@@ -1,7 +1,6 @@
 ### Maven stuff
-/target/
-/target/**
-/target
+target
+target/**
 
 ###Eclipse Stuff
 
@@ -18,6 +17,9 @@ tmp/**/*
 local.properties
 .settings/
 .loadpath
+.project/
+.project
+.classpath
 
 # External tool builders
 .externalToolBuilders/
