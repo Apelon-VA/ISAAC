@@ -1,0 +1,44 @@
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+   http://maven.apache.org/xsd/settings-1.0.0.xsd"    
+   xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <servers>
+   <server>
+     <id>maestro</id>
+     <username/>
+     <password/>
+   </server>
+ </servers>
+ <mirrors>
+   <mirror>
+     <id>maestro</id>
+     <mirrorOf>external:*</mirrorOf>
+     <name>Maestro</name>
+     <url>https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/</url>
+   </mirror>
+ </mirrors>
+ <profiles>
+   <profile>
+     <id>repos</id>
+     <activation>
+       <activeByDefault>true</activeByDefault>
+     </activation>
+     <!-- REPOSITORY DEFINITIONS -->
+     <repositories>
+       <repository>
+         <id>central</id>
+         <name>All Repository Group</name>
+         <url>https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/</url>
+       </repository>
+     </repositories>
+     <pluginRepositories>
+       <pluginRepository>
+         <id>central</id>
+         <name>All Repository Group</name>
+         <url>https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/</url>
+       </pluginRepository>
+     </pluginRepositories>
+   </profile>
+ </profiles>
+</settings>
+
