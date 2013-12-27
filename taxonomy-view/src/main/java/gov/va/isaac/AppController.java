@@ -94,8 +94,7 @@ public class AppController {
 					String message = "The Snomed Database was not found.";
 					LOG.error(message, ex);
 					String details = "Please download the file\n\n"
-							+ "https://csfe.aceworkspace.net/sf/frs/do/downloadFile/projects.veterans_administration_project/"
-							+ "frs.lego_editor.snomed_database_0_56_and_newer/frs4344?dl=1"
+							+ "https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/org/ihtsdo/otf/tcc-test-data/3.0/"
 							+ "\n\nand unzip it into\n\n"
 							+ System.getProperty("user.dir")
 							+ "\n\nand then restart the editor.";
