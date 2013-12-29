@@ -1,12 +1,14 @@
 package gov.va.isaac;
 
+import gov.va.isaac.gui.SctTreeItem;
+import gov.va.isaac.gui.SctTreeView;
+import gov.va.isaac.util.WBUtility;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.TreeView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -33,6 +35,8 @@ public class AppController {
 
 	private App app;
 	private BdbTerminologyStore dataStore;
+	private SctTreeView sctTree;
+	private boolean shutdown = false;
 
 	/**
 	 * Called by the FXMLLoader when initialization is complete.
@@ -48,11 +52,17 @@ public class AppController {
 	}
 
 	public void shutdown() {
+		LOG.info("Shutting down");
+		shutdown = true;
+
 		if (dataStore != null) {
-			LOG.info("Shutting down");
 			dataStore.shutdown();
-			LOG.info("Finished shutting down");
 		}
+
+		SctTreeView.shutdown();
+		SctTreeItem.shutdown();
+
+		LOG.info("Finished shutting down");
 	}
 
 	private void loadDataStore() {
@@ -66,6 +76,15 @@ public class AppController {
 				dataStore = getDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
 				LOG.info("Finished opening Workbench database");
 
+				// Check if user shut down early.
+				if (shutdown) {
+					dataStore.shutdown();
+					return null;
+				}
+
+				// Inject into dependent classes.
+				WBUtility.setDataStore(dataStore);
+
 				return dataStore.getFxConcept(
 						Taxonomies.SNOMED.getUuids()[0],
 						StandardViewCoordinates.getSnomedInferredLatest(),
@@ -76,12 +95,13 @@ public class AppController {
 
 			@Override
 			protected void succeeded() {
-				TreeView sctTree = new TreeView();
-				AnchorPane.setTopAnchor(sctTree, 0.0);
-				AnchorPane.setBottomAnchor(sctTree, 0.0);
-				AnchorPane.setLeftAnchor(sctTree, 0.0);
-				AnchorPane.setRightAnchor(sctTree, 0.0);
-				browserPane.setCenter(sctTree);
+				ConceptChronicleDdo result = this.getValue();
+
+				// User could have shut down early.
+				if (result != null) {
+					sctTree = new SctTreeView(result, dataStore);
+					browserPane.setCenter(sctTree);
+				}
 			}
 
 			@Override

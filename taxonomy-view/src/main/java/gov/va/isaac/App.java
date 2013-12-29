@@ -24,9 +24,9 @@ import com.sun.javafx.tk.Toolkit;
  */
 public class App extends Application {
 
-	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
+	private AppController controller;
 	private ErrorDialog errorDialog;
 
 	@Override
@@ -35,7 +35,7 @@ public class App extends Application {
         URL fxmlURL = this.getClass().getResource("App.fxml");
         FXMLLoader loader = new FXMLLoader(fxmlURL);
         Parent root = (Parent) loader.load();
-        final AppController controller = loader.getController();
+        this.controller = loader.getController();
         controller.setApp(this);
 
         primaryStage.setTitle("Taxonomy Viewer");
@@ -52,7 +52,7 @@ public class App extends Application {
 
 			@Override
 			public void handle(WindowEvent event) {
-				controller.shutdown();
+				shutdown();
 			}
 		});
 
@@ -67,6 +67,20 @@ public class App extends Application {
 
 		errorDialog.setVariables(title, message, details);
 		errorDialog.showAndWait();
+	}
+
+	private void shutdown() {
+		LOG.info("Shutting down");
+		try {
+			controller.shutdown();
+		} catch (Exception ex) {
+			String message = "Trouble shutting down";
+			LOG.warn(message, ex);
+			showErrorDialog("Oops!", message, ex.getMessage());
+		}
+		LOG.info("Finished shutting down");
+
+		//System.exit(0);
 	}
 
     public static void main(String[] args) {
