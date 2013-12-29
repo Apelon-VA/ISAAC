@@ -65,7 +65,7 @@ public class App extends Application {
 		// Make sure in application thread.
 		Toolkit.getToolkit().checkFxUserThread();
 
-		errorDialog.setVariables(title, message, null);
+		errorDialog.setVariables(title, message, details);
 		errorDialog.showAndWait();
 	}
 
