@@ -8,14 +8,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<AnchorPane id="AnchorPane" fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.dialog.SnomedConceptViewController">
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.dialog.SnomedConceptViewController">
   <children>
-    <VBox id="VBox" alignment="CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox alignment="CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
         <Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="FSN" />
         <GridPane prefWidth="790.0">
           <children>
-            <VBox id="VBox" spacing="5.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <VBox spacing="5.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
               <children>
                 <HBox maxWidth="1.7976931348623157E308">
                   <children>
@@ -41,7 +41,7 @@
                 </HBox>
               </children>
             </VBox>
-            <VBox id="idVbox" fx:id="idVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" spacing="5.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS" />
+            <VBox fx:id="idVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" spacing="5.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS" />
           </children>
           <columnConstraints>
             <ColumnConstraints hgrow="NEVER" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
@@ -51,21 +51,21 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
           </rowConstraints>
         </GridPane>
-        <SplitPane id="SplitPane" fx:id="splitPane" dividerPositions="0.5" style="-fx-background-color: transparent" VBox.vgrow="ALWAYS">
+        <SplitPane fx:id="splitPane" dividerPositions="0.5" style="-fx-background-color: transparent" VBox.vgrow="ALWAYS">
           <items>
-            <VBox id="VBox" spacing="1.0">
+            <VBox spacing="1.0">
               <children>
-                <VBox id="VBox" alignment="CENTER" prefHeight="450.0" prefWidth="606.0" spacing="5.0" VBox.vgrow="ALWAYS">
+                <VBox alignment="CENTER" prefHeight="450.0" prefWidth="606.0" spacing="5.0" VBox.vgrow="ALWAYS">
                   <children>
-                    <VBox id="VBox" alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
+                    <VBox alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
                       <children>
                         <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Descriptions" />
-                        <TableView id="tableView" fx:id="descriptionsTable" maxWidth="1.7976931348623157E308" minHeight="100.0" VBox.vgrow="ALWAYS" />
+                        <TableView fx:id="descriptionsTable" maxWidth="1.7976931348623157E308" minHeight="100.0" VBox.vgrow="ALWAYS" />
                       </children>
                     </VBox>
-                    <VBox id="VBox" alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
+                    <VBox alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
                       <children>
-                        <Label id="sourceRelGridPane" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Source Relationships" />
+                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Source Relationships" />
                         <TableView fx:id="relationshipsTable" maxWidth="1.7976931348623157E308" minHeight="100.0" VBox.vgrow="ALWAYS" />
                       </children>
                     </VBox>
@@ -75,7 +75,7 @@
             </VBox>
             <VBox fx:id="splitRight" prefHeight="200.0" prefWidth="100.0" styleClass="itemBorder">
               <children>
-                <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0">
+                <HBox alignment="CENTER_LEFT" spacing="5.0">
                   <children>
                     <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Tree View" />
                     <Button fx:id="showInTreeButton" mnemonicParsing="false" text="Find Concept">
