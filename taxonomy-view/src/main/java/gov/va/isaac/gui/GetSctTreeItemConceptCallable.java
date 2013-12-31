@@ -23,97 +23,101 @@ import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
  * @author ocarlsen
  * @author kec
  */
-class GetSctTreeItemConceptCallable implements Callable<Boolean> {
+public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
-	private final SctTreeItem treeItem;
-	private final boolean addChildren;
-	private final VersionPolicy versionPolicy;
-	private final RefexPolicy refexPolicy;
-	private final RelationshipPolicy relationshipPolicy;
-	private final BdbTerminologyStore terminologyStore;
-	private final ArrayList<SctTreeItem> childrenToAdd = new ArrayList<>();
+    private final SctTreeItem treeItem;
+    private final boolean addChildren;
+    private final VersionPolicy versionPolicy;
+    private final RefexPolicy refexPolicy;
+    private final RelationshipPolicy relationshipPolicy;
+    private final BdbTerminologyStore terminologyStore;
+    private final ArrayList<SctTreeItem> childrenToAdd = new ArrayList<>();
 
-	private ConceptChronicleDdo concept;
+    private ConceptChronicleDdo concept;
 
-   public GetSctTreeItemConceptCallable(SctTreeItem treeItem, BdbTerminologyStore terminologyStore) {
-	   this(treeItem, true, terminologyStore);
-   }
+    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, BdbTerminologyStore terminologyStore) {
+        this(treeItem, true, terminologyStore);
+    }
 
-   public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, BdbTerminologyStore terminologyStore) {
-	   this(treeItem, addChildren, VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.ANNOTATION_MEMBERS,
-			   RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS, terminologyStore);
-   }
+    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, BdbTerminologyStore terminologyStore) {
+        this(treeItem, addChildren, VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.ANNOTATION_MEMBERS,
+                RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS, terminologyStore);
+    }
 
-   public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, VersionPolicy versionPolicy,
-		   RefexPolicy refexPolicy, RelationshipPolicy relationshipPolicy, BdbTerminologyStore terminologyStore) {
-		this.treeItem = treeItem;
-		this.addChildren = true;
-		this.versionPolicy = versionPolicy;
-		this.refexPolicy = refexPolicy;
-		this.relationshipPolicy = relationshipPolicy;
-		this.terminologyStore = terminologyStore;
-   }
+    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, VersionPolicy versionPolicy,
+            RefexPolicy refexPolicy, RelationshipPolicy relationshipPolicy, BdbTerminologyStore terminologyStore) {
+        this.treeItem = treeItem;
+        this.addChildren = true;
+        this.versionPolicy = versionPolicy;
+        this.refexPolicy = refexPolicy;
+        this.relationshipPolicy = relationshipPolicy;
+        this.terminologyStore = terminologyStore;
+    }
 
-   @Override
-   public Boolean call() throws Exception {
-      ComponentReference reference;
+    @Override
+    public Boolean call() throws Exception {
+        ComponentReference reference;
 
-      if (addChildren) {
-         reference = treeItem.getValue().getRelationshipVersion().getOriginReference();
-      } else {
-         reference = treeItem.getValue().getRelationshipVersion().getDestinationReference();
-      }
+        if (addChildren) {
+            reference = treeItem.getValue().getRelationshipVersion().getOriginReference();
+        } else {
+            reference = treeItem.getValue().getRelationshipVersion().getDestinationReference();
+        }
 
-      if (SctTreeView.shutdownRequested) {
-          return false;
-      }
+        if (SctTreeView.shutdownRequested) {
+            return false;
+        }
 
-      concept = terminologyStore.getFxConcept(reference,
-    		  StandardViewCoordinates.getSnomedInferredLatest(),
-    		  versionPolicy, refexPolicy, relationshipPolicy);
+        concept = terminologyStore.getFxConcept(reference,
+                StandardViewCoordinates.getSnomedInferredLatest(),
+                versionPolicy, refexPolicy, relationshipPolicy);
 
-      if ((concept.getConceptAttributes() == null)
-    		  || concept.getConceptAttributes().getVersions().isEmpty()
-              || concept.getConceptAttributes().getVersions().get(0).isDefined()) {
-         treeItem.setDefined(true);
-      }
+        if ((concept.getConceptAttributes() == null)
+                || concept.getConceptAttributes().getVersions().isEmpty()
+                || concept.getConceptAttributes().getVersions().get(0).isDefined()) {
+            treeItem.setDefined(true);
+        }
 
-      if (concept.getOriginRelationships().size() > 1) {
-         treeItem.setMultiParent(true);
-      }
+        if (concept.getOriginRelationships().size() > 1) {
+            treeItem.setMultiParent(true);
+        }
 
-      if (addChildren) {
-			for (RelationshipChronicleDdo destRel : concept.getDestinationRelationships()) {
-				if (SctTreeView.shutdownRequested) {
-					return false;
-				}
-				for (RelationshipVersionDdo rv : destRel.getVersions()) {
-					TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-					SctTreeItem childItem = new SctTreeItem(taxRef, terminologyStore);
+        if (addChildren) {
+            for (RelationshipChronicleDdo destRel : concept.getDestinationRelationships()) {
+                if (SctTreeView.shutdownRequested) {
+                    return false;
+                }
+                for (RelationshipVersionDdo rv : destRel.getVersions()) {
+                    TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
+                    SctTreeItem childItem = new SctTreeItem(taxRef, terminologyStore);
 
-					childrenToAdd.add(childItem);
-				}
-			}
-		}
-      if (SctTreeView.shutdownRequested) {
-          return false;
-      }
+                    childrenToAdd.add(childItem);
+                }
+            }
+        }
 
-      Collections.sort(childrenToAdd);
-      Platform.runLater(new Runnable() {
-         @Override
-         public void run() {
-            TaxonomyReferenceWithConcept itemValue = treeItem.getValue();
+        if (SctTreeView.shutdownRequested) {
+            return false;
+        }
 
-            treeItem.setValue(null);
-            treeItem.getChildren().clear();
-            treeItem.computeGraphic();
-            treeItem.getChildren().addAll(childrenToAdd);
-            treeItem.setValue(itemValue);
-            treeItem.getValue().conceptProperty().set(concept);
-         }
-      });
+        Collections.sort(childrenToAdd);
 
-      return true;
-   }
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                TaxonomyReferenceWithConcept itemValue = treeItem.getValue();
+                System.out.println("itemValue="+itemValue);
+                System.out.println("concept="+concept);
+
+                treeItem.setValue(null);
+                treeItem.getChildren().clear();
+                treeItem.computeGraphic();
+                treeItem.getChildren().addAll(childrenToAdd);
+                treeItem.setValue(itemValue);
+                treeItem.getValue().conceptProperty().set(concept);
+            }
+        });
+
+        return true;
+    }
 }
