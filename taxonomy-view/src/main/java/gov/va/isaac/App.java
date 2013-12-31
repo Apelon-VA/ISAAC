@@ -24,12 +24,12 @@ import com.sun.javafx.tk.Toolkit;
  */
 public class App extends Application {
 
-	private static final Logger LOG = LoggerFactory.getLogger(App.class);
+    private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
-	private AppController controller;
-	private ErrorDialog errorDialog;
+    private AppController controller;
+    private ErrorDialog errorDialog;
 
-	@Override
+    @Override
     public void start(Stage primaryStage) throws Exception {
 
         URL fxmlURL = this.getClass().getResource("App.fxml");
@@ -47,41 +47,41 @@ public class App extends Application {
         primaryStage.setMinHeight(primaryStage.getHeight());
         primaryStage.setMinWidth(primaryStage.getWidth());
 
-		// Handle window close event.
+        // Handle window close event.
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
-			@Override
-			public void handle(WindowEvent event) {
-				shutdown();
-			}
-		});
+            @Override
+            public void handle(WindowEvent event) {
+                shutdown();
+            }
+        });
 
         // Reusable error dialog.
         this.errorDialog = new ErrorDialog(primaryStage);
     }
 
-	public void showErrorDialog(final String title, final String message, final String details) {
+    public void showErrorDialog(final String title, final String message, final String details) {
 
-		// Make sure in application thread.
-		Toolkit.getToolkit().checkFxUserThread();
+        // Make sure in application thread.
+        Toolkit.getToolkit().checkFxUserThread();
 
-		errorDialog.setVariables(title, message, details);
-		errorDialog.showAndWait();
-	}
+        errorDialog.setVariables(title, message, details);
+        errorDialog.showAndWait();
+    }
 
-	private void shutdown() {
-		LOG.info("Shutting down");
-		try {
-			controller.shutdown();
-		} catch (Exception ex) {
-			String message = "Trouble shutting down";
-			LOG.warn(message, ex);
-			showErrorDialog("Oops!", message, ex.getMessage());
-		}
-		LOG.info("Finished shutting down");
+    private void shutdown() {
+        LOG.info("Shutting down");
+        try {
+            controller.shutdown();
+        } catch (Exception ex) {
+            String message = "Trouble shutting down";
+            LOG.warn(message, ex);
+            showErrorDialog("Oops!", message, ex.getMessage());
+        }
+        LOG.info("Finished shutting down");
 
-		//System.exit(0);
-	}
+        //System.exit(0);
+    }
 
     public static void main(String[] args) {
         Application.launch(args);
