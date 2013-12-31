@@ -36,18 +36,17 @@ import org.slf4j.LoggerFactory;
  */
 public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
-	private final BdbTerminologyStore dataStore;
+    private final BdbTerminologyStore dataStore;
 
     public SctTreeCell(BdbTerminologyStore dataStore) {
-    	super();
+        super();
         this.dataStore = dataStore;
 
         setOnMouseClicked(new ClickListener());
     }
 
-    //~--- methods -------------------------------------------------------------
     private void openOrCloseParent(SctTreeItem treeItem) throws IOException, ContradictionException {
         TaxonomyReferenceWithConcept value = treeItem.getValue();
         ConceptChronicleDdo c = value.getConcept();
@@ -103,11 +102,11 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
     }
 
     @Override
-    protected void updateItem(TaxonomyReferenceWithConcept t, boolean bln) {
-        super.updateItem(t, bln);
+    protected void updateItem(TaxonomyReferenceWithConcept taxRef, boolean empty) {
+        super.updateItem(taxRef, empty);
         double opacity = 0.0;
 
-        if (t != null) {
+        if (taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
 
             if (treeItem.getMultiParentDepth() > 0) {
@@ -123,7 +122,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                     setGraphic(graphicBorderPane);
                 }
 
-                setText(WBUtility.getDescription(t.getConcept()));
+                setText(WBUtility.getDescription(taxRef.getConcept()));
 
                 return;
             }
@@ -152,13 +151,10 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 setDisclosureNode(disclosureBorderPane);
             }
 
-            if (t.getConcept() == null)
-            {
-                setText(t.toString());
-            }
-            else
-            {
-                setText(WBUtility.getDescription(t.getConcept()));
+            if (taxRef.getConcept() == null) {
+                setText(taxRef.toString());
+            } else {
+                setText(WBUtility.getDescription(taxRef.getConcept()));
             }
 
             BorderPane graphicBorderPane = new BorderPane();
@@ -191,9 +187,9 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         }
     }
 
-	/**
-	 * Listens for mouse clicks to expand/collapse node.
-	 */
+    /**
+     * Listens for mouse clicks to expand/collapse node.
+     */
     private final class ClickListener implements EventHandler<MouseEvent> {
 
         @Override
