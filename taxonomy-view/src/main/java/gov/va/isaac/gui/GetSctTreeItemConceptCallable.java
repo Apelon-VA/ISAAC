@@ -1,5 +1,7 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
@@ -25,33 +27,33 @@ import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
  */
 public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
+    private final AppContext appContext;
     private final SctTreeItem treeItem;
     private final boolean addChildren;
     private final VersionPolicy versionPolicy;
     private final RefexPolicy refexPolicy;
     private final RelationshipPolicy relationshipPolicy;
-    private final BdbTerminologyStore terminologyStore;
     private final ArrayList<SctTreeItem> childrenToAdd = new ArrayList<>();
 
     private ConceptChronicleDdo concept;
 
-    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, BdbTerminologyStore terminologyStore) {
-        this(treeItem, true, terminologyStore);
+    public GetSctTreeItemConceptCallable(AppContext appContext, SctTreeItem treeItem) {
+        this(appContext, treeItem, true);
     }
 
-    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, BdbTerminologyStore terminologyStore) {
-        this(treeItem, addChildren, VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.ANNOTATION_MEMBERS,
-                RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS, terminologyStore);
+    public GetSctTreeItemConceptCallable(AppContext appContext, SctTreeItem treeItem, boolean addChildren) {
+        this(appContext, treeItem, addChildren, VersionPolicy.ACTIVE_VERSIONS,
+                RefexPolicy.ANNOTATION_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
     }
 
-    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, VersionPolicy versionPolicy,
-            RefexPolicy refexPolicy, RelationshipPolicy relationshipPolicy, BdbTerminologyStore terminologyStore) {
+    public GetSctTreeItemConceptCallable(AppContext appContext, SctTreeItem treeItem, boolean addChildren,
+            VersionPolicy versionPolicy, RefexPolicy refexPolicy, RelationshipPolicy relationshipPolicy) {
+        this.appContext = appContext;
         this.treeItem = treeItem;
         this.addChildren = addChildren;
         this.versionPolicy = versionPolicy;
         this.refexPolicy = refexPolicy;
         this.relationshipPolicy = relationshipPolicy;
-        this.terminologyStore = terminologyStore;
     }
 
     @Override
@@ -68,7 +70,8 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
             return false;
         }
 
-        concept = terminologyStore.getFxConcept(reference,
+        BdbTerminologyStore dataStore = appContext.getDataStore();
+        concept = dataStore.getFxConcept(reference,
                 StandardViewCoordinates.getSnomedInferredLatest(),
                 versionPolicy, refexPolicy, relationshipPolicy);
 
@@ -89,7 +92,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
                 }
                 for (RelationshipVersionDdo rv : destRel.getVersions()) {
                     TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                    SctTreeItem childItem = new SctTreeItem(taxRef, terminologyStore);
+                    SctTreeItem childItem = new SctTreeItem(appContext, taxRef);
 
                     childrenToAdd.add(childItem);
                 }

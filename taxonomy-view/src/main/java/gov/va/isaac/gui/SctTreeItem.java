@@ -1,5 +1,6 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.util.Images;
 import gov.va.isaac.util.WBUtility;
 
@@ -21,7 +22,6 @@ import javafx.scene.control.TreeItem;
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.thread.NamedThreadFactory;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
@@ -47,7 +47,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         initExecutorPools();
     }
 
-    private final BdbTerminologyStore dataStore;
+    private final AppContext appContext;
     private final List<SctTreeItem> extraParents = new ArrayList<>();
 
     private ProgressIndicator progressIndicator;
@@ -56,13 +56,13 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     private int multiParentDepth = 0;
     private boolean secondaryParentOpened = false;
 
-    public SctTreeItem(TaxonomyReferenceWithConcept taxRef, BdbTerminologyStore dataStore) {
-        this(taxRef, (Node) null, dataStore);
+    public SctTreeItem(AppContext appContext, TaxonomyReferenceWithConcept taxRef) {
+        this(appContext, taxRef, (Node) null);
     }
 
-    public SctTreeItem(TaxonomyReferenceWithConcept t, Node node, BdbTerminologyStore dataStore) {
+    public SctTreeItem(AppContext appContext, TaxonomyReferenceWithConcept t, Node node) {
         super(t, node);
-        this.dataStore = dataStore;
+        this.appContext = appContext;
     }
 
     public void addChildren() {
@@ -83,7 +83,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                 for (RelationshipVersionDdo rv : r.getVersions()) {
                     try {
                         TaxonomyReferenceWithConcept fxtrc = new TaxonomyReferenceWithConcept(rv);
-                        SctTreeItem childItem = new SctTreeItem(fxtrc, dataStore);
+                        SctTreeItem childItem = new SctTreeItem(appContext, fxtrc);
 
                         childrenToProcess.add(childItem);
                     } catch (IOException | ContradictionException ex) {
@@ -121,7 +121,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                         for (RelationshipVersionDdo rv : r.getVersions()) {
                             try {
                                 TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                                SctTreeItem grandChildItem = new SctTreeItem(taxRef, dataStore);
+                                SctTreeItem grandChildItem = new SctTreeItem(appContext, taxRef);
 
                                 grandChildrenToProcess.add(grandChildItem);
                                 grandChildrenToAdd.add(grandChildItem);
@@ -358,7 +358,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 					return false;
 				}
 				if (childItem.getValue().conceptProperty().get() == null) {
-					GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(childItem, dataStore);
+					GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(appContext, childItem);
 					futureList.add(conceptFetcherService.submit(fetcher));
 				} else {
 					updateProgress(Math.min(processedCount++, size), size);

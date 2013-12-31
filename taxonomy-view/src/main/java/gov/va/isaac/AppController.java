@@ -99,7 +99,8 @@ public class AppController {
 
 				// User could have shut down early.
 				if (result != null) {
-					sctTree = new SctTreeView(result, dataStore);
+				    AppContext appContext = new AppContext(app, dataStore);
+					sctTree = new SctTreeView(appContext, result);
 					browserPane.setCenter(sctTree);
 				}
 			}

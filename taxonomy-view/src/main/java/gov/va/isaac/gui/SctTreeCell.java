@@ -1,5 +1,6 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.util.Images;
 import gov.va.isaac.util.WBUtility;
 
@@ -20,7 +21,6 @@ import javafx.scene.shape.RectangleBuilder;
 
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
@@ -38,13 +38,15 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
-    private final BdbTerminologyStore dataStore;
+    private final AppContext appContext;
 
-    public SctTreeCell(BdbTerminologyStore dataStore) {
+    public SctTreeCell(AppContext appContext) {
         super();
-        this.dataStore = dataStore;
+        this.appContext = appContext;
 
-        setOnMouseClicked(new ClickListener());
+        // Handle left-clicks.
+        ClickListener eventHandler = new ClickListener();
+        setOnMouseClicked(eventHandler);
     }
 
     private void openOrCloseParent(SctTreeItem treeItem) throws IOException, ContradictionException {
@@ -69,8 +71,8 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (RelationshipChronicleDdo extraParent : extraParents) {
                     for (RelationshipVersionDdo extraParentVersion : extraParent.getVersions()) {
                         SctTreeItem extraParentItem =
-                                new SctTreeItem(new TaxonomyReferenceWithConcept(extraParentVersion,
-                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION), dataStore);
+                                new SctTreeItem(appContext, new TaxonomyReferenceWithConcept(extraParentVersion,
+                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION));
                         ProgressIndicator indicator = new ProgressIndicator();
 
                         indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
@@ -90,7 +92,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (SctTreeItem extraParent : extraParentItems) {
                     parentItem.getChildren().add(startIndex++, extraParent);
                     treeItem.getExtraParents().add(extraParent);
-                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(extraParent, false, dataStore);
+                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(appContext, extraParent, false);
                     FutureHelper.addFuture(SctTreeItem.conceptFetcherService.submit(fetcher));
                 }
             }

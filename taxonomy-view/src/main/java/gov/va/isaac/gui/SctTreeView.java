@@ -1,5 +1,6 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.util.Images;
 import javafx.event.EventHandler;
 import javafx.scene.control.ProgressIndicator;
@@ -9,7 +10,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.util.Callback;
 
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 
@@ -21,34 +21,34 @@ import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
  */
 public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
-	private final BdbTerminologyStore dataStore;
+	private final AppContext appContext;
 
 	private SctTreeItem visibleRootItem;
 
 	protected static volatile boolean shutdownRequested = false;
 
-	public SctTreeView(ConceptChronicleDdo rootConcept, BdbTerminologyStore dataStore) {
+	public SctTreeView(AppContext appContext, ConceptChronicleDdo rootConcept) {
 		super();
-		this.dataStore = dataStore;
+		this.appContext = appContext;
 
 		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
 		setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
 			@Override
 			public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
-				return new SctTreeCell(SctTreeView.this.dataStore);
+				return new SctTreeCell(SctTreeView.this.appContext);
 			}
 		});
 
 		TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-		SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, dataStore);
+		SctTreeItem hiddenRootItem = new SctTreeItem(appContext, hiddenRootConcept);
 		setShowRoot(false);
 		setRoot(hiddenRootItem);
 
 		TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
 		visibleRootConcept.setConcept(rootConcept);
 
-		visibleRootItem = new SctTreeItem(visibleRootConcept, Images.ROOT.createImageView(), dataStore);
+		visibleRootItem = new SctTreeItem(appContext, visibleRootConcept, Images.ROOT.createImageView());
 
 		hiddenRootItem.getChildren().add(visibleRootItem);
 		visibleRootItem.addChildren();
