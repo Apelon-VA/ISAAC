@@ -9,7 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -47,6 +50,10 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         // Handle left-clicks.
         ClickListener eventHandler = new ClickListener();
         setOnMouseClicked(eventHandler);
+
+        // Handle right-clicks.
+        ContextMenu cm = buildContextMenu();
+        setContextMenu(cm);
     }
 
     private void openOrCloseParent(SctTreeItem treeItem) throws IOException, ContradictionException {
@@ -187,6 +194,26 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             removeExtraParents(extraParent, siblings);
             siblings.remove(extraParent);
         }
+    }
+
+    private ContextMenu buildContextMenu() {
+        ContextMenu cm = new ContextMenu();
+
+        // Add a "View Concept" menu item.
+        MenuItem mi = new MenuItem("View Concept");
+        mi.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
+                appContext.getApp().showSnomedConceptDialog(concept);
+            }
+        });
+        mi.setGraphic(Images.CONCEPT_VIEW.createImageView());
+
+        cm.getItems().add(mi);
+
+        return cm;
     }
 
     /**

@@ -1,11 +1,13 @@
 package gov.va.isaac;
 
 import gov.va.isaac.dialog.ErrorDialog;
+import gov.va.isaac.dialog.SnomedConceptView;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.UUID;
 
 import javafx.application.Application;
 import javafx.concurrent.Task;
@@ -16,7 +18,12 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
+import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
+import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
+import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,18 +36,21 @@ import com.sun.javafx.tk.Toolkit;
  */
 public class App extends Application {
 
-	private static final Logger LOG = LoggerFactory.getLogger(App.class);
+    private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
-	private AppController controller;
-	private ErrorDialog errorDialog;
+    private Stage primaryStage;
+    private AppController controller;
+    private ErrorDialog errorDialog;
     private boolean shutdown = false;
     private BdbTerminologyStore dataStore;
+    private AppContext appContext;
 
-	@Override
+    @Override
     public void start(Stage primaryStage) throws Exception {
+        this.primaryStage = primaryStage;
 
-        URL fxmlURL = this.getClass().getResource("App.fxml");
-        FXMLLoader loader = new FXMLLoader(fxmlURL);
+        URL resource = this.getClass().getResource("App.fxml");
+        FXMLLoader loader = new FXMLLoader(resource);
         Parent root = (Parent) loader.load();
         this.controller = loader.getController();
 
@@ -53,14 +63,14 @@ public class App extends Application {
         primaryStage.setMinHeight(primaryStage.getHeight());
         primaryStage.setMinWidth(primaryStage.getWidth());
 
-		// Handle window close event.
+        // Handle window close event.
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
-			@Override
-			public void handle(WindowEvent event) {
-				shutdown();
-			}
-		});
+            @Override
+            public void handle(WindowEvent event) {
+                shutdown();
+            }
+        });
 
         // Reusable error dialog.
         this.errorDialog = new ErrorDialog(primaryStage);
@@ -69,14 +79,70 @@ public class App extends Application {
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
     }
 
-	public void showErrorDialog(final String title, final String message, final String details) {
+    public void showErrorDialog(final String title, final String message, final String details) {
 
-		// Make sure in application thread.
-		Toolkit.getToolkit().checkFxUserThread();
+        // Make sure in application thread.
+        Toolkit.getToolkit().checkFxUserThread();
 
-		errorDialog.setVariables(title, message, details);
-		errorDialog.showAndWait();
-	}
+        errorDialog.setVariables(title, message, details);
+        errorDialog.showAndWait();
+    }
+
+    public void showSnomedConceptDialog(final UUID conceptUUID) {
+
+        // Do work in background.
+        Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
+
+            @Override
+            protected ConceptChronicleDdo call() throws Exception {
+                LOG.info("Loading concept with UUID " + conceptUUID);
+                ConceptChronicleDdo concept = dataStore.getFxConcept(
+                        conceptUUID,
+                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        VersionPolicy.ACTIVE_VERSIONS,
+                        RefexPolicy.REFEX_MEMBERS,
+                        RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+                LOG.info("Finished loading concept with UUID " + conceptUUID);
+
+                return concept;
+            }
+
+            @Override
+            protected void succeeded() {
+                ConceptChronicleDdo result = this.getValue();
+                showSnomedConceptDialog(result);
+            }
+
+            @Override
+            protected void failed() {
+                Throwable ex = getException();
+                String title = "Unexpected error loading concept with UUID " + conceptUUID;
+                String msg = ex.getClass().getName();
+                LOG.error(title, ex);
+                showErrorDialog(title, msg, ex.getMessage());
+            }
+        };
+
+        Thread t = new Thread(task, "Concept_Load_" + conceptUUID);
+        t.setDaemon(true);
+        t.start();
+    }
+
+    public void showSnomedConceptDialog(ConceptChronicleDdo concept) {
+
+        // Make sure in application thread.
+        Toolkit.getToolkit().checkFxUserThread();
+
+        try {
+            SnomedConceptView dialog = new SnomedConceptView(appContext, primaryStage);
+            dialog.setConcept(concept);
+            dialog.show();
+        } catch (Exception ex) {
+            String message = "Unexpected error displaying snomed concept view";
+            LOG.warn(message, ex);
+            showErrorDialog("Unexpected Error", message, ex.getMessage());
+        }
+    }
 
     private void loadDataStore(final String bdbFolderName) {
 
@@ -101,10 +167,10 @@ public class App extends Application {
             @Override
             protected void succeeded() {
                 dataStore = this.getValue();
+                appContext = new AppContext(App.this, dataStore);
 
                 // Inject into dependent classes.
                 WBUtility.setDataStore(dataStore);
-                AppContext appContext = new AppContext(App.this, dataStore);
                 controller.setAppContext(appContext);
             }
 
@@ -138,7 +204,7 @@ public class App extends Application {
         t.start();
     }
 
-    protected BdbTerminologyStore getDataStore(String bdbFolderName) throws Exception {
+    private BdbTerminologyStore getDataStore(String bdbFolderName) throws Exception {
 
         // Default value if null.
         if (bdbFolderName == null) {
@@ -154,25 +220,25 @@ public class App extends Application {
         return new BdbTerminologyStore();
     }
 
-	private void shutdown() {
-		LOG.info("Shutting down");
+    private void shutdown() {
+        LOG.info("Shutting down");
         shutdown = true;
 
-		try {
-	        if (dataStore != null) {
-	            dataStore.shutdown();
-	        }
-	        if (controller != null) {
-	            controller.shutdown();
-	        }
-		} catch (Exception ex) {
-			String message = "Trouble shutting down";
-			LOG.warn(message, ex);
-			showErrorDialog("Oops!", message, ex.getMessage());
-		}
+        try {
+            if (dataStore != null) {
+                dataStore.shutdown();
+            }
+            if (controller != null) {
+                controller.shutdown();
+            }
+        } catch (Exception ex) {
+            String message = "Trouble shutting down";
+            LOG.warn(message, ex);
+            showErrorDialog("Oops!", message, ex.getMessage());
+        }
 
-		LOG.info("Finished shutting down");
-	}
+        LOG.info("Finished shutting down");
+    }
 
     public static void main(String[] args) {
         Application.launch(args);
