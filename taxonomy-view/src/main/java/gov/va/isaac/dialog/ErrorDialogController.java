@@ -11,6 +11,11 @@ import javafx.stage.Stage;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Controller class for {@link ErrorDialog}.
+ *
+ * @author ocarlsen
+ */
 public class ErrorDialogController {
 
 	@FXML private AnchorPane rootPane;
