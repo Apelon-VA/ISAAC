@@ -47,7 +47,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
     public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren, VersionPolicy versionPolicy,
             RefexPolicy refexPolicy, RelationshipPolicy relationshipPolicy, BdbTerminologyStore terminologyStore) {
         this.treeItem = treeItem;
-        this.addChildren = true;
+        this.addChildren = addChildren;
         this.versionPolicy = versionPolicy;
         this.refexPolicy = refexPolicy;
         this.relationshipPolicy = relationshipPolicy;
@@ -106,8 +106,6 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
             @Override
             public void run() {
                 TaxonomyReferenceWithConcept itemValue = treeItem.getValue();
-                System.out.println("itemValue="+itemValue);
-                System.out.println("concept="+concept);
 
                 treeItem.setValue(null);
                 treeItem.getChildren().clear();
