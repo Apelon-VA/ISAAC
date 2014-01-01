@@ -1,6 +1,6 @@
-package gov.va.isaac.gui;
+package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.AppContext;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,10 +1,10 @@
-package gov.va.isaac.dialog;
+package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.SctTreeView;
-import gov.va.isaac.util.CopyableLabel;
-import gov.va.isaac.util.CustomClipboard;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.treeview.SctTreeView;
+import gov.va.isaac.gui.util.CopyableLabel;
+import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.gui.util.WBUtility;
 
 import java.util.ArrayList;
 import java.util.UUID;

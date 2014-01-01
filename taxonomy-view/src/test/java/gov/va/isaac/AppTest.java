@@ -1,5 +1,7 @@
 package gov.va.isaac;
 
+import gov.va.isaac.gui.App;
+
 import org.junit.Assert;
 import org.junit.Test;
 

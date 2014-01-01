@@ -1,7 +1,7 @@
-package gov.va.isaac.dialog;
+package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.AppContext;
-import gov.va.isaac.util.Images;
+import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.util.Images;
 
 import java.io.IOException;
 import java.net.URL;

@@ -1,4 +1,4 @@
-package gov.va.isaac;
+package gov.va.isaac.gui;
 
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 

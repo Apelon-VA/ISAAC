@@ -1,8 +1,8 @@
-package gov.va.isaac;
+package gov.va.isaac.gui;
 
-import gov.va.isaac.dialog.ErrorDialog;
-import gov.va.isaac.dialog.SnomedConceptView;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.gui.dialog.ErrorDialog;
+import gov.va.isaac.gui.dialog.SnomedConceptView;
+import gov.va.isaac.gui.util.WBUtility;
 
 import java.io.File;
 import java.io.FileNotFoundException;

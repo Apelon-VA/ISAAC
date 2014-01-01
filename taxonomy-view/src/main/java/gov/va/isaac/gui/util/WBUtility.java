@@ -1,4 +1,4 @@
-package gov.va.isaac.util;
+package gov.va.isaac.gui.util;
 
 import gov.va.isaac.model.UserPreferences;
 

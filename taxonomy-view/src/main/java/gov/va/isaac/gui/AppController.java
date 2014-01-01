@@ -1,7 +1,7 @@
-package gov.va.isaac;
+package gov.va.isaac.gui;
 
-import gov.va.isaac.gui.SctTreeItem;
-import gov.va.isaac.gui.SctTreeView;
+import gov.va.isaac.gui.treeview.SctTreeItem;
+import gov.va.isaac.gui.treeview.SctTreeView;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.layout.BorderPane;

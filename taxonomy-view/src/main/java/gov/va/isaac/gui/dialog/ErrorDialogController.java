@@ -1,4 +1,4 @@
-package gov.va.isaac.dialog;
+package gov.va.isaac.gui.dialog;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

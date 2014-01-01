@@ -25,7 +25,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package gov.va.isaac.gui;
+package gov.va.isaac.gui.treeview;
 
 import java.util.ArrayList;
 import java.util.Collections;
