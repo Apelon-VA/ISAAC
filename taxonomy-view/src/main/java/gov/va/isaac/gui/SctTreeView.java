@@ -46,64 +46,64 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
     static volatile boolean shutdownRequested = false;
 
-	private final AppContext appContext;
+    private final AppContext appContext;
 
-	private SctTreeItem rootTreeItem;
+    private SctTreeItem rootTreeItem;
 
-	public SctTreeView(AppContext appContext, ConceptChronicleDdo rootConcept) {
-		super();
-		this.appContext = appContext;
+    public SctTreeView(AppContext appContext, ConceptChronicleDdo rootConcept) {
+        super();
+        this.appContext = appContext;
 
-		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-		setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
-			@Override
-			public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
-				return new SctTreeCell(SctTreeView.this.appContext);
-			}
-		});
+        setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
+            @Override
+            public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
+                return new SctTreeCell(SctTreeView.this.appContext);
+            }
+        });
 
-		TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-		SctTreeItem hiddenRootItem = new SctTreeItem(appContext, hiddenRootConcept);
-		setShowRoot(false);
-		setRoot(hiddenRootItem);
+        TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
+        SctTreeItem hiddenRootItem = new SctTreeItem(appContext, hiddenRootConcept);
+        setShowRoot(false);
+        setRoot(hiddenRootItem);
 
-		TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
-		visibleRootConcept.setConcept(rootConcept);
+        TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
+        visibleRootConcept.setConcept(rootConcept);
 
-		rootTreeItem = new SctTreeItem(appContext, visibleRootConcept, Images.ROOT.createImageView());
+        rootTreeItem = new SctTreeItem(appContext, visibleRootConcept, Images.ROOT.createImageView());
 
-		hiddenRootItem.getChildren().add(rootTreeItem);
-		rootTreeItem.addChildren();
+        hiddenRootItem.getChildren().add(rootTreeItem);
+        rootTreeItem.addChildren();
 
-		// put this event handler on the root
-		rootTreeItem.addEventHandler(TreeItem.branchCollapsedEvent(),
-				new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
-					@Override
-					public void handle(TreeItem.TreeModificationEvent<Object> t) {
-						// remove grandchildren
-						SctTreeItem sourceTreeItem = (SctTreeItem) t
-								.getSource();
-						sourceTreeItem.removeGrandchildren();
-					}
-				});
+        // put this event handler on the root
+        rootTreeItem.addEventHandler(TreeItem.branchCollapsedEvent(),
+                new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
+                    @Override
+                    public void handle(TreeItem.TreeModificationEvent<Object> t) {
+                        // remove grandchildren
+                        SctTreeItem sourceTreeItem = (SctTreeItem) t
+                                .getSource();
+                        sourceTreeItem.removeGrandchildren();
+                    }
+                });
 
-		rootTreeItem.addEventHandler(TreeItem.branchExpandedEvent(),
-				new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
-					@Override
-					public void handle(TreeItem.TreeModificationEvent<Object> t) {
-						// add grandchildren
-						SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
-						ProgressIndicator p2 = new ProgressIndicator();
+        rootTreeItem.addEventHandler(TreeItem.branchExpandedEvent(),
+                new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
+                    @Override
+                    public void handle(TreeItem.TreeModificationEvent<Object> t) {
+                        // add grandchildren
+                        SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
+                        ProgressIndicator p2 = new ProgressIndicator();
 
-						p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
-						p2.setPrefSize(16, 16);
-						p2.setProgress(-1);
-						sourceTreeItem.setProgressIndicator(p2);
-						sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
-					}
-				});
-	}
+                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
+                        p2.setPrefSize(16, 16);
+                        p2.setProgress(-1);
+                        sourceTreeItem.setProgressIndicator(p2);
+                        sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                    }
+                });
+    }
 
     @SuppressWarnings("unused")
     public void showConcept(final UUID conceptUUID, BooleanProperty setFalseWhenDone) {
@@ -185,19 +185,19 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
         //TODO: Utility.tpe.execute(r);
     }
 
-	/**
-	 * Tell the tree to stop whatever threading operations it has running,
-	 * since the application is exiting.
-	 */
-	public static void shutdown() {
-		shutdownRequested = true;
-	}
+    /**
+     * Tell the tree to stop whatever threading operations it has running,
+     * since the application is exiting.
+     */
+    public static void shutdown() {
+        shutdownRequested = true;
+    }
 
-	/**
-	 * The various {@link BdbTerminologyStore#getFxConcept()} APIs break if
+    /**
+     * The various {@link BdbTerminologyStore#getFxConcept()} APIs break if
      * you ask for a concept that doesn't exist.
      * Create a {@link ConceptChronicleDdo} manually here instead.
-	 */
+     */
     @SuppressWarnings({ "unused", "null" })
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
