@@ -97,7 +97,7 @@ public class SnomedConceptViewController {
             @Override
             public void handle(ActionEvent event) {
                 treeViewSearchRunning.set(true);
-                //TODO: sctTree.showConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
+                sctTree.showConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
             }
         });
 
@@ -222,7 +222,7 @@ public class SnomedConceptViewController {
             splitRight.getChildren().add(sctTree);
             VBox.setVgrow(sctTree, Priority.ALWAYS);
             treeViewSearchRunning.set(true);
-            //TODO: sctTree.showConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
+            sctTree.showConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
         } catch (Exception ex) {
             LOG.error("Error creating tree view", ex);
             splitRight.getChildren().add(new Label("Unexpected error building tree"));
