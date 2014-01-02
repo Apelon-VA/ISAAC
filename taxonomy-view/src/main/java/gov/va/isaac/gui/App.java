@@ -2,6 +2,7 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.ErrorDialog;
 import gov.va.isaac.gui.dialog.SnomedConceptView;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
 
 import java.io.File;
@@ -54,6 +55,7 @@ public class App extends Application {
         Parent root = (Parent) loader.load();
         this.controller = loader.getController();
 
+        primaryStage.getIcons().add(Images.APPLICATION.getImage());
         primaryStage.setTitle("Taxonomy Viewer");
         primaryStage.setScene(new Scene(root));
         primaryStage.sizeToScene();

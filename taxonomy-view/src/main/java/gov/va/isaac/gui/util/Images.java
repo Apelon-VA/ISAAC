@@ -12,6 +12,7 @@ import javafx.scene.image.ImageView;
  */
 public enum Images {
 
+    APPLICATION(setupImage("/icons/16x16/application-block.png")),
     ROOT(setupImage("/icons/16x16/node.png")),
     PRIMITIVE_SINGLE_PARENT(setupImage("/icons/16x16/navigation-nowhere-button-white.png")),
     PRIMITIVE_MULTI_PARENT_CLOSED(setupImage("/icons/16x16/navigation-090-button-white.png")),
