@@ -22,26 +22,26 @@ import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
  */
 public class SnomedConceptView extends Stage {
 
-	private final SnomedConceptViewController controller;
+    private final SnomedConceptViewController controller;
 
-	public SnomedConceptView(AppContext appContext, Stage owner) throws IOException {
-		super();
+    public SnomedConceptView(AppContext appContext, Stage owner) throws IOException {
+        super();
 
-		initOwner(owner);
-		initModality(Modality.NONE);
-		initStyle(StageStyle.DECORATED);
+        initOwner(owner);
+        initModality(Modality.NONE);
+        initStyle(StageStyle.DECORATED);
 
-		// Load from FXML.
+        // Load from FXML.
         URL resource = this.getClass().getResource("SnomedConceptView.fxml");
-		FXMLLoader loader = new FXMLLoader(resource);
+        FXMLLoader loader = new FXMLLoader(resource);
         Parent root = (Parent) loader.load();
         setScene(new Scene(root));
 
         getIcons().add(Images.CONCEPT_VIEW.getImage());
 
-		this.controller = loader.getController();
-		controller.setAppContext(appContext);
-	}
+        this.controller = loader.getController();
+        controller.setAppContext(appContext);
+    }
 
     public void setConcept(ConceptChronicleDdo concept) {
         controller.setConcept(concept);

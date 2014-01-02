@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements Comparable<SctTreeItem> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SctTreeItem.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SctTreeItem.class);
 
     private static final ThreadGroup sctTreeItemThreadGroup = new ThreadGroup("SctTreeItem child fetcher pool");
 
@@ -67,9 +67,9 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 
     public void addChildren() {
         final TaxonomyReferenceWithConcept taxRef = getValue();
-		if (taxRef.getConcept() != null) {
+        if (taxRef.getConcept() != null) {
 
-			// Configure a new progress indicator.
+            // Configure a new progress indicator.
             ProgressIndicator pi = new ProgressIndicator();
             pi.setSkin(new TaxonomyProgressIndicatorSkin(pi));
             pi.setPrefSize(16, 16);
@@ -181,9 +181,9 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         }
     }
 
-	/**
-	 * Initialize the {@link #childFetcherService} and {@link #conceptFetcherService}.
-	 */
+    /**
+     * Initialize the {@link #childFetcherService} and {@link #conceptFetcherService}.
+     */
     private static void initExecutorPools() {
         childFetcherService = Executors.newFixedThreadPool(Math.min(6,
                 Runtime.getRuntime().availableProcessors() + 1), new NamedThreadFactory(sctTreeItemThreadGroup,
@@ -193,39 +193,39 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                 "SctTreeItem concept fetcher"));
     }
 
-	/**
-	 * Stop the {@link #childFetcherService} and {@link #conceptFetcherService}.
-	 */
-	public static void shutdown() {
-		childFetcherService.shutdown();
-		conceptFetcherService.shutdown();
-	}
+    /**
+     * Stop the {@link #childFetcherService} and {@link #conceptFetcherService}.
+     */
+    public static void shutdown() {
+        childFetcherService.shutdown();
+        conceptFetcherService.shutdown();
+    }
 
     @Override
     public String toString() {
-		if (getValue().getRelationshipVersion() != null) {
-			if (multiParentDepth > 0) {
-				ComponentReference destRef = getValue().getRelationshipVersion().getDestinationReference();
-				String temp = WBUtility.getDescription(destRef.getUuid());
-				if (temp == null) {
-					return destRef.getText();
-				} else {
-					return temp;
-				}
-			} else {
-				ComponentReference originRef = getValue().getRelationshipVersion().getOriginReference();
-				String temp = WBUtility.getDescription(originRef.getUuid());
-				if (temp == null) {
-					return originRef.getText();
-				} else {
-					return temp;
-				}
-			}
-		}
+        if (getValue().getRelationshipVersion() != null) {
+            if (multiParentDepth > 0) {
+                ComponentReference destRef = getValue().getRelationshipVersion().getDestinationReference();
+                String temp = WBUtility.getDescription(destRef.getUuid());
+                if (temp == null) {
+                    return destRef.getText();
+                } else {
+                    return temp;
+                }
+            } else {
+                ComponentReference originRef = getValue().getRelationshipVersion().getOriginReference();
+                String temp = WBUtility.getDescription(originRef.getUuid());
+                if (temp == null) {
+                    return originRef.getText();
+                } else {
+                    return temp;
+                }
+            }
+        }
 
-		if (getValue().conceptProperty().get() != null) {
-			return WBUtility.getDescription(getValue().conceptProperty().get());
-		}
+        if (getValue().conceptProperty().get() != null) {
+            return WBUtility.getDescription(getValue().conceptProperty().get());
+        }
 
         return "root";
     }
@@ -287,23 +287,23 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     }
 
 
-	public void blockUntilChildrenReady() {
-		if (progressIndicator != null) {
-			synchronized (childFetcherService) {
-				while (progressIndicator != null) {
-					try {
-						childFetcherService.wait();
-					} catch (InterruptedException e) {
-						// noop
-					}
-				}
-			}
-		}
-	}
+    public void blockUntilChildrenReady() {
+        if (progressIndicator != null) {
+            synchronized (childFetcherService) {
+                while (progressIndicator != null) {
+                    try {
+                        childFetcherService.wait();
+                    } catch (InterruptedException e) {
+                        // noop
+                    }
+                }
+            }
+        }
+    }
 
-	/**
-	 * A concrete {@link Task} to fetch concepts.
-	 */
+    /**
+     * A concrete {@link Task} to fetch concepts.
+     */
     private final class FetchConceptsTask extends Task<Boolean> {
 
         List<SctTreeItem> children;
@@ -319,15 +319,15 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
             List<Future<Boolean>> futureList = new ArrayList<>();
 
             for (SctTreeItem childItem : children) {
-				if (SctTreeView.shutdownRequested) {
-					return false;
-				}
-				if (childItem.getValue().conceptProperty().get() == null) {
-					GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(appContext, childItem);
-					futureList.add(conceptFetcherService.submit(fetcher));
-				} else {
-					updateProgress(Math.min(processedCount++, size), size);
-				}
+                if (SctTreeView.shutdownRequested) {
+                    return false;
+                }
+                if (childItem.getValue().conceptProperty().get() == null) {
+                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(appContext, childItem);
+                    futureList.add(conceptFetcherService.submit(fetcher));
+                } else {
+                    updateProgress(Math.min(processedCount++, size), size);
+                }
             }
 
             updateProgress(Math.min(processedCount, size), size);
@@ -337,19 +337,19 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                     future.get();
                     updateProgress(Math.min(processedCount++, size), size);
                 } catch (ExecutionException ex) {
-					if (SctTreeView.shutdownRequested) {
-						return false;
-					} else {
-						LOG.error(null, ex);
-					}
+                    if (SctTreeView.shutdownRequested) {
+                        return false;
+                    } else {
+                        LOG.error(null, ex);
+                    }
                 } catch (InterruptedException ex) {
                     LOG.error(null, ex);
                 }
             }
 
-			if (SctTreeView.shutdownRequested) {
-				return false;
-			}
+            if (SctTreeView.shutdownRequested) {
+                return false;
+            }
 
             updateProgress(1, 1);
 

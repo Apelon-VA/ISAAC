@@ -22,67 +22,67 @@ import org.slf4j.LoggerFactory;
  */
 public class AppController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
-	@FXML private BorderPane browserPane;
+    @FXML private BorderPane browserPane;
 
     private AppContext appContext;
-	private SctTreeView sctTree;
+    private SctTreeView sctTree;
 
-	public void setAppContext(AppContext appContext) {
+    public void setAppContext(AppContext appContext) {
         this.appContext = appContext;
 
         // Kick off a thread to load the root concept.
         loadSctTree(appContext);
-	}
+    }
 
-	public void shutdown() {
-		LOG.info("Shutting down");
+    public void shutdown() {
+        LOG.info("Shutting down");
 
-		SctTreeView.shutdown();
-		SctTreeItem.shutdown();
+        SctTreeView.shutdown();
+        SctTreeItem.shutdown();
 
-		LOG.info("Finished shutting down");
-	}
+        LOG.info("Finished shutting down");
+    }
 
-	private void loadSctTree(final AppContext appContext) {
+    private void loadSctTree(final AppContext appContext) {
 
-		// Do work in background.
-		Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
+        // Do work in background.
+        Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
 
-			@Override
-			protected ConceptChronicleDdo call() throws Exception {
-				LOG.info("Loading root concept");
-				ConceptChronicleDdo rootConcept = appContext.getDataStore().getFxConcept(
-						Taxonomies.SNOMED.getUuids()[0],
-						StandardViewCoordinates.getSnomedInferredLatest(),
-						VersionPolicy.ACTIVE_VERSIONS,
-						RefexPolicy.REFEX_MEMBERS,
-						RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+            @Override
+            protected ConceptChronicleDdo call() throws Exception {
+                LOG.info("Loading root concept");
+                ConceptChronicleDdo rootConcept = appContext.getDataStore().getFxConcept(
+                        Taxonomies.SNOMED.getUuids()[0],
+                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        VersionPolicy.ACTIVE_VERSIONS,
+                        RefexPolicy.REFEX_MEMBERS,
+                        RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
                 LOG.info("Finished loading root concept");
 
                 return rootConcept;
-			}
+            }
 
-			@Override
-			protected void succeeded() {
-				ConceptChronicleDdo result = this.getValue();
-				sctTree = new SctTreeView(appContext, result);
-				browserPane.setCenter(sctTree);
-			}
+            @Override
+            protected void succeeded() {
+                ConceptChronicleDdo result = this.getValue();
+                sctTree = new SctTreeView(appContext, result);
+                browserPane.setCenter(sctTree);
+            }
 
-			@Override
-			protected void failed() {
-				Throwable ex = getException();
-				String title = "Unexpected error loading root concept";
-				String msg = ex.getClass().getName();
-				LOG.error(title, ex);
-				AppController.this.appContext.getApp().showErrorDialog(title, msg, ex.getMessage());
-			}
-		};
+            @Override
+            protected void failed() {
+                Throwable ex = getException();
+                String title = "Unexpected error loading root concept";
+                String msg = ex.getClass().getName();
+                LOG.error(title, ex);
+                AppController.this.appContext.getApp().showErrorDialog(title, msg, ex.getMessage());
+            }
+        };
 
-		Thread t = new Thread(task, "Root_Concept_Load");
-		t.setDaemon(true);
-		t.start();
-	}
+        Thread t = new Thread(task, "Root_Concept_Load");
+        t.setDaemon(true);
+        t.start();
+    }
 }

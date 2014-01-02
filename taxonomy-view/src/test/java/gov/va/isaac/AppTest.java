@@ -12,11 +12,11 @@ import org.junit.Test;
  */
 public class AppTest {
 
-	/**
-	 * Rigourous Test :-)
-	 */
-	@Test
-	public void testApp() {
-		Assert.assertTrue(true);
-	}
+    /**
+     * Rigourous Test :-)
+     */
+    @Test
+    public void testApp() {
+        Assert.assertTrue(true);
+    }
 }

@@ -7,13 +7,13 @@ package gov.va.isaac.model;
  */
 public class UserPreferences {
 
-	protected boolean useFSN = true;
+    protected boolean useFSN = true;
 
-	public boolean isUseFSN() {
-		return useFSN;
-	}
+    public boolean isUseFSN() {
+        return useFSN;
+    }
 
-	public void setUseFSN(boolean useFSN) {
-		this.useFSN = useFSN;
-	}
+    public void setUseFSN(boolean useFSN) {
+        this.useFSN = useFSN;
+    }
 }

@@ -17,27 +17,27 @@ import javafx.stage.StageStyle;
  */
 public class ErrorDialog extends Stage {
 
-	private final ErrorDialogController controller;
+    private final ErrorDialogController controller;
 
-	public ErrorDialog(Stage owner) throws IOException {
-		super();
+    public ErrorDialog(Stage owner) throws IOException {
+        super();
 
-		initOwner(owner);
-		initModality(Modality.WINDOW_MODAL);
-		initStyle(StageStyle.UTILITY);
+        initOwner(owner);
+        initModality(Modality.WINDOW_MODAL);
+        initStyle(StageStyle.UTILITY);
 
-		// Load from FXML.
-		URL resource = ErrorDialogController.class.getResource("ErrorDialog.fxml");
-		FXMLLoader loader = new FXMLLoader(resource);
-		Parent root = (Parent) loader.load();
-		setScene(new Scene(root));
+        // Load from FXML.
+        URL resource = ErrorDialogController.class.getResource("ErrorDialog.fxml");
+        FXMLLoader loader = new FXMLLoader(resource);
+        Parent root = (Parent) loader.load();
+        setScene(new Scene(root));
 
-		this.controller = loader.getController();
-	}
+        this.controller = loader.getController();
+    }
 
-	public void setVariables(String title, String message, String details) {
-		this.setTitle(title);
-		controller.setMessageText(message);
-		controller.setDetailsText(details);
-	}
+    public void setVariables(String title, String message, String details) {
+        this.setTitle(title);
+        controller.setMessageText(message);
+        controller.setDetailsText(details);
+    }
 }
