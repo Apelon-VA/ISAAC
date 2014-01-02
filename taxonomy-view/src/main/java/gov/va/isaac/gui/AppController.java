@@ -28,6 +28,7 @@ public class AppController {
 
     private AppContext appContext;
     private SctTreeView sctTree;
+    private boolean shutdown = false;
 
     public void setAppContext(AppContext appContext) {
         this.appContext = appContext;
@@ -38,6 +39,7 @@ public class AppController {
 
     public void shutdown() {
         LOG.info("Shutting down");
+        shutdown = true;
 
         SctTreeView.shutdown();
         SctTreeItem.shutdown();
@@ -77,7 +79,11 @@ public class AppController {
                 String title = "Unexpected error loading root concept";
                 String msg = ex.getClass().getName();
                 LOG.error(title, ex);
-                AppController.this.appContext.getApp().showErrorDialog(title, msg, ex.getMessage());
+
+                // Show dialog unless we're shutting down.
+                if (! shutdown) {
+                    AppController.this.appContext.getApp().showErrorDialog(title, msg, ex.getMessage());
+                }
             }
         };
 
