@@ -13,8 +13,10 @@ import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
+import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.description.DescriptionChronicleDdo;
@@ -34,6 +36,7 @@ public class WBUtility {
 
     private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
+    private static final UUID ID_UUID = TermAux.SNOMED_IDENTIFIER.getUuids()[0]; //SNOMED integer id
     private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
     private static final UUID PREFERRED_UUID = SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0];
     private static final UUID SYNONYM_UUID = SnomedMetadataRf2.SYNONYM_RF2.getUuids()[0];
@@ -213,5 +216,50 @@ public class WBUtility {
             }
         }
         return false;
+    }
+    /**
+     * Looks up the identifier (sctid or UUID).  Does not check the pendingConcepts list.
+     */
+    public static ConceptVersionBI lookupSnomedIdentifierAsCV(UUID conceptUUID) {
+        LOG.debug("WB DB Lookup '" + conceptUUID + "'");
+
+        // Null check.
+        if (conceptUUID == null) {
+            return null;
+        }
+
+        ConceptVersionBI result = getConceptVersion(conceptUUID);
+        if (result == null) {
+
+            // Try looking up by ID.
+            // dataStore#getConceptVersionFromAlternateId seems broke after
+            // the DB update, make the UUID myself instead.
+            UUID alternateUUID = UuidFactory.getUuidFromAlternateId(ID_UUID, conceptUUID.toString().trim());
+
+            // Try again.
+            result = getConceptVersion(alternateUUID);
+        }
+        return result;
+    }
+
+    private static ConceptVersionBI getConceptVersion(UUID uuid) {
+        try {
+            ConceptVersionBI result = dataStore.getConceptVersion(
+                    StandardViewCoordinates.getSnomedInferredLatest(), uuid);
+
+            // This is garbage that the WB API invented. Nothing like an
+            // undocumented getter which, rather than returning null when
+            // the thing
+            // you are asking for doesn't exist - it goes off and returns
+            // essentially a new, empty, useless node. Sigh.
+            if (result.getUUIDs().size() == 0) {
+                return null;
+            }
+
+            return result;
+        } catch (IOException ex) {
+            LOG.warn("Trouble getting concept: " + uuid, ex);
+        }
+        return null;
     }
 }
