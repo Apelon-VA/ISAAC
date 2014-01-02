@@ -145,16 +145,6 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
     }
 
-//    @Override
-//    public <E extends Event> void addEventHandler(EventType<E> et, EventHandler<E> eh) {
-//        super.addEventHandler(et, eh);
-//    }
-
-//    @Override
-//    public EventDispatchChain buildEventDispatchChain(EventDispatchChain edc) {
-//        return super.buildEventDispatchChain(edc);
-//    }
-
     @Override
     public int compareTo(SctTreeItem o) {
         return this.toString().compareTo(o.toString());
@@ -184,31 +174,6 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         }
         return Images.PRIMITIVE_SINGLE_PARENT.createImageView();
     }
-
-//    @Override
-//    public TreeItem<TaxonomyReferenceWithConcept> nextSibling() {
-//        return super.nextSibling();
-//    }
-
-//    @Override
-//    public TreeItem<TaxonomyReferenceWithConcept> nextSibling(TreeItem<TaxonomyReferenceWithConcept> ti) {
-//        return super.nextSibling(ti);
-//    }
-
-//    @Override
-//    public TreeItem<TaxonomyReferenceWithConcept> previousSibling() {
-//        return super.previousSibling();
-//    }
-
-//    @Override
-//    public TreeItem<TaxonomyReferenceWithConcept> previousSibling(TreeItem<TaxonomyReferenceWithConcept> ti) {
-//        return super.previousSibling(ti);
-//    }
-
-//    @Override
-//    public <E extends Event> void removeEventHandler(EventType<E> et, EventHandler<E> eh) {
-//        super.removeEventHandler(et, eh);
-//    }
 
     public void removeGrandchildren() {
         for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren()) {
