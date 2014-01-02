@@ -16,6 +16,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -58,12 +59,10 @@ public class App extends Application {
         primaryStage.getIcons().add(Images.APPLICATION.getImage());
         primaryStage.setTitle("Taxonomy Viewer");
         primaryStage.setScene(new Scene(root));
-        primaryStage.sizeToScene();
-        primaryStage.show();
 
         // Set minimum dimensions.
-        primaryStage.setMinHeight(primaryStage.getHeight());
-        primaryStage.setMinWidth(primaryStage.getWidth());
+        primaryStage.setMinHeight(400);
+        primaryStage.setMinWidth(400);
 
         // Handle window close event.
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -76,6 +75,23 @@ public class App extends Application {
 
         // Reusable error dialog.
         this.errorDialog = new ErrorDialog(primaryStage);
+
+        primaryStage.show();
+
+        // Reduce size to fit in user's screen.
+        // (Need to do after stage is shown, because otherwise
+        // the primary stage width & height are NaN.)
+        Screen screen = Screen.getPrimary();
+        double screenW = screen.getVisualBounds().getWidth();
+        double screenH = screen.getVisualBounds().getHeight();
+        if (primaryStage.getWidth() > screenW) {
+            LOG.debug("Resizing width to " + screenW);
+            primaryStage.setWidth(screenW);
+        }
+        if (primaryStage.getHeight() > screenH) {
+            LOG.debug("Resizing height to " + screenH);
+            primaryStage.setHeight(screenH);
+        }
 
         // Kick off a thread to open the DB connection.
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
