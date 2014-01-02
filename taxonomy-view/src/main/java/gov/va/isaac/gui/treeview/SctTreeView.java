@@ -2,12 +2,14 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
@@ -22,7 +24,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
@@ -45,6 +47,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
+    /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
     private final AppContext appContext;
@@ -106,13 +109,19 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                 });
     }
 
-    @SuppressWarnings("unused")
-    public void showConcept(final UUID conceptUUID, BooleanProperty setFalseWhenDone) {
+    /**
+     * Tell the tree to stop whatever threading operations it has running,
+     * since the application is exiting.
+     */
+    public static void shutdown() {
+        shutdownRequested = true;
+    }
+
+    public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
 
         // Do work in background.
         Task<SctTreeItem> task = new Task<SctTreeItem>() {
 
-            @SuppressWarnings("null")
             @Override
             protected SctTreeItem call() throws Exception {
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
@@ -122,7 +131,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                 UUID current = conceptUUID;
                 while (true) {
 
-                    ConceptChronicleDdo concept = buildFxConcept(conceptUUID);
+                    ConceptChronicleDdo concept = buildFxConcept(current);
                     if (concept == null) {
 
                         // Must be a "pending concept".
@@ -134,7 +143,8 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                     boolean found = false;
                     for (RelationshipChronicleDdo chronicle : concept.getOriginRelationships()) {
                         RelationshipVersionDdo relationship = chronicle.getVersions().get(chronicle.getVersions().size() - 1);
-                        if (relationship.getTypeReference().getUuid().equals(Snomed.IS_A)) {
+                        UUID isaRelTypeUUID = SnomedRelType.IS_A.getUuids()[0];
+                        if (relationship.getTypeReference().getUuid().equals(isaRelTypeUUID)) {
                             UUID parentUUID = relationship.getDestinationReference().getUuid();
                             pathToRoot.add(parentUUID);
                             current = parentUUID;
@@ -154,7 +164,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                 // Walk down path from root.
                 for (int i = pathToRoot.size() - 1; i >= 0; i--) {
                     boolean isLast = (i == 0);
-                    SctTreeItem child = null;//TODO: findChild(currentTreeItem, pathToRoot.get(i), isLast);
+                    SctTreeItem child = findChild(currentTreeItem, pathToRoot.get(i), isLast);
                     if (child == null) {
                         break;
                     }
@@ -174,12 +184,22 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                     scrollTo(row);
                     getSelectionModel().clearAndSelect(row);
                 }
-             }
+
+                // Turn off progress indicator.
+                if (workingIndicator != null) {
+                    workingIndicator.set(false);
+                }
+            }
 
             @Override
             protected void failed() {
                 Throwable ex = getException();
                 LOG.warn("Unexpected error trying to find concept in Tree", ex);
+
+                // Turn off progress indicator.
+                if (workingIndicator != null) {
+                    workingIndicator.set(false);
+                }
             }
         };
 
@@ -187,23 +207,88 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
     }
 
     /**
-     * Tell the tree to stop whatever threading operations it has running,
-     * since the application is exiting.
+     * Ugly nasty threading code to try to get a handle on waiting until
+     * children are populated before requesting them. The first call you make to
+     * this should pass in the root node, and its children should already be
+     * populated. After that you can call it repeatedly to walk down the tree.
+     *
+     * @return the found child, or null, if not found. found child will have
+     *         already been told to expand and fetch its children.
      */
-    public static void shutdown() {
-        shutdownRequested = true;
+    private SctTreeItem findChild(final SctTreeItem item,
+            final UUID targetChildUUID, final boolean isLast) {
+
+        // This will hold
+        final ArrayList<SctTreeItem> answers = new ArrayList<>(1);
+
+        Runnable finder = new Runnable() {
+
+            @Override
+            public void run() {
+                synchronized (answers) {
+                    if (item.getValue().getConcept().getPrimordialUuid().equals(targetChildUUID)) {
+                        // Found it.
+                        answers.add(item);
+                    } else {
+
+                        // Iterate through children and look for child with target UUID.
+                        for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
+                            if (child != null
+                                    && child.getValue() != null
+                                    && child.getValue().getConcept() != null
+                                    && child.getValue().getConcept().getPrimordialUuid().equals(targetChildUUID)) {
+
+                                // Found it.
+                                answers.add((SctTreeItem) child);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (answers.size() == 0) {
+                        answers.add(null);
+                    } else {
+                        SctTreeItem answer = answers.get(0);
+                        scrollTo(getRow(answer));
+                        if (! isLast) {
+                            // Start fetching the next level.
+                            answer.setExpanded(true);
+                            answer.addChildren();
+                        }
+                    }
+
+                    answers.notify();
+                }
+            }
+        };
+
+        item.blockUntilChildrenReady();
+
+        synchronized (answers) {
+            Platform.runLater(finder);
+
+            // Wait until finder done.
+            while (answers.size() == 0) {
+                try {
+                    answers.wait();
+                } catch (InterruptedException e) {
+                    // No-op.
+                }
+            }
+        }
+
+        return answers.get(0);
     }
 
     /**
      * The various {@link BdbTerminologyStore#getFxConcept()} APIs break if
      * you ask for a concept that doesn't exist.
-     * Create a {@link ConceptChronicleDdo} manually here instead.
+     * This method creates a {@link ConceptChronicleDdo} manually instead.
      */
-    @SuppressWarnings({ "unused", "null" })
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
 
-        ConceptVersionBI wbConcept = null;//TODO: WBUtility.lookupSnomedIdentifierAsCV(conceptUUID.toString());
+        ConceptVersionBI wbConcept = WBUtility.lookupSnomedIdentifierAsCV(conceptUUID);
         if (wbConcept == null) {
             return null;
         }
