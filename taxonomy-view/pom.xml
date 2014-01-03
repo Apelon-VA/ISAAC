@@ -1,0 +1,209 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>gov.va</groupId>
+    <artifactId>taxonomy-view</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>ISAAC Taxonomy View</name>
+    <url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+    
+        <!-- OTF.  Includes JavaFX 2.2.45. -->
+        <dependency>
+            <groupId>org.ihtsdo.otf</groupId>
+            <artifactId>tcc-datastore</artifactId>
+            <version>1.1-SNAPSHOT</version>
+        </dependency>
+    
+        <!-- JUnit. -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <scope>test</scope>
+        </dependency>
+                
+        <!-- Logging. -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            
+            <!-- Bundle all dependencies into a single JAR. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <finalName>taxonomy-view-with-dependencies</finalName>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.apache.lucene:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>gov.va.isaac.App</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Package into a ZIP file. -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>zip</id>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                            </descriptors>
+                            <finalName>taxonomy-view</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+        </plugins>
+    </build> 
+
+    <profiles>
+        <profile>
+            <id>installer</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.ihtsdo.otf</groupId>
+                    <artifactId>tcc-test-data</artifactId>
+                    <version>3.0</version>
+                    <type>zip</type>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>2.2</version>
+                        <executions>
+                            <execution>
+                                <id>unpack-snomed-db</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <includeGroupIds>org.ihtsdo.otf</includeGroupIds>
+                                    <includeArtifactIds>tcc-test-data</includeArtifactIds>
+                                    <outputDirectory>${project.build.directory}/snomed-db</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.google.code.maven-install4j</groupId>
+                        <artifactId>maven-install4j-plugin</artifactId>
+                        <version>0.1.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <configuration>
+                                    <configFile>src/main/install4j/Installer.install4j</configFile>
+                                    <executable>install4jc</executable>
+                                    <compilerVariables>
+                                        <property>
+                                            <name>project.version</name>
+                                            <value>${project.version}</value>
+                                        </property>
+                                    </compilerVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <id>attach-installers</id>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>${project.build.directory}/install4j/TaxonomyViewer_macos_${project.version}.dmg</file>
+                                            <type>dmg</type>
+                                            <classifier>installer_x64</classifier>
+                                        </artifact>
+                                        <artifact>
+                                            <file>${project.build.directory}/install4j/TaxonomyViewer_windows_${project.version}.exe</file>
+                                            <type>exe</type>
+                                            <classifier>installer_x32</classifier>
+                                        </artifact>
+                                        <artifact>
+                                            <file>${project.build.directory}/install4j/TaxonomyViewer_windows-x64_${project.version}.exe</file>
+                                            <type>exe</type>
+                                            <classifier>installer_x64</classifier>
+                                        </artifact>
+                                        <artifact>
+                                            <file>${project.build.directory}/install4j/TaxonomyViewer_unix_${project.version}.sh</file>
+                                            <type>sh</type>
+                                            <classifier>installer_x64</classifier>
+                                        </artifact>
+                                    </artifacts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
+</project>
