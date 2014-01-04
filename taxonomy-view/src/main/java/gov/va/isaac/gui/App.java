@@ -65,7 +65,7 @@ public class App extends Application {
         primaryStage.setMinWidth(400);
 
         // Handle window close event.
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        primaryStage.setOnHiding(new EventHandler<WindowEvent>() {
 
             @Override
             public void handle(WindowEvent event) {
@@ -208,11 +208,10 @@ public class App extends Application {
                             + "\n\nand then restart the editor.";
                     showErrorDialog(title, message, details);
 
-                    // Shutdown since no DB to load, then close window.
-                    // (Simply calling #close apparently does not fire event
-                    // we hooked up with primaryStage#setOnCloseRequest.)
-                    shutdown();
-                    primaryStage.close();
+                    // Close app since no DB to load.
+                    // (The #shutdown method will be also invoked by
+                    // the handler we hooked up with Stage#setOnHiding.)
+                    primaryStage.hide();
 
                 } else {
                     String title = "Unexpected error connecting to workbench database";
