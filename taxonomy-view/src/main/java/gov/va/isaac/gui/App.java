@@ -207,6 +207,13 @@ public class App extends Application {
                             + System.getProperty("user.dir")
                             + "\n\nand then restart the editor.";
                     showErrorDialog(title, message, details);
+
+                    // Shutdown since no DB to load, then close window.
+                    // (Simply calling #close apparently does not fire event
+                    // we hooked up with primaryStage#setOnCloseRequest.)
+                    shutdown();
+                    primaryStage.close();
+
                 } else {
                     String title = "Unexpected error connecting to workbench database";
                     String msg = ex.getClass().getName();
