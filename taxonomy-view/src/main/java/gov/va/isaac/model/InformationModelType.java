@@ -10,19 +10,19 @@ import com.sun.javafx.collections.ImmutableObservableList;
  *
  * @author ocarlsen
  */
-public enum InformationModel {
+public enum InformationModelType {
 
     FHIM("Federal Health Information Model"),
     CEM("Clinical Element Model"),
     CIMI("Clinical Information Model Initiative"),
     HeD("Health eDecision");
 
-    private static final ImmutableObservableList<InformationModel> VALUES =
-            new ImmutableObservableList<>(InformationModel.values());
+    private static final ImmutableObservableList<InformationModelType> VALUES =
+            new ImmutableObservableList<>(InformationModelType.values());
 
     private final String displayName;
 
-    private InformationModel(String displayName) {
+    private InformationModelType(String displayName) {
         this.displayName = displayName;
     }
 
@@ -30,7 +30,7 @@ public enum InformationModel {
         return this.displayName;
     }
 
-    public static ObservableList<InformationModel> asObservableList() {
+    public static ObservableList<InformationModelType> asObservableList() {
         return VALUES;
     }
 }

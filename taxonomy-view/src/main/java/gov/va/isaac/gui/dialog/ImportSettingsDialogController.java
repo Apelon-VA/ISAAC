@@ -1,7 +1,7 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.model.InformationModel;
+import gov.va.isaac.model.InformationModelType;
 
 import java.io.File;
 
@@ -25,7 +25,7 @@ public class ImportSettingsDialogController {
 
     private final ImportSettingsDialog inputDialog;
     private final AppContext appContext;
-    private final ComboBox<InformationModel> modelTypeCombo;
+    private final ComboBox<InformationModelType> modelTypeCombo;
     private final Label fileSelectionLabel;
     private final VBox root;
 
@@ -36,12 +36,12 @@ public class ImportSettingsDialogController {
 
         // Model type widgets.
         Label modelTypeLabel = new Label("Clinical Information Model:");
-        this.modelTypeCombo = new ComboBox<>(InformationModel.asObservableList());
+        this.modelTypeCombo = new ComboBox<>(InformationModelType.asObservableList());
         HBox modelTypeBox = new HBox();
         modelTypeBox.getChildren().addAll(modelTypeLabel, modelTypeCombo);
 
         // File selection widgets.
-        Button fileSelectionButton = buildFileSelectionButton("Choose File:");
+        Button fileSelectionButton = buildFileSelectionButton("Select File:");
         this.fileSelectionLabel = new Label();
         HBox fileSelectionBox = new HBox();
         fileSelectionBox.getChildren().addAll(fileSelectionButton, fileSelectionLabel);
@@ -80,14 +80,14 @@ public class ImportSettingsDialogController {
     }
 
     private void handleOk() {
-        InformationModel informationModel = modelTypeCombo.getValue();
+        InformationModelType modelType = modelTypeCombo.getValue();
         String fileName = fileSelectionLabel.getText();
 
         // Show ImportView if both are set.
         // TODO: Show warning dialog.
-        if ((informationModel != null) && (fileName != null)) {
+        if ((modelType != null) && (fileName != null)) {
             inputDialog.close();
-            appContext.getApp().showImportView(informationModel, fileName);
+            appContext.getApp().showImportView(modelType, fileName);
         }
     }
 

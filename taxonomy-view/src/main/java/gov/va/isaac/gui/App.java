@@ -5,7 +5,7 @@ import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
-import gov.va.isaac.model.InformationModel;
+import gov.va.isaac.model.InformationModelType;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -171,14 +171,14 @@ public class App extends Application {
         }
     }
 
-    public void showImportView(InformationModel informationModel, String fileName) {
+    public void showImportView(InformationModelType modelType, String fileName) {
 
         // Make sure in application thread.
         Toolkit.getToolkit().checkFxUserThread();
 
         try {
             ImportView importView = new ImportView(appContext);
-            importView.setVariables(informationModel, fileName);
+            importView.setVariables(modelType, fileName);
 
             importStage.setScene(new Scene(importView));
             if (importStage.isShowing()) {
