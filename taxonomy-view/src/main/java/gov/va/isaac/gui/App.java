@@ -2,8 +2,10 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.ErrorDialog;
 import gov.va.isaac.gui.dialog.SnomedConceptView;
+import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
+import gov.va.isaac.model.InformationModel;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,8 +18,10 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -46,6 +50,7 @@ public class App extends Application {
     private boolean shutdown = false;
     private BdbTerminologyStore dataStore;
     private AppContext appContext;
+    private Stage importStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -95,6 +100,10 @@ public class App extends Application {
 
         // Kick off a thread to open the DB connection.
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
     }
 
     public void showErrorDialog(final String title, final String message, final String details) {
@@ -162,6 +171,43 @@ public class App extends Application {
         }
     }
 
+    public void showImportView(InformationModel informationModel, String fileName) {
+
+        // Make sure in application thread.
+        Toolkit.getToolkit().checkFxUserThread();
+
+        try {
+            ImportView importView = new ImportView(appContext);
+            importView.setVariables(informationModel, fileName);
+
+            importStage.setScene(new Scene(importView));
+            if (importStage.isShowing()) {
+                importStage.toFront();
+            } else {
+                importStage.show();
+            }
+
+            importView.doWork();
+
+        } catch (Exception ex) {
+            String message = "Unexpected error displaying import view";
+            LOG.warn(message, ex);
+            showErrorDialog("Unexpected Error", message, ex.getMessage());
+        }
+    }
+
+    private Stage buildImportStage() {
+        // Use dialog for now, so Alo/Dan can use it.
+        // TODO: Use SplitPanes like LegoEditor.
+        Stage stage = new Stage();
+        stage.initModality(Modality.NONE);
+        stage.initOwner(primaryStage);
+        stage.initStyle(StageStyle.DECORATED);
+        stage.setTitle("Import View");
+
+        return stage;
+    }
+
     private void loadDataStore(final String bdbFolderName) {
 
         // Do work in background.
@@ -190,6 +236,7 @@ public class App extends Application {
                 // Inject into dependent classes.
                 WBUtility.setDataStore(dataStore);
                 controller.setAppContext(appContext);
+                importStage = buildImportStage();
             }
 
             @Override

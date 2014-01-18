@@ -27,7 +27,7 @@ public class ErrorDialog extends Stage {
         initStyle(StageStyle.UTILITY);
 
         // Load from FXML.
-        URL resource = ErrorDialogController.class.getResource("ErrorDialog.fxml");
+        URL resource = ErrorDialog.class.getResource("ErrorDialog.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         Parent root = (Parent) loader.load();
         setScene(new Scene(root));

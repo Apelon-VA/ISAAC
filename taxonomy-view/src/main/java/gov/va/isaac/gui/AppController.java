@@ -1,9 +1,12 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Menu;
 import javafx.scene.layout.BorderPane;
 
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -24,6 +27,7 @@ public class AppController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
+    @FXML private Menu importExportMenu;
     @FXML private BorderPane browserPane;
 
     private AppContext appContext;
@@ -32,6 +36,9 @@ public class AppController {
 
     public void setAppContext(AppContext appContext) {
         this.appContext = appContext;
+
+        // Enable the menus.
+        importExportMenu.setDisable(false);
 
         // Kick off a thread to load the root concept.
         loadSctTree(appContext);
@@ -45,6 +52,15 @@ public class AppController {
         SctTreeItem.shutdown();
 
         LOG.info("Finished shutting down");
+    }
+
+    public void handleImportMenuItem(ActionEvent ev) {
+        ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext);
+        importDialog.show();
+    }
+
+    public void handleExportMenuItem(ActionEvent ev) {
+        System.out.println("TODO");
     }
 
     private void loadSctTree(final AppContext appContext) {
