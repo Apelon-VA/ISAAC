@@ -20,7 +20,7 @@ public class ImportView extends GridPane {
     @SuppressWarnings("unused") private InformationModelType modelType;
     @SuppressWarnings("unused") private String fileName;
 
-    public ImportView(AppContext appContext) {
+    public ImportView() {
         super();
 
         // GUI placeholders.
@@ -34,16 +34,14 @@ public class ImportView extends GridPane {
         setMinWidth(400);
     }
 
-    public void setVariables(InformationModelType modelType, String fileName) {
-        this.modelType = Preconditions.checkNotNull(modelType);
-        this.fileName = Preconditions.checkNotNull(fileName);
+    public void doWork(AppContext appContext, InformationModelType modelType, String fileName) {
+        Preconditions.checkNotNull(modelType);
+        Preconditions.checkNotNull(fileName);
 
         // Update UI.
         modelTypeLabel.setText(modelType.getDisplayName());
         fileNameLabel.setText(fileName);
-    }
 
-    public void doWork() {
         // TODO: Implement by Alo/Dan.
         System.out.println("TODO");
     }

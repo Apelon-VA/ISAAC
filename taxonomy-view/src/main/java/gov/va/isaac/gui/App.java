@@ -177,8 +177,7 @@ public class App extends Application {
         Toolkit.getToolkit().checkFxUserThread();
 
         try {
-            ImportView importView = new ImportView(appContext);
-            importView.setVariables(modelType, fileName);
+            ImportView importView = new ImportView();
 
             importStage.setScene(new Scene(importView));
             if (importStage.isShowing()) {
@@ -187,7 +186,7 @@ public class App extends Application {
                 importStage.show();
             }
 
-            importView.doWork();
+            importView.doWork(appContext, modelType, fileName);
 
         } catch (Exception ex) {
             String message = "Unexpected error displaying import view";
