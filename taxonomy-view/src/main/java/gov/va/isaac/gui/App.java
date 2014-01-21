@@ -168,7 +168,7 @@ public class App extends Application {
                 importStage.show();
             }
 
-            importView.doWork(appContext, modelType, fileName);
+            importView.doImport(appContext, modelType, fileName);
 
         } catch (Exception ex) {
             String message = "Unexpected error displaying import view";

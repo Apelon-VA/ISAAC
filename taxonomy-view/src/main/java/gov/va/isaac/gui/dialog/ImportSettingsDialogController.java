@@ -36,7 +36,7 @@ public class ImportSettingsDialogController {
 
         // Model type widgets.
         Label modelTypeLabel = new Label("Clinical Information Model:");
-        this.modelTypeCombo = new ComboBox<>(InformationModelType.asObservableList());
+        this.modelTypeCombo = buildModelTypeCombo();
         HBox modelTypeBox = new HBox();
         modelTypeBox.getChildren().addAll(modelTypeLabel, modelTypeCombo);
 
@@ -85,7 +85,7 @@ public class ImportSettingsDialogController {
 
         // Show ImportView if both are set.
         // TODO: Show warning dialog.
-        if ((modelType != null) && (fileName != null)) {
+        if ((modelType != null) && (fileName != null) && (! fileName.isEmpty())) {
             inputDialog.close();
             app.showImportView(modelType, fileName);
         }
@@ -129,5 +129,13 @@ public class ImportSettingsDialogController {
             }
         });
         return b;
+    }
+
+    private ComboBox<InformationModelType> buildModelTypeCombo() {
+        ComboBox<InformationModelType> combo = new ComboBox<>(InformationModelType.asObservableList());
+
+        // TODO: Make pretty drop-down.
+
+        return combo;
     }
 }
