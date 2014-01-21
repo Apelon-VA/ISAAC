@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.gui.App;
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
@@ -42,10 +43,12 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
     private final AppContext appContext;
+    private final App app;
 
-    public SctTreeCell(AppContext appContext) {
+    public SctTreeCell(AppContext appContext, App app) {
         super();
         this.appContext = appContext;
+        this.app = app;
 
         // Handle left-clicks.
         ClickListener eventHandler = new ClickListener();
@@ -206,7 +209,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public void handle(ActionEvent event) {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
-                appContext.getApp().showSnomedConceptDialog(concept);
+                app.showSnomedConceptDialog(concept);
             }
         });
         mi.setGraphic(Images.CONCEPT_VIEW.createImageView());

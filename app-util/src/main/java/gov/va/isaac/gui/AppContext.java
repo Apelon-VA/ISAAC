@@ -9,17 +9,17 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
  */
 public class AppContext {
 
-    private final App app;
+    private final AppUtil appUtil;
     private final BdbTerminologyStore dataStore;
 
-    public AppContext(App app, BdbTerminologyStore dataStore) {
+    public AppContext(AppUtil appUtil, BdbTerminologyStore dataStore) {
         super();
-        this.app = app;
+        this.appUtil = appUtil;
         this.dataStore = dataStore;
     }
 
-    public App getApp() {
-        return app;
+    public AppUtil getAppUtil() {
+        return appUtil;
     }
 
     public BdbTerminologyStore getDataStore() {

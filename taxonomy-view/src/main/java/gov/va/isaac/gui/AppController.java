@@ -31,17 +31,19 @@ public class AppController {
     @FXML private BorderPane browserPane;
 
     private AppContext appContext;
+    private App app;
     private SctTreeView sctTree;
     private boolean shutdown = false;
 
-    public void setAppContext(AppContext appContext) {
+    public void setAppContext(AppContext appContext, App app) {
         this.appContext = appContext;
+        this.app = app;
 
         // Enable the menus.
         importExportMenu.setDisable(false);
 
         // Kick off a thread to load the root concept.
-        loadSctTree(appContext);
+        loadSctTree();
     }
 
     public void shutdown() {
@@ -55,7 +57,7 @@ public class AppController {
     }
 
     public void handleImportMenuItem(ActionEvent ev) {
-        ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext);
+        ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext, app);
         importDialog.show();
     }
 
@@ -63,7 +65,7 @@ public class AppController {
         System.out.println("TODO");
     }
 
-    private void loadSctTree(final AppContext appContext) {
+    private void loadSctTree() {
 
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
@@ -85,7 +87,7 @@ public class AppController {
             @Override
             protected void succeeded() {
                 ConceptChronicleDdo result = this.getValue();
-                sctTree = new SctTreeView(appContext, result);
+                sctTree = new SctTreeView(appContext, app, result);
                 browserPane.setCenter(sctTree);
             }
 
@@ -98,7 +100,7 @@ public class AppController {
 
                 // Show dialog unless we're shutting down.
                 if (! shutdown) {
-                    AppController.this.appContext.getApp().showErrorDialog(title, msg, ex.getMessage());
+                    AppController.this.appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
                 }
             }
         };

@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.dialog;
 
+import gov.va.isaac.gui.App;
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.CopyableLabel;
@@ -75,9 +76,11 @@ public class SnomedConceptViewController {
 
     private SctTreeView sctTree;
     private AppContext appContext;
+    private App app;
 
-    public void setAppContext(AppContext appContext) {
+    public void setAppContext(AppContext appContext, App app) {
         this.appContext = appContext;
+        this.app = app;
     }
 
     public void setConcept(ConceptChronicleDdo concept) {
@@ -150,7 +153,7 @@ public class SnomedConceptViewController {
 
                                     @Override
                                     public void handle(ActionEvent ignored) {
-                                        appContext.getApp().showSnomedConceptDialog(ref.uuid);
+                                        app.showSnomedConceptDialog(ref.uuid);
                                     }
                                 });
                                 cm.getItems().add(mi1);
@@ -180,7 +183,7 @@ public class SnomedConceptViewController {
             mi.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent ignore) {
-                    appContext.getApp().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
+                    app.showSnomedConceptDialog(id.getAuthorityRef().getUuid());
                 }
             });
 
@@ -218,7 +221,7 @@ public class SnomedConceptViewController {
                             VersionPolicy.ACTIVE_VERSIONS,
                             RefexPolicy.REFEX_MEMBERS,
                             RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-            sctTree = new SctTreeView(appContext, rootConcept);
+            sctTree = new SctTreeView(appContext, app, rootConcept);
             splitRight.getChildren().add(sctTree);
             VBox.setVgrow(sctTree, Priority.ALWAYS);
             treeViewSearchRunning.set(true);

@@ -1,6 +1,6 @@
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.App;
 import gov.va.isaac.model.InformationModelType;
 
 import java.io.File;
@@ -24,15 +24,15 @@ import javafx.stage.FileChooser;
 public class ImportSettingsDialogController {
 
     private final ImportSettingsDialog inputDialog;
-    private final AppContext appContext;
+    private final App app;
     private final ComboBox<InformationModelType> modelTypeCombo;
     private final Label fileSelectionLabel;
     private final VBox root;
 
-    public ImportSettingsDialogController(ImportSettingsDialog inputDialog, AppContext appContext) {
+    public ImportSettingsDialogController(ImportSettingsDialog inputDialog, App app) {
         super();
         this.inputDialog = inputDialog;
-        this.appContext = appContext;
+        this.app = app;
 
         // Model type widgets.
         Label modelTypeLabel = new Label("Clinical Information Model:");
@@ -87,7 +87,7 @@ public class ImportSettingsDialogController {
         // TODO: Show warning dialog.
         if ((modelType != null) && (fileName != null)) {
             inputDialog.close();
-            appContext.getApp().showImportView(modelType, fileName);
+            app.showImportView(modelType, fileName);
         }
     }
 

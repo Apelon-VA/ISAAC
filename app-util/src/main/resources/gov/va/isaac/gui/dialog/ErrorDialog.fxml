@@ -32,6 +32,6 @@
     </HBox>
   </children>
   <stylesheets>
-    <URL value="@../App.css" />
+    <URL value="@ErrorDialog.css" />
   </stylesheets>
 </AnchorPane>

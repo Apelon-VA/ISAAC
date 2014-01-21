@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.dialog;
 
+import gov.va.isaac.gui.App;
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.Images;
 
@@ -24,10 +25,10 @@ public class SnomedConceptView extends Stage {
 
     private final SnomedConceptViewController controller;
 
-    public SnomedConceptView(AppContext appContext, Stage owner) throws IOException {
+    public SnomedConceptView(AppContext appContext, App app) throws IOException {
         super();
 
-        initOwner(owner);
+        initOwner(appContext.getAppUtil().getPrimaryStage());
         initModality(Modality.NONE);
         initStyle(StageStyle.DECORATED);
 
@@ -40,7 +41,7 @@ public class SnomedConceptView extends Stage {
         getIcons().add(Images.CONCEPT_VIEW.getImage());
 
         this.controller = loader.getController();
-        controller.setAppContext(appContext);
+        controller.setAppContext(appContext, app);
     }
 
     public void setConcept(ConceptChronicleDdo concept) {
