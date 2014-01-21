@@ -1,6 +1,5 @@
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.App;
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
@@ -55,7 +54,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
     private SctTreeItem rootTreeItem;
 
-    public SctTreeView(AppContext appContext, final App app, ConceptChronicleDdo rootConcept) {
+    public SctTreeView(AppContext appContext, ConceptChronicleDdo rootConcept) {
         super();
         this.appContext = appContext;
 
@@ -64,7 +63,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
         setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
             @Override
             public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
-                return new SctTreeCell(SctTreeView.this.appContext, app);
+                return new SctTreeCell(SctTreeView.this.appContext);
             }
         });
 

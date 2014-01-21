@@ -87,7 +87,7 @@ public class AppController {
             @Override
             protected void succeeded() {
                 ConceptChronicleDdo result = this.getValue();
-                sctTree = new SctTreeView(appContext, app, result);
+                sctTree = new SctTreeView(appContext, result);
                 browserPane.setCenter(sctTree);
             }
 

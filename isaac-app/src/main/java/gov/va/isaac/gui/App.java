@@ -2,6 +2,7 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.importview.ImportView;
+import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.model.InformationModelType;
@@ -39,7 +40,7 @@ import com.sun.javafx.tk.Toolkit;
  *
  * @author ocarlsen
  */
-public class App extends Application {
+public class App extends Application implements ConceptDialogProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
@@ -52,7 +53,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        this.appUtil = new AppUtil(primaryStage);
+        this.appUtil = new AppUtil(primaryStage, this);
 
         URL resource = this.getClass().getResource("App.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
@@ -76,6 +77,9 @@ public class App extends Application {
             }
         });
 
+        // Stages for other views.
+        this.importStage = buildImportStage(primaryStage);
+
         primaryStage.show();
 
         // Reduce size to fit in user's screen.
@@ -97,6 +101,7 @@ public class App extends Application {
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
     }
 
+    @Override
     public void showSnomedConceptDialog(final UUID conceptUUID) {
 
         // Do work in background.
@@ -137,13 +142,14 @@ public class App extends Application {
         t.start();
     }
 
+    @Override
     public void showSnomedConceptDialog(ConceptChronicleDdo concept) {
 
         // Make sure in application thread.
         Toolkit.getToolkit().checkFxUserThread();
 
         try {
-            SnomedConceptView dialog = new SnomedConceptView(appContext, this);
+            SnomedConceptView dialog = new SnomedConceptView(appContext);
             dialog.setConcept(concept);
             dialog.show();
         } catch (Exception ex) {
@@ -177,12 +183,11 @@ public class App extends Application {
         }
     }
 
-    private Stage buildImportStage() {
+    private Stage buildImportStage(Stage owner) {
         // Use dialog for now, so Alo/Dan can use it.
-        // TODO: Use SplitPanes like LegoEditor.
         Stage stage = new Stage();
         stage.initModality(Modality.NONE);
-        stage.initOwner(appUtil.getPrimaryStage());
+        stage.initOwner(owner);
         stage.initStyle(StageStyle.DECORATED);
         stage.setTitle("Import View");
 
@@ -217,9 +222,6 @@ public class App extends Application {
                 // Inject into dependent classes.
                 WBUtility.setDataStore(dataStore);
                 controller.setAppContext(appContext, App.this);
-
-                // Build rest of UI.
-                importStage = buildImportStage();
             }
 
             @Override

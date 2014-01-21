@@ -1,7 +1,7 @@
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.App;
 import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
@@ -76,11 +76,9 @@ public class SnomedConceptViewController {
 
     private SctTreeView sctTree;
     private AppContext appContext;
-    private App app;
 
-    public void setAppContext(AppContext appContext, App app) {
+    public void setAppContext(AppContext appContext) {
         this.appContext = appContext;
-        this.app = app;
     }
 
     public void setConcept(ConceptChronicleDdo concept) {
@@ -153,7 +151,8 @@ public class SnomedConceptViewController {
 
                                     @Override
                                     public void handle(ActionEvent ignored) {
-                                        app.showSnomedConceptDialog(ref.uuid);
+                                        ConceptDialogProvider provider = appContext.getAppUtil().getConceptDialogProvider();
+                                        provider.showSnomedConceptDialog(ref.uuid);
                                     }
                                 });
                                 cm.getItems().add(mi1);
@@ -183,7 +182,8 @@ public class SnomedConceptViewController {
             mi.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent ignore) {
-                    app.showSnomedConceptDialog(id.getAuthorityRef().getUuid());
+                    ConceptDialogProvider provider = appContext.getAppUtil().getConceptDialogProvider();
+                    provider.showSnomedConceptDialog(id.getAuthorityRef().getUuid());
                 }
             });
 
@@ -221,7 +221,7 @@ public class SnomedConceptViewController {
                             VersionPolicy.ACTIVE_VERSIONS,
                             RefexPolicy.REFEX_MEMBERS,
                             RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-            sctTree = new SctTreeView(appContext, app, rootConcept);
+            sctTree = new SctTreeView(appContext, rootConcept);
             splitRight.getChildren().add(sctTree);
             VBox.setVgrow(sctTree, Priority.ALWAYS);
             treeViewSearchRunning.set(true);

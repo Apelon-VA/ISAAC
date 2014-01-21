@@ -1,6 +1,7 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.ErrorDialog;
+import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import javafx.stage.Stage;
 
 import com.sun.javafx.tk.Toolkit;
@@ -14,9 +15,11 @@ public class AppUtil {
 
     private final Stage primaryStage;
     private final ErrorDialog errorDialog;
+    private final ConceptDialogProvider conceptDialogProvider;
 
-    public AppUtil(Stage primaryStage) throws Exception {
+    public AppUtil(Stage primaryStage, ConceptDialogProvider conceptDialogProvider) throws Exception {
         this.primaryStage = primaryStage;
+        this.conceptDialogProvider = conceptDialogProvider;
 
         // Reusable error dialog.
         this.errorDialog = new ErrorDialog(primaryStage);
@@ -42,5 +45,9 @@ public class AppUtil {
 
         errorDialog.setVariables(title, message, details);
         errorDialog.showAndWait();
+    }
+
+    public ConceptDialogProvider getConceptDialogProvider() {
+        return conceptDialogProvider;
     }
 }
