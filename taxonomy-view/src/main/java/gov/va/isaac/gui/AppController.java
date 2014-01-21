@@ -1,9 +1,12 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Menu;
 import javafx.scene.layout.BorderPane;
 
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -24,17 +27,23 @@ public class AppController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
+    @FXML private Menu importExportMenu;
     @FXML private BorderPane browserPane;
 
     private AppContext appContext;
+    private App app;
     private SctTreeView sctTree;
     private boolean shutdown = false;
 
-    public void setAppContext(AppContext appContext) {
+    public void setAppContext(AppContext appContext, App app) {
         this.appContext = appContext;
+        this.app = app;
+
+        // Enable the menus.
+        importExportMenu.setDisable(false);
 
         // Kick off a thread to load the root concept.
-        loadSctTree(appContext);
+        loadSctTree();
     }
 
     public void shutdown() {
@@ -47,7 +56,16 @@ public class AppController {
         LOG.info("Finished shutting down");
     }
 
-    private void loadSctTree(final AppContext appContext) {
+    public void handleImportMenuItem(ActionEvent ev) {
+        ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext, app);
+        importDialog.show();
+    }
+
+    public void handleExportMenuItem(ActionEvent ev) {
+        System.out.println("TODO");
+    }
+
+    private void loadSctTree() {
 
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
@@ -69,7 +87,7 @@ public class AppController {
             @Override
             protected void succeeded() {
                 ConceptChronicleDdo result = this.getValue();
-                sctTree = new SctTreeView(appContext, result);
+                sctTree = new SctTreeView(appContext, app, result);
                 browserPane.setCenter(sctTree);
             }
 
@@ -82,7 +100,7 @@ public class AppController {
 
                 // Show dialog unless we're shutting down.
                 if (! shutdown) {
-                    AppController.this.appContext.getApp().showErrorDialog(title, msg, ex.getMessage());
+                    AppController.this.appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
                 }
             }
         };

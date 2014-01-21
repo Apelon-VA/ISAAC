@@ -1,9 +1,10 @@
 package gov.va.isaac.gui;
 
-import gov.va.isaac.gui.dialog.ErrorDialog;
 import gov.va.isaac.gui.dialog.SnomedConceptView;
+import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
+import gov.va.isaac.model.InformationModelType;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,8 +17,10 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -40,16 +43,16 @@ public class App extends Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
-    private Stage primaryStage;
+    private AppUtil appUtil;
     private AppController controller;
-    private ErrorDialog errorDialog;
     private boolean shutdown = false;
     private BdbTerminologyStore dataStore;
     private AppContext appContext;
+    private Stage importStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        this.primaryStage = primaryStage;
+        this.appUtil = new AppUtil(primaryStage);
 
         URL resource = this.getClass().getResource("App.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
@@ -73,9 +76,6 @@ public class App extends Application {
             }
         });
 
-        // Reusable error dialog.
-        this.errorDialog = new ErrorDialog(primaryStage);
-
         primaryStage.show();
 
         // Reduce size to fit in user's screen.
@@ -95,15 +95,6 @@ public class App extends Application {
 
         // Kick off a thread to open the DB connection.
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
-    }
-
-    public void showErrorDialog(final String title, final String message, final String details) {
-
-        // Make sure in application thread.
-        Toolkit.getToolkit().checkFxUserThread();
-
-        errorDialog.setVariables(title, message, details);
-        errorDialog.showAndWait();
     }
 
     public void showSnomedConceptDialog(final UUID conceptUUID) {
@@ -137,7 +128,7 @@ public class App extends Application {
                 String title = "Unexpected error loading concept with UUID " + conceptUUID;
                 String msg = ex.getClass().getName();
                 LOG.error(title, ex);
-                showErrorDialog(title, msg, ex.getMessage());
+                appUtil.showErrorDialog(title, msg, ex.getMessage());
             }
         };
 
@@ -152,14 +143,50 @@ public class App extends Application {
         Toolkit.getToolkit().checkFxUserThread();
 
         try {
-            SnomedConceptView dialog = new SnomedConceptView(appContext, primaryStage);
+            SnomedConceptView dialog = new SnomedConceptView(appContext, this);
             dialog.setConcept(concept);
             dialog.show();
         } catch (Exception ex) {
             String message = "Unexpected error displaying snomed concept view";
             LOG.warn(message, ex);
-            showErrorDialog("Unexpected Error", message, ex.getMessage());
+            appUtil.showErrorDialog("Unexpected Error", message, ex.getMessage());
         }
+    }
+
+    public void showImportView(InformationModelType modelType, String fileName) {
+
+        // Make sure in application thread.
+        Toolkit.getToolkit().checkFxUserThread();
+
+        try {
+            ImportView importView = new ImportView();
+
+            importStage.setScene(new Scene(importView));
+            if (importStage.isShowing()) {
+                importStage.toFront();
+            } else {
+                importStage.show();
+            }
+
+            importView.doImport(appContext, modelType, fileName);
+
+        } catch (Exception ex) {
+            String message = "Unexpected error displaying import view";
+            LOG.warn(message, ex);
+            appUtil.showErrorDialog("Unexpected Error", message, ex.getMessage());
+        }
+    }
+
+    private Stage buildImportStage() {
+        // Use dialog for now, so Alo/Dan can use it.
+        // TODO: Use SplitPanes like LegoEditor.
+        Stage stage = new Stage();
+        stage.initModality(Modality.NONE);
+        stage.initOwner(appUtil.getPrimaryStage());
+        stage.initStyle(StageStyle.DECORATED);
+        stage.setTitle("Import View");
+
+        return stage;
     }
 
     private void loadDataStore(final String bdbFolderName) {
@@ -185,11 +212,14 @@ public class App extends Application {
             @Override
             protected void succeeded() {
                 dataStore = this.getValue();
-                appContext = new AppContext(App.this, dataStore);
+                appContext = new AppContext(appUtil, dataStore);
 
                 // Inject into dependent classes.
                 WBUtility.setDataStore(dataStore);
-                controller.setAppContext(appContext);
+                controller.setAppContext(appContext, App.this);
+
+                // Build rest of UI.
+                importStage = buildImportStage();
             }
 
             @Override
@@ -206,19 +236,19 @@ public class App extends Application {
                             + "\n\nand unzip it into\n\n"
                             + System.getProperty("user.dir")
                             + "\n\nand then restart the editor.";
-                    showErrorDialog(title, message, details);
+                    appUtil.showErrorDialog(title, message, details);
 
                     // Close app since no DB to load.
                     // (The #shutdown method will be also invoked by
                     // the handler we hooked up with Stage#setOnHiding.)
-                    primaryStage.hide();
+                    appUtil.getPrimaryStage().hide();
 
                 } else {
                     String title = "Unexpected error connecting to workbench database";
                     String msg = ex.getClass().getName();
                     String details = ex.getMessage();
                     LOG.error(title, ex);
-                    showErrorDialog(title, msg, details);
+                    appUtil.showErrorDialog(title, msg, details);
                 }
             }
         };
@@ -258,7 +288,7 @@ public class App extends Application {
         } catch (Exception ex) {
             String message = "Trouble shutting down";
             LOG.warn(message, ex);
-            showErrorDialog("Oops!", message, ex.getMessage());
+            appUtil.showErrorDialog("Oops!", message, ex.getMessage());
         }
 
         LOG.info("Finished shutting down");
