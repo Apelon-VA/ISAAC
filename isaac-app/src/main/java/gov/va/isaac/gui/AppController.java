@@ -57,8 +57,15 @@ public class AppController {
     }
 
     public void handleImportMenuItem(ActionEvent ev) {
-        ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext, app);
-        importDialog.show();
+        try {
+            ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext, app);
+            importDialog.show();
+        } catch (Exception ex) {
+            String title = ex.getClass().getName();
+            String msg = String.format("Unexpected error showing ImportSettingsDialog");
+            LOG.error(msg, ex);
+            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+        }
     }
 
     public void handleExportMenuItem(ActionEvent ev) {

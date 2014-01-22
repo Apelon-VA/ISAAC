@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.dialog.ImportSettingsDialogController">
+  <center>
+    <FlowPane alignment="CENTER" hgap="10.0" prefHeight="-1.0" prefWidth="-1.0" prefWrapLength="400.0" style="-fx-background-color:white;" vgap="10.0">
+      <children>
+        <Label text="Clinical Information Model:">
+          <FlowPane.margin>
+            <Insets />
+          </FlowPane.margin>
+        </Label>
+        <ComboBox fx:id="modelTypeCombo" editable="false" minWidth="200.0" prefWidth="-1.0" promptText="" visibleRowCount="20">
+          <items>
+            <FXCollections fx:factory="observableArrayList">
+              <String fx:value="Item 1" />
+              <String fx:value="Item 2" />
+              <String fx:value="Item 3" />
+            </FXCollections>
+          </items>
+        </ComboBox>
+        <Button id="fileSelectionButton" mnemonicParsing="false" onAction="#handleFileSelection" text="Select File:" />
+        <Label fx:id="fileSelectionLabel" minWidth="280.0" text="" />
+        <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0">
+          <children>
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#handleOk" text="Ok" underline="false">
+              <HBox.margin>
+                <Insets right="50.0" />
+              </HBox.margin>
+            </Button>
+            <Button alignment="BASELINE_RIGHT" cancelButton="true" mnemonicParsing="false" onAction="#handleCancel" text="Cancel" />
+          </children>
+        </HBox>
+      </children>
+      <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      </padding>
+    </FlowPane>
+  </center>
+  <padding>
+    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+  </padding>
+</BorderPane>
