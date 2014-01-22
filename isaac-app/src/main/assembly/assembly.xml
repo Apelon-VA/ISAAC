@@ -25,9 +25,9 @@
 	</fileSets>
 	<files>
 		<file>
-			<source>${basedir}/target/taxonomy-view-with-dependencies.jar</source>
+			<source>${basedir}/target/isaac-app-with-dependencies.jar</source>
 			<outputDirectory>/</outputDirectory>
-			<destName>taxonomy-view.jar</destName>
+			<destName>isaac-app.jar</destName>
 		</file>
 	</files>
 	<includeBaseDirectory>false</includeBaseDirectory>

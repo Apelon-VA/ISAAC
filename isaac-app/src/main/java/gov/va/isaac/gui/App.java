@@ -3,7 +3,6 @@ package gov.va.isaac.gui;
 import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.provider.ConceptDialogProvider;
-import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.model.InformationModelType;
 
@@ -18,6 +17,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.javafx.tk.Toolkit;
 
 /**
- * Taxonomy viewer app class.
+ * ISAAC {@link Application} class.
  *
  * @author ocarlsen
  */
@@ -60,8 +60,8 @@ public class App extends Application implements ConceptDialogProvider {
         Parent root = (Parent) loader.load();
         this.controller = loader.getController();
 
-        primaryStage.getIcons().add(Images.APPLICATION.getImage());
-        primaryStage.setTitle("Taxonomy Viewer");
+        primaryStage.getIcons().add(new Image("/icons/16x16/application-block.png"));
+        primaryStage.setTitle("ISAAC App");
         primaryStage.setScene(new Scene(root));
 
         // Set minimum dimensions.
