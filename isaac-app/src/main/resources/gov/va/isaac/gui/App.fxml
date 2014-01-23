@@ -36,6 +36,7 @@
             <AnchorPane prefHeight="30.0" styleClass="headerBackground">
               <children>
                 <Label styleClass="headerLabel" text="Snomed Browser" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                <Button mnemonicParsing="false" onAction="#handleTaxonomyViewerClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
               </children>
             </AnchorPane>
           </top>
@@ -62,6 +63,11 @@
           <items>
             <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />
             <MenuItem mnemonicParsing="false" onAction="#handleExportMenuItem" text="EXPORTER" />
+          </items>
+        </Menu>
+        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu">
+          <items>
+            <MenuItem disable="false" mnemonicParsing="false" onAction="#handleTaxonomyViewerMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewerMenuItem" />
           </items>
         </Menu>
       </menus>

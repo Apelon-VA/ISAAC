@@ -5,9 +5,10 @@ import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 
@@ -30,6 +31,8 @@ public class AppController {
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
     @FXML private Menu importExportMenu;
+    @FXML private Menu panelsMenu;
+    @FXML private MenuItem taxonomyViewerMenuItem;
     @FXML private SplitPane mainSplitPane;
     @FXML private BorderPane browserPane;
     @FXML private BorderPane searchPane;
@@ -38,16 +41,12 @@ public class AppController {
     private App app;
     private SctTreeView sctTree;
     private boolean shutdown = false;
-    private BorderPane[] splitPaneOrder;
-
 
     @FXML
     public void initialize() {
         // The FXML file puts all views into the split pane.  Remove them for starters.
         mainSplitPane.getItems().remove(browserPane);
-        //mainSplitPane.getItems().remove(searchPane);
-
-        this.splitPaneOrder = new BorderPane[] { browserPane, searchPane };
+        mainSplitPane.getItems().remove(searchPane);
     }
 
     public void setAppContext(AppContext appContext, App app) {
@@ -56,9 +55,7 @@ public class AppController {
 
         // Enable the menus.
         importExportMenu.setDisable(false);
-
-        // Kick off a thread to load the root concept.
-        loadSctTree();
+        panelsMenu.setDisable(false);
     }
 
     public void shutdown() {
@@ -83,7 +80,7 @@ public class AppController {
         }
     }
 
-    public void handleExportMenuItem(ActionEvent ev) {
+    public void handleExportMenuItem() {
         try {
             ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog(appContext);
             exportSettingsDialog.show();
@@ -93,6 +90,27 @@ public class AppController {
             LOG.error(msg, ex);
             appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
         }
+    }
+
+    public void handleTaxonomyViewerMenuItem() {
+        if (! taxonomyViewerVisible()) {
+            mainSplitPane.getItems().add(0, browserPane);
+            taxonomyViewerMenuItem.setDisable(true);
+
+            // Load tree if not already done.
+            if (! (browserPane.getCenter() instanceof SctTreeView)) {
+                loadSctTree();
+            }
+        }
+    }
+
+    public void handleTaxonomyViewerClose() {
+        mainSplitPane.getItems().remove(browserPane);
+        taxonomyViewerMenuItem.setDisable(false);
+    }
+
+    private boolean taxonomyViewerVisible() {
+        return mainSplitPane.getItems().contains(browserPane);
     }
 
     private void loadSctTree() {
