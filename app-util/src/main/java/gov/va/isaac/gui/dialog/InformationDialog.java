@@ -1,7 +1,5 @@
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
-
 import java.io.IOException;
 import java.net.URL;
 
@@ -13,32 +11,34 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * A {@link Stage} which can be used to show an export settings dialog.
+ * A {@link Stage} which can be used to show an information dialog.
  *
  * @author ocarlsen
  */
-public class ExportSettingsDialog extends Stage {
+public class InformationDialog extends Stage {
 
-    private final ExportSettingsDialogController controller;
+    private final InformationDialogController controller;
 
-    public ExportSettingsDialog(AppContext appContext) throws IOException {
+    public InformationDialog(Stage owner) throws IOException {
         super();
-        setTitle("Export Settings");
         setResizable(false);
 
-        Stage owner = appContext.getAppUtil().getPrimaryStage();
         initOwner(owner);
         initModality(Modality.WINDOW_MODAL);
         initStyle(StageStyle.UTILITY);
 
         // Load from FXML.
-        URL resource = this.getClass().getResource("ExportSettingsDialog.fxml");
+        URL resource = InformationDialog.class.getResource("InformationDialog.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         Parent root = (Parent) loader.load();
-        Scene scene = new Scene(root);
-        setScene(scene);
+        setScene(new Scene(root));
 
         this.controller = loader.getController();
-        controller.setVariables(this, appContext);
+        controller.setVariables(this);
+    }
+
+    public void setVariables(String title, String message) {
+        this.setTitle(title);
+        controller.setMessageText(message);
     }
 }

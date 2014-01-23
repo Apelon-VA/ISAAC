@@ -114,7 +114,10 @@ public class ExportSettingsDialogController {
                 @SuppressWarnings("unused")
                 Boolean result = this.getValue();
 
-                // TODO: Show confirmation dialog.
+                // Show confirmation dialog.
+                String title = "Export Complete";
+                String message = String.format("Export to \"%s\" successful.", fileName);
+                appContext.getAppUtil().showInformationDialog(title, message);
 
                 exportSettingsDialog.close();
             }
