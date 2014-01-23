@@ -2,9 +2,8 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.ErrorDialog;
 import gov.va.isaac.gui.provider.ConceptDialogProvider;
+import gov.va.isaac.gui.util.FxUtils;
 import javafx.stage.Stage;
-
-import com.sun.javafx.tk.Toolkit;
 
 /**
  * Application utility for ISAAC app.
@@ -41,7 +40,7 @@ public class AppUtil {
     public void showErrorDialog(final String title, final String message, final String details) {
 
         // Make sure in application thread.
-        Toolkit.getToolkit().checkFxUserThread();
+        FxUtils.checkFxUserThread();
 
         errorDialog.setVariables(title, message, details);
         errorDialog.showAndWait();

@@ -3,6 +3,7 @@ package gov.va.isaac.gui;
 import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.provider.ConceptDialogProvider;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.model.InformationModelType;
@@ -32,8 +33,6 @@ import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.javafx.tk.Toolkit;
 
 /**
  * Taxonomy viewer app class.
@@ -146,7 +145,7 @@ public class App extends Application implements ConceptDialogProvider {
     public void showSnomedConceptDialog(ConceptChronicleDdo concept) {
 
         // Make sure in application thread.
-        Toolkit.getToolkit().checkFxUserThread();
+        FxUtils.checkFxUserThread();
 
         try {
             SnomedConceptView dialog = new SnomedConceptView(appContext);
@@ -162,7 +161,7 @@ public class App extends Application implements ConceptDialogProvider {
     public void showImportView(InformationModelType modelType, String fileName) {
 
         // Make sure in application thread.
-        Toolkit.getToolkit().checkFxUserThread();
+        FxUtils.checkFxUserThread();
 
         try {
             ImportView importView = new ImportView();
