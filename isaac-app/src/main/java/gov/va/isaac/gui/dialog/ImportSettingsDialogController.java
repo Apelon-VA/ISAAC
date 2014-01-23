@@ -61,7 +61,7 @@ public class ImportSettingsDialogController {
         String fileName = fileSelectionLabel.getText();
 
         // Show ImportView if both are set.
-        // TODO: Show warning dialog.
+        // TODO: Show warning dialog if not.
         if ((modelType != null) && (fileName != null) && (! fileName.isEmpty())) {
             importSettingsDialog.close();
             app.showImportView(modelType, fileName);
