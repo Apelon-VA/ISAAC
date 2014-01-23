@@ -1,10 +1,12 @@
 package gov.va.isaac.gui.dialog;
 
+import gov.va.isaac.export.ExportHandler;
 import gov.va.isaac.gui.AppContext;
 
 import java.io.File;
 import java.io.IOException;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -69,12 +71,7 @@ public class ExportSettingsDialogController {
                 fileName = fileName + CIM_EXTENSION;
             }
 
-            boolean success = performExport(folderName, fileName);
-
-            if (success) {
-                // TODO: Show confirmation dialog.
-                exportSettingsDialog.close();
-            }
+            performExport(folderName, fileName);
         }
     }
 
@@ -85,29 +82,55 @@ public class ExportSettingsDialogController {
         exportSettingsDialog.close();
     }
 
-    private boolean performExport(String folderName, String fileName) {
-        try {
-            // Create empty file.
-            File folder = new File(folderName);
-            File file = new File(folder, fileName);
-            if (file.exists()) {
-                throw new IOException("File already exists: " + file);
+    private void performExport(final String folderName, final String fileName) {
+
+        // Do work in background.
+        Task<Boolean> task = new Task<Boolean>() {
+
+            @Override
+            protected Boolean call() throws Exception {
+
+                // Create empty file.
+                File folder = new File(folderName);
+                File file = new File(folder, fileName);
+
+                // Sanity checks.
+                if (file.exists()) {
+                    throw new IOException("File already exists: " + file);
+                }
+                if (! file.createNewFile()) {
+                    throw new IOException("Could not create file: " + file);
+                }
+
+                // Inject into an ExportHandler.
+                ExportHandler exportHandler = new ExportHandler();
+                exportHandler.doExport(appContext.getDataStore(), file);
+
+                return true;
             }
-            if (! file.createNewFile()) {
-                throw new IOException("Could not create file: " + file);
+
+            @Override
+            protected void succeeded() {
+                @SuppressWarnings("unused")
+                Boolean result = this.getValue();
+
+                // TODO: Show confirmation dialog.
+
+                exportSettingsDialog.close();
             }
 
-            // TODO: Call export handler, return status.
-            return true;
+            @Override
+            protected void failed() {
+                Throwable ex = getException();
+                String title = ex.getClass().getName();
+                String message = "Unexpected error performing export";
+                LOG.warn(message, ex);
+                appContext.getAppUtil().showErrorDialog(title, message, ex.getMessage());
+            }
+        };
 
-        } catch (Exception ex) {
-            String title = ex.getClass().getName();
-            String message = "Unexpected error performing export";
-            LOG.warn(message, ex);
-            appContext.getAppUtil().showErrorDialog(title, message, ex.getMessage());
-        }
-
-        return false;
+        Thread t = new Thread(task, "Exporter_" + fileName);
+        t.setDaemon(true);
+        t.start();
     }
-
 }
