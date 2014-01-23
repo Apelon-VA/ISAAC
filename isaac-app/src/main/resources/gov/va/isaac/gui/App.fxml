@@ -12,9 +12,9 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.AppController">
   <center>
-    <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="960.0" prefWidth="1024.0" styleClass="root">
-      <children>
-        <BorderPane fx:id="browserPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+    <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="root">
+      <items>
+        <BorderPane fx:id="browserPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0">
           <center>
             <GridPane gridLinesVisible="false" minHeight="-Infinity" minWidth="-Infinity" styleClass="centerBackground">
               <children>
@@ -40,8 +40,17 @@
             </AnchorPane>
           </top>
         </BorderPane>
-      </children>
-    </AnchorPane>
+        <BorderPane fx:id="searchPane" prefHeight="200.0" prefWidth="200.0">
+          <top>
+            <AnchorPane prefHeight="30.0" prefWidth="613.0" styleClass="headerBackground">
+              <children>
+                <Label styleClass="headerLabel" text="Snomed Search" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+              </children>
+            </AnchorPane>
+          </top>
+        </BorderPane>
+      </items>
+    </SplitPane>
   </center>
   <stylesheets>
     <URL value="@App.css" />

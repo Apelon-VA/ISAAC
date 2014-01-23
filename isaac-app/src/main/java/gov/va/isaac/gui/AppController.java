@@ -8,6 +8,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -29,12 +30,25 @@ public class AppController {
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
     @FXML private Menu importExportMenu;
+    @FXML private SplitPane mainSplitPane;
     @FXML private BorderPane browserPane;
+    @FXML private BorderPane searchPane;
 
     private AppContext appContext;
     private App app;
     private SctTreeView sctTree;
     private boolean shutdown = false;
+    private BorderPane[] splitPaneOrder;
+
+
+    @FXML
+    public void initialize() {
+        // The FXML file puts all views into the split pane.  Remove them for starters.
+        mainSplitPane.getItems().remove(browserPane);
+        //mainSplitPane.getItems().remove(searchPane);
+
+        this.splitPaneOrder = new BorderPane[] { browserPane, searchPane };
+    }
 
     public void setAppContext(AppContext appContext, App app) {
         this.appContext = appContext;
