@@ -6,7 +6,6 @@ import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
@@ -34,7 +33,7 @@ public class AppController {
     @FXML private Menu panelsMenu;
     @FXML private MenuItem taxonomyViewerMenuItem;
     @FXML private SplitPane mainSplitPane;
-    @FXML private BorderPane browserPane;
+    @FXML private BorderPane taxonomyViewerPane;
     @FXML private BorderPane searchPane;
 
     private AppContext appContext;
@@ -45,7 +44,7 @@ public class AppController {
     @FXML
     public void initialize() {
         // The FXML file puts all views into the split pane.  Remove them for starters.
-        mainSplitPane.getItems().remove(browserPane);
+        mainSplitPane.getItems().remove(taxonomyViewerPane);
         mainSplitPane.getItems().remove(searchPane);
     }
 
@@ -94,23 +93,23 @@ public class AppController {
 
     public void handleTaxonomyViewerMenuItem() {
         if (! taxonomyViewerVisible()) {
-            mainSplitPane.getItems().add(0, browserPane);
+            mainSplitPane.getItems().add(0, taxonomyViewerPane);
             taxonomyViewerMenuItem.setDisable(true);
 
             // Load tree if not already done.
-            if (! (browserPane.getCenter() instanceof SctTreeView)) {
+            if (! (taxonomyViewerPane.getCenter() instanceof SctTreeView)) {
                 loadSctTree();
             }
         }
     }
 
     public void handleTaxonomyViewerClose() {
-        mainSplitPane.getItems().remove(browserPane);
+        mainSplitPane.getItems().remove(taxonomyViewerPane);
         taxonomyViewerMenuItem.setDisable(false);
     }
 
     private boolean taxonomyViewerVisible() {
-        return mainSplitPane.getItems().contains(browserPane);
+        return mainSplitPane.getItems().contains(taxonomyViewerPane);
     }
 
     private void loadSctTree() {
@@ -136,7 +135,7 @@ public class AppController {
             protected void succeeded() {
                 ConceptChronicleDdo result = this.getValue();
                 sctTree = new SctTreeView(appContext, result);
-                browserPane.setCenter(sctTree);
+                taxonomyViewerPane.setCenter(sctTree);
             }
 
             @Override
