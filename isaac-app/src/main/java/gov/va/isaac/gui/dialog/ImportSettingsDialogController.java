@@ -5,14 +5,9 @@ import gov.va.isaac.model.InformationModelType;
 
 import java.io.File;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.Parent;
-import javafx.scene.control.Button;
+import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
 
@@ -23,49 +18,28 @@ import javafx.stage.FileChooser;
  */
 public class ImportSettingsDialogController {
 
-    private final ImportSettingsDialog inputDialog;
-    private final App app;
-    private final ComboBox<InformationModelType> modelTypeCombo;
-    private final Label fileSelectionLabel;
-    private final VBox root;
+    @FXML private ComboBox<InformationModelType> modelTypeCombo;
+    @FXML private Label fileSelectionLabel;
 
-    public ImportSettingsDialogController(ImportSettingsDialog inputDialog, App app) {
-        super();
-        this.inputDialog = inputDialog;
+    private ImportSettingsDialog importSettingsDialog;
+    private App app;
+
+    public void setVariables(ImportSettingsDialog importSettingsDialog, App app) {
+        this.importSettingsDialog = importSettingsDialog;
         this.app = app;
-
-        // Model type widgets.
-        Label modelTypeLabel = new Label("Clinical Information Model:");
-        this.modelTypeCombo = buildModelTypeCombo();
-        HBox modelTypeBox = new HBox();
-        modelTypeBox.getChildren().addAll(modelTypeLabel, modelTypeCombo);
-
-        // File selection widgets.
-        Button fileSelectionButton = buildFileSelectionButton("Select File:");
-        this.fileSelectionLabel = new Label();
-        HBox fileSelectionBox = new HBox();
-        fileSelectionBox.getChildren().addAll(fileSelectionButton, fileSelectionLabel);
-
-        // Ok, Cancel buttons.
-        Button okButton = buildOkButton("Ok");
-        Button cancelButton = buildCancelButton("Cancel");
-        HBox buttonBox = new HBox();
-        buttonBox.getChildren().addAll(okButton, cancelButton);
-
-        // Assemble UI.
-        this.root = new VBox();
-        root.getChildren().addAll(modelTypeBox, fileSelectionBox, buttonBox);
-
-        // Set minimum dimensions.
-        root.setMinHeight(400);
-        root.setMinWidth(400);
     }
 
-    public Parent getRoot() {
-        return root;
+    @FXML
+    public void initialize() {
+
+        // Populate modelTypeCombo.
+        modelTypeCombo.setItems(InformationModelType.asObservableList());
     }
 
-    private void handleFileSelection() {
+    /**
+     * Handler for file selection button.
+     */
+    public void handleFileSelection() {
         FileChooser fileChooser = new FileChooser();
 
         // Set extension filter.
@@ -73,69 +47,31 @@ public class ImportSettingsDialogController {
         fileChooser.getExtensionFilters().add(extFilter);
 
         // Show open file dialog.
-        File file = fileChooser.showOpenDialog(inputDialog);
+        File file = fileChooser.showOpenDialog(importSettingsDialog);
         if (file != null) {
             fileSelectionLabel.setText(file.getPath());
         }
     }
 
-    private void handleOk() {
+    /**
+     * Handler for ok button.
+     */
+    public void handleOk() {
         InformationModelType modelType = modelTypeCombo.getValue();
         String fileName = fileSelectionLabel.getText();
 
         // Show ImportView if both are set.
-        // TODO: Show warning dialog.
+        // TODO: Show warning dialog if not.
         if ((modelType != null) && (fileName != null) && (! fileName.isEmpty())) {
-            inputDialog.close();
+            importSettingsDialog.close();
             app.showImportView(modelType, fileName);
         }
     }
 
-    private void handleCancel() {
-        inputDialog.close();
-    }
-
-    private Button buildCancelButton(String label) {
-        Button b = new Button(label);
-        b.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent ev) {
-                handleCancel();
-            }
-        });
-        return b;
-    }
-
-    private Button buildOkButton(String label) {
-        Button b = new Button(label);
-        b.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent ev) {
-                handleOk();
-            }
-        });
-        return b;
-    }
-
-    private Button buildFileSelectionButton(String label) {
-        Button b = new Button(label);
-        b.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent ev) {
-                handleFileSelection();
-            }
-        });
-        return b;
-    }
-
-    private ComboBox<InformationModelType> buildModelTypeCombo() {
-        ComboBox<InformationModelType> combo = new ComboBox<>(InformationModelType.asObservableList());
-
-        // TODO: Make pretty drop-down.
-
-        return combo;
+    /**
+     * Handler for cancel button.
+     */
+    public void handleCancel() {
+        importSettingsDialog.close();
     }
 }

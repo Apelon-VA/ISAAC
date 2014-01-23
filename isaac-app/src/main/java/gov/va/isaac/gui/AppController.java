@@ -1,5 +1,6 @@
 package gov.va.isaac.gui;
 
+import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
@@ -56,13 +57,28 @@ public class AppController {
         LOG.info("Finished shutting down");
     }
 
-    public void handleImportMenuItem(ActionEvent ev) {
-        ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext, app);
-        importDialog.show();
+    public void handleImportMenuItem() {
+        try {
+            ImportSettingsDialog importSettingsDialog = new ImportSettingsDialog(appContext, app);
+            importSettingsDialog.show();
+        } catch (Exception ex) {
+            String title = ex.getClass().getName();
+            String msg = String.format("Unexpected error showing ImportSettingsDialog");
+            LOG.error(msg, ex);
+            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+        }
     }
 
     public void handleExportMenuItem(ActionEvent ev) {
-        System.out.println("TODO");
+        try {
+            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog(appContext);
+            exportSettingsDialog.show();
+        } catch (Exception ex) {
+            String title = ex.getClass().getName();
+            String msg = String.format("Unexpected error showing ExportSettingsDialog");
+            LOG.error(msg, ex);
+            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+        }
     }
 
     private void loadSctTree() {

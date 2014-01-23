@@ -1,6 +1,5 @@
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.App;
 import gov.va.isaac.gui.AppContext;
 
 import java.io.IOException;
@@ -14,17 +13,17 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * A {@link Stage} which can be used to show an import settings dialog.
+ * A {@link Stage} which can be used to show an export settings dialog.
  *
  * @author ocarlsen
  */
-public class ImportSettingsDialog extends Stage {
+public class ExportSettingsDialog extends Stage {
 
-    private final ImportSettingsDialogController controller;
+    private final ExportSettingsDialogController controller;
 
-    public ImportSettingsDialog(AppContext appContext, App app) throws IOException {
+    public ExportSettingsDialog(AppContext appContext) throws IOException {
         super();
-        setTitle("Import Settings");
+        setTitle("Export Settings");
         setResizable(false);
 
         Stage owner = appContext.getAppUtil().getPrimaryStage();
@@ -33,13 +32,13 @@ public class ImportSettingsDialog extends Stage {
         initStyle(StageStyle.UTILITY);
 
         // Load from FXML.
-        URL resource = this.getClass().getResource("ImportSettingsDialog.fxml");
+        URL resource = this.getClass().getResource("ExportSettingsDialog.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         Parent root = (Parent) loader.load();
         Scene scene = new Scene(root);
         setScene(scene);
 
         this.controller = loader.getController();
-        controller.setVariables(this, app);
+        controller.setVariables(this, appContext);
     }
 }
