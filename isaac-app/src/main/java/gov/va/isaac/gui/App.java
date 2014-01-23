@@ -177,9 +177,10 @@ public class App extends Application implements ConceptDialogProvider {
             importView.doImport(appContext, modelType, fileName);
 
         } catch (Exception ex) {
+            String title = ex.getClass().getName();
             String message = "Unexpected error displaying import view";
             LOG.warn(message, ex);
-            appUtil.showErrorDialog("Unexpected Error", message, ex.getMessage());
+            appUtil.showErrorDialog(title, message, ex.getMessage());
         }
     }
 
