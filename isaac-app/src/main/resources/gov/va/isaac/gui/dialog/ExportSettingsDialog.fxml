@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.dialog.ExportSettingsDialogController">
+  <center>
+    <FlowPane alignment="CENTER" hgap="10.0" prefHeight="-1.0" prefWidth="-1.0" prefWrapLength="400.0" style="-fx-background-color:white;" vgap="10.0">
+      <children>
+        <Button mnemonicParsing="false" onAction="#handleFolderSelection" text="Select Folder:" />
+        <Label fx:id="folderSelectionLabel" minWidth="270.0" text="" />
+        <Label text="Select Filename">
+          <FlowPane.margin>
+            <Insets />
+          </FlowPane.margin>
+        </Label>
+        <TextField fx:id="fileSelectionTextField" prefWidth="280.0" />
+        <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0">
+          <children>
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#handleOk" text="Ok" underline="false">
+              <HBox.margin>
+                <Insets right="50.0" />
+              </HBox.margin>
+            </Button>
+            <Button alignment="BASELINE_RIGHT" cancelButton="true" mnemonicParsing="false" onAction="#handleCancel" text="Cancel" />
+          </children>
+        </HBox>
+      </children>
+      <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      </padding>
+    </FlowPane>
+  </center>
+  <padding>
+    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+  </padding>
+</BorderPane>
