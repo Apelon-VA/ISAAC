@@ -21,7 +21,8 @@ public enum Images {
     DEFINED_MULTI_PARENT_OPEN(setupImage("/icons/16x16/navigation-045.png")),
     TAXONOMY_OPEN(setupImage("/icons/16x16/plus-small.png")),
     TAXONOMY_CLOSE(setupImage("/icons/16x16/minus-small.png")),
-    CONCEPT_VIEW(setupImage("/icons/16x16/gear.png"));
+    CONCEPT_VIEW(setupImage("/icons/16x16/gear.png")),
+    COPY(setupImage("/icons/16x16/document-copy.png"));
 
     private final Image image;
 
