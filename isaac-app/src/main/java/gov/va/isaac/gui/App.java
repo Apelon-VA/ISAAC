@@ -4,8 +4,8 @@ import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.File;
 import java.io.FileNotFoundException;
