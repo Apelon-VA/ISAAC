@@ -49,6 +49,17 @@ public class AppUtil {
         errorDialog.showAndWait();
     }
 
+    /**
+     * Helper method that calls {@link #showErrorDialog(String, String, String)}
+     * with {@code title} set to the exception class name, and {@code details}
+     * set to the exception message.
+     */
+    public void showErrorDialog(String message, Exception ex) {
+        String title = ex.getClass().getName();
+        String details = ex.getMessage();
+        showErrorDialog(title, message, details);
+    }
+
     public void showInformationDialog(String title, String message) {
 
         // Make sure in application thread.
