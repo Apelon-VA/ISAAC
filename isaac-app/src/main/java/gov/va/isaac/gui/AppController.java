@@ -4,6 +4,7 @@ import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
+import gov.va.models.cem.importer.CEMMetadataCreator;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -125,4 +126,8 @@ public class AppController {
         t.setDaemon(true);
         t.start();
     }
+    
+     public void handleCreateMetadataMenuItem() throws Exception {
+         CEMMetadataCreator.createMetadata(appContext);
+     }
 }

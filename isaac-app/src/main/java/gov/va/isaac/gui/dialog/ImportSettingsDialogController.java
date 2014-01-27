@@ -45,6 +45,8 @@ public class ImportSettingsDialogController {
         // Set extension filter.
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CIM files (*.cim)", "*.cim");
         fileChooser.getExtensionFilters().add(extFilter);
+        FileChooser.ExtensionFilter xmlFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
+        fileChooser.getExtensionFilters().add(xmlFilter);
 
         // Show open file dialog.
         File file = fileChooser.showOpenDialog(importSettingsDialog);
