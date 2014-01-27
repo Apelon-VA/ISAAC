@@ -15,7 +15,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
-
 /**
  * Controller class for {@link ImportSettingsDialog}.
  *
@@ -69,7 +68,9 @@ public class ImportSettingsDialogController {
         FileChooser fileChooser = new FileChooser();
 
         // Set extension filter.
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CIM files (*.cim)", "*.cim");
+        FileChooser.ExtensionFilter CIMExtFilter = new FileChooser.ExtensionFilter("CIM files (*.cim)", "*.cim");
+        fileChooser.getExtensionFilters().add(CIMExtFilter);
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
         fileChooser.getExtensionFilters().add(extFilter);
 
         // Show open file dialog.
@@ -85,7 +86,7 @@ public class ImportSettingsDialogController {
 
         // Show ImportView if both are set.
         // TODO: Show warning dialog.
-        if ((modelType != null) && (fileName != null) && (! fileName.isEmpty())) {
+        if ((modelType != null) && (fileName != null) && (!fileName.isEmpty())) {
             inputDialog.close();
             app.showImportView(modelType, fileName);
         }
@@ -135,7 +136,6 @@ public class ImportSettingsDialogController {
         ComboBox<InformationModelType> combo = new ComboBox<>(InformationModelType.asObservableList());
 
         // TODO: Make pretty drop-down.
-
         return combo;
     }
 }

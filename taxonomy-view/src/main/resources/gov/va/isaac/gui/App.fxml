@@ -51,6 +51,7 @@
       <menus>
         <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu">
           <items>
+            <MenuItem mnemonicParsing="false" onAction="#handleCreateMetadata" text="CREATE METADATA" />
             <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />
             <MenuItem mnemonicParsing="false" onAction="#handleExportMenuItem" text="EXPORTER" />
           </items>

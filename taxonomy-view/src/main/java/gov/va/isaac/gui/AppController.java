@@ -3,6 +3,9 @@ package gov.va.isaac.gui;
 import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
+import gov.va.models.cem.importer.CEMMetadataCreator;
+import java.io.IOException;
+import java.util.logging.Level;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -59,6 +62,14 @@ public class AppController {
     public void handleImportMenuItem(ActionEvent ev) {
         ImportSettingsDialog importDialog = new ImportSettingsDialog(appContext, app);
         importDialog.show();
+    }
+    
+    public void handleCreateMetadata(ActionEvent ev) {
+        try {
+            CEMMetadataCreator.createMetadata(appContext);
+        } catch (Exception ex) {
+            LOG.error("Error in Metadata Creation", ex);
+        }
     }
 
     public void handleExportMenuItem(ActionEvent ev) {
