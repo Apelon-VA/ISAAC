@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import gov.va.models.cem.importer.CEMImporter;
+import java.io.File;
 
 /**
  * A GUI for handling imports.
@@ -64,7 +66,7 @@ public class ImportView extends GridPane {
                 // In Process: Implement by Alo/Dan.
                 CEMImporter ci = new CEMImporter();
                 ci.ImportCEMModel(new File(fileName), appContext);
-
+                
                 return "Ended import of: " + ImportView.this.modelType;
             }
 
