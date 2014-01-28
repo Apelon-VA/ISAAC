@@ -60,6 +60,12 @@
   <top>
     <MenuBar>
       <menus>
+        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#handleTaxonomyViewMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewMenuItem" />
+              <MenuItem mnemonicParsing="false" onAction="#handleSearchViewMenuItem" text="SEARCH PANEL" fx:id="searchViewMenuItem" />
+            </items>
+        </Menu>
         <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu">
           <items>
             <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />
