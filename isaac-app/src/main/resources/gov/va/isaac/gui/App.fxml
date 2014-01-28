@@ -67,12 +67,6 @@
             <MenuItem mnemonicParsing="false" onAction="#handleCreateMetadataMenuItem" text="CREATE_METADATA" />
           </items>
         </Menu>
-        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu">
-          <items>
-            <MenuItem disable="false" mnemonicParsing="false" onAction="#handleTaxonomyViewMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewMenuItem" />
-            <MenuItem mnemonicParsing="false" onAction="#handleSearchViewMenuItem" text="SEARCH PANEL" fx:id="searchViewMenuItem" />
-          </items>
-        </Menu>
       </menus>
     </MenuBar>
   </top>
