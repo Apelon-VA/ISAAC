@@ -2,6 +2,10 @@ package gov.va.isaac.gui.importview;
 
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.models.cem.importer.CEMImporter;
+
+import java.io.File;
+
 import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -41,7 +45,7 @@ public class ImportView extends GridPane {
         setMinWidth(400);
     }
 
-    public void doImport(final AppContext appContext, InformationModelType modelType, String fileName) {
+    public void doImport(final AppContext appContext, InformationModelType modelType, final String fileName) {
         this.modelType = Preconditions.checkNotNull(modelType);
         this.fileName = Preconditions.checkNotNull(fileName);
 
@@ -57,8 +61,11 @@ public class ImportView extends GridPane {
                 @SuppressWarnings("unused")
                 BdbTerminologyStore dataStore = appContext.getDataStore();
 
-                // TODO: Implement by Alo/Dan.
-                return "TODO: " + ImportView.this.modelType;
+                // In Process: Implement by Alo/Dan.
+                CEMImporter ci = new CEMImporter();
+                ci.ImportCEMModel(new File(fileName), appContext);
+
+                return "Ended import of: " + ImportView.this.modelType;
             }
 
             @Override

@@ -52,3 +52,6 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+/taxonomy-view/berkeley-db copy/
+/isaac-app/berkeley-db copy/
+/isaac-app/berkeley-db/

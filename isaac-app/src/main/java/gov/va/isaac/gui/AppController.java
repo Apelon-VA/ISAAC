@@ -6,6 +6,7 @@ import gov.va.isaac.gui.searchview.SearchViewController;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.models.cem.importer.CEMMetadataCreator;
 
 import java.io.IOException;
 
@@ -194,4 +195,8 @@ public class AppController {
         t.setDaemon(true);
         t.start();
     }
+    
+     public void handleCreateMetadataMenuItem() throws Exception {
+         CEMMetadataCreator.createMetadata(appContext);
+     }
 }

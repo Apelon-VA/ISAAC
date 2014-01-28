@@ -33,6 +33,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
     
+        <!-- ISAAC Data Model. -->
+        <dependency>
+            <groupId>gov.va</groupId>
+            <artifactId>data-model</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    
         <!-- ISAAC Import Export. -->
         <dependency>
             <groupId>gov.va</groupId>
