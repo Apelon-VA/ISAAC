@@ -217,11 +217,28 @@ public class WBUtility {
         }
         return false;
     }
+
     /**
-     * Looks up the identifier (sctid or UUID).  Does not check the pendingConcepts list.
+     * Creates a {@link UUID} from the {@code identifier} parameter and
+     * calls {@link #lookupSnomedIdentifierAsCV(UUID)}.
+     */
+    public static ConceptVersionBI lookupSnomedIdentifierAsCV(String identifier) {
+        LOG.debug("WB DB String Lookup '" + identifier + "'");
+
+        // Null or empty check.
+        if ((identifier == null) || (identifier.trim().length() == 0)) {
+            return null;
+        }
+
+        UUID uuid = UUID.fromString(identifier.trim());
+        return lookupSnomedIdentifierAsCV(uuid);
+    }
+
+    /**
+     * Looks up the identifier (sctid or UUID).
      */
     public static ConceptVersionBI lookupSnomedIdentifierAsCV(UUID conceptUUID) {
-        LOG.debug("WB DB Lookup '" + conceptUUID + "'");
+        LOG.debug("WB DB UUID Lookup '" + conceptUUID + "'");
 
         // Null check.
         if (conceptUUID == null) {

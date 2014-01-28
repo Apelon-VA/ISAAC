@@ -46,6 +46,13 @@
             <artifactId>taxonomy-view</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+    
+        <!-- ISAAC Search View. -->
+        <dependency>
+            <groupId>gov.va</groupId>
+            <artifactId>search-view</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         
     </dependencies>
     <build>

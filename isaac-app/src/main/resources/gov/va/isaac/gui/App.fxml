@@ -14,7 +14,7 @@
   <center>
     <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="root">
       <items>
-        <BorderPane fx:id="taxonomyViewerPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0">
+        <BorderPane fx:id="taxonomyViewPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0">
           <center>
             <GridPane gridLinesVisible="false" minHeight="-Infinity" minWidth="-Infinity" styleClass="centerBackground">
               <children>
@@ -36,16 +36,17 @@
             <AnchorPane prefHeight="30.0" styleClass="headerBackground">
               <children>
                 <Label styleClass="headerLabel" text="Snomed Browser" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                <Button mnemonicParsing="false" onAction="#handleTaxonomyViewerClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
+                <Button mnemonicParsing="false" onAction="#handleTaxonomyViewClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
               </children>
             </AnchorPane>
           </top>
         </BorderPane>
-        <BorderPane fx:id="searchPane" prefHeight="200.0" prefWidth="200.0">
+        <BorderPane fx:id="searchViewPane" prefHeight="200.0" prefWidth="200.0">
           <top>
             <AnchorPane prefHeight="30.0" prefWidth="613.0" styleClass="headerBackground">
               <children>
                 <Label styleClass="headerLabel" text="Snomed Search" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                <Button mnemonicParsing="false" onAction="#handleSearchViewClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
               </children>
             </AnchorPane>
           </top>
@@ -67,7 +68,8 @@
         </Menu>
         <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu">
           <items>
-            <MenuItem disable="false" mnemonicParsing="false" onAction="#handleTaxonomyViewerMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewerMenuItem" />
+            <MenuItem disable="false" mnemonicParsing="false" onAction="#handleTaxonomyViewMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewMenuItem" />
+            <MenuItem mnemonicParsing="false" onAction="#handleSearchViewMenuItem" text="SEARCH PANEL" fx:id="searchViewMenuItem" />
           </items>
         </Menu>
       </menus>

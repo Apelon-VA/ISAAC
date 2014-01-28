@@ -35,6 +35,7 @@
         <module>../data-model</module>
         <module>../import-export</module>
         <module>../taxonomy-view</module>
+        <module>../search-view</module>
         <module>../isaac-app</module>
     </modules>
     

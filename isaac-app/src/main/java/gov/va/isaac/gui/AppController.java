@@ -2,8 +2,13 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialog;
+import gov.va.isaac.gui.searchview.SearchViewController;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
+import gov.va.isaac.gui.util.FxUtils;
+
+import java.io.IOException;
+
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
@@ -31,10 +36,11 @@ public class AppController {
 
     @FXML private Menu importExportMenu;
     @FXML private Menu panelsMenu;
-    @FXML private MenuItem taxonomyViewerMenuItem;
+    @FXML private MenuItem taxonomyViewMenuItem;
+    @FXML private MenuItem searchViewMenuItem;
     @FXML private SplitPane mainSplitPane;
-    @FXML private BorderPane taxonomyViewerPane;
-    @FXML private BorderPane searchPane;
+    @FXML private BorderPane taxonomyViewPane;
+    @FXML private BorderPane searchViewPane;
 
     private AppContext appContext;
     private App app;
@@ -44,17 +50,30 @@ public class AppController {
     @FXML
     public void initialize() {
         // The FXML file puts all views into the split pane.  Remove them for starters.
-        mainSplitPane.getItems().remove(taxonomyViewerPane);
-        mainSplitPane.getItems().remove(searchPane);
+        mainSplitPane.getItems().remove(taxonomyViewPane);
+        mainSplitPane.getItems().remove(searchViewPane);
     }
 
     public void setAppContext(AppContext appContext, App app) {
         this.appContext = appContext;
         this.app = app;
 
+        // Make sure in application thread.
+        FxUtils.checkFxUserThread();
+
         // Enable the menus.
         importExportMenu.setDisable(false);
         panelsMenu.setDisable(false);
+
+        // Finish updating the UI.
+        try {
+            SearchViewController searchViewController = SearchViewController.newInstance(appContext);
+            searchViewPane.setCenter(searchViewController.getRoot());
+        } catch (IOException ex) {
+            String message = "Could not load Search View";
+            LOG.warn(message, ex);
+            appContext.getAppUtil().showErrorDialog(message, ex);
+        }
     }
 
     public void shutdown() {
@@ -91,25 +110,44 @@ public class AppController {
         }
     }
 
-    public void handleTaxonomyViewerMenuItem() {
-        if (! taxonomyViewerVisible()) {
-            mainSplitPane.getItems().add(0, taxonomyViewerPane);
-            taxonomyViewerMenuItem.setDisable(true);
+    public void handleTaxonomyViewMenuItem() {
+        if (! taxonomyViewVisible()) {
+            mainSplitPane.getItems().add(0, taxonomyViewPane);
+            taxonomyViewMenuItem.setDisable(true);
 
             // Load tree if not already done.
-            if (! (taxonomyViewerPane.getCenter() instanceof SctTreeView)) {
+            if (! (taxonomyViewPane.getCenter() instanceof SctTreeView)) {
                 loadSctTree();
             }
         }
     }
 
-    public void handleTaxonomyViewerClose() {
-        mainSplitPane.getItems().remove(taxonomyViewerPane);
-        taxonomyViewerMenuItem.setDisable(false);
+    public void handleTaxonomyViewClose() {
+        mainSplitPane.getItems().remove(taxonomyViewPane);
+        taxonomyViewMenuItem.setDisable(false);
     }
 
-    private boolean taxonomyViewerVisible() {
-        return mainSplitPane.getItems().contains(taxonomyViewerPane);
+    public void handleSearchViewMenuItem() {
+        if (! searchViewVisible()) {
+
+            int position = (taxonomyViewVisible() ? 1 : 0);
+
+            mainSplitPane.getItems().add(position, searchViewPane);
+            searchViewMenuItem.setDisable(true);
+        }
+    }
+
+    public void handleSearchViewClose() {
+        mainSplitPane.getItems().remove(searchViewPane);
+        searchViewMenuItem.setDisable(false);
+    }
+
+    private boolean searchViewVisible() {
+        return mainSplitPane.getItems().contains(searchViewPane);
+    }
+
+    private boolean taxonomyViewVisible() {
+        return mainSplitPane.getItems().contains(taxonomyViewPane);
     }
 
     private void loadSctTree() {
@@ -135,7 +173,7 @@ public class AppController {
             protected void succeeded() {
                 ConceptChronicleDdo result = this.getValue();
                 sctTree = new SctTreeView(appContext, result);
-                taxonomyViewerPane.setCenter(sctTree);
+                taxonomyViewPane.setCenter(sctTree);
             }
 
             @Override
