@@ -2,6 +2,7 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.gui.App;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.util.InformationModelTypeStringConverter;
 
 import java.io.File;
 
@@ -33,6 +34,7 @@ public class ImportSettingsDialogController {
     public void initialize() {
 
         // Populate modelTypeCombo.
+        modelTypeCombo.setConverter(new InformationModelTypeStringConverter());
         modelTypeCombo.setItems(InformationModelType.asObservableList());
     }
 
