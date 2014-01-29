@@ -6,6 +6,7 @@
         <groupId>gov.va</groupId>
         <artifactId>isaac-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../isaac-parent</relativePath>
     </parent>
     <artifactId>app-util</artifactId>
     <packaging>jar</packaging>

@@ -52,6 +52,11 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+
+#Other misc files
 /taxonomy-view/berkeley-db copy/
 /isaac-app/berkeley-db copy/
 /isaac-app/berkeley-db/
+legoData.db/
+
+*.log
