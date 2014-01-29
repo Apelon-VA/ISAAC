@@ -111,7 +111,7 @@ public class App extends Application implements ConceptDialogProvider {
                 LOG.info("Loading concept with UUID " + conceptUUID);
                 ConceptChronicleDdo concept = dataStore.getFxConcept(
                         conceptUUID,
-                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);

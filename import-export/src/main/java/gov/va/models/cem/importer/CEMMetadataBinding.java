@@ -12,7 +12,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  *
  * @author alo
  */
-public class CEMMetadata {
+public class CEMMetadataBinding {
 
     public static ConceptSpec CEM_DATA_REFSET
             = new ConceptSpec("CEM data reference set (foundation metadata concept)",

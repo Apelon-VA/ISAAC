@@ -294,7 +294,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
         }
 
         BdbTerminologyStore dataStore = appContext.getDataStore();
-        ViewCoordinate viewCoordinate = StandardViewCoordinates.getSnomedInferredLatest();
+        ViewCoordinate viewCoordinate = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
 
         return new ConceptChronicleDdo(

@@ -59,7 +59,7 @@ public class ImportView extends GridPane {
                 @SuppressWarnings("unused")
                 BdbTerminologyStore dataStore = appContext.getDataStore();
 
-                // In Process: Implement by Alo/Dan.
+                // In Process: Implement by Alo.
                 CEMImporter ci = new CEMImporter();
                 ci.ImportCEMModel(new File(fileName), appContext);
                 

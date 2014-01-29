@@ -54,7 +54,7 @@ public class WBUtility {
 
     public static String getDescription(UUID uuid) {
         try {
-            ConceptVersionBI conceptVersion = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredLatest(), uuid);
+            ConceptVersionBI conceptVersion = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
             return getDescription(conceptVersion);
         } catch (Exception ex) {
             LOG.warn("Unexpected error looking up description", ex);
@@ -245,7 +245,7 @@ public class WBUtility {
     private static ConceptVersionBI getConceptVersion(UUID uuid) {
         try {
             ConceptVersionBI result = dataStore.getConceptVersion(
-                    StandardViewCoordinates.getSnomedInferredLatest(), uuid);
+                    StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
 
             // This is garbage that the WB API invented. Nothing like an
             // undocumented getter which, rather than returning null when
