@@ -100,6 +100,10 @@ public class App extends Application implements ConceptDialogProvider {
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
     }
 
+    public AppContext getAppContext() {
+        return appContext;
+    }
+
     @Override
     public void showSnomedConceptDialog(final UUID conceptUUID) {
 
