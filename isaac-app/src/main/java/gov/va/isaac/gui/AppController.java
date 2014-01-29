@@ -4,6 +4,7 @@ import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialog;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
+import gov.va.legoEdit.gui.LegoGUI;
 import gov.va.models.cem.importer.CEMMetadataCreator;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -62,6 +63,17 @@ public class AppController {
         try {
             ImportSettingsDialog importSettingsDialog = new ImportSettingsDialog(appContext, app);
             importSettingsDialog.show();
+        } catch (Exception ex) {
+            String title = ex.getClass().getName();
+            String msg = String.format("Unexpected error showing ImportSettingsDialog");
+            LOG.error(msg, ex);
+            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+        }
+    }
+
+    public void handleLegoImportMenuItem() {
+        try {
+            LegoGUI.showFileImportChooser(appContext.getAppUtil().getPrimaryStage());
         } catch (Exception ex) {
             String title = ex.getClass().getName();
             String msg = String.format("Unexpected error showing ImportSettingsDialog");

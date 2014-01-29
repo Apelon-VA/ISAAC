@@ -6,7 +6,7 @@ import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.model.InformationModelType;
-
+import gov.va.legoEdit.storage.wb.WBDataStore;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -221,6 +221,7 @@ public class App extends Application implements ConceptDialogProvider {
 
                 // Inject into dependent classes.
                 WBUtility.setDataStore(dataStore);
+                WBDataStore.setStore(dataStore);
                 controller.setAppContext(appContext, App.this);
             }
 

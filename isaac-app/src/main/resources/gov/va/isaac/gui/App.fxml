@@ -52,6 +52,7 @@
         <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu">
           <items>
             <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />
+            <MenuItem mnemonicParsing="false" onAction="#handleLegoImportMenuItem" text="LEGO IMPORTER" />
             <MenuItem mnemonicParsing="false" onAction="#handleExportMenuItem" text="EXPORTER" />
             <MenuItem mnemonicParsing="false" onAction="#handleCreateMetadataMenuItem" text="CREATE_METADATA" />
           </items>
