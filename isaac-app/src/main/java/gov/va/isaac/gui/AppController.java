@@ -6,6 +6,7 @@ import gov.va.isaac.gui.searchview.SearchViewController;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.legoEdit.gui.LegoGUI;
 import gov.va.models.cem.importer.CEMMetadataCreator;
 
 import java.io.IOException;
@@ -91,6 +92,17 @@ public class AppController {
         try {
             ImportSettingsDialog importSettingsDialog = new ImportSettingsDialog(appContext, app);
             importSettingsDialog.show();
+        } catch (Exception ex) {
+            String title = ex.getClass().getName();
+            String msg = String.format("Unexpected error showing ImportSettingsDialog");
+            LOG.error(msg, ex);
+            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+        }
+    }
+
+    public void handleLegoImportMenuItem() {
+        try {
+            LegoGUI.showFileImportChooser(appContext.getAppUtil().getPrimaryStage());
         } catch (Exception ex) {
             String title = ex.getClass().getName();
             String msg = String.format("Unexpected error showing ImportSettingsDialog");
@@ -195,7 +207,7 @@ public class AppController {
         t.setDaemon(true);
         t.start();
     }
-    
+
      public void handleCreateMetadataMenuItem() throws Exception {
          CEMMetadataCreator.createMetadata(appContext);
      }

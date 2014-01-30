@@ -6,6 +6,7 @@ import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.util.WBUtility;
+import gov.va.legoEdit.storage.wb.WBDataStore;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -115,7 +116,7 @@ public class App extends Application implements ConceptDialogProvider {
                 LOG.info("Loading concept with UUID " + conceptUUID);
                 ConceptChronicleDdo concept = dataStore.getFxConcept(
                         conceptUUID,
-                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
@@ -225,6 +226,7 @@ public class App extends Application implements ConceptDialogProvider {
 
                 // Inject into dependent classes.
                 WBUtility.setDataStore(dataStore);
+                WBDataStore.setStore(dataStore);
                 controller.setAppContext(appContext, App.this);
             }
 

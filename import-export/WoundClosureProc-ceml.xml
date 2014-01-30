@@ -1,0 +1,19 @@
+<ceml>
+    <cetype name="WoundClosureProc" kind="statement" conceptid="c5f15c20-c127-36b7-90c8-4e6488b59c4a">
+        <key code="Procedure_KEY_ECID" />
+        <data type="cwe" code="WoundClosure_ECID" />
+        <qual name="directSite" type="DirectSite" card="0-1"/>
+        <qual name="bodyLocation" type="BodyLocation" card="0-1"/>
+        <qual name="routeMethodDevice" type="RouteMethodDevice" card="0-1"/> 
+        <qual name="patientResponse" type="PatientResponse" card="0-1"/> 
+        <qual name="relativeTemporalContext" type="RelativeTemporalContext" card="0-M"/> 
+        <qual name="aggregate" type="Aggregate" card="0-1"/>
+        <mod name="subject" type="Subject" card="0-1"/>
+        <mod name="negationInd" type="NegationInd" card="0-1"/>
+        <att name="observed" type="Observed" card="0-1"/>
+        <att name="performed" type="Performed" card="0-M"/>
+        <att name="reportedReceived" type="ReportedReceived" card="0-1"/> <att name="verified" type="Verified" card="0-1"/>
+        <constraint path="qual.routeMethodDevice.data.cwe.domain" value="WoundClosureRouteMethodDevice_DOMAIN_ECID" />
+    </cetype>
+</ceml>
+

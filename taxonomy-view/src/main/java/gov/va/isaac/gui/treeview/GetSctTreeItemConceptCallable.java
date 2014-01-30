@@ -72,7 +72,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
         BdbTerminologyStore dataStore = appContext.getDataStore();
         concept = dataStore.getFxConcept(reference,
-                StandardViewCoordinates.getSnomedInferredLatest(),
+                StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                 versionPolicy, refexPolicy, relationshipPolicy);
 
         if ((concept.getConceptAttributes() == null)

@@ -6,7 +6,7 @@
         <groupId>gov.va</groupId>
         <artifactId>isaac-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../isaac-parent/pom.xml</relativePath>
+        <relativePath>../isaac-parent</relativePath>
     </parent>
     <artifactId>isaac-app</artifactId>
     <packaging>jar</packaging>
@@ -47,11 +47,18 @@
             <artifactId>taxonomy-view</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-    
+        
         <!-- ISAAC Search View. -->
         <dependency>
             <groupId>gov.va</groupId>
             <artifactId>search-view</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    
+        <!-- ISAAC Lego View. -->
+        <dependency>
+            <groupId>gov.va</groupId>
+            <artifactId>lego-view</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         

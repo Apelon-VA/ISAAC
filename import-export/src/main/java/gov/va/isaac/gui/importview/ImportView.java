@@ -2,10 +2,6 @@ package gov.va.isaac.gui.importview;
 
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.model.InformationModelType;
-import gov.va.models.cem.importer.CEMImporter;
-
-import java.io.File;
-
 import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -63,7 +59,7 @@ public class ImportView extends GridPane {
                 @SuppressWarnings("unused")
                 BdbTerminologyStore dataStore = appContext.getDataStore();
 
-                // In Process: Implement by Alo/Dan.
+                // In Process: Implement by Alo.
                 CEMImporter ci = new CEMImporter();
                 ci.ImportCEMModel(new File(fileName), appContext);
                 

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+<?scenebuilder-stylesheet ../../../../../resources/styles.css?>
+
+<AnchorPane id="AnchorPane" fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="344.0" prefWidth="600.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml" fx:controller="gov.va.legoEdit.gui.ExportDialogController">
+  <children>
+    <GridPane id="GridPane" hgap="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="136.0" prefWidth="600.0" styleClass="itemBorder" vgap="5.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+      <children>
+        <Label id="errorMessage" alignment="TOP_LEFT" styleClass="boldLabel" text="Export To" wrapText="true" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <StackPane id="StackPane" fx:id="exportToStack" GridPane.columnIndex="1" GridPane.rowIndex="0">
+          <children>
+            <TextField fx:id="exportTo" editable="false" prefWidth="200.0" />
+          </children>
+        </StackPane>
+        <Label styleClass="boldLabel" text="Export Transform" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <ComboBox fx:id="exportType" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+        <Label styleClass="boldLabel" text="File Extension" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <StackPane id="StackPane" fx:id="fileExtensionStack" GridPane.columnIndex="1" GridPane.rowIndex="2">
+          <children>
+            <TextField fx:id="fileExtension" maxWidth="1.7976931348623157E308" prefWidth="200.0" />
+          </children>
+        </StackPane>
+        <ProgressBar fx:id="progress" maxWidth="1.7976931348623157E308" prefWidth="2000.0" progress="0.0" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.rowIndex="3" />
+        <TextArea fx:id="detailedMessage" editable="false" maxWidth="1.7976931348623157E308" prefWidth="2000.0" wrapText="true" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.rowIndex="4" />
+        <Button fx:id="chooseDirectory" mnemonicParsing="false" text="Choose..." GridPane.columnIndex="2" GridPane.rowIndex="0" />
+        <Button id="chooseDirectory" fx:id="chooseTransform" mnemonicParsing="false" text="Choose..." GridPane.columnIndex="2" GridPane.rowIndex="1" />
+      </children>
+      <columnConstraints>
+        <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="231.0" minWidth="10.0" prefWidth="139.0" />
+        <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="347.0" />
+        <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="497.0" minWidth="10.0" prefWidth="86.0" />
+      </columnConstraints>
+      <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      </padding>
+      <rowConstraints>
+        <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+        <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+        <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+        <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
+      </rowConstraints>
+    </GridPane>
+    <GridPane prefHeight="35.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <children>
+        <Button id="okButton" fx:id="exportButton" mnemonicParsing="false" text="Export" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="0">
+          <GridPane.margin>
+            <Insets right="10.0" />
+          </GridPane.margin>
+        </Button>
+        <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" GridPane.columnIndex="1" GridPane.rowIndex="0">
+          <GridPane.margin>
+            <Insets left="10.0" />
+          </GridPane.margin>
+        </Button>
+      </children>
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      </columnConstraints>
+      <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      </padding>
+      <rowConstraints>
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      </rowConstraints>
+    </GridPane>
+    <Label alignment="CENTER" styleClass="titleLabel" text="Export Lego Lists" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0" />
+  </children>
+</AnchorPane>

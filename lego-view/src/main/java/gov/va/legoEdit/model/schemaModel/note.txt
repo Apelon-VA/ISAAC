@@ -1,0 +1,8 @@
+These classes are all generated from the schema via the command 
+
+xjc -d ../java/ -xmlschema -p gov.va.legoEdit.model.schemaModel LEGO.xsd
+
+
+Then, a second manual (yuck) step is done to annotate most of the classes as @Persistent - starting with Assertion.java and working down.
+With the exception of MeasurementConstant (which doesn't need it because it is an enumeration) and the classes that correspond to the 
+BDBModel (Lego, LegoList, Pncs, Stamp) as these classes are not stored in BDB.

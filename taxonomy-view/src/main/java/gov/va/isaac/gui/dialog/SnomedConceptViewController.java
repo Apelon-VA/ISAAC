@@ -217,7 +217,7 @@ public class SnomedConceptViewController {
         try {
             ConceptChronicleDdo rootConcept = appContext.getDataStore().getFxConcept(
                             Taxonomies.SNOMED.getUuids()[0],
-                            StandardViewCoordinates.getSnomedInferredLatest(),
+                            StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                             VersionPolicy.ACTIVE_VERSIONS,
                             RefexPolicy.REFEX_MEMBERS,
                             RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);

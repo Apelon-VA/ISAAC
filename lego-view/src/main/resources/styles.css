@@ -1,0 +1,59 @@
+.boldLabel {
+	-fx-font-weight: bold;
+}
+
+.titleLabel {
+	-fx-font-weight: bold;
+	-fx-font-size: 16;
+}
+
+.headerBackground {
+	-fx-background-color: linear-gradient(#98a8bd 0%, #8195af 25%, #6d86a4 100%);
+}
+
+.tab-pane *.tab-header-background {
+	-fx-background-color: linear-gradient(#98a8bd 0%, #8195af 25%, #6d86a4 100%);
+}
+
+.menu .label {
+	-fx-text-fill: black;
+}
+
+.menu-bar {
+	-fx-background-color: lightgrey;
+}
+
+.dialogBackground {
+	-fx-background-color: linear-gradient(lightGrey, darkGrey);
+}
+
+.itemBorder {
+	-fx-border-color: grey;
+	-fx-border-width: 2;
+	-fx-border-insets: 4;
+	-fx-border-radius: 5;
+	-fx-padding: 3;
+}
+
+.tree-cell {
+	-fx-indent: 20;
+}
+
+.tree-cell .label {
+	-fx-font-size: 14;
+}
+.lookupSearchResultsStyle-A {
+	-fx-background-color: white;
+	-fx-padding: 1;
+}
+
+.lookupSearchResultsStyle-B {
+	-fx-background-color: lightgrey;
+	-fx-padding: 1;
+}
+
+.lookupSearchResultsStyle-Selected {
+	-fx-background-color: -fx-focus-color;
+	-fx-padding: 1;
+}
+}
