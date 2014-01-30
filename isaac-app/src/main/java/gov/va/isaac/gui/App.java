@@ -240,7 +240,7 @@ public class App extends Application implements ConceptDialogProvider {
                     String message = "The Snomed Database was not found.";
                     LOG.error(message, ex);
                     String details = "Please download the file\n\n"
-                            + "https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/org/ihtsdo/otf/tcc-test-data/3.0/"
+                            + "https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/org/ihtsdo/otf/tcc-test-data/3.0/tcc-test-data-3.0.zip"
                             + "\n\nand unzip it into\n\n"
                             + System.getProperty("user.dir")
                             + "\n\nand then restart the editor.";
