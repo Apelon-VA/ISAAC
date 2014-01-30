@@ -20,7 +20,7 @@
 
     <dependencies>
 
-        <!-- OTF. Includes JavaFX 2.2.45. -->
+        <!-- OTF. -->
         <dependency>
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>tcc-datastore</artifactId>

@@ -12,6 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <otf.version>1.1-SNAPSHOT</otf.version>
     </properties>
     
     <dependencyManagement>
@@ -21,7 +22,16 @@
             <dependency>
                 <groupId>org.ihtsdo.otf</groupId>
                 <artifactId>tcc-datastore</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>${otf.version}</version>
+                <type>jar</type>
+                
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>                
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -37,6 +47,11 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+    
+                    <!-- This tricks IDEs into including JavaFX if compiling from Java 7. -->
+                    <compilerArguments>
+                        <bootclasspath>${sun.boot.class.path}${path.separator}${java.home}/lib/jfxrt.jar</bootclasspath>
+                    </compilerArguments>
                 </configuration>
             </plugin>
         </plugins>

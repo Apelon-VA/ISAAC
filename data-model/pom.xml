@@ -18,14 +18,4 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies>
-
-        <!-- OTF. Includes JavaFX 2.2.45. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>tcc-datastore</artifactId>
-        </dependency>
-        
-    </dependencies>
-
 </project>

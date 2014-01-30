@@ -22,18 +22,20 @@
 
     <dependencies>
     
-        <!-- OTF.  Includes JavaFX 2.2.45. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>tcc-datastore</artifactId>
-        </dependency>
-    
         <!-- OTF Query Implementation. -->
         <dependency>
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>query-implementation</artifactId>
             <version>${otf.version}</version>
             <type>jar</type>
+                
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>                
         </dependency>
     
     
