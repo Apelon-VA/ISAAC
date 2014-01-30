@@ -65,37 +65,7 @@
     </dependencies>
     <build>
         <plugins>
-            
-            <!-- Bundle all dependencies into a single JAR. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <finalName>isaac-app-with-dependencies</finalName>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.lucene:*</exclude>
-                                </excludes>
-                            </artifactSet>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>gov.va.isaac.gui.App</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            
+                      
             <!-- Package into a ZIP file. -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

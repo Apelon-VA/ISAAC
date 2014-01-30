@@ -1,4 +1,5 @@
 java ^
   -Xms900M ^
   -Xmx1400M ^
-  -jar isaac-app.jar
+  -Dorg.ihtsdo.otf.tcc.query.lucene-root-location=berkeley-db ^
+  -cp "lib/*" gov.va.isaac.gui.App
