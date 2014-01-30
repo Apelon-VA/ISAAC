@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>gov.va</groupId>
+		<artifactId>isaac-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+        <relativePath>../isaac-parent/pom.xml</relativePath>
+	</parent>
+	<artifactId>search-view</artifactId>
+	<packaging>jar</packaging>
+
+	<name>ISAAC Search View</name>
+	<url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<otf.version>1.1-SNAPSHOT</otf.version>
+	</properties>
+
+
+    <dependencies>
+    
+        <!-- OTF Query Implementation. -->
+        <dependency>
+            <groupId>org.ihtsdo.otf</groupId>
+            <artifactId>query-implementation</artifactId>
+            <version>${otf.version}</version>
+            <type>jar</type>
+                
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>                
+        </dependency>
+    
+    
+        <!-- ISAAC App Utils. -->
+        <dependency>
+            <groupId>gov.va</groupId>
+            <artifactId>app-util</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    
+        <!-- JUnit. -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <scope>test</scope>
+        </dependency>
+                
+        <!-- Logging. -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+    </dependencies>
+
+</project>

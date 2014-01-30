@@ -20,13 +20,6 @@
     
     <dependencies>
     
-        <!-- OTF.  Includes JavaFX 2.2.45. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>tcc-datastore</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
-    
         <!-- ISAAC App Utils. -->
         <dependency>
             <groupId>gov.va</groupId>
@@ -55,6 +48,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         
+        <!-- ISAAC Search View. -->
+        <dependency>
+            <groupId>gov.va</groupId>
+            <artifactId>search-view</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    
         <!-- ISAAC Lego View. -->
         <dependency>
             <groupId>gov.va</groupId>
@@ -136,40 +136,24 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <version>2.6</version>
-						<executions>
-                                <!--  Standard resources. -->
-							<!-- <execution>
-								<id>standard-resources</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
+                        <executions>
+                            <execution>
+                                <id>install4j-resources</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
-									<resources>
-										<resource>
-											<directory>${project.basedir}/src/main/resources</directory>
-										</resource>
-								    </resources>
+                                    <outputDirectory>${project.build.directory}/install4j</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.basedir}/src/main/install4j</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
                                 </configuration>
-							</execution> -->
-							<execution>
-								<id>install4j-resources</id>
-								<phase>validate</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
-								<configuration>
-		                            <outputDirectory>${project.build.directory}/install4j</outputDirectory>
-		                            <resources>
-		                                <resource>
-		                                    <directory>${project.basedir}/src/main/install4j</directory>
-		                                    <filtering>true</filtering>
-		                                </resource>
-		                            </resources>
-		                        </configuration>
-							</execution>
-						</executions>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

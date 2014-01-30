@@ -64,12 +64,19 @@ public class ImportSettingsDialogController {
         InformationModelType modelType = modelTypeCombo.getValue();
         String fileName = fileSelectionLabel.getText();
 
-        // Show ImportView if both are set.
-        // TODO: Show warning dialog if not.
-        if ((modelType != null) && (fileName != null) && (! fileName.isEmpty())) {
-            importSettingsDialog.close();
-            app.showImportView(modelType, fileName);
+        // Validate settings, show warning dialog if there is a problem.
+        String title = "Oops!";
+        if (modelType == null) {
+            app.getAppContext().getAppUtil().showInformationDialog(title, "Please select a model type.");
+            return;
         }
+        if ((fileName == null) || (fileName.isEmpty())) {
+            app.getAppContext().getAppUtil().showInformationDialog(title, "Please select a file to import.");
+            return;
+        }
+
+        importSettingsDialog.close();
+        app.showImportView(modelType, fileName);
     }
 
     /**

@@ -2,8 +2,8 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,10 +81,10 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
         rootTreeItem.addChildren();
 
         // put this event handler on the root
-        rootTreeItem.addEventHandler(TreeItem.branchCollapsedEvent(),
-                new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
+        rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchCollapsedEvent(),
+                new EventHandler<TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept>>() {
                     @Override
-                    public void handle(TreeItem.TreeModificationEvent<Object> t) {
+                    public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
                         // remove grandchildren
                         SctTreeItem sourceTreeItem = (SctTreeItem) t
                                 .getSource();
@@ -92,15 +92,15 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                     }
                 });
 
-        rootTreeItem.addEventHandler(TreeItem.branchExpandedEvent(),
-                new EventHandler<TreeItem.TreeModificationEvent<Object>>() {
+        rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchExpandedEvent(),
+                new EventHandler<TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept>>() {
                     @Override
-                    public void handle(TreeItem.TreeModificationEvent<Object> t) {
+                    public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
                         // add grandchildren
                         SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
                         ProgressIndicator p2 = new ProgressIndicator();
 
-                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
+//                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
                         p2.setPrefSize(16, 16);
                         p2.setProgress(-1);
                         sourceTreeItem.setProgressIndicator(p2);

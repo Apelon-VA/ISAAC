@@ -12,9 +12,9 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.AppController">
   <center>
-    <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="960.0" prefWidth="1024.0" styleClass="root">
-      <children>
-        <BorderPane fx:id="browserPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+    <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="root">
+      <items>
+        <BorderPane fx:id="taxonomyViewPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0">
           <center>
             <GridPane gridLinesVisible="false" minHeight="-Infinity" minWidth="-Infinity" styleClass="centerBackground">
               <children>
@@ -36,12 +36,23 @@
             <AnchorPane prefHeight="30.0" styleClass="headerBackground">
               <children>
                 <Label styleClass="headerLabel" text="Snomed Browser" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                <Button mnemonicParsing="false" onAction="#handleTaxonomyViewClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
               </children>
             </AnchorPane>
           </top>
         </BorderPane>
-      </children>
-    </AnchorPane>
+        <BorderPane fx:id="searchViewPane" prefHeight="200.0" prefWidth="200.0">
+          <top>
+            <AnchorPane prefHeight="30.0" prefWidth="613.0" styleClass="headerBackground">
+              <children>
+                <Label styleClass="headerLabel" text="Snomed Search" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                <Button mnemonicParsing="false" onAction="#handleSearchViewClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
+              </children>
+            </AnchorPane>
+          </top>
+        </BorderPane>
+      </items>
+    </SplitPane>
   </center>
   <stylesheets>
     <URL value="@App.css" />
@@ -49,6 +60,12 @@
   <top>
     <MenuBar>
       <menus>
+        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#handleTaxonomyViewMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewMenuItem" />
+              <MenuItem mnemonicParsing="false" onAction="#handleSearchViewMenuItem" text="SEARCH PANEL" fx:id="searchViewMenuItem" />
+            </items>
+        </Menu>
         <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu">
           <items>
             <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />

@@ -2,7 +2,7 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.gui.util.WBUtility;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 
             // Configure a new progress indicator.
             ProgressIndicator pi = new ProgressIndicator();
-            pi.setSkin(new TaxonomyProgressIndicatorSkin(pi));
+//            pi.setSkin(new TaxonomyProgressIndicatorSkin(pi));
             pi.setPrefSize(16, 16);
             pi.setProgress(-1);
             setProgressIndicator(pi);

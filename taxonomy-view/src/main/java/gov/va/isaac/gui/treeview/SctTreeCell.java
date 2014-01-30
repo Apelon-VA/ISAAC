@@ -3,7 +3,7 @@ package gov.va.isaac.gui.treeview;
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.gui.util.WBUtility;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                                 TaxonomyReferenceWithConcept.WhichConcept.DESTINATION));
                         ProgressIndicator indicator = new ProgressIndicator();
 
-                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
+//                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
                         indicator.setPrefSize(16, 16);
                         indicator.setProgress(-1);
                         extraParentItem.setGraphic(indicator);

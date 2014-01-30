@@ -1,5 +1,6 @@
 package gov.va.isaac.util;
 
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,5 +30,26 @@ public class Utility {
 
     public static void execute(Runnable command) {
         EXECUTOR.execute(command);
+    }
+
+    public static boolean isUUID(String string) {
+        if (string.length() != 36) {
+            return false;
+        }
+        try {
+            UUID.fromString(string);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public static boolean isLong(String string) {
+        try {
+            Long.parseLong(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

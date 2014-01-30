@@ -5,7 +5,7 @@ import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
-import gov.va.isaac.gui.util.WBUtility;
+import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
 import java.util.UUID;

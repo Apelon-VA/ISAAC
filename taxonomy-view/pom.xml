@@ -20,13 +20,6 @@
 
     <dependencies>
     
-        <!-- OTF.  Includes JavaFX 2.2.45. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>tcc-datastore</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
-    
         <!-- ISAAC App Utils. -->
         <dependency>
             <groupId>gov.va</groupId>

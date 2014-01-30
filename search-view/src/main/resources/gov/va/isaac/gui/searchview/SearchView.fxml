@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+
+<BorderPane fx:id="borderPane" prefHeight="450.0" prefWidth="300.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.searchview.SearchViewController">
+  <center>
+    <StackPane prefHeight="150.0" prefWidth="200.0">
+      <children>
+        <ListView fx:id="searchResults">
+          <StackPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+          </StackPane.margin>
+        </ListView>
+        <ProgressIndicator fx:id="searchProgress" maxHeight="100.0" maxWidth="100.0" visible="false" StackPane.alignment="CENTER">
+          <StackPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+          </StackPane.margin>
+        </ProgressIndicator>
+      </children>
+    </StackPane>
+  </center>
+  <stylesheets>
+    <URL value="@SearchView.css" />
+  </stylesheets>
+  <top>
+    <HBox>
+      <children>
+        <TextField fx:id="searchText" HBox.hgrow="ALWAYS">
+          <HBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+          </HBox.margin>
+        </TextField>
+        <Button fx:id="searchButton" maxWidth="-Infinity" mnemonicParsing="false" prefWidth="75.0" text="Search" HBox.hgrow="NEVER">
+          <HBox.margin>
+            <Insets bottom="5.0" right="5.0" top="5.0" />
+          </HBox.margin>
+        </Button>
+      </children>
+    </HBox>
+  </top>
+</BorderPane>

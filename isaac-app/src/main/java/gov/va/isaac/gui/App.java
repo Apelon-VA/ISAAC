@@ -4,9 +4,10 @@ import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.provider.ConceptDialogProvider;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.gui.util.WBUtility;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.util.WBUtility;
 import gov.va.legoEdit.storage.wb.WBDataStore;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -98,6 +99,10 @@ public class App extends Application implements ConceptDialogProvider {
 
         // Kick off a thread to open the DB connection.
         loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
+    }
+
+    public AppContext getAppContext() {
+        return appContext;
     }
 
     @Override
