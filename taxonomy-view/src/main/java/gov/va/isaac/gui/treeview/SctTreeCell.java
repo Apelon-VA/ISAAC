@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
+@SuppressWarnings("deprecation")
 public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
