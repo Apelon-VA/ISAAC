@@ -105,7 +105,7 @@ public class AppController {
             LegoGUI.showFileImportChooser(appContext.getAppUtil().getPrimaryStage());
         } catch (Exception ex) {
             String title = ex.getClass().getName();
-            String msg = String.format("Unexpected error showing ImportSettingsDialog");
+            String msg = String.format("Unexpected error showing LEGO Import Dialog");
             LOG.error(msg, ex);
             appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
         }
@@ -209,6 +209,13 @@ public class AppController {
     }
 
      public void handleCreateMetadataMenuItem() throws Exception {
-         CEMMetadataCreator.createMetadata(appContext);
+         try {
+             CEMMetadataCreator.createMetadata(appContext);
+         } catch (Exception ex) {
+             String title = ex.getClass().getName();
+             String msg = String.format("Unexpected error creating metadata");
+             LOG.error(msg, ex);
+             appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+         }
      }
 }
