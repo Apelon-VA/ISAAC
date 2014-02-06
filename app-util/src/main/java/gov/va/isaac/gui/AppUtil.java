@@ -54,9 +54,9 @@ public class AppUtil {
      * with {@code title} set to the exception class name, and {@code details}
      * set to the exception message.
      */
-    public void showErrorDialog(String message, Exception ex) {
-        String title = ex.getClass().getName();
-        String details = ex.getMessage();
+    public void showErrorDialog(String message, Throwable t) {
+        String title = t.getClass().getName();
+        String details = t.getMessage();
         showErrorDialog(title, message, details);
     }
 

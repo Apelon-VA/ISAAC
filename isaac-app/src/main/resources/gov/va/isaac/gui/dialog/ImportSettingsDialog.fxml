@@ -5,9 +5,8 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.dialog.ImportSettingsDialogController">
+<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.dialog.ImportSettingsDialogController">
   <center>
     <FlowPane alignment="CENTER" hgap="10.0" prefHeight="-1.0" prefWidth="-1.0" prefWrapLength="480.0" style="-fx-background-color:white;" vgap="10.0">
       <children>
@@ -26,7 +25,7 @@
           </items>
         </ComboBox>
         <Button id="fileSelectionButton" mnemonicParsing="false" onAction="#handleFileSelection" text="Select File:" />
-        <Label fx:id="fileSelectionLabel" minWidth="280.0" text="" />
+        <Label fx:id="fileSelectionLabel" minWidth="360.0" text="" />
         <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0">
           <children>
             <Button defaultButton="true" mnemonicParsing="false" onAction="#handleOk" text="Ok" underline="false">
