@@ -4,9 +4,9 @@ import gov.va.isaac.gui.util.FxUtils;
 
 import java.io.File;
 import java.util.UUID;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
-
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  */
 public class ExportHandler {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ExportHandler.class);
 
     /**
@@ -32,19 +32,25 @@ public class ExportHandler {
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
+
+        // CEM attributes (foundation metadata concept)
         UUID conceptUUID = UUID.fromString("271fb6f9-8fe1-552d-8c8e-a7d6fa9d8119");
+
+        // Load as WB-style concept.
         LOG.info("Loading concept with UUID " + conceptUUID);
-        ConceptChronicleBI conceptDs = dataStore.getConcept(conceptUUID);
+        ConceptChronicleBI concept = dataStore.getConcept(conceptUUID);
         LOG.info("Finished loading concept with UUID " + conceptUUID);
-        LOG.info(conceptDs.toLongString());
+        LOG.info(concept.toLongString());
+
+        // Load as FX-style concept.
         LOG.info("Loading FxConcept with UUID " + conceptUUID);
-        ConceptChronicleDdo concept = dataStore.getFxConcept(
+        ConceptChronicleDdo fxConcept = dataStore.getFxConcept(
                 conceptUUID,
                 StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                 VersionPolicy.ACTIVE_VERSIONS,
                 RefexPolicy.REFEX_MEMBERS,
                 RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
         LOG.info("Finished loading FxConcept with UUID " + conceptUUID);
-        LOG.info(concept.toXml());
+        LOG.info(fxConcept.toXml());
     }
 }
