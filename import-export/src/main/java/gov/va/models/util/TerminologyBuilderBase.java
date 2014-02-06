@@ -4,7 +4,6 @@ import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.AppUtil;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
@@ -49,9 +48,7 @@ public class TerminologyBuilderBase {
     protected EditCoordinate getEC() throws ValidationException, IOException {
         int authorNid = TermAux.USER.getLenient().getConceptNid();
         int module = Snomed.CORE_MODULE.getLenient().getNid();
-
-        UUID editPathUUID = Snomed.SNOMED_RELEASE_PATH.getUuids()[0];  // SNOMED CORE path
-        int editPathNid = dataStore.getNidForUuids(editPathUUID);
+        int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
 
         return new EditCoordinate(authorNid, module, editPathNid);
     }
