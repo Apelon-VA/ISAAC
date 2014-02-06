@@ -210,7 +210,7 @@ public class AppController {
 
      public void handleCreateMetadataMenuItem() throws Exception {
          try {
-             CEMMetadataCreator.createMetadata(appContext);
+             new CEMMetadataCreator(appContext).createMetadata();
          } catch (Exception ex) {
              String title = ex.getClass().getName();
              String msg = String.format("Unexpected error creating metadata");

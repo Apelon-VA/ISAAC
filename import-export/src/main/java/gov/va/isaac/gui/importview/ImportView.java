@@ -1,18 +1,21 @@
 package gov.va.isaac.gui.importview;
 
 import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.models.cem.importer.CEMImporter;
+
+import java.io.File;
+
 import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import gov.va.models.cem.importer.CEMImporter;
-import java.io.File;
 
 /**
  * A GUI for handling imports.
@@ -25,9 +28,7 @@ public class ImportView extends GridPane {
 
     private final Label modelTypeLabel = new Label();
     private final Label fileNameLabel = new Label();
-
-    private InformationModelType modelType;
-    private String fileName;
+    private final Label resultLabel = new Label();
 
     public ImportView() {
         super();
@@ -37,48 +38,54 @@ public class ImportView extends GridPane {
         add(modelTypeLabel, 1, 0);
         add(new Label("File Name: "), 0, 1);
         add(fileNameLabel, 1, 1);
+        add(new Label("Result: "), 0, 2);
+        add(resultLabel, 1, 2);
 
         // Set minimum dimensions.
-        setMinHeight(400);
-        setMinWidth(400);
+        setMinHeight(200);
+        setMinWidth(600);
     }
 
     public void doImport(final AppContext appContext, InformationModelType modelType, final String fileName) {
-        this.modelType = Preconditions.checkNotNull(modelType);
-        this.fileName = Preconditions.checkNotNull(fileName);
+        Preconditions.checkNotNull(modelType);
+        Preconditions.checkNotNull(fileName);
+
+        // Make sure in application thread.
+        FxUtils.checkFxUserThread();
 
         // Update UI.
         modelTypeLabel.setText(modelType.getDisplayName());
         fileNameLabel.setText(fileName);
 
         // Do work in background.
-        Task<String> task = new Task<String>() {
+        Task<ConceptChronicleBI> task = new Task<ConceptChronicleBI>() {
 
             @Override
-            protected String call() throws Exception {
-                @SuppressWarnings("unused")
-                BdbTerminologyStore dataStore = appContext.getDataStore();
+            protected ConceptChronicleBI call() throws Exception {
 
-                // In Process: Implement by Alo.
-                CEMImporter ci = new CEMImporter();
-                ci.ImportCEMModel(new File(fileName), appContext);
-                
-                return "Ended import of: " + ImportView.this.modelType;
+                // Do work.
+                CEMImporter importer = new CEMImporter(appContext);
+                return importer.importModel(new File(fileName));
             }
 
             @Override
             protected void succeeded() {
-                String result = this.getValue();
+                ConceptChronicleBI result = this.getValue();
 
-                // TODO: Implement by Alo/Dan.
-                System.out.println(result);
-            }
+                // Update UI.
+                resultLabel.setText("Successfully imported concept: " + result.toUserString());
+           }
 
             @Override
             protected void failed() {
+
+                // Update UI.
+                resultLabel.setText("Failed to import model from file: " + fileName);
+
+                // Show dialog.
                 Throwable ex = getException();
                 String title = ex.getClass().getName();
-                String msg = String.format("Unexpected error importing from file \"%s\"", ImportView.this.fileName);
+                String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
                 LOG.error(msg, ex);
                 appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
             }
