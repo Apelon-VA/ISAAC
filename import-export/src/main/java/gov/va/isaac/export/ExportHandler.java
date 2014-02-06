@@ -1,6 +1,7 @@
 package gov.va.isaac.export;
 
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.models.cem.importer.CEMMetadataBinding;
 
 import java.io.File;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class ExportHandler {
         FxUtils.checkBackgroundThread();
 
         // CEM attributes (foundation metadata concept)
-        UUID conceptUUID = UUID.fromString("271fb6f9-8fe1-552d-8c8e-a7d6fa9d8119");
+        UUID conceptUUID = CEMMetadataBinding.CEM_ATTRIBUTES.getUuids()[0];
 
         // Load as WB-style concept.
         LOG.info("Loading concept with UUID " + conceptUUID);

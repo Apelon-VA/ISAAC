@@ -40,6 +40,10 @@ public class CEMMetadataBinding {
             = new ConceptSpec("CEM constraints reference set (foundation metadata concept)",
             UUID.fromString("7daac070-1510-552b-9b6c-633af8a5e5fa"));
 
+    public static ConceptSpec CEM_ATTRIBUTES
+            = new ConceptSpec("CEM attributes (foundation metadata concept)",
+            UUID.fromString("271fb6f9-8fe1-552d-8c8e-a7d6fa9d8119"));
+
     public static ConceptSpec CEM_PQ
             = new ConceptSpec("CEM PQ data type (foundation metadata concept)",
             UUID.fromString("8bc4069e-b09b-53a5-9526-6a87dc855e64"));
