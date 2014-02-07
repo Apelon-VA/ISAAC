@@ -37,6 +37,9 @@ public class CEMMetadataCreator extends TerminologyBuilderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
 
+    private static final String REFSET_ROOT = "7e38cd2d-6f1a-3a81-be0b-21e6090573c2";
+    private static final String REFSET_ATTRIBUTE_ROOT = "7e52203e-8a35-3121-b2e7-b783b34d97f2";
+
     public CEMMetadataCreator(AppContext appContext) throws ValidationException, IOException {
         super(appContext);
     }
@@ -79,6 +82,7 @@ public class CEMMetadataCreator extends TerminologyBuilderBase {
         LOG.info("Preparing to create metadata");
 
         ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString("7e38cd2d-6f1a-3a81-be0b-21e6090573c2"));
+        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_ROOT));
         LOG.info("Refsets root:" + refsetsRoot.toString());
 
         ConceptChronicleBI CEMRoot = createNewConcept(refsetsRoot, "CEM reference sets (foundation metadata concept)", "CEM reference sets");
@@ -90,7 +94,7 @@ public class CEMMetadataCreator extends TerminologyBuilderBase {
         ConceptChronicleBI CEMCompositionRefset = createNewConcept(CEMRoot, "CEM composition reference set (foundation metadata concept)", "CEM composition reference set");
         ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRoot, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
 
-        ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString("7e52203e-8a35-3121-b2e7-b783b34d97f2"));
+        ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_ROOT));
         ConceptChronicleBI CEMAttributes = createNewConcept(attributesRoot, "CEM attributes (foundation metadata concept)", "CEM attributes");
 
         ConceptChronicleBI CEMDataTypes = createNewConcept(CEMAttributes, "CEM data types (foundation metadata concept)", "CEM data types");
