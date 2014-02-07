@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javafx.concurrent.Task;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
@@ -44,44 +42,13 @@ public class CEMMetadataCreator extends TerminologyBuilderBase {
         super(appContext);
     }
 
-    public void createMetadata() {
-
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
-
-        // Do work in background.
-        Task<Void> task = new Task<Void>() {
-
-            @Override
-            protected Void call() throws Exception {
-                createMetadataImpl();
-                return null;
-            }
-
-            @Override
-            protected void succeeded() {
-                getAppUtil().showInformationDialog("Success", "Successfully created metadata.");
-            }
-
-            @Override
-            protected void failed() {
-                Throwable ex = getException();
-                String msg = "Unexpected error creating metadata: ";
-                LOG.error(msg, ex);
-                getAppUtil().showErrorDialog(msg, ex);
-            }
-        };
-
-        Thread t = new Thread(task, "CreateMetadata");
-        t.setDaemon(true);
-        t.start();
-    }
-
     @SuppressWarnings("unused")
-    private void createMetadataImpl() throws Exception {
+    public void createMetadata() throws Exception {
         LOG.info("Preparing to create metadata");
 
-        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString("7e38cd2d-6f1a-3a81-be0b-21e6090573c2"));
+        // Make sure NOT in application thread.
+        FxUtils.checkBackgroundThread();
+
         ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_ROOT));
         LOG.info("Refsets root:" + refsetsRoot.toString());
 

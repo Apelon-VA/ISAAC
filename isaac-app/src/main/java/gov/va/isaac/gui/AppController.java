@@ -11,8 +11,12 @@ import gov.va.models.cem.importer.CEMMetadataCreator;
 
 import java.io.IOException;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
@@ -209,13 +213,40 @@ public class AppController {
     }
 
      public void handleCreateMetadataMenuItem() throws Exception {
-         try {
-             new CEMMetadataCreator(appContext).createMetadata();
-         } catch (Exception ex) {
-             String title = ex.getClass().getName();
-             String msg = String.format("Unexpected error creating metadata");
-             LOG.error(msg, ex);
-             appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
-         }
+
+         // Do work in background.
+         Task<Void> task = new Task<Void>() {
+
+             @Override
+             protected Void call() throws Exception {
+                 new CEMMetadataCreator(appContext).createMetadata();
+
+                 return null;
+             }
+
+             @Override
+             protected void succeeded() {
+                 AppController.this.appContext.getAppUtil().showInformationDialog("Success", "Successfully created metadata.");
+             }
+
+             @Override
+             protected void failed() {
+                 Throwable ex = getException();
+                 String msg = "Unexpected error creating metadata: ";
+                 LOG.error(msg, ex);
+                 AppController.this.appContext.getAppUtil().showErrorDialog(msg, ex);
+             }
+         };
+
+         // Bind cursor to task state.
+         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty())
+                 .then(Cursor.WAIT)
+                 .otherwise(Cursor.DEFAULT);
+         Scene scene = appContext.getAppUtil().getPrimaryStage().getScene();
+         scene.getRoot().cursorProperty().bind(cursorBinding);
+
+         Thread t = new Thread(task, "CreateMetadata");
+         t.setDaemon(true);
+         t.start();
      }
 }

@@ -1,7 +1,6 @@
 package gov.va.models.util;
 
 import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.AppUtil;
 
 import java.io.IOException;
 
@@ -22,19 +21,13 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
  */
 public class TerminologyBuilderBase {
 
-    private final AppUtil appUtil;
     private final BdbTerminologyStore dataStore;
     private final TerminologyBuilderBI builder;
 
     protected TerminologyBuilderBase(AppContext appContext) throws ValidationException, IOException {
         super();
-        this.appUtil = appContext.getAppUtil();
         this.dataStore = appContext.getDataStore();
         this.builder = new BdbTermBuilder(getEC(), getVC());
-    }
-
-    protected AppUtil getAppUtil() {
-        return appUtil;
     }
 
     protected BdbTerminologyStore getDataStore() {
