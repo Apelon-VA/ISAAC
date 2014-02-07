@@ -6,7 +6,7 @@
 package gov.va.models.cem.importer;
 
 import gov.va.isaac.gui.AppContext;
-import gov.va.models.util.TerminologyBuilderBase;
+import gov.va.models.util.ImporterBase;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +42,7 @@ import com.google.common.base.Preconditions;
  * @author ocarlsen
  */
 @SuppressWarnings("rawtypes")
-public class CEMImporter extends TerminologyBuilderBase {
+public class CEMImporter extends ImporterBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMImporter.class);
 

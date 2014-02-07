@@ -15,16 +15,16 @@ import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 
 /**
- * Base class containing common methods for building terminology objects.
+ * Base class containing common methods for importing terminology objects.
  *
  * @author ocarlsen
  */
-public class TerminologyBuilderBase {
+public class ImporterBase {
 
     private final BdbTerminologyStore dataStore;
     private final TerminologyBuilderBI builder;
 
-    protected TerminologyBuilderBase(AppContext appContext) throws ValidationException, IOException {
+    protected ImporterBase(AppContext appContext) throws ValidationException, IOException {
         super();
         this.dataStore = appContext.getDataStore();
         this.builder = new BdbTermBuilder(getEC(), getVC());

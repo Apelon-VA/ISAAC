@@ -7,7 +7,7 @@ package gov.va.models.cem.importer;
 
 import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.models.util.TerminologyBuilderBase;
+import gov.va.models.util.ImporterBase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author alo
  * @author ocarlsen
  */
-public class CEMMetadataCreator extends TerminologyBuilderBase {
+public class CEMMetadataCreator extends ImporterBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
 
