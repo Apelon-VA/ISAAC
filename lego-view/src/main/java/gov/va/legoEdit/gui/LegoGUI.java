@@ -1,5 +1,9 @@
 /**
- * Copyright 2014
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,12 +18,17 @@
  */
 package gov.va.legoEdit.gui;
 
+import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.interfaces.MenuItemI;
+import gov.va.isaac.gui.interfaces.PopupViewI;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
-import gov.va.legoEdit.storage.wb.WBDataStore;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Singleton;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -29,6 +38,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +53,13 @@ import org.slf4j.LoggerFactory;
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class LegoGUI extends Application
+@Service
+@Singleton
+public class LegoGUI extends Application implements PopupViewI
 {
 	Logger logger = LoggerFactory.getLogger(LegoGUI.class);
-
-	private static void showSummaryPane(LegoList legoList)
+	
+	private void showSummaryPane(LegoList legoList)
 	{
 		LegoSummaryPane lsp = new LegoSummaryPane(legoList);
 
@@ -56,7 +70,7 @@ public class LegoGUI extends Application
 		stage.show();
 	}
 
-	public static void showFileImportChooser(Window parent) throws IOException
+	public void showFileImportChooser(Window parent) throws IOException
 	{
 		FileChooser fc = new FileChooser();
 		fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("LEGO xml Files (*.xml)", "*.xml"));
@@ -71,7 +85,7 @@ public class LegoGUI extends Application
 		}
 	}
 
-	private static List<String> showImportDialog(List<File> filesToImport, Window parent) throws IOException
+	private List<String> showImportDialog(List<File> filesToImport, Window parent) throws IOException
 	{
 		Stage stage = new Stage();
 		stage.initModality(Modality.WINDOW_MODAL);
@@ -87,17 +101,23 @@ public class LegoGUI extends Application
 		return idc.getImportedLegoListsIDs();
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, IOException
 	{
 		System.out.println("Launching");
-		WBDataStore.openStore(new File("../isaac-app/berkeley-db"));
+		AppContext.setup();
+		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
+		Field f = Hk2Looker.class.getDeclaredField("looker");
+		f.setAccessible(true);
+		f.set(null, AppContext.getServiceLocator());
+		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getAbsolutePath());
 		launch(args);
 	}
 	
-	public static void shutdown()
-	{
-		WBDataStore.shutdown();
-	}
+	
+//	public static void shutdown()
+//	{
+//		Hk2Looker.get().getService(BdbTerminologyStore.class).shutdown();
+//	}
 	
 	/**
 	 * Null can be sent in to request an export of all legos...
@@ -124,5 +144,70 @@ public class LegoGUI extends Application
 	{
 		showFileImportChooser(stage.getOwner());
 		//shutdown();
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 */
+	@Override
+	public List<MenuItemI> getMenuBarMenus()
+	{
+		ArrayList<MenuItemI> menus = new ArrayList<>();
+		menus.add(new MenuItemI()
+		{
+			
+			@Override
+			public void handleMenuSelection(Window parent)
+			{
+				showView(parent);
+			}
+			
+			@Override
+			public int getSortOrder()
+			{
+				return 5;
+			}
+			
+			@Override
+			public String getParentMenuId()
+			{
+				return "importExportMenu";
+			}
+			
+			@Override
+			public String getMenuName()
+			{
+				return "LEGO IMPORTER";
+			}
+			
+			@Override
+			public String getMenuId()
+			{
+				return "legoImporterMenuItem";
+			}
+			
+			@Override
+			public boolean enableMnemonicParsing()
+			{
+				return false;
+			}
+		});
+		return menus;
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.interfaces.PopupViewI#showView(javafx.stage.Window)
+	 */
+	@Override
+	public void showView(Window parent)
+	{
+		try
+		{
+			showFileImportChooser(parent);
+		}
+		catch (IOException e)
+		{
+			AppContext.getCommonDialogs().showErrorDialog("Could not display the file chooser", e);
+		}
 	}
 }

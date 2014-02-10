@@ -1,8 +1,8 @@
 package gov.va.models.util;
 
-import gov.va.isaac.gui.AppContext;
-
 import java.io.IOException;
+
+import javax.inject.Inject;
 
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
@@ -13,6 +13,7 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
  * Base class containing common methods for importing terminology objects.
@@ -23,12 +24,16 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
  */
 public class ImporterBase {
 
-    private final BdbTerminologyStore dataStore;
+
+    @Inject
+    private BdbTerminologyStore dataStore;
+
     private final TerminologyBuilderBI builder;
 
-    protected ImporterBase(AppContext appContext) throws ValidationException, IOException {
+    protected ImporterBase() throws ValidationException, IOException {
         super();
-        this.dataStore = appContext.getDataStore();
+        Hk2Looker.get().inject(this);
+
         this.builder = new BdbTermBuilder(getEC(), getVC());
     }
 

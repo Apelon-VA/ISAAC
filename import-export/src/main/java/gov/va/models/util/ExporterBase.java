@@ -1,8 +1,8 @@
 package gov.va.models.util;
 
-import gov.va.isaac.gui.AppContext;
-
 import java.io.IOException;
+
+import javax.inject.Inject;
 
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -11,6 +11,7 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
  * Base class containing common methods for exporting terminology objects.
@@ -21,11 +22,12 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
  */
 public class ExporterBase {
 
-    private final BdbTerminologyStore dataStore;
+    @Inject
+    private BdbTerminologyStore dataStore;
 
-    protected ExporterBase(AppContext appContext) throws ValidationException, IOException {
+    protected ExporterBase() throws ValidationException, IOException {
         super();
-        this.dataStore = appContext.getDataStore();
+        Hk2Looker.get().inject(this);
     }
 
     protected final BdbTerminologyStore getDataStore() {

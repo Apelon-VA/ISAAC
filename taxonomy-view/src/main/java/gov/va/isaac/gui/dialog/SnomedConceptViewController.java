@@ -1,15 +1,30 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.provider.ConceptDialogProvider;
+import gov.va.isaac.gui.ExtendedAppContext;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.util.WBUtility;
-
 import java.util.ArrayList;
 import java.util.UUID;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -33,7 +48,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
@@ -75,11 +89,6 @@ public class SnomedConceptViewController {
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
     private SctTreeView sctTree;
-    private AppContext appContext;
-
-    public void setAppContext(AppContext appContext) {
-        this.appContext = appContext;
-    }
 
     public void setConcept(ConceptChronicleDdo concept) {
 
@@ -151,8 +160,7 @@ public class SnomedConceptViewController {
 
                                     @Override
                                     public void handle(ActionEvent ignored) {
-                                        ConceptDialogProvider provider = appContext.getAppUtil().getConceptDialogProvider();
-                                        provider.showSnomedConceptDialog(ref.uuid);
+                                        ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(ref.uuid);
                                     }
                                 });
                                 cm.getItems().add(mi1);
@@ -182,8 +190,7 @@ public class SnomedConceptViewController {
             mi.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent ignore) {
-                    ConceptDialogProvider provider = appContext.getAppUtil().getConceptDialogProvider();
-                    provider.showSnomedConceptDialog(id.getAuthorityRef().getUuid());
+                    ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
                 }
             });
 
@@ -215,13 +222,13 @@ public class SnomedConceptViewController {
 
         // Load the inner tree view.
         try {
-            ConceptChronicleDdo rootConcept = appContext.getDataStore().getFxConcept(
+            ConceptChronicleDdo rootConcept = ExtendedAppContext.getDataStore().getFxConcept(
                             Taxonomies.SNOMED.getUuids()[0],
                             StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                             VersionPolicy.ACTIVE_VERSIONS,
                             RefexPolicy.REFEX_MEMBERS,
                             RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-            sctTree = new SctTreeView(appContext, rootConcept);
+            sctTree = new SctTreeView(rootConcept);
             splitRight.getChildren().add(sctTree);
             VBox.setVgrow(sctTree, Priority.ALWAYS);
             treeViewSearchRunning.set(true);

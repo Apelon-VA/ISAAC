@@ -1,11 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package gov.va.models.cem.importer;
 
-import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.models.util.ImporterBase;
 
@@ -38,8 +50,8 @@ public class CEMMetadataCreator extends ImporterBase {
     private static final String REFSET_ROOT = "7e38cd2d-6f1a-3a81-be0b-21e6090573c2";
     private static final String REFSET_ATTRIBUTE_ROOT = "7e52203e-8a35-3121-b2e7-b783b34d97f2";
 
-    public CEMMetadataCreator(AppContext appContext) throws ValidationException, IOException {
-        super(appContext);
+    public CEMMetadataCreator() throws ValidationException, IOException {
+        super();
     }
 
     @SuppressWarnings("unused")

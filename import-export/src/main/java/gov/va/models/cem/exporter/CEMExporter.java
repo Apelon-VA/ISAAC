@@ -5,7 +5,6 @@
  */
 package gov.va.models.cem.exporter;
 
-import gov.va.isaac.gui.AppContext;
 import gov.va.models.cem.importer.CEMMetadataBinding;
 import gov.va.models.util.ExporterBase;
 
@@ -56,8 +55,8 @@ public class CEMExporter extends ExporterBase {
 
     private Document document;
 
-    public CEMExporter(AppContext appContext) throws ValidationException, IOException {
-        super(appContext);
+    public CEMExporter() throws ValidationException, IOException {
+        super();
     }
 
     public void exportModel(UUID conceptUUID, File file) throws Exception {

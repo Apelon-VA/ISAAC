@@ -1,6 +1,24 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
@@ -50,32 +68,30 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
-    private final AppContext appContext;
 
     private SctTreeItem rootTreeItem;
 
-    public SctTreeView(AppContext appContext, ConceptChronicleDdo rootConcept) {
+    public SctTreeView(ConceptChronicleDdo rootConcept) {
         super();
-        this.appContext = appContext;
 
         getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
             @Override
             public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
-                return new SctTreeCell(SctTreeView.this.appContext);
+                return new SctTreeCell();
             }
         });
 
         TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-        SctTreeItem hiddenRootItem = new SctTreeItem(appContext, hiddenRootConcept);
+        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept);
         setShowRoot(false);
         setRoot(hiddenRootItem);
 
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
 
-        rootTreeItem = new SctTreeItem(appContext, visibleRootConcept, Images.ROOT.createImageView());
+        rootTreeItem = new SctTreeItem(visibleRootConcept, Images.ROOT.createImageView());
 
         hiddenRootItem.getChildren().add(rootTreeItem);
         rootTreeItem.addChildren();
@@ -293,7 +309,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
             return null;
         }
 
-        BdbTerminologyStore dataStore = appContext.getDataStore();
+        BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
         ViewCoordinate viewCoordinate = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
 

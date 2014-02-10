@@ -1,6 +1,24 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
 
@@ -47,7 +65,6 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         initExecutorPools();
     }
 
-    private final AppContext appContext;
     private final List<SctTreeItem> extraParents = new ArrayList<>();
 
     private ProgressIndicator progressIndicator;
@@ -56,13 +73,12 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     private int multiParentDepth = 0;
     private boolean secondaryParentOpened = false;
 
-    public SctTreeItem(AppContext appContext, TaxonomyReferenceWithConcept taxRef) {
-        this(appContext, taxRef, (Node) null);
+    public SctTreeItem(TaxonomyReferenceWithConcept taxRef) {
+        this(taxRef, (Node) null);
     }
 
-    public SctTreeItem(AppContext appContext, TaxonomyReferenceWithConcept t, Node node) {
+    public SctTreeItem(TaxonomyReferenceWithConcept t, Node node) {
         super(t, node);
-        this.appContext = appContext;
     }
 
     public void addChildren() {
@@ -83,7 +99,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                 for (RelationshipVersionDdo rv : r.getVersions()) {
                     try {
                         TaxonomyReferenceWithConcept fxtrc = new TaxonomyReferenceWithConcept(rv);
-                        SctTreeItem childItem = new SctTreeItem(appContext, fxtrc);
+                        SctTreeItem childItem = new SctTreeItem(fxtrc);
 
                         childrenToProcess.add(childItem);
                     } catch (IOException | ContradictionException ex) {
@@ -121,7 +137,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                         for (RelationshipVersionDdo rv : r.getVersions()) {
                             try {
                                 TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                                SctTreeItem grandChildItem = new SctTreeItem(appContext, taxRef);
+                                SctTreeItem grandChildItem = new SctTreeItem(taxRef);
 
                                 grandChildrenToProcess.add(grandChildItem);
                                 grandChildrenToAdd.add(grandChildItem);
@@ -323,7 +339,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                     return false;
                 }
                 if (childItem.getValue().conceptProperty().get() == null) {
-                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(appContext, childItem);
+                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(childItem);
                     futureList.add(conceptFetcherService.submit(fetcher));
                 } else {
                     updateProgress(Math.min(processedCount++, size), size);

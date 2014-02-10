@@ -1,12 +1,11 @@
 package gov.va.isaac.util;
 
+import gov.va.isaac.gui.ExtendedAppContext;
 import gov.va.isaac.model.UserPreferences;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
@@ -45,12 +44,8 @@ public class WBUtility {
     private static Integer preferredNid = null;
     private static Integer synonymNid = null;
 
-    private static BdbTerminologyStore dataStore;
+    private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
     private static UserPreferences userPrefs = new UserPreferences();
-
-    public static void setDataStore(BdbTerminologyStore dataStore) {
-        WBUtility.dataStore = dataStore;
-    }
 
     public static String getDescription(UUID uuid) {
         try {
