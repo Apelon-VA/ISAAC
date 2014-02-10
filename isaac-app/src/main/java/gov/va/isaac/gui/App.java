@@ -19,7 +19,6 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.CommonDialogs;
-import gov.va.isaac.gui.interfaces.ApplicationWindowI;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,7 +37,6 @@ import javafx.stage.WindowEvent;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
-import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +46,8 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Service
-public class App extends Application implements ApplicationWindowI {
+
+public class App extends Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
@@ -61,6 +59,7 @@ public class App extends Application implements ApplicationWindowI {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage_ = primaryStage;
+        AppContext.getService(ApplicationWindowImpl.class).init(primaryStage_);
         //Set up the CommonDialogs class (which needs a references to primaryStage_ and gets it via injection)
         commonDialog_ = AppContext.getServiceLocator().getService(CommonDialogs.class);
 
@@ -237,14 +236,5 @@ public class App extends Application implements ApplicationWindowI {
         //Which is made worse by the fact tha the defaults in OTF are inconsistent between BDB and lucene...
         configDataStorePaths(new File("berkeley-db"));
         Application.launch(args);
-    }
-
-    /**
-     * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#getPrimaryStage()
-     */
-    @Override
-    public Stage getPrimaryStage()
-    {
-        return primaryStage_;
     }
 }
