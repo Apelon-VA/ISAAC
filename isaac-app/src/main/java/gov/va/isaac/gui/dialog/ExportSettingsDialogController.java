@@ -103,8 +103,8 @@ public class ExportSettingsDialogController {
                 }
 
                 // Inject into an ExportHandler.
-                ExportHandler exportHandler = new ExportHandler();
-                exportHandler.doExport(appContext.getDataStore(), file);
+                ExportHandler exportHandler = new ExportHandler(appContext);
+                exportHandler.doExport(file);
 
                 return true;
             }
