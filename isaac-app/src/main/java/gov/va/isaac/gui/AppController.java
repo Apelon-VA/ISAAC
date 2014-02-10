@@ -1,29 +1,61 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialog;
-import gov.va.isaac.gui.searchview.SearchViewController;
+import gov.va.isaac.gui.importview.ImportView;
+import gov.va.isaac.gui.interfaces.DockedViewI;
+import gov.va.isaac.gui.interfaces.IsaacViewI;
+import gov.va.isaac.gui.interfaces.MenuItemI;
 import gov.va.isaac.gui.treeview.SctTreeItem;
 import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.legoEdit.gui.LegoGUI;
+import gov.va.isaac.model.InformationModelType;
 import gov.va.models.cem.importer.CEMMetadataCreator;
-
-import java.io.IOException;
-
+import java.util.Hashtable;
+import java.util.TreeSet;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javax.inject.Inject;
+import org.glassfish.hk2.api.IterableProvider;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +63,7 @@ import org.slf4j.LoggerFactory;
  * Controller class for {@link App}.
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 public class AppController {
 
@@ -39,43 +72,127 @@ public class AppController {
     @FXML private Menu importExportMenu;
     @FXML private Menu panelsMenu;
     @FXML private MenuItem taxonomyViewMenuItem;
-    @FXML private MenuItem searchViewMenuItem;
     @FXML private SplitPane mainSplitPane;
     @FXML private BorderPane taxonomyViewPane;
-    @FXML private BorderPane searchViewPane;
+    @FXML private BorderPane appBorderPane;
+    @FXML private MenuBar menuBar;
 
-    private AppContext appContext;
-    private App app;
     private SctTreeView sctTree;
     private boolean shutdown = false;
+    private Stage importStage;
+    @Inject
+    private IterableProvider<IsaacViewI> moduleViews_;
+    @Inject 
+    private IterableProvider<DockedViewI> dockedViews_;
+    
+    //Just a hashed view of all of the menus
+    private Hashtable<String, Menu> allMenus_ = new Hashtable<>();
 
     @FXML
     public void initialize() {
+        
+        AppContext.getServiceLocator().inject(this);
+        
         // The FXML file puts all views into the split pane.  Remove them for starters.
         mainSplitPane.getItems().remove(taxonomyViewPane);
-        mainSplitPane.getItems().remove(searchViewPane);
+        
+        //index these for ease in adding module menus
+        
+        for (Menu menu : menuBar.getMenus())
+        {
+            allMenus_.put(menu.getId(), menu);
+        }
+
+        //Sort them...
+        TreeSet<MenuItemI> menusToAdd = new TreeSet<>();
+        for (IsaacViewI view : moduleViews_)
+        {
+            for (MenuItemI menuItem : view.getMenuBarMenus())
+            {
+                menusToAdd.add(menuItem);
+            }
+        }
+        
+        for (final MenuItemI menuItemsToCreate : menusToAdd)
+        {
+            Menu parentMenu = allMenus_.get(menuItemsToCreate.getParentMenuId());
+            if (parentMenu == null)
+            {
+                LOG.error("Cannot add module menu '" + menuItemsToCreate.getMenuId() + "' because the specified parent menu doesn't exist");
+            }
+            else
+            {
+                MenuItem menuItem = new MenuItem();
+                menuItem.setId(menuItemsToCreate.getMenuId());
+                menuItem.setText(menuItemsToCreate.getMenuName());
+                menuItem.setMnemonicParsing(menuItemsToCreate.enableMnemonicParsing());
+                menuItem.setOnAction(new EventHandler<ActionEvent>()
+                {
+                    
+                    @Override
+                    public void handle(ActionEvent arg0)
+                    {
+                        menuItemsToCreate.handleMenuSelection(appBorderPane.getScene().getWindow());
+                    }
+                });
+                parentMenu.getItems().add(menuItem);
+            }
+        }
     }
 
-    public void setAppContext(AppContext appContext, App app) {
-        this.appContext = appContext;
-        this.app = app;
-
+    public void finishInit() {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
 
         // Enable the menus.
         importExportMenu.setDisable(false);
         panelsMenu.setDisable(false);
-
-        // Finish updating the UI.
-        try {
-            SearchViewController searchViewController = SearchViewController.newInstance(appContext);
-            searchViewPane.setCenter(searchViewController.getRoot());
-        } catch (IOException ex) {
-            String message = "Could not load Search View";
-            LOG.warn(message, ex);
-            appContext.getAppUtil().showErrorDialog(message, ex);
+        
+        for (final DockedViewI dv : dockedViews_)
+        {
+            try
+            {
+                Menu parentMenu = allMenus_.get(dv.getMenuBarMenuToShowView().getParentMenuId());
+                if (parentMenu == null)
+                {
+                    LOG.error("Cannot add module menu '" + dv.getMenuBarMenuToShowView().getMenuId() + "' because the specified parent menu doesn't exist");
+                }
+                else
+                {
+                    final BorderPane bp = buildPanelForView(dv);
+                    //TODO this isn't honoring sort order... need to sort all of the menus from the DockedViewI at once....
+                    MenuItem mi = new MenuItem();
+                    mi.setText(dv.getMenuBarMenuToShowView().getMenuName());
+                    mi.setId(dv.getMenuBarMenuToShowView().getMenuId());
+                    mi.setMnemonicParsing(dv.getMenuBarMenuToShowView().enableMnemonicParsing());
+                    mi.setOnAction(new EventHandler<ActionEvent>()
+                    {
+                        @Override
+                        public void handle(ActionEvent arg0)
+                        {
+                            //This is a convenience call... not expected to actually show the view.
+                            dv.getMenuBarMenuToShowView().handleMenuSelection(appBorderPane.getScene().getWindow());
+                            
+                            if (!mainSplitPane.getItems().contains(bp))
+                            {
+                                bp.setVisible(true);
+                                mainSplitPane.getItems().add(bp);
+                            }
+                        }
+                        
+                    });
+                    mi.disableProperty().bind(bp.visibleProperty());
+                    parentMenu.getItems().add(mi);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.error("Unexpected error configuring DockedViewI " + (dv == null ? "?" : dv.getViewTitle()), e);
+            }
         }
+        
+     // Stages for other views.
+        this.importStage = buildImportStage(ExtendedAppContext.getMainApplicationWindow().getPrimaryStage());
     }
 
     public void shutdown() {
@@ -90,36 +207,25 @@ public class AppController {
 
     public void handleImportMenuItem() {
         try {
-            ImportSettingsDialog importSettingsDialog = new ImportSettingsDialog(appContext, app);
+            ImportSettingsDialog importSettingsDialog = new ImportSettingsDialog(this);
             importSettingsDialog.show();
         } catch (Exception ex) {
             String title = ex.getClass().getName();
             String msg = String.format("Unexpected error showing ImportSettingsDialog");
             LOG.error(msg, ex);
-            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
-        }
-    }
-
-    public void handleLegoImportMenuItem() {
-        try {
-            LegoGUI.showFileImportChooser(appContext.getAppUtil().getPrimaryStage());
-        } catch (Exception ex) {
-            String title = ex.getClass().getName();
-            String msg = String.format("Unexpected error showing LEGO Import Dialog");
-            LOG.error(msg, ex);
-            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
         }
     }
 
     public void handleExportMenuItem() {
         try {
-            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog(appContext);
+            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog();
             exportSettingsDialog.show();
         } catch (Exception ex) {
             String title = ex.getClass().getName();
             String msg = String.format("Unexpected error showing ExportSettingsDialog");
             LOG.error(msg, ex);
-            appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
         }
     }
 
@@ -140,23 +246,43 @@ public class AppController {
         taxonomyViewMenuItem.setDisable(false);
     }
 
-    public void handleSearchViewMenuItem() {
-        if (! searchViewVisible()) {
-
-            int position = (taxonomyViewVisible() ? 1 : 0);
-
-            mainSplitPane.getItems().add(position, searchViewPane);
-            searchViewMenuItem.setDisable(true);
-        }
+    private BorderPane buildPanelForView(DockedViewI dockedView)
+    {
+        final BorderPane bp = new BorderPane();
+        bp.setVisible(false);
+        AnchorPane ap = new AnchorPane();
+        ap.getStyleClass().add("headerBackground");
+        
+        Label l = new Label(dockedView.getViewTitle());
+        AnchorPane.setLeftAnchor(l, 5.0);
+        AnchorPane.setTopAnchor(l, 5.0);
+        ap.getChildren().add(l);
+        
+        Button b = new Button();
+        b.setMnemonicParsing(false);
+        b.setStyle("-fx-cursor:hand");
+        b.getStyleClass().add("tab-close-button");
+        b.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent arg0)
+            {
+                hidePanelView(bp);
+            }
+        });
+        AnchorPane.setTopAnchor(b, 5.0);
+        AnchorPane.setRightAnchor(b, 3.0);
+        ap.getChildren().add(b);
+        
+        bp.setTop(ap);
+        bp.setCenter(dockedView.getView(appBorderPane.getScene().getWindow()));
+        return bp;
     }
-
-    public void handleSearchViewClose() {
-        mainSplitPane.getItems().remove(searchViewPane);
-        searchViewMenuItem.setDisable(false);
-    }
-
-    private boolean searchViewVisible() {
-        return mainSplitPane.getItems().contains(searchViewPane);
+    
+    private void hidePanelView(BorderPane bp)
+    {
+        bp.setVisible(false);
+        mainSplitPane.getItems().remove(bp);
     }
 
     private boolean taxonomyViewVisible() {
@@ -171,7 +297,7 @@ public class AppController {
             @Override
             protected ConceptChronicleDdo call() throws Exception {
                 LOG.info("Loading root concept");
-                ConceptChronicleDdo rootConcept = appContext.getDataStore().getFxConcept(
+                ConceptChronicleDdo rootConcept = ExtendedAppContext.getDataStore().getFxConcept(
                         Taxonomies.SNOMED.getUuids()[0],
                         StandardViewCoordinates.getSnomedInferredLatest(),
                         VersionPolicy.ACTIVE_VERSIONS,
@@ -185,7 +311,7 @@ public class AppController {
             @Override
             protected void succeeded() {
                 ConceptChronicleDdo result = this.getValue();
-                sctTree = new SctTreeView(appContext, result);
+                sctTree = new SctTreeView(result);
                 taxonomyViewPane.setCenter(sctTree);
             }
 
@@ -198,7 +324,7 @@ public class AppController {
 
                 // Show dialog unless we're shutting down.
                 if (! shutdown) {
-                    AppController.this.appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+                    AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
                 }
             }
         };
@@ -210,12 +336,48 @@ public class AppController {
 
      public void handleCreateMetadataMenuItem() throws Exception {
          try {
-             CEMMetadataCreator.createMetadata(appContext);
+             CEMMetadataCreator.createMetadata();
          } catch (Exception ex) {
              String title = ex.getClass().getName();
              String msg = String.format("Unexpected error creating metadata");
              LOG.error(msg, ex);
-             appContext.getAppUtil().showErrorDialog(title, msg, ex.getMessage());
+             AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
          }
+     }
+     
+     public void showImportView(InformationModelType modelType, String fileName) {
+
+         // Make sure in application thread.
+         FxUtils.checkFxUserThread();
+
+         try {
+             ImportView importView = new ImportView();
+
+             importStage.setScene(new Scene(importView));
+             if (importStage.isShowing()) {
+                 importStage.toFront();
+             } else {
+                 importStage.show();
+             }
+
+             importView.doImport(modelType, fileName);
+
+         } catch (Exception ex) {
+             String title = ex.getClass().getName();
+             String message = "Unexpected error displaying import view";
+             LOG.warn(message, ex);
+             ExtendedAppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
+         }
+     }
+
+     private Stage buildImportStage(Stage owner) {
+         // Use dialog for now, so Alo/Dan can use it.
+         Stage stage = new Stage();
+         stage.initModality(Modality.NONE);
+         stage.initOwner(owner);
+         stage.initStyle(StageStyle.DECORATED);
+         stage.setTitle("Import View");
+
+         return stage;
      }
 }

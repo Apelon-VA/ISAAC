@@ -1,18 +1,30 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui;
 
-import gov.va.isaac.gui.dialog.SnomedConceptView;
-import gov.va.isaac.gui.importview.ImportView;
-import gov.va.isaac.gui.provider.ConceptDialogProvider;
-import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.model.InformationModelType;
-import gov.va.isaac.util.WBUtility;
-import gov.va.legoEdit.storage.wb.WBDataStore;
-
+import gov.va.isaac.gui.dialog.CommonDialogs;
+import gov.va.isaac.gui.interfaces.ApplicationWindowI;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.UUID;
-
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
@@ -20,18 +32,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
+import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,21 +46,23 @@ import org.slf4j.LoggerFactory;
  * ISAAC {@link Application} class.
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class App extends Application implements ConceptDialogProvider {
+@Service
+public class App extends Application implements ApplicationWindowI {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
-    private AppUtil appUtil;
     private AppController controller;
     private boolean shutdown = false;
-    private BdbTerminologyStore dataStore;
-    private AppContext appContext;
-    private Stage importStage;
+    private Stage primaryStage_;
+    private CommonDialogs commonDialog_;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        this.appUtil = new AppUtil(primaryStage, this);
+        primaryStage_ = primaryStage;
+        //Set up the CommonDialogs class (which needs a references to primaryStage_ and gets it via injection)
+        commonDialog_ = AppContext.getServiceLocator().getService(CommonDialogs.class);
 
         URL resource = this.getClass().getResource("App.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
@@ -77,9 +86,6 @@ public class App extends Application implements ConceptDialogProvider {
             }
         });
 
-        // Stages for other views.
-        this.importStage = buildImportStage(primaryStage);
-
         primaryStage.show();
 
         // Reduce size to fit in user's screen.
@@ -98,108 +104,10 @@ public class App extends Application implements ConceptDialogProvider {
         }
 
         // Kick off a thread to open the DB connection.
-        loadDataStore(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY));
+        loadDataStore();
     }
 
-    public AppContext getAppContext() {
-        return appContext;
-    }
-
-    @Override
-    public void showSnomedConceptDialog(final UUID conceptUUID) {
-
-        // Do work in background.
-        Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
-
-            @Override
-            protected ConceptChronicleDdo call() throws Exception {
-                LOG.info("Loading concept with UUID " + conceptUUID);
-                ConceptChronicleDdo concept = dataStore.getFxConcept(
-                        conceptUUID,
-                        StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
-                        VersionPolicy.ACTIVE_VERSIONS,
-                        RefexPolicy.REFEX_MEMBERS,
-                        RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-                LOG.info("Finished loading concept with UUID " + conceptUUID);
-
-                return concept;
-            }
-
-            @Override
-            protected void succeeded() {
-                ConceptChronicleDdo result = this.getValue();
-                showSnomedConceptDialog(result);
-            }
-
-            @Override
-            protected void failed() {
-                Throwable ex = getException();
-                String title = "Unexpected error loading concept with UUID " + conceptUUID;
-                String msg = ex.getClass().getName();
-                LOG.error(title, ex);
-                appUtil.showErrorDialog(title, msg, ex.getMessage());
-            }
-        };
-
-        Thread t = new Thread(task, "Concept_Load_" + conceptUUID);
-        t.setDaemon(true);
-        t.start();
-    }
-
-    @Override
-    public void showSnomedConceptDialog(ConceptChronicleDdo concept) {
-
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
-
-        try {
-            SnomedConceptView dialog = new SnomedConceptView(appContext);
-            dialog.setConcept(concept);
-            dialog.show();
-        } catch (Exception ex) {
-            String message = "Unexpected error displaying snomed concept view";
-            LOG.warn(message, ex);
-            appUtil.showErrorDialog("Unexpected Error", message, ex.getMessage());
-        }
-    }
-
-    public void showImportView(InformationModelType modelType, String fileName) {
-
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
-
-        try {
-            ImportView importView = new ImportView();
-
-            importStage.setScene(new Scene(importView));
-            if (importStage.isShowing()) {
-                importStage.toFront();
-            } else {
-                importStage.show();
-            }
-
-            importView.doImport(appContext, modelType, fileName);
-
-        } catch (Exception ex) {
-            String title = ex.getClass().getName();
-            String message = "Unexpected error displaying import view";
-            LOG.warn(message, ex);
-            appUtil.showErrorDialog(title, message, ex.getMessage());
-        }
-    }
-
-    private Stage buildImportStage(Stage owner) {
-        // Use dialog for now, so Alo/Dan can use it.
-        Stage stage = new Stage();
-        stage.initModality(Modality.NONE);
-        stage.initOwner(owner);
-        stage.initStyle(StageStyle.DECORATED);
-        stage.setTitle("Import View");
-
-        return stage;
-    }
-
-    private void loadDataStore(final String bdbFolderName) {
+    private void loadDataStore() {
 
         // Do work in background.
         Task<BdbTerminologyStore> task = new Task<BdbTerminologyStore>() {
@@ -207,7 +115,7 @@ public class App extends Application implements ConceptDialogProvider {
             @Override
             protected BdbTerminologyStore call() throws Exception {
                 LOG.info("Opening Workbench database");
-                BdbTerminologyStore dataStore = getDataStore(bdbFolderName);
+                BdbTerminologyStore dataStore = AppContext.getServiceLocator().getService(BdbTerminologyStore.class);
                 LOG.info("Finished opening Workbench database");
 
                 // Check if user shut down early.
@@ -221,13 +129,7 @@ public class App extends Application implements ConceptDialogProvider {
 
             @Override
             protected void succeeded() {
-                dataStore = this.getValue();
-                appContext = new AppContext(appUtil, dataStore);
-
-                // Inject into dependent classes.
-                WBUtility.setDataStore(dataStore);
-                WBDataStore.setStore(dataStore);
-                controller.setAppContext(appContext, App.this);
+                controller.finishInit();
             }
 
             @Override
@@ -244,19 +146,19 @@ public class App extends Application implements ConceptDialogProvider {
                             + "\n\nand unzip it into\n\n"
                             + System.getProperty("user.dir")
                             + "\n\nand then restart the editor.";
-                    appUtil.showErrorDialog(title, message, details);
+                    commonDialog_.showErrorDialog(title, message, details);
 
                     // Close app since no DB to load.
                     // (The #shutdown method will be also invoked by
                     // the handler we hooked up with Stage#setOnHiding.)
-                    appUtil.getPrimaryStage().hide();
+                    primaryStage_.hide();
 
                 } else {
                     String title = "Unexpected error connecting to workbench database";
                     String msg = ex.getClass().getName();
                     String details = ex.getMessage();
                     LOG.error(title, ex);
-                    appUtil.showErrorDialog(title, msg, details);
+                    commonDialog_.showErrorDialog(title, msg, details);
                 }
             }
         };
@@ -266,20 +168,45 @@ public class App extends Application implements ConceptDialogProvider {
         t.start();
     }
 
-    private BdbTerminologyStore getDataStore(String bdbFolderName) throws Exception {
+    private static void configDataStorePaths(File bdbFolder) throws IOException {
 
         // Default value if null.
-        if (bdbFolderName == null) {
-            bdbFolderName = "berkeley-db";  // Hard-coded in BdbTerminologyStore.
+        if (bdbFolder == null) {
+            //do nothing... let the store use its own default
+            //TODO OTF fix: note - the BDB defaults are not in sync with the Lucene defaults...  lucene will init in the wrong place and fail....
         }
-
-        // Sanity check.
-        File bdbFolderPath = new File(bdbFolderName);
-        if (! bdbFolderPath.exists()) {
-            throw new FileNotFoundException(bdbFolderName);
+        else
+        {
+            
+            if (!bdbFolder.exists())
+            {
+                throw new FileNotFoundException("Couldn't find specified bdb data store '" + bdbFolder.getAbsolutePath() + "'");
+            }
+            if (!bdbFolder.isDirectory())
+            {
+                throw new IOException("The specified bdb data store: '" + bdbFolder.getAbsolutePath() + "' is not a folder");
+            }
+            
+            if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
+            {
+                System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolder.getCanonicalPath());
+            }
+            else
+            {
+                LOG.warn("The application specified '" + bdbFolder.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY 
+                        + "is set to " + System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY + " this will override the application path"));
+            }
+            if (System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) == null)
+            {
+                System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, bdbFolder.getCanonicalPath());
+            }
+            else
+            {
+                LOG.warn("The application specified '" + bdbFolder.getCanonicalPath() + "' but the system property " + LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY 
+                        + "is set to " + System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) + " this will override the application path");
+            }
+            
         }
-
-        return new BdbTerminologyStore();
     }
 
     private void shutdown() {
@@ -287,22 +214,37 @@ public class App extends Application implements ConceptDialogProvider {
         shutdown = true;
 
         try {
-            if (dataStore != null) {
-                dataStore.shutdown();
-            }
+            ExtendedAppContext.getDataStore().shutdown();
             if (controller != null) {
                 controller.shutdown();
             }
         } catch (Exception ex) {
             String message = "Trouble shutting down";
             LOG.warn(message, ex);
-            appUtil.showErrorDialog("Oops!", message, ex.getMessage());
+            commonDialog_.showErrorDialog("Oops!", message, ex.getMessage());
         }
 
         LOG.info("Finished shutting down");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        AppContext.setup();
+        // TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
+        Field f = Hk2Looker.class.getDeclaredField("looker");
+        f.setAccessible(true);
+        f.set(null, AppContext.getServiceLocator());
+        //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
+        //Which is made worse by the fact tha the defaults in OTF are inconsistent between BDB and lucene...
+        configDataStorePaths(new File("berkeley-db"));
         Application.launch(args);
+    }
+
+    /**
+     * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#getPrimaryStage()
+     */
+    @Override
+    public Stage getPrimaryStage()
+    {
+        return primaryStage_;
     }
 }

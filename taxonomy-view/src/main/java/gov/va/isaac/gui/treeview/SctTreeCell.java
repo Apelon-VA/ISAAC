@@ -1,14 +1,29 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.provider.ConceptDialogProvider;
+import gov.va.isaac.gui.dialog.SnomedConceptView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,13 +37,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.RectangleBuilder;
-
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipVersionDdo;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +58,8 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
-    private final AppContext appContext;
-
-    public SctTreeCell(AppContext appContext) {
+    public SctTreeCell() {
         super();
-        this.appContext = appContext;
 
         // Handle left-clicks.
         ClickListener eventHandler = new ClickListener();
@@ -80,7 +92,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (RelationshipChronicleDdo extraParent : extraParents) {
                     for (RelationshipVersionDdo extraParentVersion : extraParent.getVersions()) {
                         SctTreeItem extraParentItem =
-                                new SctTreeItem(appContext, new TaxonomyReferenceWithConcept(extraParentVersion,
+                                new SctTreeItem(new TaxonomyReferenceWithConcept(extraParentVersion,
                                 TaxonomyReferenceWithConcept.WhichConcept.DESTINATION));
                         ProgressIndicator indicator = new ProgressIndicator();
 
@@ -101,7 +113,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (SctTreeItem extraParent : extraParentItems) {
                     parentItem.getChildren().add(startIndex++, extraParent);
                     treeItem.getExtraParents().add(extraParent);
-                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(appContext, extraParent, false);
+                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(extraParent, false);
                     FutureHelper.addFuture(SctTreeItem.conceptFetcherService.submit(fetcher));
                 }
             }
@@ -208,8 +220,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public void handle(ActionEvent event) {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
-                ConceptDialogProvider provider = appContext.getAppUtil().getConceptDialogProvider();
-                provider.showSnomedConceptDialog(concept);
+                Hk2Looker.get().getService(SnomedConceptView.class).showConcept(concept);
             }
         });
         mi.setGraphic(Images.CONCEPT_VIEW.createImageView());

@@ -1,7 +1,25 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.export.ExportHandler;
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,11 +48,9 @@ public class ExportSettingsDialogController {
     @FXML private TextField fileSelectionTextField;
 
     private ExportSettingsDialog exportSettingsDialog;
-    private AppContext appContext;
 
-    public void setVariables(ExportSettingsDialog exportSettingsDialog, AppContext appContext) {
+    public void setVariables(ExportSettingsDialog exportSettingsDialog) {
         this.exportSettingsDialog = exportSettingsDialog;
-        this.appContext = appContext;
     }
 
     @FXML
@@ -62,7 +78,7 @@ public class ExportSettingsDialogController {
         String fileName = fileSelectionTextField.getText();
 
         // Perform exdport if both are set.
-        // TODO: Show warning dialog if not.
+        // TODO: Show don't allow OK to be clicked if not both set....
         if ((folderName != null)  && (! folderName.isEmpty())
                 && (fileName != null) && (! fileName.isEmpty())) {
 
@@ -104,7 +120,7 @@ public class ExportSettingsDialogController {
 
                 // Inject into an ExportHandler.
                 ExportHandler exportHandler = new ExportHandler();
-                exportHandler.doExport(appContext.getDataStore(), file);
+                exportHandler.doExport(file);
 
                 return true;
             }
@@ -117,7 +133,7 @@ public class ExportSettingsDialogController {
                 // Show confirmation dialog.
                 String title = "Export Complete";
                 String message = String.format("Export to \"%s\" successful.", fileName);
-                appContext.getAppUtil().showInformationDialog(title, message);
+                ExtendedAppContext.getCommonDialogs().showInformationDialog(title, message);
 
                 exportSettingsDialog.close();
             }
@@ -128,7 +144,7 @@ public class ExportSettingsDialogController {
                 String title = ex.getClass().getName();
                 String message = "Unexpected error performing export";
                 LOG.warn(message, ex);
-                appContext.getAppUtil().showErrorDialog(title, message, ex.getMessage());
+                ExtendedAppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
             }
         };
 

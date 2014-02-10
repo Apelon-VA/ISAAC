@@ -1,11 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package gov.va.models.cem.importer;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,14 +49,11 @@ public class CEMMetadataCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
 
-    private static AppContext appContext;
-    private static BdbTerminologyStore ds;
     private static TerminologyBuilderBI builder;
-
-    public static void createMetadata(final AppContext appContext) throws Exception {
+    
+    public static void createMetadata() throws Exception {
         LOG.info("Preparing to create metadata");
-        CEMMetadataCreator.appContext = appContext;
-        ds = appContext.getDataStore();
+        BdbTerminologyStore ds = ExtendedAppContext.getDataStore();
 
         ConceptChronicleBI refsetsRoot = ds.getConcept(UUID.fromString("7e38cd2d-6f1a-3a81-be0b-21e6090573c2"));
         LOG.info("Refsets root:" + refsetsRoot.toString());
@@ -197,7 +207,7 @@ public class CEMMetadataCreator {
         ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentsUuids);
 
         ConceptChronicleBI newCon = getBuilder().construct(newConCB);
-        ds.addUncommitted(newCon);
+        ExtendedAppContext.getDataStore().addUncommitted(newCon);
 
         return newCon;
 
@@ -206,7 +216,7 @@ public class CEMMetadataCreator {
     private static EditCoordinate getEC() throws ValidationException, IOException {
         int authorNid = TermAux.USER.getLenient().getConceptNid();
         int module = Snomed.CORE_MODULE.getLenient().getNid();
-        int editPathNid = ds.getNidForUuids(UUID.fromString("8c230474-9f11-30ce-9cad-185a96fd03a2")); // SNOMED CORE path
+        int editPathNid = ExtendedAppContext.getDataStore().getNidForUuids(UUID.fromString("8c230474-9f11-30ce-9cad-185a96fd03a2")); // SNOMED CORE path
 
         return new EditCoordinate(authorNid, module, editPathNid);
     }
