@@ -12,10 +12,5 @@
     <packaging>jar</packaging>
 
     <name>ISAAC Data Model</name>
-    <url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
 </project>

@@ -1,6 +1,24 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +45,6 @@ import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
  */
 public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
-    private final AppContext appContext;
     private final SctTreeItem treeItem;
     private final boolean addChildren;
     private final VersionPolicy versionPolicy;
@@ -37,18 +54,17 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
     private ConceptChronicleDdo concept;
 
-    public GetSctTreeItemConceptCallable(AppContext appContext, SctTreeItem treeItem) {
-        this(appContext, treeItem, true);
+    public GetSctTreeItemConceptCallable(SctTreeItem treeItem) {
+        this(treeItem, true);
     }
 
-    public GetSctTreeItemConceptCallable(AppContext appContext, SctTreeItem treeItem, boolean addChildren) {
-        this(appContext, treeItem, addChildren, VersionPolicy.ACTIVE_VERSIONS,
+    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren) {
+        this(treeItem, addChildren, VersionPolicy.ACTIVE_VERSIONS,
                 RefexPolicy.ANNOTATION_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
     }
 
-    public GetSctTreeItemConceptCallable(AppContext appContext, SctTreeItem treeItem, boolean addChildren,
+    public GetSctTreeItemConceptCallable(SctTreeItem treeItem, boolean addChildren,
             VersionPolicy versionPolicy, RefexPolicy refexPolicy, RelationshipPolicy relationshipPolicy) {
-        this.appContext = appContext;
         this.treeItem = treeItem;
         this.addChildren = addChildren;
         this.versionPolicy = versionPolicy;
@@ -70,7 +86,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
             return false;
         }
 
-        BdbTerminologyStore dataStore = appContext.getDataStore();
+        BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
         concept = dataStore.getFxConcept(reference,
                 StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
                 versionPolicy, refexPolicy, relationshipPolicy);
@@ -92,7 +108,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
                 }
                 for (RelationshipVersionDdo rv : destRel.getVersions()) {
                     TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                    SctTreeItem childItem = new SctTreeItem(appContext, taxRef);
+                    SctTreeItem childItem = new SctTreeItem(taxRef);
 
                     childrenToAdd.add(childItem);
                 }

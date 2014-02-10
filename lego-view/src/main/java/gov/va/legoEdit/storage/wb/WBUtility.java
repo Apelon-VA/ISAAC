@@ -43,6 +43,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +67,7 @@ public class WBUtility
 	private static Integer synonymNid = null;
 
 	private static Logger logger = LoggerFactory.getLogger(Utility.class);
+	private static BdbTerminologyStore ds = Hk2Looker.get().getService(BdbTerminologyStore.class);
 
 
 //	/**
@@ -152,7 +155,7 @@ public class WBUtility
 		try
 		{
 			UUID uuid = UUID.fromString(identifier.trim());
-			result = WBDataStore.dataStore().getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
+			result = ds.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
 			
 			if (result.getUUIDs().size() == 0)
 			{
@@ -167,7 +170,7 @@ public class WBUtility
 			try
 			{
 				//getConceptVersionFromAlternateId seems broke after the DB update, make the UUID myself instead.
-				result = WBDataStore.dataStore().getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), UuidFactory.getUuidFromAlternateId(snomedIdType, identifier.trim()));
+				result = ds.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), UuidFactory.getUuidFromAlternateId(snomedIdType, identifier.trim()));
 				//result = WBDataStore.Ts().getConceptVersionFromAlternateId(StandardViewCoordinates.getSnomedLatest(), snomedIdType, identifier.trim());
 				if (result.getUUIDs().size() == 0)
 				{
@@ -190,7 +193,7 @@ public class WBUtility
 		{
 			try
 			{
-				snomedIdTypeNid = WBDataStore.dataStore().getNidForUuids(snomedIdType);
+				snomedIdTypeNid = ds.getNidForUuids(snomedIdType);
 			}
 			catch (IOException e)
 			{
@@ -207,7 +210,7 @@ public class WBUtility
 		{
 			try
 			{
-				FSNTypeNid = WBDataStore.dataStore().getNidForUuids(FSN_UUID);
+				FSNTypeNid = ds.getNidForUuids(FSN_UUID);
 			}
 			catch (IOException e)
 			{
@@ -224,7 +227,7 @@ public class WBUtility
 		{
 			try
 			{
-				preferredNid = WBDataStore.dataStore().getNidForUuids(PREFERRED_UUID);
+				preferredNid = ds.getNidForUuids(PREFERRED_UUID);
 			}
 			catch (IOException e)
 			{
@@ -241,7 +244,7 @@ public class WBUtility
 		{
 			try
 			{
-				synonymNid = WBDataStore.dataStore().getNidForUuids(SYNONYM_UUID);
+				synonymNid = ds.getNidForUuids(SYNONYM_UUID);
 			}
 			catch (IOException e)
 			{
@@ -260,7 +263,7 @@ public class WBUtility
 		}
 		try
 		{
-			ConceptChronicleBI cc = WBDataStore.dataStore().getConcept(nid);
+			ConceptChronicleBI cc = ds.getConcept(nid);
 			return convertConcept(cc);
 		}
 		catch (Exception e)
@@ -338,7 +341,7 @@ public class WBUtility
 	{
 		try
 		{
-			return getDescription(WBDataStore.dataStore().getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid));
+			return getDescription(ds.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid));
 		}
 		catch (Exception e)
 		{

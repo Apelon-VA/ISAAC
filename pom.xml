@@ -31,8 +31,23 @@
                         <groupId>com.sun.javafx</groupId>
                         <artifactId>jfxrt</artifactId>
                     </exclusion>
-                </exclusions>                
+                </exclusions>
             </dependency>
+            
+            <dependency>
+            <groupId>org.ihtsdo.otf</groupId>
+            <artifactId>query-implementation</artifactId>
+            <version>${otf.version}</version>
+            <type>jar</type>
+                
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>
+        </dependency>
         </dependencies>
     </dependencyManagement>
     
@@ -47,7 +62,7 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
-    
+
                     <!-- This tricks IDEs into including JavaFX if compiling from Java 7. -->
                     <compilerArguments>
                         <bootclasspath>${sun.boot.class.path}${path.separator}${java.home}/lib/jfxrt.jar</bootclasspath>
@@ -56,8 +71,25 @@
             </plugin>
         </plugins>
     </build>
-    
+
+	<dependencies>
+	
+		<dependency>
+			<groupId>org.glassfish.hk2</groupId>
+			<artifactId>hk2</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		
+	</dependencies>
+
     <modules>
+	    <module>isaac-app-interfaces</module>
         <module>app-util</module>
         <module>data-model</module>
         <module>import-export</module>
@@ -66,5 +98,4 @@
         <module>search-view</module>
         <module>isaac-app</module>
     </modules>
-    
 </project>

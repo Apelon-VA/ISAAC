@@ -14,11 +14,10 @@
         <att name="reportedReceived" type="ReportedReceived" card="0-1"/> 
         <att name="verified" type="Verified" card="0-1"/>
         <constraint path="qual.abnormalFlag.data.cwe.domain" value="AbnormalFlagNumericNom_DOMAIN_ECID"/>
-        <constraint path="qual.abnormalFlag.data.cwe.domain" value="AbnormalFlagNumericNom_DOMAIN_ECID"/>
         <constraint path="qual.deltaFlag.data.cwe.domain" value="DeltaFlagNumericNom_DOMAIN_ECID"/>
+        <constraint path="qual.methodDevice.data.cwe.domain" value="BloodPressureMeasurementDevice_DOMAIN_ECID"/>
         <constraint path="data.pq.unit.domain" value="PressureUnits_DOMAIN_ECID"/> 
         <constraint path="data.pq.normal" value="MilliMetersOfMercury_ECID"/> 
-        <constraint path="qual.methodDevice.data.cwe.domain" value="BloodPressureMeasurementDevice_DOMAIN_ECID"/>
         <link name="hasPrecondition" relation="hasPrecondition_ECID" card="0-M">
             <target path="type.domain" value="PreconditionTypes_DOMAIN_ECID"/> 
         </link>

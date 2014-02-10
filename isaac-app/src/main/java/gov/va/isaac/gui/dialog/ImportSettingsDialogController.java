@@ -1,11 +1,28 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.App;
+import gov.va.isaac.gui.ExtendedAppContext;
+import gov.va.isaac.gui.AppController;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.util.InformationModelTypeStringConverter;
-
 import java.io.File;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -23,11 +40,11 @@ public class ImportSettingsDialogController {
     @FXML private Label fileSelectionLabel;
 
     private ImportSettingsDialog importSettingsDialog;
-    private App app;
+    private AppController appController;
 
-    public void setVariables(ImportSettingsDialog importSettingsDialog, App app) {
+    public void setVariables(ImportSettingsDialog importSettingsDialog, AppController appController) {
         this.importSettingsDialog = importSettingsDialog;
-        this.app = app;
+        this.appController = appController;
     }
 
     @FXML
@@ -67,16 +84,16 @@ public class ImportSettingsDialogController {
         // Validate settings, show warning dialog if there is a problem.
         String title = "Oops!";
         if (modelType == null) {
-            app.getAppContext().getAppUtil().showInformationDialog(title, "Please select a model type.");
+            ExtendedAppContext.getCommonDialogs().showInformationDialog(title, "Please select a model type.");
             return;
         }
         if ((fileName == null) || (fileName.isEmpty())) {
-            app.getAppContext().getAppUtil().showInformationDialog(title, "Please select a file to import.");
+        	ExtendedAppContext.getCommonDialogs().showInformationDialog(title, "Please select a file to import.");
             return;
         }
 
         importSettingsDialog.close();
-        app.showImportView(modelType, fileName);
+        appController.showImportView(modelType, fileName);
     }
 
     /**

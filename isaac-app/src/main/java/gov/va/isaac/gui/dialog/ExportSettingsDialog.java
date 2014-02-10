@@ -1,6 +1,24 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,12 +39,12 @@ public class ExportSettingsDialog extends Stage {
 
     private final ExportSettingsDialogController controller;
 
-    public ExportSettingsDialog(AppContext appContext) throws IOException {
+    public ExportSettingsDialog() throws IOException {
         super();
         setTitle("Export Settings");
         setResizable(false);
 
-        Stage owner = appContext.getAppUtil().getPrimaryStage();
+        Stage owner = ExtendedAppContext.getMainApplicationWindow().getPrimaryStage();
         initOwner(owner);
         initModality(Modality.WINDOW_MODAL);
         initStyle(StageStyle.UTILITY);
@@ -39,6 +57,6 @@ public class ExportSettingsDialog extends Stage {
         setScene(scene);
 
         this.controller = loader.getController();
-        controller.setVariables(this, appContext);
+        controller.setVariables(this);
     }
 }

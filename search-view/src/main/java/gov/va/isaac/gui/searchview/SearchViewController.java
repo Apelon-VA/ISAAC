@@ -1,16 +1,32 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.searchview;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.ExtendedAppContext;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.GuiSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -21,7 +37,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -35,7 +50,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,178 +61,167 @@ import org.slf4j.LoggerFactory;
  * Original author comments are in "quotes".
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
+
 public class SearchViewController implements SearchHandler.Callback {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SearchViewController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SearchViewController.class);
 
-	@FXML private Button searchButton;
-	@FXML private ProgressIndicator searchProgress;
-	@FXML private TextField searchText;
-	@FXML private ListView<GuiSearchResult> searchResults;
-	@FXML private BorderPane borderPane;
+    @FXML private Button searchButton;
+    @FXML private ProgressIndicator searchProgress;
+    @FXML private TextField searchText;
+    @FXML private ListView<GuiSearchResult> searchResults;
+    @FXML private BorderPane borderPane;
 
-    private AppContext appContext;
-    private SearchHandler searchHandler;
+    private SearchHandler searchHandler = new SearchHandler();
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
 
 
-    public static SearchViewController newInstance(AppContext appContext) throws IOException {
-
+    public static SearchViewController init() throws IOException {
         // Load from FXML.
         URL resource = SearchViewController.class.getResource("SearchView.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         loader.load();
-
-        SearchViewController controller = loader.getController();
-        controller.setAppContext(appContext);
-
-        return controller;
-    }
-
-	private void setAppContext(AppContext appContext) {
-	    this.appContext = appContext;
-	    this.searchHandler = new SearchHandler(appContext.getDataStore());
+        return loader.getController();
     }
 
     @FXML
-	public void initialize() {
+    public void initialize() {
+        searchResults.setCellFactory(new Callback<ListView<GuiSearchResult>, ListCell<GuiSearchResult>>() {
+            @Override
+            public ListCell<GuiSearchResult> call(ListView<GuiSearchResult> arg0) {
+                return new ListCell<GuiSearchResult>() {
+                    @Override
+                    protected void updateItem(final GuiSearchResult item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (!empty) {
+                            VBox box = new VBox();
+                            box.setFillWidth(true);
+                            final ConceptVersionBI wbConcept = item.getConcept();
+                            String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "error - see log");
+                            Label concept = new Label(preferredText);
+                            concept.getStyleClass().add("boldLabel");
+                            box.getChildren().add(concept);
 
-		searchResults.setCellFactory(new Callback<ListView<GuiSearchResult>, ListCell<GuiSearchResult>>() {
-			@Override
-			public ListCell<GuiSearchResult> call(ListView<GuiSearchResult> arg0) {
-				return new ListCell<GuiSearchResult>() {
-					@Override
-					protected void updateItem(final GuiSearchResult item, boolean empty) {
-						super.updateItem(item, empty);
-						if (!empty) {
-							VBox box = new VBox();
-							box.setFillWidth(true);
-							final ConceptVersionBI wbConcept = item.getConcept();
-							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "error - see log");
-							Label concept = new Label(preferredText);
-							concept.getStyleClass().add("boldLabel");
-							box.getChildren().add(concept);
+                            for (String s : item.getMatchStrings()) {
+                                if (s.equals(preferredText)) {
+                                    continue;
+                                }
+                                Label matchString = new Label(s);
+                                VBox.setMargin(matchString, new Insets(0.0, 0.0, 0.0, 10.0));
+                                box.getChildren().add(matchString);
+                            }
+                            setGraphic(box);
 
-							for (String s : item.getMatchStrings()) {
-								if (s.equals(preferredText)) {
-									continue;
-								}
-								Label matchString = new Label(s);
-								VBox.setMargin(matchString, new Insets(0.0, 0.0, 0.0, 10.0));
-								box.getChildren().add(matchString);
-							}
-							setGraphic(box);
+                            ContextMenu cm = new ContextMenu();
 
-							ContextMenu cm = new ContextMenu();
-
-							// Menu item to copy UUID.
-							MenuItem mi0 = new MenuItem("Copy UUID");
+                            // Menu item to copy UUID.
+                            MenuItem mi0 = new MenuItem("Copy UUID");
                             mi0.setGraphic(Images.COPY.createImageView());
-							mi0.setOnAction(new EventHandler<ActionEvent>() {
+                            mi0.setOnAction(new EventHandler<ActionEvent>() {
 
-								@Override
-								public void handle(ActionEvent event) {
-									if (item.getConcept() != null) {
-										CustomClipboard.set(item.getConcept().getUUIDs().get(0).toString());
-									}
-								}
-							});
-							cm.getItems().add(mi0);
-
-							// Menu item to show concept details.
-							MenuItem mi1 = new MenuItem("View Concept");
-                            mi1.setGraphic(Images.CONCEPT_VIEW.createImageView());
-							mi1.setOnAction(new EventHandler<ActionEvent>() {
-
-								@Override
-								public void handle(ActionEvent event) {
-								    appContext.getAppUtil().getConceptDialogProvider().showSnomedConceptDialog(
-								            item.getConcept().getUUIDs().get(0));
-								}
-							});
-							cm.getItems().add(mi1);
-
-					        /**
-					         * TODO: Implement when required.
-					         *
-							// Menu item to find concept in tree.
-							MenuItem mi2 = new MenuItem("Find Concept in Tree");
-                            mi2.setGraphic(Images.ROOT.createImageView());
-							mi2.setOnAction(new EventHandler<ActionEvent>() {
-
-								@Override
-								public void handle(ActionEvent arg0) {
-								    appContext.getAppUtil().getConceptDialogProvider().findConceptInTree(
-								            item.getConcept().getUUIDs().get(0));
-								}
-							});
-							cm.getItems().add(mi2);
-							*/
-
-							setContextMenu(cm);
-
-							// Also show concept details on double-click.
-							setOnMouseClicked(new EventHandler<MouseEvent>() {
-								@SuppressWarnings("null")
                                 @Override
-								public void handle(MouseEvent mouseEvent) {
-									if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-										if (mouseEvent.getClickCount() == 2) {
-										    appContext.getAppUtil().getConceptDialogProvider().showSnomedConceptDialog(
-										            wbConcept.getUUIDs().get(0));
-										}
-									}
-								}
-							});
-						}
-					}
-				};
-			}
-		});
+                                public void handle(ActionEvent event) {
+                                    if (item.getConcept() != null) {
+                                        CustomClipboard.set(item.getConcept().getUUIDs().get(0).toString());
+                                    }
+                                }
+                            });
+                            cm.getItems().add(mi0);
 
-		/**
-		 * TODO: Implement when required.
-		 *
-		searchResults.setOnDragDetected(new EventHandler<MouseEvent>()
-		{
-			@Override
+                            // Menu item to show concept details.
+                            MenuItem mi1 = new MenuItem("View Concept");
+                            mi1.setGraphic(Images.CONCEPT_VIEW.createImageView());
+                            mi1.setOnAction(new EventHandler<ActionEvent>() {
+
+                                @Override
+                                public void handle(ActionEvent event) {
+                                    ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(
+                                            item.getConcept().getUUIDs().get(0));
+                                }
+                            });
+                            cm.getItems().add(mi1);
+
+                            /**
+                             * TODO: Implement when required.
+                             *
+                            // Menu item to find concept in tree.
+                            MenuItem mi2 = new MenuItem("Find Concept in Tree");
+                            mi2.setGraphic(Images.ROOT.createImageView());
+                            mi2.setOnAction(new EventHandler<ActionEvent>() {
+
+                                @Override
+                                public void handle(ActionEvent arg0) {
+                                    appContext.getAppUtil().getConceptDialogProvider().findConceptInTree(
+                                            item.getConcept().getUUIDs().get(0));
+                                }
+                            });
+                            cm.getItems().add(mi2);
+                            */
+
+                            setContextMenu(cm);
+
+                            // Also show concept details on double-click.
+                            setOnMouseClicked(new EventHandler<MouseEvent>() {
+                                @Override
+                                public void handle(MouseEvent mouseEvent) {
+                                    if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                                        if (mouseEvent.getClickCount() == 2) {
+                                            ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(
+                                                    wbConcept.getUUIDs().get(0));
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                };
+            }
+        });
+
+        /**
+         * TODO: Implement when required.
+         *
+        searchResults.setOnDragDetected(new EventHandler<MouseEvent>()
+        {
+            @Override
             public void handle(MouseEvent event)
-			{
-				// "A drag was detected, start a drag-and-drop gesture.
-				// Allow any transfer mode."
-				Dragboard db = searchResults.startDragAndDrop(TransferMode.COPY);
+            {
+                // "A drag was detected, start a drag-and-drop gesture.
+                // Allow any transfer mode."
+                Dragboard db = searchResults.startDragAndDrop(TransferMode.COPY);
 
-				// "Put a string on a dragboard."
-				SearchResult dragItem = searchResults.getSelectionModel().getSelectedItem();
+                // "Put a string on a dragboard."
+                SearchResult dragItem = searchResults.getSelectionModel().getSelectedItem();
 
-				if (dragItem.getConcept() != null)
-				{
-					ClipboardContent content = new ClipboardContent();
-					content.putString(dragItem.getConcept().getUUIDs().get(0).toString());
-					db.setContent(content);
-					LegoGUI.getInstance().getLegoGUIController().snomedDragStarted();
-					event.consume();
-				}
-			}
-		});
+                if (dragItem.getConcept() != null)
+                {
+                    ClipboardContent content = new ClipboardContent();
+                    content.putString(dragItem.getConcept().getUUIDs().get(0).toString());
+                    db.setContent(content);
+                    LegoGUI.getInstance().getLegoGUIController().snomedDragStarted();
+                    event.consume();
+                }
+            }
+        });
 
-		searchResults.setOnDragDone(new EventHandler<DragEvent>()
-		{
-			@Override
+        searchResults.setOnDragDone(new EventHandler<DragEvent>()
+        {
+            @Override
             public void handle(DragEvent event)
-			{
-				LegoGUI.getInstance().getLegoGUIController().snomedDragCompleted();
-			}
-		});
+            {
+                LegoGUI.getInstance().getLegoGUIController().snomedDragCompleted();
+            }
+        });
          */
 
-		final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
-		searchProgress.visibleProperty().bind(searchRunning);
-		searchButton.disableProperty().bind(searchTextValid.not());
+        final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
+        searchProgress.visibleProperty().bind(searchRunning);
+        searchButton.disableProperty().bind(searchTextValid.not());
 
-		// Perform search or cancel when button pressed.
+        // Perform search or cancel when button pressed.
         searchButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -244,7 +247,7 @@ public class SearchViewController implements SearchHandler.Callback {
             }
         });
 
-		// Perform search on Enter keypress.
+        // Perform search on Enter keypress.
         searchText.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -266,9 +269,9 @@ public class SearchViewController implements SearchHandler.Callback {
                 }
             }
         });
-	}
-
-    public Parent getRoot() {
+    }
+    
+    public BorderPane getRoot() {
         return borderPane;
     }
 
@@ -286,7 +289,7 @@ public class SearchViewController implements SearchHandler.Callback {
                 } catch (Exception ex) {
                     String title = "Unexpected Search Error";
                     LOG.error(title, ex);
-                    appContext.getAppUtil().showErrorDialog(title,
+                    ExtendedAppContext.getCommonDialogs().showErrorDialog(title,
                             "There was an unexpected error running the search",
                             ex.toString());
                     searchResults.getItems().clear();

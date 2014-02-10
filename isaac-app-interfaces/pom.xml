@@ -8,21 +8,18 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
-	<artifactId>app-util</artifactId>
+	<artifactId>isaac-app-interfaces</artifactId>
 	<packaging>jar</packaging>
 
-	<name>ISAAC Application Util</name>
-
+	<name>ISAAC App Interfaces</name>
+	
 	<dependencies>
+	
 		<dependency>
-			<groupId>gov.va.isaac.modules</groupId>
-			<artifactId>isaac-app-interfaces</artifactId>
-			<version>${project.parent.version}</version>
+			<groupId>gov.va.oia</groupId>
+			<artifactId>HK2Utilities</artifactId>
+			<version>1.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.ihtsdo.otf</groupId>
-			<artifactId>tcc-datastore</artifactId>
-		</dependency>
+		
 	</dependencies>
-
 </project>
