@@ -139,10 +139,6 @@ public class CEMExporter extends ExporterBase {
 
         // TODO: Kind attribute (1).  Not currently imported.
 
-        // ConceptId attribute (cardinality unknown).
-        Attr conceptIdAttr = buildConceptIdAttr(conceptUUID);
-        cetype.setAttributeNode(conceptIdAttr);
-
         // Key element (0-1).
         StringMember keyAnnotation = getStringMember(CEMMetadataBinding.CEM_KEY_REFSET, nidAnnotationsMap);
         if (keyAnnotation == null) {

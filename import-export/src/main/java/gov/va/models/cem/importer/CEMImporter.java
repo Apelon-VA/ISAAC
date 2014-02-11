@@ -98,14 +98,12 @@ public class CEMImporter extends ImporterBase {
         LOG.info("cetype: " + cetypeNode.getNodeName());
 
         // Parse CETYPE node attributes.
-        String focusConceptUuid = cetypeNode.getAttributes().getNamedItem("conceptid").getTextContent();  // "215fd598-e21d-3e27-a0a2-8e23b1b36dfc"
+        String focusConceptUuid = "215fd598-e21d-3e27-a0a2-8e23b1b36dfc";
         ConceptChronicleBI focusConcept = getDataStore().getConcept(UUID.fromString(focusConceptUuid));
         LOG.info("focusConcept: " + focusConcept.toString());
         String type = cetypeNode.getAttributes().getNamedItem("name").getTextContent();
         addStringAnnotation(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
         LOG.info("type: " + type);
-        String kind = cetypeNode.getAttributes().getNamedItem("kind").getTextContent();
-        LOG.info("kind: " + kind);
 
         // Iterate through CETYPE node children and process.
         NodeList cetypeChildren = cetypeNode.getChildNodes();
