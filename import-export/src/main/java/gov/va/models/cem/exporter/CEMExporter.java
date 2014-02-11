@@ -10,6 +10,7 @@ import gov.va.models.util.ExporterBase;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -90,9 +91,10 @@ public class CEMExporter extends ExporterBase {
         document.appendChild(root);
 
         // Transform DOM tree into stream.
+        OutputStream outputStream = System.out;  // TODO: Output to file when done.
         Transformer transformer = buildTransformer();
         DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult(System.out);
+        StreamResult result = new StreamResult(outputStream);
         transformer.transform(source, result);
 
         LOG.info("Ending export of CEM model to: " + file.getName());
