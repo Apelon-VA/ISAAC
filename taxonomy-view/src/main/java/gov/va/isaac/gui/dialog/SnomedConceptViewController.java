@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.ExtendedAppContext;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
@@ -158,7 +157,7 @@ public class SnomedConceptViewController {
 
                                     @Override
                                     public void handle(ActionEvent ignored) {
-                                        ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(ref.uuid);
+                                        AppContext.getCommonDialogs().showSnomedConceptDialog(ref.uuid);
                                     }
                                 });
                                 cm.getItems().add(mi1);
@@ -188,7 +187,7 @@ public class SnomedConceptViewController {
             mi.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent ignore) {
-                    ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
+                    AppContext.getCommonDialogs().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
                 }
             });
 

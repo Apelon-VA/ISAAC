@@ -18,7 +18,8 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.ExtendedAppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.interfaces.SnomedConceptViewI;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
@@ -60,7 +61,7 @@ public class SnomedConceptView extends Stage implements SnomedConceptViewI {
         //This is for HK2 to construct...
         super();
 
-        initOwner(ExtendedAppContext.getMainApplicationWindow().getPrimaryStage());
+        initOwner(AppContext.getMainApplicationWindow().getPrimaryStage());
         initModality(Modality.NONE);
         initStyle(StageStyle.DECORATED);
 
@@ -117,7 +118,7 @@ public class SnomedConceptView extends Stage implements SnomedConceptViewI {
                  String title = "Unexpected error loading concept with UUID " + conceptUUID;
                  String msg = ex.getClass().getName();
                  LOG.error(title, ex);
-                 ExtendedAppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+                 AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
              }
          };
 

@@ -18,7 +18,7 @@
         <!-- ISAAC App Utils. -->
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
-            <artifactId>app-util</artifactId>
+            <artifactId>gui-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         

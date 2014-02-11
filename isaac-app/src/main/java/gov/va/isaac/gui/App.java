@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.gui.interfaces.ApplicationWindowI;
 import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;

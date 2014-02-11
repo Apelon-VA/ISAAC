@@ -18,14 +18,11 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.ExtendedAppContext;
-
+import gov.va.isaac.ExtendedAppContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
-
 import javafx.application.Platform;
-
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.ComponentReference;
