@@ -18,8 +18,8 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.ExtendedAppContext;
-import gov.va.isaac.gui.treeview.SctTreeView;
+import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.util.WBUtility;
@@ -45,10 +45,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesChronicleDdo;
@@ -58,9 +58,6 @@ import org.ihtsdo.otf.tcc.ddo.concept.component.description.DescriptionVersionDd
 import org.ihtsdo.otf.tcc.ddo.concept.component.identifier.IdentifierDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipVersionDdo;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +85,7 @@ public class SnomedConceptViewController {
 
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
-    private SctTreeView sctTree;
+    private SctTreeViewIsaacView sctTree;
 
     public void setConcept(ConceptChronicleDdo concept) {
 
@@ -160,7 +157,7 @@ public class SnomedConceptViewController {
 
                                     @Override
                                     public void handle(ActionEvent ignored) {
-                                        ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(ref.uuid);
+                                        AppContext.getCommonDialogs().showSnomedConceptDialog(ref.uuid);
                                     }
                                 });
                                 cm.getItems().add(mi1);
@@ -190,7 +187,7 @@ public class SnomedConceptViewController {
             mi.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent ignore) {
-                    ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
+                    AppContext.getCommonDialogs().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
                 }
             });
 
@@ -222,15 +219,11 @@ public class SnomedConceptViewController {
 
         // Load the inner tree view.
         try {
-            ConceptChronicleDdo rootConcept = ExtendedAppContext.getDataStore().getFxConcept(
-                            Taxonomies.SNOMED.getUuids()[0],
-                            StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
-                            VersionPolicy.ACTIVE_VERSIONS,
-                            RefexPolicy.REFEX_MEMBERS,
-                            RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-            sctTree = new SctTreeView(rootConcept);
-            splitRight.getChildren().add(sctTree);
-            VBox.setVgrow(sctTree, Priority.ALWAYS);
+            sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
+            sctTree.init(Taxonomies.SNOMED.getUuids()[0]);
+            Region r = sctTree.getView();
+            splitRight.getChildren().add(r);
+            VBox.setVgrow(r, Priority.ALWAYS);
             treeViewSearchRunning.set(true);
             sctTree.showConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
         } catch (Exception ex) {

@@ -12,37 +12,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.AppController" fx:id="appBorderPane">
   <center>
-    <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="root">
-      <items>
-        <BorderPane fx:id="taxonomyViewPane" maxHeight="-1.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="-1.0" prefWidth="-1.0">
-          <center>
-            <GridPane gridLinesVisible="false" minHeight="-Infinity" minWidth="-Infinity" styleClass="centerBackground">
-              <children>
-                <ProgressIndicator maxHeight="100.0" maxWidth="100.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" styleClass="progressIndicator" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-              </children>
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
-          </center>
-          <top>
-            <AnchorPane prefHeight="30.0" styleClass="headerBackground">
-              <children>
-                <Label styleClass="headerLabel" text="Snomed Browser" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                <Button mnemonicParsing="false" onAction="#handleTaxonomyViewClose" style="-fx-cursor:hand;" styleClass="tab-close-button" text="" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="3.0" />
-              </children>
-            </AnchorPane>
-          </top>
-        </BorderPane>
-      </items>
-    </SplitPane>
+    <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="root"/>
   </center>
   <stylesheets>
     <URL value="@App.css" />
@@ -50,18 +20,8 @@
   <top>
     <MenuBar fx:id="menuBar">
       <menus>
-        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu" id="panelsMenu">
-            <items>
-              <MenuItem mnemonicParsing="false" onAction="#handleTaxonomyViewMenuItem" text="TAXONOMY VIEWER" fx:id="taxonomyViewMenuItem" />
-            </items>
-        </Menu>
-        <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />
-            <MenuItem mnemonicParsing="false" onAction="#handleExportMenuItem" text="EXPORTER" />
-            <MenuItem mnemonicParsing="false" onAction="#handleCreateMetadataMenuItem" text="CREATE_METADATA" />
-          </items>
-        </Menu>
+        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu" id="panelsMenu"/>
+        <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu"/>
       </menus>
     </MenuBar>
   </top>

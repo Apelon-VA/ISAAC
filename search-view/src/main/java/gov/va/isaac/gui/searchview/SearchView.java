@@ -46,10 +46,10 @@ public class SearchView implements DockedViewI
 		svc_ = SearchViewController.init();
 	}
     /**
-     * @see gov.va.isaac.gui.interfaces.DockedViewI#getView(javafx.stage.Window)
+     * @see gov.va.isaac.gui.interfaces.DockedViewI#getView()
      */
     @Override
-    public Region getView(Window parent) {
+    public Region getView() {
         return svc_.getRoot();
     }
     
@@ -86,7 +86,6 @@ public class SearchView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				//TODO make an enumeration of master menu names, and put it into the interfaces module, so these don't have to be hard-coded strings...
 				return "panelsMenu";
 			}
 			

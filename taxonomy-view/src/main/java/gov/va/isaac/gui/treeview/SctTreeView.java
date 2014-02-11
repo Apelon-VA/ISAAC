@@ -18,26 +18,27 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.ExtendedAppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
@@ -61,22 +62,80 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
+public class SctTreeView implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
-
+    private Object lock_ = new Object();
+    private boolean initialLoadComplete_ = false;
+    private StackPane sp_;
     private SctTreeItem rootTreeItem;
+    private TreeView<TaxonomyReferenceWithConcept> treeView_;
 
-    public SctTreeView(ConceptChronicleDdo rootConcept) {
-        super();
+    protected SctTreeView() {
+        treeView_ = new TreeView<>();
+        AppContext.getMainApplicationWindow().registerShutdownListener(this);
+        sp_ = new StackPane();
+        ProgressIndicator pi = new ProgressIndicator();
+        pi.setMaxHeight(100.0);
+        pi.setMaxWidth(100.0);
+        pi.getStyleClass().add("progressIndicator");
+        StackPane.setAlignment(pi, Pos.CENTER);
+        sp_.getChildren().add(pi);
+    }
+    
+    public StackPane getView()
+    {
+        return sp_;
+    }
+    
+    public void init(final UUID rootConcept) {
 
-        getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        // Do work in background.
+        Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
 
-        setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
+            @Override
+            protected ConceptChronicleDdo call() throws Exception {
+                LOG.info("Loading concept {} as the root of a tree view", rootConcept);
+                ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
+                        rootConcept,
+                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        VersionPolicy.ACTIVE_VERSIONS,
+                        RefexPolicy.REFEX_MEMBERS,
+                        RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+                LOG.info("Finished loading root concept");
+                return rootConceptCC;
+            }
+
+            @Override
+            protected void succeeded() {
+                ConceptChronicleDdo result = this.getValue();
+                SctTreeView.this.finishTreeSetup(result);
+            }
+
+            @Override
+            protected void failed() {
+                Throwable ex = getException();
+                String title = "Unexpected error loading root concept";
+                String msg = ex.getClass().getName();
+                LOG.error(title, ex);
+                if (!shutdownRequested)
+                {
+                    AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+                }
+            }
+        };
+
+        Utility.execute(task);
+    }
+    
+    private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
+        treeView_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+        treeView_.setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
             @Override
             public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
                 return new SctTreeCell();
@@ -85,8 +144,8 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
         TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
         SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept);
-        setShowRoot(false);
-        setRoot(hiddenRootItem);
+        treeView_.setShowRoot(false);
+        treeView_.setRoot(hiddenRootItem);
 
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
@@ -123,14 +182,13 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                         sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
                     }
                 });
-    }
-
-    /**
-     * Tell the tree to stop whatever threading operations it has running,
-     * since the application is exiting.
-     */
-    public static void shutdown() {
-        shutdownRequested = true;
+        sp_.getChildren().add(treeView_);
+        sp_.getChildren().remove(0);  //remove the progress indicator
+        synchronized (lock_)
+        {
+            initialLoadComplete_ = true;
+            lock_.notifyAll();
+        }
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
@@ -140,6 +198,13 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
             @Override
             protected SctTreeItem call() throws Exception {
+                synchronized (lock_)
+                {
+                    if (!initialLoadComplete_)
+                    {
+                        lock_.wait();
+                    }
+                }
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
                 pathToRoot.add(conceptUUID);
 
@@ -196,9 +261,9 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
 
                 // Expand tree to last item found.
                 if (lastItemFound != null) {
-                    int row = getRow(lastItemFound);
-                    scrollTo(row);
-                    getSelectionModel().clearAndSelect(row);
+                    int row = treeView_.getRow(lastItemFound);
+                    treeView_.scrollTo(row);
+                    treeView_.getSelectionModel().clearAndSelect(row);
                 }
 
                 // Turn off progress indicator.
@@ -265,7 +330,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                         answers.add(null);
                     } else {
                         SctTreeItem answer = answers.get(0);
-                        scrollTo(getRow(answer));
+                        treeView_.scrollTo(treeView_.getRow(answer));
                         if (! isLast) {
                             // Start fetching the next level.
                             answer.setExpanded(true);
@@ -319,5 +384,16 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> {
                 VersionPolicy.ACTIVE_VERSIONS,
                 RefexPolicy.REFEX_MEMBERS,
                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
+    }
+
+    /**
+     * Tell the tree to stop whatever threading operations it has running,
+     * since the application is exiting.
+     * @see gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI#shutdown()
+     */
+    @Override
+    public void shutdown()
+    {
+        shutdownRequested = true;
     }
 }

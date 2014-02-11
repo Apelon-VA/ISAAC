@@ -33,4 +33,10 @@ public interface ApplicationWindowI
 	 * Return a reference to the Primary Stage of the application.
 	 */
 	public Stage getPrimaryStage();
+	
+	/**
+	 * Register a for a callback to be notified when an app shutdown is requested.
+	 * @param listener
+	 */
+	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
 }

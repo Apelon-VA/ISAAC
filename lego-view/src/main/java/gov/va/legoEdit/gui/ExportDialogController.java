@@ -14,6 +14,7 @@
  */
 package gov.va.legoEdit.gui;
 
+import gov.va.isaac.gui.util.Images;
 import gov.va.legoEdit.formats.LegoXMLUtils;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;

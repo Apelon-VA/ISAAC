@@ -58,5 +58,6 @@ $RECYCLE.BIN/
 /isaac-app/berkeley-db copy/
 /isaac-app/berkeley-db/
 legoData.db/
+UserPreferences.xml
 
 *.log
