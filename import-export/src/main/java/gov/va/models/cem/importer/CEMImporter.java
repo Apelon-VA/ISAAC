@@ -138,7 +138,9 @@ public class CEMImporter extends ImporterBase {
                 String qualType = loopNode.getAttributes().getNamedItem("type").getTextContent();
                 String qualCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
                 RefexChronicleBI qual = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_QUAL, qualType);
-                addMemberInConstraintRefset(qual, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, qual.getNid(), qualCard);
+
+                // TODO: Implement as in Jay's spreadsheet.
+
                 LOG.info("qual: " + qualName + qualType + qualCard);
                 break;
             case "mod":
@@ -146,7 +148,9 @@ public class CEMImporter extends ImporterBase {
                 String modType = loopNode.getAttributes().getNamedItem("type").getTextContent();
                 String modCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
                 RefexChronicleBI mod = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_MOD, modType);
-                addMemberInConstraintRefset(mod, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, mod.getNid(), modCard);
+
+                // TODO: Implement as in Jay's spreadsheet.
+
                 LOG.info("mod: " + modName + modType + modCard);
                 break;
             case "att":
@@ -154,32 +158,17 @@ public class CEMImporter extends ImporterBase {
                 String attType = loopNode.getAttributes().getNamedItem("type").getTextContent();
                 String attCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
                 RefexChronicleBI att = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_ATTR, attType);
-                addMemberInConstraintRefset(att, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, att.getNid(), attCard);
+
+                // TODO: Implement as in Jay's spreadsheet.
+
                 LOG.info("att: " + attName + attType + attCard);
-                break;
-            case "item":
-                String itemName = loopNode.getAttributes().getNamedItem("name").getTextContent();
-                String itemType = loopNode.getAttributes().getNamedItem("type").getTextContent();
-                String itemCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
-                RefexChronicleBI item = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_ITEM, itemType);
-                addMemberInConstraintRefset(item, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, item.getNid(), itemCard);
-                LOG.info("item: " + itemName + itemType + itemCard);
                 break;
             case "constraint":
                 String path = loopNode.getAttributes().getNamedItem("path").getTextContent();
                 String value = loopNode.getAttributes().getNamedItem("value").getTextContent();
-                if (path.endsWith("domain")) {
-                    addMemberInConstraintRefset(focusConcept, CEMMetadataBinding.CEM_DOMAIN_CONSTRAINT,
-                            focusConcept.getNid(), value);
-                }
-                if (path.endsWith("card")) {
-                    addMemberInConstraintRefset(focusConcept, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT,
-                            focusConcept.getNid(), value);
-                }
-                if (path.endsWith("normal")) {
-                    addMemberInConstraintRefset(focusConcept, CEMMetadataBinding.CEM_NORMAL_CONSTRAINT,
-                            focusConcept.getNid(), value);
-                }
+
+                // TODO: Implement as in Jay's spreadsheet.
+
                 LOG.info("constraint: " + path + value);
                 break;
             }
@@ -192,74 +181,6 @@ public class CEMImporter extends ImporterBase {
         LOG.info("Ending import of CEM model from: " + file.getName());
 
         return focusConcept;
-    }
-
-    /**
-     * Method to import hard-coded demo data.
-     * Used for Sprint 2 development.
-     */
-    @Deprecated
-    public void importDemoCEMData() throws Exception {
-
-        ConceptChronicleBI bloodPressureTaking = getDataStore().getConcept(UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc"));
-        LOG.info("BloodPressureTaking concept:" + bloodPressureTaking.toString());
-
-        RefexChronicleBI modelDataMember = addMemberInDataRefset(bloodPressureTaking, CEMMetadataBinding.CEM_PQ);
-        addStringAnnotation(bloodPressureTaking, CEMMetadataBinding.CEM_TYPE_REFSET, "DiastolicBloodPressureMeas");
-        addStringAnnotation(bloodPressureTaking, CEMMetadataBinding.CEM_KEY_REFSET, "DiastolicBloodPressure_KEY_ECID");
-        addStringAnnotation(bloodPressureTaking, CEMMetadataBinding.CEM_INFO_REFSET, "DiastolicBloodPressureMeas model is a measurement model."
-                + " A measurement model holds a \"question\" or a \"test\" in the key and holds a numeric value (PQ) answer in data."
-                + " For example, in the HeartRateMeas model, the \"question\" or the \"test\" is \"What is the heart rate measurement?\","
-                + " and the \"answer\" in data can be \"100 bpm\".");
-        RefexChronicleBI methodDevice = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "MethodDevice");
-        addMemberInConstraintRefset(methodDevice, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, methodDevice.getNid(), "0-1");
-
-        RefexChronicleBI bodyLocationPrecoord = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "BodyLocationPrecoord");
-        addMemberInConstraintRefset(bodyLocationPrecoord, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, bodyLocationPrecoord.getNid(), "0-1");
-
-        RefexChronicleBI bodyPosition = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "BodyPosition");
-        addMemberInConstraintRefset(bodyPosition, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, bodyPosition.getNid(), "0-1");
-
-        RefexChronicleBI abnormalFlag = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "AbnormalFlag");
-        addMemberInConstraintRefset(abnormalFlag, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, abnormalFlag.getNid(), "0-1");
-
-        RefexChronicleBI deltaFlag = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "DeltaFlag");
-        addMemberInConstraintRefset(deltaFlag, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, deltaFlag.getNid(), "0-1");
-
-        RefexChronicleBI referenceRangeNar = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "ReferenceRangeNar");
-        addMemberInConstraintRefset(referenceRangeNar, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, referenceRangeNar.getNid(), "0-1");
-
-        RefexChronicleBI relativeTemporalContext = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_QUAL, "RelativeTemporalContext");
-        addMemberInConstraintRefset(relativeTemporalContext, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, relativeTemporalContext.getNid(), "0-M");
-
-        RefexChronicleBI subject = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_MOD, "Subject");
-        addMemberInConstraintRefset(subject, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, subject.getNid(), "0-1");
-
-        RefexChronicleBI observed = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_ATTR, "Observed");
-        addMemberInConstraintRefset(observed, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, observed.getNid(), "0-1");
-
-        RefexChronicleBI reportedReceived = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_ATTR, "ReportedReceived");
-        addMemberInConstraintRefset(reportedReceived, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, reportedReceived.getNid(), "0-1");
-
-        RefexChronicleBI verified = addMemberInCompositionRefset(bloodPressureTaking, CEMMetadataBinding.CEM_ATTR, "Verified");
-        addMemberInConstraintRefset(verified, CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, verified.getNid(), "0-1");
-
-        addMemberInConstraintRefset(abnormalFlag, CEMMetadataBinding.CEM_DOMAIN_CONSTRAINT,
-                CEMMetadataBinding.CEM_CODE_FIELD.getNid(), "AbnormalFlagNumericNom_DOMAIN_ECID");
-        addMemberInConstraintRefset(deltaFlag, CEMMetadataBinding.CEM_DOMAIN_CONSTRAINT,
-                CEMMetadataBinding.CEM_CODE_FIELD.getNid(), "DeltaFlagNumericNom_DOMAIN_ECID");
-        addMemberInConstraintRefset(methodDevice, CEMMetadataBinding.CEM_DOMAIN_CONSTRAINT,
-                CEMMetadataBinding.CEM_CODE_FIELD.getNid(), "BloodPressureMeasurementDevice_DOMAIN_ECID");
-        addMemberInConstraintRefset(modelDataMember, CEMMetadataBinding.CEM_DOMAIN_CONSTRAINT,
-                CEMMetadataBinding.CEM_UNIT_FIELD.getNid(), "PressureUnits_DOMAIN_ECID");
-        addMemberInConstraintRefset(modelDataMember, CEMMetadataBinding.CEM_NORMAL_CONSTRAINT,
-                CEMMetadataBinding.CEM_UNIT_FIELD.getNid(), "MilliMetersOfMercury_ECID");
-
-        // TODO: Links
-        getDataStore().addUncommitted(bloodPressureTaking);
-        getDataStore().commit();
-
-        LOG.info("Long form after commit:" + bloodPressureTaking.toLongString());
     }
 
     public RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI concept, ConceptSpec data)

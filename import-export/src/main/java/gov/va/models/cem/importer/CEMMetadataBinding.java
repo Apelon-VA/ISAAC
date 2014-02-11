@@ -64,25 +64,9 @@ public class CEMMetadataBinding {
             = new ConceptSpec("CEM attribution (foundation metadata concept)",
             UUID.fromString("d411d80a-54f9-5121-a5a1-0c7565bab85c"));
 
-    public static ConceptSpec CEM_ITEM
-            = new ConceptSpec("CEM item (foundation metadata concept)",
-            UUID.fromString("40efbde4-dd8b-5eda-b2ff-b35e25a961d3"));
-
     public static ConceptSpec CEM_LINK
             = new ConceptSpec("CEM link (foundation metadata concept)",
             UUID.fromString("77170ffa-9b54-571a-9f54-10a44510abf4"));
-
-    public static ConceptSpec CEM_CARDINALITY_CONSTRAINT
-            = new ConceptSpec("CEM cardinality constraint (foundation metadata concept)",
-            UUID.fromString("64308168-4fb7-5acf-8aa5-a36bfe9aee7f"));
-
-    public static ConceptSpec CEM_NORMAL_CONSTRAINT
-            = new ConceptSpec("CEM normal constraint (foundation metadata concept)",
-            UUID.fromString("49afac2f-cca1-5e9c-8339-d02076c038c4"));
-
-     public static ConceptSpec CEM_DOMAIN_CONSTRAINT
-            = new ConceptSpec("CEM domain constraint (foundation metadata concept)",
-            UUID.fromString("e34f77cf-9c8c-5d3e-bfd9-cc4af025764b"));
 
      public static ConceptSpec CEM_CODE_FIELD
             = new ConceptSpec("CEM code field (foundation metadata concept)",

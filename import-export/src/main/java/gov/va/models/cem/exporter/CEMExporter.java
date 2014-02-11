@@ -123,7 +123,7 @@ public class CEMExporter extends ExporterBase {
      * <li>item element zero to many</li>
      * <li>constraint element zero to many</li>
      * <li>link element zero to many</li>
-     * @throws ContradictionException
+     * The actual spec is in Jay's spreadsheet (ISAAC/resources/cem.xlsx).
      */
     private Element buildCetypeElement(UUID conceptUUID, Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
             throws ValidationException, IOException, ContradictionException {
@@ -134,10 +134,6 @@ public class CEMExporter extends ExporterBase {
         Preconditions.checkNotNull(nameAnnotation, "No CEM_TYPE_REFSET member found.");
         Attr nameAttr = buildNameAttr(nameAnnotation);
         cetype.setAttributeNode(nameAttr);
-
-        // TODO: Base attribute (0-1).  Not currently imported.
-
-        // TODO: Kind attribute (1).  Not currently imported.
 
         // Key element (0-1).
         StringMember keyAnnotation = getStringMember(CEMMetadataBinding.CEM_KEY_REFSET, nidAnnotationsMap);
@@ -181,41 +177,18 @@ public class CEMExporter extends ExporterBase {
             cetype.appendChild(qual);
         }
 
-        // Constraint elements (0-M).
-        List<NidNidStringMember> domainConstraints = getConstraintAnnotations(
-                CEMMetadataBinding.CEM_DOMAIN_CONSTRAINT, nidAnnotationsMap);
-        for (NidNidStringMember domainConstraint : domainConstraints) {
-            Element constraint = buildConstraintElement(domainConstraint);
-            cetype.appendChild(constraint);
-        }
-        List<NidNidStringMember> cardConstraints = getConstraintAnnotations(
-                CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT, nidAnnotationsMap);
-        for (NidNidStringMember cardConstraint : cardConstraints) {
-            Element constraint = buildConstraintElement(cardConstraint);
-            cetype.appendChild(constraint);
-        }
-        List<NidNidStringMember> normalConstraints = getConstraintAnnotations(
-                CEMMetadataBinding.CEM_NORMAL_CONSTRAINT, nidAnnotationsMap);
-        for (NidNidStringMember normalConstraint : normalConstraints) {
-            Element constraint = buildConstraintElement(normalConstraint);
-            cetype.appendChild(constraint);
-        }
-
-        // TODO: Link elements (0-M).  Not currently imported.
+        // TODO: Constraint elements (0-M).
 
         return cetype;
     }
 
+    @SuppressWarnings("unused")
     private Element buildConstraintElement(NidNidStringMember constraintAnnotation) {
         Element e = document.createElement("constraint");
 
         // TODO: Path attribute.  Not currently imported.
 
-        // Value attribute.
-        Attr valueAttr = document.createAttribute("value");
-        String value = constraintAnnotation.getString1();
-        valueAttr.setNodeValue(value);
-        e.setAttributeNode(valueAttr);
+        // TODO: Path attribute.  Not currently imported.
 
         return e;
     }
@@ -224,7 +197,7 @@ public class CEMExporter extends ExporterBase {
             throws ValidationException, IOException, ContradictionException {
         Element e = document.createElement(elementName);
 
-        // TODO: Name attribute.  Not currently imported.
+        // TODO: Name attribute.  Generate from type.
 
         // Type attribute.
         Attr typeAttr = document.createAttribute("type");
@@ -232,17 +205,7 @@ public class CEMExporter extends ExporterBase {
         typeAttr.setNodeValue(type);
         e.setAttributeNode(typeAttr);
 
-        // Card attribute (0-1).
-        NidNidStringMember cardAnnotation = getConstraintAnnotation(typeAnnotation,
-                CEMMetadataBinding.CEM_CARDINALITY_CONSTRAINT);
-        if (cardAnnotation == null) {
-            LOG.info("No CEM_CARDINALITY_CONSTRAINT member found.");
-        } else {
-            Attr cardAttr = document.createAttribute("card");
-            String card = cardAnnotation.getString1();
-            cardAttr.setNodeValue(card);
-            e.setAttributeNode(cardAttr);
-        }
+        // TODO: Card attribute (0-1).
 
         return e;
     }
@@ -280,15 +243,6 @@ public class CEMExporter extends ExporterBase {
         key.setAttributeNode(codeAttr);
 
         return key;
-    }
-
-    private Attr buildConceptIdAttr(UUID conceptUUID) {
-        Attr conceptIdAttr = document.createAttribute("conceptid");
-
-        String value = conceptUUID.toString();
-        conceptIdAttr.setNodeValue(value);
-
-        return conceptIdAttr;
     }
 
     private Attr buildNameAttr(StringMember nameAttribute) {
@@ -332,6 +286,7 @@ public class CEMExporter extends ExporterBase {
         return (StringMember) annotation;
     }
 
+    @SuppressWarnings("unused")
     private NidNidStringMember getConstraintAnnotation(NidStringMember owner, ConceptSpec constraint)
             throws ValidationException, IOException, ContradictionException {
 
@@ -384,6 +339,7 @@ public class CEMExporter extends ExporterBase {
      * {@link CEMMetadataBinding#CEM_CONSTRAINTS_REFSET} refset, filtered by the
      * specified {@link ConceptSpec}.
      */
+    @SuppressWarnings("unused")
     private List<NidNidStringMember> getConstraintAnnotations(ConceptSpec refset,
             Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
             throws ValidationException, IOException {
