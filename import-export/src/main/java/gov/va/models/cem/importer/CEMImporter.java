@@ -188,7 +188,7 @@ public class CEMImporter extends ImporterBase {
         RefexCAB newRefexCab = new RefexCAB(RefexType.CID,
                 concept.getPrimordialUuid(),
                 CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
+                IdDirective.GENERATE_HASH,
                 RefexDirective.EXCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, data.getNid());
@@ -207,7 +207,7 @@ public class CEMImporter extends ImporterBase {
         RefexCAB newRefexCab = new RefexCAB(RefexType.STR,
                 concept.getPrimordialUuid(),
                 getDataStore().getUuidPrimordialForNid(refset.getNid()),
-                IdDirective.GENERATE_RANDOM,
+                IdDirective.GENERATE_HASH,
                 RefexDirective.EXCLUDE);
 
         newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, value);
@@ -226,7 +226,7 @@ public class CEMImporter extends ImporterBase {
         RefexCAB newRefexCab = new RefexCAB(RefexType.CID_STR,
                 concept.getPrimordialUuid(),
                 CEMMetadataBinding.CEM_COMPOSITION_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
+                IdDirective.GENERATE_HASH,
                 RefexDirective.EXCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, type.getNid());
@@ -246,7 +246,7 @@ public class CEMImporter extends ImporterBase {
         RefexCAB newRefexCab = new RefexCAB(RefexType.CID_CID_STR,
                 cemMember.getPrimordialUuid(),
                 CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
+                IdDirective.GENERATE_HASH,
                 RefexDirective.EXCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, constraint.getNid());
