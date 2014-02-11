@@ -18,10 +18,11 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.ExtendedAppContext;
+import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,13 +31,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeItem;
-
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.thread.NamedThreadFactory;
@@ -53,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements Comparable<SctTreeItem> {
+public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements Comparable<SctTreeItem>, ShutdownBroadcastListenerI{
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeItem.class);
 
@@ -79,6 +78,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 
     public SctTreeItem(TaxonomyReferenceWithConcept t, Node node) {
         super(t, node);
+        AppContext.getMainApplicationWindow().registerShutdownListener(this);
     }
 
     public void addChildren() {
@@ -212,7 +212,8 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     /**
      * Stop the {@link #childFetcherService} and {@link #conceptFetcherService}.
      */
-    public static void shutdown() {
+    @Override
+    public void shutdown() {
         childFetcherService.shutdown();
         conceptFetcherService.shutdown();
     }

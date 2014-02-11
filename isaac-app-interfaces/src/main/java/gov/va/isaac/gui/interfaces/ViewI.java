@@ -18,25 +18,19 @@
  */
 package gov.va.isaac.gui.interfaces;
 
-import javafx.stage.Stage;
+import javafx.scene.layout.Region;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ApplicationWindow
+ * PopupViewI
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ApplicationWindowI
+public interface ViewI extends IsaacViewI
 {
 	/**
-	 * Return a reference to the Primary Stage of the application.
+	 * Get a reference to the JavaFX Region component that is created by this view.
 	 */
-	public Stage getPrimaryStage();
-	
-	/**
-	 * Register a for a callback to be notified when an app shutdown is requested.
-	 * @param listener
-	 */
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
+	public Region getView();
 }

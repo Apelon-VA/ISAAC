@@ -18,8 +18,6 @@
  */
 package gov.va.isaac.gui.interfaces;
 
-import javafx.scene.layout.Region;
-import javafx.stage.Window;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -28,13 +26,8 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface DockedViewI extends IsaacViewI
+public interface DockedViewI extends ViewI
 {
-	/**
-	 * Get a reference to the JavaFX Region component that is created by this view.
-	 */
-	public Region getView(Window parent);
-	
 	/**
 	 * Get a reference to the MenuItemI spec that should be used to create the menu that will show this view.
 	 * 
@@ -43,7 +36,7 @@ public interface DockedViewI extends IsaacViewI
 	 * application is expected to make the view visible when the menu is selected it whatever way is appropriate.  The 
 	 * docked view itself wouldn't have the information necessary to know how to make itself visible.
 	 * 
-	 * @return may the menu details - may return null, if no menu is requested to launch this view.
+	 * @return the menu details - may return null, if no menu is requested to launch this view.
 	 */
 	public MenuItemI getMenuBarMenuToShowView();
 	

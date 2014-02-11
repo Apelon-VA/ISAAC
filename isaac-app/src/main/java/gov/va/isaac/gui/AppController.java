@@ -24,15 +24,11 @@ import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.interfaces.DockedViewI;
 import gov.va.isaac.gui.interfaces.IsaacViewI;
 import gov.va.isaac.gui.interfaces.MenuItemI;
-import gov.va.isaac.gui.treeview.SctTreeItem;
-import gov.va.isaac.gui.treeview.SctTreeView;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.models.cem.importer.CEMMetadataCreator;
-
 import java.util.Hashtable;
 import java.util.TreeSet;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
@@ -52,17 +48,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
 import javax.inject.Inject;
-
 import org.glassfish.hk2.api.IterableProvider;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
-import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
-import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,14 +65,10 @@ public class AppController {
 
     @FXML private Menu importExportMenu;
     @FXML private Menu panelsMenu;
-    @FXML private MenuItem taxonomyViewMenuItem;
     @FXML private SplitPane mainSplitPane;
-    @FXML private BorderPane taxonomyViewPane;
     @FXML private BorderPane appBorderPane;
     @FXML private MenuBar menuBar;
 
-    private SctTreeView sctTree;
-    private boolean shutdown = false;
     private Stage importStage;
     @Inject
     private IterableProvider<IsaacViewI> moduleViews_;
@@ -100,11 +83,7 @@ public class AppController {
 
         AppContext.getServiceLocator().inject(this);
 
-        // The FXML file puts all views into the split pane.  Remove them for starters.
-        mainSplitPane.getItems().remove(taxonomyViewPane);
-
         //index these for ease in adding module menus
-
         for (Menu menu : menuBar.getMenus())
         {
             allMenus_.put(menu.getId(), menu);
@@ -135,7 +114,6 @@ public class AppController {
                 menuItem.setMnemonicParsing(menuItemsToCreate.enableMnemonicParsing());
                 menuItem.setOnAction(new EventHandler<ActionEvent>()
                 {
-
                     @Override
                     public void handle(ActionEvent arg0)
                     {
@@ -145,16 +123,7 @@ public class AppController {
                 parentMenu.getItems().add(menuItem);
             }
         }
-    }
-
-    public void finishInit() {
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
-
-        // Enable the menus.
-        importExportMenu.setDisable(false);
-        panelsMenu.setDisable(false);
-
+        
         for (final DockedViewI dv : dockedViews_)
         {
             try
@@ -194,7 +163,7 @@ public class AppController {
             }
             catch (Exception e)
             {
-                Log.error("Unexpected error configuring DockedViewI " + (dv == null ? "?" : dv.getViewTitle()), e);
+                LOG.error("Unexpected error configuring DockedViewI " + (dv == null ? "?" : dv.getViewTitle()), e);
             }
         }
 
@@ -202,14 +171,13 @@ public class AppController {
         this.importStage = buildImportStage(ExtendedAppContext.getMainApplicationWindow().getPrimaryStage());
     }
 
-    public void shutdown() {
-        LOG.info("Shutting down");
-        shutdown = true;
+    public void finishInit() {
+        // Make sure in application thread.
+        FxUtils.checkFxUserThread();
 
-        SctTreeView.shutdown();
-        SctTreeItem.shutdown();
-
-        LOG.info("Finished shutting down");
+        // Enable the menus.
+        importExportMenu.setDisable(false);
+        panelsMenu.setDisable(false);
     }
 
     public void handleImportMenuItem() {
@@ -234,23 +202,6 @@ public class AppController {
             LOG.error(msg, ex);
             AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
         }
-    }
-
-    public void handleTaxonomyViewMenuItem() {
-        if (! taxonomyViewVisible()) {
-            mainSplitPane.getItems().add(0, taxonomyViewPane);
-            taxonomyViewMenuItem.setDisable(true);
-
-            // Load tree if not already done.
-            if (! (taxonomyViewPane.getCenter() instanceof SctTreeView)) {
-                loadSctTree();
-            }
-        }
-    }
-
-    public void handleTaxonomyViewClose() {
-        mainSplitPane.getItems().remove(taxonomyViewPane);
-        taxonomyViewMenuItem.setDisable(false);
     }
 
     private BorderPane buildPanelForView(DockedViewI dockedView)
@@ -282,7 +233,7 @@ public class AppController {
         ap.getChildren().add(b);
 
         bp.setTop(ap);
-        bp.setCenter(dockedView.getView(appBorderPane.getScene().getWindow()));
+        bp.setCenter(dockedView.getView());
         return bp;
     }
 
@@ -290,55 +241,6 @@ public class AppController {
     {
         bp.setVisible(false);
         mainSplitPane.getItems().remove(bp);
-    }
-
-    private boolean taxonomyViewVisible() {
-        return mainSplitPane.getItems().contains(taxonomyViewPane);
-    }
-
-    private void loadSctTree() {
-
-        // Do work in background.
-        Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
-
-            @Override
-            protected ConceptChronicleDdo call() throws Exception {
-                LOG.info("Loading root concept");
-                ConceptChronicleDdo rootConcept = ExtendedAppContext.getDataStore().getFxConcept(
-                        Taxonomies.SNOMED.getUuids()[0],
-                        StandardViewCoordinates.getSnomedInferredLatest(),
-                        VersionPolicy.ACTIVE_VERSIONS,
-                        RefexPolicy.REFEX_MEMBERS,
-                        RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-                LOG.info("Finished loading root concept");
-
-                return rootConcept;
-            }
-
-            @Override
-            protected void succeeded() {
-                ConceptChronicleDdo result = this.getValue();
-                sctTree = new SctTreeView(result);
-                taxonomyViewPane.setCenter(sctTree);
-            }
-
-            @Override
-            protected void failed() {
-                Throwable ex = getException();
-                String title = "Unexpected error loading root concept";
-                String msg = ex.getClass().getName();
-                LOG.error(title, ex);
-
-                // Show dialog unless we're shutting down.
-                if (! shutdown) {
-                    AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-                }
-            }
-        };
-
-        Thread t = new Thread(task, "Root_Concept_Load");
-        t.setDaemon(true);
-        t.start();
     }
 
      public void handleCreateMetadataMenuItem() throws Exception {

@@ -64,7 +64,6 @@ public class SearchHandler {
 
     public SearchHandler() {
         super();
-        Hk2Looker.get().inject(this);
     }
 
     /**
@@ -93,6 +92,11 @@ public class SearchHandler {
 
             @Override
             public void run() {
+                //delay this initial lookup, as the DB isn't ready yet at the time that this class is first created
+                if (dataStore == null)
+                {
+                    Hk2Looker.get().inject(SearchHandler.this);
+                }
                 HashMap<Integer, GuiSearchResult> tempUserResults = new HashMap<>();
                 try {
                     if (localQuery.length() > 0) {
