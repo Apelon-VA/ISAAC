@@ -66,7 +66,7 @@ public class SctTreeViewDockedView  implements DockedViewI
 	@Override
 	public Region getView()
 	{
-		return sctTreeView_.getWrapperWindow();
+		return sctTreeView_.getView();
 	}
 	/**
 	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getMenuBarMenuToShowView()

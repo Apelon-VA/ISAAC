@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implements  ShutdownBroadcastListenerI {
+public class SctTreeView implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
@@ -73,9 +73,10 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
     private boolean initialLoadComplete_ = false;
     private StackPane sp_;
     private SctTreeItem rootTreeItem;
+    private TreeView<TaxonomyReferenceWithConcept> treeView_;
 
     protected SctTreeView() {
-        super();
+        treeView_ = new TreeView<>();
         AppContext.getMainApplicationWindow().registerShutdownListener(this);
         sp_ = new StackPane();
         ProgressIndicator pi = new ProgressIndicator();
@@ -86,12 +87,8 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
         sp_.getChildren().add(pi);
     }
     
-    /**
-     * This view extends a TreeView.... but its wrapped up in a StackPane as well, so we can put a progress indicator on top while it initializes.
-     */
-    public StackPane getWrapperWindow()
+    public StackPane getView()
     {
-        //TODO would like to clean this up a bit... don't like the wrapper returning a different thing than what this extends...
         return sp_;
     }
     
@@ -136,9 +133,9 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
     }
     
     private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
-        getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        treeView_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-        setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
+        treeView_.setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
             @Override
             public TreeCell<TaxonomyReferenceWithConcept> call(TreeView<TaxonomyReferenceWithConcept> p) {
                 return new SctTreeCell();
@@ -147,8 +144,8 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
 
         TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
         SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept);
-        setShowRoot(false);
-        setRoot(hiddenRootItem);
+        treeView_.setShowRoot(false);
+        treeView_.setRoot(hiddenRootItem);
 
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
@@ -185,7 +182,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
                         sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
                     }
                 });
-        sp_.getChildren().add(this);
+        sp_.getChildren().add(treeView_);
         sp_.getChildren().remove(0);  //remove the progress indicator
         synchronized (lock_)
         {
@@ -264,9 +261,9 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
 
                 // Expand tree to last item found.
                 if (lastItemFound != null) {
-                    int row = getRow(lastItemFound);
-                    scrollTo(row);
-                    getSelectionModel().clearAndSelect(row);
+                    int row = treeView_.getRow(lastItemFound);
+                    treeView_.scrollTo(row);
+                    treeView_.getSelectionModel().clearAndSelect(row);
                 }
 
                 // Turn off progress indicator.
@@ -333,7 +330,7 @@ public class SctTreeView extends TreeView<TaxonomyReferenceWithConcept> implemen
                         answers.add(null);
                     } else {
                         SctTreeItem answer = answers.get(0);
-                        scrollTo(getRow(answer));
+                        treeView_.scrollTo(treeView_.getRow(answer));
                         if (! isLast) {
                             // Start fetching the next level.
                             answer.setExpanded(true);

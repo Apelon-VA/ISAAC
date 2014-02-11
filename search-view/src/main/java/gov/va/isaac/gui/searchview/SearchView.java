@@ -86,7 +86,6 @@ public class SearchView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				//TODO make an enumeration of master menu names, and put it into the interfaces module, so these don't have to be hard-coded strings...
 				return "panelsMenu";
 			}
 			

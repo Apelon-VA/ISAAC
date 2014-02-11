@@ -87,6 +87,7 @@ public class AppController {
 
         for (final MenuItemI menuItemsToCreate : menusToAdd)
         {
+            //TODO make an enumeration of master menu names, and put it into the interfaces module, so these don't have to be hard-coded strings...
             Menu parentMenu = allMenus_.get(menuItemsToCreate.getParentMenuId());
             if (parentMenu == null)
             {
