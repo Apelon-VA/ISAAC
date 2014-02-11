@@ -18,25 +18,15 @@
  */
 package gov.va.isaac.gui;
 
-import gov.va.isaac.gui.dialog.ExportSettingsDialog;
-import gov.va.isaac.gui.dialog.ImportSettingsDialog;
-import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.interfaces.DockedViewI;
 import gov.va.isaac.gui.interfaces.IsaacViewI;
 import gov.va.isaac.gui.interfaces.MenuItemI;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.model.InformationModelType;
-import gov.va.models.cem.importer.CEMMetadataCreator;
 import java.util.Hashtable;
 import java.util.TreeSet;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.ObjectBinding;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
@@ -45,9 +35,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
@@ -69,7 +56,6 @@ public class AppController {
     @FXML private BorderPane appBorderPane;
     @FXML private MenuBar menuBar;
 
-    private Stage importStage;
     @Inject
     private IterableProvider<IsaacViewI> moduleViews_;
     @Inject
@@ -101,6 +87,7 @@ public class AppController {
 
         for (final MenuItemI menuItemsToCreate : menusToAdd)
         {
+            //TODO make an enumeration of master menu names, and put it into the interfaces module, so these don't have to be hard-coded strings...
             Menu parentMenu = allMenus_.get(menuItemsToCreate.getParentMenuId());
             if (parentMenu == null)
             {
@@ -166,9 +153,6 @@ public class AppController {
                 LOG.error("Unexpected error configuring DockedViewI " + (dv == null ? "?" : dv.getViewTitle()), e);
             }
         }
-
-     // Stages for other views.
-        this.importStage = buildImportStage(ExtendedAppContext.getMainApplicationWindow().getPrimaryStage());
     }
 
     public void finishInit() {
@@ -180,29 +164,7 @@ public class AppController {
         panelsMenu.setDisable(false);
     }
 
-    public void handleImportMenuItem() {
-        try {
-            ImportSettingsDialog importSettingsDialog = new ImportSettingsDialog(this);
-            importSettingsDialog.show();
-        } catch (Exception ex) {
-            String title = ex.getClass().getName();
-            String msg = String.format("Unexpected error showing ImportSettingsDialog");
-            LOG.error(msg, ex);
-            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-        }
-    }
 
-    public void handleExportMenuItem() {
-        try {
-            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog();
-            exportSettingsDialog.show();
-        } catch (Exception ex) {
-            String title = ex.getClass().getName();
-            String msg = String.format("Unexpected error showing ExportSettingsDialog");
-            LOG.error(msg, ex);
-            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-        }
-    }
 
     private BorderPane buildPanelForView(DockedViewI dockedView)
     {
@@ -242,78 +204,4 @@ public class AppController {
         bp.setVisible(false);
         mainSplitPane.getItems().remove(bp);
     }
-
-     public void handleCreateMetadataMenuItem() throws Exception {
-
-         // Do work in background.
-         Task<Void> task = new Task<Void>() {
-
-             @Override
-             protected Void call() throws Exception {
-                 new CEMMetadataCreator().createMetadata();
-
-                 return null;
-             }
-
-             @Override
-             protected void succeeded() {
-                 AppContext.getCommonDialogs().showInformationDialog("Success", "Successfully created metadata.");
-             }
-
-             @Override
-             protected void failed() {
-                 Throwable ex = getException();
-                 String msg = "Unexpected error creating metadata: ";
-                 LOG.error(msg, ex);
-                 AppContext.getCommonDialogs().showErrorDialog(msg, ex);
-             }
-         };
-
-         // Bind cursor to task state.
-         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty())
-                 .then(Cursor.WAIT)
-                 .otherwise(Cursor.DEFAULT);
-         Scene scene = AppContext.getMainApplicationWindow().getPrimaryStage().getScene();
-         scene.getRoot().cursorProperty().bind(cursorBinding);
-
-         Thread t = new Thread(task, "CreateMetadata");
-         t.setDaemon(true);
-         t.start();
-     }
-
-     public void showImportView(InformationModelType modelType, String fileName) {
-
-         // Make sure in application thread.
-         FxUtils.checkFxUserThread();
-
-         try {
-             ImportView importView = new ImportView();
-
-             importStage.setScene(new Scene(importView));
-             if (importStage.isShowing()) {
-                 importStage.toFront();
-             } else {
-                 importStage.show();
-             }
-
-             importView.doImport(modelType, fileName);
-
-         } catch (Exception ex) {
-             String title = ex.getClass().getName();
-             String message = "Unexpected error displaying import view";
-             LOG.warn(message, ex);
-             ExtendedAppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
-         }
-     }
-
-     private Stage buildImportStage(Stage owner) {
-         // Use dialog for now, so Alo/Dan can use it.
-         Stage stage = new Stage();
-         stage.initModality(Modality.NONE);
-         stage.initOwner(owner);
-         stage.initStyle(StageStyle.DECORATED);
-         stage.setTitle("Import View");
-
-         return stage;
-     }
 }

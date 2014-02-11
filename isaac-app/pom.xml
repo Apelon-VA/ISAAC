@@ -15,20 +15,6 @@
 
     <dependencies>
 
-        <!-- ISAAC App Utils. -->
-        <dependency>
-            <groupId>gov.va.isaac.modules</groupId>
-            <artifactId>app-util</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-    
-        <!-- ISAAC Data Model. -->
-        <dependency>
-            <groupId>gov.va.isaac.modules</groupId>
-            <artifactId>data-model</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-    
         <!-- ISAAC Import Export. -->
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
@@ -54,6 +40,12 @@
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
             <artifactId>lego-view</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>otf-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         

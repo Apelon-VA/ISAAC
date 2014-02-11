@@ -32,6 +32,12 @@
 			<artifactId>isaac-app-interfaces</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>gui-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 
 		<!-- Logging. -->
 		<!-- These are only needed when we run standalone from the main app... perhaps consider putting these in the parent too... -->

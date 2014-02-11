@@ -60,7 +60,7 @@ public class SctTreeViewIsaacView  implements ViewI
 	@Override
 	public Region getView()
 	{
-		return sctTreeView_.getWrapperWindow();
+		return sctTreeView_.getView();
 	}
 
 	/**

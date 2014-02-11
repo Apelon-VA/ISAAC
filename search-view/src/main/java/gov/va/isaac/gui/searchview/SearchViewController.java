@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui.searchview;
 
-import gov.va.isaac.gui.ExtendedAppContext;
+import gov.va.isaac.gui.AppContext;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.GuiSearchResult;
@@ -138,7 +138,7 @@ public class SearchViewController implements SearchHandler.Callback {
 
                                 @Override
                                 public void handle(ActionEvent event) {
-                                    ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(
+                                    AppContext.getCommonDialogs().showSnomedConceptDialog(
                                             item.getConcept().getUUIDs().get(0));
                                 }
                             });
@@ -169,7 +169,7 @@ public class SearchViewController implements SearchHandler.Callback {
                                 public void handle(MouseEvent mouseEvent) {
                                     if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                                         if (mouseEvent.getClickCount() == 2) {
-                                            ExtendedAppContext.getCommonDialogs().showSnomedConceptDialog(
+                                            AppContext.getCommonDialogs().showSnomedConceptDialog(
                                                     wbConcept.getUUIDs().get(0));
                                         }
                                     }
@@ -289,7 +289,7 @@ public class SearchViewController implements SearchHandler.Callback {
                 } catch (Exception ex) {
                     String title = "Unexpected Search Error";
                     LOG.error(title, ex);
-                    ExtendedAppContext.getCommonDialogs().showErrorDialog(title,
+                    AppContext.getCommonDialogs().showErrorDialog(title,
                             "There was an unexpected error running the search",
                             ex.toString());
                     searchResults.getItems().clear();

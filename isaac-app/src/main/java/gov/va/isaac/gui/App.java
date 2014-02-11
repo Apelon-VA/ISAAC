@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.gui.interfaces.ApplicationWindowI;
 import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
@@ -219,7 +220,10 @@ public class App extends Application implements ApplicationWindowI{
             ExtendedAppContext.getDataStore().shutdown();
             for (ShutdownBroadcastListenerI s : shutdownListeners_)
             {
-                s.shutdown();
+                if (s != null)
+                {
+                    s.shutdown();
+                }
             }
         } catch (Exception ex) {
             String message = "Trouble shutting down";

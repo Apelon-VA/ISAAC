@@ -21,13 +21,7 @@
     <MenuBar fx:id="menuBar">
       <menus>
         <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu" id="panelsMenu"/>
-        <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#handleImportMenuItem" text="IMPORTER" />
-            <MenuItem mnemonicParsing="false" onAction="#handleExportMenuItem" text="EXPORTER" />
-            <MenuItem mnemonicParsing="false" onAction="#handleCreateMetadataMenuItem" text="CREATE_METADATA" />
-          </items>
-        </Menu>
+        <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu"/>
       </menus>
     </MenuBar>
   </top>
