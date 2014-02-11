@@ -76,6 +76,16 @@ public class ImportView extends GridPane {
         modelTypeLabel.setText(modelType.getDisplayName());
         fileNameLabel.setText(fileName);
 
+        if (modelType == InformationModelType.CEM) {
+            importCEM(modelType, fileName);
+        } else {
+            throw new UnsupportedOperationException(modelType.getDisplayName() +
+                    " import not yet supported in ISAAC.");
+        }
+    }
+
+    private void importCEM(InformationModelType modelType, final String fileName) {
+
         // Do work in background.
         Task<ConceptChronicleBI> task = new Task<ConceptChronicleBI>() {
 
