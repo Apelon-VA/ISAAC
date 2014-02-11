@@ -107,8 +107,18 @@ public class SnomedConceptView extends Stage implements SnomedConceptViewI {
              @Override
              protected void succeeded()
              {
-                 ConceptChronicleDdo result = this.getValue();
-                 showConcept(result);
+                 try
+                {
+                    ConceptChronicleDdo result = this.getValue();
+                    showConcept(result);
+                }
+                catch (Exception e)
+                {
+                     String title = "Unexpected error loading concept with UUID " + conceptUUID;
+                     String msg = e.getClass().getName();
+                     LOG.error(title, e);
+                     AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+                }
              }
 
              @Override
