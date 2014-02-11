@@ -7,14 +7,11 @@
         <artifactId>isaac-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <groupId>gov.va.isaac</groupId>
+    <groupId>gov.va.isaac.modules</groupId>
     <artifactId>isaac-workflow</artifactId>
-    <version>1.0-SNAPSHOT</version>
+
     <name>ISAAC Workflow</name>
-    <url>http://maven.apache.org</url>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.kie.remote</groupId>

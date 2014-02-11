@@ -98,6 +98,6 @@
         <module>lego-view</module>
         <module>search-view</module>
         <module>isaac-app</module>
-    <module>isaac-workflow</module>
-  </modules>
+        <!--module>isaac-workflow</module-->
+    </modules>
 </project>
