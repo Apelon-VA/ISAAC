@@ -13,6 +13,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  * Convenience class with constants extracted from {@link CEMMetadataCreator} output.
  *
  * @author alo
+ * @author ocarlsen
  */
 public class CEMMetadataBinding {
 
@@ -39,6 +40,14 @@ public class CEMMetadataBinding {
     public static ConceptSpec CEM_CONSTRAINTS_REFSET
             = new ConceptSpec("CEM constraints reference set (foundation metadata concept)",
             UUID.fromString("7daac070-1510-552b-9b6c-633af8a5e5fa"));
+
+    public static ConceptSpec CEM_CONSTRAINTS_PATH_REFSET
+            = new ConceptSpec("CEM constraints path reference set (foundation metadata concept)",
+            "f0ca1b2f-4616-5596-b6a2-d86355ef177b");
+
+    public static ConceptSpec CEM_CONSTRAINTS_VALUE_REFSET
+            = new ConceptSpec("CEM constraints value reference set (foundation metadata concept)",
+            "46a7a28a-8fc6-5b31-8a4e-ae7b00729456");
 
     public static ConceptSpec CEM_ATTRIBUTES
             = new ConceptSpec("CEM attributes (foundation metadata concept)",
