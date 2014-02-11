@@ -1,5 +1,5 @@
 <ceml>
-    <cetype name="DiastolicBloodPressureMeas" kind="statement" conceptid="215fd598-e21d-3e27-a0a2-8e23b1b36dfc">
+    <cetype name="DiastolicBloodPressureMeas">
         <key code="DiastolicBloodPressure_KEY_ECID"/>
         <data type="pq"/>
         <qual name="methodDevice" type="MethodDevice" card="0-1"/> 
@@ -18,8 +18,5 @@
         <constraint path="qual.methodDevice.data.cwe.domain" value="BloodPressureMeasurementDevice_DOMAIN_ECID"/>
         <constraint path="data.pq.unit.domain" value="PressureUnits_DOMAIN_ECID"/> 
         <constraint path="data.pq.normal" value="MilliMetersOfMercury_ECID"/> 
-        <link name="hasPrecondition" relation="hasPrecondition_ECID" card="0-M">
-            <target path="type.domain" value="PreconditionTypes_DOMAIN_ECID"/> 
-        </link>
     </cetype> 
 </ceml>
