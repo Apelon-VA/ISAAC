@@ -45,6 +45,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.sun.xml.internal.ws.util.StringUtils;
+
 /**
  * Class for exporting a CEM model to a {@link File}.
  *
@@ -190,7 +192,7 @@ public class CEMExporter extends ExporterBase {
 
         // TODO: Path attribute.  Not currently imported.
 
-        // TODO: Path attribute.  Not currently imported.
+        // TODO: Value attribute.  Not currently imported.
 
         return e;
     }
@@ -199,13 +201,17 @@ public class CEMExporter extends ExporterBase {
             throws ValidationException, IOException, ContradictionException {
         Element e = document.createElement(elementName);
 
-        // TODO: Name attribute.  Generate from type.
-
         // Type attribute.
         Attr typeAttr = document.createAttribute("type");
         String type = typeAnnotation.getString1();
         typeAttr.setNodeValue(type);
         e.setAttributeNode(typeAttr);
+
+        // Name attribute.
+        Attr nameAttr = document.createAttribute("name");
+        String name = StringUtils.decapitalize(type);
+        nameAttr.setNodeValue(name);
+        e.setAttributeNode(nameAttr);
 
         // TODO: Card attribute (0-1).
 
