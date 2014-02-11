@@ -16,61 +16,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.searchview;
+package gov.va.isaac.gui.treeview;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import gov.va.isaac.gui.interfaces.DockedViewI;
 import gov.va.isaac.gui.interfaces.MenuItemI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import javafx.beans.property.BooleanProperty;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 import javax.inject.Singleton;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * SearchView
+ * SctTreeViewDockedView
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
 @Service
 @Singleton
-public class SearchView implements DockedViewI
+public class SctTreeViewDockedView  implements DockedViewI 
 {
-	private SearchViewController svc_;
+	private SctTreeView sctTreeView_;
 	
-	private SearchView() throws IOException
+	private SctTreeViewDockedView()
 	{
-		//created by HK2
-		svc_ = SearchViewController.init();
+		sctTreeView_ = new SctTreeView();
+		sctTreeView_.init(Taxonomies.SNOMED.getUuids()[0]);
 	}
-    /**
-     * @see gov.va.isaac.gui.interfaces.DockedViewI#getView()
-     */
-    @Override
-    public Region getView() {
-        return svc_.getRoot();
-    }
-    
+	
+	public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) 
+	{
+		sctTreeView_.showConcept(conceptUUID, workingIndicator);
+	}
+	
 	/**
 	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
-		//We don't currently have any custom menus with this view
 		return new ArrayList<MenuItemI>();
 	}
-
+	/**
+	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getView()
+	 */
+	@Override
+	public Region getView()
+	{
+		return sctTreeView_.getWrapperWindow();
+	}
 	/**
 	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getMenuBarMenuToShowView()
 	 */
 	@Override
 	public MenuItemI getMenuBarMenuToShowView()
 	{
-		MenuItemI menuItem = new MenuItemI()
+		return new MenuItemI()
 		{
+			
 			@Override
 			public void handleMenuSelection(Window parent)
 			{
@@ -80,26 +86,25 @@ public class SearchView implements DockedViewI
 			@Override
 			public int getSortOrder()
 			{
-				return 5;
+				return 6;
 			}
 			
 			@Override
 			public String getParentMenuId()
 			{
-				//TODO make an enumeration of master menu names, and put it into the interfaces module, so these don't have to be hard-coded strings...
 				return "panelsMenu";
 			}
 			
 			@Override
 			public String getMenuName()
 			{
-				return "SEARCH PANEL";
+				return "TAXONOMY VIEWER";
 			}
 			
 			@Override
 			public String getMenuId()
 			{
-				return "searchPanelMenuItem";
+				return "taxonomyViewerMenuItem";
 			}
 			
 			@Override
@@ -108,15 +113,13 @@ public class SearchView implements DockedViewI
 				return false;
 			}
 		};
-		return menuItem;
 	}
-
 	/**
 	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getViewTitle()
 	 */
 	@Override
 	public String getViewTitle()
 	{
-		return "Snomed Search";
+		return "Snomed Browser";
 	}
 }

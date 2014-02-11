@@ -18,25 +18,17 @@
  */
 package gov.va.isaac.gui.interfaces;
 
-import javafx.stage.Stage;
-import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ApplicationWindow
+ * ShutdownBroadcastI
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Contract
-public interface ApplicationWindowI
+
+public interface ShutdownBroadcastListenerI
 {
 	/**
-	 * Return a reference to the Primary Stage of the application.
+	 * Called when an app shutdown is requested.
 	 */
-	public Stage getPrimaryStage();
-	
-	/**
-	 * Register a for a callback to be notified when an app shutdown is requested.
-	 * @param listener
-	 */
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
+	public void shutdown();
 }

@@ -19,11 +19,14 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.gui.dialog.CommonDialogs;
+import gov.va.isaac.gui.interfaces.ApplicationWindowI;
+import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
@@ -34,6 +37,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
@@ -46,8 +50,7 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public class App extends Application {
+public class App extends Application implements ApplicationWindowI{
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
@@ -55,11 +58,12 @@ public class App extends Application {
     private boolean shutdown = false;
     private Stage primaryStage_;
     private CommonDialogs commonDialog_;
+    private ArrayList<ShutdownBroadcastListenerI> shutdownListeners_ = new ArrayList<>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage_ = primaryStage;
-        AppContext.getService(ApplicationWindowImpl.class).init(primaryStage_);
+        ServiceLocatorUtilities.addOneConstant(AppContext.getServiceLocator(), this);
         //Set up the CommonDialogs class (which needs a references to primaryStage_ and gets it via injection)
         commonDialog_ = AppContext.getServiceLocator().getService(CommonDialogs.class);
 
@@ -211,11 +215,11 @@ public class App extends Application {
     private void shutdown() {
         LOG.info("Shutting down");
         shutdown = true;
-
         try {
             ExtendedAppContext.getDataStore().shutdown();
-            if (controller != null) {
-                controller.shutdown();
+            for (ShutdownBroadcastListenerI s : shutdownListeners_)
+            {
+                s.shutdown();
             }
         } catch (Exception ex) {
             String message = "Trouble shutting down";
@@ -225,6 +229,24 @@ public class App extends Application {
 
         LOG.info("Finished shutting down");
     }
+    
+	/**
+	 * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#getPrimaryStage()
+	 */
+	@Override
+	public Stage getPrimaryStage()
+	{
+		return primaryStage_;
+	}
+	
+	/**
+	 * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#registerShutdownListener(gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI)
+	 */
+	@Override
+	public void registerShutdownListener(ShutdownBroadcastListenerI listener)
+	{
+		shutdownListeners_.add(listener);
+	}
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         AppContext.setup();
@@ -233,7 +255,7 @@ public class App extends Application {
         f.setAccessible(true);
         f.set(null, AppContext.getServiceLocator());
         //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
-        //Which is made worse by the fact tha the defaults in OTF are inconsistent between BDB and lucene...
+        //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
         configDataStorePaths(new File("berkeley-db"));
         Application.launch(args);
     }
