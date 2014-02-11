@@ -30,17 +30,20 @@ import javafx.scene.image.ImageView;
  */
 public enum Images {
 
-    ROOT(setupImage("/icons/16x16/node.png")),
-    PRIMITIVE_SINGLE_PARENT(setupImage("/icons/16x16/navigation-nowhere-button-white.png")),
-    PRIMITIVE_MULTI_PARENT_CLOSED(setupImage("/icons/16x16/navigation-090-button-white.png")),
-    PRIMITIVE_MULTI_PARENT_OPEN(setupImage("/icons/16x16/navigation-045-button-white.png")),
-    DEFINED_SINGLE_PARENT(setupImage("/icons/16x16/navigation-nowhere-2.png")),
-    DEFINED_MULTI_PARENT_CLOSED(setupImage("/icons/16x16/navigation-090.png")),
-    DEFINED_MULTI_PARENT_OPEN(setupImage("/icons/16x16/navigation-045.png")),
-    TAXONOMY_OPEN(setupImage("/icons/16x16/plus-small.png")),
-    TAXONOMY_CLOSE(setupImage("/icons/16x16/minus-small.png")),
-    CONCEPT_VIEW(setupImage("/icons/16x16/gear.png")),
-    COPY(setupImage("/icons/16x16/document-copy.png"));
+	//SCT Tree Icons
+    ROOT(setupImage("/icons/fugue/16x16/icons-shadowless/node.png")),
+    PRIMITIVE_SINGLE_PARENT(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-nowhere-button-white.png")),
+    PRIMITIVE_MULTI_PARENT_CLOSED(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-090-button-white.png")), 
+    PRIMITIVE_MULTI_PARENT_OPEN(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-045-button-white.png")), 
+    DEFINED_SINGLE_PARENT(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-nowhere-2.png")), 
+    DEFINED_MULTI_PARENT_CLOSED(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-090.png")), 
+    DEFINED_MULTI_PARENT_OPEN(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-045.png")), 
+    TAXONOMY_OPEN(setupImage("/icons/fugue/16x16/icons-shadowless/plus-small.png")), 
+    TAXONOMY_CLOSE(setupImage("/icons/fugue/16x16/icons-shadowless/minus-small.png")),
+    
+    //Other GUI Icons
+    CONCEPT_VIEW(setupImage("/icons/misc/16x16/gear.png")),
+    COPY(setupImage("/icons/misc/16x16/document-copy.png"));
 
     private final Image image;
 
