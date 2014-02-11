@@ -1,15 +1,15 @@
 /**
  * Copyright Notice
- * 
+ *
  * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,44 +18,50 @@
  */
 package gov.va.models.cem.importer;
 
-import gov.va.isaac.gui.ExtendedAppContext;
+import gov.va.isaac.gui.util.FxUtils;
+import gov.va.models.util.ImporterBase;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
-import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
-import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
-import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Class to create CEM metadata concepts.
  *
  * @author alo
+ * @author ocarlsen
  */
-public class CEMMetadataCreator {
+public class CEMMetadataCreator extends ImporterBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
 
-    private static TerminologyBuilderBI builder;
-    
-    public static void createMetadata() throws Exception {
-        LOG.info("Preparing to create metadata");
-        BdbTerminologyStore ds = ExtendedAppContext.getDataStore();
+    private static final String REFSET_ROOT = "7e38cd2d-6f1a-3a81-be0b-21e6090573c2";
+    private static final String REFSET_ATTRIBUTE_ROOT = "7e52203e-8a35-3121-b2e7-b783b34d97f2";
 
-        ConceptChronicleBI refsetsRoot = ds.getConcept(UUID.fromString("7e38cd2d-6f1a-3a81-be0b-21e6090573c2"));
+    public CEMMetadataCreator() throws ValidationException, IOException {
+        super();
+    }
+
+    @SuppressWarnings("unused")
+    public void createMetadata() throws Exception {
+        LOG.info("Preparing to create metadata");
+
+        // Make sure NOT in application thread.
+        FxUtils.checkBackgroundThread();
+
+        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_ROOT));
         LOG.info("Refsets root:" + refsetsRoot.toString());
 
         ConceptChronicleBI CEMRoot = createNewConcept(refsetsRoot, "CEM reference sets (foundation metadata concept)", "CEM reference sets");
@@ -67,7 +73,7 @@ public class CEMMetadataCreator {
         ConceptChronicleBI CEMCompositionRefset = createNewConcept(CEMRoot, "CEM composition reference set (foundation metadata concept)", "CEM composition reference set");
         ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRoot, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
 
-        ConceptChronicleBI attributesRoot = ds.getConcept(UUID.fromString("7e52203e-8a35-3121-b2e7-b783b34d97f2"));
+        ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_ROOT));
         ConceptChronicleBI CEMAttributes = createNewConcept(attributesRoot, "CEM attributes (foundation metadata concept)", "CEM attributes");
 
         ConceptChronicleBI CEMDataTypes = createNewConcept(CEMAttributes, "CEM data types (foundation metadata concept)", "CEM data types");
@@ -175,24 +181,23 @@ public class CEMMetadataCreator {
         ConceptChronicleBI CEMLanguageField = createNewConcept(CEMSTType, "CEM language field (foundation metadata concept)", "CEM language field");
         ConceptChronicleBI CEMTimeZoneField = createNewConcept(CEMTSType, "CEM time zone field (foundation metadata concept)", "CEM time zone field");
 
-        for (ConceptChronicleBI loopUc : ds.getUncommittedConcepts()) {
-            LOG.info("Uncommitted concept:" + loopUc.toString() + " - " + loopUc.getPrimordialUuid());
+        for (ConceptChronicleBI loopUc : getDataStore().getUncommittedConcepts()) {
+            LOG.debug("Uncommitted concept:" + loopUc.toString() + " - " + loopUc.getPrimordialUuid());
         }
 
-        ds.commit();
+        getDataStore().commit();
 
         LOG.info("Metadata creation finished");
-
     }
 
-    private static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
+    private ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {
         List<ConceptChronicleBI> oneParent = new ArrayList<ConceptChronicleBI>();
         oneParent.add(parent);
         return createNewConcept(oneParent, fsn, prefTerm);
     }
 
-    private static ConceptChronicleBI createNewConcept(List<ConceptChronicleBI> parents, String fsn,
+    private ConceptChronicleBI createNewConcept(List<ConceptChronicleBI> parents, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {
         LanguageCode lc = LanguageCode.EN_US;
         UUID isA = Snomed.IS_A.getUuids()[0];
@@ -207,29 +212,9 @@ public class CEMMetadataCreator {
         ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentsUuids);
 
         ConceptChronicleBI newCon = getBuilder().construct(newConCB);
-        ExtendedAppContext.getDataStore().addUncommitted(newCon);
+        getDataStore().addUncommitted(newCon);
 
         return newCon;
 
     }
-
-    private static EditCoordinate getEC() throws ValidationException, IOException {
-        int authorNid = TermAux.USER.getLenient().getConceptNid();
-        int module = Snomed.CORE_MODULE.getLenient().getNid();
-        int editPathNid = ExtendedAppContext.getDataStore().getNidForUuids(UUID.fromString("8c230474-9f11-30ce-9cad-185a96fd03a2")); // SNOMED CORE path
-
-        return new EditCoordinate(authorNid, module, editPathNid);
-    }
-
-    private static ViewCoordinate getVC() throws IOException {
-        return StandardViewCoordinates.getSnomedStatedLatest();
-    }
-
-    private static TerminologyBuilderBI getBuilder() throws IOException {
-        if (CEMMetadataCreator.builder == null) {
-            CEMMetadataCreator.builder = new BdbTermBuilder(getEC(), getVC());
-        }
-        return CEMMetadataCreator.builder;
-    }
-
 }
