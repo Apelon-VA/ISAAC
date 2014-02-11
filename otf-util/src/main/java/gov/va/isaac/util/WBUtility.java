@@ -1,7 +1,7 @@
 package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.model.UserPreferences;
+import gov.va.isaac.gui.interfaces.UserPreferencesI;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +45,8 @@ public class WBUtility {
     private static Integer synonymNid = null;
 
     private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-    private static UserPreferences userPrefs = new UserPreferences();
+    private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
+    private static String useFSN = "useFSN";
 
     public static String getDescription(UUID uuid) {
         try {
@@ -74,7 +75,7 @@ public class WBUtility {
 
                     if (descVer.getTypeNid() == getFSNTypeNid()) {
                         if (descVer.getStatus() == Status.ACTIVE) {
-                            if (userPrefs.isUseFSN()) {
+                            if (userPrefs.getBoolean(useFSN, true)) {
                                 return descVer.getText();
                             } else {
                                 fsn = descVer.getText();
@@ -85,7 +86,7 @@ public class WBUtility {
                         }
                     } else if (descVer.getTypeNid() == getSynonymTypeNid() && isPreferred(descVer.getAnnotations())) {
                         if (descVer.getStatus() == Status.ACTIVE) {
-                            if (! userPrefs.isUseFSN()) {
+                            if (! userPrefs.getBoolean(useFSN, true)) {
                                 return descVer.getText();
                             } else {
                                 preferred = descVer.getText();
@@ -174,7 +175,7 @@ public class WBUtility {
             DescriptionVersionDdo dv = d.getVersions().get(d.getVersions().size() - 1);
             if (dv.getTypeReference().getUuid().equals(FSN_UUID)) {
                 if (dv.getStatus() == Status.ACTIVE) {
-                    if (userPrefs.isUseFSN()) {
+                    if (userPrefs.getBoolean(useFSN, true)) {
                         return dv.getText();
                     } else {
                         fsn = dv.getText();
@@ -184,7 +185,7 @@ public class WBUtility {
                 }
             } else if (dv.getTypeReference().getUuid().equals(SYNONYM_UUID)) {
                 if ((dv.getStatus() == Status.ACTIVE) && isPreferred(dv.getAnnotations())) {
-                    if (! userPrefs.isUseFSN()) {
+                    if (! userPrefs.getBoolean(useFSN, true)) {
                         return dv.getText();
                     } else {
                         preferred = dv.getText();

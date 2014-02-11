@@ -293,7 +293,7 @@ public class WBUtility
 					{
 						if (descVer.getStatus() == Status.ACTIVE)
 						{
-							if (UserPreferences.getInstance().getUseFSN())
+							if (UserPreferences.getUseFSN())
 							{
 								return descVer.getText();
 							}
@@ -312,7 +312,7 @@ public class WBUtility
 					{
 						if (descVer.getStatus() == Status.ACTIVE)
 						{
-							if (!UserPreferences.getInstance().getUseFSN())
+							if (!UserPreferences.getUseFSN())
 							{
 								return descVer.getText();
 							}

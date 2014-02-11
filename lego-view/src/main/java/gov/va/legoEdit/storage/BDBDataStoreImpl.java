@@ -963,19 +963,19 @@ public class BDBDataStoreImpl implements DataStoreInterface
 			if (s == null)
 			{
 				s = new Stamp();
-				s.setStatus(UserPreferences.getInstance().getDefaultStatus());
+				s.setStatus(UserPreferences.getDefaultStatus());
 			}
 			if (s.getAuthor() == null || s.getAuthor().length() == 0)
 			{
-				s.setAuthor(UserPreferences.getInstance().getAuthor());
+				s.setAuthor(UserPreferences.getAuthor());
 			}
 			if (s.getModule() == null || s.getModule().length() == 0)
 			{
-				s.setModule(UserPreferences.getInstance().getModule());
+				s.setModule(UserPreferences.getModule());
 			}
 			if (s.getPath() == null || s.getPath().length() == 0)
 			{
-				s.setPath(UserPreferences.getInstance().getPath());
+				s.setPath(UserPreferences.getPath());
 			}
 			s.setTime(TimeConvert.convert(System.currentTimeMillis()));
 			s.setUuid(UUID.randomUUID().toString());
