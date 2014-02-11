@@ -43,7 +43,8 @@ public enum Images {
     
     //Other GUI Icons
     CONCEPT_VIEW(setupImage("/icons/misc/16x16/gear.png")),
-    COPY(setupImage("/icons/misc/16x16/document-copy.png"));
+    COPY(setupImage("/icons/misc/16x16/document-copy.png")),
+    EXCLAMATION(setupImage("/icons/fugue/16x16/icons-shadowless/exclamation-red.png"));
 
     private final Image image;
 

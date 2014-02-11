@@ -220,7 +220,10 @@ public class App extends Application implements ApplicationWindowI{
             ExtendedAppContext.getDataStore().shutdown();
             for (ShutdownBroadcastListenerI s : shutdownListeners_)
             {
-                s.shutdown();
+                if (s != null)
+                {
+                    s.shutdown();
+                }
             }
         } catch (Exception ex) {
             String message = "Trouble shutting down";
