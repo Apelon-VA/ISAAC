@@ -233,7 +233,7 @@ public class App extends Application {
         f.setAccessible(true);
         f.set(null, AppContext.getServiceLocator());
         //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
-        //Which is made worse by the fact tha the defaults in OTF are inconsistent between BDB and lucene...
+        //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
         configDataStorePaths(new File("berkeley-db"));
         Application.launch(args);
     }
