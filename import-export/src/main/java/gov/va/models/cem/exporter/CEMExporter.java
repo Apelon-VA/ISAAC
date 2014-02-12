@@ -45,7 +45,6 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_membership.MembershipMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
-import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_nid_string.NidNidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_string.NidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
 import org.slf4j.Logger;
@@ -86,7 +85,7 @@ public class CEMExporter extends ExporterBase {
 
         // Build a DOM tree in the style of CEM.
         this.document = buildDom();
-        Element root = buildTree(focusConceptAnnotations);
+        Element root = buildCemTree(focusConceptAnnotations);
         document.appendChild(root);
 
         // Transform DOM tree into stream.
@@ -99,10 +98,11 @@ public class CEMExporter extends ExporterBase {
         LOG.info("Ending export of CEM model to: " + file.getName());
     }
 
-    private Element buildTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
+    private Element buildCemTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
-        Element root = buildRootElement();
+        Element root = document.createElement("ceml");
 
+        // CETYPE element.
         Element cetype = buildCetypeElement(focusConceptAnnotations);
         root.appendChild(cetype);
 
@@ -183,18 +183,51 @@ public class CEMExporter extends ExporterBase {
             }
         }
 
-        // TODO: Constraint elements (0-M).
+        // Constraint elements (0-M).
+        List<MembershipMember> constraintAnnotations = filterAnnotations(
+                focusConceptAnnotations, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET,
+                MembershipMember.class);
+        if (constraintAnnotations.isEmpty()) {
+            LOG.info("No CEM_CONSTRAINTS_REFSET members found.");
+        } else {
+            for (MembershipMember constraintAnnotation : constraintAnnotations) {
+                Element constraint = buildConstraintElement(constraintAnnotation);
+                cetype.appendChild(constraint);
+            }
+        }
 
         return cetype;
     }
 
-    @SuppressWarnings("unused")
-    private Element buildConstraintElement(NidNidStringMember constraintAnnotation) {
+    private Element buildConstraintElement(MembershipMember constraintAnnotation)
+            throws ValidationException, IOException {
         Element e = document.createElement("constraint");
 
-        // TODO: Path attribute.  Not currently imported.
+        Collection<? extends RefexChronicleBI<?>> annotations = constraintAnnotation.getAnnotations();
 
-        // TODO: Value attribute.  Not currently imported.
+        // Path attribute (1).
+        StringMember pathAnnotation = getSingleAnnotation(annotations,
+                CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, StringMember.class);
+        if (pathAnnotation == null) {
+            LOG.info("No CEM_CONSTRAINTS_PATH_REFSET members found.");
+        } else {
+            Attr pathAttr = document.createAttribute("path");
+            String path = pathAnnotation.getString1();
+            pathAttr.setNodeValue(path);
+            e.setAttributeNode(pathAttr);
+        }
+
+        // Value attribute (1).
+        StringMember valueAnnotation = getSingleAnnotation(annotations,
+                CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, StringMember.class);
+        if (valueAnnotation == null) {
+            LOG.info("No CEM_CONSTRAINTS_VALUE_REFSET members found.");
+        } else {
+            Attr valueAttr = document.createAttribute("value");
+            String value = valueAnnotation.getString1();
+            valueAttr.setNodeValue(value);
+            e.setAttributeNode(valueAttr);
+        }
 
         return e;
     }
@@ -295,27 +328,6 @@ public class CEMExporter extends ExporterBase {
                 MembershipMember.class);
     }
 
-    @SuppressWarnings("unused")
-    private List<NidNidStringMember> getConstraintAnnotations(
-            Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations,
-            ConceptSpec refsetSpec)
-            throws ValidationException, IOException {
-
-        // Filter members of CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.
-        List<NidNidStringMember> annotations = filterAnnotations(focusConceptAnnotations,
-                CEMMetadataBinding.CEM_CONSTRAINTS_REFSET, NidNidStringMember.class);
-
-        // Filter again, keep those having the specified refset as their concept extension.
-        List<NidNidStringMember> filtered = Lists.newArrayList();
-        for (NidNidStringMember annotation : annotations) {
-            if (refsetSpec.getNid() == annotation.getC1Nid()) {
-                filtered.add(annotation);
-            }
-        }
-
-        return filtered;
-    }
-
     private List<NidStringMember> getCompositionAnnotations(
             Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations,
             ConceptSpec refsetSpec)
@@ -400,10 +412,6 @@ public class CEMExporter extends ExporterBase {
         }
 
         return filtered;
-    }
-
-    private Element buildRootElement() {
-        return document.createElement("ceml");
     }
 
     private Document buildDom() throws ParserConfigurationException {
