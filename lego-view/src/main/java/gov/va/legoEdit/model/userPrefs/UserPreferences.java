@@ -14,8 +14,8 @@
  */
 package gov.va.legoEdit.model.userPrefs;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.UserPreferencesI;
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.utility.UserPreferencesI;
 
 /**
  * 

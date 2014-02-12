@@ -18,8 +18,9 @@
  */
 package gov.va.isaac.gui;
 
-import gov.va.isaac.gui.interfaces.MenuItemI;
-import gov.va.isaac.gui.interfaces.PopupViewI;
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.models.cem.importer.CEMMetadataCreator;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class CEMMetadataCreatorView implements PopupViewI
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
@@ -95,7 +96,7 @@ public class CEMMetadataCreatorView implements PopupViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.PopupViewI#showView(javafx.stage.Window)
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
 	@Override
 	public void showView(Window parent)

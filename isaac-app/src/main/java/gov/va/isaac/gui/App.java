@@ -18,10 +18,11 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
-import gov.va.isaac.gui.interfaces.ApplicationWindowI;
-import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
+import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -235,7 +236,7 @@ public class App extends Application implements ApplicationWindowI{
     }
     
 	/**
-	 * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#getPrimaryStage()
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#getPrimaryStage()
 	 */
 	@Override
 	public Stage getPrimaryStage()
@@ -244,7 +245,7 @@ public class App extends Application implements ApplicationWindowI{
 	}
 	
 	/**
-	 * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#registerShutdownListener(gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI)
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
 	 */
 	@Override
 	public void registerShutdownListener(ShutdownBroadcastListenerI listener)

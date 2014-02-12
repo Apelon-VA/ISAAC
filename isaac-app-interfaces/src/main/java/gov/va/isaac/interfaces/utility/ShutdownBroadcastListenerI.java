@@ -16,21 +16,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.utility;
 
-import java.util.UUID;
-import org.jvnet.hk2.annotations.Contract;
+import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+
 
 /**
- * SnomedConceptViewI
+ * ShutdownBroadcastI
+ *
+ * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
+ * 
+ * @see ApplicationWindowI
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Contract
-public interface SnomedConceptViewI
+
+public interface ShutdownBroadcastListenerI
 {
 	/**
-	 * Present the default SnomedConceptView window to the user
+	 * Called when an app shutdown is requested.
 	 */
-	public void showConcept(UUID conceptUUID);
+	public void shutdown();
 }

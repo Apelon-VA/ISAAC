@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;

@@ -18,10 +18,11 @@
  */
 package gov.va.isaac.gui;
 
-import gov.va.isaac.gui.interfaces.DockedViewI;
-import gov.va.isaac.gui.interfaces.IsaacViewI;
-import gov.va.isaac.gui.interfaces.MenuItemI;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewI;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import javafx.event.ActionEvent;

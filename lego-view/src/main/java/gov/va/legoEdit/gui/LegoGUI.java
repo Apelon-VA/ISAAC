@@ -18,9 +18,9 @@
  */
 package gov.va.legoEdit.gui;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.MenuItemI;
-import gov.va.isaac.gui.interfaces.PopupViewI;
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
 import java.io.File;
@@ -147,7 +147,7 @@ public class LegoGUI extends Application implements PopupViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
@@ -196,7 +196,7 @@ public class LegoGUI extends Application implements PopupViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.PopupViewI#showView(javafx.stage.Window)
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
 	@Override
 	public void showView(Window parent)

@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.AppContext;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;

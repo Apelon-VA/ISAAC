@@ -18,11 +18,11 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.ApplicationWindowI;
-import gov.va.isaac.gui.interfaces.CommonDialogsI;
-import gov.va.isaac.gui.interfaces.SnomedConceptViewI;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+import gov.va.isaac.interfaces.gui.CommonDialogsI;
+import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
 import java.io.IOException;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -56,7 +56,7 @@ public class CommonDialogs implements CommonDialogsI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.CommonDialogsI#showInformationDialog(java.lang.String, java.lang.String)
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showInformationDialog(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void showInformationDialog(String title, String message)
@@ -69,7 +69,7 @@ public class CommonDialogs implements CommonDialogsI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.CommonDialogsI#showErrorDialog(java.lang.String, java.lang.Throwable)
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showErrorDialog(java.lang.String, java.lang.Throwable)
 	 */
 	@Override
 	public void showErrorDialog(String message, Throwable throwable)
@@ -80,7 +80,7 @@ public class CommonDialogs implements CommonDialogsI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.CommonDialogsI#showErrorDialog(java.lang.String, java.lang.String, java.lang.String)
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showErrorDialog(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void showErrorDialog(String title, String message, String details)
@@ -93,7 +93,7 @@ public class CommonDialogs implements CommonDialogsI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.CommonDialogsI#showSnomedConceptDialog(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showSnomedConceptDialog(java.util.UUID)
 	 */
 	@Override
 	public void showSnomedConceptDialog(UUID conceptUUID)

@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;

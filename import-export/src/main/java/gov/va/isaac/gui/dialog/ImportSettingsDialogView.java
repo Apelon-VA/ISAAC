@@ -18,9 +18,9 @@
  */
 package gov.va.isaac.gui.dialog;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.MenuItemI;
-import gov.va.isaac.gui.interfaces.PopupViewI;
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.stage.Window;
@@ -40,7 +40,7 @@ public class ImportSettingsDialogView implements PopupViewI
 {
 	private static final Logger LOG = LoggerFactory.getLogger(ImportSettingsDialogView.class);
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
@@ -88,7 +88,7 @@ public class ImportSettingsDialogView implements PopupViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.PopupViewI#showView(javafx.stage.Window)
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
 	@Override
 	public void showView(Window parent)

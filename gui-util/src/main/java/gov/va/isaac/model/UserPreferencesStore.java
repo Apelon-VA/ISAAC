@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.model;
 
-import gov.va.isaac.gui.interfaces.UserPreferencesI;
+import gov.va.isaac.interfaces.utility.UserPreferencesI;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -70,7 +70,7 @@ public class UserPreferencesStore extends UserPreferencesI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.UserPreferencesI#set(java.lang.String, java.lang.String)
+	 * @see gov.va.isaac.interfaces.utility.UserPreferencesI#set(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public String set(String prefName, String prefValue)
@@ -81,7 +81,7 @@ public class UserPreferencesStore extends UserPreferencesI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.UserPreferencesI#get(java.lang.String)
+	 * @see gov.va.isaac.interfaces.utility.UserPreferencesI#get(java.lang.String)
 	 */
 	@Override
 	public String get(String prefName)

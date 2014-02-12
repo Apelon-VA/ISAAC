@@ -18,9 +18,9 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;

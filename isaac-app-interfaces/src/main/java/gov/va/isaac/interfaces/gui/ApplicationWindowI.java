@@ -16,22 +16,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui;
 
-import java.util.List;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+import javafx.stage.Stage;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * IsaacViewI
+ * ApplicationWindowI
+ * 
+ * Hooks for modules to get references to components of the main application that they may need.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public abstract interface IsaacViewI
+public interface ApplicationWindowI
 {
 	/**
-	 * Provides the specs of all of the menus required by this view.  May return an empty list, will not return null.
+	 * Return a reference to the Primary Stage of the application.
 	 */
-	public List<MenuItemI> getMenuBarMenus();
+	public Stage getPrimaryStage();
 	
+	/**
+	 * Register a for a callback to be notified when an app shutdown is requested.
+	 * @param listener
+	 */
+	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
 }

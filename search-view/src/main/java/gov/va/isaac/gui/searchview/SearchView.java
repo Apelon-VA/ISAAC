@@ -21,8 +21,8 @@ package gov.va.isaac.gui.searchview;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import gov.va.isaac.gui.interfaces.DockedViewI;
-import gov.va.isaac.gui.interfaces.MenuItemI;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 import javax.inject.Singleton;
@@ -46,7 +46,7 @@ public class SearchView implements DockedViewI
 		svc_ = SearchViewController.init();
 	}
     /**
-     * @see gov.va.isaac.gui.interfaces.DockedViewI#getView()
+     * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
      */
     @Override
     public Region getView() {
@@ -54,7 +54,7 @@ public class SearchView implements DockedViewI
     }
     
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
@@ -64,7 +64,7 @@ public class SearchView implements DockedViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getMenuBarMenuToShowView()
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
 	 */
 	@Override
 	public MenuItemI getMenuBarMenuToShowView()
@@ -111,7 +111,7 @@ public class SearchView implements DockedViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getViewTitle()
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
 	@Override
 	public String getViewTitle()
