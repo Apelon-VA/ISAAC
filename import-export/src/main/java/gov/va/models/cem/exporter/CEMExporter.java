@@ -429,6 +429,9 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
+        // Skip XML declaration header.
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
         return transformer;
     }
 
