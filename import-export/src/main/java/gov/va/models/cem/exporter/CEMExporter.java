@@ -19,6 +19,7 @@
 package gov.va.models.cem.exporter;
 
 import gov.va.models.cem.importer.CEMMetadataBinding;
+import gov.va.models.util.CEMXmlConstants;
 import gov.va.models.util.ExporterBase;
 
 import java.io.File;
@@ -59,11 +60,11 @@ import com.google.common.collect.Lists;
 import com.sun.xml.internal.ws.util.StringUtils;
 
 /**
- * Class for exporting a CEM model to a {@link File}.
+ * Class for exporting a CEM model to an XML {@link File}.
  *
  * @author ocarlsen
  */
-public class CEMExporter extends ExporterBase {
+public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMExporter.class);
 
@@ -100,7 +101,7 @@ public class CEMExporter extends ExporterBase {
 
     private Element buildCemTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
-        Element root = document.createElement("ceml");
+        Element root = document.createElement(CEML);
 
         // CETYPE element.
         Element cetype = buildCetypeElement(focusConceptAnnotations);
@@ -114,7 +115,7 @@ public class CEMExporter extends ExporterBase {
      */
     private Element buildCetypeElement(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
-        Element cetype = document.createElement("cetype");
+        Element cetype = document.createElement(CETYPE);
 
         // Name attribute (1).
         StringMember nameAnnotation = getSingleAnnotation(focusConceptAnnotations,
@@ -154,7 +155,7 @@ public class CEMExporter extends ExporterBase {
             LOG.info("No CEM_QUAL members found.");
         } else {
             for (NidStringMember qualAnnotation : qualAnnotations) {
-                Element qual = buildCompositionElement("qual", qualAnnotation);
+                Element qual = buildCompositionElement(QUAL, qualAnnotation);
                 cetype.appendChild(qual);
             }
         }
@@ -166,7 +167,7 @@ public class CEMExporter extends ExporterBase {
             LOG.info("No CEM_MOD members found.");
         } else {
             for (NidStringMember modAnnotation : modAnnotations) {
-                Element mod = buildCompositionElement("mod", modAnnotation);
+                Element mod = buildCompositionElement(MOD, modAnnotation);
                 cetype.appendChild(mod);
             }
         }
@@ -178,7 +179,7 @@ public class CEMExporter extends ExporterBase {
             LOG.info("No CEM_ATTR members found.");
         } else {
             for (NidStringMember attAnnotation : attAnnotations) {
-                Element att = buildCompositionElement("att", attAnnotation);
+                Element att = buildCompositionElement(ATT, attAnnotation);
                 cetype.appendChild(att);
             }
         }
@@ -201,7 +202,7 @@ public class CEMExporter extends ExporterBase {
 
     private Element buildConstraintElement(MembershipMember constraintAnnotation)
             throws ValidationException, IOException {
-        Element e = document.createElement("constraint");
+        Element e = document.createElement(CONSTRAINT);
 
         Collection<? extends RefexChronicleBI<?>> annotations = constraintAnnotation.getAnnotations();
 
@@ -211,7 +212,7 @@ public class CEMExporter extends ExporterBase {
         if (pathAnnotation == null) {
             LOG.info("No CEM_CONSTRAINTS_PATH_REFSET members found.");
         } else {
-            Attr pathAttr = document.createAttribute("path");
+            Attr pathAttr = document.createAttribute(PATH);
             String path = pathAnnotation.getString1();
             pathAttr.setNodeValue(path);
             e.setAttributeNode(pathAttr);
@@ -223,7 +224,7 @@ public class CEMExporter extends ExporterBase {
         if (valueAnnotation == null) {
             LOG.info("No CEM_CONSTRAINTS_VALUE_REFSET members found.");
         } else {
-            Attr valueAttr = document.createAttribute("value");
+            Attr valueAttr = document.createAttribute(VALUE);
             String value = valueAnnotation.getString1();
             valueAttr.setNodeValue(value);
             e.setAttributeNode(valueAttr);
@@ -237,13 +238,13 @@ public class CEMExporter extends ExporterBase {
         Element e = document.createElement(elementName);
 
         // Type attribute.
-        Attr typeAttr = document.createAttribute("type");
+        Attr typeAttr = document.createAttribute(TYPE);
         String type = compositionRefex.getString1();
         typeAttr.setNodeValue(type);
         e.setAttributeNode(typeAttr);
 
         // Name attribute.
-        Attr nameAttr = document.createAttribute("name");
+        Attr nameAttr = document.createAttribute(NAME);
         String name = StringUtils.decapitalize(type);
         nameAttr.setNodeValue(name);
         e.setAttributeNode(nameAttr);
@@ -267,7 +268,7 @@ public class CEMExporter extends ExporterBase {
 
     private Element buildDataElement(NidMember dataAnnotation)
             throws ValidationException, IOException {
-        Element data = document.createElement("data");
+        Element data = document.createElement(DATA);
 
         // Convert to string.
         int nid = dataAnnotation.getNid1();
@@ -281,7 +282,7 @@ public class CEMExporter extends ExporterBase {
         }
 
         // Type attribute.
-        Attr typeAttr = document.createAttribute("type");
+        Attr typeAttr = document.createAttribute(TYPE);
         typeAttr.setNodeValue(type);
         data.setAttributeNode(typeAttr);
 
@@ -289,10 +290,10 @@ public class CEMExporter extends ExporterBase {
     }
 
     private Element buildKeyElement(StringMember keyAnnotation) {
-        Element key = document.createElement("key");
+        Element key = document.createElement(KEY);
 
         // Code attribute.
-        Attr codeAttr = document.createAttribute("code");
+        Attr codeAttr = document.createAttribute(CODE);
         String code = keyAnnotation.getString1();
         codeAttr.setNodeValue(code);
         key.setAttributeNode(codeAttr);
@@ -301,7 +302,7 @@ public class CEMExporter extends ExporterBase {
     }
 
     private Attr buildNameAttr(StringMember nameAttribute) {
-        Attr nameAttr = document.createAttribute("name");
+        Attr nameAttr = document.createAttribute(NAME);
 
         String name = nameAttribute.getString1();
         nameAttr.setNodeValue(name);

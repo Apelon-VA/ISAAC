@@ -18,6 +18,7 @@
  */
 package gov.va.models.cem.importer;
 
+import gov.va.models.util.CEMXmlConstants;
 import gov.va.models.util.ImporterBase;
 
 import java.io.File;
@@ -50,13 +51,13 @@ import org.w3c.dom.NodeList;
 import com.google.common.base.Preconditions;
 
 /**
- * Class for importing a CEM model from a {@link File}.
+ * Class for importing a CEM model from an XML {@link File}.
  *
  * @author alo
  * @author ocarlsen
  */
 @SuppressWarnings("rawtypes")
-public class CEMImporter extends ImporterBase {
+public class CEMImporter extends ImporterBase implements CEMXmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMImporter.class);
 
@@ -77,7 +78,7 @@ public class CEMImporter extends ImporterBase {
         LOG.info("rootNode: " + rootNode.getNodeName());
 
         // Sanity check.
-        Preconditions.checkState(rootNode.getNodeName().toLowerCase().equals("ceml"),
+        Preconditions.checkState(rootNode.getNodeName().toLowerCase().equals(CEML),
                 "No CEML root node in XML file! " + file.getName());
 
         LOG.info("File OK: " + file.getName());
@@ -89,7 +90,7 @@ public class CEMImporter extends ImporterBase {
             Node childNode = childNodes.item(nodeCount);
             LOG.debug("childNode : " + nodeCount + " - " + childNode.getNodeName());
 
-            if (childNode.getNodeName().equals("cetype")) {
+            if (childNode.getNodeName().equals(CETYPE)) {
                 cetypeNode = childNode;
                 break;
             }
@@ -114,7 +115,7 @@ public class CEMImporter extends ImporterBase {
         }
 
         // Parse CETYPE node attributes.
-        String type = cetypeNode.getAttributes().getNamedItem("name").getTextContent();
+        String type = cetypeNode.getAttributes().getNamedItem(NAME).getTextContent();
         addMemberInRefset(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
         LOG.info("type: " + type);
 
@@ -125,69 +126,69 @@ public class CEMImporter extends ImporterBase {
             LOG.debug("loopNode : " + nodeCount + " - " + loopNode.getNodeName());
 
             switch (loopNode.getNodeName()) {
-            case "key":
-                String key = loopNode.getAttributes().getNamedItem("code").getTextContent();
+            case KEY:
+                String key = loopNode.getAttributes().getNamedItem(CODE).getTextContent();
                 addMemberInRefset(focusConcept, CEMMetadataBinding.CEM_KEY_REFSET, key);
                 LOG.info("key: " + key);
                 break;
-            case "data":
-                String data = loopNode.getAttributes().getNamedItem("type").getTextContent();
+            case DATA:
+                String data = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
                 LOG.info("data: " + data);
                 switch (data.toUpperCase()) {
-                case "PQ":
+                case PQ:
                     addMemberInDataRefset(focusConcept, CEMMetadataBinding.CEM_PQ);
                     break;
-                case "CD":
+                case CD:
                     addMemberInDataRefset(focusConcept, CEMMetadataBinding.CEM_CD);
                     break;
-                case "CWE":  // Another way of specifying CEM CD data type.
+                case CWE:  // Another way of specifying CEM CD data type.
                     addMemberInDataRefset(focusConcept, CEMMetadataBinding.CEM_CD);
                     break;
                     //TODO: add the rest of data types
                 }
                 break;
-            case "qual":
-                String qualName = loopNode.getAttributes().getNamedItem("name").getTextContent();
-                String qualType = loopNode.getAttributes().getNamedItem("type").getTextContent();
-                String qualCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
+            case QUAL:
+                String qualName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+                String qualType = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
+                String qualCard = loopNode.getAttributes().getNamedItem(CARD).getTextContent();
                 RefexChronicleBI qual = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_QUAL, qualType);
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI qualConstraint = addMemberInConstraintsRefset(qual);
-                RefexChronicleBI qualPath = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, "card");
+                RefexChronicleBI qualPath = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
                 RefexChronicleBI qualValue = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, qualCard);
 
                 LOG.info(String.format("qual: %s %s %s", qualName, qualType, qualCard));
                 break;
-            case "mod":
-                String modName = loopNode.getAttributes().getNamedItem("name").getTextContent();
-                String modType = loopNode.getAttributes().getNamedItem("type").getTextContent();
-                String modCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
+            case MOD:
+                String modName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+                String modType = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
+                String modCard = loopNode.getAttributes().getNamedItem(CARD).getTextContent();
                 RefexChronicleBI mod = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_MOD, modType);
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI modConstraint = addMemberInConstraintsRefset(mod);
-                RefexChronicleBI modPath = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, "card");
+                RefexChronicleBI modPath = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
                 RefexChronicleBI modValue = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, modCard);
 
                 LOG.info(String.format("mod: %s %s %s", modName, modType, modCard));
                 break;
-            case "att":
-                String attName = loopNode.getAttributes().getNamedItem("name").getTextContent();
-                String attType = loopNode.getAttributes().getNamedItem("type").getTextContent();
-                String attCard = loopNode.getAttributes().getNamedItem("card").getTextContent();
+            case ATT:
+                String attName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+                String attType = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
+                String attCard = loopNode.getAttributes().getNamedItem(CARD).getTextContent();
                 RefexChronicleBI att = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_ATTR, attType);
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI attConstraint = addMemberInConstraintsRefset(att);
-                RefexChronicleBI attPath = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, "card");
+                RefexChronicleBI attPath = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
                 RefexChronicleBI attValue = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, attCard);
 
                 LOG.info(String.format("att: %s %s %s", attName, attType, attCard));
                 break;
-            case "constraint":
-                String path = loopNode.getAttributes().getNamedItem("path").getTextContent();
-                String value = loopNode.getAttributes().getNamedItem("value").getTextContent();
+            case CONSTRAINT:
+                String path = loopNode.getAttributes().getNamedItem(PATH).getTextContent();
+                String value = loopNode.getAttributes().getNamedItem(VALUE).getTextContent();
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI constraint = addMemberInConstraintsRefset(focusConcept);
