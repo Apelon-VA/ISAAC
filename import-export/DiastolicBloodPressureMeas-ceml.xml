@@ -2,21 +2,21 @@
     <cetype name="DiastolicBloodPressureMeas">
         <key code="DiastolicBloodPressure_KEY_ECID"/>
         <data type="pq"/>
-        <qual name="methodDevice" type="MethodDevice" card="0-1"/> 
-        <qual name="bodyLocationPrecoord" type="BodyLocationPrecoord" card="0-1"/>
-        <qual name="bodyPosition" type="BodyPosition" card="0-1"/>
-        <qual name="abnormalFlag" type="AbnormalFlag" card="0-1"/>
-        <qual name="deltaFlag" type="DeltaFlag" card="0-1"/>
-        <qual name="referenceRangeNar" type="ReferenceRangeNar" card="0-1"/> 
-        <qual name="relativeTemporalContext" type="RelativeTemporalContext" card="0-M"/> 
-        <mod name="subject" type="Subject" card="0-1"/>
-        <att name="observed" type="Observed" card="0-1"/>
-        <att name="reportedReceived" type="ReportedReceived" card="0-1"/> 
-        <att name="verified" type="Verified" card="0-1"/>
+        <qual card="0-1" name="methodDevice" type="MethodDevice"/>
+        <qual card="0-1" name="bodyLocationPrecoord" type="BodyLocationPrecoord"/>
+        <qual card="0-1" name="bodyPosition" type="BodyPosition"/>
+        <qual card="0-1" name="abnormalFlag" type="AbnormalFlag"/>
+        <qual card="0-1" name="deltaFlag" type="DeltaFlag"/>
+        <qual card="0-1" name="referenceRangeNar" type="ReferenceRangeNar"/>
+        <qual card="0-M" name="relativeTemporalContext" type="RelativeTemporalContext"/>
+        <mod card="0-1" name="subject" type="Subject"/>
+        <att card="0-1" name="observed" type="Observed"/>
+        <att card="0-1" name="reportedReceived" type="ReportedReceived"/>
+        <att card="0-1" name="verified" type="Verified"/>
         <constraint path="qual.abnormalFlag.data.cwe.domain" value="AbnormalFlagNumericNom_DOMAIN_ECID"/>
         <constraint path="qual.deltaFlag.data.cwe.domain" value="DeltaFlagNumericNom_DOMAIN_ECID"/>
         <constraint path="qual.methodDevice.data.cwe.domain" value="BloodPressureMeasurementDevice_DOMAIN_ECID"/>
-        <constraint path="data.pq.unit.domain" value="PressureUnits_DOMAIN_ECID"/> 
-        <constraint path="data.pq.normal" value="MilliMetersOfMercury_ECID"/> 
-    </cetype> 
+        <constraint path="data.pq.unit.domain" value="PressureUnits_DOMAIN_ECID"/>
+        <constraint path="data.pq.normal" value="MilliMetersOfMercury_ECID"/>
+    </cetype>
 </ceml>
