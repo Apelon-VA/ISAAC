@@ -99,14 +99,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
             @Override
             protected ConceptChronicleDdo call() throws Exception {
-                LOG.info("Loading concept {} as the root of a tree view", rootConcept);
+                LOG.debug("Loading concept {} as the root of a tree view", rootConcept);
                 ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
                         rootConcept,
                         StandardViewCoordinates.getSnomedInferredLatest(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-                LOG.info("Finished loading root concept");
+                LOG.debug("Finished loading root concept");
                 return rootConceptCC;
             }
 
