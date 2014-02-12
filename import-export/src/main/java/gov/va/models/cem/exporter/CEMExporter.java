@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -31,6 +30,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
+import org.ihtsdo.otf.tcc.model.cc.refex.type_membership.MembershipMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_nid_string.NidNidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_string.NidStringMember;
@@ -43,7 +43,6 @@ import org.w3c.dom.Element;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import com.sun.xml.internal.ws.util.StringUtils;
 
@@ -66,30 +65,15 @@ public class CEMExporter extends ExporterBase {
         LOG.info("Preparing to export CEM model to: " + file.getName());
 
         // Get chronicle for concept.
-        ComponentChronicleBI<?> concept = getDataStore().getComponent(conceptUUID);
-        LOG.debug("concept="+concept);
+        ComponentChronicleBI<?> focusConcept = getDataStore().getComponent(conceptUUID);
+        LOG.debug("focusConcept="+focusConcept);
 
         // Get all annotations on the specified concept.
-        Collection<? extends RefexChronicleBI<?>> annotations = getLatestAnnotations(concept);
-
-        // Organize into Map for quick access.
-        Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap = Maps.newHashMap();
-        for (RefexChronicleBI<?> annotation : annotations) {
-            LOG.debug("annotation="+annotation);
-
-            // Map to List of annotations for each assemblage nid.
-            int assemblageNid = annotation.getAssemblageNid();
-            List<RefexChronicleBI<?>> l = nidAnnotationsMap.get(assemblageNid);
-            if (l == null) {
-                l = Lists.newArrayList();
-                nidAnnotationsMap.put(assemblageNid, l);
-            }
-            l.add(annotation);
-        }
+        Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations = getLatestAnnotations(focusConcept);
 
         // Build a DOM tree in the style of CEM.
         this.document = buildDom();
-        Element root = buildTree(conceptUUID, nidAnnotationsMap);
+        Element root = buildTree(focusConceptAnnotations);
         document.appendChild(root);
 
         // Transform DOM tree into stream.
@@ -102,45 +86,37 @@ public class CEMExporter extends ExporterBase {
         LOG.info("Ending export of CEM model to: " + file.getName());
     }
 
-    private Element buildTree(UUID conceptUUID, Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
+    private Element buildTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
         Element root = buildRootElement();
 
-        Element cetype = buildCetypeElement(conceptUUID, nidAnnotationsMap);
+        Element cetype = buildCetypeElement(focusConceptAnnotations);
         root.appendChild(cetype);
 
         return root;
     }
 
     /**
-     * As per the "JCoylePhD-FinalForPrint.pdf" file, these are the
-     * Properties of the &lt;cetype&gt; element (see Table 3.15):
-     * <li>Property Type Cardinality</li>
-     * <li>name attribute one</li>
-     * <li>base attribute zero to one</li>
-     * <li>kind attribute one</li>
-     * <li>key element zero to one</li>
-     * <li>data element zero to one</li>
-     * <li>qual element zero to many</li>
-     * <li>mod element zero to many</li>
-     * <li>att element zero to many</li>
-     * <li>item element zero to many</li>
-     * <li>constraint element zero to many</li>
-     * <li>link element zero to many</li>
-     * The actual spec is in Jay's spreadsheet (ISAAC/resources/cem.xlsx).
+     * The spec for this model is in Jay's spreadsheet (ISAAC/resources/cem.xlsx).
      */
-    private Element buildCetypeElement(UUID conceptUUID, Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
+    private Element buildCetypeElement(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
         Element cetype = document.createElement("cetype");
 
         // Name attribute (1).
-        StringMember nameAnnotation = getStringMember(CEMMetadataBinding.CEM_TYPE_REFSET, nidAnnotationsMap);
-        Preconditions.checkNotNull(nameAnnotation, "No CEM_TYPE_REFSET member found.");
-        Attr nameAttr = buildNameAttr(nameAnnotation);
-        cetype.setAttributeNode(nameAttr);
+        StringMember nameAnnotation = getSingleAnnotation(focusConceptAnnotations,
+                CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
+        if (nameAnnotation == null) {
+            LOG.info("No CEM_TYPE_REFSET member found.");
+        } else {
+            Preconditions.checkNotNull(nameAnnotation, "No CEM_TYPE_REFSET member found.");
+            Attr nameAttr = buildNameAttr(nameAnnotation);
+            cetype.setAttributeNode(nameAttr);
+        }
 
         // Key element (0-1).
-        StringMember keyAnnotation = getStringMember(CEMMetadataBinding.CEM_KEY_REFSET, nidAnnotationsMap);
+        StringMember keyAnnotation = getSingleAnnotation(focusConceptAnnotations,
+                CEMMetadataBinding.CEM_KEY_REFSET, StringMember.class);
         if (keyAnnotation == null) {
             LOG.info("No CEM_KEY_REFSET member found.");
         } else {
@@ -149,7 +125,8 @@ public class CEMExporter extends ExporterBase {
         }
 
         // Data element (0-1).
-        NidMember dataAnnotation = getNidMember(CEMMetadataBinding.CEM_DATA_REFSET, nidAnnotationsMap);
+        NidMember dataAnnotation = getSingleAnnotation(focusConceptAnnotations,
+                CEMMetadataBinding.CEM_DATA_REFSET, NidMember.class);
         if (dataAnnotation == null) {
             LOG.info("No CEM_DATA_REFSET member found.");
         } else {
@@ -159,26 +136,38 @@ public class CEMExporter extends ExporterBase {
 
         // Qual elements (0-M).
         List<NidStringMember> qualAnnotations = getCompositionAnnotations(
-                CEMMetadataBinding.CEM_QUAL, nidAnnotationsMap);
-        for (NidStringMember qualAnnotation : qualAnnotations) {
-            Element qual = buildCompositionElement("qual", qualAnnotation);
-            cetype.appendChild(qual);
+                focusConceptAnnotations, CEMMetadataBinding.CEM_QUAL);
+        if (qualAnnotations.isEmpty()) {
+            LOG.info("No CEM_QUAL members found.");
+        } else {
+            for (NidStringMember qualAnnotation : qualAnnotations) {
+                Element qual = buildCompositionElement("qual", qualAnnotation);
+                cetype.appendChild(qual);
+            }
         }
 
         // Mod elements (0-M).
         List<NidStringMember> modAnnotations = getCompositionAnnotations(
-                CEMMetadataBinding.CEM_MOD, nidAnnotationsMap);
-        for (NidStringMember modAnnotation : modAnnotations) {
-            Element qual = buildCompositionElement("mod", modAnnotation);
-            cetype.appendChild(qual);
+                focusConceptAnnotations, CEMMetadataBinding.CEM_MOD);
+        if (modAnnotations.isEmpty()) {
+            LOG.info("No CEM_MOD members found.");
+        } else {
+            for (NidStringMember modAnnotation : modAnnotations) {
+                Element mod = buildCompositionElement("mod", modAnnotation);
+                cetype.appendChild(mod);
+            }
         }
 
         // Att elements (0-M).
         List<NidStringMember> attAnnotations = getCompositionAnnotations(
-                CEMMetadataBinding.CEM_ATTR, nidAnnotationsMap);
-        for (NidStringMember attAnnotation : attAnnotations) {
-            Element qual = buildCompositionElement("att", attAnnotation);
-            cetype.appendChild(qual);
+                focusConceptAnnotations, CEMMetadataBinding.CEM_ATTR);
+        if (attAnnotations.isEmpty()) {
+            LOG.info("No CEM_ATTR members found.");
+        } else {
+            for (NidStringMember attAnnotation : attAnnotations) {
+                Element att = buildCompositionElement("att", attAnnotation);
+                cetype.appendChild(att);
+            }
         }
 
         // TODO: Constraint elements (0-M).
@@ -197,13 +186,13 @@ public class CEMExporter extends ExporterBase {
         return e;
     }
 
-    private Element buildCompositionElement(String elementName, NidStringMember typeAnnotation)
+    private Element buildCompositionElement(String elementName, NidStringMember compositionRefex)
             throws ValidationException, IOException, ContradictionException {
         Element e = document.createElement(elementName);
 
         // Type attribute.
         Attr typeAttr = document.createAttribute("type");
-        String type = typeAnnotation.getString1();
+        String type = compositionRefex.getString1();
         typeAttr.setNodeValue(type);
         e.setAttributeNode(typeAttr);
 
@@ -262,76 +251,87 @@ public class CEMExporter extends ExporterBase {
         return nameAttr;
     }
 
-    private NidMember getNidMember(ConceptSpec refset,
-            Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
-            throws ValidationException, IOException {
+    private StringMember getStringAnnotation(MembershipMember owner, ConceptSpec refsetSpec)
+            throws IOException, ContradictionException {
 
-        RefexChronicleBI<?> annotation = getSingleAnnotation(refset, nidAnnotationsMap);
-        if (annotation == null) {
-            return null;
-        }
+        // Get annotations of owner.
+        Collection<? extends RefexChronicleBI<?>> annotations = getLatestAnnotations(owner);
 
-        // Sanity check.
-        Preconditions.checkState(annotation instanceof NidMember,
-                "Expected NidMember!  Actual type is " + annotation.getClass());
-
-        return (NidMember) annotation;
+        return getSingleAnnotation(annotations, refsetSpec, StringMember.class);
     }
 
-    private StringMember getStringMember(ConceptSpec refset,
-            Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
-            throws ValidationException, IOException {
-
-        RefexChronicleBI<?> annotation = getSingleAnnotation(refset, nidAnnotationsMap);
-        if (annotation == null) {
-            return null;
-        }
-
-        // Sanity check.
-        Preconditions.checkState(annotation instanceof StringMember,
-                "Expected StringMember!  Actual type is " + annotation.getClass());
-
-        return (StringMember) annotation;
-    }
-
-    @SuppressWarnings("unused")
-    private NidNidStringMember getConstraintAnnotation(NidStringMember owner, ConceptSpec constraint)
+    private MembershipMember getMembershipAnnotation(NidStringMember owner, ConceptSpec conceptSpec)
             throws ValidationException, IOException, ContradictionException {
 
         // Get annotations of owner.
         Collection<? extends RefexChronicleBI<?>> annotations = getLatestAnnotations(owner);
 
+        return getSingleAnnotation(annotations, conceptSpec,
+                MembershipMember.class);
+    }
+
+    @SuppressWarnings("unused")
+    private List<NidNidStringMember> getConstraintAnnotations(
+            Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations,
+            ConceptSpec refsetSpec)
+            throws ValidationException, IOException {
+
+        // Filter members of CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.
+        List<NidNidStringMember> annotations = filterAnnotations(focusConceptAnnotations,
+                CEMMetadataBinding.CEM_CONSTRAINTS_REFSET, NidNidStringMember.class);
+
+        // Filter again, keep those having the specified refset as their concept extension.
         List<NidNidStringMember> filtered = Lists.newArrayList();
-        for (RefexChronicleBI<?> annotation : annotations) {
-
-            // Filter on CEMMetadataBinding.CEM_CONSTRAINTS_REFSET assemblage.
-            if (annotation.getAssemblageNid() != CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
-                continue;
+        for (NidNidStringMember annotation : annotations) {
+            if (refsetSpec.getNid() == annotation.getC1Nid()) {
+                filtered.add(annotation);
             }
-
-            // Expect NidNidStringMember.
-            Preconditions.checkState(annotation instanceof NidNidStringMember,
-                    "Expected NidNidStringMember!  Actual type is " + annotation.getClass());
-            NidNidStringMember member = (NidNidStringMember) annotation;
-
-            // Filter those belonging to the specified constraint.
-            if (member.getC1Nid() != constraint.getNid()) {
-                continue;
-            }
-
-            // Filter members of owner.
-            if (member.getC2Nid() != owner.getNid()) {
-                continue;
-            }
-
-            // What we want.
-            filtered.add(member);
         }
+
+        return filtered;
+    }
+
+    private List<NidStringMember> getCompositionAnnotations(
+            Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations,
+            ConceptSpec refsetSpec)
+            throws ValidationException, IOException {
+
+        // Filter members of CEMMetadataBinding.CEM_COMPOSITION_REFSET.
+        List<NidStringMember> annotations = filterAnnotations(focusConceptAnnotations,
+                CEMMetadataBinding.CEM_COMPOSITION_REFSET, NidStringMember.class);
+
+        // Filter again, keep those having the specified refset as their concept extension.
+        List<NidStringMember> filtered = Lists.newArrayList();
+        for (NidStringMember annotation : annotations) {
+            if (refsetSpec.getNid() == annotation.getC1Nid()) {
+                filtered.add(annotation);
+            }
+        }
+
+        return filtered;
+    }
+
+    /**
+     * Helper method to filter the specified {@link Collection} of annotations
+     * by calling {@link #filterAnnotations(Collection, ConceptSpec, Class)},
+     * and then perform a sanity check that there is at most one.
+     *
+     * @return The sole annotation, or {@code null} if none found.
+     * @throws An {@link IllegalStateException} if there is more than one annotation found.
+     */
+    private <T> T getSingleAnnotation(
+            Collection<? extends RefexChronicleBI<?>> annotations,
+            ConceptSpec refsetSpec, Class<T> type)
+            throws ValidationException, IOException {
+
+        // Filter members of the specified refset.
+        List<T> filtered = filterAnnotations(annotations, refsetSpec, type);
 
         // Should be 0-1.
         int filteredCount = filtered.size();
         Preconditions.checkState(filteredCount <= 1,
-                "Expected 0-1 annotations for constraint nid " + constraint.getNid() + ", found " + filteredCount);
+                "Expected 0-1 annotations for refset nid " + refsetSpec.getNid() +
+                ", found " + filteredCount);
 
         // Return annotation, or null if none.
         if (filteredCount == 0) {
@@ -342,95 +342,39 @@ public class CEMExporter extends ExporterBase {
     }
 
     /**
-     * Helper method to return all the {@link RefexChronicleBI}s from the
-     * {@link List} of annotations in the provided {@link Map} for the
-     * {@link CEMMetadataBinding#CEM_CONSTRAINTS_REFSET} refset, filtered by the
-     * specified {@link ConceptSpec}.
-     */
-    @SuppressWarnings("unused")
-    private List<NidNidStringMember> getConstraintAnnotations(ConceptSpec refset,
-            Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
-            throws ValidationException, IOException {
-
-        // Get members of CEMMetadataBinding.CEM_COMPOSITION_REFSET.
-        int compositionRefsetNid = CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid();
-        List<RefexChronicleBI<?>> annotations = nidAnnotationsMap.get(compositionRefsetNid);
-
-        // Iterate through and gather those belonging to the specified refset.
-        List<NidNidStringMember> filtered = Lists.newArrayList();
-        for (RefexChronicleBI<?> annotation : annotations) {
-
-            // Expect NidStringMember.
-            Preconditions.checkState(annotation instanceof NidNidStringMember,
-                    "Expected NidNidStringMember!  Actual type is " + annotation.getClass());
-
-            NidNidStringMember member = (NidNidStringMember) annotation;
-            if (refset.getNid() == member.getC1Nid()) {
-                filtered.add(member);
-            }
-        }
-
-        return filtered;
-    }
-
-    /**
-     * Helper method to return all the {@link RefexChronicleBI}s from the
-     * {@link List} of annotations in the provided {@link Map} for the
-     * {@link CEMMetadataBinding#CEM_COMPOSITION_REFSET} refset, filtered by the
-     * specified {@link ConceptSpec}.
-     */
-    private List<NidStringMember> getCompositionAnnotations(ConceptSpec refset,
-            Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
-            throws ValidationException, IOException {
-
-        // Get members of CEMMetadataBinding.CEM_COMPOSITION_REFSET.
-        int compositionRefsetNid = CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid();
-        List<RefexChronicleBI<?>> annotations = nidAnnotationsMap.get(compositionRefsetNid);
-
-        // Iterate through and gather those belonging to the specified refset.
-        List<NidStringMember> filtered = Lists.newArrayList();
-        for (RefexChronicleBI<?> annotation : annotations) {
-
-            // Expect NidStringMember.
-            Preconditions.checkState(annotation instanceof NidStringMember,
-                    "Expected NidStringMember!  Actual type is " + annotation.getClass());
-
-            NidStringMember member = (NidStringMember) annotation;
-            if (refset.getNid() == member.getC1Nid()) {
-                filtered.add(member);
-            }
-        }
-
-        return filtered;
-    }
-
-    /**
-     * Helper method to return the sole {@link RefexChronicleBI} from the
-     * {@link List} of annotations in the provided {@link Map} for the given
-     * {@link ConceptSpec}, or {@code null} if none is present.
+     * Helper method to iterate through the specified {@link Collection} of
+     * annotations, keeping those belonging to the specified {@link ConceptSpec}.
+     * Also performs a sanity check that annotations are instances of the
+     * specified {@code type}.
      *
-     * Performs integrity check and throws an {@link IllegalStateException} if
-     * there is more than one.
+     * @return A new {@link List} of filtered annotations. May be empty.
+     * @throws An {@link IllegalStateException} if annotations are not
+     *         instances of the specified {@code type}.
      */
-    private RefexChronicleBI<?> getSingleAnnotation(ConceptSpec refset,
-            Map<Integer, List<RefexChronicleBI<?>>> nidAnnotationsMap)
+    private <T> List<T> filterAnnotations(
+            Collection<? extends RefexChronicleBI<?>> annotations,
+            ConceptSpec refsetSpec, Class<T> type)
             throws ValidationException, IOException {
+        List<T> filtered = Lists.newArrayList();
 
-        // Get members of specified refset.
-        int refsetNid = refset.getNid();
-        List<RefexChronicleBI<?>> annotations = nidAnnotationsMap.get(refsetNid);
+        for (RefexChronicleBI<?> annotation : annotations) {
 
-        // Should be 0-1.
-        int annotationCount = annotations.size();
-        Preconditions.checkState(annotationCount <= 1,
-                "Expected 0-1 annotations for refsetNid " + refsetNid + ", found " + annotationCount);
+            // Filter on specified refset.
+            if (annotation.getAssemblageNid() != refsetSpec.getNid()) {
+                continue;
+            }
 
-        // Return annotation, or null if none.
-        if (annotationCount == 0) {
-            return null;
-        } else {
-            return annotations.get(0);
+            // Expect member type.
+            Preconditions.checkState(type.isAssignableFrom(annotation.getClass()),
+                    "Expected " + type + "!  Actual type is " + annotation.getClass());
+            @SuppressWarnings("unchecked")
+            T member = (T) annotation;
+
+            // What we want.
+            filtered.add(member);
         }
+
+        return filtered;
     }
 
     private Element buildRootElement() {
