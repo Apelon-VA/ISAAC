@@ -16,12 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui;
 
 import javafx.stage.Window;
 
 /**
  * MenuItemI
+ * 
+ * An interface for views to provide specs for a menu that should be created on behalf of the view
+ * in the main appliation
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */

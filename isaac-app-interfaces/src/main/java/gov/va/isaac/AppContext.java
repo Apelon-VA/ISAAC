@@ -16,17 +16,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui;
+package gov.va.isaac;
 
 import java.io.IOException;
-import gov.va.isaac.gui.interfaces.ApplicationWindowI;
-import gov.va.isaac.gui.interfaces.CommonDialogsI;
-import gov.va.isaac.gui.interfaces.SnomedConceptViewI;
+import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+import gov.va.isaac.interfaces.gui.CommonDialogsI;
+import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializerCustom;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * AppContext
+ * 
+ * Provides convenience methods for retrieving implementations of various interfaces
+ * from the HK2 dependency management system.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */

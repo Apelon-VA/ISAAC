@@ -18,11 +18,11 @@
  */
 package gov.va.isaac.gui.dialog;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.SnomedConceptViewI;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
 import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.net.URL;

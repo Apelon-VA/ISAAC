@@ -1,7 +1,7 @@
 package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.interfaces.UserPreferencesI;
+import gov.va.isaac.interfaces.utility.UserPreferencesI;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;

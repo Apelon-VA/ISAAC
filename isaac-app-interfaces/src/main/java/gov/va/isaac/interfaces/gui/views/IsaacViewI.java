@@ -16,19 +16,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui.views;
 
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import java.util.List;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ShutdownBroadcastI
+ * IsaacViewI
+ * 
+ * The lowest level of a View - only provides menu options.  No view display hooks.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public interface ShutdownBroadcastListenerI
+@Contract
+public abstract interface IsaacViewI
 {
 	/**
-	 * Called when an app shutdown is requested.
+	 * Provides the specs of all of the menus required by this view.  May return an empty list, will not return null.
 	 */
-	public void shutdown();
+	public List<MenuItemI> getMenuBarMenus();
+	
 }

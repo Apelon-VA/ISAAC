@@ -18,8 +18,8 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.interfaces.MenuItemI;
-import gov.va.isaac.gui.interfaces.ViewI;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.ViewI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -55,7 +55,7 @@ public class SctTreeViewIsaacView  implements ViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getView()
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
 	 */
 	@Override
 	public Region getView()
@@ -64,7 +64,7 @@ public class SctTreeViewIsaacView  implements ViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()

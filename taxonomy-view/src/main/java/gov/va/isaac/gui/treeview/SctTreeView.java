@@ -18,10 +18,10 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -389,7 +389,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     /**
      * Tell the tree to stop whatever threading operations it has running,
      * since the application is exiting.
-     * @see gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI#shutdown()
+     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
      */
     @Override
     public void shutdown()

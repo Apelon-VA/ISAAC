@@ -16,21 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui.views;
 
-import javafx.scene.layout.Region;
+import javafx.stage.Window;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * PopupViewI
  *
+ * Extends the ViewI to provide a View which will pop up a new window on top of the parent 
+ * window when the showView method is called.
+ *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ViewI extends IsaacViewI
+public interface PopupViewI extends IsaacViewI
 {
 	/**
-	 * Get a reference to the JavaFX Region component that is created by this view.
+	 * Display this popup view to the user in front of the specified parent window.
+	 * The PopupViewI implementation is responsible for showing itself when this method 
+	 * is called.
 	 */
-	public Region getView();
+	public void showView(Window parent);
 }
