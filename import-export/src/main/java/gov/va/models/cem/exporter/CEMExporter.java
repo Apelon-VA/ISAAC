@@ -202,7 +202,19 @@ public class CEMExporter extends ExporterBase {
         nameAttr.setNodeValue(name);
         e.setAttributeNode(nameAttr);
 
-        // TODO: Card attribute (0-1).
+        // Constraint attribute (0-1).
+        MembershipMember constraint = getMembershipAnnotation(compositionRefex, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
+        if (constraint == null) {
+            LOG.info("No CEM_CONSTRAINTS_REFSET member found.");
+        } else {
+            StringMember pathAnnotation = getStringAnnotation(constraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET);
+            StringMember valueAnnotation = getStringAnnotation(constraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET);
+            String path = pathAnnotation.getString1();
+            String value = valueAnnotation.getString1();
+            Attr constraintAttr = document.createAttribute(path);
+            constraintAttr.setNodeValue(value);
+            e.setAttributeNode(constraintAttr);
+        }
 
         return e;
     }
