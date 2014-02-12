@@ -25,7 +25,10 @@ import gov.va.models.cem.importer.CEMImporter;
 
 import java.io.File;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 
@@ -119,6 +122,10 @@ public class ImportView extends GridPane {
                 AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
             }
         };
+
+        // Bind cursor to task state.
+        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
+        this.getScene().cursorProperty().bind(cursorBinding);
 
         Thread t = new Thread(task, "Importer_" + modelType);
         t.setDaemon(true);

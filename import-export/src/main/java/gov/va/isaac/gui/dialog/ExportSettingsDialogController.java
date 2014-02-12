@@ -25,8 +25,11 @@ import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.IOException;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -148,6 +151,10 @@ public class ExportSettingsDialogController {
                 AppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
             }
         };
+
+        // Bind cursor to task state.
+        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
+        exportSettingsDialog.getScene().cursorProperty().bind(cursorBinding);
 
         Utility.execute(task);
     }
