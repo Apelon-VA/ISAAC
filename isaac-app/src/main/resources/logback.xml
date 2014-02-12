@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!-- Logback (SLF) configuration file -->
+<configuration>
+	<!-- Improve performance with the redirct of Java logging into logback -->
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>true</resetJUL>
+	</contextListener>
+
+	<!-- Only prints INFO and worse -->
+	<appender name="FILE-NORMAL" class="ch.qos.logback.core.FileAppender">
+		<file>isaac.log</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		<encoder>
+			<pattern>%date %-5level %-22([%thread]) %-32([%logger{30}]) %file:%line - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Prints everything -->
+	<appender name="FILE-DEBUG" class="ch.qos.logback.core.FileAppender">
+		<file>isaac-debug.log</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>TRACE</level>
+		</filter>
+		<encoder>
+			<pattern>%date %-5level %-22([%thread]) %-32([%logger{30}]) %file:%line - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Only prints WARN and worse -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>WARN</level>
+		</filter>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %file:%line - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="gov.va.isaac" level="TRACE" />
+	<logger name="org.ihtsdo" level="INFO" />
+
+	<!-- Set the root logger (all loggers not specified above) at a WARN level -->
+	<root level="WARN">
+		<appender-ref ref="FILE-DEBUG" />
+		<appender-ref ref="FILE-NORMAL" />
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>

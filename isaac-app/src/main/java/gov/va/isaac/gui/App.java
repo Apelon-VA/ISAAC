@@ -45,6 +45,7 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * ISAAC {@link Application} class.
@@ -254,6 +255,9 @@ public class App extends Application implements ApplicationWindowI{
 	}
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        //Configure Java logging into logback
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
         AppContext.setup();
         // TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
         Field f = Hk2Looker.class.getDeclaredField("looker");
