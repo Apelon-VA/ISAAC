@@ -25,9 +25,9 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javafx.stage.Window;
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.MenuItemI;
-import gov.va.isaac.gui.interfaces.PopupViewI;
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 
 /**
  * ExportSettingsDialogView
@@ -41,7 +41,7 @@ public class ExportSettingsDialogView implements PopupViewI
 	private static final Logger LOG = LoggerFactory.getLogger(ExportSettingsDialogView.class);
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
@@ -89,7 +89,7 @@ public class ExportSettingsDialogView implements PopupViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.interfaces.PopupViewI#showView(javafx.stage.Window)
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
 	@Override
 	public void showView(Window parent)

@@ -18,8 +18,8 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.interfaces.DockedViewI;
-import gov.va.isaac.gui.interfaces.MenuItemI;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +53,7 @@ public class SctTreeViewDockedView  implements DockedViewI
 	}
 	
 	/**
-	 * @see gov.va.isaac.gui.interfaces.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
@@ -61,7 +61,7 @@ public class SctTreeViewDockedView  implements DockedViewI
 		return new ArrayList<MenuItemI>();
 	}
 	/**
-	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getView()
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
 	 */
 	@Override
 	public Region getView()
@@ -69,7 +69,7 @@ public class SctTreeViewDockedView  implements DockedViewI
 		return sctTreeView_.getView();
 	}
 	/**
-	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getMenuBarMenuToShowView()
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
 	 */
 	@Override
 	public MenuItemI getMenuBarMenuToShowView()
@@ -115,7 +115,7 @@ public class SctTreeViewDockedView  implements DockedViewI
 		};
 	}
 	/**
-	 * @see gov.va.isaac.gui.interfaces.DockedViewI#getViewTitle()
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
 	@Override
 	public String getViewTitle()

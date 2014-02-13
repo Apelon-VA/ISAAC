@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>gov.va.isaac</groupId>
@@ -10,9 +10,23 @@
     <name>ISAAC Parent POM</name>
     <url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
 
+    <scm>
+        <connection>scm:git:https://github.com/Apelon-VA/ISAAC.git</connection>
+        <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>
+        <url>https://github.com/Apelon-VA/ISAAC</url>
+        <tag>master</tag>
+    </scm>
+    <distributionManagement>
+        <site>
+            <id>site</id>
+            <url>scm:git:git@github.com:Apelon-VA/ISAAC.git</url>
+        </site>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf.version>1.1-SNAPSHOT</otf.version>
+        <otf-query.version>1.1-va-1.0-SNAPSHOT</otf-query.version>
+        <otf-versioning.version>1.1-va-1.0-SNAPSHOT</otf-versioning.version>
     </properties>
     
     <dependencyManagement>
@@ -22,7 +36,7 @@
             <dependency>
                 <groupId>org.ihtsdo.otf</groupId>
                 <artifactId>tcc-datastore</artifactId>
-                <version>${otf.version}</version>
+                <version>${otf-versioning.version}</version>
                 <type>jar</type>
                 
                 <!-- Exclude JavaFX 2.2.45 -->
@@ -37,7 +51,7 @@
             <dependency>
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>query-implementation</artifactId>
-            <version>${otf.version}</version>
+            <version>${otf-query.version}</version>
             <type>jar</type>
                 
                 <!-- Exclude JavaFX 2.2.45 -->
@@ -98,5 +112,6 @@
         <module>lego-view</module>
         <module>search-view</module>
         <module>isaac-app</module>
+        <module>isaac-workflow</module>
     </modules>
 </project>

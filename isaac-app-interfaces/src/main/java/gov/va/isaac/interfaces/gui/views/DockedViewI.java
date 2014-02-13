@@ -16,12 +16,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui.views;
 
+import gov.va.isaac.interfaces.gui.MenuItemI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * PopupViewI
+ * DockedViewI
+ *
+ * A View type that is intended to be treated as a docked window within the parent 
+ * app.  The docked view is not responsible for displaying itself - it simply provides
+ * the view object which will have its visibility managed by the parent application. 
+ * 
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */

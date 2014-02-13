@@ -16,12 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.utility;
 
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * UserPreferencesI
+ * 
+ * A simple key/value store interface for user preferences.  Provides convenience methods for boolean 
+ * values and default values.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */

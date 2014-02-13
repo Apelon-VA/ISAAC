@@ -16,27 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui.views;
 
-import javafx.stage.Stage;
+import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ApplicationWindow
+ * SnomedConceptViewI
+ * 
+ * An interface that requests a pop up window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ApplicationWindowI
+public interface SnomedConceptViewI
 {
 	/**
-	 * Return a reference to the Primary Stage of the application.
+	 * Present the default SnomedConceptView window to the user
 	 */
-	public Stage getPrimaryStage();
-	
-	/**
-	 * Register a for a callback to be notified when an app shutdown is requested.
-	 * @param listener
-	 */
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
+	public void showConcept(UUID conceptUUID);
 }

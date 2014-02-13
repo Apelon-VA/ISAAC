@@ -18,10 +18,11 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
-import gov.va.isaac.gui.interfaces.ApplicationWindowI;
-import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
+import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * ISAAC {@link Application} class.
@@ -235,7 +237,7 @@ public class App extends Application implements ApplicationWindowI{
     }
     
 	/**
-	 * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#getPrimaryStage()
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#getPrimaryStage()
 	 */
 	@Override
 	public Stage getPrimaryStage()
@@ -244,7 +246,7 @@ public class App extends Application implements ApplicationWindowI{
 	}
 	
 	/**
-	 * @see gov.va.isaac.gui.interfaces.ApplicationWindowI#registerShutdownListener(gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI)
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
 	 */
 	@Override
 	public void registerShutdownListener(ShutdownBroadcastListenerI listener)
@@ -253,6 +255,9 @@ public class App extends Application implements ApplicationWindowI{
 	}
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        //Configure Java logging into logback
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
         AppContext.setup();
         // TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
         Field f = Hk2Looker.class.getDeclaredField("looker");

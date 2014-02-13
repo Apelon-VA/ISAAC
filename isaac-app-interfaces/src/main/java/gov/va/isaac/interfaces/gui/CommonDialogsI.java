@@ -16,13 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.interfaces;
+package gov.va.isaac.interfaces.gui;
 
 import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * CommonDialogsI
+ * 
+ * Provide access to commonly used dialogs that an ISAAC application module may need.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */

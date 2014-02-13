@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui.searchview;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.GuiSearchResult;

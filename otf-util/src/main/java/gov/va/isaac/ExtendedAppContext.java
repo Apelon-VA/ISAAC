@@ -18,7 +18,6 @@
  */
 package gov.va.isaac;
 
-import gov.va.isaac.gui.AppContext;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 
 /**

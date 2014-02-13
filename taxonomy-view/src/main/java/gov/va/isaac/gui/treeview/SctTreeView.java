@@ -18,10 +18,10 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -99,14 +99,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
             @Override
             protected ConceptChronicleDdo call() throws Exception {
-                LOG.info("Loading concept {} as the root of a tree view", rootConcept);
+                LOG.debug("Loading concept {} as the root of a tree view", rootConcept);
                 ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
                         rootConcept,
                         StandardViewCoordinates.getSnomedInferredLatest(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-                LOG.info("Finished loading root concept");
+                LOG.debug("Finished loading root concept");
                 return rootConceptCC;
             }
 
@@ -389,7 +389,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     /**
      * Tell the tree to stop whatever threading operations it has running,
      * since the application is exiting.
-     * @see gov.va.isaac.gui.interfaces.ShutdownBroadcastListenerI#shutdown()
+     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
      */
     @Override
     public void shutdown()

@@ -18,11 +18,11 @@
  */
 package gov.va.isaac.gui.dialog;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.AppContext;
-import gov.va.isaac.gui.interfaces.SnomedConceptViewI;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
 import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.net.URL;
@@ -107,8 +107,18 @@ public class SnomedConceptView extends Stage implements SnomedConceptViewI {
              @Override
              protected void succeeded()
              {
-                 ConceptChronicleDdo result = this.getValue();
-                 showConcept(result);
+                 try
+                {
+                    ConceptChronicleDdo result = this.getValue();
+                    showConcept(result);
+                }
+                catch (Exception e)
+                {
+                     String title = "Unexpected error loading concept with UUID " + conceptUUID;
+                     String msg = e.getClass().getName();
+                     LOG.error(title, e);
+                     AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+                }
              }
 
              @Override

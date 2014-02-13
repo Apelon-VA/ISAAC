@@ -18,11 +18,10 @@
  */
 package gov.va.isaac.gui.importview;
 
-import gov.va.isaac.gui.AppContext;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.models.cem.importer.CEMImporter;
-
 import java.io.File;
 
 import javafx.beans.binding.Bindings;
@@ -31,11 +30,9 @@ import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Preconditions;
 
 /**
