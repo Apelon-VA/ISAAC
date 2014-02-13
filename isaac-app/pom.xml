@@ -67,12 +67,13 @@
             <version>1.0.13</version>
         </dependency>
 
-        <!-- Temporary hack to include logback-core at runtime. -->
+        <!-- for unknown reasons, maven isn't consistently following the dependency from logback-classic to logback-core
+        so hard code it here to make sure it doesn't break.  Probably a maven bug, not worth chasing now.-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <version>1.0.13</version>
-        </dependency>        
+        </dependency>
 
         <!-- Redirects Java logging into logback -->
         <dependency>
