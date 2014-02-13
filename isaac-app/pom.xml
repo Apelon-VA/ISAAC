@@ -67,6 +67,13 @@
             <version>1.0.13</version>
         </dependency>
 
+        <!-- Temporary hack to include logback-core at runtime. -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.0.13</version>
+        </dependency>        
+
         <!-- Redirects Java logging into logback -->
         <dependency>
             <groupId>org.slf4j</groupId>

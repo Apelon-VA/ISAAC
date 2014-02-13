@@ -1,15 +1,15 @@
 /**
  * Copyright Notice
- * 
+ *
  * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,13 +21,19 @@ package gov.va.isaac.gui.dialog;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.export.ExportHandler;
 import gov.va.isaac.util.Utility;
+
 import java.io.File;
 import java.io.IOException;
+
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class ExportSettingsDialogController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportSettingsDialogController.class);
-    private static final String CIM_EXTENSION = ".cim";
+    private static final String XML_EXTENSION = ".xml";
 
     @FXML private Label folderSelectionLabel;
     @FXML private TextField fileSelectionTextField;
@@ -81,8 +87,8 @@ public class ExportSettingsDialogController {
                 && (fileName != null) && (! fileName.isEmpty())) {
 
             // Add ".cim" extension to fileName if it doesn't already have one.
-            if (! fileName.endsWith(CIM_EXTENSION)) {
-                fileName = fileName + CIM_EXTENSION;
+            if (! fileName.endsWith(XML_EXTENSION)) {
+                fileName = fileName + XML_EXTENSION;
             }
 
             performExport(folderName, fileName);
@@ -145,6 +151,10 @@ public class ExportSettingsDialogController {
                 AppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
             }
         };
+
+        // Bind cursor to task state.
+        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
+        exportSettingsDialog.getScene().cursorProperty().bind(cursorBinding);
 
         Utility.execute(task);
     }
