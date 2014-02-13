@@ -11,7 +11,7 @@
     <url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
 
     <scm>
-        <connection>scm:git:https://github.com/Apelon-VA/ISAAC.git</connection>
+        <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
         <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>
         <url>https://github.com/Apelon-VA/ISAAC</url>
         <tag>master</tag>
