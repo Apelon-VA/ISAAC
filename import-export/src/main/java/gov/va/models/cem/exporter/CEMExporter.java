@@ -23,6 +23,7 @@ import gov.va.models.util.CEMXmlConstants;
 import gov.va.models.util.ExporterBase;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -90,7 +91,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         document.appendChild(root);
 
         // Transform DOM tree into stream.
-        OutputStream outputStream = System.out;  // TODO: Output to file when done.
+        OutputStream outputStream = new FileOutputStream(file);
         Transformer transformer = buildTransformer();
         DOMSource source = new DOMSource(document);
         StreamResult result = new StreamResult(outputStream);
