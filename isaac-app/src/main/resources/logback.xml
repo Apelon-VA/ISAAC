@@ -33,6 +33,7 @@
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>WARN</level>
 		</filter>
+		<target>System.err</target>
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %file:%line - %msg%n</pattern>
 		</encoder>
