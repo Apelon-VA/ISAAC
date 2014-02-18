@@ -35,7 +35,7 @@
 		</filter>
 		<target>System.err</target>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %file:%line - %message%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] (%file:%line\) - %message%n</pattern>
 		</encoder>
 	</appender>
 	
@@ -57,7 +57,7 @@
 		</filter>
 		<target>System.out</target>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %file:%line - %message%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] (%file:%line\) - %message%n</pattern>
 		</encoder>
 	</appender>
 
