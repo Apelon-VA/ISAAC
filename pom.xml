@@ -4,11 +4,27 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-Sprint_04-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-    <name>ISAAC Parent POM</name>
+    <name>ISAAC Modules Parent</name>
     <url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
+    
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>Copyright Notice
+                This is a work of the U.S. Government and is not subject to copyright
+                protection in the United States. Foreign copyrights may apply.
+            </comments>
+        </license>
+    </licenses>
+
+    <description>
+        The Maven Parent POM file for all known ISAAC modules.  Declares shared dependencies, sets up the build.
+    </description>
 
     <scm>
         <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
@@ -17,6 +33,17 @@
         <tag>master</tag>
     </scm>
     <distributionManagement>
+        <!-- I don't normally define these here, but the -D overrides are being problematic on the CI server... -->
+        <repository>
+          <id>maestro-deploy</id>
+          <name>VA Public Releases Repository</name>
+          <url>http://va-archiva-host:8082/archiva/repository/va-releases/</url>
+        </repository>
+        <snapshotRepository>
+          <id>maestro-deploy</id>
+          <name>VA Public Snapshots Repository</name>
+          <url>http://va-archiva-host:8082/archiva/repository/va-snapshots/</url>
+        </snapshotRepository>
         <site>
             <id>site</id>
             <url>scm:git:git@github.com:Apelon-VA/ISAAC.git</url>
@@ -25,8 +52,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.0-SNAPSHOT</otf-query.version>
-        <otf-versioning.version>1.1-va-1.0-SNAPSHOT</otf-versioning.version>
+        <otf-query.version>1.1-va-1.0</otf-query.version>
+        <otf-versioning.version>1.1-va-1.0</otf-versioning.version>
     </properties>
     
     <dependencyManagement>
@@ -61,13 +88,40 @@
                         <artifactId>jfxrt</artifactId>
                     </exclusion>
                 </exclusions>
-        </dependency>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.11</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.2.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.9</version>
+                    <configuration>
+                        <additionalparam>-Xdoclint:none</additionalparam>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
-            
             <!-- Java version 1.7 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -81,6 +135,59 @@
                     <compilerArguments>
                         <bootclasspath>${sun.boot.class.path}${path.separator}${java.home}/lib/jfxrt.jar</bootclasspath>
                     </compilerArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <executions>
+                <execution>
+                    <id>attach-descriptor</id>
+                    <goals>
+                        <goal>attach-descriptor</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>stage-for-scm-publish</id>
+                    <phase>post-site</phase>
+                    <goals>
+                        <goal>stage</goal>
+                    </goals>
+                    <configuration>
+                        <skipDeploy>false</skipDeploy>
+                    </configuration>
+                </execution>
+                </executions>
+                <configuration>
+                    <skipDeploy>true</skipDeploy>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
+                <version>1.0-beta-2</version>
+                <configuration>
+                    <scmBranch>gh-pages</scmBranch>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scm-publish</id>
+                        <phase>site-deploy</phase>
+                        <goals>
+                            <goal>publish-scm</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <preparationGoals>clean validate</preparationGoals>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <goals>deploy site site:stage scm-publish:publish-scm</goals>
                 </configuration>
             </plugin>
         </plugins>
@@ -114,4 +221,68 @@
         <module>isaac-app</module>
         <module>isaac-workflow</module>
     </modules>
+
+    <reporting>
+        <excludeDefaults>true</excludeDefaults>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>index</report>
+                            <report>license</report>
+                            <report>dependencies</report>
+                            <report>dependency-convergence</report>
+                            <report>plugin-management</report>
+                            <report>scm</report>
+                            <report>summary</report>
+                            <!-- Not currently useful with POM metadata
+                            <report>project-team</report>
+                            <report>mailing-list</report>
+                            <report>cim</report>
+                            <report>issue-tracking</report>-->
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <notimestamp>true</notimestamp>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.3</version>
+                <inherited>false</inherited>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jdepend-maven-plugin</artifactId>
+                <version>2.0-beta-2</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
