@@ -7,8 +7,20 @@
     <version>1.0-Sprint_04-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-    <name>ISAAC Parent POM</name>
+    <name>ISAAC Modules Parent</name>
     <url>https://csfe.aceworkspace.net/sf/projects/veterans_administration_project/</url>
+    
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>Copyright Notice
+                This is a work of the U.S. Government and is not subject to copyright
+                protection in the United States. Foreign copyrights may apply.
+            </comments>
+        </license>
+    </licenses>
 
     <scm>
         <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
