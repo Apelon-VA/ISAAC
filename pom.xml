@@ -226,6 +226,7 @@
                 <configuration>
                     <notimestamp>true</notimestamp>
                     <additionalparam>-Xdoclint:none</additionalparam>
+                    <failOnError>false</failOnError> <!-- still some issues on Java 8 with this -->
                 </configuration>
                 <reportSets>
                     <reportSet>
