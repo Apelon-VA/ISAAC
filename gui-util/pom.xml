@@ -11,6 +11,9 @@
 	<packaging>jar</packaging>
 
 	<name>ISAAC JavaFX GUI Utilities</name>
+	<description>
+		Reusable JavaFX Utility Code
+	</description>
 
 	<dependencies>
 		<dependency>

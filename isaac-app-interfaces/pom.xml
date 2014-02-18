@@ -11,6 +11,9 @@
 	<packaging>jar</packaging>
 
 	<name>ISAAC App Interfaces</name>
+	<description>
+		ISAAC Application Interfaces.  Modules implement these to provide a compatible module to the isaac-app.
+	</description>
 	
 	<dependencies>
 	

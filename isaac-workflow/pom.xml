@@ -10,6 +10,9 @@
     <artifactId>isaac-workflow</artifactId>
 
     <name>ISAAC Workflow</name>
+    <description>
+        ISAAC Workflow Tooling
+    </description>
 
     <dependencies>
         <dependency>

@@ -11,6 +11,9 @@
     <packaging>jar</packaging>
 
     <name>ISAAC Search View</name>
+    <description>
+        A Search GUI implementation for ISAAC
+    </description>
 
     <dependencies>
     

@@ -11,7 +11,10 @@
     <packaging>jar</packaging>
 
     <name>ISAAC Taxonomy View</name>
-
+    <description>
+        A Taxonomy GUI implementation for ISAAC
+    </description>
+    
     <dependencies>
     
         <!-- ISAAC App Utils. -->

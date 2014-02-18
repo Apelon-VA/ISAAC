@@ -10,7 +10,10 @@
 	<artifactId>lego-view</artifactId>
 	<packaging>jar</packaging>
 
-	<name>ISAAC Lego View</name>
+	<name>ISAAC LEGO View</name>
+	<description>
+		ISAAC LEGO tooling
+	</description>
 
 	<dependencies>
 
