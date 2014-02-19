@@ -19,7 +19,7 @@
 package gov.va.isaac.export;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.models.cem.exporter.CEMExporter;
+import gov.va.isaac.models.cem.exporter.CEMExporter;
 
 import java.io.File;
 import java.io.IOException;
