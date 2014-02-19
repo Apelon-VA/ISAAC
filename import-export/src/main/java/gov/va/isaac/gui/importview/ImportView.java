@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.models.cem.importer.CEMImporter;
+
 import java.io.File;
 
 import javafx.beans.binding.Bindings;
@@ -30,9 +31,11 @@ import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -53,12 +56,10 @@ public class ImportView extends GridPane {
         super();
 
         // GUI placeholders.
-        add(new Label("Information Model: "), 0, 0);
-        add(modelTypeLabel, 1, 0);
-        add(new Label("File Name: "), 0, 1);
-        add(fileNameLabel, 1, 1);
-        add(new Label("Result: "), 0, 2);
-        add(resultLabel, 1, 2);
+        ImportViewBuilder builder = new ImportViewBuilder(this);
+        builder.addRow("Information Model: ", modelTypeLabel);
+        builder.addRow("File Name: ", fileNameLabel);
+        builder.addRow("Result: ", resultLabel);
 
         // Set minimum dimensions.
         setMinHeight(200);
