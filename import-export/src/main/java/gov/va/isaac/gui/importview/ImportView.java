@@ -30,6 +30,7 @@ import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.GridPane;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
@@ -60,7 +61,7 @@ public class ImportView extends GridPane {
         builder.addRow("Information Model: ", modelTypeLabel);
         builder.addRow("File Name: ", fileNameLabel);
         builder.addRow("Result: ", resultLabel);
-        builder.addSeparator();
+        builder.addRow(new Separator());
 
         // Set minimum dimensions.
         setMinHeight(200);
