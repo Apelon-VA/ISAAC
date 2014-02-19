@@ -21,9 +21,12 @@ package gov.va.isaac.gui.importview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.cem.exporter.CEMExporter;
 import gov.va.models.cem.importer.CEMImporter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.OutputStream;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -31,7 +34,11 @@ import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
@@ -52,6 +59,7 @@ public class ImportView extends GridPane {
     private final Label modelTypeLabel = new Label();
     private final Label fileNameLabel = new Label();
     private final Label resultLabel = new Label();
+    private final TextArea modelDisplay = new TextArea();
 
     public ImportView() {
         super();
@@ -62,6 +70,9 @@ public class ImportView extends GridPane {
         builder.addRow("File Name: ", fileNameLabel);
         builder.addRow("Result: ", resultLabel);
         builder.addRow(new Separator());
+        builder.addRow(modelDisplay);
+
+        setConstraints();
 
         // Set minimum dimensions.
         setMinHeight(200);
@@ -106,6 +117,19 @@ public class ImportView extends GridPane {
 
                 // Update UI.
                 resultLabel.setText("Successfully imported concept: " + result.toUserString());
+
+                try {
+                    // Display imported model as exported XML.
+                    OutputStream out = new ByteArrayOutputStream();
+                    CEMExporter exporter = new CEMExporter(out);
+                    exporter.exportModel(result.getPrimordialUuid());
+                    String modelXml = out.toString();
+                    modelDisplay.setText(modelXml);
+                } catch (Exception ex) {
+                    String msg = "Unexpected error displaying imported model";
+                    LOG.error(msg, ex);
+                    AppContext.getCommonDialogs().showErrorDialog(msg, ex);
+                }
            }
 
             @Override
@@ -130,5 +154,27 @@ public class ImportView extends GridPane {
         Thread t = new Thread(task, "Importer_" + modelType);
         t.setDaemon(true);
         t.start();
+    }
+
+    private void setConstraints() {
+
+        // Column 1 has empty constraints.
+        this.getColumnConstraints().add(new ColumnConstraints());
+
+        // Column 2 should grow to fill space.
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setHgrow(Priority.ALWAYS);
+        this.getColumnConstraints().add(column2);
+
+        // Rows 1-4 have empty constraints.
+        this.getRowConstraints().add(new RowConstraints());
+        this.getRowConstraints().add(new RowConstraints());
+        this.getRowConstraints().add(new RowConstraints());
+        this.getRowConstraints().add(new RowConstraints());
+
+        // Row 5 should
+        RowConstraints row5 = new RowConstraints();
+        row5.setVgrow(Priority.ALWAYS);
+        this.getRowConstraints().add(row5);
     }
 }
