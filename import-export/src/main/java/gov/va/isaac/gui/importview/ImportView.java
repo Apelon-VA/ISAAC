@@ -60,6 +60,7 @@ public class ImportView extends GridPane {
         builder.addRow("Information Model: ", modelTypeLabel);
         builder.addRow("File Name: ", fileNameLabel);
         builder.addRow("Result: ", resultLabel);
+        builder.addSeparator();
 
         // Set minimum dimensions.
         setMinHeight(200);

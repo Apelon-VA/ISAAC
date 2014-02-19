@@ -20,6 +20,7 @@ package gov.va.isaac.gui.importview;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 
 /**
  * A utility for assembling the {@link ImportView}.
@@ -48,5 +49,9 @@ public class ImportViewBuilder {
 
         // Increment row index.
         ++rowIndex;
+    }
+
+    public void addSeparator() {
+        importView.add(new Separator(), 0, rowIndex++, 2, 1);
     }
 }
