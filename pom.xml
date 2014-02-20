@@ -22,6 +22,10 @@
         </license>
     </licenses>
 
+    <description>
+        The Maven Parent POM file for all known ISAAC modules.  Declares shared dependencies, sets up the build.
+    </description>
+
     <scm>
         <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
         <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>

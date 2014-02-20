@@ -11,6 +11,9 @@
     <packaging>jar</packaging>
 
     <name>ISAAC Importer/Exporter</name>
+    <description>
+        ISAAC Importer and Exporter tooling
+    </description>
 
     <dependencies>
     

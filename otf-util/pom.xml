@@ -11,6 +11,9 @@
 	<packaging>jar</packaging>
 
 	<name>ISAAC OTF Utilities</name>
+	<description>
+		Utility code for accessing OTF APIs
+	</description>
 
 	<dependencies>
 		<dependency>

@@ -11,5 +11,8 @@
     <packaging>jar</packaging>
 
     <name>ISAAC Data Model</name>
+    <description>
+        ISAAC Data Model classes
+    </description>
 
 </project>

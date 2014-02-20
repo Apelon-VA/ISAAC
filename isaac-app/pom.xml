@@ -12,6 +12,9 @@
     <packaging>jar</packaging>
 
     <name>ISAAC Application</name>
+    <description>
+        ISAAC GUI - combines all compatible modules into a single GUI
+    </description>
 
     <dependencies>
 
