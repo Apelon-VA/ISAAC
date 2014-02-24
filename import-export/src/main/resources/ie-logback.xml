@@ -39,22 +39,26 @@
 		</encoder>
 	</appender>
 	
-	<!-- A Console appender that prints DEBUG -->
+	<!-- A Console appender that prints only DEBUG -->
 	<appender name="STDOUT-DEBUG" class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>DEBUG</level>
-		</filter>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
 		<target>System.out</target>
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] (%file:%line\) - %message%n</pattern>
 		</encoder>
 	</appender>
 	
-	<!-- A Console appender that prints INFO -->
+	<!-- A Console appender that prints only INFO -->
 	<appender name="STDOUT-INFO" class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
-		</filter>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
 		<target>System.out</target>
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} %-5level [%thread] (%file:%line\) - %message%n</pattern>
@@ -73,6 +77,6 @@
 		<appender-ref ref="STDERR" />
 		<!-- The two appenders below can be enabled if you desire INFO or DEBUG log output on the console. -->
 		<appender-ref ref="STDOUT-DEBUG" />
-		<!--appender-ref ref="STDOUT-INFO" /-->
+		<appender-ref ref="STDOUT-INFO" />
 	</root>
 </configuration>
