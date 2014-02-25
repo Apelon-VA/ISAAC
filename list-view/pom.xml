@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>gov.va.isaac</groupId>
+		<artifactId>isaac-parent</artifactId>
+		<version>1.0-Sprint_04-SNAPSHOT</version>
+	</parent>
+	<groupId>gov.va.isaac.modules</groupId>
+	<artifactId>list-view</artifactId>
+	<packaging>jar</packaging>
+
+	<name>ISAAC List View</name>
+	<description>
+		A List / Batch view implementation for ISAAC
+	</description>
+
+	<dependencies>
+	
+		<!-- OTF Query Implementation. -->
+		<dependency>
+			<groupId>org.ihtsdo.otf</groupId>
+			<artifactId>query-implementation</artifactId>
+		</dependency>
+	
+	
+		<!-- ISAAC App Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>otf-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+	
+		<!-- JUnit. -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+	</dependencies>
+
+</project>
