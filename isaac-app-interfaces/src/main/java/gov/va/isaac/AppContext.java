@@ -35,6 +35,7 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class AppContext
 {
+	Test for build server (broken on purpose)
 	private static ServiceLocator serviceLocator_;
 
 	/**
