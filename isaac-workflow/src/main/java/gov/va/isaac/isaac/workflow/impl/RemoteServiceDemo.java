@@ -1,0 +1,98 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package gov.va.isaac.isaac.workflow.impl;
+
+import gov.va.isaac.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.isaac.workflow.LocalWorkflowRuntimeEngineFactory;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.jbpm.services.task.impl.model.xml.JaxbContent;
+import org.kie.api.task.model.Attachment;
+import org.kie.api.task.model.Comment;
+import org.kie.api.task.model.Content;
+import org.kie.api.task.model.Task;
+import org.kie.api.task.model.TaskSummary;
+import org.kie.services.client.serialization.JaxbSerializationProvider;
+
+/**
+ *
+ * @author alo
+ */
+public class RemoteServiceDemo {
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("componentId", "0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
+        params.put("componentName", "Asthma (disorder)");
+        wfEngine.requestProcessInstanceCreation("terminology-authoring.test1", params);
+        
+        List<TaskSummary> myTasks = 
+                wfEngine.getRemoteTaskService().getTasksOwned("alejandro", "en-UK");
+        
+        Task firstTask = 
+                wfEngine.getRemoteTaskService().getTaskById(myTasks.get(0).getId());
+        
+        Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(firstTask.getId());
+        
+        String componentUuidStr = (String) vmap.get("componentId");
+        
+        List<TaskSummary> possibleTasks = wfEngine.getRemoteTaskService().getTasksAssignedAsPotentialOwner("alejandro", "en-UK");
+        
+        Long taskToClaim = null;
+        System.out.println("possibleTasks " + possibleTasks.size());
+        for (TaskSummary tsum : possibleTasks) {
+            System.out.println(tsum.getName() + " " + tsum.getId());
+            if (tsum.getActualOwner() == null) {
+                taskToClaim = tsum.getId();
+                break;
+            }
+        }
+//        System.out.println(taskToClaim);
+//        wfEngine.getRemoteTaskService().claim(taskToClaim, "alejandro");
+//        Task myTask = wfEngine.getRemoteTaskService().getTaskById(13);
+//        Content contentById = wfEngine.getRemoteTaskService().getContentById(myTask.getTaskData().getDocumentContentId());
+//        JaxbContent jj = (JaxbContent) contentById;
+        Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(13L);
+        for (String loopKey : vmap.keySet()) {
+            System.out.println("loopVariable: " + loopKey + " - " + vmap.get(loopKey));
+        }
+        
+        wfEngine.getRemoteTaskService().start(firstTask.getId(), "alejandro");
+        Map<String, Object> cparams = new HashMap<String, Object>();
+        cparams.put("out_evaluation", "From ISAAC!");
+        
+        wfEngine.getRemoteTaskService().complete(firstTask.getId(), "alejandro", cparams);
+        
+//        System.out.println("Looking for attachments...");
+//        List<Attachment> attachments = myTask.getTaskData().getAttachments();
+//        for (Attachment loopAttachment : attachments) {
+//            System.out.println("loopAttachment: " + loopAttachment.getName());
+//        }
+//        
+//        System.out.println("Looking for comments...");
+//        List<Comment> comments = myTask.getTaskData().getComments();
+//        for (Comment loopComment : comments) {
+//            System.out.println("loopComment: " + loopComment.getText());
+//        }
+//        
+//        System.out.println("Looking for instance data...");
+
+    }
+
+    public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(in);
+        return is.readObject();
+    }
+
+}
