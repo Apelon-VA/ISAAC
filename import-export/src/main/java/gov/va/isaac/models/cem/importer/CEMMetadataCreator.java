@@ -16,10 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.models.cem.importer;
+package gov.va.isaac.models.cem.importer;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.models.util.ImporterBase;
+import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.IOException;
 import java.util.ArrayList;

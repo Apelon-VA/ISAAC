@@ -18,9 +18,9 @@
  */
 package gov.va.isaac.models.cem.exporter;
 
-import gov.va.models.cem.importer.CEMMetadataBinding;
-import gov.va.models.util.CEMXmlConstants;
-import gov.va.models.util.ExporterBase;
+import gov.va.isaac.models.cem.CEMXmlConstants;
+import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
+import gov.va.isaac.models.util.ExporterBase;
 
 import java.io.File;
 import java.io.IOException;

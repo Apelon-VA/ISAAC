@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
-import gov.va.models.cem.importer.CEMImporter;
+import gov.va.isaac.models.cem.importer.CEMImporter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

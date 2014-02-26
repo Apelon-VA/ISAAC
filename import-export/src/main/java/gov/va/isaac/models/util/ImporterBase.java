@@ -1,4 +1,4 @@
-package gov.va.models.util;
+package gov.va.isaac.models.util;
 
 import java.io.IOException;
 

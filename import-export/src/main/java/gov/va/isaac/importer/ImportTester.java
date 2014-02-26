@@ -19,8 +19,8 @@
 package gov.va.isaac.importer;
 
 import gov.va.isaac.AppContext;
-import gov.va.models.cem.importer.CEMMetadataBinding;
-import gov.va.models.util.ImporterBase;
+import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
+import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
 import java.lang.reflect.Field;

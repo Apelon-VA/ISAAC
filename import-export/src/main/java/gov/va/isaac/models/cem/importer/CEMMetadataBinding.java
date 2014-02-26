@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gov.va.models.cem.importer;
+package gov.va.isaac.models.cem.importer;
 
 import java.util.UUID;
 
