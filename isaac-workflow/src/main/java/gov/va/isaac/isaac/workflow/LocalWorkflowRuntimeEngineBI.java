@@ -6,9 +6,9 @@
 package gov.va.isaac.isaac.workflow;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.task.TaskService;
 
 /**
@@ -17,7 +17,7 @@ import org.kie.api.task.TaskService;
  */
 public interface LocalWorkflowRuntimeEngineBI {
     
-    public void setRemoteData(URL url, String userId, String password);
+    public void setRemoteData(URL url, String userId, String password, String deploymentId);
     
     public void synchronizeWithRemote();
     
@@ -30,5 +30,7 @@ public interface LocalWorkflowRuntimeEngineBI {
     public LocalTaskServiceBI getLocalTaskService();
     
     public TaskService getRemoteTaskService();
+    
+    public Map<String,Object> getVariablesMapForTaskId(Long taskId);
     
 }
