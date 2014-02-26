@@ -62,9 +62,9 @@ public class RemoteServiceDemo {
 //        Task myTask = wfEngine.getRemoteTaskService().getTaskById(13);
 //        Content contentById = wfEngine.getRemoteTaskService().getContentById(myTask.getTaskData().getDocumentContentId());
 //        JaxbContent jj = (JaxbContent) contentById;
-        Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(13L);
-        for (String loopKey : vmap.keySet()) {
-            System.out.println("loopVariable: " + loopKey + " - " + vmap.get(loopKey));
+        Map<String, Object> vmap2 = wfEngine.getVariablesMapForTaskId(13L);
+        for (String loopKey : vmap2.keySet()) {
+            System.out.println("loopVariable: " + loopKey + " - " + vmap2.get(loopKey));
         }
         
         wfEngine.getRemoteTaskService().start(firstTask.getId(), "alejandro");
