@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.export;
+package gov.va.isaac.importer;
 
 import gov.va.isaac.AppContext;
 import gov.va.models.cem.importer.CEMMetadataBinding;
