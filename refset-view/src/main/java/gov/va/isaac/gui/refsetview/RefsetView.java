@@ -16,16 +16,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.listview;
+package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.RefsetViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.stage.Window;
-import javax.inject.Singleton;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -36,13 +38,16 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@Singleton
-public class RefsetView implements DockedViewI
+@PerLookup
+public class RefsetView implements RefsetViewI
 {
 
+	private Label l;
+	
 	private RefsetView() throws IOException
 	{
 		// created by HK2
+		l = new Label("I show a refset!");
 	}
 
 	/**
@@ -51,8 +56,11 @@ public class RefsetView implements DockedViewI
 	@Override
 	public Region getView()
 	{
+		HBox h = new HBox();
+		h.getChildren().add(l);
+		h.getStyleClass().add("itemBorder");
 		// TODO
-		return null;
+		return h;
 	}
 
 	/**
@@ -66,58 +74,15 @@ public class RefsetView implements DockedViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
+	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setRefset(java.util.UUID)
 	 */
 	@Override
-	public MenuItemI getMenuBarMenuToShowView()
+	public void setRefset(UUID conceptUUID)
 	{
-		MenuItemI menuItem = new MenuItemI()
-		{
-			@Override
-			public void handleMenuSelection(Window parent)
-			{
-				// noop
-			}
-
-			@Override
-			public int getSortOrder()
-			{
-				return 6;
-			}
-
-			@Override
-			public String getParentMenuId()
-			{
-				return "panelsMenu";
-			}
-
-			@Override
-			public String getMenuName()
-			{
-				return "Refset View Panel";
-			}
-
-			@Override
-			public String getMenuId()
-			{
-				return "refsetViewPanelMenuItem";
-			}
-
-			@Override
-			public boolean enableMnemonicParsing()
-			{
-				return false;
-			}
-		};
-		return menuItem;
+		// TODO Auto-generated method stub
+		System.out.println("Refset passed in: " + conceptUUID);
+		l.setText("My refset was set to " + conceptUUID);
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
-	 */
-	@Override
-	public String getViewTitle()
-	{
-		return "Refset Viewer";
-	}
+
 }
