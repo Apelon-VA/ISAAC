@@ -19,13 +19,17 @@
 package gov.va.isaac.export;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.models.cem.exporter.CEMExporter;
+import gov.va.isaac.models.cem.exporter.CEMExporter;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
 import javax.validation.ValidationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for handling the ISAAC export functionality.
@@ -34,6 +38,8 @@ import javax.validation.ValidationException;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class ExportHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CEMExporter.class);
 
     public ExportHandler() throws ValidationException, IOException {
         super();
@@ -44,6 +50,7 @@ public class ExportHandler {
      * invoked on a background thread.
      */
     public void doExport(File file) throws Exception {
+        LOG.debug("doExport: file=" + file.getName());
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
@@ -52,7 +59,7 @@ public class ExportHandler {
         UUID conceptUUID = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
 
         // Export CEM model to file.
-        CEMExporter exporter = new CEMExporter();
-        exporter.exportModel(conceptUUID, file);
+        CEMExporter exporter = new CEMExporter(new FileOutputStream(file));
+        exporter.exportModel(conceptUUID);
     }
 }

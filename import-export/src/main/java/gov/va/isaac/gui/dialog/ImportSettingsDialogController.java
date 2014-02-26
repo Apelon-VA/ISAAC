@@ -47,7 +47,11 @@ import org.slf4j.LoggerFactory;
  */
 public class ImportSettingsDialogController {
 
-    private static Logger LOG = LoggerFactory.getLogger(ImportSettingsDialogController.class);
+    public static final String MODEL_TYPE_PROPERTY = "gov.va.isaac.gui.dialog.import-settings.model-type";
+    public static final String FILE_SELECTION_PROPERTY = "gov.va.isaac.gui.dialog.import-settings.file-selection";
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImportSettingsDialogController.class);
+
     @FXML private ComboBox<InformationModelType> modelTypeCombo;
     @FXML private Label fileSelectionLabel;
 
@@ -61,10 +65,24 @@ public class ImportSettingsDialogController {
 
     @FXML
     public void initialize() {
+        InformationModelTypeStringConverter converter = new InformationModelTypeStringConverter();
 
         // Populate modelTypeCombo.
-        modelTypeCombo.setConverter(new InformationModelTypeStringConverter());
+        modelTypeCombo.setConverter(converter);
         modelTypeCombo.setItems(InformationModelType.asObservableList());
+
+        // Properties to speed development.
+        String modelTypeName = System.getProperty(MODEL_TYPE_PROPERTY);
+        if (modelTypeName != null) {
+            LOG.debug(MODEL_TYPE_PROPERTY + "=" + modelTypeName);
+            InformationModelType modelType = converter.fromString(modelTypeName);
+            modelTypeCombo.setValue(modelType);
+        }
+        String fileSelection = System.getProperty(FILE_SELECTION_PROPERTY);
+        if (fileSelection != null) {
+            LOG.debug(FILE_SELECTION_PROPERTY + "=" + fileSelection);
+            fileSelectionLabel.setText(fileSelection);
+        }
     }
 
     /**
@@ -113,8 +131,6 @@ public class ImportSettingsDialogController {
 
         try {
             ImportView importView = new ImportView();
-
-
             importStage.setScene(new Scene(importView));
             if (importStage.isShowing()) {
                 importStage.toFront();
