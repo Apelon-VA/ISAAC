@@ -16,14 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.models.cem.exporter;
+package gov.va.isaac.models.cem.exporter;
 
 import gov.va.models.cem.importer.CEMMetadataBinding;
 import gov.va.models.util.CEMXmlConstants;
 import gov.va.models.util.ExporterBase;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -69,14 +68,17 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMExporter.class);
 
+    private final OutputStream outputStream;
+
     private Document document;
 
-    public CEMExporter() throws ValidationException, IOException {
+    public CEMExporter(OutputStream outputStream) throws ValidationException, IOException {
         super();
+        this.outputStream = outputStream;
     }
 
-    public void exportModel(UUID conceptUUID, File file) throws Exception {
-        LOG.info("Preparing to export CEM model to: " + file.getName());
+    public void exportModel(UUID conceptUUID) throws Exception {
+        LOG.info("Starting export of CEM model");
 
         // Get chronicle for concept.
         ComponentChronicleBI<?> focusConcept = getDataStore().getComponent(conceptUUID);
@@ -91,13 +93,12 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         document.appendChild(root);
 
         // Transform DOM tree into stream.
-        OutputStream outputStream = new FileOutputStream(file);
         Transformer transformer = buildTransformer();
         DOMSource source = new DOMSource(document);
         StreamResult result = new StreamResult(outputStream);
         transformer.transform(source, result);
 
-        LOG.info("Ending export of CEM model to: " + file.getName());
+        LOG.info("Ending export of CEM model");
     }
 
     private Element buildCemTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
