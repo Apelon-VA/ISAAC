@@ -18,16 +18,18 @@
  */
 package gov.va.isaac.gui.refsetview;
 
-import java.io.IOException;
-import java.util.UUID;
-
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.RefsetViewI;
 import gov.va.models.cem.importer.CEMMetadataBinding;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.UUID;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.ihtsdo.otf.query.lucene.LuceneIndexer;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
  * RefsetViewRunner
@@ -36,7 +38,7 @@ import javafx.stage.Stage;
  */
 public class RefsetViewRunner extends Application
 {
-    UUID diastolicBP = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
+	UUID diastolicBP = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
 
 	/**
 	 * @see javafx.application.Application#start(javafx.stage.Stage)
@@ -55,9 +57,15 @@ public class RefsetViewRunner extends Application
 		primaryStage.show();
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, IOException
+	public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
 		AppContext.setup();
+		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
+		Field f = Hk2Looker.class.getDeclaredField("looker");
+		f.setAccessible(true);
+		f.set(null, AppContext.getServiceLocator());
+		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
+		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
 		launch(args);
 	}
 

@@ -44,39 +44,39 @@ import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
 
 public class RefsetViewController {
 
-    @FXML private ResourceBundle resources;
-    @FXML private URL location;
-    @FXML private Slider hSlider;
-    @FXML private TableView<RefsetInstance> refsetRows;
-    @FXML private AnchorPane refsetAnchor;
-    @FXML private Button addButton;
-    @FXML private Button removeButton;
-    @FXML private Label refsetLabel;
-    
-    static ViewCoordinate vc = null;
-    
-    ObservableList<RefsetInstance> data = FXCollections.observableArrayList();
+	@FXML private ResourceBundle resources;
+	@FXML private URL location;
+	@FXML private Slider hSlider;
+	@FXML private TableView<RefsetInstance> refsetRows;
+	@FXML private AnchorPane refsetAnchor;
+	@FXML private Button addButton;
+	@FXML private Button removeButton;
+	@FXML private Label refsetLabel;
+	
+	static ViewCoordinate vc = null;
+	
+	ObservableList<RefsetInstance> data = FXCollections.observableArrayList();
 	private boolean isAnnotation = false;
 	private ConceptVersionBI refset;
 	private RefexType refsetType = RefexType.MEMBER;
 		
 
 	public static RefsetViewController init() throws IOException {
-        // Load from FXML.
-        URL resource = RefsetViewController.class.getResource("RefsetView.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        loader.load();
+		// Load from FXML.
+		URL resource = RefsetViewController.class.getResource("RefsetView.fxml");
+		FXMLLoader loader = new FXMLLoader(resource);
+		loader.load();
 
-        return loader.getController();
+		return loader.getController();
 	}
 
 	@FXML 
-    void initialize() {
+	void initialize() {
 		 vc = WBUtility.getViewCoordinate();
 
 		TableColumn memberCol = new TableColumn("Reference Component");	
 		memberCol.setCellValueFactory(
-			    new PropertyValueFactory<RefsetInstance,String>("refConFsn")
+				new PropertyValueFactory<RefsetInstance,String>("refConFsn")
 		);
 		memberCol.setSortType(TableColumn.SortType.DESCENDING);
 
@@ -86,33 +86,33 @@ public class RefsetViewController {
 		
 /*		
 		// Lock Column Ordering (better solution not available in API
-  		refsetRows.getColumns().addListener(new ListChangeListener() {
-	        @Override
-	        public void onChanged(Change change) {
-	          change.next();
-	          if(change.wasReplaced()) {
-	        	  ObservableList<TableColumn<RefsetInstance, ?>> origCols = FXCollections.observableArrayList();
-	        	  FXCollections.copy(refsetRows.getColumns(), origCols);
+		refsetRows.getColumns().addListener(new ListChangeListener() {
+			@Override
+			public void onChanged(Change change) {
+			  change.next();
+			  if(change.wasReplaced()) {
+				  ObservableList<TableColumn<RefsetInstance, ?>> origCols = FXCollections.observableArrayList();
+				  FXCollections.copy(refsetRows.getColumns(), origCols);
 
-	        	  refsetRows.getColumns().clear();
-	        	  refsetRows.getColumns().addAll(origCols);
-	          }
-	        }
-	    });
+				  refsetRows.getColumns().clear();
+				  refsetRows.getColumns().addAll(origCols);
+			  }
+			}
+		});
 */		
-    	addButton.setOnAction(new EventHandler<ActionEvent>() {
-        		@Override
-	            public void handle(ActionEvent e) {
-        			RefsetInstance newInstance = RefsetInstanceAccessor.createNewInstance(refsetType);
-	                data.add(newInstance);
-//	                newInstance.clear();
-	            }
-	        });
+		addButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					RefsetInstance newInstance = RefsetInstanceAccessor.createNewInstance(refsetType);
+					data.add(newInstance);
+//					newInstance.clear();
+				}
+			});
 		}
 	
-    public AnchorPane getRoot() {
-        return refsetAnchor;
-    }
+	public AnchorPane getRoot() {
+		return refsetAnchor;
+	}
 
 	public void setRefset(UUID refsetUUID) {
 		refset = WBUtility.lookupSnomedIdentifierAsCV(refsetUUID);
@@ -138,7 +138,14 @@ public class RefsetViewController {
 //				members = refset.getRefsetMembersActive();
 //			} else {
 				component = WBUtility.lookupSnomedIdentifierAsCV(componentUUID);
-				members = component.getAnnotationsActive(vc);
+				if (component == null)
+				{
+					System.err.println("Couldn't find component " + componentUUID);
+				}
+				else
+				{
+					members = component.getAnnotationsActive(vc);
+				}
 //			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -181,62 +188,62 @@ public class RefsetViewController {
 		if (refsetType == RefexType.STR) {
 			TableColumn col = new TableColumn("String");	
 			col.setCellValueFactory(
-				    new PropertyValueFactory<RefsetInstance,String>("strExt")
+					new PropertyValueFactory<RefsetInstance,String>("strExt")
 			);
 
 			col.setCellFactory(TextFieldTableCell.forTableColumn());
 			col.setOnEditCommit(
-			    new EventHandler<CellEditEvent<StrExtRefsetInstance, String>>() {
-			        @Override
-			        public void handle(CellEditEvent<StrExtRefsetInstance, String> t) {
-			        	StrExtRefsetInstance instance = (StrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-			        	instance.setStrExt(t.getNewValue());
-			        	
-			        	int nid = instance.getMemberNid();
-			        	RefexStringVersionBI refex = (RefexStringVersionBI)WBUtility.getRefsetMember(nid);
-			    		RefexCAB bp;
+				new EventHandler<CellEditEvent<StrExtRefsetInstance, String>>() {
+					@Override
+					public void handle(CellEditEvent<StrExtRefsetInstance, String> t) {
+						StrExtRefsetInstance instance = (StrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setStrExt(t.getNewValue());
+						
+						int nid = instance.getMemberNid();
+						RefexStringVersionBI refex = (RefexStringVersionBI)WBUtility.getRefsetMember(nid);
+						RefexCAB bp;
 						try {
 							bp = refex.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.INCLUDE);
-				    	
+						
 							// Change String
-				    		bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
+							bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 
-				    		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(bp);
-				    		
-				    		ConceptVersionBI refCon;
-				    		if (isAnnotation) {
-				    			refCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getReferencedComponentNid());
-				    		} else {
-				    			refCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getAssemblageNid());
-				    		}
-				    		
-				    		WBUtility.commit(refCon);
+							RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(bp);
+							
+							ConceptVersionBI refCon;
+							if (isAnnotation) {
+								refCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getReferencedComponentNid());
+							} else {
+								refCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getAssemblageNid());
+							}
+							
+							WBUtility.commit(refCon);
 						} catch (ContradictionException | InvalidCAB | IOException e) {
 							e.printStackTrace();
 						}
-			        }
-			    }
+					}
+				}
 			);
 		
 			refsetRows.getColumns().addAll(col);
 		} else if (refsetType == RefexType.CID) {
 			TableColumn col = new TableColumn("Component");	
 			col.setCellValueFactory(
-				    new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
+					new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
 			);
 			
 			refsetRows.getColumns().addAll(col);
 		} else if (refsetType == RefexType.CID_CID) {
 			TableColumn col1 = new TableColumn("Component1");	
 			col1.setCellValueFactory(
-				    new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
+					new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
 			);
 			
 			refsetRows.getColumns().addAll(col1);
 
 			TableColumn col2 = new TableColumn("Component2");	
 			col2.setCellValueFactory(
-				    new PropertyValueFactory<RefsetInstance,String>("cid2ExtFsn")
+					new PropertyValueFactory<RefsetInstance,String>("cid2ExtFsn")
 			);
 			
 			refsetRows.getColumns().addAll(col2);

@@ -59,28 +59,28 @@ public class WBUtility {
     private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
     private static String useFSN = "useFSN";
 
-	private static EditCoordinate editCoord;
+    private static EditCoordinate editCoord;
 
-	public static TerminologyBuilderBI getBuilder() {
-		return dataBuilder;
-	}
-	
+    public static TerminologyBuilderBI getBuilder() {
+        return dataBuilder;
+    }
+    
     public static EditCoordinate getEC()  {
-    	if (editCoord == null) {
-    		try {
-	            int authorNid   = TermAux.USER.getLenient().getConceptNid();
-	            int module = Snomed.CORE_MODULE.getLenient().getNid();
-	            int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
-	            
-	            editCoord =  new EditCoordinate(authorNid, module, editPathNid);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
+        if (editCoord == null) {
+            try {
+                int authorNid   = TermAux.USER.getLenient().getConceptNid();
+                int module = Snomed.CORE_MODULE.getLenient().getNid();
+                int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
+                
+                editCoord =  new EditCoordinate(authorNid, module, editPathNid);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
 
         return editCoord;
-	}
+    }
 
     public static String getDescription(UUID uuid) {
         try {
@@ -331,29 +331,29 @@ public class WBUtility {
         return null;
     }
 
-	public static ConceptVersionBI lookupSnomedIdentifierAsCV(int nid) {
-	        LOG.debug("WB DB NID Lookup '" + nid + "'");
+    public static ConceptVersionBI lookupSnomedIdentifierAsCV(int nid) {
+            LOG.debug("WB DB NID Lookup '" + nid + "'");
 
-	        // Null check.
-	        if (nid >= 0) {
-	            return null;
-	        }
+            // Null check.
+            if (nid >= 0) {
+                return null;
+            }
 
-	        ConceptVersionBI result = getConceptVersion(nid);
+            ConceptVersionBI result = getConceptVersion(nid);
 
-	        return result;
-	    }
+            return result;
+        }
 
-	public static ViewCoordinate getViewCoordinate() {
+    public static ViewCoordinate getViewCoordinate() {
         try {
-			return StandardViewCoordinates.getSnomedInferredThenStatedLatest();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+            return StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public static RefexVersionBI getRefsetMember(int nid) {
+    public static RefexVersionBI getRefsetMember(int nid) {
         try {
             RefexVersionBI refexVersion = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest());
             RefexVersionBI refexVersion2 = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedStatedLatest());
@@ -362,14 +362,14 @@ public class WBUtility {
             LOG.warn("Unexpected error looking up description", ex);
             return null;
         }
-	}
+    }
 
-	public static void commit(ConceptVersionBI refCon) {
-		try {
-			dataStore.commit(refCon);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    public static void commit(ConceptVersionBI refCon) {
+        try {
+            dataStore.commit(refCon);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }
