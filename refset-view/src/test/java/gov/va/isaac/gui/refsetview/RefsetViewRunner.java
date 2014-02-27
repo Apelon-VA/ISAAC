@@ -19,9 +19,14 @@
 package gov.va.isaac.gui.refsetview;
 
 import java.io.IOException;
+import java.util.UUID;
+
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.views.RefsetViewI;
+import gov.va.models.cem.importer.CEMMetadataBinding;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -31,6 +36,8 @@ import javafx.stage.Stage;
  */
 public class RefsetViewRunner extends Application
 {
+    UUID diastolicBP = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
+
 	/**
 	 * @see javafx.application.Application#start(javafx.stage.Stage)
 	 */
@@ -40,6 +47,8 @@ public class RefsetViewRunner extends Application
 		primaryStage.setTitle("Refset View");
 
 		RefsetView refsetView = AppContext.getService(RefsetView.class);
+		refsetView.setRefset(CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0]);
+		refsetView.setComponent(diastolicBP);
 
 		primaryStage.setScene(new Scene(refsetView.getView(), 400, 300));
 		
