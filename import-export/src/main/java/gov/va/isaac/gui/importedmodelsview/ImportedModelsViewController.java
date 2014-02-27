@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.importedmodelsview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
 import gov.va.isaac.gui.dialog.InformationModelDetailsPane;
 import gov.va.isaac.gui.util.FxUtils;
@@ -122,7 +123,21 @@ public class ImportedModelsViewController {
                     }
                 });
 
-                ContextMenu contextMenu = new ContextMenu(displayAsXmlMenuItem, displayAsRefsetMenuItem);
+                // Menu item to export.
+                MenuItem exportMenuItem = new MenuItem("Export to File");
+                exportMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+
+                    @Override
+                    public void handle(ActionEvent event) {
+                        InformationModel item = listView.getSelectionModel().getSelectedItem();
+                        if (item != null) {
+                            showExportSettingsDialog(item);
+                        }
+                    }
+                });
+
+                ContextMenu contextMenu = new ContextMenu(displayAsXmlMenuItem,
+                        displayAsRefsetMenuItem, exportMenuItem);
                 cell.setContextMenu(contextMenu);
 
                 return cell;
@@ -139,7 +154,18 @@ public class ImportedModelsViewController {
         return borderPane;
     }
 
-    public void displayAsXML(InformationModel informationModel) {
+    private void showExportSettingsDialog(InformationModel item) {
+        try {
+            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog();
+            exportSettingsDialog.show();
+        } catch (Exception ex) {
+            String msg = String.format("Unexpected error showing ExportSettingsDialog");
+            LOG.error(msg, ex);
+            AppContext.getCommonDialogs().showErrorDialog(msg, ex);
+        }
+    }
+
+    private void displayAsXML(InformationModel informationModel) {
 
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
@@ -156,10 +182,9 @@ public class ImportedModelsViewController {
             modelDetailsDialog.displayModel(informationModel);
 
         } catch (Exception ex) {
-            String title = ex.getClass().getName();
-            String message = "Unexpected error displaying import view";
-            LOG.warn(message, ex);
-            AppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
+            String msg = "Unexpected error displaying import view";
+            LOG.warn(msg, ex);
+            AppContext.getCommonDialogs().showErrorDialog(msg, ex);
         }
     }
 
@@ -192,10 +217,9 @@ public class ImportedModelsViewController {
 
                 // Show dialog.
                 Throwable ex = getException();
-                String title = ex.getClass().getName();
                 String msg = String.format("Unexpected error fetching models of type \"%s\"", modelTypeName);
                 LOG.error(msg, ex);
-                AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+                AppContext.getCommonDialogs().showErrorDialog(msg, ex);
             }
         };
 
