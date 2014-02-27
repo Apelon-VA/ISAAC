@@ -79,7 +79,7 @@ public class ImportedModelsView implements DockedViewI {
         MenuItemI menuItem = new MenuItemI() {
             @Override
             public void handleMenuSelection(Window parent) {
-                // noop
+                controller.setParent(parent);
             }
 
             @Override

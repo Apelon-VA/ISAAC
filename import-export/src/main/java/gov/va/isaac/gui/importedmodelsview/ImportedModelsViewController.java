@@ -18,20 +18,32 @@
  */
 package gov.va.isaac.gui.importedmodelsview;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
+import gov.va.isaac.ie.FetchHandler;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.util.InformationModelTypeStringConverter;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+
+import java.util.List;
+
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Window;
 import javafx.util.StringConverter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Controller class for the {@link ImportedModelsView}.
@@ -40,6 +52,7 @@ import javafx.util.StringConverter;
  */
 public class ImportedModelsViewController {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ImportSettingsDialogController.class);
     private static final String ALL = "All";
 
     /**
@@ -60,10 +73,11 @@ public class ImportedModelsViewController {
     @FXML private BorderPane borderPane;
     @FXML private ComboBox<InformationModelType> modelTypeCombo;
     @FXML private ProgressIndicator lookupProgress;
-    @FXML private ListView importedModels;
+    @FXML private ListView<String> importedModelsListView;
 
     private final StringConverter<InformationModelType> converter = new MyStringConverter();
-    private final BooleanProperty lookupRunning = new SimpleBooleanProperty(false);
+
+    private Window parent;
 
     @FXML
     public void initialize() {
@@ -72,23 +86,81 @@ public class ImportedModelsViewController {
         modelTypeCombo.setConverter(converter);
         modelTypeCombo.setItems(gatherComboBoxItems());
 
-        // Bind progress indicator visibility to whether lookup task is running or not.
-        lookupProgress.visibleProperty().bind(lookupRunning);
-
-        // TODO: Implement real handler.
+        // Handle selection changes.
         modelTypeCombo.valueProperty().addListener(new ChangeListener<InformationModelType>() {
             @Override
             public void changed(ObservableValue<? extends InformationModelType> observable,
                     InformationModelType oldValue,
                     InformationModelType newValue) {
-                System.out.println("oldValue="+oldValue);
-                System.out.println("newValue="+newValue);
+                displayImportedModels(newValue);
             }
         });
     }
 
+    public void setParent(Window parent) {
+        this.parent = parent;
+    }
+
     public BorderPane getRoot() {
         return borderPane;
+    }
+
+    private void displayImportedModels(final InformationModelType modelType) {
+
+        // Get this in scope.
+        final String modelTypeName = (modelType != null ? modelType.getDisplayName() : ALL);
+
+        // Do work in background.
+        Task<List<String>> task = new Task<List<String>>() {
+
+            @Override
+            protected List<String> call() throws Exception {
+
+                // Do work.
+                FetchHandler fetchHandler = new FetchHandler();
+                return fetchHandler.fetchModels(modelType);
+            }
+
+            @Override
+            protected void succeeded() {
+
+                // Update UI.
+                List<String> modelTypes = this.getValue();
+                updateUI(modelTypes);
+           }
+
+            @Override
+            protected void failed() {
+
+                // Show dialog.
+                Throwable ex = getException();
+                String title = ex.getClass().getName();
+                String msg = String.format("Unexpected error fetching models of type \"%s\"", modelTypeName);
+                LOG.error(msg, ex);
+                AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+            }
+        };
+
+        // Bind cursor to task state.
+        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
+        parent.getScene().cursorProperty().bind(cursorBinding);
+
+        // Bind progress indicator to task state.
+        lookupProgress.visibleProperty().bind(task.runningProperty());
+
+        Thread t = new Thread(task, "InformationModelFetcher_" + modelTypeName);
+        t.setDaemon(true);
+        t.start();
+    }
+
+    protected void updateUI(List<String> results) {
+        ObservableList<String> items = importedModelsListView.getItems();
+
+        // Clear out old items.
+        items.clear();
+
+        // Add new items.
+        items.addAll(results);
     }
 
     private ObservableList<InformationModelType> gatherComboBoxItems() {
