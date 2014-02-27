@@ -33,25 +33,27 @@ public class ExporterBase extends CommonBase {
      * @return The sole annotation, or {@code null} if none found.
      * @throws An {@link IllegalStateException} if there is more than one annotation found.
      */
-    protected <T> T getSingleAnnotation(Collection<? extends RefexChronicleBI<?>> annotations, ConceptSpec refsetSpec,
-            Class<T> type) throws ValidationException, IOException {
-            
-                // Filter members of the specified refset.
-                List<T> filtered = filterAnnotations(annotations, refsetSpec, type);
-            
-                // Should be 0-1.
-                int filteredCount = filtered.size();
-                Preconditions.checkState(filteredCount <= 1,
-                        "Expected 0-1 annotations for refset nid " + refsetSpec.getNid() +
-                        ", found " + filteredCount);
-            
-                // Return annotation, or null if none.
-                if (filteredCount == 0) {
-                    return null;
-                } else {
-                    return filtered.get(0);
-                }
-            }
+    protected <T> T getSingleAnnotation(
+            Collection<? extends RefexChronicleBI<?>> annotations,
+            ConceptSpec refsetSpec, Class<T> type)
+            throws ValidationException, IOException {
+
+        // Filter members of the specified refset.
+        List<T> filtered = filterAnnotations(annotations, refsetSpec, type);
+
+        // Should be 0-1.
+        int filteredCount = filtered.size();
+        Preconditions.checkState(filteredCount <= 1,
+                "Expected 0-1 annotations for refset nid " + refsetSpec.getNid() +
+                ", found " + filteredCount);
+
+        // Return annotation, or null if none.
+        if (filteredCount == 0) {
+            return null;
+        } else {
+            return filtered.get(0);
+        }
+    }
 
     /**
      * Helper method to iterate through the specified {@link Collection} of
@@ -65,35 +67,35 @@ public class ExporterBase extends CommonBase {
      */
     protected <T> List<T> filterAnnotations(Collection<? extends RefexChronicleBI<?>> annotations, ConceptSpec refsetSpec,
             Class<T> type) throws ValidationException, IOException {
-                List<T> filtered = Lists.newArrayList();
-            
-                for (RefexChronicleBI<?> annotation : annotations) {
-            
-                    // Filter on specified refset.
-                    if (annotation.getAssemblageNid() != refsetSpec.getNid()) {
-                        continue;
-                    }
-            
-                    // Expect member type.
-                    Preconditions.checkState(type.isAssignableFrom(annotation.getClass()),
-                            "Expected " + type + "!  Actual type is " + annotation.getClass());
-                    @SuppressWarnings("unchecked")
-                    T member = (T) annotation;
-            
-                    // What we want.
-                    filtered.add(member);
-                }
-            
-                return filtered;
+        List<T> filtered = Lists.newArrayList();
+
+        for (RefexChronicleBI<?> annotation : annotations) {
+
+            // Filter on specified refset.
+            if (annotation.getAssemblageNid() != refsetSpec.getNid()) {
+                continue;
             }
 
-    protected Collection<? extends RefexChronicleBI<?>> getLatestAnnotations(ComponentChronicleBI<?> conceptChronicle) throws IOException,
-            ContradictionException {
-            
-                // Get latest version.
-                ComponentVersionBI latestVersion = conceptChronicle.getVersion(getVC());
-            
-                // Print out annotations.
-                return latestVersion.getAnnotations();
-            }
+            // Expect member type.
+            Preconditions.checkState(type.isAssignableFrom(annotation.getClass()),
+                    "Expected " + type + "!  Actual type is " + annotation.getClass());
+            @SuppressWarnings("unchecked")
+            T member = (T) annotation;
+
+            // What we want.
+            filtered.add(member);
+        }
+
+        return filtered;
+    }
+
+    protected Collection<? extends RefexChronicleBI<?>> getLatestAnnotations(ComponentChronicleBI<?> conceptChronicle)
+            throws IOException, ContradictionException {
+
+        // Get latest version.
+        ComponentVersionBI latestVersion = conceptChronicle.getVersion(getVC());
+
+        // Print out annotations.
+        return latestVersion.getAnnotations();
+    }
 }
