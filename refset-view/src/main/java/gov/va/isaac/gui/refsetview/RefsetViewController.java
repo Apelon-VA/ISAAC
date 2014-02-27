@@ -13,8 +13,11 @@ import java.util.UUID;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
@@ -34,14 +37,18 @@ public class RefsetViewController {
     @FXML private ResourceBundle resources;
     @FXML private URL location;
     @FXML private Slider hSlider;
-    @FXML private TableView<RefsetInstance> refsetRow;
+    @FXML private TableView<RefsetInstance> refsetRows;
     @FXML private AnchorPane refsetAnchor;
+    @FXML private Button addButton;
+    @FXML private Button removeButton;
+    @FXML private Label refsetLabel;
     
     static ViewCoordinate vc = null;
     
     ObservableList<RefsetInstance> data = FXCollections.observableArrayList();
 	private boolean isAnnotation = false;
 	private ConceptVersionBI refset;
+	private RefexType refsetType = RefexType.MEMBER;
 		
 
 	public static RefsetViewController init() throws IOException {
@@ -57,15 +64,24 @@ public class RefsetViewController {
     void initialize() {
 		 vc = WBUtility.getViewCoordinate();
 
-		refsetRow.getColumns().clear();
+		refsetRows.getColumns().clear();
 
 		TableColumn memberCol = new TableColumn("Reference Component");	
 		memberCol.setCellValueFactory(
 			    new PropertyValueFactory<RefsetInstance,String>("refConFsn")
 		);
 		
-		refsetRow.getColumns().addAll(memberCol);
-	}
+		refsetRows.getColumns().addAll(memberCol);
+		
+    	addButton.setOnAction(new EventHandler<ActionEvent>() {
+        		@Override
+	            public void handle(ActionEvent e) {
+        			RefsetInstance newInstance = RefsetInstanceAccessor.createNewInstance(refsetType);
+	                data.add(newInstance);
+//	                newInstance.clear();
+	            }
+	        });
+		}
 	
     public AnchorPane getRoot() {
         return refsetAnchor;
@@ -82,10 +98,8 @@ public class RefsetViewController {
 //		}
 		
 		String refsetFsn = WBUtility.getDescription(refsetUUID);
-		Label refsetName = new Label("Refset: " + refsetFsn);
-		refsetName.setFont(new Font("Arial", 14));
-
-		refsetAnchor.getChildren().add(0, refsetName);
+		refsetLabel.setText("Refset: " + refsetFsn);
+		refsetLabel.setFont(new Font("Arial", 14));
 	}
 	
 	public void setComponent(UUID componentUUID)  {
@@ -130,38 +144,40 @@ public class RefsetViewController {
 			data.add(instance);
 		}
 		
-		refsetRow.setItems(data);
+		refsetRows.setItems(data);
 	}
 
 	private void setupTable(RefexChronicleBI<?> member) {
-		if (member.getRefexType() == RefexType.STR) {
+		refsetType  = member.getRefexType();
+		
+		if (refsetType == RefexType.STR) {
 			TableColumn col = new TableColumn("String");	
 			col.setCellValueFactory(
 				    new PropertyValueFactory<RefsetInstance,String>("strExt")
 			);
 			
-			refsetRow.getColumns().addAll(col);
-		} else if (member.getRefexType() == RefexType.CID) {
+			refsetRows.getColumns().addAll(col);
+		} else if (refsetType == RefexType.CID) {
 			TableColumn col = new TableColumn("Component");	
 			col.setCellValueFactory(
 				    new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
 			);
 			
-			refsetRow.getColumns().addAll(col);
-		} else if (member.getRefexType() == RefexType.CID_CID) {
+			refsetRows.getColumns().addAll(col);
+		} else if (refsetType == RefexType.CID_CID) {
 			TableColumn col1 = new TableColumn("Component1");	
 			col1.setCellValueFactory(
 				    new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
 			);
 			
-			refsetRow.getColumns().addAll(col1);
+			refsetRows.getColumns().addAll(col1);
 
 			TableColumn col2 = new TableColumn("Component2");	
 			col2.setCellValueFactory(
 				    new PropertyValueFactory<RefsetInstance,String>("cid2ExtFsn")
 			);
 			
-			refsetRow.getColumns().addAll(col2);
+			refsetRows.getColumns().addAll(col2);
 		}
 	}
 
@@ -169,7 +185,7 @@ public class RefsetViewController {
 		try {
 			RefexVersionBI member = memberChron.getVersion(vc);
 	
-			return RefsetInstanceAccessor.getInstance(refCon, member);
+			return RefsetInstanceAccessor.getInstance(refCon, member, refsetType);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -18,6 +18,10 @@ public class RefsetInstanceAccessor {
 		private MemberRefsetInstance(ConceptVersionBI refCon) {
 	    	super(refCon);
 		}
+
+		public MemberRefsetInstance() {
+			super(null);
+		}
 	}
 	
 	public static class StrExtRefsetInstance extends RefsetInstance {
@@ -30,6 +34,11 @@ public class RefsetInstanceAccessor {
 			strExt = new SimpleStringProperty(ext.getString1());
 		}
 	    
+		public StrExtRefsetInstance() {
+	    	super(null);
+			strExt = new SimpleStringProperty("Add String Value");
+		}
+
 		public String getStrExt() {
 	        return strExt.get();
 	    }
@@ -57,7 +66,13 @@ public class RefsetInstanceAccessor {
 			}
 		}
 
-	    public String getCidExtUuid() {
+	    public NidExtRefsetInstance() {
+	    	super(null);
+	        this.cidExtUuid = new SimpleStringProperty("Add Component UUID");
+	        this.cidExtFsn = new SimpleStringProperty("Add Component UUID");
+		}
+
+		public String getCidExtUuid() {
 	        return cidExtUuid.get();
 	    }
 	    
@@ -93,6 +108,12 @@ public class RefsetInstanceAccessor {
 			}
 		}
 
+	    public NidNidExtRefsetInstance() {
+	    	super();
+	        this.cid2ExtUuid = new SimpleStringProperty("Add Component2 UUID");
+	        this.cid2ExtFsn = new SimpleStringProperty("Add Component2 UUID");
+		}
+
 	    public String getCid2ExtUuid() {
 	        return cid2ExtUuid.get();
 	    }
@@ -115,15 +136,20 @@ public class RefsetInstanceAccessor {
 	    private SimpleStringProperty refConUuid;
 	 
 	    private RefsetInstance(ConceptVersionBI con) {
-	        this.refConUuid = new SimpleStringProperty(con.getPrimordialUuid().toString());
-	        try {
-				this.refConFsn = new SimpleStringProperty(con.getPreferredDescription().getText());
-			} catch (Exception e) {
-		        this.refConFsn = new SimpleStringProperty("Bad Concept");
-				e.printStackTrace();
+	    	if (con == null) {
+		        this.refConUuid = new SimpleStringProperty("Add Reference Component UUID");
+		        this.refConFsn = new SimpleStringProperty("Add Reference Component UUID");
+	    	} else {
+		        this.refConUuid = new SimpleStringProperty(con.getPrimordialUuid().toString());
+		        try {
+					this.refConFsn = new SimpleStringProperty(con.getPreferredDescription().getText());
+				} catch (Exception e) {
+			        this.refConFsn = new SimpleStringProperty("Bad Concept");
+					e.printStackTrace();
+				}
 			}
-		}
-
+	    }
+	    
 		public String getRefConUuid() {
 	        return refConUuid.get();
 	    }
@@ -138,20 +164,35 @@ public class RefsetInstanceAccessor {
 	    
 	    public void setRefConFsn(UUID fsn) {
 	    	this.refConFsn.set("FSN: " + fsn.toString());
-	    }	    
+	    }
+
 	}
 
-	public static RefsetInstance getInstance(ConceptVersionBI refCon, RefexVersionBI member) {
-		if (member.getRefexType() == RefexType.MEMBER) {
+	public static RefsetInstance getInstance(ConceptVersionBI refCon, RefexVersionBI member, RefexType refsetType) {
+		if (refsetType == RefexType.MEMBER) {
 			return new MemberRefsetInstance(refCon);
-		} else if (member.getRefexType() == RefexType.STR) {
+		} else if (refsetType == RefexType.STR) {
 			return new StrExtRefsetInstance(refCon, member);
-		} else if (member.getRefexType() == RefexType.CID) {
+		} else if (refsetType == RefexType.CID) {
 			return new NidExtRefsetInstance(refCon, member);
-		} else if (member.getRefexType() == RefexType.CID_CID) {
+		} else if (refsetType == RefexType.CID_CID) {
 			return new NidNidExtRefsetInstance(refCon, member);
 		}
 		
+		return null;
+	}
+
+	public static RefsetInstance createNewInstance(RefexType refsetType) {
+		if (refsetType == RefexType.MEMBER) {
+			return new MemberRefsetInstance();
+		} else if (refsetType == RefexType.STR) {
+			return new StrExtRefsetInstance();
+		} else if (refsetType == RefexType.CID) {
+			return new NidExtRefsetInstance();
+		} else if (refsetType == RefexType.CID_CID) {
+			return new NidNidExtRefsetInstance();
+		}
+
 		return null;
 	}
 }
