@@ -111,7 +111,18 @@ public class ImportedModelsViewController {
                     }
                 });
 
-                ContextMenu contextMenu = new ContextMenu(displayAsXmlMenuItem);
+                // Menu item to display as Refset.
+                MenuItem displayAsRefsetMenuItem = new MenuItem("Display as Refset");
+                displayAsRefsetMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+
+                    @Override
+                    public void handle(ActionEvent event) {
+                        AppContext.getCommonDialogs().showInformationDialog("Information",
+                                "TODO: Display as Refset");
+                    }
+                });
+
+                ContextMenu contextMenu = new ContextMenu(displayAsXmlMenuItem, displayAsRefsetMenuItem);
                 cell.setContextMenu(contextMenu);
 
                 return cell;
