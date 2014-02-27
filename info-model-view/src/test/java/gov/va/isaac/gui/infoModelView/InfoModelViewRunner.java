@@ -42,6 +42,7 @@ public class InfoModelViewRunner extends Application
 		InfoModelView infoModelView = AppContext.getService(InfoModelView.class);
 
 		primaryStage.setScene(new Scene(infoModelView.getView(), 800, 600));
+		primaryStage.getScene().getStylesheets().add("/Style.css");
 		
 		primaryStage.show();
 	}

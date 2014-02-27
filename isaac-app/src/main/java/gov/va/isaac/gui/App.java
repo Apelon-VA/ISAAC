@@ -62,6 +62,7 @@ public class App extends Application implements ApplicationWindowI{
     private Stage primaryStage_;
     private CommonDialogs commonDialog_;
     private ArrayList<ShutdownBroadcastListenerI> shutdownListeners_ = new ArrayList<>();
+    private static IOException dataStoreLocationInitException_ = null;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -109,8 +110,28 @@ public class App extends Application implements ApplicationWindowI{
             primaryStage.setHeight(screenH);
         }
 
-        // Kick off a thread to open the DB connection.
-        loadDataStore();
+        if (dataStoreLocationInitException_ == null)
+        {
+            // Kick off a thread to open the DB connection.
+            loadDataStore();
+        }
+        else
+        {
+            String title = "No Snomed Database";
+            String message = "The Snomed Database was not found.";
+            LOG.error(message, dataStoreLocationInitException_);
+            String details = "Please download the file\n\n"
+                    + "https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/org/ihtsdo/otf/tcc-test-data/3.0/tcc-test-data-3.0.zip"
+                    + "\n\nand unzip it into\n\n"
+                    + System.getProperty("user.dir")
+                    + "\n\nand then restart the editor.";
+            commonDialog_.showErrorDialog(title, message, details);
+
+            // Close app since no DB to load.
+            // (The #shutdown method will be also invoked by
+            // the handler we hooked up with Stage#setOnHiding.)
+            primaryStage_.hide();
+        }
     }
 
     private void loadDataStore() {
@@ -143,29 +164,11 @@ public class App extends Application implements ApplicationWindowI{
                 Throwable ex = getException();
 
                 // Display helpful dialog to users.
-                if (ex instanceof FileNotFoundException) {
-                    String title = "No Snomed Database";
-                    String message = "The Snomed Database was not found.";
-                    LOG.error(message, ex);
-                    String details = "Please download the file\n\n"
-                            + "https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/org/ihtsdo/otf/tcc-test-data/3.0/tcc-test-data-3.0.zip"
-                            + "\n\nand unzip it into\n\n"
-                            + System.getProperty("user.dir")
-                            + "\n\nand then restart the editor.";
-                    commonDialog_.showErrorDialog(title, message, details);
-
-                    // Close app since no DB to load.
-                    // (The #shutdown method will be also invoked by
-                    // the handler we hooked up with Stage#setOnHiding.)
-                    primaryStage_.hide();
-
-                } else {
-                    String title = "Unexpected error connecting to workbench database";
-                    String msg = ex.getClass().getName();
-                    String details = ex.getMessage();
-                    LOG.error(title, ex);
-                    commonDialog_.showErrorDialog(title, msg, details);
-                }
+                String title = "Unexpected error connecting to workbench database";
+                String msg = ex.getClass().getName();
+                String details = ex.getMessage();
+                LOG.error(title, ex);
+                commonDialog_.showErrorDialog(title, msg, details);
             }
         };
 
@@ -219,6 +222,8 @@ public class App extends Application implements ApplicationWindowI{
         LOG.info("Shutting down");
         shutdown = true;
         try {
+            //TODO OTF fix note - the current BDB access model gives me no way to know if I should call shutdown, as I don't know if it was started.
+            //If it wasn't started, calling shutdown tries to start the DB, because it inits in the constructor call.
             ExtendedAppContext.getDataStore().shutdown();
             for (ShutdownBroadcastListenerI s : shutdownListeners_)
             {
@@ -236,23 +241,23 @@ public class App extends Application implements ApplicationWindowI{
         LOG.info("Finished shutting down");
     }
     
-	/**
-	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#getPrimaryStage()
-	 */
-	@Override
-	public Stage getPrimaryStage()
-	{
-		return primaryStage_;
-	}
-	
-	/**
-	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
-	 */
-	@Override
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener)
-	{
-		shutdownListeners_.add(listener);
-	}
+    /**
+     * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#getPrimaryStage()
+     */
+    @Override
+    public Stage getPrimaryStage()
+    {
+        return primaryStage_;
+    }
+    
+    /**
+     * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
+     */
+    @Override
+    public void registerShutdownListener(ShutdownBroadcastListenerI listener)
+    {
+        shutdownListeners_.add(listener);
+    }
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         //Configure Java logging into logback
@@ -265,7 +270,15 @@ public class App extends Application implements ApplicationWindowI{
         f.set(null, AppContext.getServiceLocator());
         //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
         //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
-        configDataStorePaths(new File("berkeley-db"));
+        try
+        {
+            configDataStorePaths(new File("berkeley-db"));
+        }
+        catch (IOException e)
+        {
+            System.err.println("Configuration of datastore path failed.  DB will not be able to start properly!  " + e);
+            dataStoreLocationInitException_ = e;
+        }
         Application.launch(args);
     }
 }
