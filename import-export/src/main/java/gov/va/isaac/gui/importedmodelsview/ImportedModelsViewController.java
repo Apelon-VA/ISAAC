@@ -20,6 +20,7 @@ package gov.va.isaac.gui.importedmodelsview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
+import gov.va.isaac.gui.util.StringListCell;
 import gov.va.isaac.ie.FetchHandler;
 import gov.va.isaac.model.InformationModelType;
 
@@ -32,13 +33,19 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Window;
+import javafx.util.Callback;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +81,33 @@ public class ImportedModelsViewController {
                     String newValue) {
                 InformationModelType modelType = getModelType(newValue);
                 displayImportedModels(modelType);
+            }
+        });
+
+        // Context menu for cells.
+        importedModelsListView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+
+            @Override
+            public ListCell<String> call(final ListView<String> listView) {
+                ListCell<String> cell = new StringListCell();
+
+                // Menu item to display as XML.
+                MenuItem displayAsXmlMenuItem = new MenuItem("Display as XML");
+                displayAsXmlMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+
+                    @Override
+                    public void handle(ActionEvent event) {
+                        String item = listView.getSelectionModel().getSelectedItem();
+                        if (item != null) {
+                            System.out.println("Display as XML: " + item);
+                        }
+                    }
+                });
+
+                ContextMenu contextMenu = new ContextMenu(displayAsXmlMenuItem);
+                cell.setContextMenu(contextMenu);
+
+                return cell;
             }
         });
     }
