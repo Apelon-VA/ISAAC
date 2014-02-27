@@ -2,20 +2,30 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import org.ihtsdo.otf.tcc.api.blueprint.RefexCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
+import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
+import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.description.DescriptionChronicleDdo;
@@ -45,8 +55,32 @@ public class WBUtility {
     private static Integer synonymNid = null;
 
     private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+    private static TerminologyBuilderBI dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
     private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
     private static String useFSN = "useFSN";
+
+	private static EditCoordinate editCoord;
+
+	public static TerminologyBuilderBI getBuilder() {
+		return dataBuilder;
+	}
+	
+    public static EditCoordinate getEC()  {
+    	if (editCoord == null) {
+    		try {
+	            int authorNid   = TermAux.USER.getLenient().getConceptNid();
+	            int module = Snomed.CORE_MODULE.getLenient().getNid();
+	            int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
+	            
+	            editCoord =  new EditCoordinate(authorNid, module, editPathNid);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+
+        return editCoord;
+	}
 
     public static String getDescription(UUID uuid) {
         try {
@@ -275,4 +309,67 @@ public class WBUtility {
         }
         return null;
     }
+    
+    private static ConceptVersionBI getConceptVersion(int nid) {
+        try {
+            ConceptVersionBI result = dataStore.getConceptVersion(
+                    StandardViewCoordinates.getSnomedInferredThenStatedLatest(), nid);
+
+            // This is garbage that the WB API invented. Nothing like an
+            // undocumented getter which, rather than returning null when
+            // the thing
+            // you are asking for doesn't exist - it goes off and returns
+            // essentially a new, empty, useless node. Sigh.
+            if (result.getUUIDs().size() == 0) {
+                return null;
+            }
+
+            return result;
+        } catch (IOException ex) {
+            LOG.warn("Trouble getting concept: " + nid, ex);
+        }
+        return null;
+    }
+
+	public static ConceptVersionBI lookupSnomedIdentifierAsCV(int nid) {
+	        LOG.debug("WB DB NID Lookup '" + nid + "'");
+
+	        // Null check.
+	        if (nid >= 0) {
+	            return null;
+	        }
+
+	        ConceptVersionBI result = getConceptVersion(nid);
+
+	        return result;
+	    }
+
+	public static ViewCoordinate getViewCoordinate() {
+        try {
+			return StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static RefexVersionBI getRefsetMember(int nid) {
+        try {
+            RefexVersionBI refexVersion = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest());
+            RefexVersionBI refexVersion2 = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedStatedLatest());
+            return refexVersion;
+        } catch (Exception ex) {
+            LOG.warn("Unexpected error looking up description", ex);
+            return null;
+        }
+	}
+
+	public static void commit(ConceptVersionBI refCon) {
+		try {
+			dataStore.commit(refCon);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
