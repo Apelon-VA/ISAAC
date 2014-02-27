@@ -53,7 +53,6 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import com.sun.xml.internal.ws.util.StringUtils;
@@ -124,7 +123,6 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         if (nameAnnotation == null) {
             LOG.info("No CEM_TYPE_REFSET member found.");
         } else {
-            Preconditions.checkNotNull(nameAnnotation, "No CEM_TYPE_REFSET member found.");
             Attr nameAttr = buildNameAttr(nameAnnotation);
             cetype.setAttributeNode(nameAttr);
         }
@@ -369,5 +367,4 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
         return transformer;
     }
-
 }
