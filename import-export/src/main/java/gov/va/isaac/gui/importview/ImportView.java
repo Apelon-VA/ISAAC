@@ -20,6 +20,7 @@ package gov.va.isaac.gui.importview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 import gov.va.isaac.models.cem.importer.CEMImporter;
@@ -65,7 +66,7 @@ public class ImportView extends GridPane {
         super();
 
         // GUI placeholders.
-        ImportViewBuilder builder = new ImportViewBuilder(this);
+        GridPaneBuilder builder = new GridPaneBuilder(this);
         builder.addRow("Information Model: ", modelTypeLabel);
         builder.addRow("File Name: ", fileNameLabel);
         builder.addRow("Result: ", resultLabel);
