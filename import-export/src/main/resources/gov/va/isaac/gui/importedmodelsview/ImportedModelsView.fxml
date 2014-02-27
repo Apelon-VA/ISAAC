@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="borderPane" prefHeight="450.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.importedmodelsview.ImportedModelsViewController">
+    <center>
+        <StackPane prefHeight="150.0" prefWidth="200.0">
+            <children>
+                <ListView fx:id="importedModels">
+                    <StackPane.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </StackPane.margin>
+                </ListView>
+        <ProgressIndicator fx:id="lookupProgress" maxHeight="100.0" maxWidth="100.0" visible="false" StackPane.alignment="CENTER">
+          <StackPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+          </StackPane.margin>
+        </ProgressIndicator>
+            </children>
+        </StackPane>
+    </center>
+    <stylesheets>
+        <URL value="@ImportedModelsView.css" />
+    </stylesheets>
+<top><AnchorPane>
+<children>
+        <ComboBox fx:id="modelTypeCombo" prefWidth="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml">
+            <BorderPane.margin>
+                <Insets left="5.0" top="5.0" />
+            </BorderPane.margin>
+        </ComboBox>
+</children>
+<BorderPane.margin>
+<Insets left="5.0" right="5.0" top="5.0" />
+</BorderPane.margin></AnchorPane>
+</top>
+</BorderPane>
