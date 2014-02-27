@@ -107,13 +107,14 @@ public class FetchHandler {
     }
 
     private List<String> fetchCEM(UUID conceptUUID) throws Exception {
+        List<String> types = Lists.newArrayList();
+
         CEMFetcher fetcher = new CEMFetcher();
         String type = fetcher.fetchCEMType(conceptUUID);
         if (type != null) {
-            return Collections.singletonList(type);
+            types.add(type);
         }
 
-        // Not yet imported.
-        return Collections.emptyList();
+        return types;
     }
 }
