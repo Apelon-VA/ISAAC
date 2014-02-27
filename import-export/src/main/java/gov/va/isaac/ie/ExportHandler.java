@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.export;
+package gov.va.isaac.ie;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.cem.exporter.CEMExporter;

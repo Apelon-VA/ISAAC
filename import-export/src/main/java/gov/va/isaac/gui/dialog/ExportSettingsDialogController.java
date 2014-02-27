@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.export.ExportHandler;
+import gov.va.isaac.ie.ExportHandler;
 import gov.va.isaac.util.Utility;
 
 import java.io.File;
