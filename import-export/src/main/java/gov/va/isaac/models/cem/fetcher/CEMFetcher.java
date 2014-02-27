@@ -19,6 +19,7 @@
 package gov.va.isaac.models.cem.fetcher;
 
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
@@ -46,7 +47,7 @@ public class CEMFetcher extends ExporterBase {
         super();
     }
 
-    public String fetchCEMType(UUID conceptUUID) throws Exception {
+    public CEMInformationModel fetchCEMModel(UUID conceptUUID) throws Exception {
         LOG.info("Starting fetch of CEM model type");
         LOG.debug("conceptUUID="+conceptUUID);
 
@@ -64,14 +65,14 @@ public class CEMFetcher extends ExporterBase {
         StringMember typeAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
 
-        String type = null;
+        CEMInformationModel informationModel = null;
         if (typeAnnotation != null) {
-            type = typeAnnotation.getString1();
+            informationModel = new CEMInformationModel(typeAnnotation.getString1(), conceptUUID);
         }
 
-        LOG.debug("type="+type);
+        LOG.debug("informationModel="+informationModel);
         LOG.info("Ending fetch of CEM model type");
 
-        return type;
+        return informationModel;
     }
 }

@@ -16,54 +16,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.importview;
+package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.model.InformationModelType;
-import gov.va.isaac.models.cem.importer.CEMImporter;
+import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.cem.CEMInformationModel;
+import gov.va.isaac.models.cem.exporter.CEMExporter;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.UUID;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
 /**
- * A GUI for handling imports.
+ * A dialog for displaying an information model details.
  *
  * @author ocarlsen
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class ImportView extends GridPane {
+public class InformationModelDetailsPane extends GridPane {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ImportView.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InformationModelDetailsPane.class);
 
-    private final Label modelTypeLabel = new Label();
-    private final Label fileNameLabel = new Label();
-    private final Label resultLabel = new Label();
+    private final Label modelNameLabel = new Label();
+    private final TextArea modelXmlTextArea = new TextArea();
 
-    public ImportView() {
+    public InformationModelDetailsPane() {
         super();
 
         // GUI placeholders.
         GridPaneBuilder builder = new GridPaneBuilder(this);
-        builder.addRow("Information Model: ", modelTypeLabel);
-        builder.addRow("File Name: ", fileNameLabel);
-        builder.addRow("Result: ", resultLabel);
+        builder.addRow("Information Model: ", modelNameLabel);
+        builder.addRow(new Separator());
+        builder.addRow(modelXmlTextArea);
 
         setConstraints();
 
@@ -72,56 +75,53 @@ public class ImportView extends GridPane {
         setMinWidth(600);
     }
 
-    public void doImport(InformationModelType modelType, final String fileName) {
-        Preconditions.checkNotNull(modelType);
-        Preconditions.checkNotNull(fileName);
+    public void displayModel(InformationModel informationModel) {
+        Preconditions.checkNotNull(informationModel);
 
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
 
-        // Update UI.
-        modelTypeLabel.setText(modelType.getDisplayName());
-        fileNameLabel.setText(fileName);
-
-        if (modelType == InformationModelType.CEM) {
-            importCEM(modelType, fileName);
+        if (informationModel.getType() == InformationModelType.CEM) {
+            displayCEM((CEMInformationModel) informationModel);
         } else {
-            throw new UnsupportedOperationException(modelType.getDisplayName() +
-                    " import not yet supported in ISAAC.");
+            throw new UnsupportedOperationException(informationModel.getType() +
+                    " display not yet supported in ISAAC.");
         }
     }
 
-    private void importCEM(InformationModelType modelType, final String fileName) {
+    private void displayCEM(final CEMInformationModel cemModel) {
 
         // Do work in background.
-        Task<ConceptChronicleBI> task = new Task<ConceptChronicleBI>() {
+        Task<String> task = new Task<String>() {
 
             @Override
-            protected ConceptChronicleBI call() throws Exception {
+            protected String call() throws Exception {
 
                 // Do work.
-                CEMImporter importer = new CEMImporter();
-                return importer.importModel(new File(fileName));
+                OutputStream out = new ByteArrayOutputStream();
+                CEMExporter exporter = new CEMExporter(out);
+                UUID conceptUUID = cemModel.getConceptUUID();
+                exporter.exportModel(conceptUUID );
+                return out.toString();
             }
 
             @Override
             protected void succeeded() {
-                ConceptChronicleBI result = this.getValue();
 
                 // Update UI.
-                resultLabel.setText("Successfully imported concept: " + result.toUserString());
+                modelNameLabel.setText(cemModel.getName());
+                String modelXML = this.getValue();
+                modelXmlTextArea.setText(modelXML);
            }
 
             @Override
             protected void failed() {
-                Throwable ex = getException();
-
-                // Update UI.
-                resultLabel.setText("Failed to import model: " + ex.getMessage());
 
                 // Show dialog.
+                Throwable ex = getException();
                 String title = ex.getClass().getName();
-                String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
+                String msg = String.format("Unexpected error displaying CEM model \"%s\"",
+                        cemModel.getName());
                 LOG.error(msg, ex);
                 AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
             }
@@ -131,7 +131,7 @@ public class ImportView extends GridPane {
         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
         this.getScene().cursorProperty().bind(cursorBinding);
 
-        Thread t = new Thread(task, "Importer_" + modelType);
+        Thread t = new Thread(task, "Display_" + cemModel.getName());
         t.setDaemon(true);
         t.start();
     }
@@ -146,13 +146,11 @@ public class ImportView extends GridPane {
         column2.setHgrow(Priority.ALWAYS);
         this.getColumnConstraints().add(column2);
 
-        // Rows 1-4 have empty constraints.
-        this.getRowConstraints().add(new RowConstraints());
-        this.getRowConstraints().add(new RowConstraints());
+        // Rows 1-2 have empty constraints.
         this.getRowConstraints().add(new RowConstraints());
         this.getRowConstraints().add(new RowConstraints());
 
-        // Row 5 should
+        // Row 3 should grow to fill space.
         RowConstraints row5 = new RowConstraints();
         row5.setVgrow(Priority.ALWAYS);
         this.getRowConstraints().add(row5);

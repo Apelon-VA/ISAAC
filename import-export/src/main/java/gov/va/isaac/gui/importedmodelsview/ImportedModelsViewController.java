@@ -20,9 +20,11 @@ package gov.va.isaac.gui.importedmodelsview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
-import gov.va.isaac.gui.util.StringListCell;
+import gov.va.isaac.gui.dialog.InformationModelDetailsPane;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.FetchHandler;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.InformationModel;
 
 import java.util.List;
 
@@ -37,6 +39,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
@@ -44,6 +47,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Callback;
 
@@ -63,9 +69,10 @@ public class ImportedModelsViewController {
     @FXML private BorderPane borderPane;
     @FXML private ComboBox<String> modelTypeCombo;
     @FXML private ProgressIndicator lookupProgress;
-    @FXML private ListView<String> importedModelsListView;
+    @FXML private ListView<InformationModel> importedModelsListView;
 
     private Window parent;
+    private Stage modelDetailsStage;
 
     @FXML
     public void initialize() {
@@ -85,11 +92,11 @@ public class ImportedModelsViewController {
         });
 
         // Context menu for cells.
-        importedModelsListView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+        importedModelsListView.setCellFactory(new Callback<ListView<InformationModel>, ListCell<InformationModel>>() {
 
             @Override
-            public ListCell<String> call(final ListView<String> listView) {
-                ListCell<String> cell = new StringListCell();
+            public ListCell<InformationModel> call(final ListView<InformationModel> listView) {
+                ListCell<InformationModel> cell = new InformationModelListCell();
 
                 // Menu item to display as XML.
                 MenuItem displayAsXmlMenuItem = new MenuItem("Display as XML");
@@ -97,9 +104,9 @@ public class ImportedModelsViewController {
 
                     @Override
                     public void handle(ActionEvent event) {
-                        String item = listView.getSelectionModel().getSelectedItem();
+                        InformationModel item = listView.getSelectionModel().getSelectedItem();
                         if (item != null) {
-                            System.out.println("Display as XML: " + item);
+                            displayAsXML(item);
                         }
                     }
                 });
@@ -114,10 +121,35 @@ public class ImportedModelsViewController {
 
     public void setParent(Window parent) {
         this.parent = parent;
+        this.modelDetailsStage = buildModelDetailsStage(parent);
     }
 
     public BorderPane getRoot() {
         return borderPane;
+    }
+
+    public void displayAsXML(InformationModel informationModel) {
+
+        // Make sure in application thread.
+        FxUtils.checkFxUserThread();
+
+        try {
+            InformationModelDetailsPane modelDetailsDialog = new InformationModelDetailsPane();
+            modelDetailsStage.setScene(new Scene(modelDetailsDialog));
+            if (modelDetailsStage.isShowing()) {
+                modelDetailsStage.toFront();
+            } else {
+                modelDetailsStage.show();
+            }
+
+            modelDetailsDialog.displayModel(informationModel);
+
+        } catch (Exception ex) {
+            String title = ex.getClass().getName();
+            String message = "Unexpected error displaying import view";
+            LOG.warn(message, ex);
+            AppContext.getCommonDialogs().showErrorDialog(title, message, ex.getMessage());
+        }
     }
 
     private void displayImportedModels(final InformationModelType modelType) {
@@ -126,10 +158,10 @@ public class ImportedModelsViewController {
         final String modelTypeName = (modelType != null ? modelType.getDisplayName() : ALL);
 
         // Do work in background.
-        Task<List<String>> task = new Task<List<String>>() {
+        Task<List<InformationModel>> task = new Task<List<InformationModel>>() {
 
             @Override
-            protected List<String> call() throws Exception {
+            protected List<InformationModel> call() throws Exception {
 
                 // Do work.
                 FetchHandler fetchHandler = new FetchHandler();
@@ -140,7 +172,7 @@ public class ImportedModelsViewController {
             protected void succeeded() {
 
                 // Update UI.
-                List<String> informationModels = this.getValue();
+                List<InformationModel> informationModels = this.getValue();
                 updateUI(informationModels);
            }
 
@@ -168,8 +200,8 @@ public class ImportedModelsViewController {
         t.start();
     }
 
-    protected void updateUI(List<String> informationModels) {
-        ObservableList<String> items = importedModelsListView.getItems();
+    protected void updateUI(List<InformationModel> informationModels) {
+        ObservableList<InformationModel> items = importedModelsListView.getItems();
 
         // Clear out old items.
         items.clear();
@@ -188,6 +220,16 @@ public class ImportedModelsViewController {
 
         // Must have been "All".
         return null;
+    }
+
+    private Stage buildModelDetailsStage(Window owner) {
+        Stage stage = new Stage();
+        stage.initModality(Modality.NONE);
+        stage.initOwner(owner);
+        stage.initStyle(StageStyle.DECORATED);
+        stage.setTitle("Information Model Details");
+
+        return stage;
     }
 
     private ObservableList<String> gatherComboBoxItems() {

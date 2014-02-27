@@ -20,6 +20,7 @@ package gov.va.isaac.ie;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.fetcher.CEMFetcher;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class FetchHandler {
      * Method called by the ISAAC application to fetch the information models.
      * @throws Exception
      */
-    public List<String> fetchModels(InformationModelType modelType) throws Exception {
+    public List<InformationModel> fetchModels(InformationModelType modelType) throws Exception {
         LOG.debug("modelType=" + (modelType != null ? modelType.name() : "All"));
 
         // Make sure NOT in application thread.
@@ -63,11 +64,11 @@ public class FetchHandler {
         if (modelType == null) {
 
             // Fetch all model types.
-            List<String> allModelTypes = Lists.newArrayList();
-            allModelTypes.addAll(fetchCEM(conceptUUID));
-            allModelTypes.addAll(fetchCIMI());
-            allModelTypes.addAll(fetchFHIM());
-            allModelTypes.addAll(fetchHeD());
+            List<InformationModel> allModelTypes = Lists.newArrayList();
+            allModelTypes.addAll(fetchCEMModels(conceptUUID));
+            allModelTypes.addAll(fetchCIMIModels());
+            allModelTypes.addAll(fetchFHIMModels());
+            allModelTypes.addAll(fetchHeDModels());
             return allModelTypes;
 
         } else {
@@ -75,46 +76,46 @@ public class FetchHandler {
             // Fetch individual model type.
             switch (modelType) {
             case CEM:
-                return fetchCEM(conceptUUID);
+                return fetchCEMModels(conceptUUID);
             case CIMI:
-                return fetchCIMI();
+                return fetchCIMIModels();
             case FHIM:
-                return fetchFHIM();
+                return fetchFHIMModels();
             case HeD:
-                return fetchHeD();
+                return fetchHeDModels();
             default:
                 throw new IllegalArgumentException("Unrecognized modelType: " + modelType);
             }
         }
     }
 
-    private List<String> fetchHeD() {
+    private List<InformationModel> fetchHeDModels() {
 
         // Not yet imported.
         return Collections.emptyList();
     }
 
-    private List<String> fetchFHIM() {
+    private List<InformationModel> fetchFHIMModels() {
 
         // Not yet imported.
         return Collections.emptyList();
     }
 
-    private List<String> fetchCIMI() {
+    private List<InformationModel> fetchCIMIModels() {
 
         // Not yet imported.
         return Collections.emptyList();
     }
 
-    private List<String> fetchCEM(UUID conceptUUID) throws Exception {
-        List<String> types = Lists.newArrayList();
+    private List<InformationModel> fetchCEMModels(UUID conceptUUID) throws Exception {
+        List<InformationModel> models = Lists.newArrayList();
 
         CEMFetcher fetcher = new CEMFetcher();
-        String type = fetcher.fetchCEMType(conceptUUID);
-        if (type != null) {
-            types.add(type);
+        InformationModel model = fetcher.fetchCEMModel(conceptUUID);
+        if (model != null) {
+            models.add(model);
         }
 
-        return types;
+        return models;
     }
 }
