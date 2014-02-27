@@ -15,12 +15,12 @@ import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
 
 public class RefsetInstanceAccessor {
 	public static class MemberRefsetInstance extends RefsetInstance {
-		private MemberRefsetInstance(ConceptVersionBI refCon) {
-	    	super(refCon);
+		private MemberRefsetInstance(ConceptVersionBI refCon, RefexVersionBI member) {
+	    	super(refCon, member.getNid());
 		}
 
 		public MemberRefsetInstance() {
-			super(null);
+			super(null, 0);
 		}
 	}
 	
@@ -28,14 +28,14 @@ public class RefsetInstanceAccessor {
 	    private SimpleStringProperty strExt;
 	 
 	    private StrExtRefsetInstance(ConceptVersionBI refCon, RefexVersionBI member) {
-	    	super(refCon);
+	    	super(refCon, member.getNid());
 			RefexStringVersionBI ext = (RefexStringVersionBI)member;
 
 			strExt = new SimpleStringProperty(ext.getString1());
 		}
 	    
 		public StrExtRefsetInstance() {
-	    	super(null);
+	    	super(null, 0);
 			strExt = new SimpleStringProperty("Add String Value");
 		}
 
@@ -53,7 +53,7 @@ public class RefsetInstanceAccessor {
 	    private SimpleStringProperty cidExtUuid;
 
 	    private NidExtRefsetInstance(ConceptVersionBI refCon, RefexVersionBI member) {
-	    	super(refCon);
+	    	super(refCon, member.getNid());
 			RefexNidVersionBI ext = (RefexNidVersionBI)member;
 			ConceptVersionBI component = WBUtility.lookupSnomedIdentifierAsCV(ext.getNid1());
 			
@@ -67,7 +67,7 @@ public class RefsetInstanceAccessor {
 		}
 
 	    public NidExtRefsetInstance() {
-	    	super(null);
+	    	super(null, 0);
 	        this.cidExtUuid = new SimpleStringProperty("Add Component UUID");
 	        this.cidExtFsn = new SimpleStringProperty("Add Component UUID");
 		}
@@ -134,8 +134,11 @@ public class RefsetInstanceAccessor {
 	public static class RefsetInstance {
 	    private SimpleStringProperty refConFsn;
 	    private SimpleStringProperty refConUuid;
+		private int memberNid;
 	 
-	    private RefsetInstance(ConceptVersionBI con) {
+	    private RefsetInstance(ConceptVersionBI con, int nid) {
+	    	memberNid = nid;
+	    	
 	    	if (con == null) {
 		        this.refConUuid = new SimpleStringProperty("Add Reference Component UUID");
 		        this.refConFsn = new SimpleStringProperty("Add Reference Component UUID");
@@ -166,11 +169,18 @@ public class RefsetInstanceAccessor {
 	    	this.refConFsn.set("FSN: " + fsn.toString());
 	    }
 
+	    public int getMemberNid() {
+	    	return memberNid;
+	    }
+
+	    public void setMemberNid(int nid) {
+	    	memberNid = nid;
+	    }
 	}
 
 	public static RefsetInstance getInstance(ConceptVersionBI refCon, RefexVersionBI member, RefexType refsetType) {
 		if (refsetType == RefexType.MEMBER) {
-			return new MemberRefsetInstance(refCon);
+			return new MemberRefsetInstance(refCon, member);
 		} else if (refsetType == RefexType.STR) {
 			return new StrExtRefsetInstance(refCon, member);
 		} else if (refsetType == RefexType.CID) {
