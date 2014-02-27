@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ExportHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CEMExporter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExportHandler.class);
 
     public ExportHandler() throws ValidationException, IOException {
         super();
