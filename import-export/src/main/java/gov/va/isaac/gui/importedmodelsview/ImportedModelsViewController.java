@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
 import gov.va.isaac.ie.FetchHandler;
 import gov.va.isaac.model.InformationModelType;
-import gov.va.isaac.util.InformationModelTypeStringConverter;
 
 import java.util.List;
 
@@ -40,7 +39,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Window;
-import javafx.util.StringConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,27 +53,10 @@ public class ImportedModelsViewController {
     private static final Logger LOG = LoggerFactory.getLogger(ImportSettingsDialogController.class);
     private static final String ALL = "All";
 
-    /**
-     * A {@link StringConverter} for the internal {@link ComboBox}.
-     * Interprets a {@code null} as the {@link #ALL} value.
-     */
-    private static final class MyStringConverter extends InformationModelTypeStringConverter {
-
-        @Override
-        public String toString(InformationModelType modelType) {
-            if (modelType == null) {
-                return ALL;
-            }
-            return super.toString(modelType);
-        }
-    }
-
     @FXML private BorderPane borderPane;
-    @FXML private ComboBox<InformationModelType> modelTypeCombo;
+    @FXML private ComboBox<String> modelTypeCombo;
     @FXML private ProgressIndicator lookupProgress;
     @FXML private ListView<String> importedModelsListView;
-
-    private final StringConverter<InformationModelType> converter = new MyStringConverter();
 
     private Window parent;
 
@@ -83,16 +64,16 @@ public class ImportedModelsViewController {
     public void initialize() {
 
         // Populate modelTypeCombo.
-        modelTypeCombo.setConverter(converter);
         modelTypeCombo.setItems(gatherComboBoxItems());
 
         // Handle selection changes.
-        modelTypeCombo.valueProperty().addListener(new ChangeListener<InformationModelType>() {
+        modelTypeCombo.valueProperty().addListener(new ChangeListener<String>() {
             @Override
-            public void changed(ObservableValue<? extends InformationModelType> observable,
-                    InformationModelType oldValue,
-                    InformationModelType newValue) {
-                displayImportedModels(newValue);
+            public void changed(ObservableValue<? extends String> observable,
+                    String oldValue,
+                    String newValue) {
+                InformationModelType modelType = getModelType(newValue);
+                displayImportedModels(modelType);
             }
         });
     }
@@ -125,8 +106,8 @@ public class ImportedModelsViewController {
             protected void succeeded() {
 
                 // Update UI.
-                List<String> modelTypes = this.getValue();
-                updateUI(modelTypes);
+                List<String> informationModels = this.getValue();
+                updateUI(informationModels);
            }
 
             @Override
@@ -153,25 +134,37 @@ public class ImportedModelsViewController {
         t.start();
     }
 
-    protected void updateUI(List<String> results) {
+    protected void updateUI(List<String> informationModels) {
         ObservableList<String> items = importedModelsListView.getItems();
 
         // Clear out old items.
         items.clear();
 
         // Add new items.
-        items.addAll(results);
+        items.addAll(informationModels);
     }
 
-    private ObservableList<InformationModelType> gatherComboBoxItems() {
-        ObservableList<InformationModelType> items = FXCollections.observableArrayList();
-        items.addAll(InformationModelType.values());
+    private InformationModelType getModelType(String comboBoxItem) {
+        for (InformationModelType modelType : InformationModelType.values()) {
+            String displayName = modelType.getDisplayName();
+            if (displayName.equals(comboBoxItem)) {
+                return modelType;
+            }
+        }
 
-        // We add this null to be interpreted as "All".
-        // However, the ComboBox will not use the StringConverter on null values.
-        // Instead, it uses the prompt text.
-        items.add(null);
-        modelTypeCombo.setPromptText(ALL);
+        // Must have been "All".
+        return null;
+    }
+
+    private ObservableList<String> gatherComboBoxItems() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+
+        for (InformationModelType modelType : InformationModelType.values()) {
+            String displayName = modelType.getDisplayName();
+            items.add(displayName);
+        }
+
+        items.add(ALL);
 
         return items;
     }
