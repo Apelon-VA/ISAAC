@@ -19,6 +19,7 @@
 package gov.va.isaac.ie;
 
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 
 import java.io.File;
@@ -49,8 +50,9 @@ public class ExportHandler {
      * Method called by the ISAAC application to perform the export. Will be
      * invoked on a background thread.
      */
-    public void doExport(File file) throws Exception {
-        LOG.debug("doExport: file=" + file.getName());
+    public void doExport(InformationModelType modelType, File file) throws Exception {
+        LOG.debug("modelType=" + modelType);
+        LOG.debug("file=" + file);
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
@@ -58,8 +60,12 @@ public class ExportHandler {
         // Get "Blood pressure taking (procedure)" concept.
         UUID conceptUUID = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
 
-        // Export CEM model to file.
-        CEMExporter exporter = new CEMExporter(new FileOutputStream(file));
-        exporter.exportModel(conceptUUID);
+        if (modelType == InformationModelType.CEM) {
+            CEMExporter exporter = new CEMExporter(new FileOutputStream(file));
+            exporter.exportModel(conceptUUID);
+        } else {
+            throw new UnsupportedOperationException(modelType.getDisplayName() +
+                    " export not yet supported in ISAAC.");
+        }
     }
 }

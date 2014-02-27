@@ -156,7 +156,8 @@ public class ImportedModelsViewController {
 
     private void showExportSettingsDialog(InformationModel item) {
         try {
-            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog();
+            InformationModelType modelType = item.getType();
+            ExportSettingsDialog exportSettingsDialog = new ExportSettingsDialog(modelType);
             exportSettingsDialog.show();
         } catch (Exception ex) {
             String msg = String.format("Unexpected error showing ExportSettingsDialog");
