@@ -8,7 +8,7 @@ import javafx.util.StringConverter;
  *
  * @author ocarlsen
  */
-public final class InformationModelTypeStringConverter extends StringConverter<InformationModelType> {
+public class InformationModelTypeStringConverter extends StringConverter<InformationModelType> {
 
     @Override
     public String toString(InformationModelType modelType) {

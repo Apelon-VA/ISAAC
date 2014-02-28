@@ -1,15 +1,15 @@
 /**
  * Copyright Notice
- * 
+ *
  * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,21 +19,23 @@
 package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.AppContext;
-import gov.va.models.cem.importer.CEMMetadataBinding;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.UUID;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
  * RefsetViewRunner
- * 
+ *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class RefsetViewRunner extends Application
@@ -49,11 +51,11 @@ public class RefsetViewRunner extends Application
 		primaryStage.setTitle("Refset View");
 
 		RefsetView refsetView = AppContext.getService(RefsetView.class);
-		refsetView.setRefset(CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0]);
+		refsetView.setRefset(gov.va.isaac.models.cem.importer.CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0]);
 		refsetView.setComponent(diastolicBP);
 
 		primaryStage.setScene(new Scene(refsetView.getView(), 400, 300));
-		
+
 		primaryStage.show();
 	}
 
