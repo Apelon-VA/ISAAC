@@ -3,11 +3,13 @@ package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -115,39 +118,52 @@ public class RefsetViewController {
 		data.clear();
 		boolean isSetup = false;
 		
-		for (RefexChronicleBI<?> member : members) {
-			ConceptVersionBI refCon;
-//			if (!isAnnotation) {
-//				refCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
-//				if (member.getAssemblageNid() != refset.getNid()) {
-//					continue;
-//				}
-//			} else {
-				refCon = component;
+		try {
+			for (RefexChronicleBI<?> memChron : members) {
+				RefexVersionBI member = memChron.getVersion(WBUtility.getViewCoordinate());
 				
-				if (member.getAssemblageNid() != refset.getNid()) {
-					continue;
+				ConceptVersionBI refCon;
+				if (!isAnnotation) {
+					refCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
+				} else {
+					refCon = component;
 				}
-//			}
-
-
-			if (member.getRefexType() != RefexType.MEMBER && !isSetup) {
-				RefsetTableHandler.setupTable(member, isAnnotation, refsetRows);
-				refsetType = member.getRefexType();
+	
+				isSetup = processMembers(member, refCon, isSetup);
 			}
-
-			RefsetInstance instance = createRow(refCon, member);
-			data.add(instance);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		refsetRows.setItems(data);
 	}
 
 
-	private RefsetInstance createRow(ConceptVersionBI refCon, RefexChronicleBI<?> memberChron) {
+	private boolean processMembers(RefexVersionBI member, ConceptVersionBI refCon, boolean isSetup) throws IOException {
+		if (member.getAssemblageNid() == refset.getNid()) {
+			// Setup if Necessary
+			if (!isSetup && member.getRefexType() != RefexType.MEMBER) {
+				RefsetTableHandler.setupTable(member, isAnnotation, refsetRows);
+				refsetType = member.getRefexType();
+				isSetup = true;
+			}
+
+			// Have needed member, add to data
+			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCon, member, refsetType);
+			data.add(instance);
+		}
+
+		// Search for member's annotations
+		Collection<? extends RefexVersionBI<?>> refAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
+		for (RefexVersionBI annot : refAnnots) {
+			isSetup = processMembers(annot, refCon, isSetup);
+		}
+
+		return isSetup;
+	}
+
+	private RefsetInstance createRow(ConceptVersionBI refCon, RefexVersionBI member) {
 		try {
-			RefexVersionBI member = memberChron.getVersion(vc);
-	
 			return RefsetInstanceAccessor.getInstance(refCon, member, refsetType);
 		} catch (Exception e) {
 			e.printStackTrace();
