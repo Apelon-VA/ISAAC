@@ -18,15 +18,11 @@
  */
 package gov.va.isaac.gui.refsetview;
 
+import gov.va.isaac.AppContext;
 import java.io.IOException;
 import java.util.UUID;
-
-import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.RefsetViewI;
-import gov.va.models.cem.importer.CEMMetadataBinding;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
