@@ -45,6 +45,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
+import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
@@ -162,8 +163,12 @@ public class RefsetTableHandler {
 						instance.setValueExt(t.getNewValue());
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
-							RefexCAB newMember = new RefexCAB(RefexType.STR, refCompCon.getNid(),  instance.getValueMemberNid(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
-							commitUpdate(newMember, isAnnotation);
+							RefexCAB newMember = new RefexCAB(RefexType.STR, refCompCon.getNid(),  instance.getValueMemberNid(), IdDirective.GENERATE_HASH, RefexDirective.INCLUDE);
+							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
+							
+							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
+
+							WBUtility.addUncommitted(refCompCon);
 
 							return;
 						} else {
@@ -285,7 +290,7 @@ public class RefsetTableHandler {
 			  }
 			}
 		});
-*/		
+*/		 
 	}
 
 	private static RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
@@ -295,10 +300,10 @@ public class RefsetTableHandler {
 	
 	}
 
-	private static void commitUpdate(RefexCAB bp, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
-		RefexStringVersionBI refex = (RefexStringVersionBI)WBUtility.getRefsetMember(bp.getComponentNid());
+	private static void commitUpdate(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
+		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(member.getComponentNid());
 		
-		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(bp);
+		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(member);
 		ConceptVersionBI refCompCon;
 		if (!isAnnotation) {
 			refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getReferencedComponentNid());

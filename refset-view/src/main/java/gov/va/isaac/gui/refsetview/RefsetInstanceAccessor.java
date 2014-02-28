@@ -208,6 +208,8 @@ public class RefsetInstanceAccessor {
 			super(refCompCon, member);
 
 			try {
+				setupMemberNids();
+				
 				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
 				for (RefexVersionBI parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
@@ -229,8 +231,20 @@ public class RefsetInstanceAccessor {
 			}
 		}
 		
+		private void setupMemberNids() {
+			try {
+				constraintMemberNid = CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET.getNid();
+				constraintValMemberNid = CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET.getNid();
+				valMemberNid = CEMMetadataBinding.CEM_VALUE_REFSET.getNid();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 		public CEMCompositRefestInstance() {
 			super();
+			setupMemberNids();
+			
 			constraintExt = new SimpleStringProperty("Add String Value");
 			constraintValExt = new SimpleStringProperty("Add String Value");
 			valueExt = new SimpleStringProperty("Add String Value");
