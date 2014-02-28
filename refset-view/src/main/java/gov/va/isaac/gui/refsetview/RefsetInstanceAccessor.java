@@ -14,6 +14,54 @@ import org.ihtsdo.otf.tcc.api.refex.type_nid_nid.RefexNidNidVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
 
 public class RefsetInstanceAccessor {
+	
+	public static class RefsetInstance {
+		private SimpleStringProperty refConFsn;
+		private SimpleStringProperty refConUuid;
+		private int memberNid;
+	 
+		private RefsetInstance(ConceptVersionBI con, int nid) {
+			memberNid = nid;
+			
+			if (con == null) {
+				this.refConUuid = new SimpleStringProperty("Add Reference Component UUID");
+				this.refConFsn = new SimpleStringProperty("Add Reference Component UUID");
+			} else {
+				this.refConUuid = new SimpleStringProperty(con.getPrimordialUuid().toString());
+				try {
+					this.refConFsn = new SimpleStringProperty(con.getPreferredDescription().getText());
+				} catch (Exception e) {
+					this.refConFsn = new SimpleStringProperty("Bad Concept");
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		public String getRefConUuid() {
+			return refConUuid.get();
+		}
+		
+		public void setRefConUuid(UUID uuid) {
+			this.refConUuid.set(uuid.toString());
+		}
+			
+		public String getRefConFsn() {
+			return refConFsn.get();
+		}
+		
+		public void setRefConFsn(String fsn) {
+			this.refConFsn.set(fsn);
+		}
+
+		public int getMemberNid() {
+			return memberNid;
+		}
+
+		public void setMemberNid(int nid) {
+			memberNid = nid;
+		}
+	}
+
 	public static class MemberRefsetInstance extends RefsetInstance {
 		private MemberRefsetInstance(ConceptVersionBI refCon, RefexVersionBI member) {
 			super(refCon, member.getNid());
@@ -85,7 +133,7 @@ public class RefsetInstanceAccessor {
 		}
 		
 		public void setCidExtFsn(String fsn) {
-			this.cidExtFsn.set("FSN: " + fsn.toString());
+			this.cidExtFsn.set(fsn.toString());
 		}
 	}
 	
@@ -127,10 +175,10 @@ public class RefsetInstanceAccessor {
 		}
 		
 		public void setCid2ExtFsn(String fsn) {
-			this.cid2ExtFsn.set("FSN: " + fsn.toString());
+			this.cid2ExtFsn.set(fsn.toString());
 		}
 	}
-	
+		
 	public static class RefsetInstance {
 		private SimpleStringProperty refConFsn;
 		private SimpleStringProperty refConUuid;
@@ -149,32 +197,6 @@ public class RefsetInstanceAccessor {
 				} catch (Exception e) {
 					this.refConFsn = new SimpleStringProperty("Bad Concept");
 					e.printStackTrace();
-				}
-			}
-		}
-		
-		public String getRefConUuid() {
-			return refConUuid.get();
-		}
-		
-		public void setRefConUuid(UUID uuid) {
-			this.refConUuid.set(uuid.toString());
-		}
-			
-		public String getRefConFsn() {
-			return refConFsn.get();
-		}
-		
-		public void setRefConFsn(UUID fsn) {
-			this.refConFsn.set("FSN: " + fsn.toString());
-		}
-
-		public int getMemberNid() {
-			return memberNid;
-		}
-
-		public void setMemberNid(int nid) {
-			memberNid = nid;
 		}
 	}
 
