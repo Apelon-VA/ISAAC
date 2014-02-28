@@ -20,8 +20,10 @@ package gov.va.isaac.gui.importview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.model.InformationModelType;
-import gov.va.models.cem.importer.CEMImporter;
+import gov.va.isaac.models.cem.importer.CEMImporter;
+
 import java.io.File;
 
 import javafx.beans.binding.Bindings;
@@ -29,10 +31,15 @@ import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 
 /**
@@ -53,12 +60,12 @@ public class ImportView extends GridPane {
         super();
 
         // GUI placeholders.
-        add(new Label("Information Model: "), 0, 0);
-        add(modelTypeLabel, 1, 0);
-        add(new Label("File Name: "), 0, 1);
-        add(fileNameLabel, 1, 1);
-        add(new Label("Result: "), 0, 2);
-        add(resultLabel, 1, 2);
+        GridPaneBuilder builder = new GridPaneBuilder(this);
+        builder.addRow("Information Model: ", modelTypeLabel);
+        builder.addRow("File Name: ", fileNameLabel);
+        builder.addRow("Result: ", resultLabel);
+
+        setConstraints();
 
         // Set minimum dimensions.
         setMinHeight(200);
@@ -107,12 +114,12 @@ public class ImportView extends GridPane {
 
             @Override
             protected void failed() {
+                Throwable ex = getException();
 
                 // Update UI.
-                resultLabel.setText("Failed to import model from file: " + fileName);
+                resultLabel.setText("Failed to import model: " + ex.getMessage());
 
                 // Show dialog.
-                Throwable ex = getException();
                 String title = ex.getClass().getName();
                 String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
                 LOG.error(msg, ex);
@@ -127,5 +134,27 @@ public class ImportView extends GridPane {
         Thread t = new Thread(task, "Importer_" + modelType);
         t.setDaemon(true);
         t.start();
+    }
+
+    private void setConstraints() {
+
+        // Column 1 has empty constraints.
+        this.getColumnConstraints().add(new ColumnConstraints());
+
+        // Column 2 should grow to fill space.
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setHgrow(Priority.ALWAYS);
+        this.getColumnConstraints().add(column2);
+
+        // Rows 1-4 have empty constraints.
+        this.getRowConstraints().add(new RowConstraints());
+        this.getRowConstraints().add(new RowConstraints());
+        this.getRowConstraints().add(new RowConstraints());
+        this.getRowConstraints().add(new RowConstraints());
+
+        // Row 5 should
+        RowConstraints row5 = new RowConstraints();
+        row5.setVgrow(Priority.ALWAYS);
+        this.getRowConstraints().add(row5);
     }
 }

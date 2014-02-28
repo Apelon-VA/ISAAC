@@ -19,7 +19,8 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.export.ExportHandler;
+import gov.va.isaac.ie.ExportHandler;
+import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.util.Utility;
 
 import java.io.File;
@@ -33,6 +34,7 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,10 +53,12 @@ public class ExportSettingsDialogController {
     @FXML private Label folderSelectionLabel;
     @FXML private TextField fileSelectionTextField;
 
-    private ExportSettingsDialog exportSettingsDialog;
+    private Stage stage;
+    private InformationModelType modelType;
 
-    public void setVariables(ExportSettingsDialog exportSettingsDialog) {
-        this.exportSettingsDialog = exportSettingsDialog;
+    public void setVariables(Stage stage, InformationModelType modelType) {
+        this.stage = stage;
+        this.modelType = modelType;
     }
 
     @FXML
@@ -68,7 +72,7 @@ public class ExportSettingsDialogController {
         DirectoryChooser folderChooser = new DirectoryChooser();
 
         // Show dialog.
-        File file = folderChooser.showDialog(exportSettingsDialog);
+        File file = folderChooser.showDialog(stage);
         if (file != null) {
             folderSelectionLabel.setText(file.getPath());
         }
@@ -99,7 +103,7 @@ public class ExportSettingsDialogController {
      * Handler for cancel button.
      */
     public void handleCancel() {
-        exportSettingsDialog.close();
+        stage.close();
     }
 
     private void performExport(final String folderName, final String fileName) {
@@ -124,7 +128,7 @@ public class ExportSettingsDialogController {
 
                 // Inject into an ExportHandler.
                 ExportHandler exportHandler = new ExportHandler();
-                exportHandler.doExport(file);
+                exportHandler.doExport(modelType, file);
 
                 return true;
             }
@@ -139,7 +143,7 @@ public class ExportSettingsDialogController {
                 String message = String.format("Export to \"%s\" successful.", fileName);
                 AppContext.getCommonDialogs().showInformationDialog(title, message);
 
-                exportSettingsDialog.close();
+                stage.close();
             }
 
             @Override
@@ -154,7 +158,7 @@ public class ExportSettingsDialogController {
 
         // Bind cursor to task state.
         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
-        exportSettingsDialog.getScene().cursorProperty().bind(cursorBinding);
+        stage.getScene().cursorProperty().bind(cursorBinding);
 
         Utility.execute(task);
     }

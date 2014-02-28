@@ -35,6 +35,20 @@
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>tcc-datastore</artifactId>
         </dependency>
+ 
+         <!-- Redirects Java logging into logback -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+        
+        <!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>1.7.0</version>
+        </dependency>
     
         <!-- JUnit. -->
         <dependency>

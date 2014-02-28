@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>gov.va.isaac</groupId>
+		<artifactId>isaac-parent</artifactId>
+		<version>1.0-Sprint_04-SNAPSHOT</version>
+	</parent>
+	<groupId>gov.va.isaac.modules</groupId>
+	<artifactId>refset-view</artifactId>
+	<packaging>jar</packaging>
+
+	<name>ISAAC Refset View</name>
+	<description>
+		A Refset view implementation for ISAAC
+	</description>
+
+	<dependencies>
+	
+		<!-- OTF Query Implementation. -->
+		<dependency>
+			<groupId>org.ihtsdo.otf</groupId>
+			<artifactId>query-implementation</artifactId>
+		</dependency>
+	
+	
+		<!-- ISAAC App Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>otf-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+	
+		<!-- Import-Export Model stuff -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>import-export</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>test</scope>
+		</dependency>
+	
+		<!-- JUnit. -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+	</dependencies>
+
+</project>
