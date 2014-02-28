@@ -165,7 +165,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		VBox.setVgrow(sp, Priority.ALWAYS);
 		root.getChildren().add(sp);
 
-		for (ConceptSpec cs : CEMMetadataBinding.getAll())
+		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs == CEMMetadataBinding.CEM_DATA_REFSET || cs == CEMMetadataBinding.CEM_TYPE_REFSET)
 			{
@@ -203,7 +203,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	
 	private void addRefsetView(String name)
 	{
-		for (ConceptSpec cs : CEMMetadataBinding.getAll())
+		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs.getDescription().equals(name))
 			{
