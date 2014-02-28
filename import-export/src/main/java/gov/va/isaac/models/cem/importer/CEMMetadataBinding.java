@@ -5,8 +5,10 @@
  */
 package gov.va.isaac.models.cem.importer;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
 /**
@@ -85,4 +87,25 @@ public class CEMMetadataBinding {
             = new ConceptSpec("CEM unit field (foundation metadata concept)",
             UUID.fromString("2f3fe6d9-6a7c-5d05-aa4f-3ebde57fff83"));
 
+    // TODO convert the above to an enum
+    public static List<ConceptSpec> getAll()
+    {
+        try
+        {
+            ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
+            Field[] declaredFields = CEMMetadataBinding.class.getDeclaredFields();
+            for (Field field : declaredFields)
+            {
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getType() == ConceptSpec.class)
+                {
+                    allConceptSpec.add((ConceptSpec) field.get(null));
+                }
+            }
+            return allConceptSpec;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Unexpected!", e);
+        }
+    }
 }

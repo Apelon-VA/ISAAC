@@ -69,22 +69,11 @@ public class RefsetView implements RefsetViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setRefset(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setRefsetAndComponent(java.util.UUID, java.util.UUID)
 	 */
 	@Override
-	public void setRefset(UUID refsetUUID)
+	public void setRefsetAndComponent(UUID refsetUUID, UUID componentId)
 	{
-		rvc_.setRefset(refsetUUID);
+		rvc_.setRefsetAndComponent(refsetUUID, componentId);
 	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setComponent(java.util.UUID)
-	 */
-	
-	@Override
-	public void setComponent(UUID refsetUUID)
-	{
-		rvc_.setComponent(refsetUUID);
-	}
-
 }

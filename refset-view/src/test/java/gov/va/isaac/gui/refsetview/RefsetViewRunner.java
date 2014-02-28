@@ -51,8 +51,7 @@ public class RefsetViewRunner extends Application
 		primaryStage.setTitle("Refset View");
 
 		RefsetView refsetView = AppContext.getService(RefsetView.class);
-		refsetView.setRefset(gov.va.isaac.models.cem.importer.CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0]);
-		refsetView.setComponent(diastolicBP);
+		refsetView.setRefsetAndComponent(gov.va.isaac.models.cem.importer.CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0], diastolicBP);
 
 		primaryStage.setScene(new Scene(refsetView.getView(), 400, 300));
 

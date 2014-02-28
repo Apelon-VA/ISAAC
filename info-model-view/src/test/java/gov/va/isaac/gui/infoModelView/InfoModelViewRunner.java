@@ -18,11 +18,16 @@
  */
 package gov.va.isaac.gui.infoModelView;
 
-import java.io.IOException;
 import gov.va.isaac.AppContext;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.UUID;
 import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.ihtsdo.otf.query.lucene.LuceneIndexer;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
  * InfoModelViewRunner
@@ -40,16 +45,22 @@ public class InfoModelViewRunner extends Application
 		primaryStage.setTitle("Refset View");
 
 		InfoModelView infoModelView = AppContext.getService(InfoModelView.class);
-
-		primaryStage.setScene(new Scene(infoModelView.getView(), 800, 600));
-		primaryStage.getScene().getStylesheets().add("/Style.css");
 		
-		primaryStage.show();
+		//diastolicBP 
+		infoModelView.setConcept(UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc"));
+		infoModelView.showView(null);
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, IOException
+	public static void main(String[] args) throws ClassNotFoundException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException
 	{
 		AppContext.setup();
+		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
+		Field f = Hk2Looker.class.getDeclaredField("looker");
+		f.setAccessible(true);
+		f.set(null, AppContext.getServiceLocator());
+		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
+		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
+
 		launch(args);
 	}
 

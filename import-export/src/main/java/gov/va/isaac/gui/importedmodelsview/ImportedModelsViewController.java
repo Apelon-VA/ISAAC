@@ -24,11 +24,11 @@ import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
 import gov.va.isaac.gui.dialog.InformationModelDetailsPane;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.FetchHandler;
+import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
-
+import gov.va.isaac.models.cem.CEMInformationModel;
 import java.util.List;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ChangeListener;
@@ -53,7 +53,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Callback;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,8 +117,14 @@ public class ImportedModelsViewController {
 
                     @Override
                     public void handle(ActionEvent event) {
-                        AppContext.getCommonDialogs().showInformationDialog("Information",
-                                "TODO: Display as Refset");
+                        InformationModel item = listView.getSelectionModel().getSelectedItem();
+                        if (item != null) {
+                            if (item.getType() == InformationModelType.CEM) {
+                                InfoModelViewI imv = AppContext.getService(InfoModelViewI.class);
+                                imv.setConcept(((CEMInformationModel) item).getConceptUUID());
+                                imv.showView(parent);
+                            } 
+                        }
                     }
                 });
 

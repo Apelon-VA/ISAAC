@@ -3,13 +3,11 @@ package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -18,11 +16,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -31,7 +27,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 
 public class RefsetViewController {
 
-	@FXML private Slider hSlider;
+	//@FXML private Slider hSlider;
 	@FXML private TableView<RefsetInstance> refsetRows;
 	@FXML private AnchorPane refsetAnchor;
 	@FXML private Button addButton;
@@ -80,7 +76,8 @@ public class RefsetViewController {
 		return refsetAnchor;
 	}
 
-	public void setRefset(UUID refsetUUID) {
+	public void setRefsetAndComponent(UUID refsetUUID, UUID componentUUID)  {
+		
 		refset = WBUtility.lookupSnomedIdentifierAsCV(refsetUUID);
 
 //		try {
@@ -93,9 +90,7 @@ public class RefsetViewController {
 		String refsetFsn = WBUtility.getDescription(refsetUUID);
 		refsetLabel.setText("Refset: " + refsetFsn);
 		refsetLabel.setFont(new Font("Arial", 14));
-	}
-	
-	public void setComponent(UUID componentUUID)  {
+		
 		Collection<? extends RefexChronicleBI<?>> members = new HashSet<>();
 		ConceptVersionBI component = null;
 		

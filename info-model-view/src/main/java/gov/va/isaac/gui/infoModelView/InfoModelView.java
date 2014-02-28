@@ -20,16 +20,40 @@ package gov.va.isaac.gui.infoModelView;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.interfaces.gui.views.RefsetViewI;
+import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
+import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Popup;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import javax.inject.Singleton;
+import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -40,34 +64,177 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@Singleton
-public class InfoModelView implements DockedViewI
+@PerLookup
+public class InfoModelView implements PopupViewI, InfoModelViewI
 {
-
+	private Stage stage;
+	private VBox root = new VBox();
+	private VBox refsetArea = new VBox();
+	private Button configure = new Button("Configure...");
+	private Popup popup = new Popup();
+	private HashMap<String, Node> refsetsOnDisplay = new HashMap<>();
+	private UUID conceptUUID;
+	
 	private InfoModelView() throws IOException
 	{
 		// created by HK2
+		stage = new Stage();
+		stage.initModality(Modality.NONE);
+		stage.initStyle(StageStyle.UTILITY);
+		stage.setScene(new Scene(root, 800, 600));
+		stage.getScene().getStylesheets().add("/Style.css");
+		stage.setTitle("Info Model View");
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
+	 * @see gov.va.isaac.interfaces.gui.views.InfoModelViewI#setConcept(java.util.UUID)
 	 */
 	@Override
-	public Region getView()
+	public void setConcept(UUID conceptID)
 	{
+		this.conceptUUID = conceptID;
 		
-		VBox v = new VBox();
+		HBox h = new HBox();
+		h.getStyleClass().add("itemBorder");
 		
-		RefsetViewI ref1 = AppContext.getService(RefsetViewI.class);
-		ref1.setRefset(UUID.randomUUID());
-		v.getChildren().add(ref1.getView());
+		h.getChildren().add(new Label("Clinical Element Model"));
+		Label l = new Label(WBUtility.getDescription(conceptUUID));
+		HBox.setMargin(l, new Insets(0, 0, 0, 10));
+		h.getChildren().add(l);
 		
-		RefsetViewI ref2 = AppContext.getService(RefsetViewI.class);
-		ref2.setRefset(UUID.randomUUID());
-		v.getChildren().add(ref2.getView());
+		configure.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				if (popup.isShowing())
+				{
+					popup.hide();
+				}
+				else
+				{
+					popup.show(stage, stage.getScene().getWindow().getX() + 220, stage.getScene().getWindow().getY() + 60);
+				}
+				
+			}
+		});
+		HBox.setMargin(configure, new Insets(0, 10, 0, 10));
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		h.getChildren().add(spacer);
+		h.getChildren().add(configure);
+	
+		BorderPane bp = new BorderPane();
+		bp.getStyleClass().add("itemBorder");
+		bp.setTop(new Label("Select Desired Model Elements"));
+		BorderPane.setMargin(bp.getTop(), new Insets(5, 5, 5, 5));
 		
-		// TODO
-		return v;
+		final ListView<String> list = new ListView<String>();
+		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+		for (ConceptSpec cs : CEMMetadataBinding.getAll())
+		{
+			list.getItems().add(cs.getDescription());
+		}
+		
+		list.setPrefHeight(400);
+		list.setPrefWidth(500);
+		bp.setCenter(list);
+		bp.setStyle("-fx-background-color: gainsboro");
+		
+		popup.getContent().add(bp);
+		Button ok = new Button("Ok");
+		ok.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				popup.hide();
+			}
+		});
+		BorderPane.setMargin(ok, new Insets(5, 5, 5, 5));
+		BorderPane.setAlignment(ok, Pos.CENTER);
+		bp.setBottom(ok);
+		
+		
+		root.getChildren().add(h);
+		ScrollPane sp = new ScrollPane();
+		sp.setPrefWidth(Double.MAX_VALUE);
+		refsetArea.setFillWidth(true);
+		sp.setContent(refsetArea);
+		VBox.setVgrow(sp, Priority.ALWAYS);
+		root.getChildren().add(sp);
+
+		for (ConceptSpec cs : CEMMetadataBinding.getAll())
+		{
+			if (cs == CEMMetadataBinding.CEM_DATA_REFSET || cs == CEMMetadataBinding.CEM_TYPE_REFSET)
+			{
+				add(cs);
+				list.getSelectionModel().select(cs.getDescription());
+			}
+		}
+		
+		list.getSelectionModel().getSelectedIndices().addListener(new ListChangeListener<Integer>()
+		{
+			@Override
+			public void onChanged(Change<? extends Integer> c)
+			{
+				while (c.next())
+				{
+					for (Integer i : c.getRemoved())
+					{
+						if (i >= 0)
+						{
+							removeRefsetView(list.getItems().get(i));
+						}
+					}
+					
+					for (Integer i : c.getAddedSubList())
+					{
+						if (i >= 0)
+						{
+							addRefsetView(list.getItems().get(i));
+						}
+					}
+				}
+			}
+		});
+	}
+	
+	private void addRefsetView(String name)
+	{
+		for (ConceptSpec cs : CEMMetadataBinding.getAll())
+		{
+			if (cs.getDescription().equals(name))
+			{
+				add(cs);
+				break;
+			}
+		}
+	}
+	
+	private void removeRefsetView(String name)
+	{
+		refsetArea.getChildren().remove(refsetsOnDisplay.get(name));
+	}
+	
+	private Region getRefsetView(ConceptSpec refset)
+	{
+		RefsetViewI rv = AppContext.getService(RefsetViewI.class);
+		
+		rv.setRefsetAndComponent(refset.getUuids()[0], conceptUUID);
+		Region r =  rv.getView();
+		r.getStyleClass().add("itemBorder");
+		r.setPrefHeight(300);
+		r.prefWidthProperty().bind(root.widthProperty().subtract(20));
+		return r;
+	}
+	
+	protected void add(ConceptSpec refset)
+	{
+		Node n = getRefsetView(refset);
+		refsetsOnDisplay.put(refset.getDescription(), n);
+		refsetArea.getChildren().add(n);
 	}
 
 	/**
@@ -81,58 +248,17 @@ public class InfoModelView implements DockedViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
 	@Override
-	public MenuItemI getMenuBarMenuToShowView()
+	public void showView(Window parent)
 	{
-		MenuItemI menuItem = new MenuItemI()
+		if (conceptUUID == null)
 		{
-			@Override
-			public void handleMenuSelection(Window parent)
-			{
-				// noop
-			}
-
-			@Override
-			public int getSortOrder()
-			{
-				return 6;
-			}
-
-			@Override
-			public String getParentMenuId()
-			{
-				return "panelsMenu";
-			}
-
-			@Override
-			public String getMenuName()
-			{
-				return "Info Model View Panel";
-			}
-
-			@Override
-			public String getMenuId()
-			{
-				return "infoModelViewPanelMenuItem";
-			}
-
-			@Override
-			public boolean enableMnemonicParsing()
-			{
-				return false;
-			}
-		};
-		return menuItem;
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
-	 */
-	@Override
-	public String getViewTitle()
-	{
-		return "Info Model Viewer";
+			throw new RuntimeException("Must call setConcept(...) first");
+		}
+		stage.initOwner(parent);
+		stage.show();
+		
 	}
 }
