@@ -68,6 +68,8 @@ public class InformationModelDetailsPane extends GridPane {
         builder.addRow(new Separator());
         builder.addRow(modelXmlTextArea);
 
+        modelXmlTextArea.setEditable(false);
+
         setConstraints();
 
         // Set minimum dimensions.
