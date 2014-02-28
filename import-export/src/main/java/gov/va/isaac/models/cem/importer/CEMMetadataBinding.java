@@ -104,10 +104,6 @@ public class CEMMetadataBinding {
              allConceptSpec.add(CEM_TYPE_REFSET);
              allConceptSpec.add(CEM_INFO_REFSET);
              allConceptSpec.add(CEM_COMPOSITION_REFSET);
-             allConceptSpec.add(CEM_CONSTRAINTS_REFSET);
-             allConceptSpec.add(CEM_CONSTRAINTS_PATH_REFSET);
-             allConceptSpec.add(CEM_CONSTRAINTS_VALUE_REFSET);
-             allConceptSpec.add(CEM_VALUE_REFSET);
 
              return allConceptSpec;
          }
