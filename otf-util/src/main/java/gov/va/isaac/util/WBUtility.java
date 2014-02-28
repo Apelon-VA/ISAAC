@@ -260,8 +260,12 @@ public class WBUtility {
             return null;
         }
 
-        UUID uuid = UUID.fromString(identifier.trim());
-        return lookupSnomedIdentifierAsCV(uuid);
+        try {
+        	UUID uuid = UUID.fromString(identifier.trim());
+            return lookupSnomedIdentifierAsCV(uuid);
+        } catch (Exception e) {
+        	return null;
+        }
     }
 
     /**
@@ -281,10 +285,14 @@ public class WBUtility {
             // Try looking up by ID.
             // dataStore#getConceptVersionFromAlternateId seems broke after
             // the DB update, make the UUID myself instead.
-            UUID alternateUUID = UuidFactory.getUuidFromAlternateId(ID_UUID, conceptUUID.toString().trim());
+        	try {
+        		UUID alternateUUID = UuidFactory.getUuidFromAlternateId(ID_UUID, conceptUUID.toString().trim());
 
-            // Try again.
-            result = getConceptVersion(alternateUUID);
+        		// Try again.
+                result = getConceptVersion(alternateUUID);
+        	} catch (Exception e) {
+        		return null;
+        	}
         }
         return result;
     }
@@ -355,6 +363,7 @@ public class WBUtility {
 
     public static RefexVersionBI getRefsetMember(int nid) {
         try {
+    		RefexChronicleBI chron =         	(RefexChronicleBI) dataStore.getComponent(nid);
             RefexVersionBI refexVersion = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest());
             RefexVersionBI refexVersion2 = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedStatedLatest());
             return refexVersion;
@@ -364,12 +373,30 @@ public class WBUtility {
         }
     }
 
-    public static void commit(ConceptVersionBI refCon) {
+    public static void commit(ConceptVersionBI con) {
         try {
-            dataStore.commit(refCon);
+            dataStore.commit(con);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
+
+	public static void commit() {
+        try {
+            dataStore.commit();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+	}
+
+	public static void addUncommitted(ConceptVersionBI con) {
+        try {
+			dataStore.addUncommitted(con);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
