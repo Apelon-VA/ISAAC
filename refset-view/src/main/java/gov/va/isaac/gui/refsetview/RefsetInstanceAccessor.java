@@ -179,27 +179,6 @@ public class RefsetInstanceAccessor {
 		}
 	}
 		
-	public static class RefsetInstance {
-		private SimpleStringProperty refConFsn;
-		private SimpleStringProperty refConUuid;
-		private int memberNid;
-	 
-		private RefsetInstance(ConceptVersionBI con, int nid) {
-			memberNid = nid;
-			
-			if (con == null) {
-				this.refConUuid = new SimpleStringProperty("Add Reference Component UUID");
-				this.refConFsn = new SimpleStringProperty("Add Reference Component UUID");
-			} else {
-				this.refConUuid = new SimpleStringProperty(con.getPrimordialUuid().toString());
-				try {
-					this.refConFsn = new SimpleStringProperty(con.getPreferredDescription().getText());
-				} catch (Exception e) {
-					this.refConFsn = new SimpleStringProperty("Bad Concept");
-					e.printStackTrace();
-		}
-	}
-
 	public static RefsetInstance getInstance(ConceptVersionBI refCon, RefexVersionBI member, RefexType refsetType) {
 		if (refsetType == RefexType.MEMBER) {
 			return new MemberRefsetInstance(refCon, member);
