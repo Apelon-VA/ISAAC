@@ -40,11 +40,11 @@ import org.jvnet.hk2.annotations.Service;
 public class SctTreeViewDockedView  implements DockedViewI 
 {
 	private SctTreeView sctTreeView_;
+	private boolean hasBeenInited_ = false;
 	
 	private SctTreeViewDockedView()
 	{
 		sctTreeView_ = new SctTreeView();
-		sctTreeView_.init(Taxonomies.SNOMED.getUuids()[0]);
 	}
 	
 	public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) 
@@ -80,7 +80,12 @@ public class SctTreeViewDockedView  implements DockedViewI
 			@Override
 			public void handleMenuSelection(Window parent)
 			{
-				//noop
+				if (!hasBeenInited_)
+				{
+					//delay init till first display
+					sctTreeView_.init(Taxonomies.SNOMED.getUuids()[0]);
+					hasBeenInited_ = true;
+				}
 			}
 			
 			@Override

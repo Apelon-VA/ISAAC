@@ -18,14 +18,14 @@
  */
 package gov.va.isaac.gui.refsetview;
 
+import gov.va.isaac.gui.refsetview.RefsetViewController;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefsetViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
+
 import javafx.scene.layout.Region;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
@@ -41,13 +41,12 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class RefsetView implements RefsetViewI
 {
-
-	private Label l;
+	private RefsetViewController rvc_;
 	
 	private RefsetView() throws IOException
 	{
-		// created by HK2
-		l = new Label("I show a refset!");
+		//created by HK2
+		rvc_ = RefsetViewController.init();
 	}
 
 	/**
@@ -55,12 +54,8 @@ public class RefsetView implements RefsetViewI
 	 */
 	@Override
 	public Region getView()
-	{
-		HBox h = new HBox();
-		h.getChildren().add(l);
-		h.getStyleClass().add("itemBorder");
-		// TODO
-		return h;
+	{		
+		return rvc_.getRoot();
 	}
 
 	/**
@@ -77,12 +72,19 @@ public class RefsetView implements RefsetViewI
 	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setRefset(java.util.UUID)
 	 */
 	@Override
-	public void setRefset(UUID conceptUUID)
+	public void setRefset(UUID refsetUUID)
 	{
-		// TODO Auto-generated method stub
-		System.out.println("Refset passed in: " + conceptUUID);
-		l.setText("My refset was set to " + conceptUUID);
+		rvc_.setRefset(refsetUUID);
 	}
 
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setComponent(java.util.UUID)
+	 */
+	
+	@Override
+	public void setComponent(UUID refsetUUID)
+	{
+		rvc_.setComponent(refsetUUID);
+	}
 
 }

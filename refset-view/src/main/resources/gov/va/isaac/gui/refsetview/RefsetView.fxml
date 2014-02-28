@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="refsetAnchor" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refsetview.RefsetViewController"> 
+
+	<children>
+	<TableView fx:id="refsetRows" layoutX="169.0" layoutY="112.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="50.0">
+	  <columns>
+		<TableColumn prefWidth="75.0" text="C1" />
+	  </columns>
+	</TableView><Slider fx:id="hSlider" layoutX="10.0" layoutY="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" /><Label fx:id="refsetLabel" layoutX="14.0" layoutY="14.0" text="Label" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="10.0" /><Button fx:id="addButton" layoutX="79.1875" layoutY="450.0" mnemonicParsing="false" text="Add" AnchorPane.bottomAnchor="15.0" /><Button fx:id="removeButton" layoutX="248.1875" layoutY="450.0" mnemonicParsing="false" text="Remove" AnchorPane.bottomAnchor="15.0" />
+	</children>
+</AnchorPane>

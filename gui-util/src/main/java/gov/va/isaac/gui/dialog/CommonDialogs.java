@@ -83,13 +83,33 @@ public class CommonDialogs implements CommonDialogsI
 	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showErrorDialog(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void showErrorDialog(String title, String message, String details)
+	public synchronized void showErrorDialog(String title, String message, String details)
 	{
 		// Make sure in application thread.
 		FxUtils.checkFxUserThread();
+		
+		ErrorDialog ed;
+		
+		//If we already have our cached one up, create a new one.
+		if (errorDialog_.isShowing())
+		{
+			try
+			{
+				ed = new ErrorDialog(errorDialog_.getOwner());
+			}
+			catch (IOException e)
+			{
+				LOG.error("Unexpected error creating an error dialog!", e);
+				throw new RuntimeException("Can't display error dialog!");
+			}
+		}
+		else
+		{
+			ed = errorDialog_;
+		}
 
-		errorDialog_.setVariables(title, message, details);
-		errorDialog_.showAndWait();
+		ed.setVariables(title, message, details);
+		ed.showAndWait();
 	}
 
 	/**

@@ -32,6 +32,13 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 	
+		<!-- ISAAC App Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>import-export</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+	
 		<!-- JUnit. -->
 		<dependency>
 			<groupId>junit</groupId>

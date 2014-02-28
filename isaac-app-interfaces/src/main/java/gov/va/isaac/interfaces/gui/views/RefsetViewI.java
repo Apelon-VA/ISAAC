@@ -37,5 +37,7 @@ public interface RefsetViewI extends ViewI
 	/**
 	 * Tell this view to display a particular refset
 	 */
-	public void setRefset(UUID conceptUUID);
+	public void setRefset(UUID refsetUUID);
+	
+	public void setComponent(UUID componentUUID);
 }
