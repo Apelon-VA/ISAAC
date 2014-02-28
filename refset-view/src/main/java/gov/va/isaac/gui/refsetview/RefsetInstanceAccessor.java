@@ -21,17 +21,20 @@ package gov.va.isaac.gui.refsetview;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
 import javafx.beans.property.SimpleStringProperty;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid_string.RefexNidStringVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
 /**
  * RefsetInstanceAccessor
@@ -203,6 +206,7 @@ public class RefsetInstanceAccessor {
 		private int constraintValMemberNid;
 		private int constraintMemberNid;
 		private int valMemberNid;
+		private ComponentChronicleBI constraintRefsetCon = null;
 
 		private CEMCompositRefestInstance(ConceptVersionBI refCompCon, RefexVersionBI member) {
 			super(refCompCon, member);
@@ -296,6 +300,18 @@ public class RefsetInstanceAccessor {
 		}
 		public void setValueMemberNid(int val) {
 			valMemberNid = val;
+		}
+
+		public ComponentChronicleBI getConstraintMember() {
+			if (constraintRefsetCon == null) {
+				try {
+					constraintRefsetCon = WBUtility.lookupSnomedIdentifierAsCV(CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return constraintRefsetCon;
 		}
 
 }

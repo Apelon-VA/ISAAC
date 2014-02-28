@@ -41,6 +41,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -163,13 +164,15 @@ public class RefsetTableHandler {
 						instance.setValueExt(t.getNewValue());
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
-							RefexCAB newMember = new RefexCAB(RefexType.STR, refCompCon.getNid(),  instance.getValueMemberNid(), IdDirective.GENERATE_HASH, RefexDirective.INCLUDE);
+							ComponentChronicleBI constraintMember = instance.getConstraintMember();
+							RefexCAB newMember = new RefexCAB(RefexType.STR, constraintMember.getNid(),  instance.getValueMemberNid(), IdDirective.GENERATE_HASH, RefexDirective.INCLUDE);
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
 							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
-
+			                
+							constraintMember.addAnnotation(newMemChron);
+							
 							WBUtility.addUncommitted(refCompCon);
-
 							return;
 						} else {
 							bp = createBlueprint(instance.getValueMemberNid());
