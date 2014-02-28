@@ -74,8 +74,8 @@ public class CEMMetadataCreator extends ImporterBase {
         ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRefset, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
         ConceptChronicleBI CEMConstraintPath = createNewConcept(CEMRefset, "CEM constraints path reference set (foundation metadata concept)", "CEM constraint path");
         ConceptChronicleBI CEMConstraintValue = createNewConcept(CEMRefset, "CEM constraints value reference set (foundation metadata concept)", "CEM constraint value");
-        ConceptChronicleBI CEMValue = createNewConceptWithUUID(CEMRefset, UUID.fromString("e8864bf2-a09a-11e3-89ce-425861b86ab6"), "CEM value reference set (foundation metadata concept)", "CEM constraint path");
-
+        ConceptChronicleBI CEMValue = createNewConcept(CEMRefset, "CEM value reference set (foundation metadata concept)", "CEM constraint path");
+        
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_ROOT));
         ConceptChronicleBI CEMAttributes = createNewConcept(attributesRoot, "CEM attributes (foundation metadata concept)", "CEM attributes");
 
@@ -181,28 +181,6 @@ public class CEMMetadataCreator extends ImporterBase {
 
         LOG.info("Metadata creation finished");
     }
-
-    private ConceptChronicleBI createNewConceptWithUUID(ConceptChronicleBI parent, UUID uuid, String fsn, String prefTerm) throws IOException, InvalidCAB, ContradictionException {
-        List<ConceptChronicleBI> parents = new ArrayList<ConceptChronicleBI>();
-        parents.add(parent);
-
-        LanguageCode lc = LanguageCode.EN_US;
-        UUID isA = Snomed.IS_A.getUuids()[0];
-        IdDirective idDir = IdDirective.GENERATE_HASH;
-        UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
-        UUID[] parentsUuids = new UUID[parents.size()];
-        int count = 0;
-        for (ConceptChronicleBI curPar : parents) {
-            parentsUuids[count] = curPar.getPrimordialUuid();
-            count++;
-        }
-        ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, uuid, parentsUuids);
-
-        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
-        getDataStore().addUncommitted(newCon);
-
-        return newCon;
-	}
 
 	private ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {

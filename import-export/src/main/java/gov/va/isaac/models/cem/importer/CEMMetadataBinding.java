@@ -53,7 +53,7 @@ public class CEMMetadataBinding {
 
     public static ConceptSpec CEM_VALUE_REFSET
     		= new ConceptSpec("CEM value reference set (foundation metadata concept)",
-			"e8864bf2-a09a-11e3-89ce-425861b86ab6");
+			"AAA81c5fc48-da1f-50f5-8440-5a2fa850ad73");
 
     public static ConceptSpec CEM_ATTRIBUTES
             = new ConceptSpec("CEM attributes (foundation metadata concept)",
