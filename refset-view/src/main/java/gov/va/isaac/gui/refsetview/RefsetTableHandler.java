@@ -1,12 +1,33 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.refsetview;
 
+import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidExtRefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidStrExtRefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
+import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
@@ -25,180 +46,216 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
+/**
+ * RefsetViewRunner
+ *
+ * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ */
 public class RefsetTableHandler {
 	private static RefexType refsetType;
-
-	@SuppressWarnings("unchecked")
-	static void setupTable(RefexChronicleBI<?> member, final boolean isAnnotation, final TableView<RefsetInstance> refsetRows) {
+	private static boolean isAnnotation;
+	private static ConceptVersionBI refCompCon;
+	
+	static void setupTable(RefexChronicleBI<?> member, final boolean annotationValue, final TableView<RefsetInstance> refsetRows, ConceptVersionBI refCompSetupCon) {
 		refsetType = member.getRefexType();
+		isAnnotation = annotationValue;
+		refCompCon = refCompSetupCon;
+		
+		try {
+			if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid()) {
+				refsetType = RefexType.UNKNOWN;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		if (refsetType == RefexType.STR) {
-			TableColumn col = new TableColumn("String");	
-			col.setCellValueFactory(
-					new PropertyValueFactory<RefsetInstance,String>("strExt")
-			);
-
-			col.setCellFactory(TextFieldTableCell.forTableColumn());
-			col.setOnEditCommit(
-				new EventHandler<CellEditEvent<StrExtRefsetInstance, String>>() {
-					@Override
-					public void handle(CellEditEvent<StrExtRefsetInstance, String> t) {
-						StrExtRefsetInstance instance = (StrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-						instance.setStrExt(t.getNewValue());
-
-						try {
-							RefexCAB bp = createBlueprint(instance);
-
-							bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
-
-							commitUpdate(bp, isAnnotation);
-
-						} catch (ContradictionException | InvalidCAB | IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			);
-		
-			refsetRows.getColumns().addAll(col);
+			createStringInstanceTable(refsetRows);
 		} else if (refsetType == RefexType.CID) {
-			TableColumn col = new TableColumn("Component");	
-			col.setCellValueFactory(
-					new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
-			);
-			
-			col.setCellFactory(TextFieldTableCell.forTableColumn());
-			col.setOnEditCommit(
-				new EventHandler<CellEditEvent<NidExtRefsetInstance, String>>() {
-					@Override
-					public void handle(CellEditEvent<NidExtRefsetInstance, String> t) {
-						NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-
-						if (instance.getMemberNid() != 0) {
-							// TODO Raise dialog box saying cannot change existing RefComp
-							t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefConFsn(instance.getRefConFsn());
-						} else {
-							ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
-							if (comp == null) {
-								// TODO Raise dialog box saying cannot locate Component
-							} else {
-								try {
-									instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
-									instance.setCidExtUuid(comp.getPrimordialUuid());
-
-									RefexCAB bp = createBlueprint(instance);
-
-									bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
-
-									commitUpdate(bp, isAnnotation);
-		
-								} catch (ContradictionException | InvalidCAB | IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}
-					}
-				}
-			);
-
-			refsetRows.getColumns().addAll(col);
+			createCidInstanceTable(refsetRows);
 		} else if (refsetType == RefexType.CID_STR) {
-			TableColumn col1 = new TableColumn("Component");	
-			col1.setCellValueFactory(
-					new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
-			);
-			
-			col1.setCellFactory(TextFieldTableCell.forTableColumn());
-			col1.setOnEditCommit(
-				new EventHandler<CellEditEvent<NidStrExtRefsetInstance, String>>() {
-					@Override
-					public void handle(CellEditEvent<NidStrExtRefsetInstance, String> t) {
-						NidStrExtRefsetInstance instance = (NidStrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-
-						if (instance.getMemberNid() != 0) {
-							// TODO Raise dialog box saying cannot change existing RefComp
-							t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefConFsn(instance.getRefConFsn());
-						} else {
-							ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
-							if (comp == null) {
-								// TODO Raise dialog box saying cannot locate Component
-							} else {
-								try {
-									instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
-									instance.setCidExtUuid(comp.getPrimordialUuid());
-									RefexCAB bp = createBlueprint(instance);
-
-									bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
-
-									commitUpdate(bp, isAnnotation);
-
-								} catch (ContradictionException | InvalidCAB | IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}						
-					}
-				}
-			);
-
-			refsetRows.getColumns().addAll(col1);
-
-			TableColumn col2 = new TableColumn("String");	
-			col2.setCellValueFactory(
-					new PropertyValueFactory<RefsetInstance,String>("strExt")
-			);
-			
-			col2.setCellFactory(TextFieldTableCell.forTableColumn());
-			col2.setOnEditCommit(
-				new EventHandler<CellEditEvent<NidStrExtRefsetInstance, String>>() {
-					@Override
-					public void handle(CellEditEvent<NidStrExtRefsetInstance, String> t) {
-						NidStrExtRefsetInstance instance = (NidStrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-						instance.setStrExt(t.getNewValue());
-
-						try {
-							RefexCAB bp = createBlueprint(instance);
-
-							bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
-
-							commitUpdate(bp, isAnnotation);
-
-						} catch (ContradictionException | InvalidCAB | IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			);
-			refsetRows.getColumns().addAll(col2);
+			createCidStrInstanceTable(refsetRows);
+		} else if (refsetType == RefexType.UNKNOWN) {
+			createComponentRefsetInstanceTable(refsetRows);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
+	private static void createCidInstanceTable(TableView<RefsetInstance> refsetRows) {
+		TableColumn col = createCidColumn("Component", "cidExtFsn", 1);
+		refsetRows.getColumns().addAll(col);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void createStringInstanceTable(TableView<RefsetInstance> refsetRows) {
+		TableColumn col1 = createStrColumn("String", "strExt", 1);
+		refsetRows.getColumns().addAll(col1);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void createCidStrInstanceTable(TableView<RefsetInstance> refsetRows) {
+		TableColumn col1 = createCidColumn("Component", "cidExtFsn", 1);
+		TableColumn col2 = createStrColumn("String", "strExt", 2);
+
+		refsetRows.getColumns().addAll(col1);
+		refsetRows.getColumns().addAll(col2);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void createComponentRefsetInstanceTable(TableView<RefsetInstance> refsetRows) {
+		TableColumn col1 = createCidColumn("Component", "cidExtFsn", 1);
+		TableColumn col2 = createStrColumn("String", "strExt", 2);
+
+		// COL 3 (CONSTR PATH Refset Value)
+		TableColumn col3 = createStrColumn("Constraint Type", "constraintExt", 3);
+
+		// COL 3 (CONSTR VAL Refset Value)
+		TableColumn col4 = createStrColumn("Constraint Value", "constraintValExt", 4);
+
+		// COL 3 ( VAL Refset Value)
+		TableColumn col5 = createStrColumn("Attribute's Value", "valueExt", 5);
+
+		refsetRows.getColumns().addAll(col1);
+		refsetRows.getColumns().addAll(col2);
+		refsetRows.getColumns().addAll(col3);
+		refsetRows.getColumns().addAll(col4);
+		refsetRows.getColumns().addAll(col5);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static TableColumn createStrColumn(String columnTitle, String associatedValue, final int columnNumber) {
+		TableColumn col = new TableColumn(columnTitle);	
+		col.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>(associatedValue));
+		col.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		col.setOnEditCommit(new EventHandler<CellEditEvent<RefsetInstance, String>>() {
+			@Override
+			public void handle(CellEditEvent<RefsetInstance, String> t) {
+				RefexCAB bp = null;
+				
+				try {
+					if (columnNumber == 1) {
+						StrExtRefsetInstance instance = (StrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setStrExt(t.getNewValue());
+						
+						bp = createBlueprint(instance.getMemberNid());
+					} else if (columnNumber == 2) {
+						NidStrExtRefsetInstance instance = (NidStrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setStrExt(t.getNewValue());
+						
+						bp = createBlueprint(instance.getMemberNid());
+					} else if (columnNumber == 3) {
+						CEMCompositRefestInstance instance = (CEMCompositRefestInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setConstraintExt(t.getNewValue());
+
+						bp = createBlueprint(instance.getConstraintMemberNid());
+					} else if (columnNumber == 4) {
+						CEMCompositRefestInstance instance = (CEMCompositRefestInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setConstraintValExt(t.getNewValue());
+
+						bp = createBlueprint(instance.getConstraintValMemberNid());
+					} else if (columnNumber == 5) {
+						CEMCompositRefestInstance instance = (CEMCompositRefestInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setValueExt(t.getNewValue());
+
+						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
+							RefexCAB newMember = new RefexCAB(RefexType.STR, refCompCon.getNid(),  instance.getValueMemberNid(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+							commitUpdate(newMember, isAnnotation);
+
+							return;
+						} else {
+							bp = createBlueprint(instance.getValueMemberNid());
+						}
+					}
+
+					// None of Comp are Str-Str. . . so simple solution to this
+					bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
+
+					commitUpdate(bp, isAnnotation);
+				} catch (ContradictionException | InvalidCAB | IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+		return col;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static TableColumn createCidColumn(String columnTitle, String associatedValue, final int columnNumber) {
+		TableColumn col = new TableColumn(columnTitle);	
+		col.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>(associatedValue));
+		col.setCellFactory(TextFieldTableCell.forTableColumn());
+
+		col.setOnEditCommit(new EventHandler<CellEditEvent<RefsetInstance, String>>() {
+			@Override
+			public void handle(CellEditEvent<RefsetInstance, String> t) {
+				RefsetInstance genericInstance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+				if (genericInstance.getMemberNid() != 0) {
+					// TODO Raise dialog box saying cannot change existing RefComp
+					t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefCompConFsn(genericInstance.getRefCompConFsn());
+				} else {
+					
+					ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
+					if (comp == null) {
+						// TODO Raise dialog box saying cannot locate Component
+					} else {
+						try {
+							RefexCAB bp = null;
+							
+							if (refsetType == RefexType.CID ||
+								refsetType == RefexType.CID_STR ||
+								refsetType == RefexType.UNKNOWN)
+							{
+								if (columnNumber == 1) {
+									NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+									instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
+									instance.setCidExtUuid(comp.getPrimordialUuid());
+	
+									bp = createBlueprint(instance.getMemberNid());
+									bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
+								}
+							}
+							
+							commitUpdate(bp, isAnnotation);
+
+						} catch (ContradictionException | InvalidCAB | IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		});
+
+		return col;
+	}
+
+
+	@SuppressWarnings("unchecked")
 	public static void initializeTable(final TableView<RefsetInstance> refsetRows) {
 		TableColumn memberCol = new TableColumn("Reference Component");	
-		memberCol.setCellValueFactory(
-				new PropertyValueFactory<RefsetInstance,String>("refConFsn")
-		);
-		memberCol.setSortType(TableColumn.SortType.DESCENDING);
+		memberCol.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("refCompConFsn"));
+		
 		memberCol.setCellFactory(TextFieldTableCell.forTableColumn());
-		memberCol.setOnEditCommit(
-				new EventHandler<CellEditEvent<RefsetInstance, String>>() {
+		memberCol.setOnEditCommit(new EventHandler<CellEditEvent<RefsetInstance, String>>() {
 					@Override
 					public void handle(CellEditEvent<RefsetInstance, String> t) {
 						RefsetInstance instance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						
 						if (instance.getMemberNid() != 0) {
 							// TODO Raise dialog box saying cannot change existing RefComp
-							t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefConFsn(instance.getRefConFsn());
+							t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefCompConFsn(instance.getRefCompConFsn());
 						} else {
 							ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
 							if (comp == null) {
 								// TODO Raise dialog box saying cannot locate Component
 							} else {
 								try {
-									instance.setRefConFsn(comp.getFullySpecifiedDescription().getText());
-									instance.setRefConUuid(comp.getPrimordialUuid());
+									instance.setRefCompConFsn(comp.getFullySpecifiedDescription().getText());
+									instance.setRefCompConUuid(comp.getPrimordialUuid());
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -231,8 +288,7 @@ public class RefsetTableHandler {
 */		
 	}
 
-	private static RefexCAB createBlueprint(RefsetInstance instance) throws ContradictionException, InvalidCAB, IOException {
-		int nid = instance.getMemberNid();
+	private static RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
 		RefexStringVersionBI refex = (RefexStringVersionBI)WBUtility.getRefsetMember(nid);
 		
 		return refex.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
@@ -243,13 +299,13 @@ public class RefsetTableHandler {
 		RefexStringVersionBI refex = (RefexStringVersionBI)WBUtility.getRefsetMember(bp.getComponentNid());
 		
 		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(bp);
-		ConceptVersionBI refCon;
+		ConceptVersionBI refCompCon;
 		if (!isAnnotation) {
-			refCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getReferencedComponentNid());
+			refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getReferencedComponentNid());
 		} else {
-			refCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getAssemblageNid());
+			refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getAssemblageNid());
 		}
 		
-		WBUtility.addUncommitted(refCon);
+		WBUtility.addUncommitted(refCompCon);
 	}
 }
