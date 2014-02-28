@@ -1,7 +1,7 @@
 package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidExtRefsetInstance;
-import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidNidExtRefsetInstance;
+import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidStrExtRefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
 import gov.va.isaac.util.WBUtility;
@@ -103,18 +103,18 @@ public class RefsetTableHandler {
 			);
 
 			refsetRows.getColumns().addAll(col);
-		} else if (refsetType == RefexType.CID_CID) {
-			TableColumn col1 = new TableColumn("Component1");	
+		} else if (refsetType == RefexType.CID_STR) {
+			TableColumn col1 = new TableColumn("Component");	
 			col1.setCellValueFactory(
 					new PropertyValueFactory<RefsetInstance,String>("cidExtFsn")
 			);
 			
 			col1.setCellFactory(TextFieldTableCell.forTableColumn());
 			col1.setOnEditCommit(
-				new EventHandler<CellEditEvent<NidExtRefsetInstance, String>>() {
+				new EventHandler<CellEditEvent<NidStrExtRefsetInstance, String>>() {
 					@Override
-					public void handle(CellEditEvent<NidExtRefsetInstance, String> t) {
-						NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+					public void handle(CellEditEvent<NidStrExtRefsetInstance, String> t) {
+						NidStrExtRefsetInstance instance = (NidStrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 
 						if (instance.getMemberNid() != 0) {
 							// TODO Raise dialog box saying cannot change existing RefComp
@@ -144,39 +144,28 @@ public class RefsetTableHandler {
 
 			refsetRows.getColumns().addAll(col1);
 
-			TableColumn col2 = new TableColumn("Component2");	
+			TableColumn col2 = new TableColumn("String");	
 			col2.setCellValueFactory(
-					new PropertyValueFactory<RefsetInstance,String>("cid2ExtFsn")
+					new PropertyValueFactory<RefsetInstance,String>("strExt")
 			);
 			
 			col2.setCellFactory(TextFieldTableCell.forTableColumn());
 			col2.setOnEditCommit(
-				new EventHandler<CellEditEvent<NidNidExtRefsetInstance, String>>() {
+				new EventHandler<CellEditEvent<NidStrExtRefsetInstance, String>>() {
 					@Override
-					public void handle(CellEditEvent<NidNidExtRefsetInstance, String> t) {
-						NidNidExtRefsetInstance instance = (NidNidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+					public void handle(CellEditEvent<NidStrExtRefsetInstance, String> t) {
+						NidStrExtRefsetInstance instance = (NidStrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+						instance.setStrExt(t.getNewValue());
 
-						if (instance.getMemberNid() != 0) {
-							// TODO Raise dialog box saying cannot change existing RefComp
-							t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefConFsn(instance.getRefConFsn());
-						} else {
-							ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
-							if (comp == null) {
-								// TODO Raise dialog box saying cannot locate Component
-							} else {
-								try {
-									instance.setCid2ExtFsn(comp.getFullySpecifiedDescription().getText());
-									instance.setCid2ExtUuid(comp.getPrimordialUuid());
+						try {
+							RefexCAB bp = createBlueprint(instance);
 
-									RefexCAB bp = createBlueprint(instance);
+							bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 
-									bp.put(ComponentProperty.COMPONENT_EXTENSION_2_ID, comp.getPrimordialUuid());
+							commitUpdate(bp, isAnnotation);
 
-									commitUpdate(bp, isAnnotation);
-								} catch (ContradictionException | InvalidCAB | IOException e) {
-									e.printStackTrace();
-								}
-							}
+						} catch (ContradictionException | InvalidCAB | IOException e) {
+							e.printStackTrace();
 						}
 					}
 				}
