@@ -88,6 +88,30 @@ public class CEMMetadataBinding {
             UUID.fromString("2f3fe6d9-6a7c-5d05-aa4f-3ebde57fff83"));
 
     // TODO convert the above to an enum
+     
+     public static List<ConceptSpec> getAllRefsets()
+     {
+         try
+         {
+             ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
+             
+             allConceptSpec.add(CEM_DATA_REFSET);
+    		 allConceptSpec.add(CEM_KEY_REFSET);
+             allConceptSpec.add(CEM_TYPE_REFSET);
+             allConceptSpec.add(CEM_INFO_REFSET);
+             allConceptSpec.add(CEM_COMPOSITION_REFSET);
+             allConceptSpec.add(CEM_CONSTRAINTS_REFSET);
+             allConceptSpec.add(CEM_CONSTRAINTS_PATH_REFSET);
+             allConceptSpec.add(CEM_CONSTRAINTS_VALUE_REFSET);
+
+             return allConceptSpec;
+         }
+         catch (Exception e)
+         {
+             throw new RuntimeException("Unexpected!", e);
+         }
+     }
+
     public static List<ConceptSpec> getAll()
     {
         try

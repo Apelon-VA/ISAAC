@@ -132,7 +132,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		final ListView<String> list = new ListView<String>();
 		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		for (ConceptSpec cs : CEMMetadataBinding.getAll())
+		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			list.getItems().add(cs.getDescription());
 		}
