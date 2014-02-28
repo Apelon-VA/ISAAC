@@ -16,35 +16,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.importview;
+package gov.va.isaac.gui.util;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 
 /**
- * A utility for assembling the {@link ImportView}.
+ * A utility for assembling a {@link GridPane}.
  *
  * @author ocarlsen
  */
-public class ImportViewBuilder {
+public class GridPaneBuilder {
 
-    private final ImportView importView;
+    private final GridPane gridPane;
 
     private int rowIndex = 0;
 
-    public ImportViewBuilder(ImportView importView) {
+    public GridPaneBuilder(GridPane gridPane) {
         super();
-        this.importView = importView;
+        this.gridPane = gridPane;
     }
 
     public void addRow(String labelText, Node fxNode) {
 
         // Column 0.
         Label label = new Label(labelText);
-        importView.add(label, 0, rowIndex);
+        gridPane.add(label, 0, rowIndex);
 
         // Column 1.
-        importView.add(fxNode, 1, rowIndex);
+        gridPane.add(fxNode, 1, rowIndex);
 
         // Increment row index.
         ++rowIndex;
@@ -54,6 +55,6 @@ public class ImportViewBuilder {
      * @param fxNode A component to span two columns.
      */
     public void addRow(Node fxNode) {
-        importView.add(fxNode, 0, rowIndex++, 2, 1);
+        gridPane.add(fxNode, 0, rowIndex++, 2, 1);
     }
 }
