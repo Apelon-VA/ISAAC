@@ -21,14 +21,16 @@ package gov.va.isaac.gui.importedmodelsview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.ExportSettingsDialog;
 import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
-import gov.va.isaac.gui.dialog.InformationModelDetailsPane;
+import gov.va.isaac.gui.dialog.InformationModelDetailsDialog;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.FetchHandler;
 import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.CEMInformationModel;
+
 import java.util.List;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ChangeListener;
@@ -40,7 +42,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
-import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
@@ -48,11 +49,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Callback;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +71,6 @@ public class ImportedModelsViewController {
     @FXML private ListView<InformationModel> importedModelsListView;
 
     private Window parent;
-    private Stage modelDetailsStage;
 
     @FXML
     public void initialize() {
@@ -123,7 +121,7 @@ public class ImportedModelsViewController {
                                 InfoModelViewI imv = AppContext.getService(InfoModelViewI.class);
                                 imv.setConcept(((CEMInformationModel) item).getConceptUUID());
                                 imv.showView(parent);
-                            } 
+                            }
                         }
                     }
                 });
@@ -152,7 +150,6 @@ public class ImportedModelsViewController {
 
     public void setParent(Window parent) {
         this.parent = parent;
-        this.modelDetailsStage = buildModelDetailsStage(parent);
     }
 
     public BorderPane getRoot() {
@@ -177,16 +174,9 @@ public class ImportedModelsViewController {
         FxUtils.checkFxUserThread();
 
         try {
-            InformationModelDetailsPane modelDetailsDialog = new InformationModelDetailsPane();
-            modelDetailsStage.setScene(new Scene(modelDetailsDialog));
-            if (modelDetailsStage.isShowing()) {
-                modelDetailsStage.toFront();
-            } else {
-                modelDetailsStage.show();
-            }
-
+            InformationModelDetailsDialog modelDetailsDialog = new InformationModelDetailsDialog(parent);
+            modelDetailsDialog.show();
             modelDetailsDialog.displayModel(informationModel);
-
         } catch (Exception ex) {
             String msg = "Unexpected error displaying import view";
             LOG.warn(msg, ex);
@@ -261,16 +251,6 @@ public class ImportedModelsViewController {
 
         // Must have been "All".
         return null;
-    }
-
-    private Stage buildModelDetailsStage(Window owner) {
-        Stage stage = new Stage();
-        stage.initModality(Modality.NONE);
-        stage.initOwner(owner);
-        stage.initStyle(StageStyle.DECORATED);
-        stage.setTitle("Information Model Details");
-
-        return stage;
     }
 
     private ObservableList<String> gatherComboBoxItems() {
