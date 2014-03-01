@@ -19,6 +19,7 @@
 package gov.va.isaac.models.cem.fetcher;
 
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.models.InformationModel.Metadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
@@ -28,6 +29,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
@@ -68,8 +70,15 @@ public class CEMFetcher extends ExporterBase {
 
         CEMInformationModel informationModel = null;
         if (typeAnnotation != null) {
-            informationModel = CEMInformationModel.newInstance(typeAnnotation,
-                    focusConcept, getVC(), getDataStore());
+            Metadata metadata = Metadata.newInstance(typeAnnotation.getStamp(),
+                    getDataStore(), getVC());
+
+            ConceptVersionBI focusConceptVersion = focusConcept.getVersion(getVC());
+            String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
+
+            String modelName = typeAnnotation.getString1();
+            informationModel = new CEMInformationModel(modelName, metadata,
+                    focusConceptName, focusConceptUUID);
         }
 
         LOG.debug("informationModel="+informationModel);

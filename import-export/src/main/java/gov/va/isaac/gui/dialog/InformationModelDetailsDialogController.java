@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.InformationModel.Metadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 
@@ -113,10 +114,12 @@ public class InformationModelDetailsDialogController {
                 modelTypeLabel.setText(cemModel.getType().getDisplayName());
                 focusConceptLabel.setText(cemModel.getFocusConceptName());
                 uuidLabel.setText(cemModel.getFocusConceptUUID().toString());
-                importerNameLabel.setText(cemModel.getImporterName());
-                importDateLabel.setText(TimeHelper.formatDate(cemModel.getTime()));
-                importPathLabel.setText(cemModel.getPath().toString());
-                importModuleLabel.setText(cemModel.getModuleName());
+
+                Metadata metadata = cemModel.getMetadata();
+                importerNameLabel.setText(metadata.getImporterName());
+                importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
+                importPathLabel.setText(metadata.getPath().toString());
+                importModuleLabel.setText(metadata.getModuleName());
 
                 String modelXML = this.getValue();
                 modelXmlTextArea.setText(modelXML);
