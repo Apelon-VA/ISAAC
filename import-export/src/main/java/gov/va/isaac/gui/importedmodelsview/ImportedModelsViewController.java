@@ -119,7 +119,7 @@ public class ImportedModelsViewController {
                         if (item != null) {
                             if (item.getType() == InformationModelType.CEM) {
                                 InfoModelViewI imv = AppContext.getService(InfoModelViewI.class);
-                                imv.setConcept(((CEMInformationModel) item).getConceptUUID());
+                                imv.setConcept(((CEMInformationModel) item).getFocusConceptUUID());
                                 imv.showView(parent);
                             }
                         }

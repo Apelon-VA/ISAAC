@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
@@ -47,19 +47,20 @@ public class CEMFetcher extends ExporterBase {
         super();
     }
 
-    public CEMInformationModel fetchCEMModel(UUID conceptUUID) throws Exception {
+    public CEMInformationModel fetchCEMModel(UUID focusConceptUUID) throws Exception {
         LOG.info("Starting fetch of CEM model type");
-        LOG.debug("conceptUUID="+conceptUUID);
+        LOG.debug("focusConceptUUID="+focusConceptUUID);
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
 
         // Get chronicle for concept.
-        ComponentChronicleBI<?> focusConcept = getDataStore().getComponent(conceptUUID);
+        ConceptChronicleBI focusConcept = getDataStore().getConcept(focusConceptUUID);
         LOG.debug("focusConcept="+focusConcept);
 
         // Get all annotations on the specified concept.
-        Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations = getLatestAnnotations(focusConcept);
+        Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations =
+                getLatestAnnotations(focusConcept);
 
         // Type attribute (1).
         StringMember typeAnnotation = getSingleAnnotation(focusConceptAnnotations,
@@ -67,7 +68,8 @@ public class CEMFetcher extends ExporterBase {
 
         CEMInformationModel informationModel = null;
         if (typeAnnotation != null) {
-            informationModel = new CEMInformationModel(typeAnnotation.getString1(), conceptUUID);
+            informationModel = CEMInformationModel.newInstance(typeAnnotation,
+                    focusConcept, getVC(), getDataStore());
         }
 
         LOG.debug("informationModel="+informationModel);

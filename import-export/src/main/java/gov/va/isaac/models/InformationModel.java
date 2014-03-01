@@ -20,15 +20,24 @@ package gov.va.isaac.models;
 
 import gov.va.isaac.model.InformationModelType;
 
+import org.ihtsdo.otf.tcc.api.coordinate.Path;
+
 /**
- * Defines API for manipulating information models.
+ * Defines API for displaying information models.
  *
  * @author ocarlsen
- *
  */
 public interface InformationModel {
 
     public String getName();
 
     public InformationModelType getType();
+
+    public String getImporterName();
+
+    public long getTime();
+
+    public Path getPath();
+
+    public String getModuleName();
 }

@@ -39,6 +39,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.time.TimeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +55,17 @@ public class InformationModelDetailsDialogController {
     private static final Logger LOG = LoggerFactory.getLogger(InformationModelDetailsDialogController.class);
 
     @FXML private Label modelNameLabel;
+    @FXML private Label modelTypeLabel;
+    @FXML private Label focusConceptLabel;
+    @FXML private Label uuidLabel;
+    @FXML private Label importerNameLabel;
+    @FXML private Label importDateLabel;
+    @FXML private Label importPathLabel;
+    @FXML private Label importModuleLabel;
     @FXML private TextArea modelXmlTextArea;
     @FXML private ProgressIndicator modelXmlProgress;
 
     private Stage stage;
-    private InformationModel informationModel;
 
     @FXML
     public void initialize() {
@@ -90,12 +97,10 @@ public class InformationModelDetailsDialogController {
             @Override
             protected String call() throws Exception {
 
-                Thread.sleep(5000);
-
                 // Do work.
                 OutputStream out = new ByteArrayOutputStream();
                 CEMExporter exporter = new CEMExporter(out);
-                UUID conceptUUID = cemModel.getConceptUUID();
+                UUID conceptUUID = cemModel.getFocusConceptUUID();
                 exporter.exportModel(conceptUUID );
                 return out.toString();
             }
@@ -105,6 +110,14 @@ public class InformationModelDetailsDialogController {
 
                 // Update UI.
                 modelNameLabel.setText(cemModel.getName());
+                modelTypeLabel.setText(cemModel.getType().getDisplayName());
+                focusConceptLabel.setText(cemModel.getFocusConceptName());
+                uuidLabel.setText(cemModel.getFocusConceptUUID().toString());
+                importerNameLabel.setText(cemModel.getImporterName());
+                importDateLabel.setText(TimeHelper.formatDate(cemModel.getTime()));
+                importPathLabel.setText(cemModel.getPath().toString());
+                importModuleLabel.setText(cemModel.getModuleName());
+
                 String modelXML = this.getValue();
                 modelXmlTextArea.setText(modelXML);
            }

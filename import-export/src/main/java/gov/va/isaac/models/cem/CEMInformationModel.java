@@ -21,37 +21,72 @@ package gov.va.isaac.models.cem;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 
+import java.io.IOException;
 import java.util.UUID;
+
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Path;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
 
 import com.google.common.base.Objects;
 
 /**
- * Useful class to represent a CEM information model as a Java POJO.
+ * A concrete {@link InformationModel} for displaying CEM models.
  *
  * @author ocarlsen
  */
 public class CEMInformationModel implements InformationModel {
 
     private final String name;
-    private final UUID conceptUUID;
+    private final String focusConceptName;
+    private final UUID focusConceptUUID;
+    private final String importerName;
+    private final long time;
+    private final Path path;
+    private final String moduleName;
 
-    public CEMInformationModel(String name, UUID conceptUUID) {
-        super();
+    public static CEMInformationModel newInstance(StringMember typeAnnotation,
+            ConceptChronicleBI focusConcept, ViewCoordinate vc, BdbTerminologyStore dataStore)
+            throws IOException, ContradictionException {
+
+        String modelName = typeAnnotation.getString1();
+
+        ConceptVersionBI focusConceptVersion = focusConcept.getVersion(vc);
+        String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
+        UUID focusConceptUUID = focusConceptVersion.getPrimordialUuid();
+
+        // Get metadata from stamp.
+        int stampNid = typeAnnotation.getStamp();
+
+        String importerName = "Hard-coded placeholder";
+
+        long time = dataStore.getTimeForStamp(stampNid);
+
+        int pathNid = dataStore.getPathNidForStamp(stampNid);
+        Path path = dataStore.getPath(pathNid);
+
+        int moduleNid = dataStore.getModuleNidForStamp(stampNid);
+        ConceptChronicleBI module = dataStore.getConcept(moduleNid);
+        ConceptVersionBI version = module.getVersion(vc);
+        String moduleName = version.getFullySpecifiedDescription().getText();
+
+        return new CEMInformationModel(modelName, focusConceptName,
+                focusConceptUUID, importerName, time, path, moduleName);
+    }
+
+    public CEMInformationModel(String name, String focusConceptName, UUID focusConceptUUID,
+            String importerName, long time, Path path, String moduleName) {
         this.name = name;
-        this.conceptUUID = conceptUUID;
-    }
-
-    @Override
-    public InformationModelType getType() {
-        return InformationModelType.CEM;
-    }
-
-    /**
-     * @return The concept to which this information model is attached.
-     * Eventually this approach be revisited.
-     */
-    public UUID getConceptUUID() {
-        return conceptUUID;
+        this.focusConceptName = focusConceptName;
+        this.focusConceptUUID = focusConceptUUID;
+        this.importerName = importerName;
+        this.time = time;
+        this.path = path;
+        this.moduleName = moduleName;
     }
 
     @Override
@@ -60,11 +95,51 @@ public class CEMInformationModel implements InformationModel {
     }
 
     @Override
+    public InformationModelType getType() {
+        return InformationModelType.CEM;
+    }
+
+    @Override
+    public String getImporterName() {
+        return importerName;
+    }
+
+    @Override
+    public long getTime() {
+        return time;
+    }
+
+    @Override
+    public Path getPath() {
+        return path;
+    }
+
+    @Override
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    /**
+     * @return The name of the concept to which this information model is attached.
+     * Eventually this approach be revisited.
+     */
+    public String getFocusConceptName() {
+        return focusConceptName;
+    }
+
+    /**
+     * @return The UUID of the concept to which this information model is attached.
+     * Eventually this approach be revisited.
+     */
+    public UUID getFocusConceptUUID() {
+        return focusConceptUUID;
+    }
+
+    @Override
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("name", name)
-                .add("modelType", getType())
-                .add("conceptUUID", conceptUUID)
+                .add("type", getType())
                 .toString();
     }
 }
