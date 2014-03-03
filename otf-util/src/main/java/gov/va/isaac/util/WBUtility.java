@@ -363,14 +363,16 @@ public class WBUtility {
 
     public static RefexVersionBI getRefsetMember(int nid) {
         try {
-    		RefexChronicleBI chron =         	(RefexChronicleBI) dataStore.getComponent(nid);
-            RefexVersionBI refexVersion = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest());
-            RefexVersionBI refexVersion2 = (RefexVersionBI) dataStore.getComponent(nid).getVersion(StandardViewCoordinates.getSnomedStatedLatest());
-            return refexVersion;
+    		RefexChronicleBI refexChron = (RefexChronicleBI) dataStore.getComponent(nid);
+
+    		if (refexChron != null) {
+    			return (RefexVersionBI) refexChron.getVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest());
+    		}
         } catch (Exception ex) {
-            LOG.warn("Unexpected error looking up description", ex);
-            return null;
+
         }
+
+        return null;
     }
 
     public static void commit(ConceptVersionBI con) {
@@ -393,6 +395,26 @@ public class WBUtility {
 
 	public static void addUncommitted(ConceptVersionBI con) {
         try {
+			dataStore.addUncommitted(con);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void addUncommitted(int nid) {
+        try {
+        	ConceptVersionBI con = lookupSnomedIdentifierAsCV(nid);
+			dataStore.addUncommitted(con);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void addUncommitted(UUID uid) {
+        try {
+        	ConceptVersionBI con = lookupSnomedIdentifierAsCV(uid);
 			dataStore.addUncommitted(con);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

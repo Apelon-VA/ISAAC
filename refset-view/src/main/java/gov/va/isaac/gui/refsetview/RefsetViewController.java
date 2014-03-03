@@ -1,7 +1,27 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.refsetview;
 
 
+import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
+import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -28,6 +48,11 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 
+/**
+ * RefsetViewController
+ *
+ * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ */
 public class RefsetViewController {
 
 	//@FXML private Slider hSlider;
@@ -122,14 +147,19 @@ public class RefsetViewController {
 			for (RefexChronicleBI<?> memChron : members) {
 				RefexVersionBI member = memChron.getVersion(WBUtility.getViewCoordinate());
 				
-				ConceptVersionBI refCon;
+				ConceptVersionBI refCompCon;
 				if (!isAnnotation) {
-					refCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
+					refCompCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
 				} else {
-					refCon = component;
+					refCompCon = component;
 				}
-	
-				isSetup = processMembers(member, refCon, isSetup);
+
+				if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
+					member.getAssemblageNid() == refset.getNid()) {
+					isSetup = handleComplexRefset(member, refCompCon, isSetup);
+				} else {
+					isSetup = processMembers(member, refCompCon, isSetup);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -139,37 +169,41 @@ public class RefsetViewController {
 	}
 
 
-	private boolean processMembers(RefexVersionBI member, ConceptVersionBI refCon, boolean isSetup) throws IOException {
+	private boolean handleComplexRefset(RefexVersionBI member, ConceptVersionBI refCompCon, boolean isSetup) {
+		if (!isSetup && member.getRefexType() != RefexType.MEMBER) {
+			RefsetTableHandler.setupTable(member, isAnnotation, refsetRows, refCompCon);
+			refsetType = member.getRefexType();
+			isSetup = true;
+		}
+		
+		// Have needed member, add to data
+		CEMCompositRefestInstance instance = (CEMCompositRefestInstance)RefsetInstanceAccessor.getInstance(refCompCon, member, RefexType.UNKNOWN);
+		
+		data.add(instance);
+
+		return isSetup;
+	}
+
+	private boolean processMembers(RefexVersionBI member, ConceptVersionBI refCompCon, boolean isSetup) throws IOException {
 		if (member.getAssemblageNid() == refset.getNid()) {
 			// Setup if Necessary
 			if (!isSetup && member.getRefexType() != RefexType.MEMBER) {
-				RefsetTableHandler.setupTable(member, isAnnotation, refsetRows);
+				RefsetTableHandler.setupTable(member, isAnnotation, refsetRows, refCompCon);
 				refsetType = member.getRefexType();
 				isSetup = true;
 			}
 
 			// Have needed member, add to data
-			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCon, member, refsetType);
+			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCompCon, member, refsetType);
 			data.add(instance);
 		}
 
 		// Search for member's annotations
 		Collection<? extends RefexVersionBI<?>> refAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
 		for (RefexVersionBI annot : refAnnots) {
-			isSetup = processMembers(annot, refCon, isSetup);
+			isSetup = processMembers(annot, refCompCon, isSetup);
 		}
 
 		return isSetup;
 	}
-
-	private RefsetInstance createRow(ConceptVersionBI refCon, RefexVersionBI member) {
-		try {
-			return RefsetInstanceAccessor.getInstance(refCon, member, refsetType);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-
 }
