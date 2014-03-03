@@ -195,16 +195,16 @@ public class RefsetTableHandler {
 						instance.setValueExt(t.getNewValue());
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
-							ComponentChronicleBI constraintMember = WBUtility.getRefsetMember(instance.getConstraintMemberNid());
+							ComponentChronicleBI compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
 							
-					        RefexCAB newMember = new RefexCAB(RefexType.STR, constraintMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
+					        RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
 							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
 							instance.setValueMemberNid(newMemChron.getNid());
 							
-							constraintMember.addAnnotation(newMemChron);
+							compositeMember.addAnnotation(newMemChron);
 							
 							WBUtility.addUncommitted(instance.getRefCompConNid());
 							return;

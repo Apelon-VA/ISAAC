@@ -291,11 +291,10 @@ public class RefsetInstanceAccessor {
 		private SimpleStringProperty constraintPathExt;
 		private SimpleStringProperty constraintValExt;
 		private SimpleStringProperty valueExt = new SimpleStringProperty("");
-		private int constraintMemberNid;
+		private int compositeMemberNid;
 		private int constraintValMemberNid;
 		private int constraintPathMemberNid;
 		private int valMemberNid;
-		private ComponentChronicleBI constraintRefsetCon = null;
 
 		private CEMCompositRefestInstance(ConceptVersionBI refCompCon, RefexVersionBI member) {
 			super(refCompCon, member);
@@ -304,9 +303,10 @@ public class RefsetInstanceAccessor {
 //				setupMemberNids();
 				
 				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
+				compositeMemberNid = member.getNid();
+				
 				for (RefexVersionBI parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
-						constraintMemberNid = parentAnnot.getNid();
 						
 						Collection<? extends RefexVersionBI<?>> refAnnots = parentAnnot.getAnnotationsActive(WBUtility.getViewCoordinate());
 						for (RefexVersionBI annot : refAnnots) {
@@ -314,10 +314,10 @@ public class RefsetInstanceAccessor {
 								constraintPathExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
 							} else if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET.getNid()) {
 								constraintValExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
-							} else if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_VALUE_REFSET.getNid()) {
-								valueExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
-							} 
+							}
 						}
+					} else if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_VALUE_REFSET.getNid()) {
+						valueExt = new SimpleStringProperty(((RefexStringVersionBI)parentAnnot).getString1());
 					}
 				}
 			} catch (Exception e) {
@@ -368,12 +368,12 @@ public class RefsetInstanceAccessor {
 			this.valueExt.set(val);
 		}
 
-		public int getConstraintMemberNid() {
+		public int getCompositeMemberNid() {
 			// TODO Auto-generated method stub
-			return constraintMemberNid;
+			return compositeMemberNid;
 		}
-		public void setConstraintMemberNid(int val) {
-			constraintMemberNid = val;
+		public void setCompositeMemberNid(int val) {
+			compositeMemberNid = val;
 		}
 
 		public int getConstraintValMemberNid() {
