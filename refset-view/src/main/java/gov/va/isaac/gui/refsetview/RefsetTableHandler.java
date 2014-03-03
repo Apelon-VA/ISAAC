@@ -25,17 +25,15 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
-import java.util.UUID;
-
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-
+import javafx.scene.text.Font;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
@@ -48,7 +46,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
+import com.sun.javafx.tk.Toolkit;
 
 /**
  * RefsetViewRunner
@@ -82,6 +80,21 @@ public class RefsetTableHandler {
 			createCidStrInstanceTable(refsetRows);
 		} else if (refsetType == RefexType.UNKNOWN) {
 			createComponentRefsetInstanceTable(refsetRows);
+		}
+		
+		setColSizes(refsetRows);
+	}
+	
+	private static void setColSizes(TableView<RefsetInstance> refsetRows)
+	{
+		//Horrible hack to set a reasonable default size on the columns.
+		//Min width to the with of the header column.  Preferred width - divide space out evenly.
+		Font f = new Font("System Bold", 13.0);
+		float prefColWidthPercentage = 1.0f / (float) refsetRows.getColumns().size();
+		for (TableColumn<RefsetInstance, ?> col : refsetRows.getColumns())
+		{
+			col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 20);
+			col.prefWidthProperty().bind(refsetRows.widthProperty().subtract(5.0).multiply(prefColWidthPercentage));
 		}
 	}
 
@@ -169,7 +182,7 @@ public class RefsetTableHandler {
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
 							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
-			                
+
 							constraintMember.addAnnotation(newMemChron);
 							
 							WBUtility.addUncommitted(refCompCon);
@@ -277,6 +290,7 @@ public class RefsetTableHandler {
 		refsetRows.getColumns().clear();
 		refsetRows.setEditable(true);
 		refsetRows.getColumns().addAll(memberCol);
+		setColSizes(refsetRows);
 
 /*		
 		// Lock Column Ordering (better solution not available in API
