@@ -50,6 +50,7 @@ public class RefsetInstanceAccessor {
 	public static class RefsetInstance {
 		private SimpleStringProperty refCompConFsn;
 		private SimpleStringProperty refCompConUuid;
+		private int refCompConNid;
 		private int memberNid;
 		
 		private String status, time, author, module, path;
@@ -62,10 +63,11 @@ public class RefsetInstanceAccessor {
 						"Add Reference Component UUID");
 				this.refCompConFsn = new SimpleStringProperty(
 						"Add Reference Component UUID");
+				this.refCompConNid = 0;
 			} else {
 				this.refCompConUuid = new SimpleStringProperty(con
 						.getPrimordialUuid().toString());
-				
+				this.refCompConNid = con.getNid();
 				this.status = con.getStatus().toString();
 				this.time = sdf.format(new Date(con.getTime()));
 				try
@@ -107,12 +109,20 @@ public class RefsetInstanceAccessor {
 			}
 		}
 
-		public String getRefCompConUuid() {
-			return refCompConUuid.get();
+		public UUID getRefCompConUuid() {
+			return UUID.fromString(refCompConUuid.get());
 		}
 
 		public void setRefCompConUuid(UUID uuid) {
 			this.refCompConUuid.set(uuid.toString());
+		}
+
+		public int getRefCompConNid() {
+			return refCompConNid;
+		}
+
+		public void setRefCompConNid(int nid) {
+			this.refCompConNid = nid;
 		}
 
 		public String getRefCompConFsn() {
@@ -278,11 +288,12 @@ public class RefsetInstanceAccessor {
 	}
 
 	public static class CEMCompositRefestInstance extends NidStrExtRefsetInstance {
-		private SimpleStringProperty constraintExt;
+		private SimpleStringProperty constraintPathExt;
 		private SimpleStringProperty constraintValExt;
 		private SimpleStringProperty valueExt = new SimpleStringProperty("");
-		private int constraintValMemberNid;
 		private int constraintMemberNid;
+		private int constraintValMemberNid;
+		private int constraintPathMemberNid;
 		private int valMemberNid;
 		private ComponentChronicleBI constraintRefsetCon = null;
 
@@ -290,16 +301,17 @@ public class RefsetInstanceAccessor {
 			super(refCompCon, member);
 
 			try {
-				setupMemberNids();
+//				setupMemberNids();
 				
 				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
 				for (RefexVersionBI parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
+						constraintMemberNid = parentAnnot.getNid();
 						
 						Collection<? extends RefexVersionBI<?>> refAnnots = parentAnnot.getAnnotationsActive(WBUtility.getViewCoordinate());
 						for (RefexVersionBI annot : refAnnots) {
 							if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET.getNid()) {
-								constraintExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
+								constraintPathExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
 							} else if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET.getNid()) {
 								constraintValExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
 							} else if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_VALUE_REFSET.getNid()) {
@@ -313,31 +325,31 @@ public class RefsetInstanceAccessor {
 			}
 		}
 		
-		private void setupMemberNids() {
-			try {
-				constraintMemberNid = CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET.getNid();
-				constraintValMemberNid = CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET.getNid();
-				valMemberNid = CEMMetadataBinding.CEM_VALUE_REFSET.getNid();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
+//		private void setupMemberNids() {
+//			try {
+//				constraintPathMemberNid = CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET.getNid();
+//				constraintValMemberNid = CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET.getNid();
+//				valMemberNid = CEMMetadataBinding.CEM_VALUE_REFSET.getNid();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//
 		public CEMCompositRefestInstance() {
 			super();
-			setupMemberNids();
+//			setupMemberNids();
 			
-			constraintExt = new SimpleStringProperty("Add String Value");
+			constraintPathExt = new SimpleStringProperty("Add String Value");
 			constraintValExt = new SimpleStringProperty("Add String Value");
 			valueExt = new SimpleStringProperty("Add String Value");
 		}
 
-		public String getConstraintExt() {
-			return constraintExt.get();
+		public String getConstraintPathExt() {
+			return constraintPathExt.get();
 		}
 	
-		public void setConstraintExt(String val) {
-			this.constraintExt.set(val);
+		public void setConstraintPathExt(String val) {
+			this.constraintPathExt.set(val);
 		}
 
 		public String getConstraintValExt() {
@@ -356,6 +368,14 @@ public class RefsetInstanceAccessor {
 			this.valueExt.set(val);
 		}
 
+		public int getConstraintMemberNid() {
+			// TODO Auto-generated method stub
+			return constraintMemberNid;
+		}
+		public void setConstraintMemberNid(int val) {
+			constraintMemberNid = val;
+		}
+
 		public int getConstraintValMemberNid() {
 			// TODO Auto-generated method stub
 			return constraintValMemberNid;
@@ -364,12 +384,12 @@ public class RefsetInstanceAccessor {
 			constraintValMemberNid = val;
 		}
 
-		public int getConstraintMemberNid() {
+		public int getConstraintPathMemberNid() {
 			// TODO Auto-generated method stub
-			return constraintMemberNid;
+			return constraintPathMemberNid;
 		}
-		public void setConstraintMemberNid(int val) {
-			constraintMemberNid = val;
+		public void setConstraintPathMemberNid(int val) {
+			constraintPathMemberNid = val;
 		}
 
 		public int getValueMemberNid() {
@@ -379,20 +399,7 @@ public class RefsetInstanceAccessor {
 		public void setValueMemberNid(int val) {
 			valMemberNid = val;
 		}
-
-		public ComponentChronicleBI getConstraintMember() {
-			if (constraintRefsetCon == null) {
-				try {
-					constraintRefsetCon = WBUtility.lookupSnomedIdentifierAsCV(CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid());
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			return constraintRefsetCon;
-		}
-
-}
+	}
 
 	public static RefsetInstance getInstance(ConceptVersionBI refCompCon,
 			RefexVersionBI member, RefexType refsetType) {

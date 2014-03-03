@@ -143,7 +143,7 @@ public class RefsetTableHandler {
 		TableColumn col2 = createStrColumn("String", "strExt", 2);
 
 		// COL 3 (CONSTR PATH Refset Value)
-		TableColumn col3 = createStrColumn("Constraint Type", "constraintExt", 3);
+		TableColumn col3 = createStrColumn("Constraint Type", "constraintPathExt", 3);
 
 		// COL 3 (CONSTR VAL Refset Value)
 		TableColumn col4 = createStrColumn("Constraint Value", "constraintValExt", 4);
@@ -182,9 +182,9 @@ public class RefsetTableHandler {
 						bp = createBlueprint(instance.getMemberNid());
 					} else if (columnNumber == 3) {
 						CEMCompositRefestInstance instance = (CEMCompositRefestInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-						instance.setConstraintExt(t.getNewValue());
+						instance.setConstraintPathExt(t.getNewValue());
 
-						bp = createBlueprint(instance.getConstraintMemberNid());
+						bp = createBlueprint(instance.getConstraintPathMemberNid());
 					} else if (columnNumber == 4) {
 						CEMCompositRefestInstance instance = (CEMCompositRefestInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						instance.setConstraintValExt(t.getNewValue());
@@ -195,15 +195,18 @@ public class RefsetTableHandler {
 						instance.setValueExt(t.getNewValue());
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
-							ComponentChronicleBI constraintMember = instance.getConstraintMember();
-							RefexCAB newMember = new RefexCAB(RefexType.STR, constraintMember.getNid(),  instance.getValueMemberNid(), IdDirective.GENERATE_HASH, RefexDirective.INCLUDE);
+							ComponentChronicleBI constraintMember = WBUtility.getRefsetMember(instance.getConstraintMemberNid());
+							
+					        RefexCAB newMember = new RefexCAB(RefexType.STR, constraintMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
+
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
 							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
-
+							instance.setValueMemberNid(newMemChron.getNid());
+							
 							constraintMember.addAnnotation(newMemChron);
 							
-							WBUtility.addUncommitted(refCompCon);
+							WBUtility.addUncommitted(instance.getRefCompConNid());
 							return;
 						} else {
 							bp = createBlueprint(instance.getValueMemberNid());
