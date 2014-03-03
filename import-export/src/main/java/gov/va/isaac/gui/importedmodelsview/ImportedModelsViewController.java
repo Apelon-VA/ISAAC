@@ -150,6 +150,9 @@ public class ImportedModelsViewController {
 
     public void setParent(Window parent) {
         this.parent = parent;
+
+        // Start with ALL selected.
+        modelTypeCombo.getSelectionModel().select(ALL);
     }
 
     public BorderPane getRoot() {
