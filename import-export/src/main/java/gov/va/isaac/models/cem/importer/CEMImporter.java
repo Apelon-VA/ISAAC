@@ -158,7 +158,12 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
                 RefexChronicleBI qualPath = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
                 RefexChronicleBI qualValue = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, qualCard);
 
-                LOG.info(String.format("qual: %s %s %s", qualName, qualType, qualCard));
+                String qualCompValue = loopNode.getTextContent();
+            	if (qualCompValue != null && qualCompValue.length() > 0) {
+            		RefexChronicleBI qualCompRefex = addMemberInValueRefset(qual, qualCompValue);
+            	}
+
+                LOG.info(String.format("mod: %s %s %s %s", qualName, qualType, qualCard, qualCompValue));
                 break;
             case MOD:
                 String modName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
@@ -171,7 +176,12 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
                 RefexChronicleBI modPath = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
                 RefexChronicleBI modValue = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, modCard);
 
-                LOG.info(String.format("mod: %s %s %s", modName, modType, modCard));
+                String modCompValue = loopNode.getTextContent();
+            	if (modCompValue != null && modCompValue.length() > 0) {
+            		RefexChronicleBI modCompRefex = addMemberInValueRefset(mod, modCompValue);
+            	}
+               
+                LOG.info(String.format("mod: %s %s %s %s", modName, modType, modCard, modCompValue));
                 break;
             case ATT:
                 String attName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
@@ -184,7 +194,12 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
                 RefexChronicleBI attPath = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
                 RefexChronicleBI attValue = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, attCard);
 
-                LOG.info(String.format("att: %s %s %s", attName, attType, attCard));
+                String attCompValue = loopNode.getTextContent();
+            	if (attCompValue != null && attCompValue.length() > 0) {
+            		RefexChronicleBI attCompRefex = addMemberInValueRefset(att, attCompValue);
+            	}
+               
+                LOG.info(String.format("att: %s %s %s %s", attName, attType, attCard, attCompValue));
                 break;
             case CONSTRAINT:
                 String path = loopNode.getAttributes().getNamedItem(PATH).getTextContent();
@@ -209,7 +224,25 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
         return focusConcept;
     }
 
-    public RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
+    private RefexChronicleBI addMemberInValueRefset(RefexChronicleBI focusComponent, String value) throws IOException, InvalidCAB, ContradictionException {
+        RefexCAB newRefexCab = new RefexCAB(RefexType.STR,
+                focusComponent.getPrimordialUuid(),
+                CEMMetadataBinding.CEM_VALUE_REFSET.getUuids()[0],
+                IdDirective.GENERATE_RANDOM,
+                RefexDirective.EXCLUDE);
+
+        newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, value);
+
+        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
+
+        LOG.info("newRefex constraints UUID:" + newRefex.getPrimordialUuid());
+
+        focusComponent.addAnnotation(newRefex);
+
+        return newRefex;
+	}
+
+	public RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
             ConceptSpec conceptExtension)
             throws IOException, InvalidCAB, ContradictionException {
         RefexCAB newRefexCab = new RefexCAB(RefexType.CID,
