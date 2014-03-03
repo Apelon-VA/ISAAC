@@ -401,4 +401,24 @@ public class WBUtility {
 			e.printStackTrace();
 		}
 	}
+
+	public static void addUncommitted(int nid) {
+        try {
+        	ConceptVersionBI con = lookupSnomedIdentifierAsCV(nid);
+			dataStore.addUncommitted(con);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void addUncommitted(UUID uid) {
+        try {
+        	ConceptVersionBI con = lookupSnomedIdentifierAsCV(uid);
+			dataStore.addUncommitted(con);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
