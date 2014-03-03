@@ -26,32 +26,23 @@ import java.util.UUID;
 import com.google.common.base.Objects;
 
 /**
- * Useful class to represent a CEM information model as a Java POJO.
+ * A concrete {@link InformationModel} for displaying CEM models.
  *
  * @author ocarlsen
  */
 public class CEMInformationModel implements InformationModel {
 
     private final String name;
-    private final UUID conceptUUID;
+    private final Metadata metadata;
+    private final String focusConceptName;
+    private final UUID focusConceptUUID;
 
-    public CEMInformationModel(String name, UUID conceptUUID) {
-        super();
+    public CEMInformationModel(String name, Metadata metadata,
+            String focusConceptName, UUID focusConceptUUID) {
         this.name = name;
-        this.conceptUUID = conceptUUID;
-    }
-
-    @Override
-    public InformationModelType getType() {
-        return InformationModelType.CEM;
-    }
-
-    /**
-     * @return The concept to which this information model is attached.
-     * Eventually this approach be revisited.
-     */
-    public UUID getConceptUUID() {
-        return conceptUUID;
+        this.focusConceptName = focusConceptName;
+        this.focusConceptUUID = focusConceptUUID;
+        this.metadata = metadata;
     }
 
     @Override
@@ -60,11 +51,36 @@ public class CEMInformationModel implements InformationModel {
     }
 
     @Override
+    public InformationModelType getType() {
+        return InformationModelType.CEM;
+    }
+
+    @Override
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    /**
+     * @return The name of the concept to which this information model is attached.
+     * Eventually this approach be revisited.
+     */
+    public String getFocusConceptName() {
+        return focusConceptName;
+    }
+
+    /**
+     * @return The UUID of the concept to which this information model is attached.
+     * Eventually this approach be revisited.
+     */
+    public UUID getFocusConceptUUID() {
+        return focusConceptUUID;
+    }
+
+    @Override
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("name", name)
-                .add("modelType", getType())
-                .add("conceptUUID", conceptUUID)
+                .add("type", getType())
                 .toString();
     }
 }

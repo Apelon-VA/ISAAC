@@ -20,15 +20,74 @@ package gov.va.isaac.models;
 
 import gov.va.isaac.model.InformationModelType;
 
+import java.io.IOException;
+
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Path;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+
 /**
- * Defines API for manipulating information models.
+ * Defines API for displaying information models.
  *
  * @author ocarlsen
- *
  */
 public interface InformationModel {
+
+    public static final class Metadata {
+
+        private final String importerName;
+        private final long time;
+        private final Path path;
+        private final String moduleName;
+
+        public static Metadata newInstance(int stampNid, BdbTerminologyStore dataStore,
+                ViewCoordinate vc) throws IOException, ContradictionException {
+
+            String importerName = "Hard-coded placeholder";
+
+            long time = dataStore.getTimeForStamp(stampNid);
+
+            int pathNid = dataStore.getPathNidForStamp(stampNid);
+            Path path = dataStore.getPath(pathNid);
+
+            int moduleNid = dataStore.getModuleNidForStamp(stampNid);
+            ConceptChronicleBI module = dataStore.getConcept(moduleNid);
+            ConceptVersionBI version = module.getVersion(vc);
+            String moduleName = version.getFullySpecifiedDescription().getText();
+
+            return new Metadata(importerName, time, path, moduleName);
+        }
+
+        public Metadata(String importerName, long time, Path path, String moduleName) {
+            this.importerName = importerName;
+            this.time = time;
+            this.path = path;
+            this.moduleName = moduleName;
+        }
+
+        public String getImporterName() {
+            return importerName;
+        }
+
+        public long getTime() {
+            return time;
+        }
+
+        public Path getPath() {
+            return path;
+        }
+
+        public String getModuleName() {
+            return moduleName;
+        }
+    }
 
     public String getName();
 
     public InformationModelType getType();
+
+    public Metadata getMetadata();
 }
