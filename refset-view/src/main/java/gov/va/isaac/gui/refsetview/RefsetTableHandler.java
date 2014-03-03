@@ -82,17 +82,35 @@ public class RefsetTableHandler {
 			createComponentRefsetInstanceTable(refsetRows);
 		}
 		
+		//TODO we need some refactoring - don't know why we have a setupTable and an initializeTable method, which are sometimes both called, sometimes only one called
+		//would be easier if they were both always called, or if they were merged...
 		setColSizes(refsetRows);
 	}
 	
 	private static void setColSizes(TableView<RefsetInstance> refsetRows)
 	{
+		//Horrible hack to move the stamp column to the end
+		//TODO remove this hack after code gets refactored to combine these various init methods
+		for (int i = 0; i < refsetRows.getColumns().size(); i++)
+		{
+			if (refsetRows.getColumns().get(i).getText().equals("STAMP"))
+			{
+				refsetRows.getColumns().add(refsetRows.getColumns().remove(i));
+				break;
+			}
+		}
+		
 		//Horrible hack to set a reasonable default size on the columns.
 		//Min width to the with of the header column.  Preferred width - divide space out evenly.
 		Font f = new Font("System Bold", 13.0);
 		float prefColWidthPercentage = 1.0f / (float) refsetRows.getColumns().size();
 		for (TableColumn<RefsetInstance, ?> col : refsetRows.getColumns())
 		{
+			for (TableColumn<RefsetInstance, ?> nestedCol : col.getColumns())
+			{
+				nestedCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(nestedCol.getText(), f) + 20);
+				nestedCol.prefWidthProperty().bind(refsetRows.widthProperty().subtract(5.0).multiply(prefColWidthPercentage).divide(col.getColumns().size()));
+			}
 			col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 20);
 			col.prefWidthProperty().bind(refsetRows.widthProperty().subtract(5.0).multiply(prefColWidthPercentage));
 		}
@@ -290,6 +308,7 @@ public class RefsetTableHandler {
 		refsetRows.getColumns().clear();
 		refsetRows.setEditable(true);
 		refsetRows.getColumns().addAll(memberCol);
+		refsetRows.getColumns().add(createStampColumn());
 		setColSizes(refsetRows);
 
 /*		
@@ -308,6 +327,38 @@ public class RefsetTableHandler {
 			}
 		});
 */		 
+	}
+	
+	private static TableColumn createStampColumn() {
+		TableColumn col = new TableColumn("STAMP");
+		
+		TableColumn status = new TableColumn("Status");
+		status.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("status"));
+		status.setCellFactory(TextFieldTableCell.forTableColumn());
+		col.getColumns().add(status);
+		
+		TableColumn time = new TableColumn("Time");
+		time.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("time"));
+		time.setCellFactory(TextFieldTableCell.forTableColumn());
+		col.getColumns().add(time);
+		
+		TableColumn author = new TableColumn("Author");
+		author.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("author"));
+		author.setCellFactory(TextFieldTableCell.forTableColumn());
+		col.getColumns().add(author);
+		
+		TableColumn module = new TableColumn("Module");
+		module.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("module"));
+		module.setCellFactory(TextFieldTableCell.forTableColumn());
+		col.getColumns().add(module);
+		
+		TableColumn path = new TableColumn("Path");
+		path.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("path"));
+		path.setCellFactory(TextFieldTableCell.forTableColumn());
+		col.getColumns().add(path);
+		
+		
+		return col;
 	}
 
 	private static RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {

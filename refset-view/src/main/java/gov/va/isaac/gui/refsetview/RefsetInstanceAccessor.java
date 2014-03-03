@@ -18,15 +18,14 @@
  */
 package gov.va.isaac.gui.refsetview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
-
-import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.UUID;
-
 import javafx.beans.property.SimpleStringProperty;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -34,7 +33,9 @@ import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid_string.RefexNidStringVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
+import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * RefsetInstanceAccessor
@@ -42,11 +43,16 @@ import org.ihtsdo.otf.tcc.api.spec.ValidationException;
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
 public class RefsetInstanceAccessor {
+	
+	private static SimpleDateFormat sdf = new SimpleDateFormat();
+	private static final Logger logger = LoggerFactory.getLogger(RefsetInstanceAccessor.class);
 
 	public static class RefsetInstance {
 		private SimpleStringProperty refCompConFsn;
 		private SimpleStringProperty refCompConUuid;
 		private int memberNid;
+		
+		private String status, time, author, module, path;
 
 		private RefsetInstance(ConceptVersionBI con, int nid) {
 			memberNid = nid;
@@ -59,6 +65,38 @@ public class RefsetInstanceAccessor {
 			} else {
 				this.refCompConUuid = new SimpleStringProperty(con
 						.getPrimordialUuid().toString());
+				
+				this.status = con.getStatus().toString();
+				this.time = sdf.format(new Date(con.getTime()));
+				try
+				{
+					this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(con.getAuthorNid()).getPrimordialUuid());
+				}
+				catch (Exception e1)
+				{
+					logger.error("Error formatting stamp component", e1);
+					this.author = con.getAuthorNid() + "";
+				}
+				try
+				{
+					this.module = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(con.getModuleNid()).getPrimordialUuid());
+				}
+				catch (Exception e1)
+				{
+					logger.error("Error formatting stamp component", e1);
+					this.module = con.getModuleNid() + "";
+				}
+				try
+				{
+					this.path = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(con.getPathNid()).getPrimordialUuid());
+				}
+				catch (Exception e1)
+				{
+					logger.error("Error formatting stamp component", e1);
+					this.path = con.getPathNid() + "";
+				}
+				
+				
 				try {
 					this.refCompConFsn = new SimpleStringProperty(con
 							.getPreferredDescription().getText());
@@ -91,6 +129,46 @@ public class RefsetInstanceAccessor {
 
 		public void setMemberNid(int nid) {
 			memberNid = nid;
+		}
+
+		/**
+		 * @return the status
+		 */
+		public String getStatus()
+		{
+			return status;
+		}
+
+		/**
+		 * @return the time
+		 */
+		public String getTime()
+		{
+			return time;
+		}
+
+		/**
+		 * @return the author
+		 */
+		public String getAuthor()
+		{
+			return author;
+		}
+
+		/**
+		 * @return the module
+		 */
+		public String getModule()
+		{
+			return module;
+		}
+
+		/**
+		 * @return the path
+		 */
+		public String getPath()
+		{
+			return path;
 		}
 	}
 
