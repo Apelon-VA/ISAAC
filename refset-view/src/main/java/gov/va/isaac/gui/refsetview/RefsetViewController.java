@@ -160,7 +160,11 @@ public class RefsetViewController {
 				List<RefexVersionBI> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					memberVersion.add(memChron.getVersion(vc));
+					RefexVersionBI version = memChron.getVersion(vc);
+					
+					if (version.isActive()) {
+						memberVersion.add(version);
+					}
 				}
 				else
 				{
@@ -231,7 +235,10 @@ public class RefsetViewController {
 			List<RefexVersionBI> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				annotVersions.add((RefexVersionBI) annot.getVersion(vc));
+				RefexVersionBI version = (RefexVersionBI) annot.getVersion(vc);
+				if (version.isActive()) {
+					annotVersions.add(version);
+				}
 			}
 			else {
 				annotVersions.addAll((Collection<? extends RefexVersionBI>) annot.getVersions());
