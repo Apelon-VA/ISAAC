@@ -37,7 +37,6 @@
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>import-export</artifactId>
 			<version>${project.parent.version}</version>
-			<scope>test</scope>
 		</dependency>
 	
 		<!-- JUnit. -->

@@ -199,7 +199,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return cetype;
     }
 
-    private Element buildConstraintElement(MembershipMember constraintAnnotation)
+	private Element buildConstraintElement(MembershipMember constraintAnnotation)
             throws ValidationException, IOException {
         Element e = document.createElement(CONSTRAINT);
 
@@ -262,6 +262,14 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             e.setAttributeNode(constraintAttr);
         }
 
+
+        // Value element
+        StringMember valueAnnotation = getCompStringAnnotation(compositionRefex, CEMMetadataBinding.CEM_VALUE_REFSET);
+        if (valueAnnotation != null) {
+	        String value = valueAnnotation.getString1();
+	        e.setTextContent(value);
+        }
+
         return e;
     }
 
@@ -308,6 +316,16 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
         return nameAttr;
     }
+    
+    private StringMember getCompStringAnnotation(NidStringMember owner, ConceptSpec refsetSpec)
+            throws IOException, ContradictionException {
+
+        // Get annotations of owner.
+        Collection<? extends RefexChronicleBI<?>> annotations = getLatestAnnotations(owner);
+
+        return getSingleAnnotation(annotations, refsetSpec, StringMember.class);
+    }
+
 
     private StringMember getStringAnnotation(MembershipMember owner, ConceptSpec refsetSpec)
             throws IOException, ContradictionException {

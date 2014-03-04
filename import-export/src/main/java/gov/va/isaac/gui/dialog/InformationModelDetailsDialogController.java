@@ -20,9 +20,9 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.InformationModel.Metadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 
@@ -33,46 +33,47 @@ import java.util.UUID;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
+import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
+import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.time.TimeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
 /**
- * A dialog for displaying an information model details.
+ * Controller class for {@link InformationModelDetailsDialog}.
  *
  * @author ocarlsen
  */
-public class InformationModelDetailsPane extends GridPane {
+public class InformationModelDetailsDialogController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InformationModelDetailsPane.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InformationModelDetailsDialogController.class);
 
-    private final Label modelNameLabel = new Label();
-    private final TextArea modelXmlTextArea = new TextArea();
+    @FXML private Label modelNameLabel;
+    @FXML private Label modelTypeLabel;
+    @FXML private Label focusConceptLabel;
+    @FXML private Label uuidLabel;
+    @FXML private Label importerNameLabel;
+    @FXML private Label importDateLabel;
+    @FXML private Label importPathLabel;
+    @FXML private Label importModuleLabel;
+    @FXML private TextArea modelXmlTextArea;
+    @FXML private ProgressIndicator modelXmlProgress;
 
-    public InformationModelDetailsPane() {
-        super();
+    private Stage stage;
 
-        // GUI placeholders.
-        GridPaneBuilder builder = new GridPaneBuilder(this);
-        builder.addRow("Information Model: ", modelNameLabel);
-        builder.addRow(new Separator());
-        builder.addRow(modelXmlTextArea);
+    @FXML
+    public void initialize() {
+    }
 
-        setConstraints();
-
-        // Set minimum dimensions.
-        setMinHeight(200);
-        setMinWidth(600);
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     public void displayModel(InformationModel informationModel) {
@@ -100,7 +101,7 @@ public class InformationModelDetailsPane extends GridPane {
                 // Do work.
                 OutputStream out = new ByteArrayOutputStream();
                 CEMExporter exporter = new CEMExporter(out);
-                UUID conceptUUID = cemModel.getConceptUUID();
+                UUID conceptUUID = cemModel.getFocusConceptUUID();
                 exporter.exportModel(conceptUUID );
                 return out.toString();
             }
@@ -110,6 +111,16 @@ public class InformationModelDetailsPane extends GridPane {
 
                 // Update UI.
                 modelNameLabel.setText(cemModel.getName());
+                modelTypeLabel.setText(cemModel.getType().getDisplayName());
+                focusConceptLabel.setText(cemModel.getFocusConceptName());
+                uuidLabel.setText(cemModel.getFocusConceptUUID().toString());
+
+                Metadata metadata = cemModel.getMetadata();
+                importerNameLabel.setText(metadata.getImporterName());
+                importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
+                importPathLabel.setText(metadata.getPath().toString());
+                importModuleLabel.setText(metadata.getModuleName());
+
                 String modelXML = this.getValue();
                 modelXmlTextArea.setText(modelXML);
            }
@@ -129,30 +140,13 @@ public class InformationModelDetailsPane extends GridPane {
 
         // Bind cursor to task state.
         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
-        this.getScene().cursorProperty().bind(cursorBinding);
+        this.stage.getScene().cursorProperty().bind(cursorBinding);
+
+        // Bind progress indicator to task state.
+        modelXmlProgress.visibleProperty().bind(task.runningProperty());
 
         Thread t = new Thread(task, "Display_" + cemModel.getName());
         t.setDaemon(true);
         t.start();
-    }
-
-    private void setConstraints() {
-
-        // Column 1 has empty constraints.
-        this.getColumnConstraints().add(new ColumnConstraints());
-
-        // Column 2 should grow to fill space.
-        ColumnConstraints column2 = new ColumnConstraints();
-        column2.setHgrow(Priority.ALWAYS);
-        this.getColumnConstraints().add(column2);
-
-        // Rows 1-2 have empty constraints.
-        this.getRowConstraints().add(new RowConstraints());
-        this.getRowConstraints().add(new RowConstraints());
-
-        // Row 3 should grow to fill space.
-        RowConstraints row5 = new RowConstraints();
-        row5.setVgrow(Priority.ALWAYS);
-        this.getRowConstraints().add(row5);
     }
 }

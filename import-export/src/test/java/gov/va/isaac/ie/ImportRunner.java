@@ -48,14 +48,14 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  *
  * @author ocarlsen
  */
-public class ImportTester extends ImporterBase {
+public class ImportRunner extends ImporterBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ImportTester.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImportRunner.class);
 
     private final ConceptVersionBI focusConcept;
     private final ConceptVersionBI refsetConcept;
 
-    private ImportTester(UUID focusConceptUuid, UUID refsetConceptUuid) throws Exception {
+    private ImportRunner(UUID focusConceptUuid, UUID refsetConceptUuid) throws Exception {
         super();
 
         this.focusConcept = getDataStore().getConcept(focusConceptUuid).getVersion(getVC());
@@ -119,7 +119,7 @@ public class ImportTester extends ImporterBase {
 
         // "Blood pressure taking (procedure)"
         UUID focusConceptUuid = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
-        ImportTester tester = new ImportTester(focusConceptUuid, CEMMetadataBinding.CEM_COMPOSITION_REFSET.getUuids()[0]);
+        ImportRunner tester = new ImportRunner(focusConceptUuid, CEMMetadataBinding.CEM_COMPOSITION_REFSET.getUuids()[0]);
 
         RefexChronicleBI<?> refex1 = tester.testAddExtensionMember(CEMMetadataBinding.CEM_QUAL, "MethodDevice");
         RefexChronicleBI<?> refex2 = tester.testAddExtensionMember(CEMMetadataBinding.CEM_QUAL, "BodyLocationPrecoord");
