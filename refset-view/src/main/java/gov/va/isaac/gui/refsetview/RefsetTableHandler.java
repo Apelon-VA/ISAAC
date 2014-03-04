@@ -27,7 +27,6 @@ import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
@@ -45,7 +44,6 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
-import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -54,14 +52,15 @@ import com.sun.javafx.tk.Toolkit;
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
 public class RefsetTableHandler {
-	private static RefexType refsetType;
-	private static boolean isAnnotation;
-	private static ConceptVersionBI refCompCon;
+	private RefexType refsetType;
+	private boolean isAnnotation;
+	private RefsetViewController rvc_;
+	private boolean isSetupFinished_ = false;
 	
-	static void setupTable(RefexChronicleBI<?> member, final boolean annotationValue, final TableView<RefsetInstance> refsetRows, ConceptVersionBI refCompSetupCon) {
+	protected void finishTableSetup(RefexChronicleBI<?> member, final boolean annotationValue, final TableView<RefsetInstance> refsetRows, ConceptVersionBI refCompSetupCon) {
+		isSetupFinished_ = true;
 		refsetType = member.getRefexType();
 		isAnnotation = annotationValue;
-		refCompCon = refCompSetupCon;
 		
 		try {
 			if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid()) {
@@ -87,7 +86,12 @@ public class RefsetTableHandler {
 		setColSizes(refsetRows);
 	}
 	
-	private static void setColSizes(TableView<RefsetInstance> refsetRows)
+	protected boolean isSetupFinished()
+	{
+		return isSetupFinished_;
+	}
+	
+	private void setColSizes(TableView<RefsetInstance> refsetRows)
 	{
 		//Horrible hack to move the stamp column to the end
 		//TODO remove this hack after code gets refactored to combine these various init methods
@@ -117,19 +121,19 @@ public class RefsetTableHandler {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createCidInstanceTable(TableView<RefsetInstance> refsetRows) {
+	private void createCidInstanceTable(TableView<RefsetInstance> refsetRows) {
 		TableColumn col = createCidColumn("Component", "cidExtFsn", 1);
 		refsetRows.getColumns().addAll(col);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createStringInstanceTable(TableView<RefsetInstance> refsetRows) {
+	private void createStringInstanceTable(TableView<RefsetInstance> refsetRows) {
 		TableColumn col1 = createStrColumn("String", "strExt", 1);
 		refsetRows.getColumns().addAll(col1);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createCidStrInstanceTable(TableView<RefsetInstance> refsetRows) {
+	private void createCidStrInstanceTable(TableView<RefsetInstance> refsetRows) {
 		TableColumn col1 = createCidColumn("Component", "cidExtFsn", 1);
 		TableColumn col2 = createStrColumn("String", "strExt", 2);
 
@@ -138,7 +142,7 @@ public class RefsetTableHandler {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void createComponentRefsetInstanceTable(TableView<RefsetInstance> refsetRows) {
+	private void createComponentRefsetInstanceTable(TableView<RefsetInstance> refsetRows) {
 		TableColumn col1 = createCidColumn("Component", "cidExtFsn", 1);
 		TableColumn col2 = createStrColumn("String", "strExt", 2);
 
@@ -159,7 +163,7 @@ public class RefsetTableHandler {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static TableColumn createStrColumn(String columnTitle, String associatedValue, final int columnNumber) {
+	private TableColumn createStrColumn(String columnTitle, String associatedValue, final int columnNumber) {
 		TableColumn col = new TableColumn(columnTitle);	
 		col.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>(associatedValue));
 		col.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -197,7 +201,7 @@ public class RefsetTableHandler {
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
 							ComponentChronicleBI compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
 							
-					        RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
+							RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
@@ -217,6 +221,7 @@ public class RefsetTableHandler {
 					bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 
 					commitUpdate(bp, isAnnotation);
+					rvc_.reloadData();
 				} catch (ContradictionException | InvalidCAB | IOException e) {
 					e.printStackTrace();
 				}
@@ -227,7 +232,7 @@ public class RefsetTableHandler {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static TableColumn createCidColumn(String columnTitle, String associatedValue, final int columnNumber) {
+	private TableColumn createCidColumn(String columnTitle, String associatedValue, final int columnNumber) {
 		TableColumn col = new TableColumn(columnTitle);	
 		col.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>(associatedValue));
 		col.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -263,7 +268,7 @@ public class RefsetTableHandler {
 							}
 							
 							commitUpdate(bp, isAnnotation);
-
+							rvc_.reloadData();
 						} catch (ContradictionException | InvalidCAB | IOException e) {
 							e.printStackTrace();
 						}
@@ -277,12 +282,14 @@ public class RefsetTableHandler {
 
 
 	@SuppressWarnings("unchecked")
-	public static void initializeTable(final TableView<RefsetInstance> refsetRows) {
+	protected RefsetTableHandler(final TableView<RefsetInstance> refsetRows, RefsetViewController rvc) {
+		rvc_ = rvc;
 		TableColumn memberCol = new TableColumn("Reference Component");	
 		memberCol.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("refCompConFsn"));
 		
 		memberCol.setCellFactory(TextFieldTableCell.forTableColumn());
 		memberCol.setOnEditCommit(new EventHandler<CellEditEvent<RefsetInstance, String>>() {
+			//TODO this doesn't seem to update the WB DB
 					@Override
 					public void handle(CellEditEvent<RefsetInstance, String> t) {
 						RefsetInstance instance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
@@ -332,7 +339,7 @@ public class RefsetTableHandler {
 */		 
 	}
 	
-	private static TableColumn createStampColumn() {
+	private TableColumn createStampColumn() {
 		TableColumn col = new TableColumn("STAMP");
 		
 		TableColumn status = new TableColumn("Status");
@@ -364,16 +371,19 @@ public class RefsetTableHandler {
 		return col;
 	}
 
-	private static RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
+	private RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
 		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(nid);
 		
 		return refex.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
 	
 	}
 
-	private static void commitUpdate(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
+	private void commitUpdate(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
 		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(member.getComponentNid());
 		
+		//TODO - make sense of this magical API.  Why on earth do we have to look up, and addUncommitted, on something other than what the 
+		//Builder returned to us?  Here be dragons.
+		//Also, rename this method... it doesn't commit.
 		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(member);
 		ConceptVersionBI refCompCon;
 		if (!isAnnotation) {

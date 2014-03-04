@@ -23,13 +23,13 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInsta
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,8 +41,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -66,9 +66,13 @@ public class RefsetViewController {
 	
 	ObservableList<RefsetInstance> data = FXCollections.observableArrayList();
 	private boolean isAnnotation = false;
-	private ConceptVersionBI refset;
+	private UUID refsetUUID_;
+	private int refsetNid_;
+	private UUID componentUUID_;
 	private RefexType refsetType = RefexType.MEMBER;
-		
+	
+	private boolean activeOnly_ = false;
+	private RefsetTableHandler rth_ = null;
 
 	public static RefsetViewController init() throws IOException {
 		// Load from FXML.
@@ -81,23 +85,24 @@ public class RefsetViewController {
 
 	@FXML 
 	void initialize() {
-		 vc = WBUtility.getViewCoordinate();
+		vc = WBUtility.getViewCoordinate();
 
-		 RefsetTableHandler.initializeTable(refsetRows);
-		 addButton.setOnAction(new EventHandler<ActionEvent>() {
+		rth_ = new RefsetTableHandler(refsetRows, this);
+		addButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
 					RefsetInstance newInstance = RefsetInstanceAccessor.createNewInstance(refsetType);
 					data.add(newInstance);
 				}
 			});
-		 
-		 commitButton.setOnAction(new EventHandler<ActionEvent>() {
+		
+		commitButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
 					WBUtility.commit();
+					reloadData();
 				}
-		 	});
+			});
 		}
 	
 	public AnchorPane getRoot() {
@@ -106,7 +111,8 @@ public class RefsetViewController {
 
 	public void setRefsetAndComponent(UUID refsetUUID, UUID componentUUID)  {
 		
-		refset = WBUtility.lookupSnomedIdentifierAsCV(refsetUUID);
+		refsetUUID_ = refsetUUID;
+		componentUUID_ = componentUUID;
 
 //		try {
 //			this.isAnnotation = refset.isAnnotationStyleRefex();
@@ -119,6 +125,11 @@ public class RefsetViewController {
 		refsetLabel.setText("Refset: " + refsetFsn);
 		refsetLabel.setFont(new Font("Arial", 14));
 		
+		reloadData();
+	}
+	
+	protected void reloadData()
+	{
 		Collection<? extends RefexChronicleBI<?>> members = new HashSet<>();
 		ConceptVersionBI component = null;
 		
@@ -126,14 +137,14 @@ public class RefsetViewController {
 //			if (!isAnnotation) {
 //				members = refset.getRefsetMembersActive();
 //			} else {
-				component = WBUtility.lookupSnomedIdentifierAsCV(componentUUID);
+				component = WBUtility.lookupSnomedIdentifierAsCV(componentUUID_);
 				if (component == null)
 				{
-					System.err.println("Couldn't find component " + componentUUID);
+					System.err.println("Couldn't find component " + componentUUID_);
 				}
 				else
 				{
-					members = component.getAnnotationsActive(vc);
+					members = (activeOnly_ ? component.getAnnotationsActive(vc) : component.getAnnotations());
 				}
 //			}
 		} catch (Exception e) {
@@ -141,24 +152,37 @@ public class RefsetViewController {
 		}
 		
 		data.clear();
-		boolean isSetup = false;
+		ConceptVersionBI refset = WBUtility.lookupSnomedIdentifierAsCV(refsetUUID_);
+		refsetNid_ = refset.getNid();
 		
 		try {
 			for (RefexChronicleBI<?> memChron : members) {
-				RefexVersionBI member = memChron.getVersion(WBUtility.getViewCoordinate());
-				
-				ConceptVersionBI refCompCon;
-				if (!isAnnotation) {
-					refCompCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
-				} else {
-					refCompCon = component;
+				List<RefexVersionBI> memberVersion = new ArrayList<>();
+				if (activeOnly_)
+				{
+					memberVersion.add(memChron.getVersion(vc));
 				}
-
-				if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
-					member.getAssemblageNid() == refset.getNid()) {
-					isSetup = handleComplexRefset(member, refCompCon, isSetup);
-				} else {
-					isSetup = processMembers(member, refCompCon, isSetup);
+				else
+				{
+					memberVersion.addAll(memChron.getVersions());
+				}
+				for (RefexVersionBI member : memberVersion)
+				{
+					ConceptVersionBI refCompCon;
+					if (!isAnnotation) {
+						refCompCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
+					} else {
+						refCompCon = component;
+					}
+	
+					//TODO we shouldn't have any references to the CEM model here in the generic refset viewer.
+					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
+					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
+						member.getAssemblageNid() == refset.getNid()) {
+						handleComplexRefset(member, refCompCon);
+					} else {
+						processMembers(member, refCompCon);
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -169,28 +193,27 @@ public class RefsetViewController {
 	}
 
 
-	private boolean handleComplexRefset(RefexVersionBI member, ConceptVersionBI refCompCon, boolean isSetup) {
-		if (!isSetup && member.getRefexType() != RefexType.MEMBER) {
-			RefsetTableHandler.setupTable(member, isAnnotation, refsetRows, refCompCon);
+	private void handleComplexRefset(RefexVersionBI member, ConceptVersionBI refCompCon) {
+		if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
+			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
 			refsetType = member.getRefexType();
-			isSetup = true;
 		}
 		
 		// Have needed member, add to data
 		CEMCompositRefestInstance instance = (CEMCompositRefestInstance)RefsetInstanceAccessor.getInstance(refCompCon, member, RefexType.UNKNOWN);
 		
 		data.add(instance);
-
-		return isSetup;
 	}
 
-	private boolean processMembers(RefexVersionBI member, ConceptVersionBI refCompCon, boolean isSetup) throws IOException {
-		if (member.getAssemblageNid() == refset.getNid()) {
+	private void processMembers(RefexVersionBI member, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
+		if (member.getAssemblageNid() == refsetNid_) {
 			// Setup if Necessary
-			if (!isSetup && member.getRefexType() != RefexType.MEMBER) {
-				RefsetTableHandler.setupTable(member, isAnnotation, refsetRows, refCompCon);
+			//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
+			//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected 
+			//from the data in the table, so it can take into account multiple refex types.
+			if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
+				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
 				refsetType = member.getRefexType();
-				isSetup = true;
 			}
 
 			// Have needed member, add to data
@@ -199,11 +222,25 @@ public class RefsetViewController {
 		}
 
 		// Search for member's annotations
-		Collection<? extends RefexVersionBI<?>> refAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
-		for (RefexVersionBI annot : refAnnots) {
-			isSetup = processMembers(annot, refCompCon, isSetup);
+		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(vc) : member.getAnnotations());
+		for (RefexChronicleBI annot : refAnnots) {
+			List<RefexVersionBI> annotVersions = new ArrayList<>();
+			if (activeOnly_)
+			{
+				annotVersions.add((RefexVersionBI) annot.getVersion(vc));
+			}
+			else {
+				annotVersions.addAll((Collection<? extends RefexVersionBI>) annot.getVersions());
+			}
+			for (RefexVersionBI annotVersion : annotVersions)
+			{
+				processMembers(annotVersion, refCompCon);
+			}
 		}
-
-		return isSetup;
+	}
+	
+	public void setViewActiveOnly(boolean activeOnly)
+	{
+		activeOnly_ = activeOnly;
 	}
 }

@@ -55,8 +55,8 @@ public class RefsetInstanceAccessor {
 		
 		private String status, time, author, module, path;
 
-		private RefsetInstance(ConceptVersionBI con, int nid) {
-			memberNid = nid;
+		private RefsetInstance(ConceptVersionBI con, RefexVersionBI member) {
+			memberNid = (member == null ? 0 : member.getNid());
 
 			if (con == null) {
 				this.refCompConUuid = new SimpleStringProperty(
@@ -68,34 +68,39 @@ public class RefsetInstanceAccessor {
 				this.refCompConUuid = new SimpleStringProperty(con
 						.getPrimordialUuid().toString());
 				this.refCompConNid = con.getNid();
-				this.status = con.getStatus().toString();
-				this.time = sdf.format(new Date(con.getTime()));
-				try
+				if (member != null)
 				{
-					this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(con.getAuthorNid()).getPrimordialUuid());
-				}
-				catch (Exception e1)
-				{
-					logger.error("Error formatting stamp component", e1);
-					this.author = con.getAuthorNid() + "";
-				}
-				try
-				{
-					this.module = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(con.getModuleNid()).getPrimordialUuid());
-				}
-				catch (Exception e1)
-				{
-					logger.error("Error formatting stamp component", e1);
-					this.module = con.getModuleNid() + "";
-				}
-				try
-				{
-					this.path = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(con.getPathNid()).getPrimordialUuid());
-				}
-				catch (Exception e1)
-				{
-					logger.error("Error formatting stamp component", e1);
-					this.path = con.getPathNid() + "";
+					this.status = member.getStatus().toString();
+					
+					this.time = sdf.format(new Date(member.getTime()));
+					try
+					{
+						System.out.println(member.isActive());
+						this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
+					}
+					catch (Exception e1)
+					{
+						logger.error("Error formatting stamp component", e1);
+						this.author = member.getAuthorNid() + "";
+					}
+					try
+					{
+						this.module = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getModuleNid()).getPrimordialUuid());
+					}
+					catch (Exception e1)
+					{
+						logger.error("Error formatting stamp component", e1);
+						this.module = member.getModuleNid() + "";
+					}
+					try
+					{
+						this.path = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getPathNid()).getPrimordialUuid());
+					}
+					catch (Exception e1)
+					{
+						logger.error("Error formatting stamp component", e1);
+						this.path = member.getPathNid() + "";
+					}
 				}
 				
 				
@@ -140,6 +145,8 @@ public class RefsetInstanceAccessor {
 		public void setMemberNid(int nid) {
 			memberNid = nid;
 		}
+		
+		
 
 		/**
 		 * @return the status
@@ -185,11 +192,11 @@ public class RefsetInstanceAccessor {
 	public static class MemberRefsetInstance extends RefsetInstance {
 		private MemberRefsetInstance(ConceptVersionBI refCompCon,
 				RefexVersionBI member) {
-			super(refCompCon, member.getNid());
+			super(refCompCon, member);
 		}
 
 		public MemberRefsetInstance() {
-			super(null, 0);
+			super(null, null);
 		}
 	}
 
@@ -197,14 +204,14 @@ public class RefsetInstanceAccessor {
 		private SimpleStringProperty strExt;
 
 		private StrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member) {
-			super(refCompCon, member.getNid());
+			super(refCompCon, member);
 			RefexStringVersionBI ext = (RefexStringVersionBI) member;
 
 			strExt = new SimpleStringProperty(ext.getString1());
 		}
 
 		public StrExtRefsetInstance() {
-			super(null, 0);
+			super(null, null);
 			strExt = new SimpleStringProperty("Add String Value");
 		}
 
@@ -223,7 +230,7 @@ public class RefsetInstanceAccessor {
 
 		private NidExtRefsetInstance(ConceptVersionBI refCompCon,
 				RefexVersionBI member) {
-			super(refCompCon, member.getNid());
+			super(refCompCon, member);
 			RefexNidVersionBI ext = (RefexNidVersionBI) member;
 			ConceptVersionBI component = WBUtility
 					.lookupSnomedIdentifierAsCV(ext.getNid1());
@@ -240,7 +247,7 @@ public class RefsetInstanceAccessor {
 		}
 
 		public NidExtRefsetInstance() {
-			super(null, 0);
+			super(null, null);
 			this.cidExtUuid = new SimpleStringProperty("Add Component UUID");
 			this.cidExtFsn = new SimpleStringProperty("Add Component UUID");
 		}
@@ -305,6 +312,7 @@ public class RefsetInstanceAccessor {
 				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
 				compositeMemberNid = member.getNid();
 				
+				//TODO this should be done generically in the refset view API, not CEM specific.
 				for (RefexVersionBI parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
 						

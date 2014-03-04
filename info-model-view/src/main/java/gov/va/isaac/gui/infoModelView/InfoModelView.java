@@ -28,6 +28,7 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import javafx.collections.ListChangeListener;
@@ -38,6 +39,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -55,6 +57,8 @@ import javafx.stage.Window;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -67,9 +71,11 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class InfoModelView implements PopupViewI, InfoModelViewI
 {
+	private final Logger logger = LoggerFactory.getLogger(InfoModelView.class);
 	private Stage stage;
 	private VBox root = new VBox();
 	private VBox refsetArea = new VBox();
+	private CheckBox activeOnly = new CheckBox("Active Only");
 	private Button configure = new Button("Configure...");
 	private Popup popup = new Popup();
 	private HashMap<String, Node> refsetsOnDisplay = new HashMap<>();
@@ -92,6 +98,10 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	@Override
 	public void setConcept(UUID conceptID)
 	{
+		if (this.conceptUUID != null)
+		{
+			throw new RuntimeException("Currently only supports being set once");
+		}
 		this.conceptUUID = conceptID;
 		
 		HBox h = new HBox();
@@ -122,14 +132,34 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 		h.getChildren().add(spacer);
+		activeOnly.setSelected(true);
+		
+		final ListView<String> list = new ListView<String>();
+		
+		h.getChildren().add(activeOnly);
+		activeOnly.setOnAction(new EventHandler<ActionEvent>()
+		{
+			//TODO this is pretty hackish... ideally, the refset view would be monitoring a property we pass in, 
+			//or maybe even a global property, and it would update itself.  But this should work for now...
+			@Override
+			public void handle(ActionEvent event)
+			{
+				refsetArea.getChildren().clear();
+				refsetsOnDisplay.clear();
+				for (String s : list.getSelectionModel().getSelectedItems())
+				{
+					addRefsetView(s);
+				}
+			}
+		});
 		h.getChildren().add(configure);
+
 	
 		BorderPane bp = new BorderPane();
 		bp.getStyleClass().add("itemBorder");
 		bp.setTop(new Label("Select Desired Model Elements"));
 		BorderPane.setMargin(bp.getTop(), new Insets(5, 5, 5, 5));
 		
-		final ListView<String> list = new ListView<String>();
 		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
@@ -174,28 +204,34 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 			}
 		}
 		
-		list.getSelectionModel().getSelectedIndices().addListener(new ListChangeListener<Integer>()
+		list.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>()
 		{
 			@Override
-			public void onChanged(Change<? extends Integer> c)
+			public void onChanged(Change<? extends String> c)
 			{
-				while (c.next())
+				//asking c for the remove and added sublists doesn't seem to work properly.
+				//manually compute what needs to change.  Sigh.
+				//TODO file a bug on JavaFX.  The old code here should have worked...
+				HashSet<String> all = new HashSet<>();
+				for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 				{
-					for (Integer i : c.getRemoved())
+					all.add(cs.getDescription());
+				}
+				
+				//Add the ones that we currently aren't showing
+				for (String s : list.getSelectionModel().getSelectedItems())
+				{
+					all.remove(s);
+					if (!refsetsOnDisplay.containsKey(s))
 					{
-						if (i >= 0)
-						{
-							removeRefsetView(list.getItems().get(i));
-						}
+						addRefsetView(s);
 					}
-					
-					for (Integer i : c.getAddedSubList())
-					{
-						if (i >= 0)
-						{
-							addRefsetView(list.getItems().get(i));
-						}
-					}
+				}
+				
+				//Anything that remains in the all list should _not_ be on display
+				for (String s : all)
+				{
+					removeRefsetView(s);
 				}
 			}
 		});
@@ -215,13 +251,14 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	
 	private void removeRefsetView(String name)
 	{
-		refsetArea.getChildren().remove(refsetsOnDisplay.get(name));
+		refsetArea.getChildren().remove(refsetsOnDisplay.remove(name));
 	}
 	
 	private Region getRefsetView(ConceptSpec refset)
 	{
 		RefsetViewI rv = AppContext.getService(RefsetViewI.class);
 		
+		rv.setViewActiveOnly(activeOnly.isSelected());
 		rv.setRefsetAndComponent(refset.getUuids()[0], conceptUUID);
 		Region r =  rv.getView();
 		r.getStyleClass().add("itemBorder");
@@ -232,6 +269,12 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	
 	protected void add(ConceptSpec refset)
 	{
+		if (refsetsOnDisplay.keySet().contains(refset.getDescription()))
+		{
+			logger.error("Who called add?");
+			return;
+		}
+		
 		Node n = getRefsetView(refset);
 		refsetsOnDisplay.put(refset.getDescription(), n);
 		refsetArea.getChildren().add(n);
