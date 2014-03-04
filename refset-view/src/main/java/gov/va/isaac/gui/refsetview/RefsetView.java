@@ -76,4 +76,14 @@ public class RefsetView implements RefsetViewI
 	{
 		rvc_.setRefsetAndComponent(refsetUUID, componentId);
 	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setViewActiveOnly(boolean)
+	 */
+	@Override
+	public void setViewActiveOnly(boolean activeOnly)
+	{
+		rvc_.setViewActiveOnly(activeOnly);
+		
+	}
 }

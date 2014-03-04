@@ -38,4 +38,11 @@ public interface RefsetViewI extends ViewI
 	 * Tell this view to display a particular refset
 	 */
 	public void setRefsetAndComponent(UUID refsetUUID, UUID componentUUID);
+	
+	/**
+	 * Tell this view to display activeOnly in the current view coordinate, or 
+	 * all values.  Implementations should default this value to true.
+	 * @param activeOnly
+	 */
+	public void setViewActiveOnly(boolean activeOnly);
 }
