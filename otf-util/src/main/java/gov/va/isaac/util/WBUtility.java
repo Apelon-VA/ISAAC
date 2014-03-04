@@ -361,7 +361,10 @@ public class WBUtility {
 
 	public static ViewCoordinate getViewCoordinate() {
 		try {
-			return StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+			ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+			vc.getAllowedStatus().add(Status.INACTIVE);
+			
+			return vc;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -373,8 +376,22 @@ public class WBUtility {
     		RefexChronicleBI refexChron = (RefexChronicleBI) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
-    			return (RefexVersionBI) refexChron.getVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest());
+				ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+				vc.getAllowedStatus().add(Status.INACTIVE);
+				
+				return (RefexVersionBI) refexChron.getVersion(vc);
 			}
+		} catch (Exception ex) {
+
+		}
+
+		return null;
+	}
+
+	public static RefexChronicleBI getAllVersionsRefsetMember(int nid) {
+		try {
+    		return (RefexChronicleBI) dataStore.getComponent(nid);
+
 		} catch (Exception ex) {
 
 		}
