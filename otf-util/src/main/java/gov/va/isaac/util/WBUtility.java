@@ -394,7 +394,7 @@ public class WBUtility {
 	public static void commit() {
 		try {
 			
-			if (changeSetCreated) {
+			if (!changeSetCreated) {
 				TerminologySnapshotDI ts = dataStore.getSnapshot(getViewCoordinate());
 				
 				String name = "user#1#" + UUID.randomUUID();
