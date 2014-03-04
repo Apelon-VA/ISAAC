@@ -399,8 +399,9 @@ public class WBUtility {
 				
 				String name = "user#1#" + UUID.randomUUID();
 				String tmpName = "user#0#" + UUID.randomUUID();
-				File mainFile = new File("C:\\Users\\yishai\\Desktop\\ISAAC\\" + name + ".eccs");
-				File tempFile = new File("C:\\Users\\yishai\\Desktop\\ISAAC\\" + tmpName + ".eccs");
+				//TODO fix OTF https://jira.ihtsdotools.org/browse/OTFISSUE-15
+				File mainFile = new File(name + ".eccs").getCanonicalFile();// new File("C:\\Users\\yishai\\Desktop\\ISAAC\\" + name + ".eccs");
+				File tempFile = new File(tmpName + ".eccs").getCanonicalFile(); //new File("C:\\Users\\yishai\\Desktop\\ISAAC\\" + tmpName + ".eccs");
 				System.out.println(mainFile.getAbsolutePath());
 				System.out.println(tempFile.getAbsolutePath());
 				ChangeSetGeneratorBI csFile = ts.createDtoChangeSetGenerator(mainFile, tempFile, ChangeSetGenerationPolicy.MUTABLE_ONLY);
