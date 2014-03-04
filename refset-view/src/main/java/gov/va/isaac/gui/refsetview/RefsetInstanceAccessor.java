@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RefsetInstanceAccessor {
 	
-	private static SimpleDateFormat sdf = new SimpleDateFormat();
+	private static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyy h:mm:ss a");
 	private static final Logger logger = LoggerFactory.getLogger(RefsetInstanceAccessor.class);
 
 	public static class RefsetInstance {

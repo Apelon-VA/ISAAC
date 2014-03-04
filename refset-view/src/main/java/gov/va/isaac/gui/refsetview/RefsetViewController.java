@@ -39,6 +39,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -103,7 +104,7 @@ public class RefsetViewController {
 					reloadData();
 				}
 			});
-		}
+	}
 	
 	public AnchorPane getRoot() {
 		return refsetAnchor;
@@ -203,7 +204,7 @@ public class RefsetViewController {
 
 	private void handleComplexRefset(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) {
 		if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
-			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
+			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 			refsetType = member.getRefexType();
 		}
 		
@@ -220,7 +221,7 @@ public class RefsetViewController {
 			//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected 
 			//from the data in the table, so it can take into account multiple refex types.
 			if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
-				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
+				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 				refsetType = member.getRefexType();
 			}
 

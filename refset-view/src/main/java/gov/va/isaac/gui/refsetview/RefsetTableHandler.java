@@ -79,11 +79,13 @@ public class RefsetTableHandler {
 	private boolean isAnnotation;
 	private RefsetViewController rvc_;
 	private boolean isSetupFinished_ = false;
+	private int refsetNid ;
 	
-	protected void finishTableSetup(RefexChronicleBI<?> member, final boolean annotationValue, final TableView<RefsetInstance> refsetRows, ConceptVersionBI refCompSetupCon) {
+	protected void finishTableSetup(RefexChronicleBI<?> member, final boolean annotationValue, final TableView<RefsetInstance> refsetRows, ConceptVersionBI refCompSetupCon, int rNid) {
 		isSetupFinished_ = true;
 		refsetType = member.getRefexType();
 		isAnnotation = annotationValue;
+		refsetNid = rNid;
 		
 		try {
 			if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid()) {
@@ -201,7 +203,29 @@ public class RefsetTableHandler {
 						StrExtRefsetInstance instance = (StrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						instance.setStrExt(t.getNewValue());
 						
-						bp = createBlueprint(instance.getMemberNid());
+						if (WBUtility.getRefsetMember(instance.getMemberNid()) == null) {
+							RefexCAB newMember = new RefexCAB(RefexType.STR, instance.getRefCompConNid(), refsetNid, IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
+
+							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
+							
+							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
+							instance.setMemberNid(newMemChron.getNid());
+							
+							
+							ConceptVersionBI refCompCon;
+							if (!isAnnotation) {
+								refCompCon = WBUtility.lookupSnomedIdentifierAsCV(instance.getRefCompConNid());
+							} else {
+								refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refsetNid);
+							}
+							refCompCon.addAnnotation(newMemChron);
+							
+							WBUtility.addUncommitted(instance.getRefCompConNid());
+							rvc_.reloadData();
+							return;
+						} else {
+							bp = createBlueprint(instance.getMemberNid());
+						}
 					} else if (columnNumber == 2) {
 						NidStrExtRefsetInstance instance = (NidStrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						instance.setStrExt(t.getNewValue());
@@ -234,6 +258,7 @@ public class RefsetTableHandler {
 							compositeMember.addAnnotation(newMemChron);
 							
 							WBUtility.addUncommitted(instance.getRefCompConNid());
+							rvc_.reloadData();
 							return;
 						} else {
 							bp = createBlueprint(instance.getValueMemberNid());
@@ -270,7 +295,6 @@ public class RefsetTableHandler {
 					return;
 				}
 
-				RefsetInstance genericInstance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 				ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
 				if (comp == null) {
 					AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
@@ -284,11 +308,33 @@ public class RefsetTableHandler {
 						{
 							if (columnNumber == 1) {
 								NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-								instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
-								instance.setCidExtUuid(comp.getPrimordialUuid());
+								if (WBUtility.getRefsetMember(instance.getMemberNid()) == null) {
+									RefexCAB newMember = new RefexCAB(RefexType.CID, instance.getRefCompConNid(), refsetNid, IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
-								bp = createBlueprint(instance.getMemberNid());
-								bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
+									newMember.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
+									
+									RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
+									instance.setMemberNid(newMemChron.getNid());
+									
+									
+									ConceptVersionBI refCompCon;
+									if (!isAnnotation) {
+										refCompCon = WBUtility.lookupSnomedIdentifierAsCV(instance.getRefCompConNid());
+									} else {
+										refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refsetNid);
+									}
+									refCompCon.addAnnotation(newMemChron);
+									
+									WBUtility.addUncommitted(instance.getRefCompConNid());
+									rvc_.reloadData();
+									return;
+								} else {
+									instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
+									instance.setCidExtUuid(comp.getPrimordialUuid());
+	
+									bp = createBlueprint(instance.getMemberNid());
+									bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
+								}
 							}
 						}
 						
@@ -335,6 +381,7 @@ public class RefsetTableHandler {
 								try {
 									instance.setRefCompConFsn(comp.getFullySpecifiedDescription().getText());
 									instance.setRefCompConUuid(comp.getPrimordialUuid());
+									instance.setRefCompConNid(comp.getNid());
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -362,7 +409,7 @@ public class RefsetTableHandler {
 				  FXCollections.copy(refsetRows.getColumns(), origCols);
 
 				  refsetRows.getColumns().clear();
-				  refsetRows.getColumns().addAll(origCols);
++				  refsetRows.getColumns().addAll(origCols);
 			  }
 			}
 		});
