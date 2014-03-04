@@ -106,12 +106,19 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		this.conceptUUID = conceptID;
 		
 		HBox h = new HBox();
-		h.getStyleClass().add("itemBorder");
+		h.setPadding(new Insets(5, 5, 5, 5));
+		h.getStyleClass().add("headerBackground");
 		
-		h.getChildren().add(new Label("Clinical Element Model"));
+		Label title = new Label("Clinical Element Model");
+		h.getChildren().add(title);
+		title.getStyleClass().add("boldLabel");
+		HBox.setMargin(title, new Insets(4, 0, 0, 0));
+		
 		Label l = new Label(WBUtility.getDescription(conceptUUID));
-		HBox.setMargin(l, new Insets(0, 0, 0, 10));
+		HBox.setMargin(l, new Insets(4, 0, 0, 10));
 		h.getChildren().add(l);
+		
+		final ListView<String> list = new ListView<String>();
 		
 		configure.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -133,11 +140,9 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 		h.getChildren().add(spacer);
-		activeOnly.setSelected(true);
-		
-		final ListView<String> list = new ListView<String>();
 		
 		h.getChildren().add(activeOnly);
+		HBox.setMargin(activeOnly, new Insets(4, 0, 0, 5));
 		activeOnly.setOnAction(new EventHandler<ActionEvent>()
 		{
 			//TODO this is pretty hackish... ideally, the refset view would be monitoring a property we pass in, 
@@ -153,8 +158,8 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 				}
 			}
 		});
+		activeOnly.setSelected(true);
 		h.getChildren().add(configure);
-
 	
 		BorderPane bp = new BorderPane();
 		bp.getStyleClass().add("itemBorder");
