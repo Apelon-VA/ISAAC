@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.infoModelView;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.DragResizer;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
@@ -275,9 +276,10 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 			return;
 		}
 		
-		Node n = getRefsetView(refset);
-		refsetsOnDisplay.put(refset.getDescription(), n);
-		refsetArea.getChildren().add(n);
+		Region r = getRefsetView(refset);
+		DragResizer.makeResizable(r);
+		refsetsOnDisplay.put(refset.getDescription(), r);
+		refsetArea.getChildren().add(r);
 	}
 
 	/**
