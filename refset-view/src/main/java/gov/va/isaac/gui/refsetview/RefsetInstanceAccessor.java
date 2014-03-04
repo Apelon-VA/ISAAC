@@ -75,7 +75,6 @@ public class RefsetInstanceAccessor {
 					this.time = sdf.format(new Date(member.getTime()));
 					try
 					{
-						System.out.println(member.isActive());
 						this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
 					}
 					catch (Exception e1)
