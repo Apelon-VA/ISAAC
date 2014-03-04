@@ -48,8 +48,12 @@ public class CEMMetadataBinding {
             "f0ca1b2f-4616-5596-b6a2-d86355ef177b");
 
     public static ConceptSpec CEM_CONSTRAINTS_VALUE_REFSET
-            = new ConceptSpec("CEM constraints value reference set (foundation metadata concept)",
-            "46a7a28a-8fc6-5b31-8a4e-ae7b00729456");
+    		= new ConceptSpec("CEM constraints value reference set (foundation metadata concept)",
+			"46a7a28a-8fc6-5b31-8a4e-ae7b00729456");
+
+    public static ConceptSpec CEM_VALUE_REFSET
+    		= new ConceptSpec("CEM value reference set (foundation metadata concept)",
+			"AAA81c5fc48-da1f-50f5-8440-5a2fa850ad73");
 
     public static ConceptSpec CEM_ATTRIBUTES
             = new ConceptSpec("CEM attributes (foundation metadata concept)",
@@ -100,9 +104,6 @@ public class CEMMetadataBinding {
              allConceptSpec.add(CEM_TYPE_REFSET);
              allConceptSpec.add(CEM_INFO_REFSET);
              allConceptSpec.add(CEM_COMPOSITION_REFSET);
-             allConceptSpec.add(CEM_CONSTRAINTS_REFSET);
-             allConceptSpec.add(CEM_CONSTRAINTS_PATH_REFSET);
-             allConceptSpec.add(CEM_CONSTRAINTS_VALUE_REFSET);
 
              return allConceptSpec;
          }

@@ -74,7 +74,8 @@ public class CEMMetadataCreator extends ImporterBase {
         ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRefset, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
         ConceptChronicleBI CEMConstraintPath = createNewConcept(CEMRefset, "CEM constraints path reference set (foundation metadata concept)", "CEM constraint path");
         ConceptChronicleBI CEMConstraintValue = createNewConcept(CEMRefset, "CEM constraints value reference set (foundation metadata concept)", "CEM constraint value");
-
+        ConceptChronicleBI CEMValue = createNewConcept(CEMRefset, "CEM value reference set (foundation metadata concept)", "CEM constraint path");
+        
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_ROOT));
         ConceptChronicleBI CEMAttributes = createNewConcept(attributesRoot, "CEM attributes (foundation metadata concept)", "CEM attributes");
 
@@ -181,7 +182,7 @@ public class CEMMetadataCreator extends ImporterBase {
         LOG.info("Metadata creation finished");
     }
 
-    private ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
+	private ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {
         List<ConceptChronicleBI> oneParent = new ArrayList<ConceptChronicleBI>();
         oneParent.add(parent);
