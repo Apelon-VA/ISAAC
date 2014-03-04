@@ -18,15 +18,14 @@
  */
 package gov.va.isaac.models.util;
 
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 
 import javax.inject.Inject;
 
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
-import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
@@ -51,14 +50,10 @@ public class CommonBase {
     }
 
     protected final EditCoordinate getEC() throws ValidationException, IOException {
-        int authorNid = TermAux.USER.getLenient().getConceptNid();
-        int module = Snomed.CORE_MODULE.getLenient().getNid();
-        int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
-
-        return new EditCoordinate(authorNid, module, editPathNid);
+        return WBUtility.getEC();
     }
 
     protected final ViewCoordinate getVC() throws IOException {
-        return StandardViewCoordinates.getSnomedStatedLatest();
+        return WBUtility.getViewCoordinate();
     }
 }
