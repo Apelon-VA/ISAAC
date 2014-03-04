@@ -176,6 +176,11 @@ public class RefsetInstanceAccessor {
 			return status;
 		}
 
+		public void setStatus(String s)
+		{
+			status = s;
+		}
+
 		/**
 		 * @return the time
 		 */

@@ -26,21 +26,32 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Callback;
 
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -50,9 +61,12 @@ import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.omg.PortableInterceptor.INACTIVE;
+
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -355,32 +369,74 @@ public class RefsetTableHandler {
 */		 
 	}
 	
+	@SuppressWarnings("unchecked")
 	private TableColumn createStampColumn() {
+		final ObservableList<Status> statusList = FXCollections.observableArrayList(Status.ACTIVE, Status.INACTIVE);
+
 		TableColumn col = new TableColumn("STAMP");
 		
 		TableColumn status = new TableColumn("Status");
-		status.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("status"));
-		status.setCellFactory(TextFieldTableCell.forTableColumn());
+		status.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RefsetInstance, String>, ObservableValue<String>>() {
+			@Override 
+			public ObservableValue<String> call(CellDataFeatures<RefsetInstance, String> cdf) {
+				return new ReadOnlyObjectWrapper<String>(cdf.getValue().getStatus());
+			}
+		});
+		status.setCellFactory(ComboBoxTableCell.<RefsetInstance, Status>forTableColumn(statusList));
+		status.setOnEditCommit(new EventHandler<CellEditEvent<RefsetInstance, Status>>() {
+			@Override
+			public void handle(CellEditEvent<RefsetInstance, Status> t) {
+				RefsetInstance instance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+				try {
+					if (!isLatestVersion(instance)) {
+						// TODO throw dialog
+					} else {
+						instance.setStatus(t.getNewValue().toString());
+						RefexCAB bp = createBlueprint(instance.getMemberNid());
+						bp.setStatus(t.getNewValue());
+						commitUpdate(bp, isAnnotation);
+						rvc_.reloadData();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+			private boolean isLatestVersion(RefsetInstance instance) throws ContradictionException {
+ 				RefexChronicleBI refChron = WBUtility.getAllVersionsRefsetMember(instance.getMemberNid());
+				RefexVersionBI refVersion = WBUtility.getRefsetMember(instance.getMemberNid());
+				
+				if (refChron.getVersion(WBUtility.getViewCoordinate()).getStamp() == refVersion.getStamp()) {
+					return true;
+				}
+				
+				return false;
+			}
+		});
 		col.getColumns().add(status);
 		
 		TableColumn time = new TableColumn("Time");
 		time.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("time"));
 		time.setCellFactory(TextFieldTableCell.forTableColumn());
+		time.setEditable(false);
 		col.getColumns().add(time);
 		
 		TableColumn author = new TableColumn("Author");
 		author.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("author"));
 		author.setCellFactory(TextFieldTableCell.forTableColumn());
+		author.setEditable(false);
 		col.getColumns().add(author);
 		
 		TableColumn module = new TableColumn("Module");
 		module.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("module"));
 		module.setCellFactory(TextFieldTableCell.forTableColumn());
+		module.setEditable(false);
 		col.getColumns().add(module);
 		
 		TableColumn path = new TableColumn("Path");
 		path.setCellValueFactory(new PropertyValueFactory<RefsetInstance,String>("path"));
 		path.setCellFactory(TextFieldTableCell.forTableColumn());
+		path.setEditable(false);
 		col.getColumns().add(path);
 		
 		
