@@ -72,7 +72,7 @@ public class RefsetInstanceAccessor {
 				{
 					this.status = member.getStatus().toString();
 					
-					this.time = sdf.format(new Date(member.getTime()));
+					this.time = (member.isUncommitted() ? "Uncommitted" : sdf.format(new Date(member.getTime())));
 					try
 					{
 						this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
