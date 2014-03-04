@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.refsetview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidExtRefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidStrExtRefsetInstance;
@@ -26,13 +27,21 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
+import java.util.UUID;
+
 import javafx.event.EventHandler;
+import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
@@ -240,38 +249,39 @@ public class RefsetTableHandler {
 		col.setOnEditCommit(new EventHandler<CellEditEvent<RefsetInstance, String>>() {
 			@Override
 			public void handle(CellEditEvent<RefsetInstance, String> t) {
+				try {
+					UUID value = UUID.fromString(t.getNewValue());
+				} catch (Exception e) {
+					AppContext.getCommonDialogs().showErrorDialog("Invalid UUID", "Value requested is not a valid UUID", t.getNewValue());
+					return;
+				}
+
 				RefsetInstance genericInstance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-				if (columnNumber == 0 && genericInstance.getMemberNid() != 0) {
-					// TODO Raise dialog box saying cannot change existing RefComp
-					t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefCompConFsn(genericInstance.getRefCompConFsn());
+				ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
+				if (comp == null) {
+					AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 				} else {
-					
-					ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
-					if (comp == null) {
-						// TODO Raise dialog box saying cannot locate Component
-					} else {
-						try {
-							RefexCAB bp = null;
-							
-							if (refsetType == RefexType.CID ||
-								refsetType == RefexType.CID_STR ||
-								refsetType == RefexType.UNKNOWN)
-							{
-								if (columnNumber == 1) {
-									NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-									instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
-									instance.setCidExtUuid(comp.getPrimordialUuid());
-	
-									bp = createBlueprint(instance.getMemberNid());
-									bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
-								}
+					try {
+						RefexCAB bp = null;
+						
+						if (refsetType == RefexType.CID ||
+							refsetType == RefexType.CID_STR ||
+							refsetType == RefexType.UNKNOWN)
+						{
+							if (columnNumber == 1) {
+								NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
+								instance.setCidExtFsn(comp.getFullySpecifiedDescription().getText());
+								instance.setCidExtUuid(comp.getPrimordialUuid());
+
+								bp = createBlueprint(instance.getMemberNid());
+								bp.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
 							}
-							
-							commitUpdate(bp, isAnnotation);
-							rvc_.reloadData();
-						} catch (ContradictionException | InvalidCAB | IOException e) {
-							e.printStackTrace();
 						}
+						
+						commitUpdate(bp, isAnnotation);
+						rvc_.reloadData();
+					} catch (ContradictionException | InvalidCAB | IOException e) {
+						e.printStackTrace();
 					}
 				}
 			}
@@ -292,15 +302,21 @@ public class RefsetTableHandler {
 			//TODO this doesn't seem to update the WB DB
 					@Override
 					public void handle(CellEditEvent<RefsetInstance, String> t) {
+						try {
+							UUID value = UUID.fromString(t.getNewValue());
+						} catch (Exception e) {
+							AppContext.getCommonDialogs().showErrorDialog("Invalid UUID", "Value requested is not a valid UUID", t.getNewValue());
+							return;
+						}
+
 						RefsetInstance instance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						
 						if (instance.getMemberNid() != 0) {
-							// TODO Raise dialog box saying cannot change existing RefComp
-							t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefCompConFsn(instance.getRefCompConFsn());
+							AppContext.getCommonDialogs().showErrorDialog("Illegal Operation", "Cannot modify the reference component of an existing refset member", "");
 						} else {
 							ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
 							if (comp == null) {
-								// TODO Raise dialog box saying cannot locate Component
+								AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 							} else {
 								try {
 									instance.setRefCompConFsn(comp.getFullySpecifiedDescription().getText());
