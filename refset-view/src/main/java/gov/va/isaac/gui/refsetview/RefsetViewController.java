@@ -166,6 +166,8 @@ public class RefsetViewController {
 				{
 					memberVersion.addAll(memChron.getVersions());
 				}
+				RefexVersionBI previousMember = null;
+				
 				for (RefexVersionBI member : memberVersion)
 				{
 					ConceptVersionBI refCompCon;
@@ -179,10 +181,12 @@ public class RefsetViewController {
 					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
 					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
 						member.getAssemblageNid() == refset.getNid()) {
-						handleComplexRefset(member, refCompCon);
+						handleComplexRefset(member, previousMember, refCompCon);
 					} else {
-						processMembers(member, refCompCon);
+						processMembers(member, previousMember, refCompCon);
 					}
+					
+					previousMember = member;
 				}
 			}
 		} catch (Exception e) {
@@ -193,19 +197,19 @@ public class RefsetViewController {
 	}
 
 
-	private void handleComplexRefset(RefexVersionBI member, ConceptVersionBI refCompCon) {
+	private void handleComplexRefset(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) {
 		if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
 			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
 			refsetType = member.getRefexType();
 		}
 		
 		// Have needed member, add to data
-		CEMCompositRefestInstance instance = (CEMCompositRefestInstance)RefsetInstanceAccessor.getInstance(refCompCon, member, RefexType.UNKNOWN);
+		CEMCompositRefestInstance instance = (CEMCompositRefestInstance)RefsetInstanceAccessor.getInstance(refCompCon, member, previousMember, RefexType.UNKNOWN);
 		
 		data.add(instance);
 	}
 
-	private void processMembers(RefexVersionBI member, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
+	private void processMembers(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
 		if (member.getAssemblageNid() == refsetNid_) {
 			// Setup if Necessary
 			//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
@@ -217,7 +221,7 @@ public class RefsetViewController {
 			}
 
 			// Have needed member, add to data
-			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCompCon, member, refsetType);
+			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCompCon, member, previousMember, refsetType);
 			data.add(instance);
 		}
 
@@ -232,9 +236,13 @@ public class RefsetViewController {
 			else {
 				annotVersions.addAll((Collection<? extends RefexVersionBI>) annot.getVersions());
 			}
+			
+			RefexVersionBI prevAnnotVersion = null;
 			for (RefexVersionBI annotVersion : annotVersions)
 			{
-				processMembers(annotVersion, refCompCon);
+				processMembers(annotVersion, prevAnnotVersion, refCompCon);
+				
+				prevAnnotVersion = annotVersion;
 			}
 		}
 	}
