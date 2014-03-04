@@ -236,7 +236,7 @@ public class RefsetTableHandler {
 			@Override
 			public void handle(CellEditEvent<RefsetInstance, String> t) {
 				RefsetInstance genericInstance = (RefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-				if (genericInstance.getMemberNid() != 0) {
+				if (columnNumber == 0 && genericInstance.getMemberNid() != 0) {
 					// TODO Raise dialog box saying cannot change existing RefComp
 					t.getTableView().getItems().get(t.getTablePosition().getRow()).setRefCompConFsn(genericInstance.getRefCompConFsn());
 				} else {
@@ -365,7 +365,7 @@ public class RefsetTableHandler {
 	}
 
 	private static RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
-		RefexStringVersionBI refex = (RefexStringVersionBI)WBUtility.getRefsetMember(nid);
+		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(nid);
 		
 		return refex.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
 	
