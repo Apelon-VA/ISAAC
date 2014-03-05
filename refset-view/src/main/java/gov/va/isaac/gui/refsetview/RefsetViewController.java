@@ -39,6 +39,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -103,7 +104,7 @@ public class RefsetViewController {
 					reloadData();
 				}
 			});
-		}
+	}
 	
 	public AnchorPane getRoot() {
 		return refsetAnchor;
@@ -160,7 +161,11 @@ public class RefsetViewController {
 				List<RefexVersionBI> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					memberVersion.add(memChron.getVersion(vc));
+					RefexVersionBI version = memChron.getVersion(vc);
+					
+					if (version.isActive()) {
+						memberVersion.add(version);
+					}
 				}
 				else
 				{
@@ -199,7 +204,7 @@ public class RefsetViewController {
 
 	private void handleComplexRefset(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) {
 		if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
-			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
+			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 			refsetType = member.getRefexType();
 		}
 		
@@ -216,7 +221,7 @@ public class RefsetViewController {
 			//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected 
 			//from the data in the table, so it can take into account multiple refex types.
 			if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
-				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
+				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 				refsetType = member.getRefexType();
 			}
 
@@ -231,7 +236,10 @@ public class RefsetViewController {
 			List<RefexVersionBI> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				annotVersions.add((RefexVersionBI) annot.getVersion(vc));
+				RefexVersionBI version = (RefexVersionBI) annot.getVersion(vc);
+				if (version.isActive()) {
+					annotVersions.add(version);
+				}
 			}
 			else {
 				annotVersions.addAll((Collection<? extends RefexVersionBI>) annot.getVersions());
