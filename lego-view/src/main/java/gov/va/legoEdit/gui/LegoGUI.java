@@ -25,10 +25,8 @@ import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Singleton;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -38,8 +36,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,19 +98,6 @@ public class LegoGUI extends Application implements PopupViewI
 		return idc.getImportedLegoListsIDs();
 	}
 
-	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, IOException
-	{
-		System.out.println("Launching");
-		AppContext.setup();
-		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
-		Field f = Hk2Looker.class.getDeclaredField("looker");
-		f.setAccessible(true);
-		f.set(null, AppContext.getServiceLocator());
-		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getAbsolutePath());
-		launch(args);
-	}
-	
-	
 //	public static void shutdown()
 //	{
 //		Hk2Looker.get().getService(BdbTerminologyStore.class).shutdown();
