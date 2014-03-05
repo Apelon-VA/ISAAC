@@ -1,3 +1,21 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
@@ -9,7 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.ihtsdo.otf.tcc.api.blueprint.RefexCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
@@ -26,7 +43,6 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
 import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
@@ -37,7 +53,6 @@ import org.ihtsdo.otf.tcc.ddo.concept.component.description.DescriptionVersionDd
 import org.ihtsdo.otf.tcc.ddo.concept.component.refex.RefexChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.refex.type_comp.RefexCompVersionDdo;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
-import org.ihtsdo.otf.tcc.model.cc.termstore.TerminologySnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,18 +65,18 @@ public class WBUtility {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
-    private static final UUID ID_UUID = TermAux.SNOMED_IDENTIFIER.getUuids()[0]; //SNOMED integer id
-    private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
-    private static final UUID PREFERRED_UUID = SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0];
-    private static final UUID SYNONYM_UUID = SnomedMetadataRf2.SYNONYM_RF2.getUuids()[0];
+	private static final UUID ID_UUID = TermAux.SNOMED_IDENTIFIER.getUuids()[0]; //SNOMED integer id
+	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
+	private static final UUID PREFERRED_UUID = SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0];
+	private static final UUID SYNONYM_UUID = SnomedMetadataRf2.SYNONYM_RF2.getUuids()[0];
 
 	private static Integer fsnTypeNid = null;
 	private static Integer preferredNid = null;
 	private static Integer synonymNid = null;
 
-    private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-    private static TerminologyBuilderBI dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
-    private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
+	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+	private static TerminologyBuilderBI dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
+	private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
 	private static String useFSN = "useFSN";
 
 	private static EditCoordinate editCoord;
@@ -71,15 +86,15 @@ public class WBUtility {
 	public static TerminologyBuilderBI getBuilder() {
 		return dataBuilder;
 	}
-    
-    public static EditCoordinate getEC()  {
+	
+	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-                int authorNid   = TermAux.USER.getLenient().getConceptNid();
+				int authorNid   = TermAux.USER.getLenient().getConceptNid();
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
-                int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
-                
-                editCoord =  new EditCoordinate(authorNid, module, editPathNid);
+				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
+				
+				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -91,7 +106,7 @@ public class WBUtility {
 
 	public static String getDescription(UUID uuid) {
 		try {
-            ConceptVersionBI conceptVersion = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
+			ConceptVersionBI conceptVersion = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
 			return getDescription(conceptVersion);
 		} catch (Exception ex) {
 			LOG.warn("Unexpected error looking up description", ex);
@@ -100,8 +115,8 @@ public class WBUtility {
 	}
 
 	/**
-     * Note, this method isn't smart enough to work with multiple versions properly....
-     * assumes you only pass in a concept with current values.
+	 * Note, this method isn't smart enough to work with multiple versions properly....
+	 * assumes you only pass in a concept with current values.
 	 */
 	public static String getDescription(ConceptVersionBI concept) {
 		String fsn = null;
@@ -125,9 +140,9 @@ public class WBUtility {
 						} else {
 							bestFound = descVer.getText();
 						}
-                    } else if (descVer.getTypeNid() == getSynonymTypeNid() && isPreferred(descVer.getAnnotations())) {
+					} else if (descVer.getTypeNid() == getSynonymTypeNid() && isPreferred(descVer.getAnnotations())) {
 						if (descVer.getStatus() == Status.ACTIVE) {
-                            if (! userPrefs.getBoolean(useFSN, true)) {
+							if (! userPrefs.getBoolean(useFSN, true)) {
 								return descVer.getText();
 							} else {
 								preferred = descVer.getText();
@@ -165,7 +180,7 @@ public class WBUtility {
 			try {
 				synonymNid = dataStore.getNidForUuids(SYNONYM_UUID);
 			} catch (IOException ex) {
-                LOG.error("Could not find nid for synonymNid UUID: " + SYNONYM_UUID, ex);
+				LOG.error("Could not find nid for synonymNid UUID: " + SYNONYM_UUID, ex);
 				synonymNid = -1;
 			}
 		}
@@ -178,7 +193,7 @@ public class WBUtility {
 			try {
 				preferredNid = dataStore.getNidForUuids(PREFERRED_UUID);
 			} catch (IOException ex) {
-                LOG.error("Could not find nid for Preferred UUID: " + PREFERRED_UUID, ex);
+				LOG.error("Could not find nid for Preferred UUID: " + PREFERRED_UUID, ex);
 				preferredNid = -1;
 			}
 		}
@@ -186,10 +201,10 @@ public class WBUtility {
 	}
 
 
-    private static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
+	private static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
 		for (RefexChronicleBI<?> rc : collection) {
 			if (rc.getRefexType() == RefexType.CID) {
-                int nid1 = ((NidMember) rc).getNid1();  // RefexType.CID means NidMember.
+				int nid1 = ((NidMember) rc).getNid1();  // RefexType.CID means NidMember.
 				if (nid1 == getPreferredTypeNid()) {
 					return true;
 				}
@@ -213,7 +228,7 @@ public class WBUtility {
 		String preferred = null;
 		String bestFound = null;
 		for (DescriptionChronicleDdo d : concept.getDescriptions()) {
-            DescriptionVersionDdo dv = d.getVersions().get(d.getVersions().size() - 1);
+			DescriptionVersionDdo dv = d.getVersions().get(d.getVersions().size() - 1);
 			if (dv.getTypeReference().getUuid().equals(FSN_UUID)) {
 				if (dv.getStatus() == Status.ACTIVE) {
 					if (userPrefs.getBoolean(useFSN, true)) {
@@ -225,8 +240,8 @@ public class WBUtility {
 					bestFound = dv.getText();
 				}
 			} else if (dv.getTypeReference().getUuid().equals(SYNONYM_UUID)) {
-                if ((dv.getStatus() == Status.ACTIVE) && isPreferred(dv.getAnnotations())) {
-                    if (! userPrefs.getBoolean(useFSN, true)) {
+				if ((dv.getStatus() == Status.ACTIVE) && isPreferred(dv.getAnnotations())) {
+					if (! userPrefs.getBoolean(useFSN, true)) {
 						return dv.getText();
 					} else {
 						preferred = dv.getText();
@@ -247,7 +262,7 @@ public class WBUtility {
 		for (RefexChronicleDdo<?, ?> frc : annotations) {
 			for (Object version : frc.getVersions()) {
 				if (version instanceof RefexCompVersionDdo) {
-                    UUID uuid = ((RefexCompVersionDdo<?, ?>) version).getComp1Ref().getUuid();
+					UUID uuid = ((RefexCompVersionDdo<?, ?>) version).getComp1Ref().getUuid();
 					return uuid.equals(PREFERRED_UUID);
 				}
 			}
@@ -256,8 +271,8 @@ public class WBUtility {
 	}
 
 	/**
-     * Creates a {@link UUID} from the {@code identifier} parameter and
-     * calls {@link #lookupSnomedIdentifierAsCV(UUID)}.
+	 * Creates a {@link UUID} from the {@code identifier} parameter and
+	 * calls {@link #lookupSnomedIdentifierAsCV(UUID)}.
 	 */
 	public static ConceptVersionBI lookupSnomedIdentifierAsCV(String identifier) {
 		LOG.debug("WB DB String Lookup '" + identifier + "'");
@@ -293,7 +308,7 @@ public class WBUtility {
 			// dataStore#getConceptVersionFromAlternateId seems broke after
 			// the DB update, make the UUID myself instead.
 			try {
-        		UUID alternateUUID = UuidFactory.getUuidFromAlternateId(ID_UUID, conceptUUID.toString().trim());
+				UUID alternateUUID = UuidFactory.getUuidFromAlternateId(ID_UUID, conceptUUID.toString().trim());
 
 				// Try again.
 				result = getConceptVersion(alternateUUID);
@@ -306,13 +321,11 @@ public class WBUtility {
 
 	private static ConceptVersionBI getConceptVersion(UUID uuid) {
 		try {
-            ConceptVersionBI result = dataStore.getConceptVersion(
-                    StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
+			ConceptVersionBI result = dataStore.getConceptVersion(
+					StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
 
-			// This is garbage that the WB API invented. Nothing like an
-			// undocumented getter which, rather than returning null when
-			// the thing
-			// you are asking for doesn't exist - it goes off and returns
+			// Nothing like an undocumented getter which, rather than returning null when
+			// the thing you are asking for doesn't exist - it goes off and returns
 			// essentially a new, empty, useless node. Sigh.
 			if (result.getUUIDs().size() == 0) {
 				return null;
@@ -324,16 +337,14 @@ public class WBUtility {
 		}
 		return null;
 	}
-    
+	
 	private static ConceptVersionBI getConceptVersion(int nid) {
 		try {
-            ConceptVersionBI result = dataStore.getConceptVersion(
-                    StandardViewCoordinates.getSnomedInferredThenStatedLatest(), nid);
+			ConceptVersionBI result = dataStore.getConceptVersion(
+					StandardViewCoordinates.getSnomedInferredThenStatedLatest(), nid);
 
-			// This is garbage that the WB API invented. Nothing like an
-			// undocumented getter which, rather than returning null when
-			// the thing
-			// you are asking for doesn't exist - it goes off and returns
+			// Nothing like an undocumented getter which, rather than returning null when
+			// the thing you are asking for doesn't exist - it goes off and returns
 			// essentially a new, empty, useless node. Sigh.
 			if (result.getUUIDs().size() == 0) {
 				return null;
@@ -371,29 +382,29 @@ public class WBUtility {
 		}
 	}
 
-	public static RefexVersionBI getRefsetMember(int nid) {
+	public static RefexVersionBI<?> getRefsetMember(int nid) {
 		try {
-    		RefexChronicleBI refexChron = (RefexChronicleBI) dataStore.getComponent(nid);
+			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
 				ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
 				vc.getAllowedStatus().add(Status.INACTIVE);
 				
-				return (RefexVersionBI) refexChron.getVersion(vc);
+				return refexChron.getVersion(vc);
 			}
 		} catch (Exception ex) {
-
+			LOG.warn("perhaps unexpected?", ex);
 		}
 
 		return null;
 	}
 
-	public static RefexChronicleBI getAllVersionsRefsetMember(int nid) {
+	public static RefexChronicleBI<?> getAllVersionsRefsetMember(int nid) {
 		try {
-    		return (RefexChronicleBI) dataStore.getComponent(nid);
+			return (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 		} catch (Exception ex) {
-
+			LOG.warn("perhaps unexpected?", ex);
 		}
 
 		return null;
@@ -403,8 +414,8 @@ public class WBUtility {
 		try {
 			dataStore.commit(con);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("commit failure", e);
 		}
 	}
 
@@ -429,8 +440,8 @@ public class WBUtility {
 			
 			dataStore.commit();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("commit failure", e);
 		}
 	}
 
@@ -438,8 +449,8 @@ public class WBUtility {
 		try {
 			dataStore.addUncommitted(con);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
 		}
 	}
 
@@ -448,8 +459,8 @@ public class WBUtility {
 			ConceptVersionBI con = lookupSnomedIdentifierAsCV(nid);
 			dataStore.addUncommitted(con);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
 		}
 	}
 
@@ -458,8 +469,8 @@ public class WBUtility {
 			ConceptVersionBI con = lookupSnomedIdentifierAsCV(uid);
 			dataStore.addUncommitted(con);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
 		}
 	}
 }
