@@ -32,7 +32,6 @@ import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
-
 /**
  * Abstract superclass for metadata creators.
  *
@@ -47,7 +46,26 @@ public abstract class MetadataCreator extends ImporterBase {
     protected static final String REFSET_CONCEPT = "7e38cd2d-6f1a-3a81-be0b-21e6090573c2";
     protected static final String REFSET_ATTRIBUTE_CONCEPT = "7e52203e-8a35-3121-b2e7-b783b34d97f2";
 
-    public abstract void createMetadata() throws Exception;
+    /**
+     * Concrete subclasses should implement to create metadata if it does not
+     * already exist.  Return value should indicate as appropriate.
+     * @return {@code true} if metadata was created, or {@code false} if metadata
+     * already existed and so creation was bypassed.
+     * @throws Exception if there is a problem creating metadata.
+     */
+    public abstract boolean createMetadata() throws Exception;
+
+    /**
+     * @return The {@link ConceptChronicleBI} for the specified {@link UUID},
+     * or {@code null} if it has not yet been created.
+     */
+    protected ConceptChronicleBI getConcept(UUID uuid) throws IOException {
+        ConceptChronicleBI concept = getDataStore().getConcept(uuid);
+        if (concept.getDescriptions().size() == 0) {
+            return null;
+        }
+        return concept;
+    }
 
     protected ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {

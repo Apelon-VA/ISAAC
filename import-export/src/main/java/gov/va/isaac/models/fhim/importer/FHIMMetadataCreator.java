@@ -44,21 +44,46 @@ public class FHIMMetadataCreator extends MetadataCreator {
 
     @Override
     @SuppressWarnings("unused")
-    public void createMetadata() throws Exception {
-        LOG.info("Preparing to create metadata");
+    public boolean createMetadata() throws Exception {
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
 
-        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_CONCEPT));
-        LOG.info("Refsets root:" + refsetsRoot.toString());
+        // Check if metadata already created.
+        ConceptChronicleBI FHIMRefsets = getConcept(FHIMMetadataBinding.FHIM_REFSET.getUuids()[0]);
+        if (FHIMRefsets != null) {
+            LOG.info("FHIM metadata already created.");
+            return false;
+        }
 
-        ConceptChronicleBI FHIMRefset = createNewConcept(refsetsRoot, "FHIM reference sets (foundation metadata concept)", "FHIM reference sets");
+        LOG.info("Preparing to create FHIM metadata.");
+
+        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_CONCEPT));
+        LOG.debug("Refsets root:" + refsetsRoot.toString());
+
+        FHIMRefsets = createNewConcept(refsetsRoot, "FHIM reference sets (foundation metadata concept)", "FHIM reference set");
+
+        ConceptChronicleBI FHIMTypeRefset = createNewConcept(FHIMRefsets, "FHIM type reference set (foundation metadata concept)", "FHIM type reference set");
+        ConceptChronicleBI FHIMCodeRefset = createNewConcept(FHIMRefsets, "FHIM code reference set (foundation metadata concept)", "FHIM code reference set");
+        ConceptChronicleBI FHIMDataRefset = createNewConcept(FHIMRefsets, "FHIM data reference set (foundation metadata concept)", "FHIM data reference set");
+        ConceptChronicleBI FHIMCompositionRefset = createNewConcept(FHIMRefsets, "FHIM composition reference set (foundation metadata concept)", "FHIM composition reference set");
+        ConceptChronicleBI FHIMConstraintsRefset = createNewConcept(FHIMRefsets, "FHIM constraints reference set (foundation metadata concept)", "FHIM constraints reference set");
+        ConceptChronicleBI FHIMConstraintPath = createNewConcept(FHIMRefsets, "FHIM constraints path reference set (foundation metadata concept)", "FHIM constraint path");
+        ConceptChronicleBI FHIMConstraintValue = createNewConcept(FHIMRefsets, "FHIM constraints value reference set (foundation metadata concept)", "FHIM constraint value");
 
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));
-        LOG.info("Attributes root:" + attributesRoot.toString());
+        LOG.debug("Attributes root:" + attributesRoot.toString());
 
         ConceptChronicleBI FHIMAttributes = createNewConcept(attributesRoot, "FHIM attributes (foundation metadata concept)", "FHIM attributes");
+
+        ConceptChronicleBI FHIMDataTypes = createNewConcept(FHIMAttributes, "FHIM data types (foundation metadata concept)", "FHIM data types");
+        ConceptChronicleBI FHIMPysicalQuantityDataType = createNewConcept(FHIMDataTypes, "FHIM PysicalQuantity data type (foundation metadata concept)", "FHIM PysicalQuantity data type");
+        // TODO: Other data types as necessary.
+
+        ConceptChronicleBI FHIMComponentTypes = createNewConcept(FHIMAttributes, "FHIM component types (foundation metadata concept)", "FHIM component types");
+        ConceptChronicleBI FHIMQual = createNewConcept(FHIMComponentTypes, "FHIM qualifier (foundation metadata concept)", "FHIM quaifier");
+        ConceptChronicleBI FHIMMod = createNewConcept(FHIMComponentTypes, "FHIM modifier (foundation metadata concept)", "FHIM modifier");
+        ConceptChronicleBI FHIMAttr = createNewConcept(FHIMComponentTypes, "FHIM attribution (foundation metadata concept)", "FHIM attribution");
 
         for (ConceptChronicleBI loopUc : getDataStore().getUncommittedConcepts()) {
             LOG.debug("Uncommitted concept:" + loopUc.toString() + " - " + loopUc.getPrimordialUuid());
@@ -66,6 +91,7 @@ public class FHIMMetadataCreator extends MetadataCreator {
 
         getDataStore().commit();
 
-        LOG.info("Metadata creation finished");
+        LOG.info("FHIM metadata creation finished.");
+        return true;
     }
 }

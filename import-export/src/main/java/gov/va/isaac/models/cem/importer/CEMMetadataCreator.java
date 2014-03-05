@@ -47,29 +47,37 @@ public class CEMMetadataCreator extends MetadataCreator {
 
     @Override
     @SuppressWarnings("unused")
-    public void createMetadata() throws Exception {
-        LOG.info("Preparing to create metadata");
+    public boolean createMetadata() throws Exception {
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
 
+        // Check if metadata already created.
+        ConceptChronicleBI CEMRefsets = getConcept(CEMMetadataBinding.CEM_REFSET.getUuids()[0]);
+        if (CEMRefsets != null) {
+            LOG.info("CEM metadata already created.");
+            return false;
+        }
+
+        LOG.info("Preparing to create CEM metadata.");
+
         ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_CONCEPT));
-        LOG.info("Refsets root:" + refsetsRoot.toString());
+        LOG.debug("Refsets root:" + refsetsRoot.toString());
 
-        ConceptChronicleBI CEMRefset = createNewConcept(refsetsRoot, "CEM reference sets (foundation metadata concept)", "CEM reference sets");
+        CEMRefsets = createNewConcept(refsetsRoot, "CEM reference sets (foundation metadata concept)", "CEM reference sets");
 
-        ConceptChronicleBI CEMDataRefset = createNewConcept(CEMRefset, "CEM data reference set (foundation metadata concept)", "CEM data reference set");
-        ConceptChronicleBI CEMTypeRefset = createNewConcept(CEMRefset, "CEM type reference set (foundation metadata concept)", "CEM type reference set");
-        ConceptChronicleBI CEMKeyRefset = createNewConcept(CEMRefset, "CEM key reference set (foundation metadata concept)", "CEM key reference set");
-        ConceptChronicleBI CEMInfoRefset = createNewConcept(CEMRefset, "CEM info reference set (foundation metadata concept)", "CEM info reference set");
-        ConceptChronicleBI CEMCompositionRefset = createNewConcept(CEMRefset, "CEM composition reference set (foundation metadata concept)", "CEM composition reference set");
-        ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRefset, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
-        ConceptChronicleBI CEMConstraintPath = createNewConcept(CEMRefset, "CEM constraints path reference set (foundation metadata concept)", "CEM constraint path");
-        ConceptChronicleBI CEMConstraintValue = createNewConcept(CEMRefset, "CEM constraints value reference set (foundation metadata concept)", "CEM constraint value");
-        ConceptChronicleBI CEMValue = createNewConcept(CEMRefset, "CEM value reference set (foundation metadata concept)", "CEM constraint path");
+        ConceptChronicleBI CEMDataRefset = createNewConcept(CEMRefsets, "CEM data reference set (foundation metadata concept)", "CEM data reference set");
+        ConceptChronicleBI CEMTypeRefset = createNewConcept(CEMRefsets, "CEM type reference set (foundation metadata concept)", "CEM type reference set");
+        ConceptChronicleBI CEMKeyRefset = createNewConcept(CEMRefsets, "CEM key reference set (foundation metadata concept)", "CEM key reference set");
+        ConceptChronicleBI CEMInfoRefset = createNewConcept(CEMRefsets, "CEM info reference set (foundation metadata concept)", "CEM info reference set");
+        ConceptChronicleBI CEMCompositionRefset = createNewConcept(CEMRefsets, "CEM composition reference set (foundation metadata concept)", "CEM composition reference set");
+        ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRefsets, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
+        ConceptChronicleBI CEMConstraintPath = createNewConcept(CEMRefsets, "CEM constraints path reference set (foundation metadata concept)", "CEM constraint path");
+        ConceptChronicleBI CEMConstraintValue = createNewConcept(CEMRefsets, "CEM constraints value reference set (foundation metadata concept)", "CEM constraint value");
+        ConceptChronicleBI CEMValue = createNewConcept(CEMRefsets, "CEM value reference set (foundation metadata concept)", "CEM constraint path");
 
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));
-        LOG.info("Attributes root:" + attributesRoot.toString());
+        LOG.debug("Attributes root:" + attributesRoot.toString());
 
         ConceptChronicleBI CEMAttributes = createNewConcept(attributesRoot, "CEM attributes (foundation metadata concept)", "CEM attributes");
 
@@ -173,6 +181,7 @@ public class CEMMetadataCreator extends MetadataCreator {
 
         getDataStore().commit();
 
-        LOG.info("Metadata creation finished");
+        LOG.info("CEM metadata creation finished.");
+        return true;
     }
 }

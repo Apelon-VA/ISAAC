@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.models.cem.importer.CEMMetadataCreator;
+import gov.va.isaac.models.fhim.importer.FHIMMetadataCreator;
 import gov.va.isaac.util.Utility;
 
 import java.util.ArrayList;
@@ -108,19 +109,27 @@ public class CEMMetadataCreatorView implements PopupViewI
 		// TODO should really pop up a window with a progress bar, cancel button, etc....
 
 		// Do work in background.
-		Task<Void> task = new Task<Void>()
+		Task<Boolean> task = new Task<Boolean>()
 		{
 			@Override
-			protected Void call() throws Exception
+			protected Boolean call() throws Exception
 			{
-				new CEMMetadataCreator().createMetadata();
-				return null;
+				boolean cemCreated = new CEMMetadataCreator().createMetadata();
+				boolean fhimCreated = new FHIMMetadataCreator().createMetadata();
+
+				// If any one of them was created, return true.
+				return cemCreated || fhimCreated;
 			}
 
 			@Override
 			protected void succeeded()
 			{
-				AppContext.getCommonDialogs().showInformationDialog("Success", "Successfully created metadata.");
+			    boolean metadataCreated = this.getValue();
+			    if (metadataCreated) {
+			        AppContext.getCommonDialogs().showInformationDialog("Success", "Successfully created metadata.");
+			    } else {
+			        AppContext.getCommonDialogs().showInformationDialog("Info", "Metadata has already been created.");
+			    }
 			}
 
 			@Override

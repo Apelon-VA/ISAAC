@@ -18,7 +18,8 @@
  */
 package gov.va.isaac.models.cem.importer;
 
-import java.lang.reflect.Field;
+import gov.va.isaac.models.util.MetadataBinding;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,11 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  * @author alo
  * @author ocarlsen
  */
-public class CEMMetadataBinding {
+public class CEMMetadataBinding extends MetadataBinding {
+
+    public static ConceptSpec CEM_REFSET
+            = new ConceptSpec("CEM reference sets (foundation metadata concept)",
+            UUID.fromString("cb6035e9-b943-5d56-bfa3-0c6f2f413dc3"));
 
     public static ConceptSpec CEM_DATA_REFSET
             = new ConceptSpec("CEM data reference set (foundation metadata concept)",
@@ -58,15 +63,15 @@ public class CEMMetadataBinding {
 
     public static ConceptSpec CEM_CONSTRAINTS_PATH_REFSET
             = new ConceptSpec("CEM constraints path reference set (foundation metadata concept)",
-            "f0ca1b2f-4616-5596-b6a2-d86355ef177b");
+            UUID.fromString("f0ca1b2f-4616-5596-b6a2-d86355ef177b"));
 
     public static ConceptSpec CEM_CONSTRAINTS_VALUE_REFSET
     		= new ConceptSpec("CEM constraints value reference set (foundation metadata concept)",
-			"46a7a28a-8fc6-5b31-8a4e-ae7b00729456");
+    		UUID.fromString("46a7a28a-8fc6-5b31-8a4e-ae7b00729456"));
 
     public static ConceptSpec CEM_VALUE_REFSET
     		= new ConceptSpec("CEM value reference set (foundation metadata concept)",
-			"AAA81c5fc48-da1f-50f5-8440-5a2fa850ad73");
+    		UUID.fromString("AAA81c5fc48-da1f-50f5-8440-5a2fa850ad73"));
 
     public static ConceptSpec CEM_ATTRIBUTES
             = new ConceptSpec("CEM attributes (foundation metadata concept)",
@@ -126,24 +131,8 @@ public class CEMMetadataBinding {
          }
      }
 
-    public static List<ConceptSpec> getAll()
-    {
-        try
-        {
-            ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
-            Field[] declaredFields = CEMMetadataBinding.class.getDeclaredFields();
-            for (Field field : declaredFields)
-            {
-                if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getType() == ConceptSpec.class)
-                {
-                    allConceptSpec.add((ConceptSpec) field.get(null));
-                }
-            }
-            return allConceptSpec;
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Unexpected!", e);
-        }
-    }
+
+     public static List<ConceptSpec> getAll() {
+         return getAll(CEMMetadataBinding.class);
+     }
 }
