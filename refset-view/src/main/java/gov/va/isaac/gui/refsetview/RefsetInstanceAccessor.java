@@ -26,8 +26,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 import javafx.beans.property.SimpleStringProperty;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
@@ -53,7 +53,8 @@ public class RefsetInstanceAccessor {
 		private int refCompConNid;
 		private int memberNid;
 		
-		private String status, time, author, module, path;
+		private Status status;
+		private String time, author, module, path;
 
 		private RefsetInstance(ConceptVersionBI con, RefexVersionBI member, RefexVersionBI previousMember) {
 			memberNid = (member == null ? 0 : member.getNid());
@@ -71,9 +72,9 @@ public class RefsetInstanceAccessor {
 				if (member != null)
 				{
 					if (previousMember == null || previousMember.getStatus() != member.getStatus()) {
-						this.status = member.getStatus().toString();
+						this.status = member.getStatus();
 					} else {
-						this.status = "";
+						this.status = null;
 					}
 					
 					this.time = (member.isUncommitted() ? "Uncommitted" : sdf.format(new Date(member.getTime())));
@@ -171,12 +172,12 @@ public class RefsetInstanceAccessor {
 		/**
 		 * @return the status
 		 */
-		public String getStatus()
+		public Status getStatus()
 		{
 			return status;
 		}
 
-		public void setStatus(String s)
+		public void setStatus(Status s)
 		{
 			status = s;
 		}
