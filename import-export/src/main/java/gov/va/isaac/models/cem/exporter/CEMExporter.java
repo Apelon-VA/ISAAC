@@ -99,6 +99,11 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         LOG.info("Ending export of CEM model");
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOG;
+    }
+
     private Element buildCemTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
         Element root = document.createElement(CEML);
@@ -316,7 +321,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
         return nameAttr;
     }
-    
+
     private StringMember getCompStringAnnotation(NidStringMember owner, ConceptSpec refsetSpec)
             throws IOException, ContradictionException {
 
