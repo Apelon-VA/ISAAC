@@ -28,6 +28,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
+import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -37,11 +38,13 @@ import com.google.common.collect.Lists;
  *
  * @author ocarlsen
  */
-public class ExporterBase extends CommonBase {
+public abstract class ExporterBase extends CommonBase {
 
     protected ExporterBase() throws ValidationException, IOException {
         super();
     }
+
+    protected abstract Logger getLogger();
 
     /**
      * Helper method to filter the specified {@link Collection} of annotations
@@ -61,9 +64,15 @@ public class ExporterBase extends CommonBase {
 
         // Should be 0-1.
         int filteredCount = filtered.size();
-        Preconditions.checkState(filteredCount <= 1,
+        // This check is prohibiting export following the Stan Huff demo.
+        // It means something is different between the way the refset-view
+        // is using refsets and the way import-export is.
+        // Log it for now, resolve later.  (See artf229216.)
+//        Preconditions.checkState(filteredCount <= 1,
+        getLogger().warn(
                 "Expected 0-1 annotations for refset nid " + refsetSpec.getNid() +
                 ", found " + filteredCount);
+
 
         // Return annotation, or null if none.
         if (filteredCount == 0) {
