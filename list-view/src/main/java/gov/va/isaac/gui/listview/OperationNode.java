@@ -22,12 +22,13 @@ import gov.va.isaac.gui.listview.operations.Operation;
 import gov.va.isaac.gui.listview.operations.ParentReplace;
 import gov.va.isaac.gui.listview.operations.PlaceHolder;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 import java.util.TreeMap;
-import javafx.collections.ListChangeListener;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.BooleanExpression;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
@@ -42,9 +43,8 @@ import javafx.scene.layout.VBox;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class OperationNode
+public class OperationNode extends VBox
 {
-	private VBox root_;
 	private StackPane subOptionsPane_;
 	private ComboBox<String> operation_;
 	Button removeOperation_;
@@ -53,29 +53,29 @@ public class OperationNode
 	private TreeMap<String, Operation> operations_ = new TreeMap<>();
 	private ListBatchViewController lbvc_;
 	
+	private UpdateableBooleanBinding isOperationReady_;
+	
 	protected OperationNode(ListBatchViewController lbvc)
 	{
 		lbvc_ = lbvc;
 		//TODO be smarter about this, build a utility
-		Operation operation = new ParentReplace();
+		Operation operation = new ParentReplace(lbvc_.getConceptList());
 		operations_.put(operation.getTitle(), operation);
-		operation = new PlaceHolder();
+		operation = new PlaceHolder(lbvc_.getConceptList());
 		operations_.put(operation.getTitle(), operation);
 		
-		root_ = new VBox();
-		root_.setMaxWidth(Double.MAX_VALUE);
-		root_.setMinWidth(300);
-		root_.setStyle("-fx-border-color: lightgrey; -fx-border-width: 2px");
-		
+		setMaxWidth(Double.MAX_VALUE);
+		setMinWidth(300);
+		setStyle("-fx-border-color: lightgrey; -fx-border-width: 2px");
 		
 		HBox operationSelectionHBox = new HBox();
 		operationSelectionHBox.setPadding(new Insets(5, 5, 5, 5));
-		root_.getChildren().add(operationSelectionHBox);
+		getChildren().add(operationSelectionHBox);
 		
 		subOptionsPane_ = new StackPane();
 		subOptionsPane_.setMaxWidth(Double.MAX_VALUE);
 		VBox.setMargin(subOptionsPane_, new Insets(5, 5, 5, 5));
-		root_.getChildren().add(subOptionsPane_);
+		getChildren().add(subOptionsPane_);
 		
 		ImageView ivMinus = new ImageView(Images.MINUS.getImage());
 		removeOperation_ = new Button(null, ivMinus);
@@ -98,14 +98,31 @@ public class OperationNode
 	
 	private void initActionHandlers()
 	{
+		isOperationReady_ = new UpdateableBooleanBinding()
+		{
+			@Override
+			protected boolean computeValue()
+			{
+				return currentOperation_.isValid().get();
+			}
+		};
+		
 		operation_.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
 				subOptionsPane_.getChildren().clear();
+				//stop watching old property
+				if (currentOperation_ != null)
+				{
+					isOperationReady_.removeBinding(currentOperation_.isValid());
+				}
 				currentOperation_ = operations_.get(operation_.getSelectionModel().getSelectedItem());
+				//start watching new one
+				isOperationReady_.addBinding(currentOperation_.isValid());
 				subOptionsPane_.getChildren().add(currentOperation_.getNode());
+				isOperationReady_.invalidate();
 			}
 		});
 		
@@ -117,19 +134,10 @@ public class OperationNode
 				lbvc_.remove(OperationNode.this);
 			}
 		});
-		
-		lbvc_.getConceptList().addListener(new ListChangeListener<String>()
-		{
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c)
-			{
-				currentOperation_.conceptListChanged(lbvc_.getConceptList());
-			}
-		});
 	}
 	
-	protected Node getNode()
+	protected BooleanExpression isReadyForExecution()
 	{
-		return root_;
+		return isOperationReady_; 
 	}
 }

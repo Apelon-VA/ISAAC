@@ -18,33 +18,25 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import java.util.List;
-import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 
 /**
  * {@link PlaceHolder}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class PlaceHolder implements Operation
+public class PlaceHolder extends Operation
 {
-	private GridPane root_;
-
-	
-	public PlaceHolder()
+	public PlaceHolder(ObservableList<String> conceptList)
 	{
-		root_ = new GridPane();
+		super(conceptList);
 		
 		root_.add(new Label("Stuff goes here: "), 0, 0);
 	}
-	public Node getNode()
-	{
-		return root_;
-	}
+
 	/**
 	 * @see gov.va.isaac.gui.listview.operations.Operation#getTitle()
 	 */
@@ -54,12 +46,23 @@ public class PlaceHolder implements Operation
 		return "Placeholder";
 	}
 	
+
 	/**
-	 * @see gov.va.isaac.gui.listview.operations.Operation#conceptListChanged(java.util.List)
+	 * @see gov.va.isaac.gui.listview.operations.Operation#conceptListChanged()
 	 */
 	@Override
-	public void conceptListChanged(List<String> concepts)
+	protected void conceptListChanged()
 	{
 		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.listview.operations.Operation#isValid()
+	 */
+	@Override
+	public BooleanExpression isValid()
+	{
+		return new SimpleBooleanProperty(true);
 	}
 }

@@ -18,17 +18,23 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 import java.io.IOException;
 import java.net.URL;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
@@ -50,9 +56,12 @@ public class ListBatchViewController
 	@FXML private Button addOperationButton;
 	@FXML private Button clearListButton;
 	@FXML private Button executeOperationsButton;
+	@FXML private ToolBar executeOperationsToolbar;
 	@FXML private Button saveListButton;
 	@FXML private AnchorPane rootPane;
 
+	private UpdateableBooleanBinding allOperationsReady_;
+	StringProperty reasonWhyExecuteDisabled_ = new SimpleStringProperty();
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	protected static ListBatchViewController init() throws IOException
@@ -67,17 +76,24 @@ public class ListBatchViewController
 	@FXML
 	public void initialize()
 	{
-		operationsList.getChildren().add(new OperationNode(this).getNode());
+		operationsList.getChildren().add(new OperationNode(this));
 
 		conceptTable.setPlaceholder(new Label("Drop Concepts Here"));
 		conceptTable.getColumns().get(0).prefWidthProperty().bind(conceptTable.widthProperty());
+		
+		//remove it, wrap it, readd it.
+		executeOperationsToolbar.getItems().remove(executeOperationsButton);
+		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(executeOperationsButton, reasonWhyExecuteDisabled_));
 
 		addOperationButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				operationsList.getChildren().add(new OperationNode(ListBatchViewController.this).getNode());
+				OperationNode operationNode = new OperationNode(ListBatchViewController.this);
+				operationsList.getChildren().add(operationNode);
+				allOperationsReady_.addBinding(operationNode.isReadyForExecution());
+				allOperationsReady_.invalidate();
 			}
 		});
 
@@ -87,6 +103,8 @@ public class ListBatchViewController
 			public void handle(ActionEvent event)
 			{
 				operationsList.getChildren().clear();
+				allOperationsReady_.clearBindings();
+				allOperationsReady_.invalidate();
 			}
 		});
 
@@ -129,14 +147,61 @@ public class ListBatchViewController
 				conceptTable.getItems().add("Foobar");
 			}
 		});
+		
+		allOperationsReady_ = new UpdateableBooleanBinding()
+		{
+			@Override
+			protected boolean computeValue()
+			{
+				for (Node n : operationsList.getChildren())
+				{
+					if (n instanceof OperationNode)
+					{
+						OperationNode on = (OperationNode)n;
+						if (!on.isReadyForExecution().get())
+						{
+							reasonWhyExecuteDisabled_.set("All errors must be corrected in the Operations List before execution");
+							return false;
+						}
+					}
+					else
+					{
+						logger_.error("Design error - Node isn't an operationNode!");
+					}
+				}
+				if (operationsList.getChildren().size() == 0)
+				{
+					reasonWhyExecuteDisabled_.set("At least one operation must be specified");
+					return false;
+				}
+				return true;
+			}
+		};
+		
+		for (Node n : operationsList.getChildren())
+		{
+			if (n instanceof OperationNode)
+			{
+				allOperationsReady_.addBinding(((OperationNode) n).isReadyForExecution());
+			}
+			else
+			{
+				logger_.error("Design error - Node isn't an operationNode!");
+			}
+		}
+		allOperationsReady_.invalidate();
+		
+		executeOperationsButton.disableProperty().bind(allOperationsReady_.not());
 	}
 
 	protected void remove(OperationNode node)
 	{
-		if (!operationsList.getChildren().remove(node.getNode()))
+		if (!operationsList.getChildren().remove(node))
 		{
 			logger_.error("Unexpected error removing operation item");
 		}
+		allOperationsReady_.removeBinding(node.isReadyForExecution());
+		allOperationsReady_.invalidate();
 	}
 	
 	protected ObservableList<String> getConceptList()

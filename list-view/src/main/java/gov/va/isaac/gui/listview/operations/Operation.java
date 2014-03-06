@@ -18,19 +18,49 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import java.util.List;
+import javafx.beans.binding.BooleanExpression;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.layout.GridPane;
 
 /**
  * {@link Operation}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public interface Operation
+public abstract class Operation
 {
-	public Node getNode();
+	protected ObservableList<String> conceptList_;
+	protected GridPane root_;
 	
-	public String getTitle();
+	public Operation(ObservableList<String> conceptList)
+	{
+		this.conceptList_ = conceptList;
+		root_ = new GridPane();
+		root_.setMaxWidth(Double.MAX_VALUE);
+		root_.setHgap(5.0);
+		root_.setVgap(3.0);
+		
+		conceptList_.addListener(new ListChangeListener<String>()
+		{
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c)
+			{
+				conceptListChanged();
+			}
+		});
+	}
 	
-	public void conceptListChanged(List<String> concepts);
+	public Node getNode()
+	{
+		return root_;
+	}
+	
+	
+	public abstract String getTitle();
+	
+	protected abstract void conceptListChanged();
+	
+	public abstract BooleanExpression isValid();
 }
