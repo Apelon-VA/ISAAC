@@ -1,15 +1,15 @@
 /**
  * Copyright Notice
- * 
+ *
  * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ import gov.va.isaac.models.util.MetadataBinding;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
 /**
@@ -66,12 +67,12 @@ public class CEMMetadataBinding extends MetadataBinding {
             UUID.fromString("f0ca1b2f-4616-5596-b6a2-d86355ef177b"));
 
     public static ConceptSpec CEM_CONSTRAINTS_VALUE_REFSET
-    		= new ConceptSpec("CEM constraints value reference set (foundation metadata concept)",
-    		UUID.fromString("46a7a28a-8fc6-5b31-8a4e-ae7b00729456"));
+            = new ConceptSpec("CEM constraints value reference set (foundation metadata concept)",
+            UUID.fromString("46a7a28a-8fc6-5b31-8a4e-ae7b00729456"));
 
     public static ConceptSpec CEM_VALUE_REFSET
-    		= new ConceptSpec("CEM value reference set (foundation metadata concept)",
-    		UUID.fromString("AAA81c5fc48-da1f-50f5-8440-5a2fa850ad73"));
+            = new ConceptSpec("CEM value reference set (foundation metadata concept)",
+            UUID.fromString("AAA81c5fc48-da1f-50f5-8440-5a2fa850ad73"));
 
     public static ConceptSpec CEM_ATTRIBUTES
             = new ConceptSpec("CEM attributes (foundation metadata concept)",
@@ -110,15 +111,15 @@ public class CEMMetadataBinding extends MetadataBinding {
             UUID.fromString("2f3fe6d9-6a7c-5d05-aa4f-3ebde57fff83"));
 
     // TODO convert the above to an enum
-     
+
      public static List<ConceptSpec> getAllRefsets()
      {
          try
          {
              ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
-             
+
              allConceptSpec.add(CEM_DATA_REFSET);
-    		 allConceptSpec.add(CEM_KEY_REFSET);
+             allConceptSpec.add(CEM_KEY_REFSET);
              allConceptSpec.add(CEM_TYPE_REFSET);
              allConceptSpec.add(CEM_INFO_REFSET);
              allConceptSpec.add(CEM_COMPOSITION_REFSET);
