@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import java.util.List;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -51,5 +52,14 @@ public class PlaceHolder implements Operation
 	public String getTitle()
 	{
 		return "Placeholder";
+	}
+	
+	/**
+	 * @see gov.va.isaac.gui.listview.operations.Operation#conceptListChanged(java.util.List)
+	 */
+	@Override
+	public void conceptListChanged(List<String> concepts)
+	{
+		// TODO Auto-generated method stub
 	}
 }

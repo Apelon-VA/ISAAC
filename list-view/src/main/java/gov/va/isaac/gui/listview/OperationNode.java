@@ -18,11 +18,12 @@
  */
 package gov.va.isaac.gui.listview;
 
-import gov.va.isaac.gui.listview.operations.PlaceHolder;
 import gov.va.isaac.gui.listview.operations.Operation;
 import gov.va.isaac.gui.listview.operations.ParentReplace;
+import gov.va.isaac.gui.listview.operations.PlaceHolder;
 import gov.va.isaac.gui.util.Images;
 import java.util.TreeMap;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -32,7 +33,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -47,11 +47,16 @@ public class OperationNode
 	private VBox root_;
 	private StackPane subOptionsPane_;
 	private ComboBox<String> operation_;
+	Button removeOperation_;
+	private Operation currentOperation_;
 	
 	private TreeMap<String, Operation> operations_ = new TreeMap<>();
+	private ListBatchViewController lbvc_;
 	
-	protected OperationNode()
+	protected OperationNode(ListBatchViewController lbvc)
 	{
+		lbvc_ = lbvc;
+		//TODO be smarter about this, build a utility
 		Operation operation = new ParentReplace();
 		operations_.put(operation.getTitle(), operation);
 		operation = new PlaceHolder();
@@ -73,10 +78,10 @@ public class OperationNode
 		root_.getChildren().add(subOptionsPane_);
 		
 		ImageView ivMinus = new ImageView(Images.MINUS.getImage());
-		Button removeOperation = new Button(null, ivMinus);
-		HBox.setMargin(removeOperation, new Insets(0, 5, 0, 0));
-		removeOperation.setTooltip(new Tooltip("Remove operation"));
-		operationSelectionHBox.getChildren().add(removeOperation);
+		removeOperation_ = new Button(null, ivMinus);
+		HBox.setMargin(removeOperation_, new Insets(0, 5, 0, 0));
+		removeOperation_.setTooltip(new Tooltip("Remove operation"));
+		operationSelectionHBox.getChildren().add(removeOperation_);
 		
 		operation_ = new ComboBox<String>();
 		for (String s : operations_.keySet())
@@ -99,7 +104,26 @@ public class OperationNode
 			public void handle(ActionEvent event)
 			{
 				subOptionsPane_.getChildren().clear();
-				subOptionsPane_.getChildren().add(operations_.get(operation_.getSelectionModel().getSelectedItem()).getNode());
+				currentOperation_ = operations_.get(operation_.getSelectionModel().getSelectedItem());
+				subOptionsPane_.getChildren().add(currentOperation_.getNode());
+			}
+		});
+		
+		removeOperation_.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				lbvc_.remove(OperationNode.this);
+			}
+		});
+		
+		lbvc_.getConceptList().addListener(new ListChangeListener<String>()
+		{
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c)
+			{
+				currentOperation_.conceptListChanged(lbvc_.getConceptList());
 			}
 		});
 	}

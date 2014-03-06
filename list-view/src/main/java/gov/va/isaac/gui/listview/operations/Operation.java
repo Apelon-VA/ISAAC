@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import java.util.List;
 import javafx.scene.Node;
 
 /**
@@ -30,4 +31,6 @@ public interface Operation
 	public Node getNode();
 	
 	public String getTitle();
+	
+	public void conceptListChanged(List<String> concepts);
 }
