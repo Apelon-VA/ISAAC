@@ -19,7 +19,7 @@
 package gov.va.isaac.models.cem.importer;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.models.util.MetadataCreator;
+import gov.va.isaac.models.util.MetadataCreatorBase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author alo
  * @author ocarlsen
  */
-public class CEMMetadataCreator extends MetadataCreator {
+public class CEMMetadataCreator extends MetadataCreatorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
 

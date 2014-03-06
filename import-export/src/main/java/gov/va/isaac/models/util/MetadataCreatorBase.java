@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.models.util;
 
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +39,9 @@ import org.ihtsdo.otf.tcc.api.spec.ValidationException;
  *
  * @author ocarlsen
  */
-public abstract class MetadataCreator extends ImporterBase {
+public abstract class MetadataCreatorBase extends CommonBase {
 
-    protected MetadataCreator() throws ValidationException, IOException {
+    protected MetadataCreatorBase() throws ValidationException, IOException {
         super();
     }
 
@@ -88,7 +90,7 @@ public abstract class MetadataCreator extends ImporterBase {
         }
         ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentsUuids);
 
-        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+        ConceptChronicleBI newCon = WBUtility.getBuilder().construct(newConCB);
         getDataStore().addUncommitted(newCon);
 
         return newCon;
