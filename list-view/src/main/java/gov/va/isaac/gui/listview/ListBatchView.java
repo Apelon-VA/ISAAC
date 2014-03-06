@@ -36,12 +36,14 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @Singleton
-public class ListView implements DockedViewI
+public class ListBatchView implements DockedViewI
 {
+	ListBatchViewController lbvc_;
 
-	private ListView() throws IOException
+	private ListBatchView() throws IOException
 	{
 		// created by HK2
+		lbvc_ = ListBatchViewController.init();
 	}
 
 	/**
@@ -50,8 +52,7 @@ public class ListView implements DockedViewI
 	@Override
 	public Region getView()
 	{
-		// TODO
-		return null;
+		return lbvc_.getRoot();
 	}
 
 	/**

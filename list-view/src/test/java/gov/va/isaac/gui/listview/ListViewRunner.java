@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import javafx.application.Application;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
@@ -43,8 +44,9 @@ public class ListViewRunner extends Application
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
-		// TODO Auto-generated method stub
-
+		ListBatchView lv = AppContext.getService(ListBatchView.class);
+		primaryStage.setScene(new Scene(lv.getView(), 800, 600));
+		primaryStage.show();
 	}
 
 	/**
@@ -70,7 +72,5 @@ public class ListViewRunner extends Application
 		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
 		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
 		launch(args);
-
 	}
-
 }
