@@ -19,7 +19,7 @@
 package gov.va.isaac.models.fhim.importer;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.models.util.MetadataCreator;
+import gov.va.isaac.models.util.MetadataCreatorBase;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author ocarlsen
  */
-public class FHIMMetadataCreator extends MetadataCreator {
+public class FHIMMetadataCreator extends MetadataCreatorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FHIMMetadataCreator.class);
 
