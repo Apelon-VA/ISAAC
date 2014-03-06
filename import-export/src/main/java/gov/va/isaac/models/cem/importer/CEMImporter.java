@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.models.cem.importer;
 
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
@@ -68,6 +69,9 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
     @SuppressWarnings("unused")
     public ConceptChronicleBI importModel(File file) throws Exception {
         LOG.info("Preparing to import CEM model from: " + file.getName());
+
+        // Make sure in background thread.
+        FxUtils.checkBackgroundThread();
 
         // Parse XML file.
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -159,9 +163,9 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
                 RefexChronicleBI qualValue = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, qualCard);
 
                 String qualCompValue = loopNode.getTextContent();
-            	if (qualCompValue != null && qualCompValue.length() > 0) {
-            		RefexChronicleBI qualCompRefex = addMemberInValueRefset(qual, qualCompValue);
-            	}
+                if (qualCompValue != null && qualCompValue.length() > 0) {
+                    RefexChronicleBI qualCompRefex = addMemberInValueRefset(qual, qualCompValue);
+                }
 
                 LOG.info(String.format("mod: %s %s %s %s", qualName, qualType, qualCard, qualCompValue));
                 break;
@@ -177,10 +181,10 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
                 RefexChronicleBI modValue = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, modCard);
 
                 String modCompValue = loopNode.getTextContent();
-            	if (modCompValue != null && modCompValue.length() > 0) {
-            		RefexChronicleBI modCompRefex = addMemberInValueRefset(mod, modCompValue);
-            	}
-               
+                if (modCompValue != null && modCompValue.length() > 0) {
+                    RefexChronicleBI modCompRefex = addMemberInValueRefset(mod, modCompValue);
+                }
+
                 LOG.info(String.format("mod: %s %s %s %s", modName, modType, modCard, modCompValue));
                 break;
             case ATT:
@@ -195,10 +199,10 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
                 RefexChronicleBI attValue = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, attCard);
 
                 String attCompValue = loopNode.getTextContent();
-            	if (attCompValue != null && attCompValue.length() > 0) {
-            		RefexChronicleBI attCompRefex = addMemberInValueRefset(att, attCompValue);
-            	}
-               
+                if (attCompValue != null && attCompValue.length() > 0) {
+                    RefexChronicleBI attCompRefex = addMemberInValueRefset(att, attCompValue);
+                }
+
                 LOG.info(String.format("att: %s %s %s %s", attName, attType, attCard, attCompValue));
                 break;
             case CONSTRAINT:
@@ -240,9 +244,9 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
         focusComponent.addAnnotation(newRefex);
 
         return newRefex;
-	}
+    }
 
-	public RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
+    public RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
             ConceptSpec conceptExtension)
             throws IOException, InvalidCAB, ContradictionException {
         RefexCAB newRefexCab = new RefexCAB(RefexType.CID,
