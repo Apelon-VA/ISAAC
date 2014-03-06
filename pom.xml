@@ -52,8 +52,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.0</otf-query.version>
-        <otf-versioning.version>1.1-va-1.0</otf-versioning.version>
+        <otf-query.version>1.1-va-1.1-SNAPSHOT</otf-query.version>
+        <otf-versioning.version>1.1-va-1.1-SNAPSHOT</otf-versioning.version>
     </properties>
     
     <dependencyManagement>
@@ -220,6 +220,8 @@
         <module>search-view</module>
         <module>isaac-app</module>
         <module>isaac-workflow</module>
+        <module>refset-view</module>
+        <module>info-model-view</module>
     </modules>
 
     <reporting>

@@ -20,21 +20,17 @@ package gov.va.isaac.gui.importview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.model.InformationModelType;
-import gov.va.isaac.models.cem.exporter.CEMExporter;
-import gov.va.models.cem.importer.CEMImporter;
+import gov.va.isaac.models.cem.importer.CEMImporter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -59,18 +55,15 @@ public class ImportView extends GridPane {
     private final Label modelTypeLabel = new Label();
     private final Label fileNameLabel = new Label();
     private final Label resultLabel = new Label();
-    private final TextArea modelDisplay = new TextArea();
 
     public ImportView() {
         super();
 
         // GUI placeholders.
-        ImportViewBuilder builder = new ImportViewBuilder(this);
+        GridPaneBuilder builder = new GridPaneBuilder(this);
         builder.addRow("Information Model: ", modelTypeLabel);
         builder.addRow("File Name: ", fileNameLabel);
         builder.addRow("Result: ", resultLabel);
-        builder.addRow(new Separator());
-        builder.addRow(modelDisplay);
 
         setConstraints();
 
@@ -117,29 +110,16 @@ public class ImportView extends GridPane {
 
                 // Update UI.
                 resultLabel.setText("Successfully imported concept: " + result.toUserString());
-
-                try {
-                    // Display imported model as exported XML.
-                    OutputStream out = new ByteArrayOutputStream();
-                    CEMExporter exporter = new CEMExporter(out);
-                    exporter.exportModel(result.getPrimordialUuid());
-                    String modelXml = out.toString();
-                    modelDisplay.setText(modelXml);
-                } catch (Exception ex) {
-                    String msg = "Unexpected error displaying imported model";
-                    LOG.error(msg, ex);
-                    AppContext.getCommonDialogs().showErrorDialog(msg, ex);
-                }
            }
 
             @Override
             protected void failed() {
+                Throwable ex = getException();
 
                 // Update UI.
-                resultLabel.setText("Failed to import model from file: " + fileName);
+                resultLabel.setText("Failed to import model: " + ex.getMessage());
 
                 // Show dialog.
-                Throwable ex = getException();
                 String title = ex.getClass().getName();
                 String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
                 LOG.error(msg, ex);

@@ -46,6 +46,20 @@
             <version>${project.parent.version}</version>
         </dependency>
         
+        <!-- ISAAC Refset View. -->
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>refset-view</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        
+        <!-- ISAAC Info Model View. -->
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>info-model-view</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
             <artifactId>otf-util</artifactId>

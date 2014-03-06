@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="refsetAnchor" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="350.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refsetview.RefsetViewController"> 
+	<children>
+		<TableView fx:id="refsetRows" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="40.0">
+			<columns>
+				<TableColumn prefWidth="75.0" text="C1" />
+			</columns>
+		</TableView>
+		<Label fx:id="refsetLabel" text="Label" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="14.0" />
+		<Button fx:id="addButton" mnemonicParsing="false" text="Add" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="80.0" />
+		<Button fx:id="commitButton" mnemonicParsing="false" text="Commit" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="80.0" />
+	</children>
+</AnchorPane>
