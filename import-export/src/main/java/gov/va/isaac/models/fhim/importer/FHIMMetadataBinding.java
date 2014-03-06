@@ -62,29 +62,31 @@ public class FHIMMetadataBinding extends MetadataBinding {
             UUID.fromString("1188762f-e6c5-5396-9fdb-1c1ec1909d10"));
 
     public static ConceptSpec FHIM_CONSTRAINTS_VALUE_REFSET
-    		= new ConceptSpec("FHIM constraints value reference set (foundation metadata concept)",
-    		UUID.fromString("aad39bde-43e2-5ec1-aab7-3529dd793234"));
+            = new ConceptSpec("FHIM constraints value reference set (foundation metadata concept)",
+            UUID.fromString("aad39bde-43e2-5ec1-aab7-3529dd793234"));
 
-    // TODO convert the above to an enum
+    public static ConceptSpec FHIM_PHYSICALQUANTITY
+            = new ConceptSpec("FHIM PysicalQuantity data type (foundation metadata concept)",
+            UUID.fromString("28b40275-fa79-5fbe-9c75-715c8d5f74b5"));
 
-     public static List<ConceptSpec> getAllRefsets()
-     {
-         try
-         {
-             ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
+    public static List<ConceptSpec> getAllRefsets()
+    {
+        try
+        {
+            ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
 
-             allConceptSpec.add(FHIM_TYPE_REFSET);
-             allConceptSpec.add(FHIM_CODE_REFSET);
-             allConceptSpec.add(FHIM_DATA_REFSET);
-             allConceptSpec.add(FHIM_COMPOSITION_REFSET);
+            allConceptSpec.add(FHIM_TYPE_REFSET);
+            allConceptSpec.add(FHIM_CODE_REFSET);
+            allConceptSpec.add(FHIM_DATA_REFSET);
+            allConceptSpec.add(FHIM_COMPOSITION_REFSET);
 
-             return allConceptSpec;
-         }
-         catch (Exception e)
-         {
-             throw new RuntimeException("Unexpected!", e);
-         }
-     }
+            return allConceptSpec;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Unexpected!", e);
+        }
+    }
 
     public static List<ConceptSpec> getAll() {
         return getAll(FHIMMetadataBinding.class);
