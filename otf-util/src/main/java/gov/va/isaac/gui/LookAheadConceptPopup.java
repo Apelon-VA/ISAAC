@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui;
 
-import gov.va.isaac.search.GuiSearchResult;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.TaskCompleteCallback;
@@ -297,7 +297,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		displayedSearchResults.fireEvent(event);
 	}
 
-	private VBox processResult(GuiSearchResult result, final int idx)
+	private VBox processResult(CompositeSearchResult result, final int idx)
 	{
 		VBox box = new VBox();
 
@@ -469,7 +469,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 			}
 			else
 			{
-				final Collection<GuiSearchResult> sortedResults = ssh.getResults();
+				final Collection<CompositeSearchResult> sortedResults = ssh.getResults();
 				Platform.runLater(new Runnable()
 				{
 					@Override
@@ -478,7 +478,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 						displayedSearchResults.getChildren().clear();
 						uuidArray.clear();
 						currentSelection = -1;
-						for (GuiSearchResult result : sortedResults)
+						for (CompositeSearchResult result : sortedResults)
 						{
 							int idx = displayedSearchResults.getChildren().size();
 							displayedSearchResults.getChildren().add(processResult(result, idx));

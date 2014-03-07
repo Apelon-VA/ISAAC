@@ -21,7 +21,7 @@ package gov.va.isaac.gui.searchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.search.GuiSearchResult;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.TaskCompleteCallback;
@@ -72,7 +72,7 @@ public class SearchViewController implements TaskCompleteCallback {
     @FXML private Button searchButton;
     @FXML private ProgressIndicator searchProgress;
     @FXML private TextField searchText;
-    @FXML private ListView<GuiSearchResult> searchResults;
+    @FXML private ListView<CompositeSearchResult> searchResults;
     @FXML private BorderPane borderPane;
 
     private SearchHandler searchHandler = new SearchHandler();
@@ -90,12 +90,12 @@ public class SearchViewController implements TaskCompleteCallback {
 
     @FXML
     public void initialize() {
-        searchResults.setCellFactory(new Callback<ListView<GuiSearchResult>, ListCell<GuiSearchResult>>() {
+        searchResults.setCellFactory(new Callback<ListView<CompositeSearchResult>, ListCell<CompositeSearchResult>>() {
             @Override
-            public ListCell<GuiSearchResult> call(ListView<GuiSearchResult> arg0) {
-                return new ListCell<GuiSearchResult>() {
+            public ListCell<CompositeSearchResult> call(ListView<CompositeSearchResult> arg0) {
+                return new ListCell<CompositeSearchResult>() {
                     @Override
-                    protected void updateItem(final GuiSearchResult item, boolean empty) {
+                    protected void updateItem(final CompositeSearchResult item, boolean empty) {
                         super.updateItem(item, empty);
                         if (!empty) {
                             VBox box = new VBox();

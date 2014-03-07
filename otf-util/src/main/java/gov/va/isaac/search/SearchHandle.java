@@ -30,7 +30,7 @@ public class SearchHandle {
 
     private final long searchStartTime = System.currentTimeMillis();
 
-    private Collection<GuiSearchResult> result;
+    private Collection<CompositeSearchResult> result;
     private volatile boolean cancelled = false;
     private Exception error = null;
 
@@ -40,7 +40,7 @@ public class SearchHandle {
      * @return
      * @throws Exception
      */
-    public Collection<GuiSearchResult> getResults() throws Exception {
+    public Collection<CompositeSearchResult> getResults() throws Exception {
         if (result == null) {
             synchronized (SearchHandle.this) {
                 while (result == null && error == null && !cancelled) {
@@ -58,7 +58,7 @@ public class SearchHandle {
         return result;
     }
 
-    protected void setResults(Collection<GuiSearchResult> results) {
+    protected void setResults(Collection<CompositeSearchResult> results) {
         synchronized (SearchHandle.this) {
             result = results;
         }

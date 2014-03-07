@@ -88,7 +88,7 @@ public class SearchHandler
 			{
 				//make sure the data store is loaded
 				BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-				HashMap<Integer, GuiSearchResult> tempUserResults = new HashMap<>();
+				HashMap<Integer, CompositeSearchResult> tempUserResults = new HashMap<>();
 				try
 				{
 					if (localQuery.length() > 0)
@@ -99,7 +99,7 @@ public class SearchHandler
 							ConceptVersionBI temp = WBUtility.lookupSnomedIdentifier(localQuery);
 							if (temp != null)
 							{
-								GuiSearchResult gsr = new GuiSearchResult(temp.getConceptNid(), 2.0f, temp);
+								CompositeSearchResult gsr = new CompositeSearchResult(temp.getConceptNid(), 2.0f, temp);
 								gsr.addMatchingString(localQuery);
 								tempUserResults.put(temp.getConceptNid(), gsr);
 							}
@@ -147,14 +147,14 @@ public class SearchHandler
 
 									// Create a search result for the corresponding concept.
 									final int conceptNid = cc.getConceptNid();
-									GuiSearchResult gsr = tempUserResults.get(conceptNid);
+									CompositeSearchResult gsr = tempUserResults.get(conceptNid);
 									if (gsr == null)
 									{
 										ConceptVersionBI concept = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredLatest(), cc.getConceptNid());
 
 										// "normalize the scores between 0 and 1"
 										float normScore = (searchResult.getScore() / maxScore);
-										gsr = new GuiSearchResult(conceptNid, normScore, concept);
+										gsr = new CompositeSearchResult(conceptNid, normScore, concept);
 										tempUserResults.put(conceptNid, gsr);
 									}
 
@@ -198,9 +198,9 @@ public class SearchHandler
 					}
 
 					// "Now, sort the results."
-					ArrayList<GuiSearchResult> userResults = new ArrayList<>(tempUserResults.size());
+					ArrayList<CompositeSearchResult> userResults = new ArrayList<>(tempUserResults.size());
 					userResults.addAll(tempUserResults.values());
-					Collections.sort(userResults, new GuiSearchResultComparator());
+					Collections.sort(userResults, new CompositeSearchResultComparator());
 					if (userResults.size() > resultLimit)
 					{
 						searchHandle.setResults(userResults.subList(0, resultLimit - 1));

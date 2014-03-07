@@ -26,7 +26,7 @@ import java.util.Comparator;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class GuiSearchResultComparator implements Comparator<GuiSearchResult> {
+public class CompositeSearchResultComparator implements Comparator<CompositeSearchResult> {
 
     /**
      * Note, this sorts in reverse, so it goes highest to lowest
@@ -34,7 +34,7 @@ public class GuiSearchResultComparator implements Comparator<GuiSearchResult> {
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
     @Override
-    public int compare(GuiSearchResult o1, GuiSearchResult o2) {
+    public int compare(CompositeSearchResult o1, CompositeSearchResult o2) {
         if (o1.getBestScore() < o2.getBestScore()) {
             return 1;
         } else if (o1.getBestScore() > o2.getBestScore()) {

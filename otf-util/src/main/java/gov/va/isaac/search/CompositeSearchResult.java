@@ -32,7 +32,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class GuiSearchResult {
+public class CompositeSearchResult {
 
     private final HashSet<String> matchingStrings = new HashSet<>();
     private final int conceptNid;
@@ -40,7 +40,7 @@ public class GuiSearchResult {
 
     private float bestScore; // "best score, rather than score, as multiple matches may go into a SearchResult"
 
-    public GuiSearchResult(int conceptNid, float score, ConceptVersionBI concept) {
+    public CompositeSearchResult(int conceptNid, float score, ConceptVersionBI concept) {
         this.conceptNid = conceptNid;
         this.bestScore = score;
         this.concept = concept;
