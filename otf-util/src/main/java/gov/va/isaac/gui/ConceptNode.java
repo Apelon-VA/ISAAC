@@ -153,7 +153,7 @@ public class ConceptNode implements ConceptLookupCallback
 		pi_.setMaxHeight(16.0);
 
 		lookupFailImage_ = Images.EXCLAMATION.createImageView();
-		lookupFailImage_.visibleProperty().bind(isValid.not());
+		lookupFailImage_.visibleProperty().bind(isValid.not().and(lookupInProgress.not()));
 		Tooltip t = new Tooltip();
 		t.textProperty().bind(invalidToolTipText);
 		Tooltip.install(lookupFailImage_, t);
