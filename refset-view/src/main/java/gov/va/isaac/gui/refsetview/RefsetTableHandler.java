@@ -208,9 +208,9 @@ public class RefsetTableHandler {
 							
 							ConceptVersionBI refCompCon;
 							if (!isAnnotation) {
-								refCompCon = WBUtility.lookupSnomedIdentifierAsCV(instance.getRefCompConNid());
+								refCompCon = WBUtility.getConceptVersion(instance.getRefCompConNid());
 							} else {
-								refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refsetNid);
+								refCompCon = WBUtility.getConceptVersion(refsetNid);
 							}
 							refCompCon.addAnnotation(newMemChron);
 							
@@ -292,7 +292,7 @@ public class RefsetTableHandler {
 						return;
 					}
 	
-					ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
+					ConceptVersionBI comp = WBUtility.lookupSnomedIdentifier(t.getNewValue());
 					if (comp == null) {
 						AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 					} else {
@@ -315,9 +315,9 @@ public class RefsetTableHandler {
 									
 									ConceptVersionBI refCompCon;
 									if (!isAnnotation) {
-										refCompCon = WBUtility.lookupSnomedIdentifierAsCV(instance.getRefCompConNid());
+										refCompCon = WBUtility.getConceptVersion(instance.getRefCompConNid());
 									} else {
-										refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refsetNid);
+										refCompCon = WBUtility.getConceptVersion(refsetNid);
 									}
 									refCompCon.addAnnotation(newMemChron);
 									
@@ -374,7 +374,7 @@ public class RefsetTableHandler {
 					if (instance.getMemberNid() != 0) {
 						AppContext.getCommonDialogs().showErrorDialog("Illegal Operation", "Cannot modify the reference component of an existing refset member", "");
 					} else {
-						ConceptVersionBI comp = WBUtility.lookupSnomedIdentifierAsCV(t.getNewValue());
+						ConceptVersionBI comp = WBUtility.lookupSnomedIdentifier(t.getNewValue());
 						if (comp == null) {
 							AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 						} else {
@@ -503,9 +503,9 @@ public class RefsetTableHandler {
 		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(member);
 		ConceptVersionBI refCompCon;
 		if (!isAnnotation) {
-			refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getReferencedComponentNid());
+			refCompCon = WBUtility.getConceptVersion(refex.getReferencedComponentNid());
 		} else {
-			refCompCon = WBUtility.lookupSnomedIdentifierAsCV(refex.getAssemblageNid());
+			refCompCon = WBUtility.getConceptVersion(refex.getAssemblageNid());
 		}
 		
 		WBUtility.addUncommitted(refCompCon);

@@ -30,6 +30,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
  * Original author comments are in "quotes".
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class GuiSearchResult {
 

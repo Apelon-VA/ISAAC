@@ -282,7 +282,7 @@ public class RefsetInstanceAccessor {
 				}
 			}
 
-			ConceptVersionBI component = WBUtility.lookupSnomedIdentifierAsCV(ext.getNid1());
+			ConceptVersionBI component = WBUtility.getConceptVersion(ext.getNid1());
 
 			if (updateComponent) {
 

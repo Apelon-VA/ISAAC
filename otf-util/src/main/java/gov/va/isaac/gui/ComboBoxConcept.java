@@ -1,0 +1,88 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package gov.va.isaac.gui;
+
+import org.apache.commons.lang.StringUtils;
+
+/**
+ * 
+ * {@link ComboBoxConcept}
+ *
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ */
+public class ComboBoxConcept
+{
+	private String description_;
+	private int nid_;
+	private boolean ignoreChange = false;
+
+	public ComboBoxConcept(String description, int nid, boolean ignoreChange)
+	{
+		this(description, nid);
+		this.ignoreChange = ignoreChange;
+	}
+
+	public ComboBoxConcept(String description, int nid)
+	{
+		description_ = description;
+		nid_ = nid;
+	}
+
+	public String getDescription()
+	{
+		return description_;
+	}
+
+	public int getNid()
+	{
+		return nid_;
+	}
+	
+	/**
+	 * Note - this can only be read once - if it returns true after the first call, 
+	 * it resets itself to false for every subsequent call.
+	 */
+	public boolean shouldIgnoreChange()
+	{
+		boolean temp = ignoreChange;
+		ignoreChange = false;
+		return temp;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == null)
+		{
+			return false;
+		}
+		if (obj instanceof ComboBoxConcept)
+		{
+			ComboBoxConcept other = (ComboBoxConcept) obj;
+			return nid_ == other.nid_ && StringUtils.equals(description_, other.description_);
+		}
+		return false;
+	}
+
+	@Override
+	public String toString()
+	{
+		return nid_ + ":" + description_;
+	}
+}

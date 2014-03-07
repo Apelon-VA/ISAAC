@@ -24,6 +24,7 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.GuiSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
@@ -64,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 
-public class SearchViewController implements SearchHandler.Callback {
+public class SearchViewController implements TaskCompleteCallback {
 
     private static final Logger LOG = LoggerFactory.getLogger(SearchViewController.class);
 

@@ -24,6 +24,7 @@ import java.util.Comparator;
  * A {@link Comparator} for {@link SearchResult} objects.
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class GuiSearchResultComparator implements Comparator<GuiSearchResult> {
 

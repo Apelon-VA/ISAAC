@@ -23,6 +23,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 
+ * {@link Utility}
+ *
+ * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+ */
 public class Utility {
 
     private static final ThreadPoolExecutor EXECUTOR = buildExecutor();
@@ -50,16 +57,19 @@ public class Utility {
         EXECUTOR.execute(command);
     }
 
-    public static boolean isUUID(String string) {
+    public static UUID getUUID(String string) {
         if (string.length() != 36) {
-            return false;
+            return null;
         }
         try {
-            UUID.fromString(string);
-            return true;
+            return UUID.fromString(string);
         } catch (IllegalArgumentException e) {
-            return false;
+            return null;
         }
+    }
+    
+    public static boolean isUUID(String string) {
+        return (getUUID(string) != null);
     }
 
     public static boolean isLong(String string) {
@@ -68,6 +78,18 @@ public class Utility {
             return true;
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+    
+    public static boolean isInt(String string) {
+        return (getInt(string) != null);
+    }
+    
+    public static Integer getInt(String string) {
+        try {
+            return Integer.parseInt(string);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 }

@@ -369,7 +369,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
 
-        ConceptVersionBI wbConcept = WBUtility.lookupSnomedIdentifierAsCV(conceptUUID);
+        //TODO see if this is still the case... we should be using the Fx APIs directly....
+        ConceptVersionBI wbConcept = WBUtility.getConceptVersion(conceptUUID);
         if (wbConcept == null) {
             return null;
         }

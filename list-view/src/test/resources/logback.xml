@@ -76,7 +76,7 @@
 		<appender-ref ref="FILE-NORMAL" />
 		<appender-ref ref="STDERR" />
 		<!-- The two appenders below can be enabled if you desire INFO or DEBUG log output on the console. -->
-		<!--appender-ref ref="STDOUT-DEBUG" /-->
-		<!--appender-ref ref="STDOUT-INFO" /-->
+		<appender-ref ref="STDOUT-DEBUG" />
+		<appender-ref ref="STDOUT-INFO" />
 	</root>
 </configuration>

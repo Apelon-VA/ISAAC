@@ -20,13 +20,12 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
+import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
@@ -57,15 +56,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 
+ * {@link WBUtility}
+ * 
  * Utility for accessing Workbench APIs.
  *
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @author ocarlsen
+ * @author jefron
  */
 public class WBUtility {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
-	private static final UUID ID_UUID = TermAux.SNOMED_IDENTIFIER.getUuids()[0]; //SNOMED integer id
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
 	private static final UUID PREFERRED_UUID = SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0];
 	private static final UUID SYNONYM_UUID = SnomedMetadataRf2.SYNONYM_RF2.getUuids()[0];
@@ -96,8 +99,7 @@ public class WBUtility {
 				
 				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("error configuring edit coordinate", e);
 			}
 		}
 
@@ -271,113 +273,151 @@ public class WBUtility {
 	}
 
 	/**
-	 * Creates a {@link UUID} from the {@code identifier} parameter and
-	 * calls {@link #lookupSnomedIdentifierAsCV(UUID)}.
+	 * If the passed in value is a {@link UUID}, calls {@link #getConceptVersion(UUID)}
+	 * Next, if no hit, if the passed in value is parseable as a long, treats it as an SCTID and converts that to UUID and 
+	 * then calls {@link #getConceptVersion(UUID)}
+	 * Next, if no hit, if the passed in value is parseable as a int, calls {@link #getConceptVersion(int)}
 	 */
-	public static ConceptVersionBI lookupSnomedIdentifierAsCV(String identifier) {
-		LOG.debug("WB DB String Lookup '" + identifier + "'");
+	public static ConceptVersionBI lookupSnomedIdentifier(String identifier)
+	{
+		LOG.debug("WB DB String Lookup '{}'", identifier);
 
-		// Null or empty check.
-		if ((identifier == null) || (identifier.trim().length() == 0)) {
+		if (StringUtils.isBlank(identifier))
+		{
 			return null;
 		}
+		String localIdentifier = identifier.trim();
 
-		try {
-			UUID uuid = UUID.fromString(identifier.trim());
-			return lookupSnomedIdentifierAsCV(uuid);
-		} catch (Exception e) {
-			return null;
+		UUID uuid = Utility.getUUID(localIdentifier);
+		if (uuid != null)
+		{
+			return getConceptVersion(uuid);
 		}
-	}
-
-	/**
-	 * Looks up the identifier (sctid or UUID).
-	 */
-	public static ConceptVersionBI lookupSnomedIdentifierAsCV(UUID conceptUUID) {
-		LOG.debug("WB DB UUID Lookup '" + conceptUUID + "'");
-
-		// Null check.
-		if (conceptUUID == null) {
-			return null;
-		}
-
-		ConceptVersionBI result = getConceptVersion(conceptUUID);
-		if (result == null) {
-
-			// Try looking up by ID.
-			// dataStore#getConceptVersionFromAlternateId seems broke after
-			// the DB update, make the UUID myself instead.
-			try {
-				UUID alternateUUID = UuidFactory.getUuidFromAlternateId(ID_UUID, conceptUUID.toString().trim());
-
-				// Try again.
-				result = getConceptVersion(alternateUUID);
-			} catch (Exception e) {
-				return null;
+		
+		if (Utility.isLong(localIdentifier))
+		{
+			UUID alternateUUID = UuidFactory.getUuidFromAlternateId(TermAux.SNOMED_IDENTIFIER.getUuids()[0], localIdentifier);
+			LOG.debug("WB DB String Lookup as SCTID converted to UUID {}", alternateUUID);
+			ConceptVersionBI cv = getConceptVersion(alternateUUID);
+			if (cv != null)
+			{
+				return cv;
 			}
 		}
-		return result;
-	}
-
-	private static ConceptVersionBI getConceptVersion(UUID uuid) {
-		try {
-			ConceptVersionBI result = dataStore.getConceptVersion(
-					StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
-
-			// Nothing like an undocumented getter which, rather than returning null when
-			// the thing you are asking for doesn't exist - it goes off and returns
-			// essentially a new, empty, useless node. Sigh.
-			if (result.getUUIDs().size() == 0) {
-				return null;
-			}
-
-			return result;
-		} catch (IOException ex) {
-			LOG.warn("Trouble getting concept: " + uuid, ex);
+		
+		Integer i = Utility.getInt(localIdentifier);
+		if (i != null)
+		{
+			return getConceptVersion(i);
 		}
 		return null;
 	}
 	
-	private static ConceptVersionBI getConceptVersion(int nid) {
-		try {
-			ConceptVersionBI result = dataStore.getConceptVersion(
-					StandardViewCoordinates.getSnomedInferredThenStatedLatest(), nid);
+	/**
+	 * If the passed in value is a {@link UUID}, calls {@link #getConceptVersion(UUID)}
+	 * Next, if no hit, if the passed in value is parseable as a long, treats it as an SCTID and converts that to UUID and 
+	 * then calls {@link #getConceptVersion(UUID)}
+	 * Next, if no hit, if the passed in value is parseable as a int, calls {@link #getConceptVersion(int)}
+	 * 
+	 * All done in a background thread, method returns immediately
+	 * 
+	 * @param identifier - what to search for
+	 * @param callback - who to inform when lookup completes
+	 * @param callId - An arbitrary identifier that will be returned to the caller when this completes
+	 */
+	public static void lookupSnomedIdentifier(final String identifier, final ConceptLookupCallback callback, final Integer callId)
+	{
+		LOG.debug("Threaded Lookup: '{}'", identifier);
+		final long submitTime = System.currentTimeMillis();
+		Runnable r = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				ConceptVersionBI c = lookupSnomedIdentifier(identifier);
+				callback.lookupComplete(c, submitTime, callId);
+			}
+		};
+		Utility.execute(r);
+	}
+
+	/**
+	 * Get the ConceptVersion identified by UUID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
+	 * only if the concept exists at that point.  Returns null otherwise.
+	 */
+	public static ConceptVersionBI getConceptVersion(UUID uuid)
+	{
+		LOG.debug("Get ConceptVersion: '{}'", uuid);
+		
+		if (uuid == null)
+		{
+			return null;
+		}
+		try
+		{
+			ConceptVersionBI result = dataStore.getConceptVersion(getViewCoordinate(), uuid);
 
 			// Nothing like an undocumented getter which, rather than returning null when
 			// the thing you are asking for doesn't exist - it goes off and returns
 			// essentially a new, empty, useless node. Sigh.
-			if (result.getUUIDs().size() == 0) {
+			if (result.getUUIDs().size() == 0)
+			{
 				return null;
 			}
 
 			return result;
-		} catch (IOException ex) {
-			LOG.warn("Trouble getting concept: " + nid, ex);
+		}
+		catch (IOException ex)
+		{
+			LOG.error("Trouble getting concept: " + uuid, ex);
+		}
+		return null;
+	}
+	
+	/**
+	 * Get the ConceptVersion identified by NID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
+	 * only if the concept exists at that point.  Returns null otherwise.
+	 */
+	public static ConceptVersionBI getConceptVersion(int nid)
+	{
+		LOG.debug("Get concept by nid: '{}'", nid);
+		if (nid == 0)
+		{
+			return null;
+		}
+		try
+		{
+			ConceptVersionBI result = dataStore.getConceptVersion(getViewCoordinate(), nid);
+			// Nothing like an undocumented getter which, rather than returning null when
+			// the thing you are asking for doesn't exist - it goes off and returns
+			// essentially a new, empty, useless node. Sigh.
+			if (result.getUUIDs().size() == 0)
+			{
+				return null;
+			}
+			return result;
+		}
+		catch (IOException ex)
+		{
+			LOG.error("Trouble getting concept: " + nid, ex);
 		}
 		return null;
 	}
 
-	public static ConceptVersionBI lookupSnomedIdentifierAsCV(int nid) {
-		LOG.debug("WB DB NID Lookup '" + nid + "'");
-
-		// Null check.
-		if (nid >= 0) {
-			return null;
-		}
-
-		ConceptVersionBI result = getConceptVersion(nid);
-
-		return result;
-	}
-
-	public static ViewCoordinate getViewCoordinate() {
-		try {
+	/**
+	 * Currently configured to return InferredThenStatedLatest + INACTIVE status
+	 */
+	public static ViewCoordinate getViewCoordinate()
+	{
+		try
+		{
 			ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
 			vc.getAllowedStatus().add(Status.INACTIVE);
-			
 			return vc;
-		} catch (IOException e) {
-			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			LOG.error("Unexpected error fetching view coordinates!", e);
 			return null;
 		}
 	}
@@ -456,7 +496,7 @@ public class WBUtility {
 
 	public static void addUncommitted(int nid) {
 		try {
-			ConceptVersionBI con = lookupSnomedIdentifierAsCV(nid);
+			ConceptVersionBI con = getConceptVersion(nid);
 			dataStore.addUncommitted(con);
 		} catch (IOException e) {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
@@ -464,9 +504,9 @@ public class WBUtility {
 		}
 	}
 
-	public static void addUncommitted(UUID uid) {
+	public static void addUncommitted(UUID uuid) {
 		try {
-			ConceptVersionBI con = lookupSnomedIdentifierAsCV(uid);
+			ConceptVersionBI con = getConceptVersion(uuid);
 			dataStore.addUncommitted(con);
 		} catch (IOException e) {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...

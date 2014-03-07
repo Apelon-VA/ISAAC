@@ -18,19 +18,16 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.StringUtils;
@@ -44,8 +41,7 @@ public class ParentReplace extends Operation
 {
 	private ComboBox<String> replaceOptions_;
 	private StringProperty replaceOptionsInvalidString_ = new SimpleStringProperty("A concept must be selected from this drop down");
-	private StringProperty withConceptInvalidString_ = new SimpleStringProperty("A Concept is required in this field");
-	private TextField withConcept_;
+	private ConceptNode withConcept_;
 
 	private BooleanBinding operationIsReady_;
 
@@ -61,12 +57,10 @@ public class ParentReplace extends Operation
 		root_.add(ErrorMarkerUtils.setupErrorMarker(replaceOptions_, replaceOptionsInvalidString_), 1, 0);
 
 		root_.add(new Label("With Parent: "), 0, 1);
-		withConcept_ = new TextField();
-		withConcept_.setPromptText("Concept Required");
-		Node withConceptWrapper = ErrorMarkerUtils.setupErrorMarker(withConcept_, withConceptInvalidString_);
-		root_.add(withConceptWrapper, 1, 1);
+		withConcept_ = new ConceptNode(null, true);
+		root_.add(withConcept_.getNode(), 1, 1);
 
-		GridPane.setHgrow(withConceptWrapper, Priority.ALWAYS);
+		GridPane.setHgrow(withConcept_.getNode(), Priority.ALWAYS);
 
 		initActionListeners();
 	}
@@ -96,33 +90,16 @@ public class ParentReplace extends Operation
 			}
 		});
 		
-		withConcept_.textProperty().addListener(new ChangeListener<String>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
-			{
-				if (StringUtils.isNotBlank(newValue))
-				{
-					withConceptInvalidString_.set(null);
-				}
-				else
-				{
-					withConceptInvalidString_.set("Concept Required");
-				}
-				
-			}
-		});
-
 		operationIsReady_ = new BooleanBinding()
 		{
 			{
-				super.bind(replaceOptionsInvalidString_, withConceptInvalidString_);
+				super.bind(replaceOptionsInvalidString_, withConcept_.isValid());
 			}
 
 			@Override
 			protected boolean computeValue()
 			{
-				if (StringUtils.isBlank(replaceOptionsInvalidString_.get()) && StringUtils.isBlank(withConceptInvalidString_.get()))
+				if (StringUtils.isBlank(replaceOptionsInvalidString_.get()) && withConcept_.isValid().get())
 				{
 					return true;
 				}

@@ -138,7 +138,7 @@ public class RefsetViewController {
 //			if (!isAnnotation) {
 //				members = refset.getRefsetMembersActive();
 //			} else {
-				component = WBUtility.lookupSnomedIdentifierAsCV(componentUUID_);
+				component = WBUtility.getConceptVersion(componentUUID_);
 				if (component == null)
 				{
 					System.err.println("Couldn't find component " + componentUUID_);
@@ -153,7 +153,7 @@ public class RefsetViewController {
 		}
 		
 		data.clear();
-		ConceptVersionBI refset = WBUtility.lookupSnomedIdentifierAsCV(refsetUUID_);
+		ConceptVersionBI refset = WBUtility.getConceptVersion(refsetUUID_);
 		refsetNid_ = refset.getNid();
 		
 		try {
@@ -177,7 +177,7 @@ public class RefsetViewController {
 				{
 					ConceptVersionBI refCompCon;
 					if (!isAnnotation) {
-						refCompCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
+						refCompCon = WBUtility.getConceptVersion(member.getReferencedComponentNid());
 					} else {
 						refCompCon = component;
 					}

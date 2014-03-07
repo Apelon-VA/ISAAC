@@ -17,13 +17,6 @@
 
     <dependencies>
     
-        <!-- OTF Query Implementation. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>query-implementation</artifactId>
-        </dependency>
-    
-    
         <!-- ISAAC App Utils. -->
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>

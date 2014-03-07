@@ -23,7 +23,7 @@ import java.util.Collection;
 /**
  * Handle object to get search results.
  *
- * @author Dan Armbrust
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @author ocarlsen
  */
 public class SearchHandle {

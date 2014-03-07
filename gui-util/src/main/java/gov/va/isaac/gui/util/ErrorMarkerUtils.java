@@ -74,7 +74,7 @@ public class ErrorMarkerUtils
 		StackPane.setAlignment(initialControl, Pos.CENTER_LEFT);
 		stackPane.getChildren().add(exclamation);
 		StackPane.setAlignment(exclamation, Pos.CENTER_RIGHT);
-		double insetFromRight = (initialControl instanceof ComboBox ? 20.0 : 5.0);
+		double insetFromRight = (initialControl instanceof ComboBox ? 30.0 : 5.0);
 		StackPane.setMargin(exclamation, new Insets(0.0, insetFromRight, 0.0, 0.0));
 		return stackPane;
 	}
@@ -103,7 +103,7 @@ public class ErrorMarkerUtils
 		else
 		{
 			StackPane.setAlignment(information, Pos.CENTER_RIGHT);
-			double insetFromRight = (initialControl instanceof ComboBox ? 20.0 : 5.0);
+			double insetFromRight = (initialControl instanceof ComboBox ? 30.0 : 5.0);
 			StackPane.setMargin(information, new Insets(0.0, insetFromRight, 0.0, 0.0));
 		}
 		return stackPane;
