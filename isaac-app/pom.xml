@@ -60,6 +60,13 @@
             <version>${project.parent.version}</version>
         </dependency>
         
+        <!-- ISAAC List / Batch View. -->
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>list-view</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
             <artifactId>otf-util</artifactId>

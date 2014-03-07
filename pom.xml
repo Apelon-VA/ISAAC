@@ -271,6 +271,7 @@
         <module>isaac-workflow</module>
         <module>refset-view</module>
         <module>info-model-view</module>
+        <module>list-view</module>
     </modules>
 
     <reporting>
