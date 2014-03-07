@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -63,9 +62,10 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 {
 	Logger logger = LoggerFactory.getLogger(LookAheadConceptPopup.class);
 	private TextField sourceTextField;
+	private ComboBox<ComboBoxConcept> sourceComboBox = null;
 	VBox popupContent = new VBox();
 	private VBox displayedSearchResults = new VBox();
-	private List<UUID> uuidArray = new ArrayList<>();
+	private List<PopUpResult> popUpResults = new ArrayList<>();
 	private int currentSelection = -1;
 	private boolean enableMouseHover = false;
 	private boolean stylesAdded = false;
@@ -84,11 +84,27 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 	private HashMap<Integer, SearchHandle> runningSearches = new HashMap<>();
 	private boolean above = false;
 
+	private class PopUpResult
+	{
+		PopUpResult(int nid, String description)
+		{
+			this.nid = nid;
+			this.description = description;
+		}
+		int nid;
+		String description;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public LookAheadConceptPopup(Control field)
 	{
 		if (field instanceof ComboBox)
 		{
 			this.sourceTextField = ((ComboBox<?>) field).getEditor();
+			if (((ComboBox<?>)field).getValue() instanceof ComboBoxConcept)
+			{
+				this.sourceComboBox = (ComboBox<ComboBoxConcept>) field;
+			}
 		}
 		else if (field instanceof TextField)
 		{
@@ -186,7 +202,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 				}
 				else
 				{
-					if (uuidArray.size() > 0)
+					if (popUpResults.size() > 0)
 					{
 						header.setText("Suggested Concepts");
 					}
@@ -199,6 +215,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		});
 
 		popupContent.getChildren().add(displayedSearchResults);
+		//TODO figure out how to deal with width better, so it isn't too small, and doesn't go off screen.
 		popupContent.prefWidthProperty().bind(sourceTextField.widthProperty());
 		popupContent.getStyleClass().add("lookAheadItemBorder");
 		popupContent.getStyleClass().add("lookAheadDialogBackground");
@@ -318,13 +335,20 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 			box.getChildren().add(matchString);
 		}
 
-		uuidArray.add(idx, c.getPrimordialUuid());
+		popUpResults.add(idx, new PopUpResult(c.getNid(), concept.getText()));
 		box.setOnMouseClicked(new EventHandler<MouseEvent>()
 		{
 			@Override
 			public void handle(MouseEvent event)
 			{
-				sourceTextField.setText(uuidArray.get(idx).toString());
+				if (sourceComboBox == null)
+				{
+					sourceTextField.setText(popUpResults.get(idx).description);
+				}
+				else
+				{
+					sourceComboBox.setValue(new ComboBoxConcept(popUpResults.get(idx).description, popUpResults.get(idx).nid, false));
+				}
 				sourceTextField.getParent().requestFocus();
 				closeLookAheadPanel();
 			}
@@ -355,7 +379,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		hide();
 		enableMouseHover = false;
 		displayedSearchResults.getChildren().clear();
-		uuidArray.clear();
+		popUpResults.clear();
 		currentSelection = -1;
 	}
 
@@ -378,7 +402,14 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 					//It processes it even if it is consumed - firing the changelistener.  So, when we set the UUID like this, lookup gets 
 					//called twice.  Once with whatever letters they had typed before arrowing down, and once again when the UUID hits.
 					//In practice, its fairly harmless.
-					sourceTextField.setText(uuidArray.get(currentSelection).toString());
+					if (sourceComboBox == null)
+					{
+						sourceTextField.setText(popUpResults.get(currentSelection).description);
+					}
+					else
+					{
+						sourceComboBox.setValue(new ComboBoxConcept(popUpResults.get(currentSelection).description, popUpResults.get(currentSelection).nid, false));
+					}
 					sourceTextField.getParent().requestFocus();
 					closeLookAheadPanel();
 					return;
@@ -476,7 +507,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 					public void run()
 					{
 						displayedSearchResults.getChildren().clear();
-						uuidArray.clear();
+						popUpResults.clear();
 						currentSelection = -1;
 						for (CompositeSearchResult result : sortedResults)
 						{
