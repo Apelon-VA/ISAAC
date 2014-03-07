@@ -59,8 +59,6 @@ public class SearchHandler
 		return doSearch(query, sizeLimit, true, callback, taskId);
 	}
 
-	// TODO this needs massive repairs to fix the prefixSearches
-
 	/**
 	 * Logs an error and returns no results if a local database is not available. Otherwise, returns results sorted by score.
 	 */
@@ -119,7 +117,7 @@ public class SearchHandler
 							// Look for description matches.
 							ComponentProperty field = ComponentProperty.DESCRIPTION_TEXT;
 							int limit = 1000;
-							List<SearchResult> searchResults = descriptionIndexer.query(localQuery, field, limit);
+							List<SearchResult> searchResults = descriptionIndexer.query(localQuery, prefixSearch, field, limit, Long.MIN_VALUE);
 							final int resultCount = searchResults.size();
 							LOG.debug(resultCount + " results");
 
