@@ -57,15 +57,15 @@
     </properties>
     
     <dependencyManagement>
+        <!-- The dependencies that we expect child modules may need to depend on - with the versions and 
+        scopes set to reasonable defaults. -->
         <dependencies>
-            
             <!-- OTF.  Includes JavaFX 2.2.45. -->
             <dependency>
                 <groupId>org.ihtsdo.otf</groupId>
                 <artifactId>tcc-datastore</artifactId>
                 <version>${otf-versioning.version}</version>
                 <type>jar</type>
-                
                 <!-- Exclude JavaFX 2.2.45 -->
                 <exclusions>
                     <exclusion>
@@ -76,11 +76,10 @@
             </dependency>
             
             <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>query-implementation</artifactId>
-            <version>${otf-query.version}</version>
-            <type>jar</type>
-                
+                <groupId>org.ihtsdo.otf</groupId>
+                <artifactId>query-implementation</artifactId>
+                <version>${otf-query.version}</version>
+                <type>jar</type>
                 <!-- Exclude JavaFX 2.2.45 -->
                 <exclusions>
                     <exclusion>
@@ -89,10 +88,34 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- The native logback implementation (note, the logback api comes from parent) -->
+            <dependency> 
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.0.13</version>
+                <!-- Default to test scope - only the Parent app should need them at normal scope.   -->
+                <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
+                <scope>test</scope>  
+            </dependency>
+
+            <!-- Redirects Java logging into logback -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.11</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>1.7.0</version>
+                <!-- Default to test scope - only the Parent app should need them at normal scope.   -->
+                <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
+                <scope>test</scope>
+            </dependency>
+            
+            <!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>1.7.0</version>
+                <!-- Default to test scope - only the Parent app should need them at normal scope.   -->
+                <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -194,7 +217,7 @@
     </build>
 
     <dependencies>
-    
+        <!-- The dependencies that we give to all child modules by default.  Note - most of these are test scope only -->
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
@@ -205,6 +228,32 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
+        </dependency>
+        
+        <!-- JUnit (test scope only by default) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        
+         <!-- The native logback implementation (test scope only by default) -->
+        <dependency> 
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <!-- Redirects Java logging into logback (test scope only by default) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+        
+        <!-- Redirects log4j into logback - note - we must not include log4j in our classpath. (test scope only by default) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
         </dependency>
         
     </dependencies>

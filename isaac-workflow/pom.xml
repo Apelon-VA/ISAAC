@@ -20,9 +20,5 @@
             <artifactId>kie-services-client</artifactId>
             <version>6.0.1.Final</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
     </dependencies>
 </project>

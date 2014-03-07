@@ -35,12 +35,6 @@
             <artifactId>tcc-datastore</artifactId>
         </dependency>
    
-        <!-- JUnit. -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>
