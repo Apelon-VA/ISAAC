@@ -19,20 +19,14 @@
 package gov.va.isaac.models.cem.importer;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.models.util.ImporterBase;
+import gov.va.isaac.models.util.MetadataCreatorBase;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
-import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,40 +37,48 @@ import org.slf4j.LoggerFactory;
  * @author alo
  * @author ocarlsen
  */
-public class CEMMetadataCreator extends ImporterBase {
+public class CEMMetadataCreator extends MetadataCreatorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
-
-    private static final String REFSET_ROOT = "7e38cd2d-6f1a-3a81-be0b-21e6090573c2";
-    private static final String REFSET_ATTRIBUTE_ROOT = "7e52203e-8a35-3121-b2e7-b783b34d97f2";
 
     public CEMMetadataCreator() throws ValidationException, IOException {
         super();
     }
 
+    @Override
     @SuppressWarnings("unused")
-    public void createMetadata() throws Exception {
-        LOG.info("Preparing to create metadata");
+    public boolean createMetadata() throws Exception {
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
 
-        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_ROOT));
-        LOG.info("Refsets root:" + refsetsRoot.toString());
+        // Check if metadata already created.
+        ConceptChronicleBI CEMRefsets = getConcept(CEMMetadataBinding.CEM_REFSET.getUuids()[0]);
+        if (CEMRefsets != null) {
+            LOG.info("CEM metadata already created.");
+            return false;
+        }
 
-        ConceptChronicleBI CEMRefset = createNewConcept(refsetsRoot, "CEM reference sets (foundation metadata concept)", "CEM reference sets");
+        LOG.info("Preparing to create CEM metadata.");
 
-        ConceptChronicleBI CEMDataRefset = createNewConcept(CEMRefset, "CEM data reference set (foundation metadata concept)", "CEM data reference set");
-        ConceptChronicleBI CEMTypeRefset = createNewConcept(CEMRefset, "CEM type reference set (foundation metadata concept)", "CEM type reference set");
-        ConceptChronicleBI CEMKeyRefset = createNewConcept(CEMRefset, "CEM key reference set (foundation metadata concept)", "CEM key reference set");
-        ConceptChronicleBI CEMInfoRefset = createNewConcept(CEMRefset, "CEM info reference set (foundation metadata concept)", "CEM info reference set");
-        ConceptChronicleBI CEMCompositionRefset = createNewConcept(CEMRefset, "CEM composition reference set (foundation metadata concept)", "CEM composition reference set");
-        ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRefset, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
-        ConceptChronicleBI CEMConstraintPath = createNewConcept(CEMRefset, "CEM constraints path reference set (foundation metadata concept)", "CEM constraint path");
-        ConceptChronicleBI CEMConstraintValue = createNewConcept(CEMRefset, "CEM constraints value reference set (foundation metadata concept)", "CEM constraint value");
-        ConceptChronicleBI CEMValue = createNewConcept(CEMRefset, "CEM value reference set (foundation metadata concept)", "CEM constraint path");
-        
-        ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_ROOT));
+        ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_CONCEPT));
+        LOG.debug("Refsets root:" + refsetsRoot.toString());
+
+        CEMRefsets = createNewConcept(refsetsRoot, "CEM reference sets (foundation metadata concept)", "CEM reference sets");
+
+        ConceptChronicleBI CEMDataRefset = createNewConcept(CEMRefsets, "CEM data reference set (foundation metadata concept)", "CEM data reference set");
+        ConceptChronicleBI CEMTypeRefset = createNewConcept(CEMRefsets, "CEM type reference set (foundation metadata concept)", "CEM type reference set");
+        ConceptChronicleBI CEMKeyRefset = createNewConcept(CEMRefsets, "CEM key reference set (foundation metadata concept)", "CEM key reference set");
+        ConceptChronicleBI CEMInfoRefset = createNewConcept(CEMRefsets, "CEM info reference set (foundation metadata concept)", "CEM info reference set");
+        ConceptChronicleBI CEMCompositionRefset = createNewConcept(CEMRefsets, "CEM composition reference set (foundation metadata concept)", "CEM composition reference set");
+        ConceptChronicleBI CEMConstraintsRefset = createNewConcept(CEMRefsets, "CEM constraints reference set (foundation metadata concept)", "CEM constraints reference set");
+        ConceptChronicleBI CEMConstraintPath = createNewConcept(CEMRefsets, "CEM constraints path reference set (foundation metadata concept)", "CEM constraint path");
+        ConceptChronicleBI CEMConstraintValue = createNewConcept(CEMRefsets, "CEM constraints value reference set (foundation metadata concept)", "CEM constraint value");
+        ConceptChronicleBI CEMValue = createNewConcept(CEMRefsets, "CEM value reference set (foundation metadata concept)", "CEM constraint path");
+
+        ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));
+        LOG.debug("Attributes root:" + attributesRoot.toString());
+
         ConceptChronicleBI CEMAttributes = createNewConcept(attributesRoot, "CEM attributes (foundation metadata concept)", "CEM attributes");
 
         ConceptChronicleBI CEMDataTypes = createNewConcept(CEMAttributes, "CEM data types (foundation metadata concept)", "CEM data types");
@@ -179,33 +181,7 @@ public class CEMMetadataCreator extends ImporterBase {
 
         getDataStore().commit();
 
-        LOG.info("Metadata creation finished");
-    }
-
-	private ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
-            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
-        List<ConceptChronicleBI> oneParent = new ArrayList<ConceptChronicleBI>();
-        oneParent.add(parent);
-        return createNewConcept(oneParent, fsn, prefTerm);
-    }
-
-    private ConceptChronicleBI createNewConcept(List<ConceptChronicleBI> parents, String fsn,
-            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
-        LanguageCode lc = LanguageCode.EN_US;
-        UUID isA = Snomed.IS_A.getUuids()[0];
-        IdDirective idDir = IdDirective.GENERATE_HASH;
-        UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
-        UUID[] parentsUuids = new UUID[parents.size()];
-        int count = 0;
-        for (ConceptChronicleBI parent : parents) {
-            parentsUuids[count] = parent.getPrimordialUuid();
-            count++;
-        }
-        ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentsUuids);
-
-        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
-        getDataStore().addUncommitted(newCon);
-
-        return newCon;
+        LOG.info("CEM metadata creation finished.");
+        return true;
     }
 }
