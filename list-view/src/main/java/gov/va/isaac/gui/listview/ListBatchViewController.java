@@ -18,10 +18,12 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -41,16 +44,23 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -121,6 +131,68 @@ public class ListBatchViewController
 		col1.prefWidthProperty().bind(conceptTable.widthProperty().subtract(3.0));
 		col1.setCellValueFactory(new PropertyValueFactory<SimpleDisplayConcept, String>("description"));
 		conceptTable.getColumns().add(col1);
+		conceptTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		conceptTable.setOnKeyReleased(new EventHandler<KeyEvent>()
+		{
+			@Override
+			public void handle(KeyEvent event)
+			{
+				if (event.getCode() == KeyCode.DELETE)
+				{
+					for (SimpleDisplayConcept sdc : conceptTable.getSelectionModel().getSelectedItems())
+					{
+						conceptTable.getItems().remove(sdc);
+					}
+					conceptTable.getSelectionModel().clearSelection();
+				}
+			}
+		});
+		
+		conceptTable.setRowFactory(new Callback<TableView<SimpleDisplayConcept>, TableRow<SimpleDisplayConcept>>()
+		{
+			@Override
+			public TableRow<SimpleDisplayConcept> call(TableView<SimpleDisplayConcept> param)
+			{
+				final TableRow<SimpleDisplayConcept> row = new TableRow<SimpleDisplayConcept>();
+				final ContextMenu rowMenu = new ContextMenu();
+				MenuItem viewItem = new MenuItem("View Concept");
+				viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+				viewItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						AppContext.getCommonDialogs().showConceptDialog(row.getItem().getNid());
+					}
+				});
+				MenuItem removeItem = new MenuItem("Delete");
+				removeItem.setGraphic(Images.DELETE.createImageView());
+				removeItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						if (conceptTable.getSelectionModel().getSelectedItems().size() > 1)
+						{
+							for (SimpleDisplayConcept sdc : conceptTable.getSelectionModel().getSelectedItems())
+							{
+								conceptTable.getItems().remove(sdc);
+							}
+							conceptTable.getSelectionModel().clearSelection();
+						}
+						else
+						{
+							conceptTable.getItems().remove(row.getItem());
+						}
+					}
+				});
+				rowMenu.getItems().addAll(viewItem, removeItem);
+
+				// only display context menu for non-null items:
+				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
+				return row;
+			}
+		});
 
 		//remove it, wrap it, readd it.
 		executeOperationsToolbar.getItems().remove(executeOperationsButton);

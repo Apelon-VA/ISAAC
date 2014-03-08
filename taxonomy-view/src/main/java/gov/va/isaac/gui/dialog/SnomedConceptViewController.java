@@ -62,7 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Controller class for {@link SnomedConceptView}.
+ * Controller class for {@link ConceptView}.
  *
  * @author ocarlsen
  */
@@ -157,7 +157,7 @@ public class SnomedConceptViewController {
 
                                     @Override
                                     public void handle(ActionEvent ignored) {
-                                        AppContext.getCommonDialogs().showSnomedConceptDialog(ref.uuid);
+                                        AppContext.getCommonDialogs().showConceptDialog(ref.uuid);
                                     }
                                 });
                                 cm.getItems().add(mi1);
@@ -187,7 +187,7 @@ public class SnomedConceptViewController {
             mi.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent ignore) {
-                    AppContext.getCommonDialogs().showSnomedConceptDialog(id.getAuthorityRef().getUuid());
+                    AppContext.getCommonDialogs().showConceptDialog(id.getAuthorityRef().getUuid());
                 }
             });
 

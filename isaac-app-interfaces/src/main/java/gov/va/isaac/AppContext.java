@@ -21,7 +21,7 @@ package gov.va.isaac;
 import java.io.IOException;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
-import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
+import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializerCustom;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -77,8 +77,8 @@ public class AppContext
 		return getService(ApplicationWindowI.class);
 	}
 
-	public static SnomedConceptViewI createSnomedConceptViewWindow()
+	public static ConceptViewI createConceptViewWindow()
 	{
-		return getService(SnomedConceptViewI.class);
+		return getService(ConceptViewI.class);
 	}
 }

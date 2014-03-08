@@ -139,7 +139,7 @@ public class SearchViewController implements TaskCompleteCallback {
 
                                 @Override
                                 public void handle(ActionEvent event) {
-                                    AppContext.getCommonDialogs().showSnomedConceptDialog(
+                                    AppContext.getCommonDialogs().showConceptDialog(
                                             item.getConcept().getUUIDs().get(0));
                                 }
                             });
@@ -170,7 +170,7 @@ public class SearchViewController implements TaskCompleteCallback {
                                 public void handle(MouseEvent mouseEvent) {
                                     if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                                         if (mouseEvent.getClickCount() == 2) {
-                                            AppContext.getCommonDialogs().showSnomedConceptDialog(
+                                            AppContext.getCommonDialogs().showConceptDialog(
                                                     wbConcept.getUUIDs().get(0));
                                         }
                                     }

@@ -53,6 +53,7 @@ public class CopyableLabel extends Label {
 
     public static void addCopyMenu(final Label targetLabel) {
         MenuItem mi = new MenuItem("Copy");
+        mi.setGraphic(Images.COPY.createImageView());
 
         // Add acion handler to copy label text.
         mi.setOnAction(new EventHandler<ActionEvent>() {

@@ -22,17 +22,22 @@ import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * SnomedConceptViewI
+ * {@link ConceptViewI}
  * 
  * An interface that requests a pop up window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface SnomedConceptViewI
+public interface ConceptViewI
 {
 	/**
-	 * Present the default SnomedConceptView window to the user
+	 * Present the default ConceptView window to the user
 	 */
-	public void showConcept(UUID conceptUUID);
+	public void showConcept(UUID uuid);
+	
+	/**
+	 * Present the default ConceptView window to the user
+	 */
+	public void showConcept(int nid);
 }
