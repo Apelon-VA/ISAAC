@@ -39,6 +39,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -103,7 +104,7 @@ public class RefsetViewController {
 					reloadData();
 				}
 			});
-		}
+	}
 	
 	public AnchorPane getRoot() {
 		return refsetAnchor;
@@ -137,7 +138,7 @@ public class RefsetViewController {
 //			if (!isAnnotation) {
 //				members = refset.getRefsetMembersActive();
 //			} else {
-				component = WBUtility.lookupSnomedIdentifierAsCV(componentUUID_);
+				component = WBUtility.getConceptVersion(componentUUID_);
 				if (component == null)
 				{
 					System.err.println("Couldn't find component " + componentUUID_);
@@ -152,7 +153,7 @@ public class RefsetViewController {
 		}
 		
 		data.clear();
-		ConceptVersionBI refset = WBUtility.lookupSnomedIdentifierAsCV(refsetUUID_);
+		ConceptVersionBI refset = WBUtility.getConceptVersion(refsetUUID_);
 		refsetNid_ = refset.getNid();
 		
 		try {
@@ -160,17 +161,23 @@ public class RefsetViewController {
 				List<RefexVersionBI> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					memberVersion.add(memChron.getVersion(vc));
+					RefexVersionBI version = memChron.getVersion(vc);
+					
+					if (version.isActive()) {
+						memberVersion.add(version);
+					}
 				}
 				else
 				{
 					memberVersion.addAll(memChron.getVersions());
 				}
+				RefexVersionBI previousMember = null;
+				
 				for (RefexVersionBI member : memberVersion)
 				{
 					ConceptVersionBI refCompCon;
 					if (!isAnnotation) {
-						refCompCon = WBUtility.lookupSnomedIdentifierAsCV(member.getReferencedComponentNid());
+						refCompCon = WBUtility.getConceptVersion(member.getReferencedComponentNid());
 					} else {
 						refCompCon = component;
 					}
@@ -179,10 +186,12 @@ public class RefsetViewController {
 					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
 					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
 						member.getAssemblageNid() == refset.getNid()) {
-						handleComplexRefset(member, refCompCon);
+						handleComplexRefset(member, previousMember, refCompCon);
 					} else {
-						processMembers(member, refCompCon);
+						processMembers(member, previousMember, refCompCon);
 					}
+					
+					previousMember = member;
 				}
 			}
 		} catch (Exception e) {
@@ -193,31 +202,31 @@ public class RefsetViewController {
 	}
 
 
-	private void handleComplexRefset(RefexVersionBI member, ConceptVersionBI refCompCon) {
+	private void handleComplexRefset(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) {
 		if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
-			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
+			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 			refsetType = member.getRefexType();
 		}
 		
 		// Have needed member, add to data
-		CEMCompositRefestInstance instance = (CEMCompositRefestInstance)RefsetInstanceAccessor.getInstance(refCompCon, member, RefexType.UNKNOWN);
+		CEMCompositRefestInstance instance = (CEMCompositRefestInstance)RefsetInstanceAccessor.getInstance(refCompCon, member, previousMember, RefexType.UNKNOWN);
 		
 		data.add(instance);
 	}
 
-	private void processMembers(RefexVersionBI member, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
+	private void processMembers(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
 		if (member.getAssemblageNid() == refsetNid_) {
 			// Setup if Necessary
 			//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
 			//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected 
 			//from the data in the table, so it can take into account multiple refex types.
 			if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
-				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon);
+				rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 				refsetType = member.getRefexType();
 			}
 
 			// Have needed member, add to data
-			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCompCon, member, refsetType);
+			RefsetInstance instance = RefsetInstanceAccessor.getInstance(refCompCon, member, previousMember, refsetType);
 			data.add(instance);
 		}
 
@@ -227,14 +236,21 @@ public class RefsetViewController {
 			List<RefexVersionBI> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				annotVersions.add((RefexVersionBI) annot.getVersion(vc));
+				RefexVersionBI version = (RefexVersionBI) annot.getVersion(vc);
+				if (version.isActive()) {
+					annotVersions.add(version);
+				}
 			}
 			else {
 				annotVersions.addAll((Collection<? extends RefexVersionBI>) annot.getVersions());
 			}
+			
+			RefexVersionBI prevAnnotVersion = null;
 			for (RefexVersionBI annotVersion : annotVersions)
 			{
-				processMembers(annotVersion, refCompCon);
+				processMembers(annotVersion, prevAnnotVersion, refCompCon);
+				
+				prevAnnotVersion = annotVersion;
 			}
 		}
 	}

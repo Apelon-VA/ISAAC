@@ -63,5 +63,12 @@ public interface CommonDialogsI
 	 * implementation of a concept viewer dialog within the application.
 	 * @param conceptUUID
 	 */
-	public void showSnomedConceptDialog(UUID conceptUUID);
+	public void showConceptDialog(UUID conceptUUID);
+	
+	/**
+	 * Present a non-modal pop-up window which displays the details of a concept.  Uses the default 
+	 * implementation of a concept viewer dialog within the application.
+	 * @param conceptUUID
+	 */
+	public void showConceptDialog(int conceptNID);
 }

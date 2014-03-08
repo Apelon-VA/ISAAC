@@ -183,6 +183,7 @@ public class App extends Application implements ApplicationWindowI{
         if (bdbFolder == null) {
             //do nothing... let the store use its own default
             //TODO OTF fix: note - the BDB defaults are not in sync with the Lucene defaults...  lucene will init in the wrong place and fail....
+        	//https://jira.ihtsdotools.org/browse/OTFISSUE-12
         }
         else
         {
@@ -223,7 +224,7 @@ public class App extends Application implements ApplicationWindowI{
         shutdown = true;
         try {
             //TODO OTF fix note - the current BDB access model gives me no way to know if I should call shutdown, as I don't know if it was started.
-            //If it wasn't started, calling shutdown tries to start the DB, because it inits in the constructor call.
+            //If it wasn't started, calling shutdown tries to start the DB, because it inits in the constructor call.  https://jira.ihtsdotools.org/browse/OTFISSUE-13
             ExtendedAppContext.getDataStore().shutdown();
             for (ShutdownBroadcastListenerI s : shutdownListeners_)
             {
@@ -264,7 +265,7 @@ public class App extends Application implements ApplicationWindowI{
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
         AppContext.setup();
-        // TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
+        // TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
         Field f = Hk2Looker.class.getDeclaredField("looker");
         f.setAccessible(true);
         f.set(null, AppContext.getServiceLocator());

@@ -22,8 +22,9 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
+import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
@@ -35,7 +36,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.glassfish.hk2.api.PerLookup;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
@@ -45,19 +46,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link Stage} which can be used to show a SNOMED concept detail view .
+ * A {@link Stage} which can be used to show a concept detail view .
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  * @author ocarlsen
  */
 @Service
 @PerLookup
-public class SnomedConceptView extends Stage implements SnomedConceptViewI {
+public class ConceptView extends Stage implements ConceptViewI {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private final SnomedConceptViewController controller;
 
-    private SnomedConceptView() throws IOException {
+    private ConceptView() throws IOException {
         //This is for HK2 to construct...
         super();
 
@@ -97,7 +98,7 @@ public class SnomedConceptView extends Stage implements SnomedConceptViewI {
              protected ConceptChronicleDdo call() throws Exception
              {
                  LOG.info("Loading concept with UUID " + conceptUUID);
-                 ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
+                 ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
                          VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
                  LOG.info("Finished loading concept with UUID " + conceptUUID);
 
@@ -133,5 +134,33 @@ public class SnomedConceptView extends Stage implements SnomedConceptViewI {
          };
 
          Utility.execute(task);
+    }
+
+    //TODO concept-view-tree is not stopping background threaded operations when this window is closed....
+    //TODO is also seems to fall into infinite loops at times...
+    
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#showConcept(int)
+     */
+    @Override
+    public void showConcept(int nid)
+    {
+        //TODO fix threading issues on this too...
+        try
+        {
+            ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(nid);
+            if (concept != null)
+            {
+                showConcept(concept.getPrimordialUuid());
+            }
+        }
+        catch (IOException e)
+        {
+            String title = "Unexpected error loading concept with nid " + nid;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+        }
+
     }
 }

@@ -86,4 +86,9 @@ public class CEMFetcher extends ExporterBase {
 
         return informationModel;
     }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
+    }
 }

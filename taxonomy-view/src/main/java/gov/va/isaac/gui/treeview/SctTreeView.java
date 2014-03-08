@@ -102,7 +102,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 LOG.debug("Loading concept {} as the root of a tree view", rootConcept);
                 ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
                         rootConcept,
-                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        WBUtility.getViewCoordinate(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
@@ -369,13 +369,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
 
-        ConceptVersionBI wbConcept = WBUtility.lookupSnomedIdentifierAsCV(conceptUUID);
+        //TODO see if this is still the case... we should be using the Fx APIs directly....
+        ConceptVersionBI wbConcept = WBUtility.getConceptVersion(conceptUUID);
         if (wbConcept == null) {
             return null;
         }
 
         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-        ViewCoordinate viewCoordinate = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+        ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
 
         return new ConceptChronicleDdo(

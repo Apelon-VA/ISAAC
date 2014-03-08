@@ -14,7 +14,12 @@
         <dependencySet>
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
-            <scope>runtime</scope>
+            <!-- Maven is broken (I know, you are shocked) and doesn't properly evaluate scopes on dependencies when the scop
+            is overridden in a child pom.  Sigh.  So, include all test, then exclude the test ones we don't actually need. -->
+            <scope>test</scope>
+            <excludes>
+                <exclude>junit:junit</exclude>
+            </excludes>
         </dependencySet>
     </dependencySets>
     <includeBaseDirectory>false</includeBaseDirectory>

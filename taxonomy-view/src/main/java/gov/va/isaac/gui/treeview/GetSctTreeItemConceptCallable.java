@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.WBUtility;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
@@ -85,7 +86,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
         concept = dataStore.getFxConcept(reference,
-                StandardViewCoordinates.getSnomedInferredThenStatedLatest(),
+                WBUtility.getViewCoordinate(),
                 versionPolicy, refexPolicy, relationshipPolicy);
 
         if ((concept.getConceptAttributes() == null)

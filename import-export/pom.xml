@@ -4,7 +4,7 @@
     <parent>
         <groupId>gov.va.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.0-Sprint_04-SNAPSHOT</version>
+        <version>1.0-Sprint_05-SNAPSHOT</version>
     </parent>
     <groupId>gov.va.isaac.modules</groupId>
     <artifactId>import-export</artifactId>
@@ -23,6 +23,13 @@
             <artifactId>gui-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+            
+        <!-- ISAAC OTF Utils. -->
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>otf-util</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         
         <!-- ISAAC Data Model. -->
         <dependency>
@@ -34,26 +41,6 @@
         <dependency>
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>tcc-datastore</artifactId>
-        </dependency>
- 
-         <!-- Redirects Java logging into logback -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>1.7.0</version>
-        </dependency>
-        
-        <!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.7.0</version>
-        </dependency>
-    
-        <!-- JUnit. -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
         </dependency>
 
     </dependencies>

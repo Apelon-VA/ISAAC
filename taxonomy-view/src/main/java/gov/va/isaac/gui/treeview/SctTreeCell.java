@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.gui.dialog.SnomedConceptView;
+import gov.va.isaac.gui.dialog.ConceptView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -220,7 +220,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public void handle(ActionEvent event) {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
-                Hk2Looker.get().getService(SnomedConceptView.class).showConcept(concept);
+                Hk2Looker.get().getService(ConceptView.class).showConcept(concept);
             }
         });
         mi.setGraphic(Images.CONCEPT_VIEW.createImageView());

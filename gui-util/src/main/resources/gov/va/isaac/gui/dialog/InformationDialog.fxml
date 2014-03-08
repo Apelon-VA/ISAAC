@@ -25,7 +25,7 @@
           <graphic>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
               <image>
-                <Image url="@information.png" preserveRatio="false" smooth="false" />
+                <Image url="@../../../../../icons/fugue/32x32/icons-shadowless/information.png" preserveRatio="false" smooth="false" />
               </image>
             </ImageView>
           </graphic>

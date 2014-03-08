@@ -4,7 +4,7 @@
     <parent>
         <groupId>gov.va.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.0-Sprint_04-SNAPSHOT</version>
+        <version>1.0-Sprint_05-SNAPSHOT</version>
     </parent>
     <groupId>gov.va.isaac.modules</groupId>
     <artifactId>search-view</artifactId>
@@ -17,24 +17,11 @@
 
     <dependencies>
     
-        <!-- OTF Query Implementation. -->
-        <dependency>
-            <groupId>org.ihtsdo.otf</groupId>
-            <artifactId>query-implementation</artifactId>
-        </dependency>
-    
-    
         <!-- ISAAC App Utils. -->
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
             <artifactId>otf-util</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-    
-        <!-- JUnit. -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
         </dependency>
 
     </dependencies>

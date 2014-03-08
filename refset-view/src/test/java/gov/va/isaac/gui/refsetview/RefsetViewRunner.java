@@ -61,7 +61,7 @@ public class RefsetViewRunner extends Application
 	public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
 		AppContext.setup();
-		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection....
+		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
 		Field f = Hk2Looker.class.getDeclaredField("looker");
 		f.setAccessible(true);
 		f.set(null, AppContext.getServiceLocator());

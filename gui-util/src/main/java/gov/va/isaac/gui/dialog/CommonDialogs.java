@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
-import gov.va.isaac.interfaces.gui.views.SnomedConceptViewI;
+import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import java.io.IOException;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -113,19 +113,38 @@ public class CommonDialogs implements CommonDialogsI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showSnomedConceptDialog(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showConceptDialog(java.util.UUID)
 	 */
 	@Override
-	public void showSnomedConceptDialog(UUID conceptUUID)
+	public void showConceptDialog(UUID uuid)
 	{
 		try
 		{
-			SnomedConceptViewI dialog = AppContext.createSnomedConceptViewWindow();
-			dialog.showConcept(conceptUUID);
+			ConceptViewI dialog = AppContext.createConceptViewWindow();
+			dialog.showConcept(uuid);
 		}
 		catch (Exception ex)
 		{
-			String message = "Unexpected error displaying snomed concept view";
+			String message = "Unexpected error displaying concept view";
+			LOG.warn(message, ex);
+			showErrorDialog("Unexpected Error", message, ex.getMessage());
+		}
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showConceptDialog(int)
+	 */
+	@Override
+	public void showConceptDialog(int conceptNID)
+	{
+		try
+		{
+			ConceptViewI dialog = AppContext.createConceptViewWindow();
+			dialog.showConcept(conceptNID);
+		}
+		catch (Exception ex)
+		{
+			String message = "Unexpected error displaying concept view";
 			LOG.warn(message, ex);
 			showErrorDialog("Unexpected Error", message, ex.getMessage());
 		}

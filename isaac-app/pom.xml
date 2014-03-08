@@ -5,7 +5,7 @@
     <parent>
         <groupId>gov.va.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.0-Sprint_04-SNAPSHOT</version>
+        <version>1.0-Sprint_05-SNAPSHOT</version>
     </parent>
     <groupId>gov.va.isaac.modules</groupId>
     <artifactId>isaac-app</artifactId>
@@ -60,6 +60,13 @@
             <version>${project.parent.version}</version>
         </dependency>
         
+        <!-- ISAAC List / Batch View. -->
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>list-view</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
             <artifactId>otf-util</artifactId>
@@ -76,25 +83,26 @@
             <artifactId>tcc-datastore</artifactId>
         </dependency>
         
+        <!-- Need to override the scope on these 3 logging packages -->
         <!-- The native logback implementation (note, the logback api comes from parent) -->
         <dependency> 
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Redirects Java logging into logback -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
-            <version>1.7.0</version>
+            <scope>compile</scope>
         </dependency>
         
         <!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.7.0</version>
+            <scope>compile</scope>
         </dependency>
         
     </dependencies>

@@ -76,7 +76,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	private Stage stage;
 	private VBox root = new VBox();
 	private VBox refsetArea = new VBox();
-	private CheckBox activeOnly = new CheckBox("Active Only");
+	private CheckBox activeOnly = new CheckBox("Show Only Latest Version");
 	private Button configure = new Button("Configure...");
 	private Popup popup = new Popup();
 	private HashMap<String, Node> refsetsOnDisplay = new HashMap<>();

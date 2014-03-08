@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.models.cem.importer;
 
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
@@ -29,17 +30,12 @@ import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
-import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.RefexCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
-import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
@@ -68,6 +64,9 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
     @SuppressWarnings("unused")
     public ConceptChronicleBI importModel(File file) throws Exception {
         LOG.info("Preparing to import CEM model from: " + file.getName());
+
+        // Make sure in background thread.
+        FxUtils.checkBackgroundThread();
 
         // Parse XML file.
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -116,7 +115,7 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
 
         // Parse CETYPE node attributes.
         String type = cetypeNode.getAttributes().getNamedItem(NAME).getTextContent();
-        addMemberInRefset(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
+        addRefexInStrExtensionRefset(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
         LOG.info("type: " + type);
 
         // Iterate through CETYPE node children and process.
@@ -128,7 +127,7 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
             switch (loopNode.getNodeName()) {
             case KEY:
                 String key = loopNode.getAttributes().getNamedItem(CODE).getTextContent();
-                addMemberInRefset(focusConcept, CEMMetadataBinding.CEM_KEY_REFSET, key);
+                addRefexInStrExtensionRefset(focusConcept, CEMMetadataBinding.CEM_KEY_REFSET, key);
                 LOG.info("key: " + key);
                 break;
             case DATA:
@@ -155,13 +154,15 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI qualConstraint = addMemberInConstraintsRefset(qual);
-                RefexChronicleBI qualPath = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
-                RefexChronicleBI qualValue = addMemberInRefset(qualConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, qualCard);
+                RefexChronicleBI qualPath = addRefexInStrExtensionRefset(qualConstraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
+                RefexChronicleBI qualValue = addRefexInStrExtensionRefset(qualConstraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, qualCard);
 
                 String qualCompValue = loopNode.getTextContent();
-            	if (qualCompValue != null && qualCompValue.length() > 0) {
-            		RefexChronicleBI qualCompRefex = addMemberInValueRefset(qual, qualCompValue);
-            	}
+                if (qualCompValue != null && qualCompValue.length() > 0) {
+                    RefexChronicleBI qualCompRefex = addMemberInValueRefset(qual, qualCompValue);
+                }
 
                 LOG.info(String.format("mod: %s %s %s %s", qualName, qualType, qualCard, qualCompValue));
                 break;
@@ -173,14 +174,16 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI modConstraint = addMemberInConstraintsRefset(mod);
-                RefexChronicleBI modPath = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
-                RefexChronicleBI modValue = addMemberInRefset(modConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, modCard);
+                RefexChronicleBI modPath = addRefexInStrExtensionRefset(modConstraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
+                RefexChronicleBI modValue = addRefexInStrExtensionRefset(modConstraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, modCard);
 
                 String modCompValue = loopNode.getTextContent();
-            	if (modCompValue != null && modCompValue.length() > 0) {
-            		RefexChronicleBI modCompRefex = addMemberInValueRefset(mod, modCompValue);
-            	}
-               
+                if (modCompValue != null && modCompValue.length() > 0) {
+                    RefexChronicleBI modCompRefex = addMemberInValueRefset(mod, modCompValue);
+                }
+
                 LOG.info(String.format("mod: %s %s %s %s", modName, modType, modCard, modCompValue));
                 break;
             case ATT:
@@ -191,14 +194,16 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI attConstraint = addMemberInConstraintsRefset(att);
-                RefexChronicleBI attPath = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
-                RefexChronicleBI attValue = addMemberInRefset(attConstraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, attCard);
+                RefexChronicleBI attPath = addRefexInStrExtensionRefset(attConstraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, CARD);
+                RefexChronicleBI attValue = addRefexInStrExtensionRefset(attConstraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, attCard);
 
                 String attCompValue = loopNode.getTextContent();
-            	if (attCompValue != null && attCompValue.length() > 0) {
-            		RefexChronicleBI attCompRefex = addMemberInValueRefset(att, attCompValue);
-            	}
-               
+                if (attCompValue != null && attCompValue.length() > 0) {
+                    RefexChronicleBI attCompRefex = addMemberInValueRefset(att, attCompValue);
+                }
+
                 LOG.info(String.format("att: %s %s %s %s", attName, attType, attCard, attCompValue));
                 break;
             case CONSTRAINT:
@@ -207,8 +212,10 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI constraint = addMemberInConstraintsRefset(focusConcept);
-                RefexChronicleBI constraintPath = addMemberInRefset(constraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI constraintValue = addMemberInRefset(constraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
+                RefexChronicleBI constraintPath = addRefexInStrExtensionRefset(constraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
+                RefexChronicleBI constraintValue = addRefexInStrExtensionRefset(constraint,
+                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
 
                 LOG.info(String.format("constraint: %s %s", path, value));
                 break;
@@ -224,99 +231,28 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
         return focusConcept;
     }
 
-    private RefexChronicleBI addMemberInValueRefset(RefexChronicleBI focusComponent, String value) throws IOException, InvalidCAB, ContradictionException {
-        RefexCAB newRefexCab = new RefexCAB(RefexType.STR,
-                focusComponent.getPrimordialUuid(),
-                CEMMetadataBinding.CEM_VALUE_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+    private RefexChronicleBI addMemberInValueRefset(RefexChronicleBI focusComponent, String value)
+            throws IOException, InvalidCAB, ContradictionException {
+        return addRefexInStrExtensionRefset(focusComponent, CEMMetadataBinding.CEM_VALUE_REFSET,
+                value);
+    }
 
-        newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, value);
-
-        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
-
-        LOG.info("newRefex constraints UUID:" + newRefex.getPrimordialUuid());
-
-        focusComponent.addAnnotation(newRefex);
-
-        return newRefex;
-	}
-
-	public RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
+    private RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
             ConceptSpec conceptExtension)
             throws IOException, InvalidCAB, ContradictionException {
-        RefexCAB newRefexCab = new RefexCAB(RefexType.CID,
-                focusConcept.getPrimordialUuid(),
-                CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
-
-        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, conceptExtension.getNid());
-
-        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
-
-        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
-
-        focusConcept.addAnnotation(newRefex);
-
-        return newRefex;
+        return addRefexInCidExtensionRefset(focusConcept, CEMMetadataBinding.CEM_DATA_REFSET,
+                conceptExtension);
     }
 
-    public RefexChronicleBI addMemberInRefset(ComponentChronicleBI focusComponent,
-            ConceptSpec refsetSpec, String stringExtension)
-            throws IOException, InvalidCAB, ContradictionException {
-        RefexCAB newRefexCab = new RefexCAB(RefexType.STR,
-                focusComponent.getPrimordialUuid(),
-                getDataStore().getUuidPrimordialForNid(refsetSpec.getNid()),
-                IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
-
-        newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
-
-        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
-
-        LOG.info("newRefex string UUID:" + newRefex.getPrimordialUuid());
-
-        focusComponent.addAnnotation(newRefex);
-
-        return newRefex;
-    }
-
-    public RefexChronicleBI addMemberInCompositionRefset(ConceptChronicleBI focusConcept,
+    private RefexChronicleBI addMemberInCompositionRefset(ConceptChronicleBI focusConcept,
             ConceptSpec componentExtension, String stringExtension)
             throws IOException, InvalidCAB, ContradictionException {
-        RefexCAB newRefexCab = new RefexCAB(RefexType.CID_STR,
-                focusConcept.getPrimordialUuid(),
-                CEMMetadataBinding.CEM_COMPOSITION_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
-
-        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtension.getNid());
-        newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
-
-        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
-
-        LOG.info("newRefex composition UUID:" + newRefex.getPrimordialUuid());
-
-        focusConcept.addAnnotation(newRefex);
-
-        return newRefex;
+        return addRefexInCidStrExtensionRefset(focusConcept, CEMMetadataBinding.CEM_COMPOSITION_REFSET,
+                componentExtension, stringExtension);
     }
 
-    public RefexChronicleBI addMemberInConstraintsRefset(ComponentChronicleBI focusComponent)
+    private RefexChronicleBI addMemberInConstraintsRefset(ComponentChronicleBI focusComponent)
             throws IOException, InvalidCAB, ContradictionException {
-        RefexCAB newRefexCab = new RefexCAB(RefexType.MEMBER,
-                focusComponent.getPrimordialUuid(),
-                CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getUuids()[0],
-                IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
-
-        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
-
-        LOG.info("newRefex constraints UUID:" + newRefex.getPrimordialUuid());
-
-        focusComponent.addAnnotation(newRefex);
-
-        return newRefex;
+        return addRefexInMemberRefset(focusComponent, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
     }
 }

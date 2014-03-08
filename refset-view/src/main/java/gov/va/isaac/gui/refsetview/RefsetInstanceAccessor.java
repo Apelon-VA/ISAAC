@@ -26,8 +26,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 import javafx.beans.property.SimpleStringProperty;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RefsetInstanceAccessor {
 	
-	private static SimpleDateFormat sdf = new SimpleDateFormat();
+	private static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyy h:mm:ss a");
 	private static final Logger logger = LoggerFactory.getLogger(RefsetInstanceAccessor.class);
 
 	public static class RefsetInstance {
@@ -53,9 +53,10 @@ public class RefsetInstanceAccessor {
 		private int refCompConNid;
 		private int memberNid;
 		
-		private String status, time, author, module, path;
+		private Status status;
+		private String time, author, module, path;
 
-		private RefsetInstance(ConceptVersionBI con, RefexVersionBI member) {
+		private RefsetInstance(ConceptVersionBI con, RefexVersionBI member, RefexVersionBI previousMember) {
 			memberNid = (member == null ? 0 : member.getNid());
 
 			if (con == null) {
@@ -70,12 +71,20 @@ public class RefsetInstanceAccessor {
 				this.refCompConNid = con.getNid();
 				if (member != null)
 				{
-					this.status = member.getStatus().toString();
+					if (previousMember == null || previousMember.getStatus() != member.getStatus()) {
+						this.status = member.getStatus();
+					} else {
+						this.status = null;
+					}
 					
 					this.time = (member.isUncommitted() ? "Uncommitted" : sdf.format(new Date(member.getTime())));
 					try
 					{
-						this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
+						if (previousMember == null || previousMember.getAuthorNid() != member.getAuthorNid()) {
+							this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
+						} else {
+							this.author = "";
+						}
 					}
 					catch (Exception e1)
 					{
@@ -84,7 +93,11 @@ public class RefsetInstanceAccessor {
 					}
 					try
 					{
-						this.module = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getModuleNid()).getPrimordialUuid());
+						if (previousMember == null || previousMember.getModuleNid() != member.getModuleNid()) {
+							this.module = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getModuleNid()).getPrimordialUuid());
+						} else {
+							this.module = "";
+						}
 					}
 					catch (Exception e1)
 					{
@@ -93,7 +106,11 @@ public class RefsetInstanceAccessor {
 					}
 					try
 					{
-						this.path = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getPathNid()).getPrimordialUuid());
+						if (previousMember == null || previousMember.getPathNid() != member.getPathNid()) {
+							this.path = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getPathNid()).getPrimordialUuid());
+						} else {
+							this.path = "";
+						}
 					}
 					catch (Exception e1)
 					{
@@ -104,8 +121,13 @@ public class RefsetInstanceAccessor {
 				
 				
 				try {
-					this.refCompConFsn = new SimpleStringProperty(con
-							.getPreferredDescription().getText());
+					// Testing on Previous member special in RefComp. . . that cannot change so if there, don't display
+					if (previousMember == null) {
+						this.refCompConFsn = new SimpleStringProperty(con
+								.getPreferredDescription().getText());
+					} else {
+						this.refCompConFsn = new SimpleStringProperty("");
+					}
 				} catch (Exception e) {
 					this.refCompConFsn = new SimpleStringProperty("Bad Concept");
 					e.printStackTrace();
@@ -150,9 +172,14 @@ public class RefsetInstanceAccessor {
 		/**
 		 * @return the status
 		 */
-		public String getStatus()
+		public Status getStatus()
 		{
 			return status;
+		}
+
+		public void setStatus(Status s)
+		{
+			status = s;
 		}
 
 		/**
@@ -190,27 +217,41 @@ public class RefsetInstanceAccessor {
 
 	public static class MemberRefsetInstance extends RefsetInstance {
 		private MemberRefsetInstance(ConceptVersionBI refCompCon,
-				RefexVersionBI member) {
-			super(refCompCon, member);
+				RefexVersionBI member,  RefexVersionBI previousMember) {
+			super(refCompCon, member, previousMember);
 		}
 
 		public MemberRefsetInstance() {
-			super(null, null);
+			super(null, null, null);
 		}
 	}
 
 	public static class StrExtRefsetInstance extends RefsetInstance {
 		private SimpleStringProperty strExt;
 
-		private StrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member) {
-			super(refCompCon, member);
+		private StrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+			super(refCompCon, member, previousMember);
 			RefexStringVersionBI ext = (RefexStringVersionBI) member;
-
-			strExt = new SimpleStringProperty(ext.getString1());
+			
+			boolean updateString = true;
+			
+			if (previousMember != null) {
+				RefexStringVersionBI prevExt = (RefexStringVersionBI) previousMember;
+				
+				if (prevExt.getString1().equals(ext.getString1())) {
+					updateString = false;
+				}
+			}
+			
+			if (updateString) {
+				strExt = new SimpleStringProperty(ext.getString1());
+			} else {
+				strExt = new SimpleStringProperty("");
+			}
 		}
-
+		
 		public StrExtRefsetInstance() {
-			super(null, null);
+			super(null, null, null);
 			strExt = new SimpleStringProperty("Add String Value");
 		}
 
@@ -227,26 +268,42 @@ public class RefsetInstanceAccessor {
 		private SimpleStringProperty cidExtFsn;
 		private SimpleStringProperty cidExtUuid;
 
-		private NidExtRefsetInstance(ConceptVersionBI refCompCon,
-				RefexVersionBI member) {
-			super(refCompCon, member);
-			RefexNidVersionBI ext = (RefexNidVersionBI) member;
-			ConceptVersionBI component = WBUtility
-					.lookupSnomedIdentifierAsCV(ext.getNid1());
+		private NidExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+			super(refCompCon, member, previousMember);
 
-			this.cidExtUuid = new SimpleStringProperty(component
-					.getPrimordialUuid().toString());
-			try {
-				this.cidExtFsn = new SimpleStringProperty(component
-						.getPreferredDescription().getText());
-			} catch (Exception e) {
-				this.cidExtFsn = new SimpleStringProperty("Bad Concept");
-				e.printStackTrace();
+			RefexNidVersionBI ext = (RefexNidVersionBI) member;
+			
+			boolean updateComponent = true;
+			if (previousMember != null) {
+				RefexNidVersionBI prevExt = (RefexNidVersionBI) previousMember;
+				
+				if (prevExt.getNid1() == ext.getNid1()) {
+					updateComponent = false;
+				}
+			}
+
+			ConceptVersionBI component = WBUtility.getConceptVersion(ext.getNid1());
+
+			if (updateComponent) {
+
+				this.cidExtUuid = new SimpleStringProperty(component
+						.getPrimordialUuid().toString());
+				try {
+					this.cidExtFsn = new SimpleStringProperty(component
+							.getPreferredDescription().getText());
+				} catch (Exception e) {
+					this.cidExtFsn = new SimpleStringProperty("Bad Concept");
+					e.printStackTrace();
+				}
+			} else {
+				this.cidExtUuid = new SimpleStringProperty(component
+						.getPrimordialUuid().toString());
+				this.cidExtFsn = new SimpleStringProperty("");
 			}
 		}
 
 		public NidExtRefsetInstance() {
-			super(null, null);
+			super(null, null, null);
 			this.cidExtUuid = new SimpleStringProperty("Add Component UUID");
 			this.cidExtFsn = new SimpleStringProperty("Add Component UUID");
 		}
@@ -271,11 +328,26 @@ public class RefsetInstanceAccessor {
 	public static class NidStrExtRefsetInstance extends NidExtRefsetInstance  {
 		private SimpleStringProperty strExt;
 
-		private NidStrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member) {
-			super(refCompCon, member);
+		private NidStrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+			super(refCompCon, member, previousMember);
 
 			RefexNidStringVersionBI ext = (RefexNidStringVersionBI)member;
 			this.strExt = new SimpleStringProperty(ext.getString1());
+			boolean updateString = true;
+			
+			if (previousMember != null) {
+				RefexStringVersionBI prevExt = (RefexStringVersionBI) previousMember;
+				
+				if (prevExt.getString1().equals(ext.getString1())) {
+					updateString = false;
+				}
+			}
+			
+			if (updateString) {
+				strExt = new SimpleStringProperty(ext.getString1());
+			} else {
+				strExt = new SimpleStringProperty("");
+			}
 		}
 
 
@@ -302,8 +374,8 @@ public class RefsetInstanceAccessor {
 		private int constraintPathMemberNid;
 		private int valMemberNid;
 
-		private CEMCompositRefestInstance(ConceptVersionBI refCompCon, RefexVersionBI member) {
-			super(refCompCon, member);
+		private CEMCompositRefestInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+			super(refCompCon, member, previousMember);
 
 			try {
 //				setupMemberNids();
@@ -409,17 +481,17 @@ public class RefsetInstanceAccessor {
 	}
 
 	public static RefsetInstance getInstance(ConceptVersionBI refCompCon,
-			RefexVersionBI member, RefexType refsetType) {
+			RefexVersionBI member, RefexVersionBI previousMember, RefexType refsetType) {
 		if (refsetType == RefexType.MEMBER) {
-			return new MemberRefsetInstance(refCompCon, member);
+			return new MemberRefsetInstance(refCompCon, member, previousMember);
 		} else if (refsetType == RefexType.STR) {
-			return new StrExtRefsetInstance(refCompCon, member);
+			return new StrExtRefsetInstance(refCompCon, member, previousMember);
 		} else if (refsetType == RefexType.CID) {
-			return new NidExtRefsetInstance(refCompCon, member);
+			return new NidExtRefsetInstance(refCompCon, member, previousMember);
 		} else if (refsetType == RefexType.CID_STR) {
-			return new NidStrExtRefsetInstance(refCompCon, member);
+			return new NidStrExtRefsetInstance(refCompCon, member, previousMember);
 		} else if (refsetType == RefexType.UNKNOWN) {
-			return new CEMCompositRefestInstance(refCompCon, member);
+			return new CEMCompositRefestInstance(refCompCon, member, previousMember);
 		}
 
 		return null;
