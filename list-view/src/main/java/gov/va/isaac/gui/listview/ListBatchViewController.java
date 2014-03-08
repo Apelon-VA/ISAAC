@@ -84,6 +84,16 @@ public class ListBatchViewController
 		//remove it, wrap it, readd it.
 		executeOperationsToolbar.getItems().remove(executeOperationsButton);
 		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(executeOperationsButton, reasonWhyExecuteDisabled_));
+		
+		executeOperationsButton.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				//TODO implement
+				logger_.error("Not yet implemented");
+			}
+		});
 
 		addOperationButton.setOnAction(new EventHandler<ActionEvent>()
 		{
