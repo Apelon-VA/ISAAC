@@ -18,12 +18,17 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -46,7 +51,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,9 +193,37 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				//TODO implement
-				logger_.error("Not yet implemented");
-				conceptTable.getItems().add(new SimpleDisplayConcept("Foobar", 0));
+				addUncommittedListButton.setDisable(true);
+				Runnable r = new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						final ArrayList<SimpleDisplayConcept> concepts = new ArrayList<>();
+						for (ConceptChronicleBI c : ExtendedAppContext.getDataStore().getUncommittedConcepts())
+						{
+							try
+							{
+								concepts.add(new SimpleDisplayConcept(WBUtility.getDescription(c.getVersion(WBUtility.getViewCoordinate())), c.getNid()));
+							}
+							catch (ContradictionException e)
+							{
+								logger_.error("error adding uncommited concept '" + c + "'", e);
+							}
+						}
+						Platform.runLater(new Runnable()
+						{
+							
+							@Override
+							public void run()
+							{
+								conceptTable.getItems().addAll(concepts);
+								addUncommittedListButton.setDisable(false);
+							}
+						});
+					}
+				};
+				Utility.execute(r);
 			}
 		});
 		
