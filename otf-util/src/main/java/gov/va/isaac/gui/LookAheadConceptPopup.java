@@ -62,7 +62,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 {
 	Logger logger = LoggerFactory.getLogger(LookAheadConceptPopup.class);
 	private TextField sourceTextField;
-	private ComboBox<ComboBoxConcept> sourceComboBox = null;
+	private ComboBox<SimpleDisplayConcept> sourceComboBox = null;
 	VBox popupContent = new VBox();
 	private VBox displayedSearchResults = new VBox();
 	private List<PopUpResult> popUpResults = new ArrayList<>();
@@ -101,9 +101,9 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		if (field instanceof ComboBox)
 		{
 			this.sourceTextField = ((ComboBox<?>) field).getEditor();
-			if (((ComboBox<?>)field).getValue() instanceof ComboBoxConcept)
+			if (((ComboBox<?>)field).getValue() instanceof SimpleDisplayConcept)
 			{
-				this.sourceComboBox = (ComboBox<ComboBoxConcept>) field;
+				this.sourceComboBox = (ComboBox<SimpleDisplayConcept>) field;
 			}
 		}
 		else if (field instanceof TextField)
@@ -347,7 +347,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 				}
 				else
 				{
-					sourceComboBox.setValue(new ComboBoxConcept(popUpResults.get(idx).description, popUpResults.get(idx).nid, false));
+					sourceComboBox.setValue(new SimpleDisplayConcept(popUpResults.get(idx).description, popUpResults.get(idx).nid, false));
 				}
 				sourceTextField.getParent().requestFocus();
 				closeLookAheadPanel();
@@ -408,7 +408,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 					}
 					else
 					{
-						sourceComboBox.setValue(new ComboBoxConcept(popUpResults.get(currentSelection).description, popUpResults.get(currentSelection).nid, false));
+						sourceComboBox.setValue(new SimpleDisplayConcept(popUpResults.get(currentSelection).description, popUpResults.get(currentSelection).nid, false));
 					}
 					sourceTextField.getParent().requestFocus();
 					closeLookAheadPanel();

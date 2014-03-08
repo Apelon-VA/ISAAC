@@ -61,11 +61,11 @@ public class ConceptNode implements ConceptLookupCallback
 	private static Logger logger = LoggerFactory.getLogger(ConceptNode.class);
 
 	private HBox hbox_;
-	private ComboBox<ComboBoxConcept> cb_;
+	private ComboBox<SimpleDisplayConcept> cb_;
 	private ProgressIndicator pi_;
 	private ImageView lookupFailImage_;
 	private ConceptVersionBI c_;
-	private ComboBoxConcept codeSetComboBoxConcept_ = null;
+	private SimpleDisplayConcept codeSetComboBoxConcept_ = null;
 	private BooleanProperty isValid = new SimpleBooleanProperty(true);
 	private StringProperty invalidToolTipText = new SimpleStringProperty("The specified concept was not found in the database.");
 	private boolean flagAsInvalidWhenBlank_ = true;
@@ -85,18 +85,18 @@ public class ConceptNode implements ConceptLookupCallback
 		c_ = initialConcept;
 		flagAsInvalidWhenBlank_ = flagAsInvalidWhenBlank;
 		cb_ = new ComboBox<>();
-		cb_.setConverter(new StringConverter<ComboBoxConcept>()
+		cb_.setConverter(new StringConverter<SimpleDisplayConcept>()
 		{
 			@Override
-			public String toString(ComboBoxConcept object)
+			public String toString(SimpleDisplayConcept object)
 			{
 				return object.getDescription();
 			}
 
 			@Override
-			public ComboBoxConcept fromString(String string)
+			public SimpleDisplayConcept fromString(String string)
 			{
-				return new ComboBoxConcept(string, 0);
+				return new SimpleDisplayConcept(string, 0);
 			}
 		});
 		cb_.setEditable(true);
@@ -122,10 +122,10 @@ public class ConceptNode implements ConceptLookupCallback
 			isValid.set(true);
 		}
 
-		cb_.valueProperty().addListener(new ChangeListener<ComboBoxConcept>()
+		cb_.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
-			public void changed(ObservableValue<? extends ComboBoxConcept> observable, ComboBoxConcept oldValue, ComboBoxConcept newValue)
+			public void changed(ObservableValue<? extends SimpleDisplayConcept> observable, SimpleDisplayConcept oldValue, SimpleDisplayConcept newValue)
 			{
 				if (newValue.shouldIgnoreChange())
 				{
@@ -223,12 +223,12 @@ public class ConceptNode implements ConceptLookupCallback
 		if (c_ == null)
 		{
 			//Keep the user entry, if it was invalid, so they can edit it.
-			codeSetComboBoxConcept_ = new ComboBoxConcept((cb_.getValue() != null ? cb_.getValue().getDescription() : ""), 0, true);
+			codeSetComboBoxConcept_ = new SimpleDisplayConcept((cb_.getValue() != null ? cb_.getValue().getDescription() : ""), 0, true);
 			cb_.setTooltip(null);
 		}
 		else
 		{
-			codeSetComboBoxConcept_ = new ComboBoxConcept(WBUtility.getDescription(c_), c_.getNid(), true);
+			codeSetComboBoxConcept_ = new SimpleDisplayConcept(WBUtility.getDescription(c_), c_.getNid(), true);
 			
 			//In case the description is too long, also put it in a tooltip
 			Tooltip t = new Tooltip(codeSetComboBoxConcept_.getDescription());
@@ -265,7 +265,7 @@ public class ConceptNode implements ConceptLookupCallback
 
 	protected void set(String newValue)
 	{
-		cb_.setValue(new ComboBoxConcept(newValue, 0));
+		cb_.setValue(new SimpleDisplayConcept(newValue, 0));
 	}
 	
 	public BooleanProperty isValid()

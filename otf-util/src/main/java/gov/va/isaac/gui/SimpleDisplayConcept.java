@@ -22,23 +22,34 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * 
- * {@link ComboBoxConcept}
+ * {@link SimpleDisplayConcept}
+ *
+ * A very simple concept container, useful for things like ComboBoxes, or lists
+ * where we want to display workbench concepts, and still have a link to the underlying
+ * concept (via the nid)
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class ComboBoxConcept
+public class SimpleDisplayConcept
 {
 	private String description_;
 	private int nid_;
 	private boolean ignoreChange = false;
 
-	public ComboBoxConcept(String description, int nid, boolean ignoreChange)
+	/**
+	 * 
+	 * @param description
+	 * @param nid
+	 * @param ignoreChange - typically used to allow a changeListener to ignore a change.  
+	 * See {@link #shouldIgnoreChange()}
+	 */
+	public SimpleDisplayConcept(String description, int nid, boolean ignoreChange)
 	{
 		this(description, nid);
 		this.ignoreChange = ignoreChange;
 	}
 
-	public ComboBoxConcept(String description, int nid)
+	public SimpleDisplayConcept(String description, int nid)
 	{
 		description_ = description;
 		nid_ = nid;
@@ -56,9 +67,11 @@ public class ComboBoxConcept
 	
 	/**
 	 * Note - this can only be read once - if it returns true after the first call, 
-	 * it resets itself to false for every subsequent call.
+	 * it resets itself to false for every subsequent call.  It will only return 
+	 * true if this item was constructed with the ignoreChange property set to true.
+	 * If not, it will always return false.
 	 */
-	public boolean shouldIgnoreChange()
+	public synchronized boolean shouldIgnoreChange()
 	{
 		boolean temp = ignoreChange;
 		ignoreChange = false;
@@ -72,9 +85,9 @@ public class ComboBoxConcept
 		{
 			return false;
 		}
-		if (obj instanceof ComboBoxConcept)
+		if (obj instanceof SimpleDisplayConcept)
 		{
-			ComboBoxConcept other = (ComboBoxConcept) obj;
+			SimpleDisplayConcept other = (SimpleDisplayConcept) obj;
 			return nid_ == other.nid_ && StringUtils.equals(description_, other.description_);
 		}
 		return false;
