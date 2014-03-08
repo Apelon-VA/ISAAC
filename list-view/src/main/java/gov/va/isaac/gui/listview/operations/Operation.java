@@ -18,11 +18,16 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import javafx.beans.binding.BooleanExpression;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
+import com.sun.javafx.tk.Toolkit;
 
 /**
  * {@link Operation}
@@ -31,10 +36,10 @@ import javafx.scene.layout.GridPane;
  */
 public abstract class Operation
 {
-	protected ObservableList<String> conceptList_;
+	protected ObservableList<SimpleDisplayConcept> conceptList_;
 	protected GridPane root_;
 	
-	public Operation(ObservableList<String> conceptList)
+	public Operation(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		this.conceptList_ = conceptList;
 		root_ = new GridPane();
@@ -42,10 +47,10 @@ public abstract class Operation
 		root_.setHgap(5.0);
 		root_.setVgap(3.0);
 		
-		conceptList_.addListener(new ListChangeListener<String>()
+		conceptList_.addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c)
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SimpleDisplayConcept> c)
 			{
 				conceptListChanged();
 			}
@@ -57,6 +62,29 @@ public abstract class Operation
 		return root_;
 	}
 	
+	/**
+	 * Call this after adding all label content to the first column, to prevent it from shrinking
+	 */
+	protected void preventColOneCollapse()
+	{
+		Font f = new Font("System", 13.0);
+		float largestWidth = 0;
+		for (Node n : root_.getChildrenUnmodifiable())
+		{
+			if (GridPane.getColumnIndex(n) == 0 && n instanceof Label)
+			{
+				float width = Toolkit.getToolkit().getFontLoader().computeStringWidth(((Label)n).getText(), f);
+				if (width > largestWidth)
+				{
+					largestWidth = width;
+				}
+			}
+		}
+		//don't let the first column shrink less than the labels
+		ColumnConstraints cc = new ColumnConstraints();
+		cc.setMinWidth(largestWidth);
+		root_.getColumnConstraints().add(cc);
+	}
 	
 	public abstract String getTitle();
 	

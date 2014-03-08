@@ -86,13 +86,14 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 
 	private class PopUpResult
 	{
+		int nid_;
+		String description_;
+		
 		PopUpResult(int nid, String description)
 		{
-			this.nid = nid;
-			this.description = description;
+			this.nid_ = nid;
+			this.description_ = description;
 		}
-		int nid;
-		String description;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -301,12 +302,14 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 
 	private void moveUpIfNecessary()
 	{
-		if (above || (getY() + getHeight()) > (sourceTextField.getScene().getWindow().getY() + sourceTextField.getScene().getWindow().getHeight()))
-		{
-			Point2D p = sourceTextField.localToScene(0.0, 0.0);
-			setY(p.getY() + sourceTextField.getScene().getY() + sourceTextField.getScene().getWindow().getY() - getHeight());
-			above = true;
-		}
+		//TODO this logic isn't working... java8 regression  Sometimes is flags 'above', but doesn't actually move it above, 
+		//which messes up the up/down logic.  disable for now.
+//		if (above || (getY() + getHeight()) > (sourceTextField.getScene().getWindow().getY() + sourceTextField.getScene().getWindow().getHeight()))
+//		{
+//			Point2D p = sourceTextField.localToScene(0.0, 0.0);
+//			setY(p.getY() + sourceTextField.getScene().getY() + sourceTextField.getScene().getWindow().getY() - getHeight());
+//			above = true;
+//		}
 	}
 
 	private void handleScroll(KeyEvent event)
@@ -343,11 +346,11 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 			{
 				if (sourceComboBox == null)
 				{
-					sourceTextField.setText(popUpResults.get(idx).description);
+					sourceTextField.setText(popUpResults.get(idx).description_);
 				}
 				else
 				{
-					sourceComboBox.setValue(new SimpleDisplayConcept(popUpResults.get(idx).description, popUpResults.get(idx).nid, false));
+					sourceComboBox.setValue(new SimpleDisplayConcept(popUpResults.get(idx).description_, popUpResults.get(idx).nid_, false));
 				}
 				sourceTextField.getParent().requestFocus();
 				closeLookAheadPanel();
@@ -404,11 +407,11 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 					//In practice, its fairly harmless.
 					if (sourceComboBox == null)
 					{
-						sourceTextField.setText(popUpResults.get(currentSelection).description);
+						sourceTextField.setText(popUpResults.get(currentSelection).description_);
 					}
 					else
 					{
-						sourceComboBox.setValue(new SimpleDisplayConcept(popUpResults.get(currentSelection).description, popUpResults.get(currentSelection).nid, false));
+						sourceComboBox.setValue(new SimpleDisplayConcept(popUpResults.get(currentSelection).description_, popUpResults.get(currentSelection).nid_, false));
 					}
 					sourceTextField.getParent().requestFocus();
 					closeLookAheadPanel();

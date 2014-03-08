@@ -340,6 +340,30 @@ public class WBUtility {
 		};
 		Utility.execute(r);
 	}
+	
+	/**
+	 * 
+	 * All done in a background thread, method returns immediately
+	 * 
+	 * @param identifier - The NID to search for
+	 * @param callback - who to inform when lookup completes
+	 * @param callId - An arbitrary identifier that will be returned to the caller when this completes
+	 */
+	public static void getConceptVersion(final int nid, final ConceptLookupCallback callback, final Integer callId)
+	{
+		LOG.debug("Threaded Lookup: '{}'", nid);
+		final long submitTime = System.currentTimeMillis();
+		Runnable r = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				ConceptVersionBI c = getConceptVersion(nid);
+				callback.lookupComplete(c, submitTime, callId);
+			}
+		};
+		Utility.execute(r);
+	}
 
 	/**
 	 * Get the ConceptVersion identified by UUID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 

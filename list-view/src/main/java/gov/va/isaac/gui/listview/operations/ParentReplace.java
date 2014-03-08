@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
@@ -39,17 +40,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ParentReplace extends Operation
 {
-	private ComboBox<String> replaceOptions_;
+	private ComboBox<SimpleDisplayConcept> replaceOptions_;
 	private StringProperty replaceOptionsInvalidString_ = new SimpleStringProperty("A concept must be selected from this drop down");
 	private ConceptNode withConcept_;
 
 	private BooleanBinding operationIsReady_;
 
-	public ParentReplace(ObservableList<String> conceptList)
+	public ParentReplace(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		super(conceptList);
 		root_.add(new Label("Replace: "), 0, 0);
-
+		
 		replaceOptions_ = new ComboBox<>();
 		replaceOptions_.setMaxWidth(Double.MAX_VALUE);
 		replaceOptions_.setPromptText("Populate the Concepts List");
@@ -61,16 +62,16 @@ public class ParentReplace extends Operation
 		root_.add(withConcept_.getNode(), 1, 1);
 
 		GridPane.setHgrow(withConcept_.getNode(), Priority.ALWAYS);
-
+		preventColOneCollapse();
 		initActionListeners();
 	}
 
 	private void initActionListeners()
 	{
-		replaceOptions_.getItems().addListener(new ListChangeListener<String>()
+		replaceOptions_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c)
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SimpleDisplayConcept> c)
 			{
 				if (replaceOptions_.getItems().size() > 0)
 				{

@@ -18,7 +18,9 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.util.WBUtility;
 import org.apache.commons.lang.StringUtils;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 
 /**
  * 
@@ -47,6 +49,12 @@ public class SimpleDisplayConcept
 	{
 		this(description, nid);
 		this.ignoreChange = ignoreChange;
+	}
+	
+	public SimpleDisplayConcept(ConceptVersionBI c)
+	{
+		this(WBUtility.getDescription(c), c.getNid());
+		this.ignoreChange = false;
 	}
 
 	public SimpleDisplayConcept(String description, int nid)
@@ -96,6 +104,6 @@ public class SimpleDisplayConcept
 	@Override
 	public String toString()
 	{
-		return nid_ + ":" + description_;
+		return description_;
 	}
 }

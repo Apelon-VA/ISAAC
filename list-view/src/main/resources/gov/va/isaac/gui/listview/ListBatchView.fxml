@@ -23,11 +23,7 @@
 									prefViewportHeight="339.0" prefViewportWidth="395.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
 									AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
 									<content>
-										<TableView fx:id="conceptTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
-											<columns>
-												<TableColumn prefWidth="75.0" text="Concepts" />
-											</columns>
-										</TableView>
+										<TableView fx:id="conceptTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
 									</content>
 								</ScrollPane>
 							</center>
@@ -91,10 +87,18 @@
 									</items>
 								</ToolBar>
 							</top>
+							<bottom>
+								<HBox id="conceptTableFooter" fx:id="conceptTableFooter" fillHeight="false" prefWidth="200.0"
+									BorderPane.alignment="CENTER">
+									<children>
+										<Label />
+									</children>
+								</HBox>
+							</bottom>
 						</BorderPane>
 						<BorderPane prefHeight="200.0" prefWidth="200.0">
 							<bottom>
-								<ToolBar prefWidth="200.0" BorderPane.alignment="CENTER" fx:id="executeOperationsToolbar">
+								<ToolBar fx:id="executeOperationsToolbar" prefWidth="200.0" BorderPane.alignment="CENTER">
 									<items>
 										<Button id="clearOperationsButton" fx:id="clearOperationsButton" mnemonicParsing="false" prefHeight="25.0"
 											prefWidth="25.0">

@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
@@ -30,7 +31,7 @@ import javafx.scene.control.Label;
  */
 public class PlaceHolder extends Operation
 {
-	public PlaceHolder(ObservableList<String> conceptList)
+	public PlaceHolder(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		super(conceptList);
 		

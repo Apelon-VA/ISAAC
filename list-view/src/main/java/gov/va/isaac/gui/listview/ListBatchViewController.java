@@ -18,25 +18,35 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +61,8 @@ public class ListBatchViewController
 	@FXML private VBox operationsList;
 	@FXML private Button clearOperationsButton;
 	@FXML private Tab batchResultsTab;
-	@FXML private TableView<String> conceptTable;
+	@FXML private TableView<SimpleDisplayConcept> conceptTable;
+	@FXML private HBox conceptTableFooter;
 	@FXML private Button addUncommittedListButton;
 	@FXML private Button addOperationButton;
 	@FXML private Button clearListButton;
@@ -77,10 +88,33 @@ public class ListBatchViewController
 	public void initialize()
 	{
 		operationsList.getChildren().add(new OperationNode(this));
+		
+		final ConceptNode cn = new ConceptNode(null, false);
+		cn.setPromptText("Type or select concept to add");
+		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
+		HBox.setMargin(cn.getNode(), new Insets(5, 5, 5, 5));
+		conceptTableFooter.getChildren().add(cn.getNode());
+		
+		cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
+			{
+				if (newValue != null)
+				{
+					conceptTable.getItems().add(new SimpleDisplayConcept(newValue));
+					cn.clear();
+				}
+			}
+		});
 
 		conceptTable.setPlaceholder(new Label("Drop Concepts Here"));
-		conceptTable.getColumns().get(0).prefWidthProperty().bind(conceptTable.widthProperty());
-		
+		TableColumn<SimpleDisplayConcept, String> col1 = new TableColumn<SimpleDisplayConcept, String>();
+		col1.setText("Concept");
+		col1.prefWidthProperty().bind(conceptTable.widthProperty().subtract(3.0));
+		col1.setCellValueFactory(new PropertyValueFactory<SimpleDisplayConcept, String>("description"));
+		conceptTable.getColumns().add(col1);
+
 		//remove it, wrap it, readd it.
 		executeOperationsToolbar.getItems().remove(executeOperationsButton);
 		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(executeOperationsButton, reasonWhyExecuteDisabled_));
@@ -154,7 +188,7 @@ public class ListBatchViewController
 			{
 				//TODO implement
 				logger_.error("Not yet implemented");
-				conceptTable.getItems().add("Foobar");
+				conceptTable.getItems().add(new SimpleDisplayConcept("Foobar", 0));
 			}
 		});
 		
@@ -214,7 +248,7 @@ public class ListBatchViewController
 		allOperationsReady_.invalidate();
 	}
 	
-	protected ObservableList<String> getConceptList()
+	protected ObservableList<SimpleDisplayConcept> getConceptList()
 	{
 		return conceptTable.getItems();
 	}

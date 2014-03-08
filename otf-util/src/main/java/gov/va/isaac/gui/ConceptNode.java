@@ -24,6 +24,7 @@ import gov.va.isaac.util.WBUtility;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -65,6 +66,7 @@ public class ConceptNode implements ConceptLookupCallback
 	private ProgressIndicator pi_;
 	private ImageView lookupFailImage_;
 	private ConceptVersionBI c_;
+	private ObjectBinding<ConceptVersionBI> conceptBinding_;
 	private SimpleDisplayConcept codeSetComboBoxConcept_ = null;
 	private BooleanProperty isValid = new SimpleBooleanProperty(true);
 	private StringProperty invalidToolTipText = new SimpleStringProperty("The specified concept was not found in the database.");
@@ -83,6 +85,16 @@ public class ConceptNode implements ConceptLookupCallback
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank)
 	{
 		c_ = initialConcept;
+		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
+		{
+
+			@Override
+			protected ConceptVersionBI computeValue()
+			{
+				return c_;
+			}
+		};
+		
 		flagAsInvalidWhenBlank_ = flagAsInvalidWhenBlank;
 		cb_ = new ComboBox<>();
 		cb_.setConverter(new StringConverter<SimpleDisplayConcept>()
@@ -107,11 +119,11 @@ public class ConceptNode implements ConceptLookupCallback
 		//TODO add a recently-used list of concepts API
 		//cb_.setItems(FXCollections.observableArrayList(LegoGUI.getInstance().getLegoGUIController().getCommonlyUsedConcept().getSuggestions(cut)));
 		cb_.setVisibleRowCount(11);
-		
-		//TODO Would be nice to have a single global one of these, but don't have time to deal with the memory-leak implications
-		new LookAheadConceptPopup(cb_);
 
 		updateGUI();
+		
+		new LookAheadConceptPopup(cb_);
+
 		if (cb_.getValue().getNid() == 0 && flagAsInvalidWhenBlank_)
 		{
 			isValid.set(false);
@@ -127,14 +139,13 @@ public class ConceptNode implements ConceptLookupCallback
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> observable, SimpleDisplayConcept oldValue, SimpleDisplayConcept newValue)
 			{
+				logger.debug("Combo Value Changed: {} {}", newValue.getDescription(), newValue.getNid());
 				if (newValue.shouldIgnoreChange())
 				{
 					return;
 				}
-				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new generated will have the description
-				//in place of the id.  detect and ignore.
-				if (codeSetComboBoxConcept_ != null && codeSetComboBoxConcept_.getNid() != 0 
-						&& StringUtils.equals(codeSetComboBoxConcept_.getDescription(), newValue.getDescription()))
+				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
+				if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
 				{
 					return;
 				}
@@ -244,7 +255,7 @@ public class ConceptNode implements ConceptLookupCallback
 	{
 		lookupsInProgress_.incrementAndGet();
 		lookupInProgress.invalidate();
-		WBUtility.lookupSnomedIdentifier(cb_.getValue().getDescription(), this, null);
+		WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
 	}
 
 	public Node getNode()
@@ -281,6 +292,7 @@ public class ConceptNode implements ConceptLookupCallback
 			@Override
 			public void run()
 			{
+				logger.debug("lookupComplete - found '{}'", (concept == null  ? "-null-" : concept.toUserString()));
 				lookupsInProgress_.decrementAndGet();
 				lookupInProgress.invalidate();
 
@@ -322,6 +334,7 @@ public class ConceptNode implements ConceptLookupCallback
 					}
 				}
 				updateGUI();
+				conceptBinding_.invalidate();
 			}
 		});
 	}
@@ -329,5 +342,23 @@ public class ConceptNode implements ConceptLookupCallback
 	public void setPromptText(String promptText)
 	{
 		cb_.setPromptText(promptText);
+	}
+	
+	public ObjectBinding<ConceptVersionBI> getConceptProperty()
+	{
+		return conceptBinding_;
+	}
+	
+	public void clear()
+	{
+		logger.debug("Clear called");
+		Platform.runLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				cb_.setValue(new SimpleDisplayConcept("", 0));
+			}
+		});
 	}
 }
