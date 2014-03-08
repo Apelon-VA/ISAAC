@@ -108,7 +108,7 @@ public class WBUtility {
 
 	public static String getDescription(UUID uuid) {
 		try {
-			ConceptVersionBI conceptVersion = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredThenStatedLatest(), uuid);
+			ConceptVersionBI conceptVersion = dataStore.getConceptVersion(getViewCoordinate(), uuid);
 			return getDescription(conceptVersion);
 		} catch (Exception ex) {
 			LOG.warn("Unexpected error looking up description", ex);
@@ -451,7 +451,7 @@ public class WBUtility {
 			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
-				ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+				ViewCoordinate vc = getViewCoordinate();
 				vc.getAllowedStatus().add(Status.INACTIVE);
 				
 				return refexChron.getVersion(vc);

@@ -102,7 +102,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 LOG.debug("Loading concept {} as the root of a tree view", rootConcept);
                 ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
                         rootConcept,
-                        StandardViewCoordinates.getSnomedInferredLatest(),
+                        WBUtility.getViewCoordinate(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
@@ -376,7 +376,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         }
 
         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-        ViewCoordinate viewCoordinate = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+        ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
 
         return new ConceptChronicleDdo(
