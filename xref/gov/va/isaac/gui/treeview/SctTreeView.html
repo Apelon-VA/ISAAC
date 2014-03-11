@@ -112,7 +112,7 @@
 <a class="jxr_linenumber" name="102" href="#102">102</a>                 LOG.debug(<span class="jxr_string">"Loading concept {} as the root of a tree view"</span>, rootConcept);
 <a class="jxr_linenumber" name="103" href="#103">103</a>                 ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
 <a class="jxr_linenumber" name="104" href="#104">104</a>                         rootConcept,
-<a class="jxr_linenumber" name="105" href="#105">105</a>                         StandardViewCoordinates.getSnomedInferredLatest(),
+<a class="jxr_linenumber" name="105" href="#105">105</a>                         WBUtility.getViewCoordinate(),
 <a class="jxr_linenumber" name="106" href="#106">106</a>                         VersionPolicy.ACTIVE_VERSIONS,
 <a class="jxr_linenumber" name="107" href="#107">107</a>                         RefexPolicy.REFEX_MEMBERS,
 <a class="jxr_linenumber" name="108" href="#108">108</a>                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
@@ -379,34 +379,36 @@
 <a class="jxr_linenumber" name="369" href="#369">369</a>     <strong class="jxr_keyword">private</strong> ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
 <a class="jxr_linenumber" name="370" href="#370">370</a>             <strong class="jxr_keyword">throws</strong> IOException, ContradictionException {
 <a class="jxr_linenumber" name="371" href="#371">371</a> 
-<a class="jxr_linenumber" name="372" href="#372">372</a>         ConceptVersionBI wbConcept = WBUtility.lookupSnomedIdentifierAsCV(conceptUUID);
-<a class="jxr_linenumber" name="373" href="#373">373</a>         <strong class="jxr_keyword">if</strong> (wbConcept == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="374" href="#374">374</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="375" href="#375">375</a>         }
-<a class="jxr_linenumber" name="376" href="#376">376</a> 
-<a class="jxr_linenumber" name="377" href="#377">377</a>         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-<a class="jxr_linenumber" name="378" href="#378">378</a>         ViewCoordinate viewCoordinate = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
-<a class="jxr_linenumber" name="379" href="#379">379</a>         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
-<a class="jxr_linenumber" name="380" href="#380">380</a> 
-<a class="jxr_linenumber" name="381" href="#381">381</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ConceptChronicleDdo(
-<a class="jxr_linenumber" name="382" href="#382">382</a>                 snapshot,
-<a class="jxr_linenumber" name="383" href="#383">383</a>                 wbConcept,
-<a class="jxr_linenumber" name="384" href="#384">384</a>                 VersionPolicy.ACTIVE_VERSIONS,
-<a class="jxr_linenumber" name="385" href="#385">385</a>                 RefexPolicy.REFEX_MEMBERS,
-<a class="jxr_linenumber" name="386" href="#386">386</a>                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
-<a class="jxr_linenumber" name="387" href="#387">387</a>     }
-<a class="jxr_linenumber" name="388" href="#388">388</a> 
-<a class="jxr_linenumber" name="389" href="#389">389</a>     <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="390" href="#390">390</a> <em class="jxr_javadoccomment">     * Tell the tree to stop whatever threading operations it has running,</em>
-<a class="jxr_linenumber" name="391" href="#391">391</a> <em class="jxr_javadoccomment">     * since the application is exiting.</em>
-<a class="jxr_linenumber" name="392" href="#392">392</a> <em class="jxr_javadoccomment">     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()</em>
-<a class="jxr_linenumber" name="393" href="#393">393</a> <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="394" href="#394">394</a>     @Override
-<a class="jxr_linenumber" name="395" href="#395">395</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> shutdown()
-<a class="jxr_linenumber" name="396" href="#396">396</a>     {
-<a class="jxr_linenumber" name="397" href="#397">397</a>         shutdownRequested = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="398" href="#398">398</a>     }
-<a class="jxr_linenumber" name="399" href="#399">399</a> }
+<a class="jxr_linenumber" name="372" href="#372">372</a>         <em class="jxr_comment">//TODO see if this is still the case... we should be using the Fx APIs directly....</em>
+<a class="jxr_linenumber" name="373" href="#373">373</a>         ConceptVersionBI wbConcept = WBUtility.getConceptVersion(conceptUUID);
+<a class="jxr_linenumber" name="374" href="#374">374</a>         <strong class="jxr_keyword">if</strong> (wbConcept == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="375" href="#375">375</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="376" href="#376">376</a>         }
+<a class="jxr_linenumber" name="377" href="#377">377</a> 
+<a class="jxr_linenumber" name="378" href="#378">378</a>         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+<a class="jxr_linenumber" name="379" href="#379">379</a>         ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
+<a class="jxr_linenumber" name="380" href="#380">380</a>         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
+<a class="jxr_linenumber" name="381" href="#381">381</a> 
+<a class="jxr_linenumber" name="382" href="#382">382</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ConceptChronicleDdo(
+<a class="jxr_linenumber" name="383" href="#383">383</a>                 snapshot,
+<a class="jxr_linenumber" name="384" href="#384">384</a>                 wbConcept,
+<a class="jxr_linenumber" name="385" href="#385">385</a>                 VersionPolicy.ACTIVE_VERSIONS,
+<a class="jxr_linenumber" name="386" href="#386">386</a>                 RefexPolicy.REFEX_MEMBERS,
+<a class="jxr_linenumber" name="387" href="#387">387</a>                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
+<a class="jxr_linenumber" name="388" href="#388">388</a>     }
+<a class="jxr_linenumber" name="389" href="#389">389</a> 
+<a class="jxr_linenumber" name="390" href="#390">390</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="391" href="#391">391</a> <em class="jxr_javadoccomment">     * Tell the tree to stop whatever threading operations it has running,</em>
+<a class="jxr_linenumber" name="392" href="#392">392</a> <em class="jxr_javadoccomment">     * since the application is exiting.</em>
+<a class="jxr_linenumber" name="393" href="#393">393</a> <em class="jxr_javadoccomment">     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()</em>
+<a class="jxr_linenumber" name="394" href="#394">394</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="395" href="#395">395</a>     @Override
+<a class="jxr_linenumber" name="396" href="#396">396</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> shutdown()
+<a class="jxr_linenumber" name="397" href="#397">397</a>     {
+<a class="jxr_linenumber" name="398" href="#398">398</a>         shutdownRequested = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="399" href="#399">399</a>     }
+<a class="jxr_linenumber" name="400" href="#400">400</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>
+
