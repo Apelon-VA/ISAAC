@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.WeakListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -84,6 +89,9 @@ public class ConceptNode implements ConceptLookupCallback
 			return lookupsInProgress_.get() > 0;
 		}
 	};
+	
+	private ListChangeListener<SimpleDisplayConcept> listChangeListener_;
+	private volatile boolean disableChangeListener_ = false;
 
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank)
 	{
@@ -105,7 +113,7 @@ public class ConceptNode implements ConceptLookupCallback
 			@Override
 			public String toString(SimpleDisplayConcept object)
 			{
-				return object.getDescription();
+				return object == null ? "" : object.getDescription();
 			}
 
 			@Override
@@ -119,8 +127,27 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setPrefWidth(ComboBox.USE_COMPUTED_SIZE);
 		cb_.setMinWidth(200.0);
 		cb_.setPromptText("Drop or select a concept");
-		//TODO add a recently-used list of concepts API
-		//cb_.setItems(FXCollections.observableArrayList(LegoGUI.getInstance().getLegoGUIController().getCommonlyUsedConcept().getSuggestions(cut)));
+		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
+		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
+		ObservableList<SimpleDisplayConcept> items = AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts();
+		listChangeListener_ = new ListChangeListener<SimpleDisplayConcept>()
+		{
+			@Override
+			public void onChanged(Change<? extends SimpleDisplayConcept> c)
+			{
+				logger.debug("updating recently used dropdown");
+				disableChangeListener_ = true;
+				SimpleDisplayConcept temp = cb_.getValue();
+				cb_.setItems(FXCollections.observableArrayList(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts()));
+				cb_.setValue(temp);
+				cb_.getSelectionModel().select(temp);
+				disableChangeListener_ = false;
+			}
+		};
+		
+		items.addListener(new WeakListChangeListener<SimpleDisplayConcept>(listChangeListener_));
+		
+		cb_.setItems(FXCollections.observableArrayList(items));
 		cb_.setVisibleRowCount(11);
 
 		updateGUI();
@@ -142,14 +169,29 @@ public class ConceptNode implements ConceptLookupCallback
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> observable, SimpleDisplayConcept oldValue, SimpleDisplayConcept newValue)
 			{
-				logger.debug("Combo Value Changed: {} {}", newValue.getDescription(), newValue.getNid());
+				if (newValue == null)
+				{
+					logger.debug("Combo Value Changed - null entry");
+				}
+				else
+				{
+					logger.debug("Combo Value Changed: {} {}", newValue.getDescription(), newValue.getNid());
+				}
+				
+				if (disableChangeListener_)
+				{
+					logger.debug("change listener disabled");
+					return;
+				}
 				if (newValue.shouldIgnoreChange())
 				{
+					logger.debug("One time change ignore");
 					return;
 				}
 				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
 				if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
 				{
+					logger.debug("Not a real change, ignore");
 					newValue.setNid(oldValue.getNid());
 					return;
 				}
@@ -287,8 +329,7 @@ public class ConceptNode implements ConceptLookupCallback
 				if (concept != null)
 				{
 					c_ = concept;
-					//TODO recent codes api
-					//LegoGUI.getInstance().getLegoGUIController().updateRecentCodes(c_);
+					AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(c_));
 					isValid.set(true);
 				}
 				else

@@ -79,6 +79,7 @@ public class ParentReplace extends Operation
 
 	private void initActionListeners()
 	{
+		//TODO remember current selection
 		replaceOptions_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override

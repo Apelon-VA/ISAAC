@@ -93,7 +93,22 @@ public class SimpleDisplayConcept
 		ignoreChange_ = false;
 		return temp;
 	}
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((description_ == null) ? 0 : description_.hashCode());
+		result = prime * result + nid_;
+		return result;
+	}
 
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -113,5 +128,10 @@ public class SimpleDisplayConcept
 	public String toString()
 	{
 		return description_;
+	}
+	
+	public SimpleDisplayConcept clone()
+	{
+		return new SimpleDisplayConcept(this.description_, this.nid_, false);
 	}
 }
