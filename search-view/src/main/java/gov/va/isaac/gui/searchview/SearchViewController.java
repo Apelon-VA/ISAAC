@@ -23,6 +23,7 @@ import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
@@ -146,22 +147,17 @@ public class SearchViewController implements TaskCompleteCallback {
                             });
                             cm.getItems().add(mi1);
 
-                            /**
-                             * TODO: Implement when required.
-                             *
+
                             // Menu item to find concept in tree.
-                            MenuItem mi2 = new MenuItem("Find Concept in Tree");
+                            MenuItem mi2 = new MenuItem("Find Concept in Taxonomy View");
                             mi2.setGraphic(Images.ROOT.createImageView());
                             mi2.setOnAction(new EventHandler<ActionEvent>() {
-
                                 @Override
                                 public void handle(ActionEvent arg0) {
-                                    appContext.getAppUtil().getConceptDialogProvider().findConceptInTree(
-                                            item.getConcept().getUUIDs().get(0));
+                                    AppContext.getService(TaxonomyViewI.class).locateConcept(item.getConcept().getUUIDs().get(0), null);
                                 }
                             });
                             cm.getItems().add(mi2);
-                            */
 
                             setContextMenu(cm);
 

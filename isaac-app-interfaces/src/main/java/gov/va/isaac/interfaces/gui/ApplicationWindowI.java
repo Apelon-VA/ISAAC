@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.interfaces.gui;
 
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import javafx.stage.Stage;
 import org.jvnet.hk2.annotations.Contract;
@@ -42,4 +43,6 @@ public interface ApplicationWindowI
 	 * @param listener
 	 */
 	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
+	
+	public void ensureDockedViewIsVisble(DockedViewI view);
 }
