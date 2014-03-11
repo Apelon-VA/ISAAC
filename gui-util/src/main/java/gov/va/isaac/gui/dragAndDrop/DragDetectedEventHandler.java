@@ -55,7 +55,7 @@ public class DragDetectedEventHandler implements EventHandler<MouseEvent>
 
 			/* Put a string on a dragboard */
 			String drag = idProvider_.getConceptId();
-			if (drag != null)
+			if (drag != null && drag.length() > 0)
 			{
 				ClipboardContent content = new ClipboardContent();
 				content.putString(drag);

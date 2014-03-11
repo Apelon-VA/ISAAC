@@ -23,6 +23,7 @@ import gov.va.isaac.gui.util.FxUtils;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
@@ -48,7 +49,7 @@ import org.slf4j.LoggerFactory;
 public class DragRegistry
 {
 	private static Logger logger = LoggerFactory.getLogger(DragRegistry.class);
-	private volatile long dragStartedAt = 0;
+	private AtomicLong dragStartedAt = new AtomicLong();
 	private Set<Node> codeDropTargets = Collections.newSetFromMap(new WeakHashMap<Node, Boolean>());
 	private WeakHashMap<Node, Effect> existingEffect = new WeakHashMap<Node, Effect>();
 
@@ -61,6 +62,13 @@ public class DragRegistry
 	private void addConceptDropTargetInternal(Node node)
 	{
 		codeDropTargets.add(node);
+	}
+	
+	public void setupDragOnly(final Node n, ConceptIdProvider conceptIdProvider)
+	{
+		logger.debug("Configure drag support for node {}", n);
+		n.setOnDragDetected(new DragDetectedEventHandler(n, conceptIdProvider));
+		n.setOnDragDone(new DragDoneEventHandler());
 	}
 
 	public void setupDragAndDrop(final ComboBox<?> n, ConceptIdProvider conceptIdProvider, boolean allowDrop)
@@ -197,16 +205,17 @@ public class DragRegistry
 		logger.debug("Drag Started");
 		// There is a bug in javafx with comboboxs - it seems to fire dragStarted events twice.
 		// http://javafx-jira.kenai.com/browse/RT-28778
-		if ((System.currentTimeMillis() - dragStartedAt) < 2000)
+		if ((System.currentTimeMillis() - dragStartedAt.get()) < 2000)
 		{
-			logger.debug("Ignoring duplicate drag event");
+			logger.debug("Ignoring duplicate drag started event");
 			return;
 		}
-		if (dragStartedAt > 0)
+		if (dragStartedAt.get() > 0)
 		{
-			logger.warn("Unclosed drag event is still active while another was started!");
+			logger.warn("Unclosed drag event is still active while another was started!  Cleaning up...");
+			conceptDragCompleted();
 		}
-		dragStartedAt = System.currentTimeMillis();
+		dragStartedAt.set(System.currentTimeMillis());
 		for (Node n : codeDropTargets)
 		{
 			Effect existing = n.getEffect();
@@ -221,7 +230,7 @@ public class DragRegistry
 	protected void conceptDragCompleted()
 	{
 		logger.debug("Drag Completed");
-		dragStartedAt = 0;
+		dragStartedAt.set(0);
 		for (Node n : codeDropTargets)
 		{
 			n.setEffect(existingEffect.remove(n));
