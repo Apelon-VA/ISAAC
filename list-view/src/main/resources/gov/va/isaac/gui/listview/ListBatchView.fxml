@@ -90,9 +90,7 @@
 							<bottom>
 								<HBox id="conceptTableFooter" fx:id="conceptTableFooter" fillHeight="false" prefWidth="200.0"
 									BorderPane.alignment="CENTER">
-									<children>
-										<Label />
-									</children>
+									<children/>
 								</HBox>
 							</bottom>
 						</BorderPane>
