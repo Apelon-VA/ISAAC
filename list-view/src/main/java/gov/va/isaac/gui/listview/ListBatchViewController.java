@@ -109,7 +109,7 @@ public class ListBatchViewController
 		final ConceptNode cn = new ConceptNode(null, false);
 		cn.setPromptText("Type or select concept to add");
 		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
-		HBox.setMargin(cn.getNode(), new Insets(5, 5, 5, 5));
+		HBox.setMargin(cn.getNode(), new Insets(6, 5, 6, 5));
 		conceptTableFooter.getChildren().add(cn.getNode());
 		
 		cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
