@@ -292,7 +292,7 @@ public class RefsetTableHandler {
 						return;
 					}
 	
-					ConceptVersionBI comp = WBUtility.lookupSnomedIdentifier(t.getNewValue());
+					ConceptVersionBI comp = WBUtility.lookupIdentifier(t.getNewValue());
 					if (comp == null) {
 						AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 					} else {
@@ -374,7 +374,7 @@ public class RefsetTableHandler {
 					if (instance.getMemberNid() != 0) {
 						AppContext.getCommonDialogs().showErrorDialog("Illegal Operation", "Cannot modify the reference component of an existing refset member", "");
 					} else {
-						ConceptVersionBI comp = WBUtility.lookupSnomedIdentifier(t.getNewValue());
+						ConceptVersionBI comp = WBUtility.lookupIdentifier(t.getNewValue());
 						if (comp == null) {
 							AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 						} else {

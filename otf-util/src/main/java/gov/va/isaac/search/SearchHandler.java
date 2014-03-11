@@ -96,7 +96,7 @@ public class SearchHandler
 						// If search query is an ID, look up concept and add the result.
 						if (Utility.isUUID(localQuery) || Utility.isLong(localQuery))
 						{
-							ConceptVersionBI temp = WBUtility.lookupSnomedIdentifier(localQuery);
+							ConceptVersionBI temp = WBUtility.lookupIdentifier(localQuery);
 							if (temp != null)
 							{
 								CompositeSearchResult gsr = new CompositeSearchResult(temp.getConceptNid(), 2.0f, temp);

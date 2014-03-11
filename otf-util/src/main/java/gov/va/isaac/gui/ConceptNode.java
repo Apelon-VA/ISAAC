@@ -18,6 +18,9 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
@@ -147,15 +150,22 @@ public class ConceptNode implements ConceptLookupCallback
 				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
 				if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
 				{
+					newValue.setNid(oldValue.getNid());
 					return;
 				}
 				lookup();
 			}
 		});
 
-		//TODO add drag and drop hooks
-		//LegoGUI.getInstance().getLegoGUIController().addSnomedDropTarget(legoTreeView_.getLego(), cb_);
-
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(cb_, new ConceptIdProvider()
+		{
+			@Override
+			public String getConceptId()
+			{
+				return cb_.getValue().getNid() + "";
+			}
+		}, true);
+		
 		pi_ = new ProgressIndicator(ProgressIndicator.INDETERMINATE_PROGRESS);
 		pi_.visibleProperty().bind(lookupInProgress);
 		pi_.setPrefHeight(16.0);
@@ -186,46 +196,6 @@ public class ConceptNode implements ConceptLookupCallback
 
 		hbox_.getChildren().add(sp);
 		HBox.setHgrow(sp, Priority.SOMETIMES);
-		//TODO drag and drop
-//		cb_.getEditor().setOnDragDetected(new EventHandler<MouseEvent>()
-//		{
-//			public void handle(MouseEvent event)
-//			{
-//				/* drag was detected, start a drag-and-drop gesture */
-//				/* allow any transfer mode */
-//				if (c_ != null)
-//				{
-//					Dragboard db = cb_.startDragAndDrop(TransferMode.COPY);
-//
-//					/* Put a string on a dragboard */
-//					String drag = null;
-//					if (c_.getUuid() != null)
-//					{
-//						drag = c_.getUuid();
-//					}
-//					else if (c_.getSctid() != null)
-//					{
-//						drag = c_.getSctid() + "";
-//					}
-//					if (drag != null)
-//					{
-//						ClipboardContent content = new ClipboardContent();
-//						content.putString(drag);
-//						db.setContent(content);
-//						LegoGUI.getInstance().getLegoGUIController().snomedDragStarted();
-//						event.consume();
-//					}
-//				}
-//			}
-//		});
-//
-//		cb_.getEditor().setOnDragDone(new EventHandler<DragEvent>()
-//		{
-//			public void handle(DragEvent event)
-//			{
-//				LegoGUI.getInstance().getLegoGUIController().snomedDragCompleted();
-//			}
-//		});
 	}
 
 	private void updateGUI()
@@ -255,7 +225,14 @@ public class ConceptNode implements ConceptLookupCallback
 	{
 		lookupsInProgress_.incrementAndGet();
 		lookupInProgress.invalidate();
-		WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
+		if (cb_.getValue().getNid() != 0)
+		{
+			WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
+		}
+		else
+		{
+			WBUtility.lookupIdentifier(cb_.getValue().getDescription(), this, null);
+		}
 	}
 
 	public Node getNode()

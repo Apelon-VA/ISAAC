@@ -18,8 +18,11 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
@@ -56,6 +59,14 @@ public class ParentReplace extends Operation
 		replaceOptions_.setPromptText("Populate the Concepts List");
 		replaceOptions_.getItems().addAll(conceptList);
 		root_.add(ErrorMarkerUtils.setupErrorMarker(replaceOptions_, replaceOptionsInvalidString_), 1, 0);
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(replaceOptions_, new ConceptIdProvider()
+		{
+			@Override
+			public String getConceptId()
+			{
+				return replaceOptions_.getValue().getNid() + "";
+			}
+		}, false);
 
 		root_.add(new Label("With Parent: "), 0, 1);
 		withConcept_ = new ConceptNode(null, true);
