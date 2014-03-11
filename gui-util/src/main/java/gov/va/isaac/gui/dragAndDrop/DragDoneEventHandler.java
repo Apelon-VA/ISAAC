@@ -20,49 +20,21 @@ package gov.va.isaac.gui.dragAndDrop;
 
 import gov.va.isaac.AppContext;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.DragEvent;
 
 /**
- * {@link DragDetectedEventHandeler}
+ * {@link DragDoneEventHandler}
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class DragDetectedEventHandeler implements EventHandler<MouseEvent>
+public class DragDoneEventHandler implements EventHandler<DragEvent>
 {
-	private Node node_;
-	private ConceptIdProvider idProvider_;
-	public DragDetectedEventHandeler(Node n, ConceptIdProvider idProvider)
-	{
-		node_ = n;
-		idProvider_ = idProvider;
-	}
-	
 	/**
 	 * @see javafx.event.EventHandler#handle(javafx.event.Event)
 	 */
 	@Override
-	public void handle(MouseEvent event)
+	public void handle(DragEvent event)
 	{
-		/* drag was detected, start a drag-and-drop gesture */
-		/* allow any transfer mode */
-		if (node_ != null)
-		{
-			Dragboard db = node_.startDragAndDrop(TransferMode.COPY);
-
-			/* Put a string on a dragboard */
-			String drag = idProvider_.getConceptId();
-			if (drag != null)
-			{
-				ClipboardContent content = new ClipboardContent();
-				content.putString(drag);
-				db.setContent(content);
-				AppContext.getService(DragRegistry.class).conceptDragStarted();
-				event.consume();
-			}
-		}
+		AppContext.getService(DragRegistry.class).conceptDragCompleted();
 	}
 }

@@ -104,8 +104,8 @@ public class DragRegistry
 			});
 		}
 
-		n.setOnDragDetected(new DragDetectedEventHandeler(n, conceptIdProvider));
-		n.setOnDragDone(new DragDoneEventHandeler());
+		n.setOnDragDetected(new DragDetectedEventHandler(n, conceptIdProvider));
+		n.setOnDragDone(new DragDoneEventHandler());
 	}
 
 	public void setupDragAndDrop(final TextField n, ConceptIdProvider conceptIdProvider, boolean allowDrop)
@@ -146,8 +146,8 @@ public class DragRegistry
 				}
 			});
 		}
-		n.setOnDragDetected(new DragDetectedEventHandeler(n, conceptIdProvider));
-		n.setOnDragDone(new DragDoneEventHandeler());
+		n.setOnDragDetected(new DragDetectedEventHandler(n, conceptIdProvider));
+		n.setOnDragDone(new DragDoneEventHandler());
 	}
 
 	private void setDropShadows(final Node n)
