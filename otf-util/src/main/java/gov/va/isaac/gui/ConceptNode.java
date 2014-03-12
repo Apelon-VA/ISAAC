@@ -80,13 +80,13 @@ public class ConceptNode implements ConceptLookupCallback
 	private StringProperty invalidToolTipText = new SimpleStringProperty("The specified concept was not found in the database.");
 	private boolean flagAsInvalidWhenBlank_ = true;
 	private volatile long lookupUpdateTime_ = 0;
-	private AtomicInteger lookupsInProgress_ = new AtomicInteger();
-	private BooleanBinding lookupInProgress = new BooleanBinding()
+	private AtomicInteger lookupsCurrentlyInProgress_ = new AtomicInteger();
+	private BooleanBinding isLookupInProgress_ = new BooleanBinding()
 	{
 		@Override
 		protected boolean computeValue()
 		{
-			return lookupsInProgress_.get() > 0;
+			return lookupsCurrentlyInProgress_.get() > 0;
 		}
 	};
 	
@@ -209,14 +209,14 @@ public class ConceptNode implements ConceptLookupCallback
 		}, true);
 		
 		pi_ = new ProgressIndicator(ProgressIndicator.INDETERMINATE_PROGRESS);
-		pi_.visibleProperty().bind(lookupInProgress);
+		pi_.visibleProperty().bind(isLookupInProgress_);
 		pi_.setPrefHeight(16.0);
 		pi_.setPrefWidth(16.0);
 		pi_.setMaxWidth(16.0);
 		pi_.setMaxHeight(16.0);
 
 		lookupFailImage_ = Images.EXCLAMATION.createImageView();
-		lookupFailImage_.visibleProperty().bind(isValid.not().and(lookupInProgress.not()));
+		lookupFailImage_.visibleProperty().bind(isValid.not().and(isLookupInProgress_.not()));
 		Tooltip t = new Tooltip();
 		t.textProperty().bind(invalidToolTipText);
 		Tooltip.install(lookupFailImage_, t);
@@ -260,13 +260,10 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setValue(codeSetComboBoxConcept_);
 	}
 
-	/**
-	 * returns true if launched, false if skipped because it decided it wasn't necessary
-	 */
 	private synchronized void lookup()
 	{
-		lookupsInProgress_.incrementAndGet();
-		lookupInProgress.invalidate();
+		lookupsCurrentlyInProgress_.incrementAndGet();
+		isLookupInProgress_.invalidate();
 		if (cb_.getValue().getNid() != 0)
 		{
 			WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
@@ -284,7 +281,23 @@ public class ConceptNode implements ConceptLookupCallback
 
 	public ConceptVersionBI getConcept()
 	{
-		//TODO this should block if a lookup is in progress
+		if (isLookupInProgress_.get())
+		{
+			synchronized (lookupsCurrentlyInProgress_)
+			{
+				while (lookupsCurrentlyInProgress_.get() > 0)
+				{
+					try
+					{
+						lookupsCurrentlyInProgress_.wait();
+					}
+					catch (InterruptedException e)
+					{
+						// noop
+					}
+				}
+			}
+		}
 		return c_;
 	}
 	
@@ -312,9 +325,13 @@ public class ConceptNode implements ConceptLookupCallback
 			public void run()
 			{
 				logger.debug("lookupComplete - found '{}'", (concept == null  ? "-null-" : concept.toUserString()));
-				lookupsInProgress_.decrementAndGet();
-				lookupInProgress.invalidate();
-
+				synchronized (lookupsCurrentlyInProgress_)
+				{
+					lookupsCurrentlyInProgress_.decrementAndGet();
+					isLookupInProgress_.invalidate();
+					lookupsCurrentlyInProgress_.notifyAll();
+				}
+				
 				if (submitTime < lookupUpdateTime_)
 				{
 					// Throw it away, we already got back a newer lookup.
