@@ -278,7 +278,7 @@ public class WBUtility {
 	 * then calls {@link #getConceptVersion(UUID)}
 	 * Next, if no hit, if the passed in value is parseable as a int, calls {@link #getConceptVersion(int)}
 	 */
-	public static ConceptVersionBI lookupSnomedIdentifier(String identifier)
+	public static ConceptVersionBI lookupIdentifier(String identifier)
 	{
 		LOG.debug("WB DB String Lookup '{}'", identifier);
 
@@ -325,7 +325,7 @@ public class WBUtility {
 	 * @param callback - who to inform when lookup completes
 	 * @param callId - An arbitrary identifier that will be returned to the caller when this completes
 	 */
-	public static void lookupSnomedIdentifier(final String identifier, final ConceptLookupCallback callback, final Integer callId)
+	public static void lookupIdentifier(final String identifier, final ConceptLookupCallback callback, final Integer callId)
 	{
 		LOG.debug("Threaded Lookup: '{}'", identifier);
 		final long submitTime = System.currentTimeMillis();
@@ -334,7 +334,7 @@ public class WBUtility {
 			@Override
 			public void run()
 			{
-				ConceptVersionBI c = lookupSnomedIdentifier(identifier);
+				ConceptVersionBI c = lookupIdentifier(identifier);
 				callback.lookupComplete(c, submitTime, callId);
 			}
 		};

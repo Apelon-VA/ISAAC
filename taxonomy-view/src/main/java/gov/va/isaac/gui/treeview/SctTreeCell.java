@@ -18,7 +18,10 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.ConceptView;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -68,6 +71,17 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         // Handle right-clicks.
         ContextMenu cm = buildContextMenu();
         setContextMenu(cm);
+        
+        //Allow drags
+        AppContext.getService(DragRegistry.class).setupDragOnly(this, new ConceptIdProvider()
+        {
+            
+            @Override
+            public String getConceptId()
+            {
+                return SctTreeCell.this.getItem().getConcept().getPrimordialUuid().toString();
+            }
+        });
     }
 
     private void openOrCloseParent(SctTreeItem treeItem) throws IOException, ContradictionException {
@@ -95,7 +109,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                                 new SctTreeItem(new TaxonomyReferenceWithConcept(extraParentVersion,
                                 TaxonomyReferenceWithConcept.WhichConcept.DESTINATION));
                         ProgressIndicator indicator = new ProgressIndicator();
-
+//TODO figure out what we will do with this indicator skin
 //                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
                         indicator.setPrefSize(16, 16);
                         indicator.setProgress(-1);

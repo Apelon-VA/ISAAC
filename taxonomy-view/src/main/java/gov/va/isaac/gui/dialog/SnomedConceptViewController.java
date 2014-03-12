@@ -19,9 +19,13 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.WBUtility;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -96,8 +100,26 @@ public class SnomedConceptViewController {
         conceptStatusLabel.setText(conceptAttributes.getStatus().name());
         fsnLabel.setText(WBUtility.getDescription(concept));
         CopyableLabel.addCopyMenu(fsnLabel);
+        AppContext.getService(DragRegistry.class).setupDragOnly(fsnLabel, new ConceptIdProvider()
+        {
+            @Override
+            public String getConceptId()
+            {
+                return uuidLabel.getText();
+            }
+        });
         uuidLabel.setText(concept.getPrimordialUuid().toString());
+        AppContext.getService(DragRegistry.class).setupDragOnly(uuidLabel, new ConceptIdProvider()
+        {
+            @Override
+            public String getConceptId()
+            {
+                return uuidLabel.getText();
+            }
+        });
         CopyableLabel.addCopyMenu(uuidLabel);
+        
+        AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(concept));
 
         // Update action handlers.
         showInTreeButton.setOnAction(new EventHandler<ActionEvent>() {

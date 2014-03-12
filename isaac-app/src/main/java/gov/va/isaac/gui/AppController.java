@@ -25,10 +25,13 @@ import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewI;
 import java.util.Hashtable;
 import java.util.TreeSet;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -125,27 +128,28 @@ public class AppController {
                 {
                     final BorderPane bp = buildPanelForView(dv);
                     //TODO this isn't honoring sort order... need to sort all of the menus from the DockedViewI at once....
-                    MenuItem mi = new MenuItem();
+                    final CheckMenuItem mi = new CheckMenuItem();
                     mi.setText(dv.getMenuBarMenuToShowView().getMenuName());
                     mi.setId(dv.getMenuBarMenuToShowView().getMenuId());
                     mi.setMnemonicParsing(dv.getMenuBarMenuToShowView().enableMnemonicParsing());
-                    mi.setOnAction(new EventHandler<ActionEvent>()
+                    mi.selectedProperty().addListener(new InvalidationListener()
                     {
                         @Override
-                        public void handle(ActionEvent arg0)
+                        public void invalidated(Observable observable)
                         {
                             //This is a convenience call... not expected to actually show the view.
                             dv.getMenuBarMenuToShowView().handleMenuSelection(appBorderPane.getScene().getWindow());
-
-                            if (!mainSplitPane.getItems().contains(bp))
+                            if (mi.isSelected() && !mainSplitPane.getItems().contains(bp))
                             {
-                                bp.setVisible(true);
                                 mainSplitPane.getItems().add(bp);
                             }
+                            else if (!mi.isSelected() && mainSplitPane.getItems().contains(bp))
+                            {
+                                hidePanelView(bp);
+                            }
                         }
-
                     });
-                    mi.disableProperty().bind(bp.visibleProperty());
+                    mi.selectedProperty().bindBidirectional(bp.visibleProperty());
                     parentMenu.getItems().add(mi);
                 }
             }
@@ -204,5 +208,20 @@ public class AppController {
     {
         bp.setVisible(false);
         mainSplitPane.getItems().remove(bp);
+    }
+    
+    public void ensureDockedViewIsVisible(DockedViewI view)
+    {
+        Menu parentMenu = allMenus_.get(view.getMenuBarMenuToShowView().getParentMenuId());
+        String id = view.getMenuBarMenuToShowView().getMenuId();
+        for (MenuItem menu : parentMenu.getItems())
+        {
+            if (menu.getId().equals(id))
+            {
+                CheckMenuItem cmi = (CheckMenuItem)menu;
+                cmi.selectedProperty().set(true);
+                break;
+            }
+        }
     }
 }

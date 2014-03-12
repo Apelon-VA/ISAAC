@@ -86,6 +86,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 
             // Configure a new progress indicator.
             ProgressIndicator pi = new ProgressIndicator();
+            //TODO Figure out what to do with the progress indicator
 //            pi.setSkin(new TaxonomyProgressIndicatorSkin(pi));
             pi.setPrefSize(16, 16);
             pi.setProgress(-1);

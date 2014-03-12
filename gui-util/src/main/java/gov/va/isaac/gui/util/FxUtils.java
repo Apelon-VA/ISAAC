@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.gui.util;
 
+import javafx.scene.effect.DropShadow;
+import javafx.scene.paint.Color;
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -27,6 +29,16 @@ import com.sun.javafx.tk.Toolkit;
  */
 public class FxUtils {
 
+    public static DropShadow redDropShadow = new DropShadow();
+    public static DropShadow greenDropShadow = new DropShadow();
+    public static DropShadow lightGreenDropShadow = new DropShadow();
+    static
+    {
+        redDropShadow.setColor(Color.RED);
+        greenDropShadow.setColor(Color.GREEN);
+        lightGreenDropShadow.setColor(Color.LIGHTGREEN);
+    }
+    
     // Do not instantiate.
     private FxUtils() {};
 

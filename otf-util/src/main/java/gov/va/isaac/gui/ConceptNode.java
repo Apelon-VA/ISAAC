@@ -18,7 +18,11 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +35,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.WeakListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -72,15 +80,18 @@ public class ConceptNode implements ConceptLookupCallback
 	private StringProperty invalidToolTipText = new SimpleStringProperty("The specified concept was not found in the database.");
 	private boolean flagAsInvalidWhenBlank_ = true;
 	private volatile long lookupUpdateTime_ = 0;
-	private AtomicInteger lookupsInProgress_ = new AtomicInteger();
-	private BooleanBinding lookupInProgress = new BooleanBinding()
+	private AtomicInteger lookupsCurrentlyInProgress_ = new AtomicInteger();
+	private BooleanBinding isLookupInProgress_ = new BooleanBinding()
 	{
 		@Override
 		protected boolean computeValue()
 		{
-			return lookupsInProgress_.get() > 0;
+			return lookupsCurrentlyInProgress_.get() > 0;
 		}
 	};
+	
+	private ListChangeListener<SimpleDisplayConcept> listChangeListener_;
+	private volatile boolean disableChangeListener_ = false;
 
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank)
 	{
@@ -102,7 +113,7 @@ public class ConceptNode implements ConceptLookupCallback
 			@Override
 			public String toString(SimpleDisplayConcept object)
 			{
-				return object.getDescription();
+				return object == null ? "" : object.getDescription();
 			}
 
 			@Override
@@ -116,8 +127,27 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setPrefWidth(ComboBox.USE_COMPUTED_SIZE);
 		cb_.setMinWidth(200.0);
 		cb_.setPromptText("Drop or select a concept");
-		//TODO add a recently-used list of concepts API
-		//cb_.setItems(FXCollections.observableArrayList(LegoGUI.getInstance().getLegoGUIController().getCommonlyUsedConcept().getSuggestions(cut)));
+		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
+		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
+		ObservableList<SimpleDisplayConcept> items = AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts();
+		listChangeListener_ = new ListChangeListener<SimpleDisplayConcept>()
+		{
+			@Override
+			public void onChanged(Change<? extends SimpleDisplayConcept> c)
+			{
+				logger.debug("updating recently used dropdown");
+				disableChangeListener_ = true;
+				SimpleDisplayConcept temp = cb_.getValue();
+				cb_.setItems(FXCollections.observableArrayList(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts()));
+				cb_.setValue(temp);
+				cb_.getSelectionModel().select(temp);
+				disableChangeListener_ = false;
+			}
+		};
+		
+		items.addListener(new WeakListChangeListener<SimpleDisplayConcept>(listChangeListener_));
+		
+		cb_.setItems(FXCollections.observableArrayList(items));
 		cb_.setVisibleRowCount(11);
 
 		updateGUI();
@@ -139,32 +169,54 @@ public class ConceptNode implements ConceptLookupCallback
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> observable, SimpleDisplayConcept oldValue, SimpleDisplayConcept newValue)
 			{
-				logger.debug("Combo Value Changed: {} {}", newValue.getDescription(), newValue.getNid());
+				if (newValue == null)
+				{
+					logger.debug("Combo Value Changed - null entry");
+				}
+				else
+				{
+					logger.debug("Combo Value Changed: {} {}", newValue.getDescription(), newValue.getNid());
+				}
+				
+				if (disableChangeListener_)
+				{
+					logger.debug("change listener disabled");
+					return;
+				}
 				if (newValue.shouldIgnoreChange())
 				{
+					logger.debug("One time change ignore");
 					return;
 				}
 				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
 				if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
 				{
+					logger.debug("Not a real change, ignore");
+					newValue.setNid(oldValue.getNid());
 					return;
 				}
 				lookup();
 			}
 		});
 
-		//TODO add drag and drop hooks
-		//LegoGUI.getInstance().getLegoGUIController().addSnomedDropTarget(legoTreeView_.getLego(), cb_);
-
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(cb_, new ConceptIdProvider()
+		{
+			@Override
+			public String getConceptId()
+			{
+				return cb_.getValue().getNid() + "";
+			}
+		}, true);
+		
 		pi_ = new ProgressIndicator(ProgressIndicator.INDETERMINATE_PROGRESS);
-		pi_.visibleProperty().bind(lookupInProgress);
+		pi_.visibleProperty().bind(isLookupInProgress_);
 		pi_.setPrefHeight(16.0);
 		pi_.setPrefWidth(16.0);
 		pi_.setMaxWidth(16.0);
 		pi_.setMaxHeight(16.0);
 
 		lookupFailImage_ = Images.EXCLAMATION.createImageView();
-		lookupFailImage_.visibleProperty().bind(isValid.not().and(lookupInProgress.not()));
+		lookupFailImage_.visibleProperty().bind(isValid.not().and(isLookupInProgress_.not()));
 		Tooltip t = new Tooltip();
 		t.textProperty().bind(invalidToolTipText);
 		Tooltip.install(lookupFailImage_, t);
@@ -186,46 +238,6 @@ public class ConceptNode implements ConceptLookupCallback
 
 		hbox_.getChildren().add(sp);
 		HBox.setHgrow(sp, Priority.SOMETIMES);
-		//TODO drag and drop
-//		cb_.getEditor().setOnDragDetected(new EventHandler<MouseEvent>()
-//		{
-//			public void handle(MouseEvent event)
-//			{
-//				/* drag was detected, start a drag-and-drop gesture */
-//				/* allow any transfer mode */
-//				if (c_ != null)
-//				{
-//					Dragboard db = cb_.startDragAndDrop(TransferMode.COPY);
-//
-//					/* Put a string on a dragboard */
-//					String drag = null;
-//					if (c_.getUuid() != null)
-//					{
-//						drag = c_.getUuid();
-//					}
-//					else if (c_.getSctid() != null)
-//					{
-//						drag = c_.getSctid() + "";
-//					}
-//					if (drag != null)
-//					{
-//						ClipboardContent content = new ClipboardContent();
-//						content.putString(drag);
-//						db.setContent(content);
-//						LegoGUI.getInstance().getLegoGUIController().snomedDragStarted();
-//						event.consume();
-//					}
-//				}
-//			}
-//		});
-//
-//		cb_.getEditor().setOnDragDone(new EventHandler<DragEvent>()
-//		{
-//			public void handle(DragEvent event)
-//			{
-//				LegoGUI.getInstance().getLegoGUIController().snomedDragCompleted();
-//			}
-//		});
 	}
 
 	private void updateGUI()
@@ -248,14 +260,18 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setValue(codeSetComboBoxConcept_);
 	}
 
-	/**
-	 * returns true if launched, false if skipped because it decided it wasn't necessary
-	 */
 	private synchronized void lookup()
 	{
-		lookupsInProgress_.incrementAndGet();
-		lookupInProgress.invalidate();
-		WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
+		lookupsCurrentlyInProgress_.incrementAndGet();
+		isLookupInProgress_.invalidate();
+		if (cb_.getValue().getNid() != 0)
+		{
+			WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
+		}
+		else
+		{
+			WBUtility.lookupIdentifier(cb_.getValue().getDescription(), this, null);
+		}
 	}
 
 	public Node getNode()
@@ -265,7 +281,23 @@ public class ConceptNode implements ConceptLookupCallback
 
 	public ConceptVersionBI getConcept()
 	{
-		//TODO this should block if a lookup is in progress
+		if (isLookupInProgress_.get())
+		{
+			synchronized (lookupsCurrentlyInProgress_)
+			{
+				while (lookupsCurrentlyInProgress_.get() > 0)
+				{
+					try
+					{
+						lookupsCurrentlyInProgress_.wait();
+					}
+					catch (InterruptedException e)
+					{
+						// noop
+					}
+				}
+			}
+		}
 		return c_;
 	}
 	
@@ -293,9 +325,13 @@ public class ConceptNode implements ConceptLookupCallback
 			public void run()
 			{
 				logger.debug("lookupComplete - found '{}'", (concept == null  ? "-null-" : concept.toUserString()));
-				lookupsInProgress_.decrementAndGet();
-				lookupInProgress.invalidate();
-
+				synchronized (lookupsCurrentlyInProgress_)
+				{
+					lookupsCurrentlyInProgress_.decrementAndGet();
+					isLookupInProgress_.invalidate();
+					lookupsCurrentlyInProgress_.notifyAll();
+				}
+				
 				if (submitTime < lookupUpdateTime_)
 				{
 					// Throw it away, we already got back a newer lookup.
@@ -310,8 +346,7 @@ public class ConceptNode implements ConceptLookupCallback
 				if (concept != null)
 				{
 					c_ = concept;
-					//TODO recent codes api
-					//LegoGUI.getInstance().getLegoGUIController().updateRecentCodes(c_);
+					AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(c_));
 					isValid.set(true);
 				}
 				else

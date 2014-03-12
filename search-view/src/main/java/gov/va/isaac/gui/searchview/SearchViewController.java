@@ -19,8 +19,11 @@
 package gov.va.isaac.gui.searchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
@@ -75,7 +78,6 @@ public class SearchViewController implements TaskCompleteCallback {
     @FXML private ListView<CompositeSearchResult> searchResults;
     @FXML private BorderPane borderPane;
 
-    private SearchHandler searchHandler = new SearchHandler();
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
 
@@ -145,22 +147,17 @@ public class SearchViewController implements TaskCompleteCallback {
                             });
                             cm.getItems().add(mi1);
 
-                            /**
-                             * TODO: Implement when required.
-                             *
+
                             // Menu item to find concept in tree.
-                            MenuItem mi2 = new MenuItem("Find Concept in Tree");
+                            MenuItem mi2 = new MenuItem("Find Concept in Taxonomy View");
                             mi2.setGraphic(Images.ROOT.createImageView());
                             mi2.setOnAction(new EventHandler<ActionEvent>() {
-
                                 @Override
                                 public void handle(ActionEvent arg0) {
-                                    appContext.getAppUtil().getConceptDialogProvider().findConceptInTree(
-                                            item.getConcept().getUUIDs().get(0));
+                                    AppContext.getService(TaxonomyViewI.class).locateConcept(item.getConcept().getUUIDs().get(0), null);
                                 }
                             });
                             cm.getItems().add(mi2);
-                            */
 
                             setContextMenu(cm);
 
@@ -182,41 +179,19 @@ public class SearchViewController implements TaskCompleteCallback {
             }
         });
 
-        /**
-         * TODO: Implement when required.
-         *
-        searchResults.setOnDragDetected(new EventHandler<MouseEvent>()
+        AppContext.getService(DragRegistry.class).setupDragOnly(searchResults, new ConceptIdProvider()
         {
             @Override
-            public void handle(MouseEvent event)
+            public String getConceptId()
             {
-                // "A drag was detected, start a drag-and-drop gesture.
-                // Allow any transfer mode."
-                Dragboard db = searchResults.startDragAndDrop(TransferMode.COPY);
-
-                // "Put a string on a dragboard."
-                SearchResult dragItem = searchResults.getSelectionModel().getSelectedItem();
-
-                if (dragItem.getConcept() != null)
+                CompositeSearchResult dragItem = searchResults.getSelectionModel().getSelectedItem();
+                if (dragItem != null)
                 {
-                    ClipboardContent content = new ClipboardContent();
-                    content.putString(dragItem.getConcept().getUUIDs().get(0).toString());
-                    db.setContent(content);
-                    LegoGUI.getInstance().getLegoGUIController().snomedDragStarted();
-                    event.consume();
+                    return dragItem.getConceptNid() + "";
                 }
+                return null;
             }
         });
-
-        searchResults.setOnDragDone(new EventHandler<DragEvent>()
-        {
-            @Override
-            public void handle(DragEvent event)
-            {
-                LegoGUI.getInstance().getLegoGUIController().snomedDragCompleted();
-            }
-        });
-         */
 
         final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
         searchProgress.visibleProperty().bind(searchRunning);
@@ -311,6 +286,6 @@ public class SearchViewController implements TaskCompleteCallback {
         searchRunning.set(true);
         searchResults.getItems().clear();
         // "we get called back when the results are ready."
-        ssh = searchHandler.descriptionSearch(searchText.getText(), this);
+        ssh = SearchHandler.descriptionSearch(searchText.getText(), this);
     }
 }

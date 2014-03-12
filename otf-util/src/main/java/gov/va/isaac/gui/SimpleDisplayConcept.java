@@ -21,6 +21,7 @@ package gov.va.isaac.gui;
 import gov.va.isaac.util.WBUtility;
 import org.apache.commons.lang.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 
 /**
  * 
@@ -36,7 +37,7 @@ public class SimpleDisplayConcept
 {
 	private String description_;
 	private int nid_;
-	private boolean ignoreChange = false;
+	private boolean ignoreChange_ = false;
 
 	/**
 	 * 
@@ -47,20 +48,32 @@ public class SimpleDisplayConcept
 	 */
 	public SimpleDisplayConcept(String description, int nid, boolean ignoreChange)
 	{
-		this(description, nid);
-		this.ignoreChange = ignoreChange;
+		description_ = description;
+		nid_ = nid;
+		ignoreChange_ = ignoreChange;
 	}
 	
 	public SimpleDisplayConcept(ConceptVersionBI c)
 	{
 		this(WBUtility.getDescription(c), c.getNid());
-		this.ignoreChange = false;
+	}
+	
+	public SimpleDisplayConcept(ConceptChronicleDdo c)
+	{
+		ConceptVersionBI cv = WBUtility.getConceptVersion(c.getPrimordialUuid());
+		description_ = WBUtility.getDescription(cv);
+		nid_ = cv.getNid();
+		ignoreChange_ = false;
+	}
+	
+	public SimpleDisplayConcept(String description)
+	{
+		this(description, 0);
 	}
 
 	public SimpleDisplayConcept(String description, int nid)
 	{
-		description_ = description;
-		nid_ = nid;
+		this(description, nid, false);
 	}
 
 	public String getDescription()
@@ -73,6 +86,10 @@ public class SimpleDisplayConcept
 		return nid_;
 	}
 	
+	protected void setNid(int nid)
+	{
+		nid_ = nid;
+	}
 	/**
 	 * Note - this can only be read once - if it returns true after the first call, 
 	 * it resets itself to false for every subsequent call.  It will only return 
@@ -81,11 +98,26 @@ public class SimpleDisplayConcept
 	 */
 	public synchronized boolean shouldIgnoreChange()
 	{
-		boolean temp = ignoreChange;
-		ignoreChange = false;
+		boolean temp = ignoreChange_;
+		ignoreChange_ = false;
 		return temp;
 	}
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((description_ == null) ? 0 : description_.hashCode());
+		result = prime * result + nid_;
+		return result;
+	}
 
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -105,5 +137,10 @@ public class SimpleDisplayConcept
 	public String toString()
 	{
 		return description_;
+	}
+	
+	public SimpleDisplayConcept clone()
+	{
+		return new SimpleDisplayConcept(this.description_, this.nid_, false);
 	}
 }
