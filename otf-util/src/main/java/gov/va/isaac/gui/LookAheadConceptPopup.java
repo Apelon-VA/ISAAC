@@ -33,9 +33,11 @@ import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.DoubleBinding;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -69,6 +71,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 	private int currentSelection = -1;
 	private boolean enableMouseHover = false;
 	private boolean stylesAdded = false;
+	private DoubleBinding calculatedPrefWidth_;
 
 	private AtomicInteger activeSearchCount = new AtomicInteger(0);
 	private BooleanBinding searchRunning = new BooleanBinding()
@@ -216,8 +219,32 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		});
 
 		popupContent.getChildren().add(displayedSearchResults);
-		//TODO figure out how to deal with width better, so it isn't too small, and doesn't go off screen.
-		popupContent.prefWidthProperty().bind(sourceTextField.widthProperty());
+		
+		calculatedPrefWidth_ = new DoubleBinding()
+		{
+			{
+				bind(sourceTextField.widthProperty());
+			}
+			@Override
+			protected double computeValue()
+			{
+				double parentWidth = sourceTextField.widthProperty().get();
+				double widestChild = 0;
+				for (Node n : displayedSearchResults.getChildrenUnmodifiable())
+				{
+					double d = n.prefWidth(0);
+					if (d > widestChild)
+					{
+						widestChild = d;
+					}
+				}
+				widestChild += 50;
+				return Math.max(parentWidth, widestChild);
+			}
+		};
+		
+		
+		popupContent.prefWidthProperty().bind(calculatedPrefWidth_);
 		popupContent.getStyleClass().add("lookAheadItemBorder");
 		popupContent.getStyleClass().add("lookAheadDialogBackground");
 		this.getContent().add(popupContent);
@@ -527,6 +554,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 							int idx = displayedSearchResults.getChildren().size();
 							displayedSearchResults.getChildren().add(processResult(result, idx));
 						}
+						calculatedPrefWidth_.invalidate();
 					}
 				});
 			}
