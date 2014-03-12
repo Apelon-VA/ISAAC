@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -183,7 +184,7 @@ public class App extends Application implements ApplicationWindowI{
         if (bdbFolder == null) {
             //do nothing... let the store use its own default
             //TODO OTF fix: note - the BDB defaults are not in sync with the Lucene defaults...  lucene will init in the wrong place and fail....
-        	//https://jira.ihtsdotools.org/browse/OTFISSUE-12
+            //https://jira.ihtsdotools.org/browse/OTFISSUE-12
         }
         else
         {
@@ -258,6 +259,15 @@ public class App extends Application implements ApplicationWindowI{
     public void registerShutdownListener(ShutdownBroadcastListenerI listener)
     {
         shutdownListeners_.add(listener);
+    }
+    
+    /**
+     * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#ensureDockedViewIsVisble(gov.va.isaac.interfaces.gui.views.DockedViewI)
+     */
+    @Override
+    public void ensureDockedViewIsVisble(DockedViewI view)
+    {
+        controller.ensureDockedViewIsVisible(view);
     }
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {

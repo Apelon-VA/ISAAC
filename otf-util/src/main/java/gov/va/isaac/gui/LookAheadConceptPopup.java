@@ -33,9 +33,11 @@ import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.DoubleBinding;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -69,6 +71,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 	private int currentSelection = -1;
 	private boolean enableMouseHover = false;
 	private boolean stylesAdded = false;
+	private DoubleBinding calculatedPrefWidth_;
 
 	private AtomicInteger activeSearchCount = new AtomicInteger(0);
 	private BooleanBinding searchRunning = new BooleanBinding()
@@ -216,8 +219,32 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		});
 
 		popupContent.getChildren().add(displayedSearchResults);
-		//TODO figure out how to deal with width better, so it isn't too small, and doesn't go off screen.
-		popupContent.prefWidthProperty().bind(sourceTextField.widthProperty());
+		
+		calculatedPrefWidth_ = new DoubleBinding()
+		{
+			{
+				bind(sourceTextField.widthProperty());
+			}
+			@Override
+			protected double computeValue()
+			{
+				double parentWidth = sourceTextField.widthProperty().get();
+				double widestChild = 0;
+				for (Node n : displayedSearchResults.getChildrenUnmodifiable())
+				{
+					double d = n.prefWidth(0);
+					if (d > widestChild)
+					{
+						widestChild = d;
+					}
+				}
+				widestChild += 50;
+				return Math.max(parentWidth, widestChild);
+			}
+		};
+		
+		
+		popupContent.prefWidthProperty().bind(calculatedPrefWidth_);
 		popupContent.getStyleClass().add("lookAheadItemBorder");
 		popupContent.getStyleClass().add("lookAheadDialogBackground");
 		this.getContent().add(popupContent);
@@ -227,7 +254,18 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 			@Override
 			public void invalidated(Observable observable)
 			{
-				moveUpIfNecessary();
+				//https://javafx-jira.kenai.com/browse/RT-36194
+				//Note, this was a change in behavior in JavaFX 8 - You can't call setX / setY in the listener of a height change, otherwise, 
+				//your newly set values get ignored.
+				Platform.runLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						moveUpIfNecessary();
+					}
+				});
+				
 			}
 		});
 		
@@ -302,14 +340,12 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 
 	private void moveUpIfNecessary()
 	{
-		//TODO this logic isn't working... java8 regression  Sometimes is flags 'above', but doesn't actually move it above, 
-		//which messes up the up/down logic.  disable for now.
-//		if (above || (getY() + getHeight()) > (sourceTextField.getScene().getWindow().getY() + sourceTextField.getScene().getWindow().getHeight()))
-//		{
-//			Point2D p = sourceTextField.localToScene(0.0, 0.0);
-//			setY(p.getY() + sourceTextField.getScene().getY() + sourceTextField.getScene().getWindow().getY() - getHeight());
-//			above = true;
-//		}
+		if (above || (getY() + getHeight()) > (sourceTextField.getScene().getWindow().getY() + sourceTextField.getScene().getWindow().getHeight()))
+		{
+			Point2D p = sourceTextField.localToScene(0.0, 0.0);
+			setY(p.getY() + sourceTextField.getScene().getY() + sourceTextField.getScene().getWindow().getY() - getHeight());
+			above = true;
+		}
 	}
 
 	private void handleScroll(KeyEvent event)
@@ -320,6 +356,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 	private VBox processResult(CompositeSearchResult result, final int idx)
 	{
 		VBox box = new VBox();
+		box.setPadding(new Insets(3, 3, 3, 3));
 
 		ConceptVersionBI c = result.getConcept();
 
@@ -517,6 +554,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 							int idx = displayedSearchResults.getChildren().size();
 							displayedSearchResults.getChildren().add(processResult(result, idx));
 						}
+						calculatedPrefWidth_.invalidate();
 					}
 				});
 			}

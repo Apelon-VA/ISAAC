@@ -18,7 +18,9 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Singleton
-public class SctTreeViewDockedView  implements DockedViewI 
+public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI 
 {
 	private SctTreeView sctTreeView_;
 	private boolean hasBeenInited_ = false;
@@ -126,5 +128,16 @@ public class SctTreeViewDockedView  implements DockedViewI
 	public String getViewTitle()
 	{
 		return "Snomed Browser";
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#locateConcept(java.util.UUID, javafx.beans.property.BooleanProperty)
+	 */
+	@Override
+	public void locateConcept(UUID uuid, BooleanProperty busyIndicator)
+	{
+		//TODO add a visible progress indicator while this happens
+		showConcept(uuid, busyIndicator);
+		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(this);
 	}
 }

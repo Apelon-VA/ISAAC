@@ -20,15 +20,12 @@
 
 .lookAheadSearchResultsStyle-A {
 	-fx-background-color: white;
-	-fx-padding: 1;
 }
 
 .lookAheadSearchResultsStyle-B {
 	-fx-background-color: lightgrey;
-	-fx-padding: 1;
 }
 
 .lookAheadSearchResultsStyle-Selected {
 	-fx-background-color: -fx-focus-color;
-	-fx-padding: 1;
 }

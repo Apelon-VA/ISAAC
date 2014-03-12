@@ -16,33 +16,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui;
-
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
-import javafx.stage.Stage;
-import org.jvnet.hk2.annotations.Contract;
+package gov.va.isaac.gui.dragAndDrop;
 
 /**
- * ApplicationWindowI
- * 
- * Hooks for modules to get references to components of the main application that they may need.
+ * {@link ConceptIdProvider}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Contract
-public interface ApplicationWindowI
+public interface ConceptIdProvider
 {
 	/**
-	 * Return a reference to the Primary Stage of the application.
+	 * Implementers of this should return a UUID, or a NID - which we would expect most drop targets to handle.
+	 * @return
 	 */
-	public Stage getPrimaryStage();
-	
-	/**
-	 * Register a for a callback to be notified when an app shutdown is requested.
-	 * @param listener
-	 */
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
-	
-	public void ensureDockedViewIsVisble(DockedViewI view);
+	public String getConceptId();
 }

@@ -41,7 +41,6 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
@@ -175,6 +174,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
                         ProgressIndicator p2 = new ProgressIndicator();
 
+                        //TODO figure out what to do with the progress indicator
 //                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
                         p2.setPrefSize(16, 16);
                         p2.setProgress(-1);
