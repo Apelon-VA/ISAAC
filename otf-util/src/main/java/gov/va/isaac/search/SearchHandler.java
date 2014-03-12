@@ -203,7 +203,7 @@ public class SearchHandler
 					Collections.sort(userResults, new CompositeSearchResultComparator());
 					if (userResults.size() > resultLimit)
 					{
-						searchHandle.setResults(userResults.subList(0, resultLimit - 1));
+						searchHandle.setResults(userResults.subList(0, resultLimit));
 					}
 					else
 					{
