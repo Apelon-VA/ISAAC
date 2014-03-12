@@ -1,6 +1,7 @@
 gov.va.isaac
 gov.va.isaac.gui
 gov.va.isaac.gui.dialog
+gov.va.isaac.gui.dragAndDrop
 gov.va.isaac.gui.importedmodelsview
 gov.va.isaac.gui.importview
 gov.va.isaac.gui.infoModelView
