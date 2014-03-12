@@ -79,7 +79,6 @@ public class ParentReplace extends Operation
 
 	private void initActionListeners()
 	{
-		//TODO remember current selection
 		replaceOptions_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
@@ -136,9 +135,13 @@ public class ParentReplace extends Operation
 	@Override
 	public void conceptListChanged()
 	{
-		// TODO Auto-generated method stub
+		SimpleDisplayConcept sdc = replaceOptions_.getSelectionModel().getSelectedItem();
 		replaceOptions_.getItems().clear();
 		replaceOptions_.getItems().addAll(conceptList_);
+		if (sdc != null && conceptList_.size() > 0)
+		{
+			replaceOptions_.getSelectionModel().select(sdc);
+		}
 	}
 
 	/**
