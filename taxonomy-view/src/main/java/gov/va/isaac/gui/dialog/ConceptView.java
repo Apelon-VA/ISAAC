@@ -62,7 +62,7 @@ public class ConceptView extends Stage implements ConceptViewI {
         //This is for HK2 to construct...
         super();
 
-        initOwner(AppContext.getMainApplicationWindow().getPrimaryStage());
+        initOwner(null);
         initModality(Modality.NONE);
         initStyle(StageStyle.DECORATED);
 
