@@ -227,7 +227,18 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 			@Override
 			public void invalidated(Observable observable)
 			{
-				moveUpIfNecessary();
+				//https://javafx-jira.kenai.com/browse/RT-36194
+				//Note, this was a change in behavior in JavaFX 8 - You can't call setX / setY in the listener of a height change, otherwise, 
+				//your newly set values get ignored.
+				Platform.runLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						moveUpIfNecessary();
+					}
+				});
+				
 			}
 		});
 		
@@ -302,14 +313,12 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 
 	private void moveUpIfNecessary()
 	{
-		//TODO this logic isn't working... java8 regression  Sometimes is flags 'above', but doesn't actually move it above, 
-		//which messes up the up/down logic.  disable for now.
-//		if (above || (getY() + getHeight()) > (sourceTextField.getScene().getWindow().getY() + sourceTextField.getScene().getWindow().getHeight()))
-//		{
-//			Point2D p = sourceTextField.localToScene(0.0, 0.0);
-//			setY(p.getY() + sourceTextField.getScene().getY() + sourceTextField.getScene().getWindow().getY() - getHeight());
-//			above = true;
-//		}
+		if (above || (getY() + getHeight()) > (sourceTextField.getScene().getWindow().getY() + sourceTextField.getScene().getWindow().getHeight()))
+		{
+			Point2D p = sourceTextField.localToScene(0.0, 0.0);
+			setY(p.getY() + sourceTextField.getScene().getY() + sourceTextField.getScene().getWindow().getY() - getHeight());
+			above = true;
+		}
 	}
 
 	private void handleScroll(KeyEvent event)
@@ -320,6 +329,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 	private VBox processResult(CompositeSearchResult result, final int idx)
 	{
 		VBox box = new VBox();
+		box.setPadding(new Insets(3, 3, 3, 3));
 
 		ConceptVersionBI c = result.getConcept();
 
