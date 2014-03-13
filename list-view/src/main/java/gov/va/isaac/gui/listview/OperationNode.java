@@ -20,7 +20,7 @@ package gov.va.isaac.gui.listview;
 
 import gov.va.isaac.gui.listview.operations.Operation;
 import gov.va.isaac.gui.listview.operations.ParentReplace;
-import gov.va.isaac.gui.listview.operations.PlaceHolder;
+import gov.va.isaac.gui.listview.operations.SampleOperation;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import java.util.TreeMap;
@@ -60,7 +60,7 @@ public class OperationNode extends VBox
 		//TODO be smarter about this, build a utility
 		Operation operation = new ParentReplace(lbvc_.getConceptList());
 		operations_.put(operation.getTitle(), operation);
-		operation = new PlaceHolder(lbvc_.getConceptList());
+		operation = new SampleOperation(lbvc_.getConceptList());
 		operations_.put(operation.getTitle(), operation);
 		
 		setMaxWidth(Double.MAX_VALUE);

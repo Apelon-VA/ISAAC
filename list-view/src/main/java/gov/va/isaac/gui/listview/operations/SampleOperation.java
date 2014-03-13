@@ -25,16 +25,18 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 
 /**
- * {@link PlaceHolder}
+ * {@link SampleOperation}
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class PlaceHolder extends Operation
+public class SampleOperation extends Operation
 {
-	public PlaceHolder(ObservableList<SimpleDisplayConcept> conceptList)
+	public SampleOperation(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		super(conceptList);
-		root_.add(new Label("Stuff goes here: "), 0, 0);
+		root_.add(new Label("User configuration detail: "), 0, 0);
+		root_.add(new Label("user setting"), 1, 0);
+		preventColOneCollapse();
 	}
 
 	/**
@@ -43,7 +45,7 @@ public class PlaceHolder extends Operation
 	@Override
 	public String getTitle()
 	{
-		return "Placeholder";
+		return "Sample Operation";
 	}
 
 	/**
@@ -52,7 +54,7 @@ public class PlaceHolder extends Operation
 	@Override
 	protected void conceptListChanged()
 	{
-		// TODO Auto-generated method stub
+		//noop
 	}
 
 	/**
@@ -70,7 +72,7 @@ public class PlaceHolder extends Operation
 	@Override
 	public String getOperationDescription()
 	{
-		return "Just a placeholder";
+		return "A do-nothing operation for demonstration purposes";
 	}
 
 	/**
@@ -79,32 +81,35 @@ public class PlaceHolder extends Operation
 	@Override
 	public CustomTask<String> createTask()
 	{
-		return new CustomTask<String>(PlaceHolder.this)
+		return new CustomTask<String>(SampleOperation.this)
 		{
-			
 			@Override
 			protected String call() throws Exception
 			{
-				if (cancelRequested_)
+				double i = 0;
+				for (SimpleDisplayConcept c : conceptList_)
 				{
-					return "PlaceHolder was cancelled";
+					if (cancelRequested_)
+					{
+						return SampleOperation.this.getTitle() + " was cancelled";
+					}
+					updateProgress(i, conceptList_.size());
+					updateMessage("processing " + c.getDescription());
+					Thread.sleep(3000);
+					if (cancelRequested_)
+					{
+						return SampleOperation.this.getTitle() + " was cancelled";
+					}
+					updateProgress((i + 0.5), conceptList_.size());
+					updateMessage("still working on " + c.getDescription());
+					Thread.sleep(3000);
+					if (cancelRequested_)
+					{
+						return SampleOperation.this.getTitle() + " was cancelled";
+					}
+					updateProgress(++i, conceptList_.size());
 				}
-				updateProgress(0.1, 1);
-				updateMessage("starting");
-				Thread.sleep(3000);
-				if (cancelRequested_)
-				{
-					return "PlaceHolder was cancelled";
-				}
-				updateMessage("still working");
-				updateProgress(0.5, 1);
-				Thread.sleep(3000);
-				if (cancelRequested_)
-				{
-					return "PlaceHolder was cancelled";
-				}
-				updateProgress(1, 1);
-				return "Placeholder was completed";
+				return SampleOperation.this.getTitle() + " completed - modified 0 concepts";
 			}
 		};
 	}
