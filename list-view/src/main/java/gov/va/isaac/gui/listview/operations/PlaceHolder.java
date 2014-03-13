@@ -1,15 +1,15 @@
 /**
  * Copyright Notice
- *
- * This is a work of the U.S. Government and is not subject to copyright 
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,15 +26,14 @@ import javafx.scene.control.Label;
 
 /**
  * {@link PlaceHolder}
- *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ * 
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class PlaceHolder extends Operation
 {
 	public PlaceHolder(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		super(conceptList);
-		
 		root_.add(new Label("Stuff goes here: "), 0, 0);
 	}
 
@@ -46,7 +45,6 @@ public class PlaceHolder extends Operation
 	{
 		return "Placeholder";
 	}
-	
 
 	/**
 	 * @see gov.va.isaac.gui.listview.operations.Operation#conceptListChanged()
@@ -55,7 +53,6 @@ public class PlaceHolder extends Operation
 	protected void conceptListChanged()
 	{
 		// TODO Auto-generated method stub
-		
 	}
 
 	/**
@@ -65,5 +62,50 @@ public class PlaceHolder extends Operation
 	public BooleanExpression isValid()
 	{
 		return new SimpleBooleanProperty(true);
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.listview.operations.Operation#getOperationDescription()
+	 */
+	@Override
+	public String getOperationDescription()
+	{
+		return "Just a placeholder";
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
+	 */
+	@Override
+	public CustomTask<String> createTask()
+	{
+		return new CustomTask<String>(PlaceHolder.this)
+		{
+			
+			@Override
+			protected String call() throws Exception
+			{
+				if (cancelRequested_)
+				{
+					return "PlaceHolder was cancelled";
+				}
+				updateProgress(0.1, 1);
+				updateMessage("starting");
+				Thread.sleep(3000);
+				if (cancelRequested_)
+				{
+					return "PlaceHolder was cancelled";
+				}
+				updateMessage("still working");
+				updateProgress(0.5, 1);
+				Thread.sleep(3000);
+				if (cancelRequested_)
+				{
+					return "PlaceHolder was cancelled";
+				}
+				updateProgress(1, 1);
+				return "Placeholder was completed";
+			}
+		};
 	}
 }

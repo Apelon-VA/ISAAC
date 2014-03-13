@@ -24,7 +24,6 @@ import gov.va.isaac.gui.listview.operations.PlaceHolder;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import java.util.TreeMap;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -119,6 +118,7 @@ public class OperationNode extends VBox
 					isOperationReady_.removeBinding(currentOperation_.isValid());
 				}
 				currentOperation_ = operations_.get(operation_.getSelectionModel().getSelectedItem());
+				operation_.setTooltip(new Tooltip(currentOperation_.getOperationDescription()));
 				//start watching new one
 				isOperationReady_.addBinding(currentOperation_.isValid());
 				subOptionsPane_.getChildren().add(currentOperation_.getNode());
@@ -139,5 +139,10 @@ public class OperationNode extends VBox
 	protected BooleanExpression isReadyForExecution()
 	{
 		return isOperationReady_; 
+	}
+	
+	protected Operation getOperation()
+	{
+		return currentOperation_;
 	}
 }

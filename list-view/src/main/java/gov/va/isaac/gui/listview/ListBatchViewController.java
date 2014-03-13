@@ -22,27 +22,41 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.listview.operations.CustomTask;
+import gov.va.isaac.gui.listview.operations.ListBatchOperationsRunnerController;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
+import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -60,6 +74,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -77,7 +95,7 @@ public class ListBatchViewController
 	@FXML private Button loadListButton;
 	@FXML private VBox operationsList;
 	@FXML private Button clearOperationsButton;
-	@FXML private Tab batchResultsTab;
+	@FXML private Tab conceptDisplayTab;
 	@FXML private TableView<SimpleDisplayConcept> conceptTable;
 	@FXML private HBox conceptTableFooter;
 	@FXML private Button addUncommittedListButton;
@@ -105,13 +123,13 @@ public class ListBatchViewController
 	public void initialize()
 	{
 		operationsList.getChildren().add(new OperationNode(this));
-		
+
 		final ConceptNode cn = new ConceptNode(null, false);
 		cn.setPromptText("Type or select concept to add");
 		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
 		HBox.setMargin(cn.getNode(), new Insets(6, 5, 6, 5));
 		conceptTableFooter.getChildren().add(cn.getNode());
-		
+
 		cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
 		{
 			@Override
@@ -147,7 +165,7 @@ public class ListBatchViewController
 				}
 			}
 		});
-		
+
 		conceptTable.setRowFactory(new Callback<TableView<SimpleDisplayConcept>, TableRow<SimpleDisplayConcept>>()
 		{
 			@Override
@@ -194,17 +212,16 @@ public class ListBatchViewController
 			}
 		});
 
-		//remove it, wrap it, readd it.
+		// remove it, wrap it, readd it.
 		executeOperationsToolbar.getItems().remove(executeOperationsButton);
 		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(executeOperationsButton, reasonWhyExecuteDisabled_));
-		
+
 		executeOperationsButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				//TODO implement
-				logger_.error("Not yet implemented");
+				executeOperations();
 			}
 		});
 
@@ -245,21 +262,21 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				//TODO implement
+				// TODO implement
 				logger_.error("Not yet implemented");
 			}
 		});
-		
+
 		loadListButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				//TODO implement
+				// TODO implement
 				logger_.error("Not yet implemented");
 			}
 		});
-		
+
 		addUncommittedListButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -285,7 +302,7 @@ public class ListBatchViewController
 						}
 						Platform.runLater(new Runnable()
 						{
-							
+
 							@Override
 							public void run()
 							{
@@ -298,7 +315,7 @@ public class ListBatchViewController
 				Utility.execute(r);
 			}
 		});
-		
+
 		allOperationsReady_ = new UpdateableBooleanBinding()
 		{
 			@Override
@@ -308,7 +325,7 @@ public class ListBatchViewController
 				{
 					if (n instanceof OperationNode)
 					{
-						OperationNode on = (OperationNode)n;
+						OperationNode on = (OperationNode) n;
 						if (!on.isReadyForExecution().get())
 						{
 							reasonWhyExecuteDisabled_.set("All errors must be corrected in the Operations List before execution");
@@ -328,7 +345,7 @@ public class ListBatchViewController
 				return true;
 			}
 		};
-		
+
 		for (Node n : operationsList.getChildren())
 		{
 			if (n instanceof OperationNode)
@@ -341,7 +358,7 @@ public class ListBatchViewController
 			}
 		}
 		allOperationsReady_.invalidate();
-		
+
 		executeOperationsButton.disableProperty().bind(allOperationsReady_.not());
 	}
 
@@ -354,7 +371,7 @@ public class ListBatchViewController
 		allOperationsReady_.removeBinding(node.isReadyForExecution());
 		allOperationsReady_.invalidate();
 	}
-	
+
 	protected ObservableList<SimpleDisplayConcept> getConceptList()
 	{
 		return conceptTable.getItems();
@@ -363,5 +380,164 @@ public class ListBatchViewController
 	public AnchorPane getRoot()
 	{
 		return rootPane;
+	}
+
+	private void executeOperations()
+	{
+		try
+		{
+			final AtomicInteger tasksCompleted = new AtomicInteger(0);
+			final StringBuilder taskSummary = new StringBuilder();
+			final Stage s = new Stage(StageStyle.UTILITY);
+			s.initOwner(rootPane.getScene().getWindow());
+			s.initModality(Modality.WINDOW_MODAL);
+			s.setTitle("Batch Operation Execution");
+			s.setOnCloseRequest(new EventHandler<WindowEvent>()
+			{
+				public void handle(WindowEvent we)
+				{
+					// disable close button
+					we.consume();
+				}
+			});
+
+			final BooleanProperty cancelRequested = new SimpleBooleanProperty(false);
+
+			final ListBatchOperationsRunnerController lborc = ListBatchOperationsRunnerController.init(cancelRequested);
+			s.setScene(new Scene(lborc.getRoot()));
+
+			final List<CustomTask<String>> operationsToExecute = new ArrayList<>(operationsList.getChildren().size());
+			for (Node n : operationsList.getChildren())
+			{
+				OperationNode on = (OperationNode) n;
+				operationsToExecute.add(on.getOperation().createTask());
+			}
+
+			final UpdateableDoubleBinding progressComputer = new UpdateableDoubleBinding()
+			{
+				@Override
+				protected double computeValue()
+				{
+					// rough progress
+					double progress = ((double) tasksCompleted.get()) / ((double) operationsToExecute.size());
+
+					for (Object binding : getDependencies())
+					{
+						// Should only be one of these, at most - which will be the currently executing task
+						DoubleProperty db = (DoubleProperty) binding;
+						progress += (db.get() / ((double) operationsToExecute.size()));
+					}
+					return progress;
+				}
+			};
+
+			lborc.getProgressProperty().bind(progressComputer);
+
+			s.show();
+
+			final ExecutorService es = Executors.newFixedThreadPool(1);
+			EventHandler<WorkerStateEvent> workerStateHandler = new EventHandler<WorkerStateEvent>()
+			{
+				@Override
+				public void handle(WorkerStateEvent event)
+				{
+					boolean finished = false;
+					if (event.getEventType() == WorkerStateEvent.WORKER_STATE_RUNNING)
+					{
+						progressComputer.clearBindings();
+						progressComputer.addBinding(event.getSource().progressProperty());
+						progressComputer.invalidate();
+						lborc.setTitle("(" + (tasksCompleted.get() + 1) + " of " + operationsToExecute.size() + ") " + event.getSource().getTitle());
+						lborc.getMessageProperty().bind(event.getSource().messageProperty());
+					}
+					else if (event.getEventType() == WorkerStateEvent.WORKER_STATE_CANCELLED || event.getEventType() == WorkerStateEvent.WORKER_STATE_FAILED)
+					{
+						finished = true;
+						if (event.getEventType() == WorkerStateEvent.WORKER_STATE_CANCELLED)
+						{
+							logger_.info("Task Execution cancelled: " + event.getSource().getState(), event.getSource().getException());
+						}
+						else
+						{
+							logger_.error("Task Execution failed: " + event.getSource().getState(), event.getSource().getException());
+						}
+						taskSummary.append(event.getSource().getTitle() + " "
+								+ (event.getSource().getException() == null ? event.getSource().getState() : "Failed: " + event.getSource().getException()));
+					}
+					else if (event.getEventType() == WorkerStateEvent.WORKER_STATE_SUCCEEDED)
+					{
+						finished = true;
+						taskSummary.append((String) event.getSource().getValue());
+					}
+					
+					taskSummary.append("\r\n");
+					if (finished)
+					{
+						tasksCompleted.incrementAndGet();
+						lborc.getSummary().setText(taskSummary.toString());
+						lborc.getMessageProperty().unbind();
+						lborc.getMessageProperty().setValue("");
+						progressComputer.clearBindings();
+						progressComputer.invalidate();
+					}
+				}
+			};
+
+			for (Task<String> task : operationsToExecute)
+			{
+				task.setOnRunning(workerStateHandler);
+				task.setOnCancelled(workerStateHandler);
+				task.setOnFailed(workerStateHandler);
+				task.setOnSucceeded(workerStateHandler);
+				es.submit(task);
+			}
+
+			cancelRequested.addListener(new ChangeListener<Boolean>()
+			{
+				@Override
+				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+				{
+					if (cancelRequested.get())
+					{
+						for (CustomTask<String> task : operationsToExecute)
+						{
+							//Can't use task.cancel(false) because oracle mis-designed it... and the executor service doesn't 
+							//wait for the task to actually complete when you use the awaitCompletion() method.
+							task.shutdownRequested();
+						}
+					}
+				}
+			});
+
+			es.shutdown();
+			
+			//spawn a thread to wait for completion of the tasks
+			Thread t = new Thread(new Runnable()
+			{
+				
+				@Override
+				public void run()
+				{
+					while (!es.isTerminated())
+					{
+						try
+						{
+							es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+							lborc.finished();
+						}
+						catch (InterruptedException e)
+						{
+							//noop
+						}
+					}
+				}
+			}, "Batch Execution Monitor Thread");
+			t.start();
+		}
+		catch (Exception e)
+		{
+			logger_.error("Failure running Batch Operations", e);
+			AppContext.getCommonDialogs().showErrorDialog("Error running operations", e);
+		}
 	}
 }

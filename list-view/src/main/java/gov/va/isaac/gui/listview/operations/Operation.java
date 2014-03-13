@@ -86,9 +86,41 @@ public abstract class Operation
 		root_.getColumnConstraints().add(cc);
 	}
 	
+	/**
+	 * The title of the operation, which will be displayed to the user.
+	 * @return
+	 */
 	public abstract String getTitle();
 	
+	/**
+	 * The description of the operation, which will be displayed to the user
+	 * @return
+	 */
+	public abstract String getOperationDescription();
+	
+	/**
+	 * A convenience method which will be called when the conceptList changes.
+	 */
 	protected abstract void conceptListChanged();
 	
+	/**
+	 * Implementers should return a BooleanExpression which evaluates to true when all necessary values
+	 * for task execution have been provided.
+	 */
 	public abstract BooleanExpression isValid();
+	
+	/**
+	 * Implementers should return a task - the task should update the progress value as appropriate, and 
+	 * update the message value as appropriate as the task progresses.
+	 * 
+	 * If the execution fails during the task execution, an Exception should be thrown using the 
+	 * Task API.  The returned String value should be a summary of what happened during the task execution
+	 * which will be displayed to end users.
+	 * 
+	 * Implementers should also monitor the {@code CustomTask#cancelRequested_} variable, and respond appropriately 
+	 * if the variable is set to true.
+	 * 
+	 * @return a Task implementation that performs the necessary work on the {@code #conceptList_}
+	 */
+	public abstract CustomTask<String> createTask();
 }

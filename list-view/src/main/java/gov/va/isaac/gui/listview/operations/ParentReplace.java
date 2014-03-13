@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,7 +53,7 @@ public class ParentReplace extends Operation
 	{
 		super(conceptList);
 		root_.add(new Label("Replace: "), 0, 0);
-		
+
 		replaceOptions_ = new ComboBox<>();
 		replaceOptions_.setMaxWidth(Double.MAX_VALUE);
 		replaceOptions_.setPromptText("Populate the Concepts List");
@@ -101,7 +101,7 @@ public class ParentReplace extends Operation
 				}
 			}
 		});
-		
+
 		operationIsReady_ = new BooleanBinding()
 		{
 			{
@@ -151,5 +151,32 @@ public class ParentReplace extends Operation
 	public BooleanExpression isValid()
 	{
 		return operationIsReady_;
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.listview.operations.Operation#getOperationDescription()
+	 */
+	@Override
+	public String getOperationDescription()
+	{
+		// TODO write this
+		return "TBD";
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
+	 */
+	@Override
+	public CustomTask<String> createTask()
+	{
+		return new CustomTask<String>(ParentReplace.this)
+		{
+			@Override
+			protected String call() throws Exception
+			{
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
 	}
 }
