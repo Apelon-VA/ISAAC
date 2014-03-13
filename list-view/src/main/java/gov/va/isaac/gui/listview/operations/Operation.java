@@ -27,19 +27,28 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
+import org.jvnet.hk2.annotations.Contract;
 import com.sun.javafx.tk.Toolkit;
 
 /**
  * {@link Operation}
+ * 
+ * The interface that serves as the basis for batch operations.  Extend this to create a new operation.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
+@Contract
 public abstract class Operation
 {
 	protected ObservableList<SimpleDisplayConcept> conceptList_;
 	protected GridPane root_;
 	
-	public Operation(ObservableList<SimpleDisplayConcept> conceptList)
+	protected Operation()
+	{
+		//For HK2 to create
+	}
+	
+	public void init(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		this.conceptList_ = conceptList;
 		root_ = new GridPane();

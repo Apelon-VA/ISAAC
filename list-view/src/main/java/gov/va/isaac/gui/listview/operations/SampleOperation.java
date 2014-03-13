@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -33,11 +35,18 @@ import javafx.scene.control.Label;
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@Service
+@PerLookup
 public class SampleOperation extends Operation
 {
-	public SampleOperation(ObservableList<SimpleDisplayConcept> conceptList)
+	private SampleOperation()
 	{
-		super(conceptList);
+		//For HK2 to init
+	}
+	@Override
+	public void init(ObservableList<SimpleDisplayConcept> conceptList)
+	{
+		super.init(conceptList);
 		root_.add(new Label("User configuration detail: "), 0, 0);
 		root_.add(new Label("user setting"), 1, 0);
 		preventColOneCollapse();

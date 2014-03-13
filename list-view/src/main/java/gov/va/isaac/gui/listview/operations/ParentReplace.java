@@ -35,12 +35,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * {@link ParentReplace}
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@Service
+@PerLookup
 public class ParentReplace extends Operation
 {
 	private ComboBox<SimpleDisplayConcept> replaceOptions_;
@@ -49,15 +53,21 @@ public class ParentReplace extends Operation
 
 	private BooleanBinding operationIsReady_;
 
-	public ParentReplace(ObservableList<SimpleDisplayConcept> conceptList)
+	private ParentReplace()
 	{
-		super(conceptList);
+		super();
+		//For HK2 to create
+	}
+	
+	@Override
+	public void init(ObservableList<SimpleDisplayConcept> conceptList)
+	{
+		super.init(conceptList);
 		root_.add(new Label("Replace: "), 0, 0);
 
 		replaceOptions_ = new ComboBox<>();
 		replaceOptions_.setMaxWidth(Double.MAX_VALUE);
 		replaceOptions_.setPromptText("Populate the Concepts List");
-		replaceOptions_.getItems().addAll(conceptList);
 		root_.add(ErrorMarkerUtils.setupErrorMarker(replaceOptions_, replaceOptionsInvalidString_), 1, 0);
 		AppContext.getService(DragRegistry.class).setupDragAndDrop(replaceOptions_, new ConceptIdProvider()
 		{
@@ -75,6 +85,7 @@ public class ParentReplace extends Operation
 		GridPane.setHgrow(withConcept_.getNode(), Priority.ALWAYS);
 		preventColOneCollapse();
 		initActionListeners();
+		replaceOptions_.getItems().addAll(conceptList);
 	}
 
 	private void initActionListeners()
@@ -174,8 +185,8 @@ public class ParentReplace extends Operation
 			@Override
 			protected String call() throws Exception
 			{
-				// TODO Auto-generated method stub
-				return null;
+				//TODO implement this
+				return "Not yet implemented";
 			}
 		};
 	}
