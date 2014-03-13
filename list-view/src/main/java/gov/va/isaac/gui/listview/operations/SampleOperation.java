@@ -27,6 +27,10 @@ import javafx.scene.control.Label;
 /**
  * {@link SampleOperation}
  * 
+ * An example operation that does nothing during execution, but provides an example for 
+ * implementing other operations.  Will remove this code, eventually, as other real operations
+ * are implemented.
+ * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class SampleOperation extends Operation
