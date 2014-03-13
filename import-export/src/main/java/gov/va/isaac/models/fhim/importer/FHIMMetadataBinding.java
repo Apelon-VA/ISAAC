@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.models.fhim.importer;
 
-import gov.va.isaac.models.util.MetadataBinding;
+import gov.va.isaac.models.util.MetadataBindingBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  *
  * @author ocarlsen
  */
-public class FHIMMetadataBinding extends MetadataBinding {
+public class FHIMMetadataBinding extends MetadataBindingBase {
 
     public static ConceptSpec FHIM_REFSET
             = new ConceptSpec("FHIM reference sets (foundation metadata concept)",
