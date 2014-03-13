@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.listview.operations;
+package gov.va.isaac.gui.listview;
 
 import java.io.IOException;
 import java.net.URL;

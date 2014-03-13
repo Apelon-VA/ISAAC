@@ -23,7 +23,6 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.listview.operations.CustomTask;
-import gov.va.isaac.gui.listview.operations.ListBatchOperationsRunnerController;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -523,13 +522,13 @@ public class ListBatchViewController
 						try
 						{
 							es.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-							lborc.finished();
 						}
 						catch (InterruptedException e)
 						{
 							//noop
 						}
 					}
+					lborc.finished();
 				}
 			}, "Batch Execution Monitor Thread");
 			t.start();
