@@ -63,27 +63,37 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
 
         FHIMRefsets = createNewConcept(refsetsRoot, "FHIM reference sets (foundation metadata concept)", "FHIM reference set");
 
-        ConceptChronicleBI FHIMTypeRefset = createNewConcept(FHIMRefsets, "FHIM type reference set (foundation metadata concept)", "FHIM type reference set");
-        ConceptChronicleBI FHIMCodeRefset = createNewConcept(FHIMRefsets, "FHIM code reference set (foundation metadata concept)", "FHIM code reference set");
-        ConceptChronicleBI FHIMDataRefset = createNewConcept(FHIMRefsets, "FHIM data reference set (foundation metadata concept)", "FHIM data reference set");
-        ConceptChronicleBI FHIMCompositionRefset = createNewConcept(FHIMRefsets, "FHIM composition reference set (foundation metadata concept)", "FHIM composition reference set");
-        ConceptChronicleBI FHIMConstraintsRefset = createNewConcept(FHIMRefsets, "FHIM constraints reference set (foundation metadata concept)", "FHIM constraints reference set");
-        ConceptChronicleBI FHIMConstraintPath = createNewConcept(FHIMRefsets, "FHIM constraints path reference set (foundation metadata concept)", "FHIM constraint path");
-        ConceptChronicleBI FHIMConstraintValue = createNewConcept(FHIMRefsets, "FHIM constraints value reference set (foundation metadata concept)", "FHIM constraint value");
+        ConceptChronicleBI FHIMModelsRefset = createNewConcept(FHIMRefsets, "FHIM Models reference set (foundation metadata concept)", "FHIM Models reference set");
+        ConceptChronicleBI FHIMClassesRefset = createNewConcept(FHIMRefsets, "FHIM Classes reference set (foundation metadata concept)", "FHIM Classes reference set");
+        ConceptChronicleBI FHIMEnumerationsRefset = createNewConcept(FHIMRefsets, "FHIM Enumerations reference set (foundation metadata concept)", "FHIM Enumerations reference set");
+        ConceptChronicleBI FHIMEnumerationValuesRefset = createNewConcept(FHIMRefsets, "FHIM EnumerationValues reference set (foundation metadata concept)", "FHIM EnumerationValues reference set");
+        ConceptChronicleBI FHIMAttributesRefset = createNewConcept(FHIMRefsets, "FHIM Attributes reference set (foundation metadata concept)", "FHIM Attributes reference set");
+        ConceptChronicleBI FHIMDefaultValuesRefset = createNewConcept(FHIMRefsets, "FHIM DefaultValues reference set (foundation metadata concept)", "FHIM DefaultValues reference set");
+        ConceptChronicleBI FHIMRelationshipsRefset = createNewConcept(FHIMRefsets, "FHIM Relationships reference set (foundation metadata concept)", "FHIM Relationships reference set");
+        ConceptChronicleBI FHIMConstraintsRefset = createNewConcept(FHIMRefsets, "FHIM Constraints reference set (foundation metadata concept)", "FHIM Constraints reference set");
 
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));
         LOG.debug("Attributes root:" + attributesRoot.toString());
 
         ConceptChronicleBI FHIMAttributes = createNewConcept(attributesRoot, "FHIM attributes (foundation metadata concept)", "FHIM attributes");
 
+        // Data types.
         ConceptChronicleBI FHIMDataTypes = createNewConcept(FHIMAttributes, "FHIM data types (foundation metadata concept)", "FHIM data types");
-        ConceptChronicleBI FHIMPysicalQuantityDataType = createNewConcept(FHIMDataTypes, "FHIM PysicalQuantity data type (foundation metadata concept)", "FHIM PysicalQuantity data type");
-        // TODO: Other data types as necessary.
+        ConceptChronicleBI FHIMCode = createNewConcept(FHIMDataTypes, "FHIM Code (foundation metadata concept)", "FHIM Code");
+        ConceptChronicleBI FHIMObservationQualifier = createNewConcept(FHIMDataTypes, "FHIM ObservationQualifier (foundation metadata concept)", "FHIM ObservationQualifier");
+        ConceptChronicleBI FHIMObservationStatement = createNewConcept(FHIMDataTypes, "FHIM ObservationStatement (foundation metadata concept)", "FHIM ObservationStatement");
+        ConceptChronicleBI FHIMPysicalQuantity = createNewConcept(FHIMDataTypes, "FHIM PysicalQuantity (foundation metadata concept)", "FHIM PysicalQuantity");
+        ConceptChronicleBI FHIMPulsePosition = createNewConcept(FHIMDataTypes, "FHIM PulsePosition (foundation metadata concept)", "FHIM PulsePosition");
 
-        ConceptChronicleBI FHIMComponentTypes = createNewConcept(FHIMAttributes, "FHIM component types (foundation metadata concept)", "FHIM component types");
-        ConceptChronicleBI FHIMQual = createNewConcept(FHIMComponentTypes, "FHIM qualifier (foundation metadata concept)", "FHIM quaifier");
-        ConceptChronicleBI FHIMMod = createNewConcept(FHIMComponentTypes, "FHIM modifier (foundation metadata concept)", "FHIM modifier");
-        ConceptChronicleBI FHIMAttr = createNewConcept(FHIMComponentTypes, "FHIM attribution (foundation metadata concept)", "FHIM attribution");
+        // Relationship types.
+        ConceptChronicleBI FHIMRelationshipTypes = createNewConcept(FHIMAttributes, "FHIM relationship types (foundation metadata concept)", "FHIM relationship types");
+        ConceptChronicleBI FHIMGeneralization = createNewConcept(FHIMRelationshipTypes, "FHIM Generalization (foundation metadata concept)", "FHIM Generalization");
+        ConceptChronicleBI FHIMAssociation = createNewConcept(FHIMRelationshipTypes, "FHIM Association (foundation metadata concept)", "FHIM Association");
+        ConceptChronicleBI FHIMDependency = createNewConcept(FHIMRelationshipTypes, "FHIM Dependency (foundation metadata concept)", "FHIM Dependency");
+
+        // Constraint types.
+        ConceptChronicleBI FHIMConstraintTypes = createNewConcept(FHIMAttributes, "FHIM constraint types (foundation metadata concept)", "FHIM constraint types");
+        ConceptChronicleBI FHIMMultiplicity = createNewConcept(FHIMConstraintTypes, "FHIM Multiplicity (foundation metadata concept)", "FHIM Multiplicity");
 
         for (ConceptChronicleBI loopUc : getDataStore().getUncommittedConcepts()) {
             LOG.debug("Uncommitted concept:" + loopUc.toString() + " - " + loopUc.getPrimordialUuid());
