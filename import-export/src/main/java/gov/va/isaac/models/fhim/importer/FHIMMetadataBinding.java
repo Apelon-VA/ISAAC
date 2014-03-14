@@ -61,13 +61,21 @@ public class FHIMMetadataBinding extends MetadataBindingBase {
             = new ConceptSpec("FHIM DefaultValues reference set (foundation metadata concept)",
             UUID.fromString("0950b1e1-bb50-57a6-94b8-c546afa9dc15"));
 
-    public static ConceptSpec FHIM_RELATIONSHIPS_REFSET
-            = new ConceptSpec("FHIM Relationships reference set (foundation metadata concept)",
-            UUID.fromString("aa170d80-3c37-5e52-bb0f-4468c5bfd201"));
+    public static ConceptSpec FHIM_MULTIPLICITY_REFSET
+            = new ConceptSpec("FHIM Multiplicity reference set (foundation metadata concept)",
+            UUID.fromString("bd4aad66-4575-5138-85c0-b50c484522fe"));
 
-    public static ConceptSpec FHIM_CONSTRAINTS_REFSET
-            = new ConceptSpec("FHIM Constraints reference set (foundation metadata concept)",
-            UUID.fromString("48db0d60-a32a-535e-8525-b48b78ea45f4"));
+    public static ConceptSpec FHIM_GENERALIZATIONS_REFSET
+            = new ConceptSpec("FHIM Generalizations reference set (foundation metadata concept)",
+            UUID.fromString("1a3d8e30-5654-5bfb-9cee-04ec2f91b6bb"));
+
+    public static ConceptSpec FHIM_DEPENDENCIES_REFSET
+          = new ConceptSpec("FHIM Dependencies reference set (foundation metadata concept)",
+          UUID.fromString("cb3a61fb-4e7a-5cb5-9f4d-1de071c56563"));
+
+    public static ConceptSpec FHIM_ASSOCIATIONS_REFSET
+          = new ConceptSpec("FHIM Associations reference set (foundation metadata concept)",
+          UUID.fromString("96391b15-b633-5d83-be9f-a4f6ae07846f"));
 
     public static ConceptSpec FHIM_CODE
             = new ConceptSpec("FHIM Code (foundation metadata concept)",
@@ -89,21 +97,13 @@ public class FHIMMetadataBinding extends MetadataBindingBase {
             = new ConceptSpec("FHIM PulsePosition (foundation metadata concept)",
             UUID.fromString("e05f10cb-09e0-5cbe-809b-eaa09d770e53"));
 
-    public static ConceptSpec FHIM_GENERALIZATION
-            = new ConceptSpec("FHIM Generalization (foundation metadata concept)",
-            UUID.fromString("f326a54e-3d05-5a73-b075-9487fc324eb3"));
+    public static ConceptSpec FHIM_LOWER
+            = new ConceptSpec("FHIM Lower (foundation metadata concept)",
+            UUID.fromString("62dc9dcf-bead-50e5-8ff3-a8377d4e5bf8"));
 
-    public static ConceptSpec FHIM_ASSOCIATION
-            = new ConceptSpec("FHIM Association (foundation metadata concept)",
-            UUID.fromString("19d14f12-56de-5ced-8964-efa4f9fea1b7"));
-
-    public static ConceptSpec FHIM_DEPENDENCY
-            = new ConceptSpec("FHIM Dependency (foundation metadata concept)",
-            UUID.fromString("09cfd668-0196-541c-bfda-720522c65cb6"));
-
-    public static ConceptSpec FHIM_MULTIPLICITY
-            = new ConceptSpec("FHIM Multiplicity (foundation metadata concept)",
-            UUID.fromString("433e0078-c273-52bb-8e85-4ac2d22da4cc"));
+    public static ConceptSpec FHIM_UPPER
+            = new ConceptSpec("FHIM Upper (foundation metadata concept)",
+            UUID.fromString("9359533a-268c-51d7-ab8e-7acf62087342"));
 
     public static List<ConceptSpec> getAllRefsets()
     {
@@ -115,8 +115,10 @@ public class FHIMMetadataBinding extends MetadataBindingBase {
             allConceptSpec.add(FHIM_CLASSES_REFSET);
             allConceptSpec.add(FHIM_ATTRIBUTES_REFSET);
             allConceptSpec.add(FHIM_DEFAULTVALUES_REFSET);
-            allConceptSpec.add(FHIM_RELATIONSHIPS_REFSET);
-            allConceptSpec.add(FHIM_CONSTRAINTS_REFSET);
+            allConceptSpec.add(FHIM_MULTIPLICITY_REFSET);
+            allConceptSpec.add(FHIM_GENERALIZATIONS_REFSET);
+            allConceptSpec.add(FHIM_DEPENDENCIES_REFSET);
+            allConceptSpec.add(FHIM_ASSOCIATIONS_REFSET);
 
             return allConceptSpec;
         }

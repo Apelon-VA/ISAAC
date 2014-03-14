@@ -21,6 +21,7 @@ package gov.va.isaac.models.fhim.importer;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.External;
+import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 
 import java.util.Iterator;
 import java.util.List;
@@ -242,15 +243,21 @@ public class FHIMInformationModelFactory {
         String name = umlAttribute.getName();
         LOG.debug("    attribute: " + name);
 
-        // Need to figure correct model Type for attribute.
+        // Attribute type.
         Type umlType = umlAttribute.getType();
         String typeName = umlType.getName();
         FHIMInformationModel.Type type = getType(typeName);
 
+        // Default value.
         ValueSpecification valueSpec = umlAttribute.getDefaultValue();
-        String defaultValue = (valueSpec != null ? valueSpec.stringValue() : "");
+        String defaultValue = (valueSpec != null ? valueSpec.stringValue() : null);
 
-        return new Attribute(name, type, defaultValue);
+        // Multiplicity.
+        int lower = umlAttribute.getLower();
+        int upper = umlAttribute.getUpper();
+        Multiplicity multiplicity = new Multiplicity(lower, upper);
+
+        return new Attribute(name, type, defaultValue, multiplicity);
     }
 
     private FHIMInformationModel.Type getType(String typeName) {

@@ -23,6 +23,7 @@ import gov.va.isaac.models.InformationModel;
 
 import java.util.List;
 
+import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
 import com.google.common.base.Objects;
@@ -30,19 +31,43 @@ import com.google.common.collect.Lists;
 
 public class FHIMInformationModel implements InformationModel {
 
+    /**
+     * For unlimited values, see {@link LiteralUnlimitedNatural}
+     */
+    public static final class Multiplicity {
+        private final int lower;
+        private final int upper;
+        public Multiplicity(int lower, int upper) {
+            super();
+            this.lower = lower;
+            this.upper = upper;
+        }
+        public int getLower() {
+            return lower;
+        }
+        public int getUpper() {
+            return upper;
+        }
+    }
+
     public static final class Attribute extends Type {
         private final Type type;
         private final String defaultValue;
-        public Attribute(String name, Type type, String defaultValue) {
+        private final Multiplicity multiplicity;
+        public Attribute(String name, Type type, String defaultValue, Multiplicity multiplicity) {
             super(name);
             this.type = type;
             this.defaultValue = defaultValue;
+            this.multiplicity = multiplicity;
         }
         public Type getType() {
             return type;
         }
         public String getDefaultValue() {
             return defaultValue;
+        }
+        public Multiplicity getMultiplicity() {
+            return multiplicity;
         }
     }
 
