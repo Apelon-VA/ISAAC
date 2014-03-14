@@ -192,7 +192,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
                 String attName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
                 String attType = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
                 String attCard = loopNode.getAttributes().getNamedItem(CARD).getTextContent();
-                RefexChronicleBI att = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_ATTR, attType);
+                RefexChronicleBI att = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_ATT, attType);
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI attConstraint = addMemberInConstraintsRefset(att);

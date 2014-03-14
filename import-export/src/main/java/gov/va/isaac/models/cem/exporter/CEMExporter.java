@@ -178,7 +178,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
         // Att elements (0-M).
         List<NidStringMember> attAnnotations = getCompositionAnnotations(
-                focusConceptAnnotations, CEMMetadataBinding.CEM_ATTR);
+                focusConceptAnnotations, CEMMetadataBinding.CEM_ATT);
         if (attAnnotations.isEmpty()) {
             LOG.info("No CEM_ATTR members found.");
         } else {
