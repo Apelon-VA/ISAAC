@@ -70,10 +70,10 @@ public class OperationNode extends VBox
 		}
 		
 		setMaxWidth(Double.MAX_VALUE);
-		setMinWidth(300);
 		setStyle("-fx-border-color: lightgrey; -fx-border-width: 2px");
 		
 		HBox operationSelectionHBox = new HBox();
+		operationSelectionHBox.setMinWidth(400);
 		operationSelectionHBox.setPadding(new Insets(5, 5, 5, 5));
 		getChildren().add(operationSelectionHBox);
 		

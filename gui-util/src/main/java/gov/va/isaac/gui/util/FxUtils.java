@@ -18,14 +18,23 @@
  */
 package gov.va.isaac.gui.util;
 
+import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import com.sun.javafx.tk.FontLoader;
 import com.sun.javafx.tk.Toolkit;
 
 /**
  * Helper class encapsulating various Java FX helper utilities.
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 public class FxUtils {
 
@@ -58,5 +67,70 @@ public class FxUtils {
      */
     public static void checkFxUserThread() {
         Toolkit.getToolkit().checkFxUserThread();
+    }
+    
+    /**
+     * Call this after adding all label content to a column, to prevent it from shrinking smaller than the labels
+     * returns the calculated width, for convenience
+     */
+    public static float preventColCollapse(GridPane gp, int colNumber)
+    {
+        float largestWidth = 0;
+        FontLoader fl = Toolkit.getToolkit().getFontLoader();
+        for (Node node : gp.getChildrenUnmodifiable())
+        {
+            Integer colIndex = GridPane.getColumnIndex(node);
+            if (colIndex != null && colIndex.intValue() == colNumber)
+            {
+                String textValue = "";
+                int extraWidth = 0;
+                Font font = null;
+                if (node instanceof Label)
+                {
+                    textValue = ((Label) node).getText();
+                    font = ((Label) node).getFont();
+                }
+                else if (node instanceof CheckBox)
+                {
+                    textValue = ((CheckBox) node).getText();
+                    font = ((CheckBox) node).getFont();
+                    extraWidth = 25;
+                }
+                else if (node instanceof RadioButton)
+                {
+                    textValue = ((RadioButton) node).getText();
+                    font = ((RadioButton) node).getFont();
+                    extraWidth = 25;
+                }
+                if (font != null)
+                {
+                    float width = fl.computeStringWidth(textValue, font) + extraWidth;
+                    if (width > largestWidth)
+                    {
+                        largestWidth = width;
+                    }
+                }
+            }
+        }
+        // don't let the column shrink less than the labels
+
+        if (gp.getColumnConstraints().size() == 0)
+        {
+            if (colNumber > 0)
+            {
+                throw new RuntimeException("Sorry, not handled");
+            }
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setMinWidth(largestWidth);
+            cc.setPrefWidth(largestWidth);
+            gp.getColumnConstraints().add(cc);
+        }
+        else
+        {
+            ColumnConstraints cc = gp.getColumnConstraints().get(colNumber);
+            cc.setMinWidth(largestWidth);
+            cc.setPrefWidth(largestWidth);
+        }
+        return largestWidth;
     }
 }

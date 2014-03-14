@@ -18,29 +18,33 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.util.FxUtils;
+import java.io.IOException;
+import java.net.URL;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Label;
+import javafx.fxml.FXMLLoader;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * {@link SampleOperation}
+ * {@link FindAndReplace}
  * 
- * An example operation that does nothing during execution, but provides an example for 
- * implementing other operations.  Will remove this code, eventually, as other real operations
- * are implemented.
- * 
+ * A Find / Replace operation, mostly ported from the SearchReplaceDialog in TK2
+ *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Service
 @PerLookup
-public class SampleOperation extends Operation
+public class FindAndReplace extends Operation
 {
-	private SampleOperation()
+	private FindAndReplaceController frc_;
+	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
+	
+	private FindAndReplace()
 	{
 		//For HK2 to init
 	}
@@ -48,9 +52,19 @@ public class SampleOperation extends Operation
 	public void init(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		super.init(conceptList);
-		root_.add(new Label("User configuration detail: "), 0, 0);
-		root_.add(new Label("user setting"), 1, 0);
-		FxUtils.preventColCollapse(root_, 0);
+		try
+		{
+			URL resource = FindAndReplace.class.getResource("FindAndReplaceController.fxml");
+			FXMLLoader loader = new FXMLLoader(resource);
+			loader.load();
+			frc_ = loader.getController();
+			super.root_ = frc_.getRoot();
+		}
+		catch (IOException e)
+		{
+			logger_.error("Unexpected error building panel", e);
+			throw new RuntimeException("Error building panel");
+		}
 	}
 
 	/**
@@ -59,7 +73,7 @@ public class SampleOperation extends Operation
 	@Override
 	public String getTitle()
 	{
-		return "Sample Operation";
+		return "Find and Replace";
 	}
 
 	/**
@@ -86,7 +100,7 @@ public class SampleOperation extends Operation
 	@Override
 	public String getOperationDescription()
 	{
-		return "A do-nothing operation for demonstration purposes";
+		return "Perform a Find and Replace operation on content in the database";
 	}
 
 	/**
@@ -95,7 +109,7 @@ public class SampleOperation extends Operation
 	@Override
 	public CustomTask<String> createTask()
 	{
-		return new CustomTask<String>(SampleOperation.this)
+		return new CustomTask<String>(FindAndReplace.this)
 		{
 			@Override
 			protected String call() throws Exception
@@ -105,25 +119,17 @@ public class SampleOperation extends Operation
 				{
 					if (cancelRequested_)
 					{
-						return SampleOperation.this.getTitle() + " was cancelled";
+						return FindAndReplace.this.getTitle() + " was cancelled";
 					}
 					updateProgress(i, conceptList_.size());
-					updateMessage("processing " + c.getDescription());
-					Thread.sleep(3000);
-					if (cancelRequested_)
-					{
-						return SampleOperation.this.getTitle() + " was cancelled";
-					}
-					updateProgress((i + 0.5), conceptList_.size());
-					updateMessage("still working on " + c.getDescription());
-					Thread.sleep(3000);
-					if (cancelRequested_)
-					{
-						return SampleOperation.this.getTitle() + " was cancelled";
-					}
+					updateMessage("Processing " + c.getDescription());
+					
+					//TODO details...
+					
 					updateProgress(++i, conceptList_.size());
 				}
-				return SampleOperation.this.getTitle() + " completed - modified 0 concepts";
+				//TODO figure out how to return / display formatted output
+				return FindAndReplace.this.getTitle() + " completed.";
 			}
 		};
 	}

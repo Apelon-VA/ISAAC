@@ -24,6 +24,7 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleStringProperty;
@@ -83,7 +84,7 @@ public class ParentReplace extends Operation
 		root_.add(withConcept_.getNode(), 1, 1);
 
 		GridPane.setHgrow(withConcept_.getNode(), Priority.ALWAYS);
-		preventColOneCollapse();
+		FxUtils.preventColCollapse(root_, 0);
 		initActionListeners();
 		replaceOptions_.getItems().addAll(conceptList);
 	}

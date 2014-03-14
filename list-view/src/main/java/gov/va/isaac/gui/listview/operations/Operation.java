@@ -26,7 +26,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 import org.jvnet.hk2.annotations.Contract;
 import com.sun.javafx.tk.Toolkit;
 
@@ -69,30 +68,6 @@ public abstract class Operation
 	public Node getNode()
 	{
 		return root_;
-	}
-	
-	/**
-	 * Call this after adding all label content to the first column, to prevent it from shrinking
-	 */
-	protected void preventColOneCollapse()
-	{
-		Font f = new Font("System", 13.0);
-		float largestWidth = 0;
-		for (Node n : root_.getChildrenUnmodifiable())
-		{
-			if (GridPane.getColumnIndex(n) == 0 && n instanceof Label)
-			{
-				float width = Toolkit.getToolkit().getFontLoader().computeStringWidth(((Label)n).getText(), f);
-				if (width > largestWidth)
-				{
-					largestWidth = width;
-				}
-			}
-		}
-		//don't let the first column shrink less than the labels
-		ColumnConstraints cc = new ColumnConstraints();
-		cc.setMinWidth(largestWidth);
-		root_.getColumnConstraints().add(cc);
 	}
 	
 	/**

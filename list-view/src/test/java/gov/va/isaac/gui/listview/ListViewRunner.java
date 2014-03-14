@@ -51,7 +51,7 @@ public class ListViewRunner extends Application implements ApplicationWindowI
 	{
 		primaryStage_ = primaryStage;
 		ListBatchView lv = AppContext.getService(ListBatchView.class);
-		primaryStage.setScene(new Scene(lv.getView(), 800, 600));
+		primaryStage.setScene(new Scene(lv.getView(), 1024, 800));
 		primaryStage.show();
 	}
 
