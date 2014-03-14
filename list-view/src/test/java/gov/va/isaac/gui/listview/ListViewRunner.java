@@ -19,6 +19,9 @@
 package gov.va.isaac.gui.listview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.ApplicationWindowI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -28,6 +31,7 @@ import javafx.stage.Stage;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
@@ -35,15 +39,17 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class ListViewRunner extends Application
+@Service
+public class ListViewRunner extends Application implements ApplicationWindowI
 {
-
+	Stage primaryStage_;
 	/**
 	 * @see javafx.application.Application#start(javafx.stage.Stage)
 	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
+		primaryStage_ = primaryStage;
 		ListBatchView lv = AppContext.getService(ListBatchView.class);
 		primaryStage.setScene(new Scene(lv.getView(), 800, 600));
 		primaryStage.show();
@@ -72,5 +78,32 @@ public class ListViewRunner extends Application
 		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
 		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
 		launch(args);
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#getPrimaryStage()
+	 */
+	@Override
+	public Stage getPrimaryStage()
+	{
+		return primaryStage_;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
+	 */
+	@Override
+	public void registerShutdownListener(ShutdownBroadcastListenerI listener)
+	{
+		
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#ensureDockedViewIsVisble(gov.va.isaac.interfaces.gui.views.DockedViewI)
+	 */
+	@Override
+	public void ensureDockedViewIsVisble(DockedViewI view)
+	{
+		
 	}
 }

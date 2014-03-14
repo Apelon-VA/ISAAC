@@ -29,10 +29,14 @@ import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +58,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -73,16 +78,22 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialog;
+import org.controlsfx.dialog.Dialogs;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * {@link ListBatchViewController}
@@ -261,8 +272,66 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				// TODO implement
-				logger_.error("Not yet implemented");
+				try
+				{
+					FileChooser fc = new FileChooser();
+					fc.setInitialFileName("ExportedConcepts.txt");
+					fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt"));
+					fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files (*.*)", "*"));
+					File file = fc.showSaveDialog(rootPane.getScene().getWindow());
+					if (file != null)
+					{
+						File f;
+						String tempPath = file.getCanonicalPath().toLowerCase();
+						if (!(tempPath.endsWith(".txt")))
+						{
+							String extension = fc.selectedExtensionFilterProperty().get().getExtensions().get(0).substring(1);
+							// default to .txt, if the user had *.* selected
+							if (extension.length() == 0)
+							{
+								extension = ".txt";
+							}
+							f = new File(file.getCanonicalPath() + extension);
+
+							// Only have to check this if we muck with the file name...
+							if (f.exists())
+							{
+								Action response = Dialogs.create().owner(rootPane.getScene().getWindow()).title("Overwrite existing file?")
+										.masthead(null).nativeTitleBar().message("The file '" + f.getName() + "' already exists.  Overwrite?").showConfirm();
+								if (response != Dialog.Actions.YES)
+								{
+									return;
+								}
+							}
+						}
+						else
+						{
+							f = file.getCanonicalFile();
+						}
+						
+						if (f.getName().toLowerCase().endsWith(".txt"))
+						{
+							CSVWriter fileWriter = new CSVWriter(new FileWriter(f), '\t',
+									CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, System.getProperty("line.separator"));
+							fileWriter.writeNext(new String[] {"Primordial UUID", "Description"});
+							for (SimpleDisplayConcept c : conceptTable.getItems())
+							{
+								fileWriter.writeNext(new String[] {WBUtility.getConceptVersion(c.getNid()).getPrimordialUuid().toString(), c.getDescription()});
+							}
+							fileWriter.close();
+						}
+						else
+						{
+							logger_.error("Design error - shouldn't have happened");
+							AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "Unknown output format", null);
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					logger_.error("Unexpected error exporting concepts", e);
+					AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
+				}
 			}
 		});
 
@@ -271,8 +340,121 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				// TODO implement
-				logger_.error("Not yet implemented");
+				try
+				{
+					FileChooser fc = new FileChooser();
+					fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt"));
+					fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files (*.*)", "*"));
+					final File file = fc.showOpenDialog(rootPane.getScene().getWindow());
+					
+					if (file != null)
+					{
+						if (file.getName().toLowerCase().endsWith(".txt"))
+						{
+							rootPane.getScene().setCursor(Cursor.WAIT);
+							
+							
+							Task<Void> t = new Task<Void>()
+							{
+								
+								@Override
+								public Void call()
+								{
+									try
+									{
+										updateProgress(-1, -1);
+										CSVReader fileReader = new CSVReader(new FileReader(file), '\t',
+												CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+										List<String[]> lines = fileReader.readAll();
+										fileReader.close();
+										final StringBuilder readErrors = new StringBuilder();
+										final ArrayList<SimpleDisplayConcept> newConcepts = new ArrayList<>();
+										int lineNumber = 0;
+										for (String[] line : lines)
+										{
+											lineNumber++;
+											if (line.length > 0)
+											{
+												try 
+												{
+													UUID uuid = UUID.fromString(line[0]);
+													ConceptVersionBI c = WBUtility.getConceptVersion(uuid);
+													if (c != null)
+													{
+														newConcepts.add(new SimpleDisplayConcept(c));
+													}
+													else
+													{
+														readErrors.append("The UUID found on line " + lineNumber + " '" + uuid.toString() + "' could not be resolved\r\n");
+													}
+												}
+												catch (IllegalArgumentException e)
+												{
+													if (lineNumber > 1)
+													{
+														readErrors.append("No UUID found on line " + lineNumber + "\r\n");
+													}
+												}
+											}
+										}
+										
+										Platform.runLater(new Runnable()
+										{
+											@Override
+											public void run()
+											{
+												conceptTable.getItems().addAll(newConcepts);
+												Dialogs.create().title("Concept Import Completed").masthead(null)
+													.message("The Concept List import is complete" 
+															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""))
+															.owner(rootPane.getScene().getWindow()).nativeTitleBar().showInformation();
+											}
+										});
+										
+									}
+									catch (final Exception e)
+									{
+										logger_.error("Unexpected error loading concept file", e);
+										Platform.runLater(new Runnable()
+										{
+											@Override
+											public void run()
+											{
+												AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
+											}
+										});
+									}
+									finally
+									{
+										Platform.runLater(new Runnable()
+										{
+											
+											@Override
+											public void run()
+											{
+												rootPane.getScene().setCursor(Cursor.DEFAULT);
+											}
+										});
+									}
+									return null;
+								}
+							};
+							Dialogs.create().title("Importing").masthead(null).message("Importing").owner(rootPane.getScene().getWindow())
+								.nativeTitleBar().showWorkerProgress(t);
+							Utility.execute(t);
+						}
+						else
+						{
+							logger_.error("Design error - shouldn't have happened");
+							AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "Unknown output format", null);
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					logger_.error("Unexpected error loading concepts", e);
+					AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
+				}
 			}
 		});
 
@@ -500,8 +682,8 @@ public class ListBatchViewController
 					{
 						for (CustomTask<String> task : operationsToExecute)
 						{
-							//Can't use task.cancel(false) because oracle mis-designed it... and the executor service doesn't 
-							//wait for the task to actually complete when you use the awaitCompletion() method.
+							// Can't use task.cancel(false) because oracle mis-designed it... and the executor service doesn't
+							// wait for the task to actually complete when you use the awaitCompletion() method.
 							task.shutdownRequested();
 						}
 					}
@@ -509,11 +691,11 @@ public class ListBatchViewController
 			});
 
 			es.shutdown();
-			
-			//spawn a thread to wait for completion of the tasks
+
+			// spawn a thread to wait for completion of the tasks
 			Thread t = new Thread(new Runnable()
 			{
-				
+
 				@Override
 				public void run()
 				{
@@ -525,7 +707,7 @@ public class ListBatchViewController
 						}
 						catch (InterruptedException e)
 						{
-							//noop
+							// noop
 						}
 					}
 					lborc.finished();
