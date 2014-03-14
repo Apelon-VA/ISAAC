@@ -29,5 +29,9 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
  */
 public interface ImportHandler {
 
+    /**
+     * Method called by the ISAAC application to perform the import. Will be
+     * invoked on a background thread.
+     */
     public ConceptChronicleBI importModel(File file) throws Exception;
 }
