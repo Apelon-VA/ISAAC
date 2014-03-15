@@ -135,7 +135,7 @@ public class ListBatchViewController
 		operationsList.getChildren().add(new OperationNode(this));
 
 		final ConceptNode cn = new ConceptNode(null, false);
-		cn.setPromptText("Type or select concept to add");
+		cn.setPromptText("Type, drop or select a concept to add");
 		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
 		HBox.setMargin(cn.getNode(), new Insets(6, 5, 6, 5));
 		conceptTableFooter.getChildren().add(cn.getNode());
