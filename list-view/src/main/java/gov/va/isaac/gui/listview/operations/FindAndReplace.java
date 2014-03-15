@@ -22,7 +22,6 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import java.io.IOException;
 import java.net.URL;
 import javafx.beans.binding.BooleanExpression;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import org.glassfish.hk2.api.PerLookup;
@@ -91,7 +90,7 @@ public class FindAndReplace extends Operation
 	@Override
 	public BooleanExpression isValid()
 	{
-		return new SimpleBooleanProperty(true);
+		return frc_.allFieldsValid();
 	}
 
 	/**

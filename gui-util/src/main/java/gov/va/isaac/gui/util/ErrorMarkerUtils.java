@@ -27,10 +27,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,6 +53,15 @@ public class ErrorMarkerUtils
 	 */
 	public static Node setupErrorMarker(Control initialControl, StringProperty reasonWhyControlInvalid)
 	{
+		return setupDisabledInfoMarker(initialControl, new StackPane(), reasonWhyControlInvalid);
+	}
+	
+	/**
+	 * Setup an 'EXCLAMATION' error marker on the component.  Automatically displays anytime that the reasonWhyControlInvalid value
+	 * is not empty.  Hides when the reasonWhyControlInvalid is empty.
+	 */
+	public static Node setupErrorMarker(Control initialControl, StackPane stackPane, StringProperty reasonWhyControlInvalid)
+	{
 		ImageView exclamation = Images.EXCLAMATION.createImageView();
 		
 		final BooleanProperty showExclamation = new SimpleBooleanProperty(StringUtils.isNotBlank(reasonWhyControlInvalid.get()));
@@ -68,7 +79,6 @@ public class ErrorMarkerUtils
 		tooltip.textProperty().bind(reasonWhyControlInvalid);
 		Tooltip.install(exclamation, tooltip);
 		
-		StackPane stackPane = new StackPane();
 		stackPane.setMaxWidth(Double.MAX_VALUE);
 		stackPane.getChildren().add(initialControl);
 		StackPane.setAlignment(initialControl, Pos.CENTER_LEFT);
@@ -84,6 +94,15 @@ public class ErrorMarkerUtils
 	 */
 	public static Node setupDisabledInfoMarker(Control initialControl, StringProperty reasonWhyControlDisabled)
 	{
+		return setupDisabledInfoMarker(initialControl, new StackPane(), reasonWhyControlDisabled);
+	}
+	
+	/**
+	 * Setup an 'INFORMATION' info marker on the component.  Automatically displays anytime that the initialControl is disabled.
+	 * Put the initial control in the provided stack pane
+	 */
+	public static Node setupDisabledInfoMarker(Control initialControl, StackPane stackPane, StringProperty reasonWhyControlDisabled)
+	{
 		ImageView information = Images.INFORMATION.createImageView();
 		
 		information.visibleProperty().bind(initialControl.disabledProperty());
@@ -91,7 +110,6 @@ public class ErrorMarkerUtils
 		tooltip.textProperty().bind(reasonWhyControlDisabled);
 		Tooltip.install(information, tooltip);
 		
-		StackPane stackPane = new StackPane();
 		stackPane.setMaxWidth(Double.MAX_VALUE);
 		stackPane.getChildren().add(initialControl);
 		StackPane.setAlignment(initialControl, Pos.CENTER_LEFT);
@@ -100,6 +118,11 @@ public class ErrorMarkerUtils
 		{
 			StackPane.setAlignment(information, Pos.CENTER);
 		}
+		else if (initialControl instanceof CheckBox)
+		{
+			StackPane.setAlignment(information, Pos.CENTER_LEFT);
+			StackPane.setMargin(information, new Insets(0, 0, 0, 1));
+		}
 		else
 		{
 			StackPane.setAlignment(information, Pos.CENTER_RIGHT);
@@ -107,5 +130,24 @@ public class ErrorMarkerUtils
 			StackPane.setMargin(information, new Insets(0.0, insetFromRight, 0.0, 0.0));
 		}
 		return stackPane;
+	}
+	
+	/**
+	 * Useful when taking a node already placed by a fxml file, for example, and wrapping it
+	 * in a stack pane 
+	 */
+	public static void swapComponents(Node placedNode, Node replacementNode, GridPane gp)
+	{
+		int index = gp.getChildren().indexOf(placedNode);
+		if (index < 0)
+		{
+			throw new RuntimeException("placed Node is not in the grid pane");
+		}
+
+		gp.getChildren().remove(index);
+		gp.getChildren().add(index, replacementNode);
+		
+		//this transfers the node specific constraints
+		replacementNode.getProperties().putAll(placedNode.getProperties());
 	}
 }

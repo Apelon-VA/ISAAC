@@ -23,11 +23,8 @@ import javafx.beans.binding.BooleanExpression;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import org.jvnet.hk2.annotations.Contract;
-import com.sun.javafx.tk.Toolkit;
 
 /**
  * {@link Operation}

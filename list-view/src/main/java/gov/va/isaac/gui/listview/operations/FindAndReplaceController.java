@@ -19,8 +19,14 @@
 package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -31,6 +37,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 
 /**
  * {@link FindAndReplaceController}
@@ -55,6 +62,12 @@ public class FindAndReplaceController
 	@FXML private GridPane root;
 	@FXML private GridPane optionsGridPane;
 	@FXML private TitledPane optionsTitledPane;
+	
+	private StringProperty descriptionTypeInvalidReason = new SimpleStringProperty("");
+	private BooleanBinding descriptionTypeSelectionValid;
+	private StringProperty findTextInvalidReason = new SimpleStringProperty("");
+	private BooleanBinding findTextValid;
+	private BooleanBinding allFieldsValid;
 
 	@FXML
 	void initialize()
@@ -129,6 +142,89 @@ public class FindAndReplaceController
 				}
 			}
 		});
+		
+		//Bind various things together for validity
+		descriptionTypeFSN.disableProperty().bind(descriptionTypeAll.selectedProperty());
+		descriptionTypePT.disableProperty().bind(descriptionTypeAll.selectedProperty());
+		descriptionTypeSynonym.disableProperty().bind(descriptionTypeAll.selectedProperty());
+		caseSensitive.disableProperty().bind(regexp.selectedProperty());
+		
+		descriptionTypeSelectionValid = new BooleanBinding()
+		{
+			{
+				bind(descriptionTypeFSN.selectedProperty(), descriptionTypePT.selectedProperty(), descriptionTypeSynonym.selectedProperty(), 
+						descriptionTypeSelected.selectedProperty());
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				if (descriptionTypeSelected.isSelected() && 
+						!(descriptionTypeFSN.isSelected() || descriptionTypePT.isSelected() || descriptionTypeSynonym.isSelected()))
+				{
+					descriptionTypeInvalidReason.set("When Description Type is 'Selected', you must choose at least one of "
+							+ "'Fully Specified Name', 'Preferred Term' or 'Synonym'");
+					return false;
+				}
+				descriptionTypeInvalidReason.set("");
+				return true;
+			}
+		};
+		
+		findTextValid = new BooleanBinding()
+		{
+			{
+				bind(findText.textProperty(), regexp.selectedProperty());
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				if (findText.getText().length() == 0)
+				{
+					findTextInvalidReason.set("The 'Find' field is required");
+					return false;
+				}
+				else if (regexp.isSelected())
+				{
+					try
+					{
+						Pattern.compile(findText.getText());
+						findTextInvalidReason.set("");
+						return true;
+					}
+					catch (PatternSyntaxException e)
+					{
+						findTextInvalidReason.set("The entered value is not a valid regular expression");
+						return false;
+					}
+				}
+				findTextInvalidReason.set("");
+				return true;
+			}
+		};
+
+		//swap out some components, wrap them up in a stack pane so that we can set up the 
+		//error and info markers
+		StackPane sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(caseSensitive, sp, optionsGridPane);
+		ErrorMarkerUtils.setupDisabledInfoMarker(caseSensitive, sp, new SimpleStringProperty("Not available during a Regular Expression search"));
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(descriptionTypeSelected, sp, optionsGridPane);
+		ErrorMarkerUtils.setupErrorMarker(descriptionTypeSelected, sp, descriptionTypeInvalidReason);
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(findText, sp, root);
+		ErrorMarkerUtils.setupErrorMarker(findText, sp, findTextInvalidReason);
+		
+		searchInLanguage.getItems().add(new SimpleDisplayConcept("ANY"));
+		searchInLanguage.getSelectionModel().select(0);
+		
+		allFieldsValid = findTextValid.and(descriptionTypeSelectionValid);
+	}
+	
+	protected BooleanBinding allFieldsValid()
+	{
+		return allFieldsValid;
 	}
 
 	protected GridPane getRoot()
