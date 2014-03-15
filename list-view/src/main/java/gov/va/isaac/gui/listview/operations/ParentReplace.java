@@ -68,7 +68,7 @@ public class ParentReplace extends Operation
 
 		replaceOptions_ = new ComboBox<>();
 		replaceOptions_.setMaxWidth(Double.MAX_VALUE);
-		replaceOptions_.setPromptText("Populate the Concepts List");
+		replaceOptions_.setPromptText("-Populate the Concepts List-");
 		root_.add(ErrorMarkerUtils.setupErrorMarker(replaceOptions_, replaceOptionsInvalidString_), 1, 0);
 		AppContext.getService(DragRegistry.class).setupDragAndDrop(replaceOptions_, new ConceptIdProvider()
 		{
