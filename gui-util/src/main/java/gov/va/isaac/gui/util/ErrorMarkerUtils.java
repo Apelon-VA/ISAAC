@@ -135,6 +135,8 @@ public class ErrorMarkerUtils
 	/**
 	 * Useful when taking a node already placed by a fxml file, for example, and wrapping it
 	 * in a stack pane 
+	 * WARNING - the mechanism of moving the properties isn't currently very smart - it should only target 
+	 * GridPane properties, but it takes everything.
 	 */
 	public static void swapComponents(Node placedNode, Node replacementNode, GridPane gp)
 	{
