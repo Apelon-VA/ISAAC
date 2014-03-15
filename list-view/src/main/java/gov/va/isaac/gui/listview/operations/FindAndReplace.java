@@ -113,22 +113,22 @@ public class FindAndReplace extends Operation
 			@Override
 			protected String call() throws Exception
 			{
-				double i = 0;
-				for (SimpleDisplayConcept c : conceptList_)
-				{
-					if (cancelRequested_)
-					{
-						return FindAndReplace.this.getTitle() + " was cancelled";
-					}
-					updateProgress(i, conceptList_.size());
-					updateMessage("Processing " + c.getDescription());
-					
-					//TODO details...
-					
-					updateProgress(++i, conceptList_.size());
-				}
-				//TODO figure out how to return / display formatted output
-				return FindAndReplace.this.getTitle() + " completed.";
+//				double i = 0;
+//				for (SimpleDisplayConcept c : conceptList_)
+//				{
+//					if (cancelRequested_)
+//					{
+//						return FindAndReplace.this.getTitle() + " was cancelled";
+//					}
+//					updateProgress(i, conceptList_.size());
+//					updateMessage("Processing " + c.getDescription());
+//					
+//					//TODO Implement Find/Replace Operation
+//					
+//					updateProgress(++i, conceptList_.size());
+//				}
+//				return FindAndReplace.this.getTitle() + " completed.";
+				return "Not yet implemented";
 			}
 		};
 	}

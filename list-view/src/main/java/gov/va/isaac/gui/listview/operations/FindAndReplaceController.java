@@ -18,13 +18,17 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.util.WBUtility;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -38,6 +42,9 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link FindAndReplaceController}
@@ -89,10 +96,24 @@ public class FindAndReplaceController
 		FxUtils.preventColCollapse(optionsGridPane, 0);
 		FxUtils.preventColCollapse(optionsGridPane, 1);
 		FxUtils.preventColCollapse(optionsGridPane, 2);
+		
+		//swap out some components, wrap them up in a stack pane so that we can set up the 
+		//error and info markers.  Note, do this early, swapComponents isn't real smart, and might mess other things up
+		StackPane sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(caseSensitive, sp, optionsGridPane);
+		ErrorMarkerUtils.setupDisabledInfoMarker(caseSensitive, sp, new SimpleStringProperty("Not available during a Regular Expression search"));
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(descriptionTypeSelected, sp, optionsGridPane);
+		ErrorMarkerUtils.setupErrorMarker(descriptionTypeSelected, sp, descriptionTypeInvalidReason);
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(findText, sp, root);
+		ErrorMarkerUtils.setupErrorMarker(findText, sp, findTextInvalidReason);
 
 		//Sigh - TitlePane doesn't advertise its size properly, unless you manually set the min sizes.
 		//Add a couple listeners, do a bunch of hacking to work around it.
-		//TODO file bug
+		//TODO file JavaFX bug
 		optionsTitledPane.expandedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
@@ -202,24 +223,45 @@ public class FindAndReplaceController
 			}
 		};
 
-		//swap out some components, wrap them up in a stack pane so that we can set up the 
-		//error and info markers
-		StackPane sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(caseSensitive, sp, optionsGridPane);
-		ErrorMarkerUtils.setupDisabledInfoMarker(caseSensitive, sp, new SimpleStringProperty("Not available during a Regular Expression search"));
-		
-		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(descriptionTypeSelected, sp, optionsGridPane);
-		ErrorMarkerUtils.setupErrorMarker(descriptionTypeSelected, sp, descriptionTypeInvalidReason);
-		
-		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(findText, sp, root);
-		ErrorMarkerUtils.setupErrorMarker(findText, sp, findTextInvalidReason);
-		
 		searchInLanguage.getItems().add(new SimpleDisplayConcept("ANY"));
 		searchInLanguage.getSelectionModel().select(0);
 		
+		try
+		{
+			//84a0b03b-220c-3d69-8487-2e019c933687 Language type reference set
+			for (ConceptVersionBI c : WBUtility.getAllChildrenOfConcept(WBUtility.getConceptVersion(UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687")).getNid()))
+			{
+				SimpleDisplayConcept sdc = new SimpleDisplayConcept(c);
+				//TODO OTF Bug - OTF is broken, and doesn't even return hierarchies without duplicates
+				if (!searchInLanguage.getItems().contains(sdc))
+				{
+					searchInLanguage.getItems().add(sdc);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			LoggerFactory.getLogger(this.getClass()).error("Error populating 'Language' drop down", e);
+			AppContext.getCommonDialogs().showErrorDialog("Error populating the 'Language' drop down", e);
+			//this isn't fatal - 'ANY' will still be there.
+		}
+
 		allFieldsValid = findTextValid.and(descriptionTypeSelectionValid);
+		
+		try
+		{
+			//TODO these should come from user preferences
+			retireAs.getItems().add(new SimpleDisplayConcept(WBUtility.getConceptVersion(SnomedMetadataRf2.ACTIVE_VALUE_RF2.getUuids()[0])));
+			retireAs.getItems().add(new SimpleDisplayConcept(WBUtility.getConceptVersion(SnomedMetadataRf2.INACTIVE_VALUE_RF2.getUuids()[0])));
+			retireAs.getSelectionModel().select(0);
+		}
+		catch (Exception e)
+		{
+			LoggerFactory.getLogger(this.getClass()).error("Error populating 'Retire As' drop down", e);
+			AppContext.getCommonDialogs().showErrorDialog("Error populating the 'Retire As' drop down", e);
+			//JavaFX doesn't compute findTextValue, if no one is using it
+			allFieldsValid = findTextValid.and(descriptionTypeSelectionValid.and(new SimpleBooleanProperty(false)));  
+		}
 	}
 	
 	protected BooleanBinding allFieldsValid()
