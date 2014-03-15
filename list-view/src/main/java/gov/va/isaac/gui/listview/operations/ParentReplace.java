@@ -171,7 +171,7 @@ public class ParentReplace extends Operation
 	@Override
 	public String getOperationDescription()
 	{
-		// TODO write this
+		// TODO Describe ParentReplace
 		return "TBD";
 	}
 
@@ -186,7 +186,7 @@ public class ParentReplace extends Operation
 			@Override
 			protected String call() throws Exception
 			{
-				//TODO implement this
+				//TODO implement ParentReplace
 				return "Not yet implemented";
 			}
 		};
