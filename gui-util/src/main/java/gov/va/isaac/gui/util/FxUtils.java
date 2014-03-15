@@ -73,9 +73,9 @@ public class FxUtils {
      * Call this after adding all label content to a column, to prevent it from shrinking smaller than the labels
      * returns the calculated width, for convenience
      */
-    public static float preventColCollapse(GridPane gp, int colNumber)
+    public static double preventColCollapse(GridPane gp, int colNumber)
     {
-        float largestWidth = 0;
+        double largestWidth = 0;
         FontLoader fl = Toolkit.getToolkit().getFontLoader();
         for (Node node : gp.getChildrenUnmodifiable())
         {
@@ -83,12 +83,13 @@ public class FxUtils {
             if (colIndex != null && colIndex.intValue() == colNumber)
             {
                 String textValue = "";
-                int extraWidth = 0;
+                double extraWidth = 0;
                 Font font = null;
                 if (node instanceof Label)
                 {
                     textValue = ((Label) node).getText();
                     font = ((Label) node).getFont();
+                    extraWidth = ((Label)node).getInsets().getLeft() + ((Label)node).getInsets().getRight(); 
                 }
                 else if (node instanceof CheckBox)
                 {
@@ -104,7 +105,7 @@ public class FxUtils {
                 }
                 if (font != null)
                 {
-                    float width = fl.computeStringWidth(textValue, font) + extraWidth;
+                    double width = fl.computeStringWidth(textValue, font) + extraWidth;
                     if (width > largestWidth)
                     {
                         largestWidth = width;
