@@ -1,0 +1,1573 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="20110701" xmlns:xmi="http://www.omg.org/spec/XMI/20110701" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Default="http:///schemas/Default/_fNm3AAqoEd6-N_NOT9vsCA/2" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:uml="http://www.eclipse.org/uml2/4.0.0/UML" xmlns:umlnotation="http://www.ibm.com/xtools/1.5.3/Umlnotation" xsi:schemaLocation="http:///schemas/Default/_fNm3AAqoEd6-N_NOT9vsCA/2 pathmap://UML2_MSL_PROFILES/Default.epx#_fNwoAAqoEd6-N_NOT9vsCA?Default/Default?">
+  <uml:Package xmi:id="_KqYgwM3ZEdyMrbJiuKueSQ" name="Datatypes">
+    <eAnnotations xmi:id="_qyYyAEDMEeOMp8J4NxvidQ" source="com.ibm.xtools.uml.msl.fragments"/>
+    <eAnnotations xmi:id="_qntzEEDMEeOMp8J4NxvidQ" source="com.ibm.xtools.uml.msl.fragmentContainer">
+      <references xmi:type="uml:Package" href="FHIM.emx#420A62FD03B6?FHIM?"/>
+    </eAnnotations>
+    <eAnnotations xmi:id="_KqYgwc3ZEdyMrbJiuKueSQ" source="uml2.diagrams" references="_420A62FD03B6426674B203CC">
+      <contents xmi:type="umlnotation:UMLDiagram" xmi:id="_420A62FD03B6426674B203CC" type="Class" name="Datatypes" description="This diagram displays all the classes in the FHIM Datatypes package.  The FHIM data types are based on the HL7 Version 3 data types, but are simplified so that they might be more easily resolved into implementable specifications.  Where a FHIM data type maps to an HL7 data type, we have placed the HL7 data type mnemonic as a keyword, so for example, Person Name has a &lt;&lt;PN>> keyword.&#xD;&#xA;&#xD;&#xA;It is important to keep in mind that many of these data types will not necessarily be implemented directly, but rather serve as logical placeholders that will be used to inform a transformation process to generate structures appropriate to the target platform.  For example, note the Id data type.  When targeting an HL7 V2 platform, FHIM properties referencing the Id data type will be modified to reference an HL72EntityIdentifier, HL72ExtendedCompositeId, HL72HierarchicDesignator, HL72OrganizationIdentifierExtended, or HL72PersonLocation, as needed.  The knowledge of which HL7 V2 “flavor” of Id to substitute will be contained in a separate mapping model.  Similarly, when targeting HL7 V3, multiple “flavors” of V3 Id data types are possible.&#xD;&#xA;&#xD;&#xA;A note about Person Name is in order:  We found the HL7 V3 notion that a person’s given name is an ordered list of names rather than a first name and middle name as traditionally modeled to be a useful construct.  But we found that HL7’s modeling each part of the name separately to be overly complex, so we have modeled a single structure made up of several attributes each of which is a string.  Also, we chose not to build a use code into the Person Name data type, rather, the use code is defined explicitly in the domain models.  For example, the Person class contains a property called legalName, which by definition should contain the person’s legal name, thus no use code is required.&#xD;&#xA;&#xD;&#xA;Similarly for addresses, we found HL7’s modeling each part of the address separately to be overly complex, so we have modeled a single structure made up of several attributes each of which is a string.  Notably, the street portion of the address is simply line1, line2, and line3 rather than modeling each part of the street line separately.&#xD;&#xA;&#xD;&#xA;However, unlike our approach for Person Name, for both addresses and telecommunications addresses, we chose a hybrid approach for the use code.  We include an address type (the values of which come from the HL7 V3 vocabulary), and we explicitly model the use of the data element in the domain model.  For example, Person has both a primaryHomeAddress and a workAddress.  The Address.addressTypeCode property would be set to the appropriate value accordingly.  This approach was taken in order to explicitly account for the concepts in the logical model (for example, it makes no sense for a hospital to have a home phone number), while acknowledging that phone numbers, addresses, email addresses, etc. will likely be implemented using a mixed bag of addresses, each of which would have some sort of type code.">
+        <children xmi:type="notation:Shape" xmi:id="_GIOQ0Od8Ed6qdqXtvR-ZHQ" type="Note" fontName="Arial" fontHeight="10" description="FHIM Datatypes" fillColor="16777088" lineColor="0" lineWidth="1">
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_GIOQ0ed8Ed6qdqXtvR-ZHQ" type="DiagramName">
+            <element xsi:nil="true"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_GIOQ0ud8Ed6qdqXtvR-ZHQ" type="Description">
+            <element xsi:nil="true"/>
+          </children>
+          <styles xmi:type="notation:TextStyle" xmi:id="_GIOQ1Od8Ed6qdqXtvR-ZHQ"/>
+          <styles xmi:type="notation:LineTypeStyle" xmi:id="_GIOQ1ed8Ed6qdqXtvR-ZHQ"/>
+          <element xsi:nil="true"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_GIOQ1ud8Ed6qdqXtvR-ZHQ" x="634"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XS8IIAqhEd-426xscrxYmQ" element="_420A62FD03B6418A46B702C7" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XS8IIwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XS8IJAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XS8IJQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XS8IJgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XS8IJwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XS8IKAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XS8IKgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XS8ILAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XS8ILgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XS8IIgqhEd-426xscrxYmQ" x="6974" y="17435"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XS8IMAqhEd-426xscrxYmQ" element="_GmKqYGAfEd6a0qoC8Dh7hA" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XS8IMwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XS8INAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XS8INQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XS8INgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XS8INwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XS8IOAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XS8IOgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XS8IPAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XS8IPgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XS8IMgqhEd-426xscrxYmQ" x="19654" y="4438"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTPDPQqhEd-426xscrxYmQ" element="_mZFS8ERREdyvWauSJSvkeQ" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTPDQAqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTPDQQqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDQgqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDQwqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDRAqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTPDRQqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTPDRwqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTPDSQqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTPDSwqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTPDPwqhEd-426xscrxYmQ" x="19654" y="951"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTPDTQqhEd-426xscrxYmQ" element="_420A62FD03B641886F630086" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTPDUAqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTPDUQqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDUgqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDUwqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDVAqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTPDVQqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTPDVwqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTPDWQqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTPDWwqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTPDTwqhEd-426xscrxYmQ" x="634" y="4755"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTPDXQqhEd-426xscrxYmQ" element="_420A62FD03B641886F630338" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTPDYAqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTPDYQqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDYgqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDYwqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTPDZAqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNAAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNAgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNBAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTYNBgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTPDXwqhEd-426xscrxYmQ" x="634" y="6974"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTYNCAqhEd-426xscrxYmQ" element="_420A62FD03B6418A8DCD02C2" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTYNCwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTYNDAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTYNDQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTYNDgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTYNDwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNEAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNEgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNFAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTYNFgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTYNCgqhEd-426xscrxYmQ" x="8242" y="8559"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTYNGAqhEd-426xscrxYmQ" element="_420A62FD03B641886F630160" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTYNGwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTYNHAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTYNHQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTYNHgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTYNHwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNIAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNIgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTYNJAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTYNJgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTYNGgqhEd-426xscrxYmQ" x="634" y="9193"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTh-SgqhEd-426xscrxYmQ" element="_3lzSEFVyEdyaooytdRFnxQ" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTh-TQqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTh-TgqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-TwqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-UAqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-UQqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTh-UgqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTh-VAqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTh-VgqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTh-WAqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTh-TAqhEd-426xscrxYmQ" x="9193" y="1268"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTh-WgqhEd-426xscrxYmQ" element="_420A62FD03B641886F630221" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTh-XQqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTh-XgqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-XwqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-YAqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-YQqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTh-YgqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTh-ZAqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTh-ZgqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTh-aAqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTh-XAqhEd-426xscrxYmQ" x="634" y="13948"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTh-agqhEd-426xscrxYmQ" element="_420A62FD03B641886F63021A" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTh-bQqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTh-bgqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-bwqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-cAqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTh-cQqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvAAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvAgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvBAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvBgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTh-bAqhEd-426xscrxYmQ" x="634" y="16167"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTrvCAqhEd-426xscrxYmQ" element="_420A62FD03B64244824602F5" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTrvCwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTrvDAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvDQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvDgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvDwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvEAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvEgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvFAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvFgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTrvCgqhEd-426xscrxYmQ" x="634" y="21873"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTrvGAqhEd-426xscrxYmQ" element="_420A62FD03B641886F63021C" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTrvGwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTrvHAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvHQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvHgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvHwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvIAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvIgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvJAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvJgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTrvGgqhEd-426xscrxYmQ" x="634" y="23775"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTrvKAqhEd-426xscrxYmQ" element="_N-BAoNYeEd62cosTNS-_lw" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTrvKwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTrvLAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvLQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvLgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvLwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvMAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvMgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvNAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvNgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTrvKgqhEd-426xscrxYmQ" x="634" y="26311"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTrvOAqhEd-426xscrxYmQ" element="_420A62FD03B642387187004E" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTrvOwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTrvPAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvPQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvPgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvPwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvQAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvQgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvRAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvRgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTrvOgqhEd-426xscrxYmQ" x="634" y="28213"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTrvSAqhEd-426xscrxYmQ" element="_420A62FD03B64239FAA800D9" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTrvSwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTrvTAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvTQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvTgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvTwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvUAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvUgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvVAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvVgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTrvSgqhEd-426xscrxYmQ" x="634" y="31066"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XTrvWAqhEd-426xscrxYmQ" element="_420A62FD03B641886F6203C7" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XTrvWwqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XTrvXAqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvXQqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvXgqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XTrvXwqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvYAqhEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvYgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XTrvZAqhEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_XTrvZgqhEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XTrvWgqhEd-426xscrxYmQ" x="6974" y="15216"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_XT04-QqhEd-426xscrxYmQ" element="_cJEi4AqcEd-426xscrxYmQ" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XT04_AqhEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_XT04_QqhEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XT04_gqhEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XT04_wqhEd-426xscrxYmQ" type="Kind"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XT05AAqhEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_XT05AQqhEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XT05AgqhEd-426xscrxYmQ" type="EnumerationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XT05BAqhEd-426xscrxYmQ" visible="false" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_XT05BgqhEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XT04-wqhEd-426xscrxYmQ" x="7291" y="25994"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_f-71oQqmEd-426xscrxYmQ" element="_f-71oAqmEd-426xscrxYmQ" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_f-71pAqmEd-426xscrxYmQ" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_f-71pQqmEd-426xscrxYmQ" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_f-71pgqmEd-426xscrxYmQ" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_f-71pwqmEd-426xscrxYmQ" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_f-71qAqmEd-426xscrxYmQ" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_f-71qQqmEd-426xscrxYmQ" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_f_E_kAqmEd-426xscrxYmQ" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_f_E_kgqmEd-426xscrxYmQ" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_f_E_lAqmEd-426xscrxYmQ" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_f-71owqmEd-426xscrxYmQ" x="11095" y="15216"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_hWVGIBAnEd-2E9qx-lgHBg" element="_xfYxMPybEd6COP7rUDIHOg" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_hWVGIxAnEd-2E9qx-lgHBg" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_hWVGJBAnEd-2E9qx-lgHBg" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_hWVGJRAnEd-2E9qx-lgHBg" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_hWVGJhAnEd-2E9qx-lgHBg" type="Kind"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_hWVGJxAnEd-2E9qx-lgHBg" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_hWVGKBAnEd-2E9qx-lgHBg" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_hWVGKRAnEd-2E9qx-lgHBg" type="EnumerationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_hWVGKxAnEd-2E9qx-lgHBg" visible="false" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_hWVGLRAnEd-2E9qx-lgHBg" visible="false" type="OperationCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_hWVGIhAnEd-2E9qx-lgHBg" x="11729" y="25994"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_yQHtwBAnEd-2E9qx-lgHBg" element="_fImbAAEYEd-ZUM5xZsXWyw" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_yQQ3sBAnEd-2E9qx-lgHBg" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_yQQ3sRAnEd-2E9qx-lgHBg" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_yQQ3shAnEd-2E9qx-lgHBg" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_yQQ3sxAnEd-2E9qx-lgHBg" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_yQQ3tBAnEd-2E9qx-lgHBg" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_yQQ3tRAnEd-2E9qx-lgHBg" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_yQQ3txAnEd-2E9qx-lgHBg" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_yQQ3uRAnEd-2E9qx-lgHBg" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_yQQ3uxAnEd-2E9qx-lgHBg" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_yQHtwhAnEd-2E9qx-lgHBg" x="6974" y="20288"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_r_-oABvxEd-afqIGzWhetA" element="_r_1eEBvxEd-afqIGzWhetA" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_r_-oAxvxEd-afqIGzWhetA" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_r_-oBBvxEd-afqIGzWhetA" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_r_-oBRvxEd-afqIGzWhetA" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_sAIZABvxEd-afqIGzWhetA" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_sAIZARvxEd-afqIGzWhetA" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_sAIZAhvxEd-afqIGzWhetA" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_sAIZBBvxEd-afqIGzWhetA" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_sAIZBhvxEd-afqIGzWhetA" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_sAIZCBvxEd-afqIGzWhetA" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_r_-oAhvxEd-afqIGzWhetA" x="634" y="2853"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_dNTfQKyUEeCsjfrdZcTwnA" element="_dNAkUKyUEeCsjfrdZcTwnA" fontName="Arial" fontHeight="10" showListVisibility="None" fillColor="13434879" lineColor="3342489" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_dNTfQ6yUEeCsjfrdZcTwnA" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_dNTfRKyUEeCsjfrdZcTwnA" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_dNTfRayUEeCsjfrdZcTwnA" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_dNTfRqyUEeCsjfrdZcTwnA" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_dNTfR6yUEeCsjfrdZcTwnA" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_dNTfSKyUEeCsjfrdZcTwnA" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_dNTfSqyUEeCsjfrdZcTwnA" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_dNTfTKyUEeCsjfrdZcTwnA" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_dNTfTqyUEeCsjfrdZcTwnA" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_dNTfQqyUEeCsjfrdZcTwnA" x="8876" y="6023"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_ZdBjkHUeEeGl_7Z-4li2AA" element="_ZYu5cHUeEeGl_7Z-4li2AA" fontName="Arial" fontHeight="10" showListVisibility="None" fillColor="13434879" transparency="0" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_Zd9XsHUeEeGl_7Z-4li2AA" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_Zd9XsXUeEeGl_7Z-4li2AA" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_Zd9-wHUeEeGl_7Z-4li2AA" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_Zd-l0HUeEeGl_7Z-4li2AA" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_Zd_M4HUeEeGl_7Z-4li2AA" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_Zd_M4XUeEeGl_7Z-4li2AA" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_Zd_z8HUeEeGl_7Z-4li2AA" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_ZeAbAHUeEeGl_7Z-4li2AA" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_ZeKzEHUeEeGl_7Z-4li2AA" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_ZdBjkXUeEeGl_7Z-4li2AA" x="22190" y="9510"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_yQwfgLyGEeGK2djLWlLFew" element="_yQqY4LyGEeGK2djLWlLFew" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" transparency="0" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_yQxGkLyGEeGK2djLWlLFew" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_yQxGkbyGEeGK2djLWlLFew" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_yQxGkryGEeGK2djLWlLFew" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_yQxGk7yGEeGK2djLWlLFew" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_yQxtoLyGEeGK2djLWlLFew" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_yQxtobyGEeGK2djLWlLFew" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_yQxtoryGEeGK2djLWlLFew" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_yQxto7yGEeGK2djLWlLFew" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_yQxtpLyGEeGK2djLWlLFew" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_yQwfgbyGEeGK2djLWlLFew" x="634" y="11412"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_i52K0OZSEeGuIoEQ4Mvu0w" element="_i5jP4OZSEeGuIoEQ4Mvu0w" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" transparency="0" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_i52x4OZSEeGuIoEQ4Mvu0w" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_i52x4eZSEeGuIoEQ4Mvu0w" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_i53Y8OZSEeGuIoEQ4Mvu0w" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_i53Y8eZSEeGuIoEQ4Mvu0w" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_i53Y8uZSEeGuIoEQ4Mvu0w" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_i53Y8-ZSEeGuIoEQ4Mvu0w" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_i53Y9OZSEeGuIoEQ4Mvu0w" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_i54AAOZSEeGuIoEQ4Mvu0w" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_i54AAeZSEeGuIoEQ4Mvu0w" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_i52K0eZSEeGuIoEQ4Mvu0w" x="17118" y="9510"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_mAX24OZSEeGuIoEQ4Mvu0w" element="_mARwQOZSEeGuIoEQ4Mvu0w" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" transparency="0" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_mAYd8OZSEeGuIoEQ4Mvu0w" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_mAYd8eZSEeGuIoEQ4Mvu0w" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_mAZFAOZSEeGuIoEQ4Mvu0w" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_mAZFAeZSEeGuIoEQ4Mvu0w" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_mAZsEOZSEeGuIoEQ4Mvu0w" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_mAZsEeZSEeGuIoEQ4Mvu0w" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_mAaTIOZSEeGuIoEQ4Mvu0w" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_mAaTIeZSEeGuIoEQ4Mvu0w" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_mAaTIuZSEeGuIoEQ4Mvu0w" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_mAX24eZSEeGuIoEQ4Mvu0w" x="17435" y="12363"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_EgRfgEhWEeKFm6BiMe_FyA" element="_2xsJQM_6Ed-YeMSrwW6svA" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" transparency="0" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_EgRfgkhWEeKFm6BiMe_FyA" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_EgRfg0hWEeKFm6BiMe_FyA" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_EgRfhEhWEeKFm6BiMe_FyA" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_EgRfhUhWEeKFm6BiMe_FyA" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_EgRfhkhWEeKFm6BiMe_FyA" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_EgRfh0hWEeKFm6BiMe_FyA" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_EgRfiEhWEeKFm6BiMe_FyA" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_EgRfiUhWEeKFm6BiMe_FyA" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_EgRfikhWEeKFm6BiMe_FyA" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_EgRfgUhWEeKFm6BiMe_FyA" x="634" y="19337"/>
+        </children>
+        <children xmi:type="umlnotation:UMLShape" xmi:id="_BjtucHB8EeKknILXOCcS7w" element="_Bjnn0HB8EeKknILXOCcS7w" fontName="Arial" fontHeight="10" showListStereotype="Text" showListVisibility="None" fillColor="13434879" transparency="0" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_BjuVgHB8EeKknILXOCcS7w" type="ImageCompartment">
+            <layoutConstraint xmi:type="notation:Size" xmi:id="_BjuVgXB8EeKknILXOCcS7w" width="1320" height="1320"/>
+          </children>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_Bju8kHB8EeKknILXOCcS7w" type="Stereotype"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_Bju8kXB8EeKknILXOCcS7w" type="Name"/>
+          <children xmi:type="notation:BasicDecorationNode" xmi:id="_BjvjoHB8EeKknILXOCcS7w" type="Parent"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_BjvjoXB8EeKknILXOCcS7w" type="AttributeCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_BjvjonB8EeKknILXOCcS7w" visible="false" type="OperationCompartment"/>
+          <children xmi:type="notation:SemanticListCompartment" xmi:id="_BjwKsHB8EeKknILXOCcS7w" visible="false" type="SignalCompartment"/>
+          <children xmi:type="umlnotation:UMLShapeCompartment" xmi:id="_BjwKsXB8EeKknILXOCcS7w" visible="false" type="StructureCompartment"/>
+          <layoutConstraint xmi:type="notation:Bounds" xmi:id="_BjtucXB8EeKknILXOCcS7w" x="16801" y="15850"/>
+        </children>
+        <element xsi:nil="true"/>
+        <edges xmi:type="umlnotation:UMLConnector" xmi:id="_XT-qDQqhEd-426xscrxYmQ" element="_420A62FD03B6418A8DDF0368" source="_XTrvWAqhEd-426xscrxYmQ" target="_XTYNCAqhEd-426xscrxYmQ" fontName="Arial" fontHeight="10" routing="Tree" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_XT-qEAqhEd-426xscrxYmQ" type="NameLabel">
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_XT-qEgqhEd-426xscrxYmQ" type="Stereotype"/>
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_XT-qEwqhEd-426xscrxYmQ" type="Name"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XT-qEQqhEd-426xscrxYmQ" y="-186"/>
+          </children>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_XT-qDwqhEd-426xscrxYmQ" points="[0, -752, -2154, 4217]$[0, -1072, -2154, 3897]$[2314, -1072, 160, 3897]$[2314, -2529, 160, 2440]"/>
+        </edges>
+        <edges xmi:type="umlnotation:UMLConnector" xmi:id="_iQ9ioQqmEd-426xscrxYmQ" element="_iQ9ioAqmEd-426xscrxYmQ" source="_f-71oQqmEd-426xscrxYmQ" target="_XTYNCAqhEd-426xscrxYmQ" fontName="Arial" fontHeight="10" routing="Tree" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_iQ9ipAqmEd-426xscrxYmQ" type="NameLabel">
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_iQ9ipgqmEd-426xscrxYmQ" type="Stereotype"/>
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_iQ9ipwqmEd-426xscrxYmQ" type="Name"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_iQ9ipQqmEd-426xscrxYmQ" y="-186"/>
+          </children>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_iQ9iowqmEd-426xscrxYmQ" points="[0, -752, 2297, 4217]$[0, -1072, 2297, 3897]$[-2137, -1072, 160, 3897]$[-2137, -2529, 160, 2440]"/>
+        </edges>
+        <edges xmi:type="umlnotation:UMLConnector" xmi:id="_74bIQOZSEeGuIoEQ4Mvu0w" element="_74MewOZSEeGuIoEQ4Mvu0w" source="_i52K0OZSEeGuIoEQ4Mvu0w" target="_XS8IMAqhEd-426xscrxYmQ" fontName="Arial" fontHeight="10" routing="Tree" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_74bvUOZSEeGuIoEQ4Mvu0w" type="NameLabel">
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_74cWYOZSEeGuIoEQ4Mvu0w" type="Stereotype"/>
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_74cWYeZSEeGuIoEQ4Mvu0w" type="Name"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_74bvUeZSEeGuIoEQ4Mvu0w" y="-186"/>
+          </children>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_74bIQeZSEeGuIoEQ4Mvu0w" points="[-7, -29, -2, 103]$[-7, -184, -2, -52]"/>
+        </edges>
+        <edges xmi:type="umlnotation:UMLConnector" xmi:id="_8Snw8OZSEeGuIoEQ4Mvu0w" element="_8SkGkOZSEeGuIoEQ4Mvu0w" source="_mAX24OZSEeGuIoEQ4Mvu0w" target="_i52K0OZSEeGuIoEQ4Mvu0w" fontName="Arial" fontHeight="10" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_8SoYAOZSEeGuIoEQ4Mvu0w" type="NameLabel">
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_8So_EOZSEeGuIoEQ4Mvu0w" type="Stereotype"/>
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_8So_EeZSEeGuIoEQ4Mvu0w" type="Name"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_8SoYAeZSEeGuIoEQ4Mvu0w" y="-186"/>
+          </children>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_8Snw8eZSEeGuIoEQ4Mvu0w" points="[-7, -29, -8, 79]$[-7, -80, -8, 28]"/>
+        </edges>
+        <edges xmi:type="umlnotation:UMLConnector" xmi:id="_661V8HB7EeKknILXOCcS7w" element="_nM3d5HB4EeKknILXOCcS7w" source="_BjtucHB8EeKknILXOCcS7w" target="_mAX24OZSEeGuIoEQ4Mvu0w" fontName="Arial" fontHeight="10" routing="Tree" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_6619AHB7EeKknILXOCcS7w" type="NameLabel">
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_662kEHB7EeKknILXOCcS7w" type="Stereotype"/>
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_662kEXB7EeKknILXOCcS7w" type="Name"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_6619AXB7EeKknILXOCcS7w" y="-186"/>
+          </children>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_661V8XB7EeKknILXOCcS7w" points="[170, -334, 3249, 8441]$[170, -6978, 3249, 1797]$[-2987, -6978, 92, 1797]$[-2987, -8023, 92, 752]"/>
+          <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_IjYPQHB8EeKknILXOCcS7w" id="(0.5030635960278893,0.09249798332885184)"/>
+        </edges>
+        <edges xmi:type="umlnotation:UMLConnector" xmi:id="_f8F_EMlFEeKk-pg0LZnieg" element="_f78OEMlFEeKk-pg0LZnieg" source="_ZdBjkHUeEeGl_7Z-4li2AA" target="_XS8IMAqhEd-426xscrxYmQ" fontName="Arial" fontHeight="10" routing="Tree" lineColor="3342489" lineWidth="1" showStereotype="Text">
+          <children xmi:type="notation:DecorationNode" xmi:id="_f8JCYMlFEeKk-pg0LZnieg" type="NameLabel">
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_f8JCYslFEeKk-pg0LZnieg" type="Stereotype"/>
+            <children xmi:type="notation:BasicDecorationNode" xmi:id="_f8JCY8lFEeKk-pg0LZnieg" type="Name"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_f8JCYclFEeKk-pg0LZnieg" y="-186"/>
+          </children>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_f8F_EclFEeKk-pg0LZnieg" points="[-49, -28, 14, 115]$[-99, -91, -36, 52]"/>
+        </edges>
+      </contents>
+    </eAnnotations>
+    <ownedComment xmi:id="_4tkeoLa1Ed-Y0_knsxZjWg" annotatedElement="_KqYgwM3ZEdyMrbJiuKueSQ">
+      <body>This package contains classes that serve as “data types” for FHIM attributes.  The FHIM data types are common, reusable structures that are often needed in healthcare applications.  For example, healthcare observations often need both a numerical value and a unit of measure, such as a weight of 150 pounds.  Rather than modeling the value and units of measure separately in the main model (i.e., weightValue=150, weightUnits=pounds), we have chosen to create a Physical Quantity data type which can hold both the value and the units so the main model would only have weight:PhysicalQuantity=150 pounds.&#xD;
+&#xD;
+The FHIM data types are based on the HL7 Version 3 data types, but are simplified so that they might be more easily resolved into implementable specifications.  Where possible, we have removed recursion from the data types, and where there are generalization relationships, the subtypes only add to the super types.&#xD;
+&#xD;
+Besides the data types in this package, the FHIM only uses the basic data types defined in UML, and the properties of the data types in this package eventually all resolve to the basic UML data types.  The FHIM modeling style requires that all FHIM attributes must be either a UML data type or a class contained in this Datatypes package.  If a property requires any other kind of type, it is modeled as an association, not as an attribute.  For example, a lab test references a Patient and a lab test code.  In UML both the patient and lab test code properties could be modeled as either an attribute or an association of the lab test.  Since Patient is not a FHIM Datatype, it is modeled as an association, but since the lab test is a code, which is a data type, it is modeled as an attribute.  This style results in models similar in structure to HL7 models.&#xD;
+&#xD;
+Note that every package in the FHIM is dependent on the FHIM Datatypes package.  The FHIM Datatypes package must not be dependent on any other package.  Indeed, the FHIM data types must all resolve to UML Primitives.</body>
+    </ownedComment>
+    <packagedElement xmi:type="uml:Class" xmi:id="_fImbAAEYEd-ZUM5xZsXWyw" name="Telecommunications">
+      <eAnnotations xmi:id="_aHrcYO55Ed-crcWiXVDZrQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_aHrcYe55Ed-crcWiXVDZrQ" key="TEL"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_O3O_IAE1Ed-ZUM5xZsXWyw" annotatedElement="_fImbAAEYEd-ZUM5xZsXWyw">
+        <body>A collection of electronic addresses at which the person or organization may be reached. This includes telephones, email addresses, etc.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_o6XQAgEYEd-ZUM5xZsXWyw" name="addressType" visibility="public" type="_xfYxMPybEd6COP7rUDIHOg">
+        <ownedComment xmi:id="_Ig9voAHwEd-VSqNkiZ4fOA" annotatedElement="_o6XQAgEYEd-ZUM5xZsXWyw">
+          <body>Indicates the kind of communications address that is contained within this class.  Examples include primaryHome, Work, etc.  Note that in HL7 V3, this concept is part of the Telecom data type (the 'use code').  This concept is made explicit in this Telecommunications class, because this is a platform-independent model.  Non V3 implementations will need other mechanisms to deal with the type.</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_o6XQAQEYEd-ZUM5xZsXWyw" name="effectiveDateRange" visibility="public" type="_420A62FD03B642387187004E">
+        <ownedComment xmi:id="_6DnAIAHtEd-VSqNkiZ4fOA" annotatedElement="_o6XQAQEYEd-ZUM5xZsXWyw">
+          <body>The time period for which the phone number or communications address is valid for the person or organization. The data type is a TimeInterval, which includes both a start date and end date, either of which may be empty.</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_f5Kh0H7qEeOYQJZKXKAJnw" name="isTextMessageEnabled" visibility="public">
+        <ownedComment xmi:id="_s-4a4H7qEeOYQJZKXKAJnw" annotatedElement="_f5Kh0H7qEeOYQJZKXKAJnw">
+          <body>Indicates whether the endpoint can receive text messages.  Used for phone numbers only.  Added for ONC S&amp;I Clinical Element Data Dictionary (CEDD).</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_mmHiAH7qEeOYQJZKXKAJnw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_mmIJEH7qEeOYQJZKXKAJnw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_o6XQAAEYEd-ZUM5xZsXWyw" name="universalResourceId" visibility="public">
+        <ownedComment xmi:id="_aXba4AHwEd-VSqNkiZ4fOA" annotatedElement="_o6XQAAEYEd-ZUM5xZsXWyw">
+          <body>Represents a telecommunications address at which the person or organization may be reached.  Note that this property is a simply a string, the formatting of which will depend on the type of communications address employed.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Enumeration" xmi:id="_xfYxMPybEd6COP7rUDIHOg" name="AddressType">
+      <ownedComment xmi:id="_ulvTAAILEd-VSqNkiZ4fOA" annotatedElement="_xfYxMPybEd6COP7rUDIHOg">
+        <body>This enumeration describes types of Addresses at which a person or organization exists or can be reached.</body>
+      </ownedComment>
+      <ownedLiteral xmi:id="_3Md4QAILEd-VSqNkiZ4fOA" name="mobileContact">
+        <ownedComment xmi:id="_5pEdkAILEd-VSqNkiZ4fOA" annotatedElement="_3Md4QAILEd-VSqNkiZ4fOA">
+          <body>A telecommunication device that moves and stays with its owner. May have characteristics of all other use codes, suitable  for urgent matters, not the first choice for routine business.</body>
+        </ownedComment>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_6vsucAILEd-VSqNkiZ4fOA" name="pager">
+        <ownedComment xmi:id="_-KSmAAILEd-VSqNkiZ4fOA" annotatedElement="_6vsucAILEd-VSqNkiZ4fOA">
+          <body>A paging device suitable to solicit a callback or to leave a very short message.</body>
+        </ownedComment>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_6ngwgFO4EeOPsNTFFieZWw" name="postal">
+        <ownedComment xmi:id="_a4qjsFO5EeOPsNTFFieZWw" annotatedElement="_6ngwgFO4EeOPsNTFFieZWw">
+          <body>Used to send mail.</body>
+        </ownedComment>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_zRNUIPybEd6COP7rUDIHOg" name="primaryHome">
+        <ownedComment xmi:id="_Tor2sAILEd-VSqNkiZ4fOA" annotatedElement="_zRNUIPybEd6COP7rUDIHOg">
+          <body>The primary home, to reach a person after business hours.</body>
+        </ownedComment>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_hmUWcAEfEd-ZUM5xZsXWyw" name="temporaryAddress">
+        <ownedComment xmi:id="_N7nH0PwREd-3ndaGus2qMA" annotatedElement="_hmUWcAEfEd-ZUM5xZsXWyw">
+          <body>The temporary address where a person resides.  An address that is different from the permanent address, but at which the person is residing for a limited, defined period of time.  Note that for military personnel, this address may represent a location at which the person is temporarily assigned or deployed.</body>
+        </ownedComment>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_fh3n4AEeEd-ZUM5xZsXWyw" name="vacationHome">
+        <ownedComment xmi:id="_bBLuQAILEd-VSqNkiZ4fOA" annotatedElement="_fh3n4AEeEd-ZUM5xZsXWyw">
+          <body>A vacation home, to reach a person while on vacation</body>
+        </ownedComment>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_hWVScAILEd-VSqNkiZ4fOA" name="workPlace">
+        <ownedComment xmi:id="_meAW4AILEd-VSqNkiZ4fOA" annotatedElement="_hWVScAILEd-VSqNkiZ4fOA">
+          <body>An office address. First choice for business related contacts during business hours.</body>
+        </ownedComment>
+      </ownedLiteral>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B6418A46B702C7" name="BirthAddress">
+      <eAnnotations xmi:id="_O0Oxo-LiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_O0OxpOLiEduGJrQyRGTO1A" key="AD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_pMqpwPwHEd-3ndaGus2qMA" annotatedElement="_420A62FD03B6418A46B702C7">
+        <body>A simplified version of a Postal Address which contains only a city, state, and country, all of which are optional. This is used to record a person's place of birth, used for identificaton and statistical purposes.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B6418A471F00B4" name="city" visibility="public">
+        <eAnnotations xmi:id="_O0FApOLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O0FAouLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6418A471F00B4">
+          <body>An Address Part (ADXP) that contains the name of the city, town, village, or other community or delivery center.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_0vWAMO0IEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6418A471F00B4">
+          <body>&quot;The name of the city, town, village, or other community or delivery center.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSqeLjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSquLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B6418A473E011D" name="state" visibility="public">
+        <eAnnotations xmi:id="_O0FAqeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O0FAp-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6418A473E011D">
+          <body>An Address Part (ADXP) that contains a sub-unit of a state or province. A sub-unit of a country with limited sovereignty in a federally organized country.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_EuBDYO0JEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6418A473E011D">
+          <body>An Address Part (ADXP) that contains the state or province. A state or provinces is a sub-unit of a country with limited sovereignty in a federally organized country.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSq-LjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSrOLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B6418A475A0218" name="country" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_O0OxoeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O0FArOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6418A475A0218">
+          <body>An Address Part (ADXP) that contains the Country of the address.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_4LNqIO0IEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6418A475A0218">
+          <body>A state or nation</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSreLjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSruLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_mZFS8ERREdyvWauSJSvkeQ" name="Id">
+      <eAnnotations xmi:id="_r_mPgERREdyvWauSJSvkeQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_Zc44sNYTEd62cosTNS-_lw" key="II"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_usiO8PwLEd-3ndaGus2qMA" annotatedElement="_mZFS8ERREdyvWauSJSvkeQ">
+        <body>An identifier that uniquely identifies a thing or object.  This *abstract* data type represents a &quot;identifier&quot; - some series of letters or numbers which uniquely identifies something.  In practice, this data type will be substituted with specific &quot;flavors&quot; of the Id data type for use in particular standards-based payloads.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_9cNIYPwLEd-3ndaGus2qMA" name="identifier">
+        <ownedComment xmi:id="_9cNIYfwLEd-3ndaGus2qMA" annotatedElement="_9cNIYPwLEd-3ndaGus2qMA">
+          <body>This is a placeholder for the &quot;entity identifier,&quot; which is usually defined to be unique within the series of identifiers created by the &quot;assigning authority&quot;.  Note that this property will be replaced by some other concept or group of concepts when this abstract class is replaced by a specific class for a given target platform.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_9cNIY_wLEd-3ndaGus2qMA"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_9cNIYvwLEd-3ndaGus2qMA" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_OyHbIFldEeCyw5g2lQh-Ug" name="idType" visibility="public">
+        <ownedComment xmi:id="_H12GYFl6EeCH--YpPiEryw" annotatedElement="_OyHbIFldEeCyw5g2lQh-Ug">
+          <body>Indicates what kind of identifier is being represented.  For example, the idType might be represent a Driver's License, in which case the assigning Authority might be the Virginia Department of Motor Vehicles.  Note that: a) this information can (and probably should) be also be made clear by the name and definition of the property whose data type is an Id; and b) this property might be an enumeration in the future.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Tgq08FldEeCyw5g2lQh-Ug"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Tgq08VldEeCyw5g2lQh-Ug" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_9cNIZPwLEd-3ndaGus2qMA" name="assigningAuthority">
+        <ownedComment xmi:id="_9cNIZfwLEd-3ndaGus2qMA" annotatedElement="_9cNIZPwLEd-3ndaGus2qMA">
+          <body>This is a placeholder for the &quot;assigning authority&quot;, which is a unique identifier of the system (or organization or agency or department) that creates the data.    Note that this property will be replaced by some other concept or group of concepts when this abstract class is replaced by a specific class for a given target platform.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_9cNIZ_wLEd-3ndaGus2qMA"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_9cNIZvwLEd-3ndaGus2qMA" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F630086" name="IntegerInterval">
+      <eAnnotations xmi:id="_OGe63eLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_OGe63uLiEduGJrQyRGTO1A" key="IVL_INT"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_OGe61eLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F630086">
+        <body>An interval of integer numbers stating the minimal and maximal number of repetitions of the Act.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_0p36oPwMEd-3ndaGus2qMA" annotatedElement="_420A62FD03B641886F630086">
+        <body>This data type represents an Interval, where the Low and High Limits are Integers.  An Interval is a &quot;set of consecutive values of an ordered base data type.&quot; - HL7 V3  &quot;Integer numbers are precise numbers that are results of counting and enumerating. Integer numbers are discrete, the set of integers is infinite but countable. No arbitrary limit is imposed on the range of integer numbers.&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B6424ACE840127" name="low" visibility="public">
+        <ownedComment xmi:id="_OGe62OLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6424ACE840127">
+          <body>The minimal number of repetitions of the Act.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_-7dBIO0DEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6424ACE840127">
+          <body>&quot;The low limit of the interval. The low limit SHALL NOT be positive infinity.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B6424ACE8802F0" name="high" visibility="public">
+        <ownedComment xmi:id="_OGe62-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6424ACE8802F0">
+          <body>The maximal number of repetitions of the Act.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_cXRJcO0FEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6424ACE8802F0">
+          <body>&quot;The high limit of the interval. The high limit SHALL NOT be negative infinity, and SHALL be higher than the low  limit if one exists.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_jN538CS2EdydDLPGoKyp1w"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_jODB4CS2EdydDLPGoKyp1w" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F630338" name="IntegerRatio">
+      <eAnnotations xmi:id="_OwgIOeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_1dHLQAqiEd-426xscrxYmQ" key="RTO_INT"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_OwW-TOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F630338">
+        <body>A ratio (numerator : denominator) specifying the relative quantities of the Entity playing the Role in the Entity scoping the Role, used for Roles that represent composition relationships between the scoping and playing Entities.</body>
+      </ownedComment>
+      <ownedComment xmi:id="__cLmoPwMEd-3ndaGus2qMA" annotatedElement="_420A62FD03B641886F630338">
+        <body>This data type represents an Ratio, where the Numerator and Denominator are Integers.  A Ratio is &quot;a quantity constructed as the quotient of a numerator quantity divided by a denominator quantity. Common factors in the numerator and denominator are not automatically cancelled out. The RTO data type supports titers (e.g., &quot;1:128&quot;) and other quantities produced by laboratories that truly represent ratios.&quot; - HL7 V3  &quot;Integer numbers are precise numbers that are results of counting and enumerating. Integer numbers are discrete, the set of integers is infinite but countable. No arbitrary limit is imposed on the range of integer numbers.&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B64238AA3900D0" name="numerator" visibility="public">
+        <ownedComment xmi:id="_OwgINOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B64238AA3900D0">
+          <body>The quantity that is being divided in the ratio. The default is the integer number 1</body>
+        </ownedComment>
+        <ownedComment xmi:id="_rvLWEO2eEd-YWc6j70EPjw" annotatedElement="_420A62FD03B64238AA3900D0">
+          <body>&quot;The quantity that is being divided in the ratio. The default is the integer number 1 (one).&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B64238AA3C023D" name="denominator" visibility="public">
+        <ownedComment xmi:id="_OwgIN-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B64238AA3C023D">
+          <body>The quantity that divides the numerator in the ratio. The default is the integer number 1 (one.) The denominator must not be zero.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_wY3eAO2eEd-YWc6j70EPjw" annotatedElement="_420A62FD03B64238AA3C023D">
+          <body>&quot;The quantity that devides the numerator in the ratio. The default is the integer number 1 (one). The denominator SHALL not  be zero.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B6418A8DCD02C2" name="Address">
+      <eAnnotations xmi:id="_O1bEc-LiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_O1bEdOLiEduGJrQyRGTO1A" key="AD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_PSftQBAnEd-2E9qx-lgHBg" annotatedElement="_420A62FD03B6418A8DCD02C2">
+        <body>A physical address at which the person resides or may be contacted.  7/8/10: Renamed from MailingAddress to Address.  Moved county from Person to here.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_NrTfQPyaEd6COP7rUDIHOg" name="addressType" visibility="public" type="_xfYxMPybEd6COP7rUDIHOg">
+        <ownedComment xmi:id="_-XSJ4AHvEd-VSqNkiZ4fOA" annotatedElement="_NrTfQPyaEd6COP7rUDIHOg">
+          <body>Indicates the kind of address that is contained within this class. Examples include primaryHome, Work, etc. Note that in HL7 V3, this concept is part of the Address data type (the 'use code'). This concept is made explicit in this Address class, because this is a platform-independent model - non V3 implementations will need other mechanisms to deal with the type.</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_FoSrEPyaEd6COP7rUDIHOg" name="effectiveDateRange" visibility="public" type="_420A62FD03B642387187004E">
+        <ownedComment xmi:id="_bhWtIPwDEd-3ndaGus2qMA" annotatedElement="_FoSrEPyaEd6COP7rUDIHOg">
+          <body>The time period for which the address is a valid location for the person or organization.  The data type is a TimeInterval, which includes both a start date and end date, either of which may be empty.</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203C9" name="line1" visibility="public">
+        <eAnnotations xmi:id="_O1IJheLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O1IJg-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F6203C9">
+          <body>The first line of a mailing address.  Unlike HL7, we have chosen not to break up the parts of each line.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_l1mkIPwDEd-3ndaGus2qMA" annotatedElement="_420A62FD03B641886F6203C9">
+          <body>The first line of the street address.  While this street address could be broken into several constituent parts, for the purpose of this logical model, the whole line is treated as a single concept.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSxeLjEdutr_MT9HkPyQ" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSxuLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203CD" name="line2" visibility="public">
+        <eAnnotations xmi:id="_O1IJiuLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O1IJiOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F6203CD">
+          <body>The second line of a mailing address.  Unlike HL7, we have chosen not to break up the parts of each line.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_UI8VwO0IEd-KQpEfY1umCw" annotatedElement="_420A62FD03B641886F6203CD">
+          <body>The second line of the street address.  While this street address could be broken into several constituent parts, for the purpose of this logical model, the whole line is treated as a single concept.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSx-LjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSyOLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203CE" name="line3" visibility="public">
+        <eAnnotations xmi:id="_O1IJj-LiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O1IJjeLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F6203CE">
+          <body>The third line of a mailing address.  Unlike HL7, we have chosen not to break up the parts of each line.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_XuZZgO0IEd-KQpEfY1umCw" annotatedElement="_420A62FD03B641886F6203CE">
+          <body>The first line of the street address.  While this street address could be broken into several constituent parts, for the purpose of this logical model, the whole line is treated as a single concept.  Note that the third line is rarely used.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSyeLjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSyuLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203CF" name="city" visibility="public">
+        <eAnnotations xmi:id="_O1RTceLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O1IJkuLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F6203CF">
+          <body>An Address Part (ADXP) that contains the name of the city, town, village, or other community or delivery center.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_p6UM0O0HEd-KQpEfY1umCw" annotatedElement="_420A62FD03B641886F6203CF">
+          <body>&quot;The name of the city, town, village, or other community or delivery center.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSy-LjEdutr_MT9HkPyQ" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSzOLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_ABqyEBAoEd-2E9qx-lgHBg" name="county" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <ownedComment xmi:id="_XrbkcPwDEd-3ndaGus2qMA" annotatedElement="_ABqyEBAoEd-2E9qx-lgHBg">
+          <body>A region created by territorial division for the purpose of local government.  In the United States, a county (or parish in Louisiana) is the largest administrative district within a state.  This property is used primarily for statistical and pricing information (i.e., the same service may be more expensive in an affluent section of the country than in a less-affluent portion).</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_VxP9cPwIEd-3ndaGus2qMA"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_VxP9cfwIEd-3ndaGus2qMA" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203D2" name="postalCode" visibility="public">
+        <eAnnotations xmi:id="_O1RTduLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O1RTdOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F6203D2">
+          <body>An Address Part (ADXP) that contains a postal code designating a region defined by the postal service.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_iMKY4O0IEd-KQpEfY1umCw" annotatedElement="_420A62FD03B641886F6203D2">
+          <body>A code designating a region defined by the postal service</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSzeLjEdutr_MT9HkPyQ" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSzuLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203D7" name="country" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_O1RTe-LiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O1RTeeLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F6203D7">
+          <body>An Address Part (ADXP) that contains the Country of the address.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_F4XzIO0IEd-KQpEfY1umCw" annotatedElement="_420A62FD03B641886F6203D7">
+          <body>A state or nation</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSz-LjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyyDkOLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F630160" name="MonetaryAmount">
+      <eAnnotations xmi:id="_ObWXkeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_ObWXkuLiEduGJrQyRGTO1A" key="MO"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_ObMmm-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F630160">
+        <body>Indicates the monetary amount to be transferred from the debit to the credit account.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_Qbj-cO2fEd-YWc6j70EPjw" annotatedElement="_420A62FD03B641886F630160">
+        <body>&quot;A quantity expressing an amount of money in some currency. While the monetary amount is a single kind of quantity (money)  the exchange rates between the different units are variable. This is the principle difference between PQ and MO, and the  reason why currency units are not physical units.&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B643D93D1000CD" name="currency" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <ownedComment xmi:id="_ObMmnuLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B643D93D1000CD">
+          <body>Currencies are the units in which monetary amounts are denominated in different economic regions.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_YcFfUO2fEd-YWc6j70EPjw" annotatedElement="_420A62FD03B643D93D1000CD">
+          <body>&quot;The currency unit as defined in ISO 4217&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_UOEXsDbiEdy47dq8gWemow" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_UOEXsTbiEdy47dq8gWemow" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B643D93D1000CE" name="value" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_ObMmoeLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B643D93D1000CE">
+          <body>The amount of money in some currency.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_dZa8AO2fEd-YWc6j70EPjw" annotatedElement="_420A62FD03B643D93D1000CE">
+          <body>&quot;The magnitude of the Monetary Amount in terms of currency&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_5DUcUPRMEdyLkN7_Anv_Ag" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_5DeNUPRMEdyLkN7_Anv_Ag" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_3lzSEFVyEdyaooytdRFnxQ" name="PersonName">
+      <eAnnotations xmi:id="_3lzSEVVyEdyaooytdRFnxQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_3lzSElVyEdyaooytdRFnxQ" key="PN"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_3lzSE1VyEdyaooytdRFnxQ" annotatedElement="_3lzSEFVyEdyaooytdRFnxQ">
+        <body>The name of the person.  Uses the VHIM-constrained Person Name data type.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_ry9SYPwOEd-3ndaGus2qMA" annotatedElement="_3lzSEFVyEdyaooytdRFnxQ">
+        <body>&quot;A word or term by which a person or thing is commonly and distinctively known.&quot; - Collins English Dictionary.   This data type represents a person's name.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_3lzSFFVyEdyaooytdRFnxQ" name="prefix" visibility="public" isOrdered="true" isUnique="false">
+        <eAnnotations xmi:id="_3lzSFVVyEdyaooytdRFnxQ" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_3lzSFlVyEdyaooytdRFnxQ" annotatedElement="_3lzSFFVyEdyaooytdRFnxQ">
+          <body>'A prefix has a strong association to the immediately following name part. A prefix has no implicit trailing white space (it has implicit leading white space though). Note that prefixes can be inverted' (HL7) A Person Name Prefix is usually an academic or nobility title. An Academic title includes a prefix like 'Dr.' There are still people with nobility titles (aristocrats). German 'von' is generally a nobility title, not a mere voorvoegsel. Others are 'Earl of' or 'His Majesty King of...' etc. Rarely used nowadays, but some systems do keep track of this. </body>
+        </ownedComment>
+        <ownedComment xmi:id="_XO-sAAEbEd-ZUM5xZsXWyw" annotatedElement="_3lzSFFVyEdyaooytdRFnxQ">
+          <body>&quot;Contains a set of honorific terms that typically appear before a person's name, for example Mr., Mrs., Dr., etc. Prefixes have a strong association to the immediately following name part.&quot; -  HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_3lzSGFVyEdyaooytdRFnxQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_3lzSF1VyEdyaooytdRFnxQ" value="*"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_3lzSGVVyEdyaooytdRFnxQ" name="given" visibility="public" isOrdered="true" isUnique="false">
+        <eAnnotations xmi:id="_3lzSGlVyEdyaooytdRFnxQ" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_3lzSG1VyEdyaooytdRFnxQ" annotatedElement="_3lzSGVVyEdyaooytdRFnxQ">
+          <body>'Given name (don't call it 'first name' since this given names do not always come first)' (HL7) </body>
+        </ownedComment>
+        <ownedComment xmi:id="_AVrIgPwPEd-3ndaGus2qMA" annotatedElement="_3lzSGVVyEdyaooytdRFnxQ">
+          <body>&quot;A set of names given to a person at birth, but not including the family name.  In western cultures, this property would contain the 'first' and 'middle' names.  Note that in some cultures, the given name is placed after the family name.  Note also that this property contains multiple elements, so it can handle those situations where a person has more than one 'middle' name.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_3lzSHVVyEdyaooytdRFnxQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_3lzSHFVyEdyaooytdRFnxQ" value="*"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_3lzSHlVyEdyaooytdRFnxQ" name="nickname" visibility="public">
+        <eAnnotations xmi:id="_3lzSH1VyEdyaooytdRFnxQ" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_3lzSIFVyEdyaooytdRFnxQ" annotatedElement="_3lzSHlVyEdyaooytdRFnxQ">
+          <body>'A callme name is (usually a given name) that is preferred when a person is directly addressed.' (HL7) </body>
+        </ownedComment>
+        <ownedComment xmi:id="_mNbrEO5qEd-crcWiXVDZrQ" annotatedElement="_3lzSHlVyEdyaooytdRFnxQ">
+          <body>A name added to or substituted for the proper name of a person.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_3lzSIlVyEdyaooytdRFnxQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_3lzSIVVyEdyaooytdRFnxQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_3lzSI1VyEdyaooytdRFnxQ" name="family" visibility="public">
+        <ownedComment xmi:id="_3lzSJFVyEdyaooytdRFnxQ" annotatedElement="_3lzSI1VyEdyaooytdRFnxQ">
+          <body>'Family name, this is the name that links to the genealogy' (HL7) </body>
+        </ownedComment>
+        <ownedComment xmi:id="_RIU-UBprEd-j8JC21F3W2A" annotatedElement="_3lzSI1VyEdyaooytdRFnxQ">
+          <body>&quot;The portion of a person's name that reflects the genealogy of the person.  In western cultures, this is the 'last' name.  In eastern cultures, the family name appears before the person's given name(s).  In some cultures (e.g. Eritrea) the family name of a son is the first name of his father.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_3lzSJVVyEdyaooytdRFnxQ" name="suffix" visibility="public" isOrdered="true" isUnique="false">
+        <eAnnotations xmi:id="_3lzSJlVyEdyaooytdRFnxQ" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_3lzSJ1VyEdyaooytdRFnxQ" annotatedElement="_3lzSJVVyEdyaooytdRFnxQ">
+          <body>'A suffix has a strong association to the immediately preceding name part. A prefix has no implicit leading white space (it has implicit trailing white space though). Suffices can not be inverted' (HL7) </body>
+        </ownedComment>
+        <ownedComment xmi:id="_b_6L4BprEd-j8JC21F3W2A" annotatedElement="_3lzSJVVyEdyaooytdRFnxQ">
+          <body>&quot;Contains a list of honorific terms that typically appear after a person's name, for example Jr., Sr., MD, RN, etc. Prefixes have a strong association to the immediately following name part.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_3lzSKVVyEdyaooytdRFnxQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_3lzSKFVyEdyaooytdRFnxQ" value="*"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_KU2sAAEoEd-ZUM5xZsXWyw" name="initials" visibility="public">
+        <ownedComment xmi:id="_p9QoQO5pEd-crcWiXVDZrQ" annotatedElement="_KU2sAAEoEd-ZUM5xZsXWyw">
+          <body>The first letter of each part of a proper name. This property stores the initials of a person's name, which is used  in research studies to identify the patient without divulging the person's entire name.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_OhhgwAEoEd-ZUM5xZsXWyw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_OhhgwQEoEd-ZUM5xZsXWyw" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F630221" name="PhysicalQuantity">
+      <eAnnotations xmi:id="_Oy4t4OLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_Oy4t4eLiEduGJrQyRGTO1A" key="PQ"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_Oy4t1uLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F630221">
+        <body>The amount that was or is to be supplied</body>
+      </ownedComment>
+      <ownedComment xmi:id="_0QY6cO2kEd-YWc6j70EPjw" annotatedElement="_420A62FD03B641886F630221">
+        <body>&quot;A dimensioned quantity expressing the result of measuring&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B6424AC40901DE" name="value" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_Oy4t2eLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6424AC40901DE">
+          <body>The magnitude of the quantity measured in terms of the unit.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_3suecO2kEd-YWc6j70EPjw" annotatedElement="_420A62FD03B6424AC40901DE">
+          <body>&quot;The magnitude of the quantity measured in terms of the unit&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_4PBRkPRMEdyLkN7_Anv_Ag" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_4PBRkfRMEdyLkN7_Anv_Ag" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B64303793A0385" name="unit" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_Oy4t3uLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_Oy4t3OLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B64303793A0385">
+          <body>The unit of measure specified in the Unified Code for Units of Measure (UCUM) [].</body>
+        </ownedComment>
+        <ownedComment xmi:id="__NtjoO2kEd-YWc6j70EPjw" annotatedElement="_420A62FD03B64303793A0385">
+          <body>&quot;The unit of measure specified in the Unified Code for Units of Measure (UCUM). The default unit is 1.&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyoSneLjEdutr_MT9HkPyQ" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyoSnuLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F63021A" name="PhysicalQuantityInterval">
+      <eAnnotations xmi:id="_OZ2ix-LiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_OZ2iyOLiEduGJrQyRGTO1A" key="IVL_PQ"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_OZtY4OLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F63021A">
+        <body>The amount of the therapeutic agent or other substance given at one administration event.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_y8ce4O5rEd-crcWiXVDZrQ" annotatedElement="_420A62FD03B641886F63021A">
+        <body>This data type represents an Interval, where the Low and High Limits are Physical Quantities.  An Interval is a &quot;set of consecutive values of an ordered base data type.&quot; - HL7 V3  A Physical Quantity is &quot;a dimensioned quantity expressing the result of measuring&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_gaSH0EzZEdyZ7YHHi9KCRg" name="lowValue" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_gaSH0UzZEdyZ7YHHi9KCRg" annotatedElement="_gaSH0EzZEdyZ7YHHi9KCRg">
+          <body>The magnitude of the quantity measured in terms of the unit.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_ayHyIPwPEd-3ndaGus2qMA" annotatedElement="_gaSH0EzZEdyZ7YHHi9KCRg">
+          <body>&quot;The low limit of the interval.  The low limit SHALL NOT be positive infinity.&quot; - HL7 V3  This property contains the numeric portion (i.e., not including any units of measure) of the low limit.</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_9uj1cMzJEeCMF_3VBil7Gw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_9uj1cczJEeCMF_3VBil7Gw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_gaSH0kzZEdyZ7YHHi9KCRg" name="lowUnit" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_gaSH00zZEdyZ7YHHi9KCRg" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_gaSH1EzZEdyZ7YHHi9KCRg" annotatedElement="_gaSH0kzZEdyZ7YHHi9KCRg">
+          <body>The unit of measure specified in the Unified Code for Units of Measure (UCUM) [].</body>
+        </ownedComment>
+        <ownedComment xmi:id="_MOb6IO0EEd-KQpEfY1umCw" annotatedElement="_gaSH0kzZEdyZ7YHHi9KCRg">
+          <body>&quot;The low limit of the interval.  The low limit SHALL NOT be positive infinity.&quot; - HL7 V3.  This property containsthe Unit of Measure of the low limit.</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_gaSH1kzZEdyZ7YHHi9KCRg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_gaSH1UzZEdyZ7YHHi9KCRg" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_gab40EzZEdyZ7YHHi9KCRg" name="highValue" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_gab40UzZEdyZ7YHHi9KCRg" annotatedElement="_gab40EzZEdyZ7YHHi9KCRg">
+          <body>The magnitude of the quantity measured in terms of the unit.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_TM9-oPwPEd-3ndaGus2qMA" annotatedElement="_gab40EzZEdyZ7YHHi9KCRg">
+          <body>&quot;The high limit of the interval.  The high limit SHALL NOT be negative infinity, and SHALL be higher than the low limit if one exists.&quot; - HL7 V3.  This property contains the numeric portion (i.e., not including any units of measure) of the high limit.</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="__VGVcMzJEeCMF_3VBil7Gw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="__VGVcczJEeCMF_3VBil7Gw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_gab40kzZEdyZ7YHHi9KCRg" name="highUnit" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_gab400zZEdyZ7YHHi9KCRg" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_gab41EzZEdyZ7YHHi9KCRg" annotatedElement="_gab40kzZEdyZ7YHHi9KCRg">
+          <body>The unit of measure specified in the Unified Code for Units of Measure (UCUM) [].</body>
+        </ownedComment>
+        <ownedComment xmi:id="_f2wvIO0FEd-KQpEfY1umCw" annotatedElement="_gab40kzZEdyZ7YHHi9KCRg">
+          <body>&quot;The high limit of the interval.  The high limit SHALL NOT be negative infinity, and SHALL be higher than the low limit if one exists.&quot; - HL7 V3.  This property contains the Unit of Measure of the high limit.</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_gab41kzZEdyZ7YHHi9KCRg"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_gab41UzZEdyZ7YHHi9KCRg" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B64244824602F5" name="PointInTime">
+      <eAnnotations xmi:id="_O5vjyeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_O5vjyuLiEduGJrQyRGTO1A" key="TS"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_O5vjxOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B64244824602F5">
+        <body>A quantity specifying a point on the axis of natural time. A point in time is most often represented as a calendar expression.  Semantically, however, time is independent from calendars and best described by its relationship to elapsed time (measured as a physical quantity in the dimension of time.) A point in time plus an elapsed time yields another point in time. Inversely, a point in time minus another point in time yields an elapsed time.  As nobody knows when time began, a point in time is conceptualized as the amount of time that has elapsed from some arbitrary zero-point, called an epoch. Because there is no absolute zero-point on the time axis natural time is a difference-scale quantity, where only differences are defined but no ratios. (For example, no point in time is - absolutely speaking - 'twice as late' as another point in time.)  Given some arbitrary zero-point, one can express any point in time as an elapsed time measured from that offset. Such an arbitrary zero-point is called an epoch. This epoch-offset form is used as a semantic representation here, without implying that any system would have to implement the TS data type in that way. Systems that do not need to compute distances between points in time will not need any other representation than a calendar expression literal </body>
+      </ownedComment>
+      <ownedComment xmi:id="_nJTKMPwPEd-3ndaGus2qMA" annotatedElement="_420A62FD03B64244824602F5">
+        <body>A data type containing date/time information.  This data type is a placeholder, as various platforms have differing built-in date/time datatypes.  It is anticipated that this data type will be replaced by a different data type when transforming to a particular implementation platform.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B643D930510248" name="literal" visibility="public">
+        <ownedComment xmi:id="_O5vjx-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B643D930510248">
+          <body>For the default Gregorian calendar the calendar expression literals of this specification conform to the constrained ISO 8601 that is defined in ISO 8824 (ASN.1) under clause 32 (generalized time) and to the HL7 version 2 TS data format.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_rsclQPwPEd-3ndaGus2qMA" annotatedElement="_420A62FD03B643D930510248">
+          <body>&quot;TS literals are simple calendar expressions... [which] conform to the constrained ISO 8601... western calendar expressions  begin with the 4-digit year; followed by the 2-digit month of the year; followed by the 2-digit day of the month; followed  by the 2-digit hour of the day (beginning with zero); and so forth. For example, '200004010315' is a valid expression for  April 1, 2000, 3:15 am.  A calendar expression can be of variable precision, omitting parts from the right.  For example, '20000401' is precise  only to the day of the month.  The least defined calendar period (i.e. the second) may be written as a REAL, with the number of integer digits specified,  followed by the decimal point and any number of fractional digits. For example, '20000401031520.34' means April 1, 2000,  3:15 and 20.34 seconds.  When other calendars are used in the future, a prefix 'GREG:' can be placed before the western (Gregorian) calendar  expression to disambiguate from other calendars. Each calendar shall have its own prefix. However, the western calendar is  the default if no prefix is present.  In the modern Gregorian calendar (and all calendars where time of day is based on UTC), the calendar expression may contain  a time zone suffix. The time zone suffix begins with a plus (+) or minus (-) followed by digits for the hour and, for non  UTC times, minute cycles. UTC is designated as offset '+00' or '-00'; the ISO 8601 and ISO 8824 suffix 'Z' for UTC is not  permitted.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_8f20oPRMEdyLkN7_Anv_Ag" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_8f20ofRMEdyLkN7_Anv_Ag" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F63021C" name="RateQuantity">
+      <eAnnotations xmi:id="_OaATyuLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_K1avEO6AEd-crcWiXVDZrQ" key="RTO"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_OZ2iyuLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B641886F63021C">
+        <body>Identifies the speed with which the substance is introduced into the subject. Expressed as a physical (extensive) quantity over elapsed time (e.g., examples are 100 mL/h, 1 g/d, 40 mmol/h, etc.)</body>
+      </ownedComment>
+      <ownedComment xmi:id="_7HQ0IO5_Ed-crcWiXVDZrQ" annotatedElement="_420A62FD03B641886F63021C">
+        <body>Rate: &quot;A certain quantity or amount of one thing considered in relation to a unit of another thing and used as a standard  or measure: at the rate of 60 miles an hour.&quot; - Dictionary.com  This class represents a ratio of some Physical Quantity over a period of time.  This class is structurally similar to  other Ratio classes (e.g., IntegerRatio), except the denominator is by definition a TimeQuantity.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_wFoSsO5_Ed-crcWiXVDZrQ" name="numerator" visibility="public" type="_420A62FD03B641886F630221">
+        <eAnnotations xmi:id="_JeFvwO6AEd-crcWiXVDZrQ" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_wFoSse5_Ed-crcWiXVDZrQ" annotatedElement="_wFoSsO5_Ed-crcWiXVDZrQ">
+          <body>The quantity that is being divided in the ratio. The default is the integer number 1</body>
+        </ownedComment>
+        <ownedComment xmi:id="_wFoSsu5_Ed-crcWiXVDZrQ" annotatedElement="_wFoSsO5_Ed-crcWiXVDZrQ">
+          <body>&quot;The quantity that is being divided in the ratio. The default is the integer number 1 (one).&quot; - HL7 V3</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_tQIFM-5_Ed-crcWiXVDZrQ" name="denominator" visibility="public" type="_420A62FD03B64239FAA800D9">
+        <ownedComment xmi:id="_tQIFNO5_Ed-crcWiXVDZrQ" annotatedElement="_tQIFM-5_Ed-crcWiXVDZrQ">
+          <body>The quantity that divides the numerator in the ratio. The default is the integer number 1 (one.) The denominator must not be zero.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_xz32gPwPEd-3ndaGus2qMA" annotatedElement="_tQIFM-5_Ed-crcWiXVDZrQ">
+          <body>&quot;The quantity that divides the numerator in the ratio. The denominator SHALL not be zero.&quot; - HL7 V3  This property is by definition a period of time, with the unit almost always one.  For example, one hour, one minute, etc.</body>
+        </ownedComment>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B642387187004E" name="TimeInterval">
+      <eAnnotations xmi:id="_O55U0OLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_O55U0eLiEduGJrQyRGTO1A" key="IVL_TS"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_O5vjzOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B642387187004E">
+        <body>An interval of time specified as an interval of points in time - TS.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_jZ7r4O5uEd-crcWiXVDZrQ" annotatedElement="_420A62FD03B642387187004E">
+        <body>This data type represents an Interval, where the Low and High Limits are Points In Time.  An Interval is a &quot;set of consecutive values of an ordered base data type.&quot; - HL7 V3  A PointInTime is &quot;a quantity specifying a point on the axis of natural time. A point in time is most often represented as a  calendar expression.&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B6423871C20233" name="low" visibility="public" type="_420A62FD03B64244824602F5">
+        <eAnnotations xmi:id="_O55UxOLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O55UwuLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6423871C20233">
+          <body>This is the low limit of the interval.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_xq-NEO0EEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6423871C20233">
+          <body>&quot;The low limit of the interval.  The low limit SHALL NOT be positive infinity.&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ey7NouLjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ey7No-LjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B6423871C60030" name="high" visibility="public" type="_420A62FD03B64244824602F5">
+        <eAnnotations xmi:id="_O55UyeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O55Ux-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6423871C60030">
+          <body>This is the high limit of the interval.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_fIRRcO0FEd-KQpEfY1umCw" annotatedElement="_420A62FD03B6423871C60030">
+          <body>&quot;The high limit of the interval.  The high limit SHALL NOT be negative infinity, and SHALL be higher than the low limit if one exists.&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ey7NpOLjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ey7NpeLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B6424ACC670093" name="width" visibility="public" type="_420A62FD03B64239FAA800D9">
+        <eAnnotations xmi:id="_O55UzuLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O55UzOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B6424ACC670093">
+          <body>The difference between high and low boundary. The purpose of distinguishing a width property is to handle all cases of incomplete information symmetrically. In any interval representation only two of the three properties high, low, and width need to be stated and the third can be derived.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_fe-GUPwQEd-3ndaGus2qMA" annotatedElement="_420A62FD03B6424ACC670093">
+          <body>&quot;The difference between HIGH and LOW boundary. The purpose of distinguishing width is to handle all cases of incomplete information symmetrically. In any IVL representation only two of the three properties HIGH, LOW, and width need to be stated: the third can be derived.  When both boundaries are known, width can be derived as HIGH minus LOW. When one boundary and width is known, the other boundary is also known. When no boundary is known, width may still be known. For example, one knows that an activity takes about 30 minutes, but one may not yet know when that activity is started.&quot; - HL7 V3</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ey7NpuLjEdutr_MT9HkPyQ"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ey7Np-LjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B64239FAA800D9" name="TimeQuantity">
+      <eAnnotations xmi:id="_O6CeuuLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_O6Ceu-LiEduGJrQyRGTO1A" key="PQ"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_O6CesOLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B64239FAA800D9">
+        <body>A length of time specified as a Physical Quantity, e.g., 5 minutes, 2.5 hours.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_j-QVEPwQEd-3ndaGus2qMA" annotatedElement="_420A62FD03B64239FAA800D9">
+        <body>This class represents an amount of time, such as 10 minutes, 3.2 seconds, etc. This class is structurally identical to a Physical Quantity, although the units of measure are by definition time units (e.g., hours), rather than physical units (e.g., kilograms).</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_420A62FD03B64239FABE01AD" name="value" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_O6Ces-LiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B64239FABE01AD">
+          <body>Value of the number of time units</body>
+        </ownedComment>
+        <ownedComment xmi:id="_pbkSUPwQEd-3ndaGus2qMA" annotatedElement="_420A62FD03B64239FABE01AD">
+          <body>&quot;The magnitude of the quantity measured in terms of the unit&quot; - HL7 V3</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_420A62FD03B643037E010077" name="unit" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_O6CeuOLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_O6CetuLiEduGJrQyRGTO1A" annotatedElement="_420A62FD03B643037E010077">
+          <body>The unit of measure specified in the Unified Code for Units of Measure (UCUM).</body>
+        </ownedComment>
+        <ownedComment xmi:id="_navDAPwQEd-3ndaGus2qMA" annotatedElement="_420A62FD03B643037E010077">
+          <body>&quot;The unit of measure specified in the Unified Code for Units of Measure (UCUM).&quot; - HL7 V3  The units of measure used by this class are limited to those measuring time (e.g., minutes, hours, years, etc.)</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ey7NqOLjEdutr_MT9HkPyQ" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_ey7NqeLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_420A62FD03B641886F6203C7" name="UsMailingAddress">
+      <eAnnotations xmi:id="_KPgZgCTeEdy0d_IHH17lcA" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_KPgZgSTeEdy0d_IHH17lcA" key="AD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_2QnoQPwHEd-3ndaGus2qMA" annotatedElement="_420A62FD03B641886F6203C7">
+        <body>A specialization of MailingAddress that is used for U.S. addresses.  Note that the state property may only contain a code for a U.S. State, territory, or APO.</body>
+      </ownedComment>
+      <generalization xmi:id="_420A62FD03B6418A8DDF0368" general="_420A62FD03B6418A8DCD02C2"/>
+      <ownedAttribute xmi:id="_420A62FD03B641886F6203D1" name="state" visibility="public" type="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <eAnnotations xmi:id="_O2nXQeLiEduGJrQyRGTO1A" source="http://www.eclipse.org/uml2/2.0.0/UML"/>
+        <ownedComment xmi:id="_zJkXwPwHEd-3ndaGus2qMA" annotatedElement="_420A62FD03B641886F6203D1">
+          <body>An Address Part (ADXP) that contains the state or province. A state or provinces is a sub-unit of a country with limited sovereignty in a federally organized country.&#xD;
+The State code is defined in the USPS Publication 28.  Note that while technically, each state &quot;code&quot; should be an Id, the enumeration of states has historically treated as a code.</body>
+        </ownedComment>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_eyyDqeLjEdutr_MT9HkPyQ" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_eyyDquLjEdutr_MT9HkPyQ" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_GmKqYGAfEd6a0qoC8Dh7hA" name="Code">
+      <eAnnotations xmi:id="_YUcKoLyKEeGK2djLWlLFew" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_u9IWgOZSEeGuIoEQ4Mvu0w" key="CS"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_DcLDkPwIEd-3ndaGus2qMA" annotatedElement="_GmKqYGAfEd6a0qoC8Dh7hA">
+        <body>&quot;A word, letter, number, or other symbol used in a code system to mark, represent, or identify something: The code on the label shows the date of manufacture.&quot; - Dictionary.com  This *abstract* data type represents a &quot;coded element&quot; - some series of letters or numbers which can be &quot;looked up&quot; in a code system or value set.  In practice, this data type will be substituted with specific &quot;flavors&quot; of the code data type for use in particular standards-based payloads.</body>
+      </ownedComment>
+      <generalization xmi:id="_lY5xkKRDEeGrsN1DjD6wSA" general="_hTVDUKRDEeGrsN1DjD6wSA"/>
+      <ownedAttribute xmi:id="_AmhAIAewEeCPOdVNW49Akw" name="code" visibility="public">
+        <ownedComment xmi:id="_AmhAIQewEeCPOdVNW49Akw" annotatedElement="_AmhAIAewEeCPOdVNW49Akw">
+          <body>This is a placeholder for the &quot;code&quot;, which is a unique identifier of an entry in a coding system. Note that this property will be replaced by some other concept or group of concepts when this abstract class is replaced by a specific class for a given target platform.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_AmhAIwewEeCPOdVNW49Akw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_AmhAIgewEeCPOdVNW49Akw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_AmiOQAewEeCPOdVNW49Akw" name="displayText">
+        <ownedComment xmi:id="_Ami1UAewEeCPOdVNW49Akw" annotatedElement="_AmiOQAewEeCPOdVNW49Akw">
+          <body>This is a placeholder for the &quot;display text&quot; or &quot;designation&quot;, which is the human-readable string representing the concept. Note that this property will be replaced by some other concept or group of concepts when this abstract class is replaced by a specific class for a given target platform.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Ami1UgewEeCPOdVNW49Akw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Ami1UQewEeCPOdVNW49Akw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_Ami1UwewEeCPOdVNW49Akw" name="codeSystem">
+        <ownedComment xmi:id="_Ami1VAewEeCPOdVNW49Akw" annotatedElement="_Ami1UwewEeCPOdVNW49Akw">
+          <body>This is a placeholder for the &quot;coding system&quot;, which is a identifies the coding scheme or coding system of which the code is a member. Note that this property will be replaced by some other concept or group of concepts when this abstract class is replaced by a specific class for a given target platform.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_Ami1VgewEeCPOdVNW49Akw"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_Ami1VQewEeCPOdVNW49Akw" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_o-VSUFx8EeCsbYJDFyCu_A" name="codeSystemVersion">
+        <ownedComment xmi:id="_o-VSUVx8EeCsbYJDFyCu_A" annotatedElement="_o-VSUFx8EeCsbYJDFyCu_A">
+          <body>This is a placeholder for the &quot;coding system version&quot;, which is identifies the version coding scheme or coding system of which the code is a member. Note that this property will be replaced by some other concept or group of concepts when this abstract class is replaced by a specific class for a given target platform.  This version number identifies the possible members of a coding system as of a particular time.  If a coding system isn't formally versioned, such as NDC, the date on which the coding system was published could be used here.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_o-VSU1x8EeCsbYJDFyCu_A"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_o-VSUlx8EeCsbYJDFyCu_A" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_N-BAoNYeEd62cosTNS-_lw" name="Real">
+      <eAnnotations xmi:id="_ysrrAAqiEd-426xscrxYmQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_ysrrAQqiEd-426xscrxYmQ" key="REAL"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_4W9wEPwPEd-3ndaGus2qMA" annotatedElement="_N-BAoNYeEd62cosTNS-_lw">
+        <body>&quot;A scalar magnitude. Typically used whenever quantities are measured, estimated, or computed from other real numbers. The typical representation is decimal, where the number of significant decimal digits is known as the precision.&quot; - HL7 V3  A data type containing non-whole numbers.  This data type is a placeholder, as various platforms have differing built-in floating-point datatypes.  It is anticipated that this data type will be replaced by a different data type when transforming to a particular implementation platform.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_aZHukAqkEd-426xscrxYmQ" name="literal" visibility="public">
+        <ownedComment xmi:id="_lWlsQAqlEd-426xscrxYmQ" annotatedElement="_aZHukAqkEd-426xscrxYmQ">
+          <body>This is a placeholder for an actual data type that will be substituted via transformation to a platform-specific datatype.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Enumeration" xmi:id="_cJEi4AqcEd-426xscrxYmQ" name="NullFlavor">
+      <ownedComment xmi:id="_ojb2AO2iEd-YWc6j70EPjw" annotatedElement="_cJEi4AqcEd-426xscrxYmQ">
+        <body>This enumeration defines the set of possible &quot;null-flavors&quot;, which are used to communicate why a data type value is empty  when otherwise it should not be empty.  Null Flavor: &quot;If a value is an exceptional value (NULL-value), this specifies in what way and why proper information is  missing.&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedLiteral xmi:id="_Ax7rQAqfEd-426xscrxYmQ" name="AskedButUnknown">
+        <ownedComment xmi:id="_r2KAcO2hEd-YWc6j70EPjw" annotatedElement="_Ax7rQAqfEd-426xscrxYmQ">
+          <body>&quot;Information was sought but not found (e.g., patient was asked but didn't know)&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_DAYf0AqfEd-426xscrxYmQ">
+          <body>ASKU</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_6or1EAqeEd-426xscrxYmQ" name="Derived">
+        <ownedComment xmi:id="_Tz3UoPwREd-3ndaGus2qMA" annotatedElement="_6or1EAqeEd-426xscrxYmQ">
+          <body>&quot;An actual value may exist, but it must be derived from the provided information (usually an EXPR generic data type extension will be used to convey the derivation expression&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_8cxB0AqeEd-426xscrxYmQ">
+          <body>DER</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_bzBvgAqeEd-426xscrxYmQ" name="Invalid">
+        <ownedComment xmi:id="_xSHIQO2gEd-YWc6j70EPjw" annotatedElement="_bzBvgAqeEd-426xscrxYmQ">
+          <body>&quot;The value as represented in the instance is not a member of the set of permitted data values in the constrained value  domain of a variable.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_eTN0UAqeEd-426xscrxYmQ">
+          <body>INV</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_WYwpwAqfEd-426xscrxYmQ" name="Masked">
+        <ownedComment xmi:id="_Z1dbIO2hEd-YWc6j70EPjw" annotatedElement="_WYwpwAqfEd-426xscrxYmQ">
+          <body>&quot;There is information on this item available but it has not been provided by the sender due to security, privacy or other  reasons. There may be an alternate mechanism for gaining access to this information.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_Yd040AqfEd-426xscrxYmQ">
+          <body>MSK</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_oHACkAqeEd-426xscrxYmQ" name="NegativeInfinity">
+        <ownedComment xmi:id="_JQGycO2hEd-YWc6j70EPjw" annotatedElement="_oHACkAqeEd-426xscrxYmQ">
+          <body>&quot;Negative infinity of numbers.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_rKzx0AqeEd-426xscrxYmQ">
+          <body>NINF</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_Xo5RYAqeEd-426xscrxYmQ" name="NoInformation">
+        <ownedComment xmi:id="_Glfw4O2iEd-YWc6j70EPjw" annotatedElement="_Xo5RYAqeEd-426xscrxYmQ">
+          <body>&quot;The value is exceptional (missing, omitted, incomplete, improper). No information as to the reason for being an  exceptional value is provided. This is the most general exceptional value. It is also the default exceptional value.&quot; - HL7  V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_akzB0AqeEd-426xscrxYmQ">
+          <body>NI</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_Z8TB8AqfEd-426xscrxYmQ" name="NotApplicable">
+        <ownedComment xmi:id="_gQ-GAO2hEd-YWc6j70EPjw" annotatedElement="_Z8TB8AqfEd-426xscrxYmQ">
+          <body>&quot;Known to have no proper value (e.g., last menstrual period for a male).&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_c7CD8AqfEd-426xscrxYmQ">
+          <body>NA</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_MMr3UAqfEd-426xscrxYmQ" name="NotAsked">
+        <ownedComment xmi:id="_2UrNwO2hEd-YWc6j70EPjw" annotatedElement="_MMr3UAqfEd-426xscrxYmQ">
+          <body>&quot;This information has not been sought (e.g., patient was not asked)&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_N5diMAqfEd-426xscrxYmQ">
+          <body>NASK</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_tTANYAqeEd-426xscrxYmQ" name="PositiveInfinity">
+        <ownedComment xmi:id="_PszwIO2hEd-YWc6j70EPjw" annotatedElement="_tTANYAqeEd-426xscrxYmQ">
+          <body>&quot;Positive infinity of numbers.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_wHwM8AqeEd-426xscrxYmQ">
+          <body>PINF</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_H1IoQAqfEd-426xscrxYmQ" name="SufficientQuantity">
+        <ownedComment xmi:id="__BiQMO2hEd-YWc6j70EPjw" annotatedElement="_H1IoQAqfEd-426xscrxYmQ">
+          <body>&quot;The specific quantity is not known, but is known to be non-zero and is not specified because it makes up the bulk of the  material. e.g. 'Add 10mg of ingredient X, 50mg of ingredient Y, and sufficient quantity of water to 100mL.' The null flavor  would be used to express the quantity of water.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_KEolsAqfEd-426xscrxYmQ">
+          <body>QS</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_EIglgAqfEd-426xscrxYmQ" name="TemporarilyUnavailable">
+        <ownedComment xmi:id="_xnHScO2hEd-YWc6j70EPjw" annotatedElement="_EIglgAqfEd-426xscrxYmQ">
+          <body>&quot;Information is not available at this time but it is expected that it will be available later.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_GXaGAAqfEd-426xscrxYmQ">
+          <body>NAV</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_RZIHAAqfEd-426xscrxYmQ" name="Trace">
+        <ownedComment xmi:id="_8nG1IO2hEd-YWc6j70EPjw" annotatedElement="_RZIHAAqfEd-426xscrxYmQ">
+          <body>&quot;The content is greater than zero, but too small to be quantified.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_TJVgYAqfEd-426xscrxYmQ">
+          <body>TRC</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_xgapAAqeEd-426xscrxYmQ" name="Unencoded">
+        <ownedComment xmi:id="_To05wO2hEd-YWc6j70EPjw" annotatedElement="_xgapAAqeEd-426xscrxYmQ">
+          <body>&quot;The actual value has not yet been encoded within the approved valueset for the domain.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="_zEjVQAqeEd-426xscrxYmQ">
+          <body>UNC</body>
+        </specification>
+      </ownedLiteral>
+      <ownedLiteral xmi:id="_9aToIAqeEd-426xscrxYmQ" name="Unknown">
+        <ownedComment xmi:id="_nnF_AO2hEd-YWc6j70EPjw" annotatedElement="_9aToIAqeEd-426xscrxYmQ">
+          <body>&quot;A proper value is applicable, but not known.&quot; - HL7 V3</body>
+        </ownedComment>
+        <specification xmi:type="uml:OpaqueExpression" xmi:id="__NWTEAqeEd-426xscrxYmQ">
+          <body>UNK</body>
+        </specification>
+      </ownedLiteral>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_f-71oAqmEd-426xscrxYmQ" name="NonUsMailingAddress">
+      <eAnnotations xmi:id="_nzJ_4AqmEd-426xscrxYmQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_nzJ_4QqmEd-426xscrxYmQ" key="AD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_3aWHQO2fEd-YWc6j70EPjw" annotatedElement="_f-71oAqmEd-426xscrxYmQ">
+        <body>A specialization of Address for non-US postal addresses. Note that the Address class does not have a State or  Province attribute - the US Mailing Address includes a code for the State, whereas the Non-US Mailing address merely has a  string for the &quot;jurisdiction&quot;, which would have the state or province as needed by that country's postal designation  conventions.</body>
+      </ownedComment>
+      <generalization xmi:id="_iQ9ioAqmEd-426xscrxYmQ" general="_420A62FD03B6418A8DCD02C2"/>
+      <ownedAttribute xmi:id="_mK9QUIrJEd-W_sKBWcwIbA" name="jurisdiction" visibility="public">
+        <ownedComment xmi:id="_HPCvEO2gEd-YWc6j70EPjw" annotatedElement="_mK9QUIrJEd-W_sKBWcwIbA">
+          <body>This property is a string for the &quot;jurisdiction&quot;, which would have the state or province as needed by the country's postal  designation conventions. In some cases, this property will be blank, and the jurisdiction would be part of one of the  street address lines.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_r_1eEBvxEd-afqIGzWhetA" name="Any">
+      <eAnnotations xmi:id="_uBoCUO55Ed-crcWiXVDZrQ" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_uBoCUe55Ed-crcWiXVDZrQ" key="ANY"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_lgHfgPwHEd-3ndaGus2qMA" annotatedElement="_r_1eEBvxEd-afqIGzWhetA">
+        <body>This *abstract* class is used to represent a data type that is not known at the logical model level, but rather will be substituted with a (set of) real data type(s) when transformed to a given platform.</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_2xsJQM_6Ed-YeMSrwW6svA" name="PhysicalQuantityRatio">
+      <eAnnotations xmi:id="_2xsJQc_6Ed-YeMSrwW6svA" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_AZLA4M_7Ed-YeMSrwW6svA" key="RTO_PQ"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_2xsJQ8_6Ed-YeMSrwW6svA" annotatedElement="_2xsJQM_6Ed-YeMSrwW6svA">
+        <body>A ratio (numerator : denominator) specifying the relative quantities of the Entity playing the Role in the Entity scoping the Role, used for Roles that represent composition relationships between the scoping and playing Entities.</body>
+      </ownedComment>
+      <ownedComment xmi:id="_Hmr5UO5sEd-crcWiXVDZrQ" annotatedElement="_2xsJQM_6Ed-YeMSrwW6svA">
+        <body>This data type represents a Ratio, where the Low and High Limits are Physical Quantities.  A Ratio is &quot; A quantity constructed as the quotient of a numerator quantity divided by a denominator quantity.&quot; - HL7 V3  A Physical Quantity is &quot;a dimensioned quantity expressing the result of measuring&quot; - HL7 V3</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_2xsJRM_6Ed-YeMSrwW6svA" name="numerator" visibility="public" type="_420A62FD03B641886F630221">
+        <ownedComment xmi:id="_2xsJRc_6Ed-YeMSrwW6svA" annotatedElement="_2xsJRM_6Ed-YeMSrwW6svA">
+          <body>The quantity that is being divided in the ratio. The default is the integer number 1</body>
+        </ownedComment>
+        <ownedComment xmi:id="_i04HoPwPEd-3ndaGus2qMA" annotatedElement="_2xsJRM_6Ed-YeMSrwW6svA">
+          <body>&quot;The quantity that is being divided in the ratio. The default is the integer number 1 (one).&quot; - HL7 V3</body>
+        </ownedComment>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_2xsJRs_6Ed-YeMSrwW6svA" name="denominator" visibility="public" type="_420A62FD03B641886F630221">
+        <ownedComment xmi:id="_2xsJR8_6Ed-YeMSrwW6svA" annotatedElement="_2xsJRs_6Ed-YeMSrwW6svA">
+          <body>The quantity that divides the numerator in the ratio. The default is the integer number 1 (one.) The denominator must not be zero.</body>
+        </ownedComment>
+        <ownedComment xmi:id="_gxNmwPwPEd-3ndaGus2qMA" annotatedElement="_2xsJRs_6Ed-YeMSrwW6svA">
+          <body>&quot;The quantity that devides the numerator in the ratio. The default is the integer number 1 (one). The denominator SHALL not be zero.&quot; - HL7 V3</body>
+        </ownedComment>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_dNAkUKyUEeCsjfrdZcTwnA" name="OrganizationName">
+      <eAnnotations xmi:id="_BvMc8KyXEeCsjfrdZcTwnA" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_BvMc8ayXEeCsjfrdZcTwnA" key="ON"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_AlCPkKyaEeCsjfrdZcTwnA" annotatedElement="_dNAkUKyUEeCsjfrdZcTwnA">
+        <body>&quot;A word or term by which a person or thing is commonly and distinctively known.&quot; - Collins English Dictionary.   This data type represents a organization's name.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_SeW3AKyZEeCsjfrdZcTwnA" name="name" visibility="public">
+        <ownedComment xmi:id="_JbaaYKyaEeCsjfrdZcTwnA" annotatedElement="_SeW3AKyZEeCsjfrdZcTwnA">
+          <body>&quot;A word or term by which a person or thing is commonly and distinctively known.&quot; - Collins English Dictionary.   This property represents a organization's name.  Note that the data type is simply a string, unlike HL7 V3's complex collection of name parts.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_ZYu5cHUeEeGl_7Z-4li2AA" name="CodedOrdinal">
+      <eAnnotations xmi:id="_dcYVEHUeEeGl_7Z-4li2AA" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_dcYVEXUeEeGl_7Z-4li2AA" key="CO"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_d1WVAMlFEeKk-pg0LZnieg" annotatedElement="_ZYu5cHUeEeGl_7Z-4li2AA">
+        <body>&quot;Coded data, where the coding system from which the code comes defines a partial or complete order on some or all of the codes in the system.  Codes may be assigned a numerical value, but this is not required. [This datatype] adds semantics related to ordering and/or numerical values....&quot; - HL7 V3.</body>
+      </ownedComment>
+      <generalization xmi:id="_f78OEMlFEeKk-pg0LZnieg" general="_GmKqYGAfEd6a0qoC8Dh7hA"/>
+      <ownedAttribute xmi:id="_oDjIEHUeEeGl_7Z-4li2AA" name="value" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_ioyO0MlFEeKk-pg0LZnieg" annotatedElement="_oDjIEHUeEeGl_7Z-4li2AA">
+          <body>The value assigned to this code in the code System. - HL7 V3.</body>
+        </ownedComment>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_hTVDUKRDEeGrsN1DjD6wSA" name="CD" visibility="private">
+      <eAnnotations xmi:id="_WpAjkLyKEeGK2djLWlLFew" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_WpAjkbyKEeGK2djLWlLFew" key="CD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_rhp4gKRDEeGrsN1DjD6wSA" annotatedElement="_hTVDUKRDEeGrsN1DjD6wSA">
+        <body>Temporary class used to trigger MDHT Terminology Constraints</body>
+      </ownedComment>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_yQqY4LyGEeGK2djLWlLFew" name="NullableBoolean">
+      <eAnnotations xmi:id="_4RrgILyGEeGK2djLWlLFew" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_4RrgIbyGEeGK2djLWlLFew" key="BL"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_RChjkLyHEeGK2djLWlLFew" annotatedElement="_yQqY4LyGEeGK2djLWlLFew">
+        <body>This data type represents a boolean value which may be unknown.  In other words, this data type can represent Yes, No, and Unknown; unlike a traditional boolean which can only represent True and False.  For this logical model, this class has been modeled in the HL7 V3 style, which has the advantage of being able to account for different kinds of &quot;unknowns&quot;, but has the disadvantage of having two fields, one of which must always be populated while the other must always be empty.  Implementers may choose to implement this class using a single field instead.</body>
+      </ownedComment>
+      <ownedAttribute xmi:id="_5LbLkLyGEeGK2djLWlLFew" name="value" visibility="public">
+        <ownedComment xmi:id="_6IRuALyJEeGK2djLWlLFew" annotatedElement="_5LbLkLyGEeGK2djLWlLFew">
+          <body>This property contains either a True or a False (or Yes or No).  If &quot;unknown&quot; is needed, this property will be empty, and the nullFlavor property will be valued.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_7uBrMLyGEeGK2djLWlLFew" name="nullFlavor" visibility="public" type="_cJEi4AqcEd-426xscrxYmQ">
+        <ownedComment xmi:id="_FSGiILyKEeGK2djLWlLFew" annotatedElement="_7uBrMLyGEeGK2djLWlLFew">
+          <body>This property indicates why the value property is empty.  It uses the NullFlavor enumeration.  This property must be valued when the value property is empty, and must be empty when the value property is valued.</body>
+        </ownedComment>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_i5jP4OZSEeGuIoEQ4Mvu0w" name="CodeWithOriginalText">
+      <eAnnotations xmi:id="_vmBigOZSEeGuIoEQ4Mvu0w" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_vmBigeZSEeGuIoEQ4Mvu0w" key="CD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_ktX8wMlFEeKk-pg0LZnieg" annotatedElement="_i5jP4OZSEeGuIoEQ4Mvu0w">
+        <body>A specialization of Code which additionally contains a property to hold the original text as seen and/or selected by the user who entered the data</body>
+      </ownedComment>
+      <generalization xmi:id="_74MewOZSEeGuIoEQ4Mvu0w" general="_GmKqYGAfEd6a0qoC8Dh7hA"/>
+      <ownedAttribute xmi:id="_zl2OEOZSEeGuIoEQ4Mvu0w" name="originalText" visibility="public">
+        <ownedComment xmi:id="_zl2OEeZSEeGuIoEQ4Mvu0w" annotatedElement="_zl2OEOZSEeGuIoEQ4Mvu0w">
+          <body>&quot;The text as seen and/or selected by the user who entered the data which represents the intended meaning of the user.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_zl2OE-ZSEeGuIoEQ4Mvu0w" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_zl2OEuZSEeGuIoEQ4Mvu0w" value="1"/>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_mARwQOZSEeGuIoEQ4Mvu0w" name="NullableCode">
+      <eAnnotations xmi:id="_wn7rcOZSEeGuIoEQ4Mvu0w" source="http://www.eclipse.org/uml2/2.0.0/UML">
+        <details xmi:id="_wn7rceZSEeGuIoEQ4Mvu0w" key="CD"/>
+      </eAnnotations>
+      <ownedComment xmi:id="_pbt7MMlFEeKk-pg0LZnieg" annotatedElement="_mARwQOZSEeGuIoEQ4Mvu0w">
+        <body>A specialization of Code which additionally contains a property to hold a reason why the value of the code is empty.</body>
+      </ownedComment>
+      <generalization xmi:id="_8SkGkOZSEeGuIoEQ4Mvu0w" general="_i5jP4OZSEeGuIoEQ4Mvu0w"/>
+      <ownedAttribute xmi:id="_6BKrsOZSEeGuIoEQ4Mvu0w" name="nullFlavor" visibility="public" type="_cJEi4AqcEd-426xscrxYmQ">
+        <ownedComment xmi:id="_6BKrseZSEeGuIoEQ4Mvu0w" annotatedElement="_6BKrsOZSEeGuIoEQ4Mvu0w">
+          <body>This property indicates why the value property is empty.  It uses the NullFlavor enumeration.  This property must be valued when the value property is empty, and must be empty when the value property is valued.</body>
+        </ownedComment>
+      </ownedAttribute>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="_Bjnn0HB8EeKknILXOCcS7w" name="LoincAnswerCode">
+      <ownedComment xmi:id="_KfG5EMlFEeKk-pg0LZnieg" annotatedElement="_Bjnn0HB8EeKknILXOCcS7w">
+        <body>A specialization of Code which contains properties necessary to support LOINC-coded answers to assessment questions.</body>
+      </ownedComment>
+      <generalization xmi:id="_nM3d5HB4EeKknILXOCcS7w" general="_mARwQOZSEeGuIoEQ4Mvu0w">
+        <eAnnotations xmi:id="_nM3d5XB4EeKknILXOCcS7w" source="http://www.eclipse.org/uml2/2.0.0/UML">
+          <details xmi:id="_nM3d5nB4EeKknILXOCcS7w" key="ReplacedBy"/>
+        </eAnnotations>
+      </generalization>
+      <ownedAttribute xmi:id="_EIKBIHB8EeKknILXOCcS7w" name="code" visibility="public">
+        <ownedComment xmi:id="_EIKBIXB8EeKknILXOCcS7w" annotatedElement="_EIKBIHB8EeKknILXOCcS7w">
+          <body>&quot;The plain code symbol defined by the code system, or an expression in a syntax defined by the code system which describes the concept.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_EIKBI3B8EeKknILXOCcS7w" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_EIKBInB8EeKknILXOCcS7w" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_EIKoMHB8EeKknILXOCcS7w" name="codeSystem" visibility="public">
+        <ownedComment xmi:id="_EIKoMXB8EeKknILXOCcS7w" annotatedElement="_EIKoMHB8EeKknILXOCcS7w">
+          <body>&quot;The code system that defines the code.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_EIKoM3B8EeKknILXOCcS7w" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_EIKoMnB8EeKknILXOCcS7w" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_EIKoNHB8EeKknILXOCcS7w" name="codeSystemName" visibility="public">
+        <ownedComment xmi:id="_EIKoNXB8EeKknILXOCcS7w" annotatedElement="_EIKoNHB8EeKknILXOCcS7w">
+          <body>&quot;The common name of the coding system.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_EIKoN3B8EeKknILXOCcS7w" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_EIKoNnB8EeKknILXOCcS7w" value="1"/>
+        <defaultValue xmi:type="uml:LiteralString" xmi:id="_EIKoOHB8EeKknILXOCcS7w" value="Loinc">
+          <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        </defaultValue>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_EILPQHB8EeKknILXOCcS7w" name="codeSystemVersion" visibility="public">
+        <ownedComment xmi:id="_EILPQXB8EeKknILXOCcS7w" annotatedElement="_EILPQHB8EeKknILXOCcS7w">
+          <body>&quot;If applicable, a version descriptor defined specifically for the given code system.&quot; - HL7 V3</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_EILPQ3B8EeKknILXOCcS7w"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_EILPQnB8EeKknILXOCcS7w" value="1"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_EILPRHB8EeKknILXOCcS7w" name="sequenceNbr" visibility="public">
+        <ownedComment xmi:id="_OTzSsMlFEeKk-pg0LZnieg" annotatedElement="_EILPRHB8EeKknILXOCcS7w">
+          <body>The order in which this answer is displayed among the list of possible answers, as defined bythe code system.  The ordering of both questions and the possible answers to them are important, as they may influence the way people answer them.  The sequencing of the answers is not necessarily related to the value (or score) of the answer.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_EIL2UHB8EeKknILXOCcS7w" name="answer" visibility="public">
+        <ownedComment xmi:id="_RHCPUMlFEeKk-pg0LZnieg" annotatedElement="_EIL2UHB8EeKknILXOCcS7w">
+          <body>The text associated with the answer.  In assessment instruments, each possible answer has a specific wording.  This property holds that wording.</body>
+        </ownedComment>
+        <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="_EIL2UXB8EeKknILXOCcS7w" name="score" visibility="public" type="_N-BAoNYeEd62cosTNS-_lw">
+        <ownedComment xmi:id="_SsJL8MlFEeKk-pg0LZnieg" annotatedElement="_EIL2UXB8EeKknILXOCcS7w">
+          <body>The value assigned to this code in the code System. - HL7 V3.</body>
+        </ownedComment>
+      </ownedAttribute>
+    </packagedElement>
+  </uml:Package>
+  <Default:Documentation xmi:id="_-7myIO0DEd-KQpEfY1umCw" base_Comment="_-7dBIO0DEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_-KcXAAILEd-VSqNkiZ4fOA" base_Comment="_-KSmAAILEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_0qBroPwMEd-3ndaGus2qMA" base_Comment="_0p36oPwMEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_0QircO2kEd-YWc6j70EPjw" base_Comment="_0QY6cO2kEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_0vZDgO0IEd-KQpEfY1umCw" base_Comment="_0vWAMO0IEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_2Q7KQPwHEd-3ndaGus2qMA" base_Comment="_2QnoQPwHEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_2U-vwO2hEd-YWc6j70EPjw" base_Comment="_2UrNwO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_3af4QO2fEd-YWc6j70EPjw" base_Comment="_3aWHQO2fEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_3s3oYO2kEd-YWc6j70EPjw" base_Comment="_3suecO2kEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_4LW0EO0IEd-KQpEfY1umCw" base_Comment="_4LNqIO0IEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_4tuPoLa1Ed-Y0_knsxZjWg" base_Comment="_4tkeoLa1Ed-Y0_knsxZjWg"/>
+  <Default:Documentation xmi:id="_4XHhEPwPEd-3ndaGus2qMA" base_Comment="_4W9wEPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_5pX_kAILEd-VSqNkiZ4fOA" base_Comment="_5pEdkAILEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_6BLSwOZSEeGuIoEQ4Mvu0w" base_Comment="_6BKrseZSEeGuIoEQ4Mvu0w"/>
+  <Default:Documentation xmi:id="_6D57EAHtEd-VSqNkiZ4fOA" base_Comment="_6DnAIAHtEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_6IZp0LyJEeGK2djLWlLFew" base_Comment="_6IRuALyJEeGK2djLWlLFew"/>
+  <Default:Documentation xmi:id="_7HalIO5_Ed-crcWiXVDZrQ" base_Comment="_7HQ0IO5_Ed-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_8nQmIO2hEd-YWc6j70EPjw" base_Comment="_8nG1IO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_9cNIafwLEd-3ndaGus2qMA" base_Comment="_9cNIZfwLEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_9cNIaPwLEd-3ndaGus2qMA" base_Comment="_9cNIYfwLEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_AlMAkKyaEeCsjfrdZcTwnA" base_Comment="_AlCPkKyaEeCsjfrdZcTwnA"/>
+  <Default:Documentation xmi:id="_AmkqgAewEeCPOdVNW49Akw" base_Comment="_AmhAIQewEeCPOdVNW49Akw"/>
+  <Default:Documentation xmi:id="_AmlRkAewEeCPOdVNW49Akw" base_Comment="_Ami1UAewEeCPOdVNW49Akw"/>
+  <Default:Documentation xmi:id="_AmlRkQewEeCPOdVNW49Akw" base_Comment="_Ami1VAewEeCPOdVNW49Akw"/>
+  <Default:Documentation xmi:id="_AV0ScPwPEd-3ndaGus2qMA" base_Comment="_AVrIgPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_aXkk0AHwEd-VSqNkiZ4fOA" base_Comment="_aXba4AHwEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_ayQ8EPwPEd-3ndaGus2qMA" base_Comment="_ayHyIPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_bBLuQQILEd-VSqNkiZ4fOA" base_Comment="_bBLuQAILEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_bhf3EPwDEd-3ndaGus2qMA" base_Comment="_bhWtIPwDEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_b_6L4RprEd-j8JC21F3W2A" base_Comment="_b_6L4BprEd-j8JC21F3W2A"/>
+  <Default:Documentation xmi:id="_cXXQEO0FEd-KQpEfY1umCw" base_Comment="_cXRJcO0FEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_d1gGAMlFEeKk-pg0LZnieg" base_Comment="_d1WVAMlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_DcUNgPwIEd-3ndaGus2qMA" base_Comment="_DcLDkPwIEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_dZktAO2fEd-YWc6j70EPjw" base_Comment="_dZa8AO2fEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_EIL2U3B8EeKknILXOCcS7w" base_Comment="_EIKoMXB8EeKknILXOCcS7w"/>
+  <Default:Documentation xmi:id="_EIL2UnB8EeKknILXOCcS7w" base_Comment="_EIKBIXB8EeKknILXOCcS7w"/>
+  <Default:Documentation xmi:id="_EIL2VHB8EeKknILXOCcS7w" base_Comment="_EIKoNXB8EeKknILXOCcS7w"/>
+  <Default:Documentation xmi:id="_EIL2VXB8EeKknILXOCcS7w" base_Comment="_EILPQXB8EeKknILXOCcS7w"/>
+  <Default:Documentation xmi:id="_EuKNUO0JEd-KQpEfY1umCw" base_Comment="_EuBDYO0JEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_f255EO0FEd-KQpEfY1umCw" base_Comment="_f2wvIO0FEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_F4g9EO0IEd-KQpEfY1umCw" base_Comment="_F4XzIO0IEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_fe-GUfwQEd-3ndaGus2qMA" base_Comment="_fe-GUPwQEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_fIabYO0FEd-KQpEfY1umCw" base_Comment="_fIRRcO0FEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_FSOd8LyKEeGK2djLWlLFew" base_Comment="_FSGiILyKEeGK2djLWlLFew"/>
+  <Default:Documentation xmi:id="_G7MEFRAnEd-2E9qx-lgHBg" base_Comment="_-XSJ4AHvEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_Glph4O2iEd-YWc6j70EPjw" base_Comment="_Glfw4O2iEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_gRHP8O2hEd-YWc6j70EPjw" base_Comment="_gQ-GAO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_gxWwsPwPEd-3ndaGus2qMA" base_Comment="_gxNmwPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_H2DhwFl6EeCH--YpPiEryw" base_Comment="_H12GYFl6EeCH--YpPiEryw"/>
+  <Default:Documentation xmi:id="_Hm1qUO5sEd-crcWiXVDZrQ" base_Comment="_Hmr5UO5sEd-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_HPMgEO2gEd-YWc6j70EPjw" base_Comment="_HPCvEO2gEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_i04HofwPEd-3ndaGus2qMA" base_Comment="_i04HoPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_IhRRoAHwEd-VSqNkiZ4fOA" base_Comment="_Ig9voAHwEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_iMTi0O0IEd-KQpEfY1umCw" base_Comment="_iMKY4O0IEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_io7YwMlFEeKk-pg0LZnieg" base_Comment="_ioyO0MlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_j-ZfAPwQEd-3ndaGus2qMA" base_Comment="_j-QVEPwQEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_jaE10O5uEd-crcWiXVDZrQ" base_Comment="_jZ7r4O5uEd-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_JbaaYayaEeCsjfrdZcTwnA" base_Comment="_JbaaYKyaEeCsjfrdZcTwnA"/>
+  <Default:Documentation xmi:id="_JQQjcO2hEd-YWc6j70EPjw" base_Comment="_JQGycO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_KfWwsMlFEeKk-pg0LZnieg" base_Comment="_KfG5EMlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_ktgfoMlFEeKk-pg0LZnieg" base_Comment="_ktX8wMlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_l1wVIPwDEd-3ndaGus2qMA" base_Comment="_l1mkIPwDEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_lgQpcPwHEd-3ndaGus2qMA" base_Comment="_lgHfgPwHEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_lWlsQQqlEd-426xscrxYmQ" base_Comment="_lWlsQAqlEd-426xscrxYmQ"/>
+  <Default:Documentation xmi:id="_meJg0AILEd-VSqNkiZ4fOA" base_Comment="_meAW4AILEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_mNumAO5qEd-crcWiXVDZrQ" base_Comment="_mNbrEO5qEd-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_MOlrIO0EEd-KQpEfY1umCw" base_Comment="_MOb6IO0EEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_N7w40PwREd-3ndaGus2qMA" base_Comment="_N7nH0PwREd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_na4M8PwQEd-3ndaGus2qMA" base_Comment="_navDAPwQEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_nJcUIPwPEd-3ndaGus2qMA" base_Comment="_nJTKMPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_nnPI8O2hEd-YWc6j70EPjw" base_Comment="_nnF_AO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_o-VSVFx8EeCsbYJDFyCu_A" base_Comment="_o-VSUVx8EeCsbYJDFyCu_A"/>
+  <Default:Documentation xmi:id="_O3YwIAE1Ed-ZUM5xZsXWyw" base_Comment="_O3O_IAE1Ed-ZUM5xZsXWyw"/>
+  <Default:Documentation xmi:id="_ojlnAO2iEd-YWc6j70EPjw" base_Comment="_ojb2AO2iEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_OT9DsMlFEeKk-pg0LZnieg" base_Comment="_OTzSsMlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_p6dWwO0HEd-KQpEfY1umCw" base_Comment="_p6UM0O0HEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_p9aZQO5pEd-crcWiXVDZrQ" base_Comment="_p9QoQO5pEd-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_pb3sMMlFEeKk-pg0LZnieg" base_Comment="_pbt7MMlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_pbuDUPwQEd-3ndaGus2qMA" base_Comment="_pbkSUPwQEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_pMzzsPwHEd-3ndaGus2qMA" base_Comment="_pMqpwPwHEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_Ps9hIO2hEd-YWc6j70EPjw" base_Comment="_PszwIO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_PSpeQBAnEd-2E9qx-lgHBg" base_Comment="_PSftQBAnEd-2E9qx-lgHBg"/>
+  <Default:Documentation xmi:id="_QbtvcO2fEd-YWc6j70EPjw" base_Comment="_Qbj-cO2fEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_r2TxcO2hEd-YWc6j70EPjw" base_Comment="_r2KAcO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_RCoRQLyHEeGK2djLWlLFew" base_Comment="_RChjkLyHEeGK2djLWlLFew"/>
+  <Default:Documentation xmi:id="_rh2s0KRDEeGrsN1DjD6wSA" base_Comment="_rhp4gKRDEeGrsN1DjD6wSA"/>
+  <Default:Documentation xmi:id="_RHMAUMlFEeKk-pg0LZnieg" base_Comment="_RHCPUMlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_RIn5QBprEd-j8JC21F3W2A" base_Comment="_RIU-UBprEd-j8JC21F3W2A"/>
+  <Default:Documentation xmi:id="_rsmWQPwPEd-3ndaGus2qMA" base_Comment="_rsclQPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_rveRAO2eEd-YWc6j70EPjw" base_Comment="_rvLWEO2eEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_rzHDYPwOEd-3ndaGus2qMA" base_Comment="_ry9SYPwOEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_SsRu0MlFEeKk-pg0LZnieg" base_Comment="_SsJL8MlFEeKk-pg0LZnieg"/>
+  <Default:Documentation xmi:id="_T0AekPwREd-3ndaGus2qMA" base_Comment="_Tz3UoPwREd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_TNHvoPwPEd-3ndaGus2qMA" base_Comment="_TM9-oPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_To1nsAILEd-VSqNkiZ4fOA" base_Comment="_Tor2sAILEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_TpIbwO2hEd-YWc6j70EPjw" base_Comment="_To05wO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_UJIjAO0IEd-KQpEfY1umCw" base_Comment="_UI8VwO0IEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_umCN8AILEd-VSqNkiZ4fOA" base_Comment="_ulvTAAILEd-VSqNkiZ4fOA"/>
+  <Default:Documentation xmi:id="_usr_8PwLEd-3ndaGus2qMA" base_Comment="_usiO8PwLEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_wFoSs-5_Ed-crcWiXVDZrQ" base_Comment="_wFoSsu5_Ed-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_wZBPAO2eEd-YWc6j70EPjw" base_Comment="_wY3eAO2eEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_x0BAcPwPEd-3ndaGus2qMA" base_Comment="_xz32gPwPEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_xnRDcO2hEd-YWc6j70EPjw" base_Comment="_xnHScO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_XPIdAAEbEd-ZUM5xZsXWyw" base_Comment="_XO-sAAEbEd-ZUM5xZsXWyw"/>
+  <Default:Documentation xmi:id="_xrBQYO0EEd-KQpEfY1umCw" base_Comment="_xq-NEO0EEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_XrkuYPwDEd-3ndaGus2qMA" base_Comment="_XrbkcPwDEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_xSQSMO2gEd-YWc6j70EPjw" base_Comment="_xSHIQO2gEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_XulmwO0IEd-KQpEfY1umCw" base_Comment="_XuZZgO0IEd-KQpEfY1umCw"/>
+  <Default:Documentation xmi:id="_y8mP4O5rEd-crcWiXVDZrQ" base_Comment="_y8ce4O5rEd-crcWiXVDZrQ"/>
+  <Default:Documentation xmi:id="_YcPQUO2fEd-YWc6j70EPjw" base_Comment="_YcFfUO2fEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_Z1nMIO2hEd-YWc6j70EPjw" base_Comment="_Z1dbIO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_zJthsPwHEd-3ndaGus2qMA" base_Comment="_zJkXwPwHEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="_zl4qUOZSEeGuIoEQ4Mvu0w" base_Comment="_zl2OEeZSEeGuIoEQ4Mvu0w"/>
+  <Default:Documentation xmi:id="__BsBMO2hEd-YWc6j70EPjw" base_Comment="__BiQMO2hEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="__cVXoPwMEd-3ndaGus2qMA" base_Comment="__cLmoPwMEd-3ndaGus2qMA"/>
+  <Default:Documentation xmi:id="__N2tkO2kEd-YWc6j70EPjw" base_Comment="__NtjoO2kEd-YWc6j70EPjw"/>
+  <Default:Documentation xmi:id="_a44mIFO5EeOPsNTFFieZWw" base_Comment="_a4qjsFO5EeOPsNTFFieZWw"/>
+  <Default:Documentation xmi:id="_s_A9wH7qEeOYQJZKXKAJnw" base_Comment="_s-4a4H7qEeOYQJZKXKAJnw"/>
+</xmi:XMI>

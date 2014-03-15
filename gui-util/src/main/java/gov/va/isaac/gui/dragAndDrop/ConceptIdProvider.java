@@ -18,16 +18,55 @@
  */
 package gov.va.isaac.gui.dragAndDrop;
 
+import java.util.UUID;
+import gov.va.isaac.util.Utility;
+
 /**
  * {@link ConceptIdProvider}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public interface ConceptIdProvider
+public abstract class ConceptIdProvider
 {
 	/**
 	 * Implementers of this should return a UUID, or a NID - which we would expect most drop targets to handle.
 	 * @return
 	 */
-	public String getConceptId();
+	public abstract String getConceptId();
+	
+	/**
+	 * Convenience method
+	 * @return
+	 */
+	public boolean isNid()
+	{
+		return Utility.isInt(getConceptId());
+	}
+	
+	/**
+	 * Convenience method
+	 * @return
+	 */
+	public boolean isUUID()
+	{
+		return Utility.isUUID(getConceptId());
+	}
+	
+	/**
+	 * Convenience method that simply parses the UUID from {@code #getConceptId}
+	 * Will fail if it isn't a UUID (but this may be overridden to be smarter by implementations)
+	 */
+	public UUID getConceptUUID()
+	{
+		return UUID.fromString(getConceptId());
+	}
+	
+	/**
+	 * Convenience method that simply parses the UUID from {@code #getConceptId}
+	 * Will fail if it isn't an int (but this may be overridden to be smarter by implementations)
+	 */
+	public int getNid()
+	{
+		return Integer.parseInt(getConceptId());
+	}
 }

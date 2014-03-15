@@ -58,6 +58,10 @@ public class Utility {
     }
 
     public static UUID getUUID(String string) {
+        if (string == null)
+        {
+            return null;
+        }
         if (string.length() != 36) {
             return null;
         }
@@ -73,6 +77,10 @@ public class Utility {
     }
 
     public static boolean isLong(String string) {
+        if (string == null)
+        {
+            return false;
+        }
         try {
             Long.parseLong(string);
             return true;

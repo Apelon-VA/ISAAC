@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.models.cem.importer;
 
-import gov.va.isaac.models.util.MetadataBinding;
+import gov.va.isaac.models.util.MetadataBindingBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  * @author alo
  * @author ocarlsen
  */
-public class CEMMetadataBinding extends MetadataBinding {
+public class CEMMetadataBinding extends MetadataBindingBase {
 
     public static ConceptSpec CEM_REFSET
             = new ConceptSpec("CEM reference sets (foundation metadata concept)",
