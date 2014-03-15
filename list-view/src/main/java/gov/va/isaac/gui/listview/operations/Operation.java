@@ -38,10 +38,20 @@ public abstract class Operation
 {
 	protected ObservableList<SimpleDisplayConcept> conceptList_;
 	protected GridPane root_;
+	private boolean initRun = false;
 	
 	protected Operation()
 	{
 		//For HK2 to create
+	}
+	
+	public synchronized final void initIfNot(ObservableList<SimpleDisplayConcept> conceptList)
+	{
+		if(!initRun)
+		{
+			initRun = true;
+			init(conceptList);
+		}
 	}
 	
 	public void init(ObservableList<SimpleDisplayConcept> conceptList)

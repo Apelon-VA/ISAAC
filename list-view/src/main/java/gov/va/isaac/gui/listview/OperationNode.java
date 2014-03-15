@@ -65,7 +65,6 @@ public class OperationNode extends VBox
 		
 		for (Operation o : allOperations_)
 		{
-			o.init(lbvc_.getConceptList());
 			operationsMap_.put(o.getTitle(), o);
 		}
 		
@@ -124,6 +123,8 @@ public class OperationNode extends VBox
 					isOperationReady_.removeBinding(currentOperation_.isValid());
 				}
 				currentOperation_ = operationsMap_.get(operation_.getSelectionModel().getSelectedItem());
+				//delay init
+				currentOperation_.initIfNot(lbvc_.getConceptList());
 				operation_.setTooltip(new Tooltip(currentOperation_.getOperationDescription()));
 				//start watching new one
 				isOperationReady_.addBinding(currentOperation_.isValid());
