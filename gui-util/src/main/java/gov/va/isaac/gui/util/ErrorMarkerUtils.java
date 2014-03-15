@@ -53,7 +53,7 @@ public class ErrorMarkerUtils
 	 */
 	public static Node setupErrorMarker(Control initialControl, StringProperty reasonWhyControlInvalid)
 	{
-		return setupDisabledInfoMarker(initialControl, new StackPane(), reasonWhyControlInvalid);
+		return setupErrorMarker(initialControl, new StackPane(), reasonWhyControlInvalid);
 	}
 	
 	/**
