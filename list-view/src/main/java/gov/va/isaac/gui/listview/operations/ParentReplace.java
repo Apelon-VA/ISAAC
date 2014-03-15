@@ -18,11 +18,9 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanBinding;
@@ -70,14 +68,7 @@ public class ParentReplace extends Operation
 		replaceOptions_.setMaxWidth(Double.MAX_VALUE);
 		replaceOptions_.setPromptText("-Populate the Concepts List-");
 		root_.add(ErrorMarkerUtils.setupErrorMarker(replaceOptions_, replaceOptionsInvalidString_), 1, 0);
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(replaceOptions_, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return replaceOptions_.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(replaceOptions_);
 
 		root_.add(new Label("With Parent: "), 0, 1);
 		withConcept_ = new ConceptNode(null, true);
@@ -94,7 +85,7 @@ public class ParentReplace extends Operation
 		replaceOptions_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SimpleDisplayConcept> c)
+			public void onChanged(ListChangeListener.Change<? extends SimpleDisplayConcept> c)
 			{
 				if (replaceOptions_.getItems().size() > 0)
 				{

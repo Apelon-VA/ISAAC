@@ -19,9 +19,8 @@
 package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.util.WBUtility;
@@ -228,24 +227,8 @@ public class FindAndReplaceController
 		searchInLanguage.getItems().add(new SimpleDisplayConcept("ANY"));
 		searchInLanguage.getSelectionModel().select(0);
 		
-		
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(searchInLanguage, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return searchInLanguage.getValue().getNid() + "";
-			}
-		}, false);
-		
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(retireAs, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return retireAs.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(searchInLanguage);
+		ComboBoxSetupTool.setupComboBox(retireAs);
 		
 		try
 		{

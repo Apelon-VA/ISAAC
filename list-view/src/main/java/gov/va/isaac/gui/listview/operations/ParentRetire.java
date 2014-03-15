@@ -18,10 +18,8 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanBinding;
@@ -71,14 +69,7 @@ public class ParentRetire extends Operation
 		Node n = ErrorMarkerUtils.setupErrorMarker(retireAsParent_, replaceOptionsInvalidString_);
 		root_.add(n, 1, 0);
 
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(retireAsParent_, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return retireAsParent_.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(retireAsParent_);
 		// TODO populate retireAsParentCombo
 
 		retireAsParent_.setMaxWidth(Double.MAX_VALUE);

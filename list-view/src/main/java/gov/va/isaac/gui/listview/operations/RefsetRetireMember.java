@@ -18,10 +18,8 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanBinding;
@@ -77,14 +75,7 @@ public class RefsetRetireMember extends Operation
 		root_.add(wrappedRetireFrom, 1, 0);
 		retireFrom_.setMaxWidth(Double.MAX_VALUE);
 		retireFrom_.setPromptText("-Populate the Concepts List-");
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(retireFrom_, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return retireFrom_.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(retireFrom_);
 
 		// TODO populate retireFrom
 		retireFrom_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()

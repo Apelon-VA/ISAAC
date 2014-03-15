@@ -18,11 +18,9 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanExpression;
 import javafx.collections.ObservableList;
@@ -62,14 +60,7 @@ public class ParentAddNew extends Operation
 		root_.add(new Label("New Parent"), 0, 1);
 		root_.add(newParent_.getNode(), 1, 1);
 		
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(relationship_, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return relationship_.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(relationship_);
 		//TODO populate relationshipCombo
 		
 		relationship_.setMaxWidth(Double.MAX_VALUE);

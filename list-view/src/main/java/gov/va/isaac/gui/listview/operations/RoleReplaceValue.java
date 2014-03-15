@@ -18,11 +18,9 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanBinding;
@@ -68,14 +66,7 @@ public class RoleReplaceValue extends Operation
 		root_.add(ErrorMarkerUtils.setupErrorMarker(existingRole_, replaceOptionsInvalidString_), 1, 0);
 		existingRole_.setPromptText("-Populate the Concepts List-");
 		existingRole_.setMaxWidth(Double.MAX_VALUE);
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(existingRole_, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return existingRole_.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(existingRole_);
 		
 		root_.add(new Label("New Role Value"), 0, 1);
 		root_.add(newRoleValue_.getNode(), 1, 1);

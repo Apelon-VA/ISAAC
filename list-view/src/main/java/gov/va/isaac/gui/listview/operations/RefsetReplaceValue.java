@@ -18,10 +18,8 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.beans.binding.BooleanBinding;
@@ -76,14 +74,7 @@ public class RefsetReplaceValue extends Operation
 		root_.add(ErrorMarkerUtils.setupErrorMarker(inRefset_, inRefsetInvalidString_), 1, 0);
 		inRefset_.setPromptText("-Populate the Concepts List-");
 		inRefset_.setMaxWidth(Double.MAX_VALUE);
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(inRefset_, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				return inRefset_.getValue().getNid() + "";
-			}
-		}, false);
+		ComboBoxSetupTool.setupComboBox(inRefset_);
 
 		// TODO populate moveFrom
 		inRefset_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
