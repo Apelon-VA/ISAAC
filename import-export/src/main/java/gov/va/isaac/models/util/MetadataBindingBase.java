@@ -30,7 +30,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  *
  * @author ocarlsen
  */
-public class MetadataBinding {
+public class MetadataBindingBase {
 
     public static List<ConceptSpec> getAll(Class<?> clazz) {
         try {

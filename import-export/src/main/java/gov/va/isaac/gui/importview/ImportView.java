@@ -21,10 +21,13 @@ package gov.va.isaac.gui.importview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.GridPaneBuilder;
+import gov.va.isaac.ie.ImportHandler;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.cem.importer.CEMImporter;
+import gov.va.isaac.models.fhim.importer.FHIMImporter;
 
 import java.io.File;
+import java.io.IOException;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -37,6 +40,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +76,7 @@ public class ImportView extends GridPane {
         setMinWidth(600);
     }
 
-    public void doImport(InformationModelType modelType, final String fileName) {
+    public void doImport(InformationModelType modelType, final String fileName) throws ValidationException, IOException {
         Preconditions.checkNotNull(modelType);
         Preconditions.checkNotNull(fileName);
 
@@ -83,49 +87,22 @@ public class ImportView extends GridPane {
         modelTypeLabel.setText(modelType.getDisplayName());
         fileNameLabel.setText(fileName);
 
-        if (modelType == InformationModelType.CEM) {
-            importCEM(modelType, fileName);
-        } else {
+        // Instantiate appropriate importer class.
+        ImportHandler importHandler = null;
+        switch (modelType) {
+        case CEM:
+            importHandler = new CEMImporter();
+            break;
+        case FHIM:
+            importHandler = new FHIMImporter();
+            break;
+        default:
             throw new UnsupportedOperationException(modelType.getDisplayName() +
                     " import not yet supported in ISAAC.");
         }
-    }
-
-    private void importCEM(InformationModelType modelType, final String fileName) {
 
         // Do work in background.
-        Task<ConceptChronicleBI> task = new Task<ConceptChronicleBI>() {
-
-            @Override
-            protected ConceptChronicleBI call() throws Exception {
-
-                // Do work.
-                CEMImporter importer = new CEMImporter();
-                return importer.importModel(new File(fileName));
-            }
-
-            @Override
-            protected void succeeded() {
-                ConceptChronicleBI result = this.getValue();
-
-                // Update UI.
-                resultLabel.setText("Successfully imported concept: " + result.toUserString());
-           }
-
-            @Override
-            protected void failed() {
-                Throwable ex = getException();
-
-                // Update UI.
-                resultLabel.setText("Failed to import model: " + ex.getMessage());
-
-                // Show dialog.
-                String title = ex.getClass().getName();
-                String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
-                LOG.error(msg, ex);
-                AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-            }
-        };
+        Task<ConceptChronicleBI> task = new ImporterTask(fileName, importHandler);
 
         // Bind cursor to task state.
         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
@@ -156,5 +133,50 @@ public class ImportView extends GridPane {
         RowConstraints row5 = new RowConstraints();
         row5.setVgrow(Priority.ALWAYS);
         this.getRowConstraints().add(row5);
+    }
+
+    /**
+     * Concrete {@link Task} for executing the import.
+     *
+     * @author ocarlsen
+     */
+    private class ImporterTask extends Task<ConceptChronicleBI> {
+
+        private final String fileName;
+        private final ImportHandler importHandler;
+
+        private ImporterTask(String fileName, ImportHandler importHandler) {
+            this.fileName = fileName;
+            this.importHandler = importHandler;
+        }
+
+        @Override
+        protected ConceptChronicleBI call() throws Exception {
+
+            // Do work.
+            return importHandler.importModel(new File(fileName));
+        }
+
+        @Override
+        protected void succeeded() {
+            ConceptChronicleBI result = this.getValue();
+
+            // Update UI.
+            resultLabel.setText("Successfully imported concept: " + result.toUserString());
+         }
+
+        @Override
+        protected void failed() {
+            Throwable ex = getException();
+
+            // Update UI.
+            resultLabel.setText("Failed to import model: " + ex.getMessage());
+
+            // Show dialog.
+            String title = ex.getClass().getName();
+            String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
+            LOG.error(msg, ex);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+        }
     }
 }

@@ -19,6 +19,7 @@
 package gov.va.isaac.models.cem.importer;
 
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.ie.ImportHandler;
 import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
@@ -53,7 +54,7 @@ import com.google.common.base.Preconditions;
  * @author ocarlsen
  */
 @SuppressWarnings("rawtypes")
-public class CEMImporter extends ImporterBase implements CEMXmlConstants {
+public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMImporter.class);
 
@@ -61,6 +62,7 @@ public class CEMImporter extends ImporterBase implements CEMXmlConstants {
         super();
     }
 
+    @Override
     @SuppressWarnings("unused")
     public ConceptChronicleBI importModel(File file) throws Exception {
         LOG.info("Preparing to import CEM model from: " + file.getName());
