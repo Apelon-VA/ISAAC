@@ -21,16 +21,15 @@ package gov.va.isaac.gui.searchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
-import gov.va.isaac.gui.util.CustomClipboard;
-import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
+import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -46,7 +45,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
@@ -120,44 +118,33 @@ public class SearchViewController implements TaskCompleteCallback {
 
                             ContextMenu cm = new ContextMenu();
 
-                            // Menu item to copy UUID.
-                            MenuItem mi0 = new MenuItem("Copy UUID");
-                            mi0.setGraphic(Images.COPY.createImageView());
-                            mi0.setOnAction(new EventHandler<ActionEvent>() {
-
+                            CommonMenus.addCommonMenus(cm, null, new ConceptIdProvider()
+                            {
+                                
                                 @Override
-                                public void handle(ActionEvent event) {
-                                    if (item.getConcept() != null) {
-                                        CustomClipboard.set(item.getConcept().getUUIDs().get(0).toString());
-                                    }
+                                public String getConceptId()
+                                {
+                                    return item.getConceptNid() + "";
+                                }
+
+                                /**
+                                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+                                 */
+                                @Override
+                                public UUID getConceptUUID()
+                                {
+                                    return item.getConcept().getPrimordialUuid();
+                                }
+
+                                /**
+                                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+                                 */
+                                @Override
+                                public int getNid()
+                                {
+                                    return item.getConceptNid();
                                 }
                             });
-                            cm.getItems().add(mi0);
-
-                            // Menu item to show concept details.
-                            MenuItem mi1 = new MenuItem("View Concept");
-                            mi1.setGraphic(Images.CONCEPT_VIEW.createImageView());
-                            mi1.setOnAction(new EventHandler<ActionEvent>() {
-
-                                @Override
-                                public void handle(ActionEvent event) {
-                                    AppContext.getCommonDialogs().showConceptDialog(
-                                            item.getConcept().getUUIDs().get(0));
-                                }
-                            });
-                            cm.getItems().add(mi1);
-
-
-                            // Menu item to find concept in tree.
-                            MenuItem mi2 = new MenuItem("Find Concept in Taxonomy View");
-                            mi2.setGraphic(Images.ROOT.createImageView());
-                            mi2.setOnAction(new EventHandler<ActionEvent>() {
-                                @Override
-                                public void handle(ActionEvent arg0) {
-                                    AppContext.getService(TaxonomyViewI.class).locateConcept(item.getConcept().getUUIDs().get(0), null);
-                                }
-                            });
-                            cm.getItems().add(mi2);
 
                             setContextMenu(cm);
 
