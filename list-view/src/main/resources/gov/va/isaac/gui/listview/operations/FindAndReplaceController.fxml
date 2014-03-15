@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<GridPane fx:id="root" hgap="5.0" maxWidth="1.7976931348623157E308" vgap="3.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.listview.operations.FindAndReplaceController">
+<GridPane fx:id="root" hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.listview.operations.FindAndReplaceController">
 	<columnConstraints>
 		<ColumnConstraints hgrow="NEVER" />
 		<ColumnConstraints hgrow="ALWAYS" />

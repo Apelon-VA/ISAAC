@@ -60,7 +60,7 @@ public abstract class Operation
 		root_ = new GridPane();
 		root_.setMaxWidth(Double.MAX_VALUE);
 		root_.setHgap(5.0);
-		root_.setVgap(3.0);
+		root_.setVgap(5.0);
 		
 		conceptList_.addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
