@@ -68,18 +68,17 @@ public class CEMFetcher extends ExporterBase {
         StringMember typeAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
 
-        CEMInformationModel informationModel = null;
-        if (typeAnnotation != null) {
-            Metadata metadata = Metadata.newInstance(typeAnnotation.getStamp(),
-                    getDataStore(), getVC());
+        String modelName = typeAnnotation.getString1();
+        CEMInformationModel informationModel = new CEMInformationModel(modelName);
 
-            ConceptVersionBI focusConceptVersion = focusConcept.getVersion(getVC());
-            String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
+        Metadata metadata = Metadata.newInstance(typeAnnotation.getStamp(),
+                getDataStore(), getVC());
+        informationModel.setMetadata(metadata);
 
-            String modelName = typeAnnotation.getString1();
-            informationModel = new CEMInformationModel(modelName, metadata,
-                    focusConceptName, focusConceptUUID);
-        }
+        ConceptVersionBI focusConceptVersion = focusConcept.getVersion(getVC());
+        String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
+        informationModel.setFocusConceptName(focusConceptName);
+        informationModel.setFocusConceptUUID(focusConceptUUID);
 
         LOG.debug("informationModel="+informationModel);
         LOG.info("Ending fetch of CEM model type");
