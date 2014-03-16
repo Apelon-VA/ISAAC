@@ -68,6 +68,11 @@ public class FHIMFetcher extends ExporterBase {
         StringMember modelAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 FHIMMetadataBinding.FHIM_MODELS_REFSET, StringMember.class);
 
+        // Abort if not found.
+        if (modelAnnotation == null) {
+            return  null;
+        }
+
         String modelName = modelAnnotation.getString1();
         FHIMInformationModel informationModel = new FHIMInformationModel(modelName);
 

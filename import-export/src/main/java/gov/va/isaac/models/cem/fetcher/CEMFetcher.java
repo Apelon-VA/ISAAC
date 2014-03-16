@@ -68,6 +68,11 @@ public class CEMFetcher extends ExporterBase {
         StringMember typeAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
 
+        // Abort if not found.
+        if (typeAnnotation == null) {
+            return  null;
+        }
+
         String modelName = typeAnnotation.getString1();
         CEMInformationModel informationModel = new CEMInformationModel(modelName);
 
