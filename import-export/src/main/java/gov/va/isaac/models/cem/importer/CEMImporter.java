@@ -305,7 +305,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
                 // Cardinality constraint.
                 if (modCard != null && modCard.length() > 0) {
-                    Constraint constraint = new Constraint(MOD, modCard);
+                    Constraint constraint = new Constraint(CARD, modCard);
                     mod.setConstraint(constraint);
                 }
 
@@ -326,7 +326,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
                 // Cardinality constraint.
                 if (attCard != null && attCard.length() > 0) {
-                    Constraint constraint = new Constraint(ATT, attCard);
+                    Constraint constraint = new Constraint(CARD, attCard);
                     att.setConstraint(constraint);
                 }
 
