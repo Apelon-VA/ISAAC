@@ -18,27 +18,27 @@
  */
 package gov.va.isaac.util;
 
-import java.util.HashSet;
 import javafx.beans.Observable;
-import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.DoubleBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import com.sun.javafx.binding.BindingHelperObserver;
 
 /**
- * {@link UpdateableBooleanBinding}
+ * {@link UpdateableDoubleBinding}
  * 
- * No idea why BooleanBinding has these variations of these methods that are protected and final...
+ * No idea why DoubleBinding has these variations of these methods that are protected and final... 
  * And the remove was implemented in such a way that you can't remove individual items.
- * (because then nulled themselves after a remove). Copied code here, fixed to allow individual
+ * (because then nulled themselves after a remove).  Copied code here, fixed to allow individual 
  * removals.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public abstract class UpdateableBooleanBinding extends BooleanBinding
+public abstract class UpdateableDoubleBinding extends DoubleBinding
 {
 	private BindingHelperObserver observer;
-	private HashSet<Observable> listeningTo = new HashSet<>();
-	private boolean computeOnInvalidate_ = false;
-
+	private ObservableList<Observable> listeningTo = FXCollections.observableArrayList();
+	
 	public final void addBinding(Observable... dependencies)
 	{
 		if ((dependencies != null) && (dependencies.length > 0))
@@ -76,7 +76,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			}
 		}
 	}
-
+	
 	public final void clearBindings()
 	{
 		while (listeningTo.size() > 0)
@@ -86,27 +86,12 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 	}
 
 	/**
-	 * @see javafx.beans.binding.BooleanBinding#onInvalidating()
+	 * Currently registered bindings
+	 * @see javafx.beans.binding.DoubleBinding#getDependencies()
 	 */
 	@Override
-	protected void onInvalidating()
+	public ObservableList<?> getDependencies()
 	{
-		super.onInvalidating();
-		if (computeOnInvalidate_)
-		{
-			get();
-		}
+		return listeningTo;
 	}
-	
-	/**
-	 * convenience method to let implementers choose to compute on invalidate, 
-	 * rather than on the next request, which is the default behavior.
-	 * @param computeOnInvalidate
-	 */
-	protected void setComputeOnInvalidate(boolean computeOnInvalidate)
-	{
-		computeOnInvalidate_ = computeOnInvalidate;
-		get();
-	}
-
 }

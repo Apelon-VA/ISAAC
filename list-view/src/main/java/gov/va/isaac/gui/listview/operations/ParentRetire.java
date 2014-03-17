@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.gui.ComboBoxSetupTool;
-import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
@@ -29,6 +28,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -38,89 +38,80 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * {@link ParentReplace}
+ * {@link ParentRetire}
+ * 
+ * An example operation that does nothing during execution, but provides an example for
+ * implementing other operations. Will remove this code, eventually, as other real operations
+ * are implemented.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Service
 @PerLookup
-public class ParentReplace extends Operation
+public class ParentRetire extends Operation
 {
-	private ComboBox<SimpleDisplayConcept> replaceOptions_;
+	private ComboBox<SimpleDisplayConcept> retireAsParent_ = new ComboBox<>();
 	private StringProperty replaceOptionsInvalidString_ = new SimpleStringProperty("A concept must be selected from this drop down");
-	private ConceptNode withConcept_;
-
-	private BooleanBinding operationIsReady_;
-
-	private ParentReplace()
-	{
-		super();
-		//For HK2 to create
-	}
 	
+	private BooleanBinding allValid_;
+
+	private ParentRetire()
+	{
+		// For HK2 to init
+	}
+
 	@Override
 	public void init(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		super.init(conceptList);
-		root_.add(new Label("Replace: "), 0, 0);
+		root_.add(new Label("Retire as parent"), 0, 0);
+		retireAsParent_.setPromptText("-Populate the Concepts List-");
+		Node n = ErrorMarkerUtils.setupErrorMarker(retireAsParent_, replaceOptionsInvalidString_);
+		root_.add(n, 1, 0);
 
-		replaceOptions_ = new ComboBox<>();
-		replaceOptions_.setMaxWidth(Double.MAX_VALUE);
-		replaceOptions_.setPromptText("-Populate the Concepts List-");
-		root_.add(ErrorMarkerUtils.setupErrorMarker(replaceOptions_, replaceOptionsInvalidString_), 1, 0);
-		ComboBoxSetupTool.setupComboBox(replaceOptions_);
+		ComboBoxSetupTool.setupComboBox(retireAsParent_);
+		// TODO populate retireAsParentCombo
 
-		root_.add(new Label("With Parent: "), 0, 1);
-		withConcept_ = new ConceptNode(null, true);
-		root_.add(withConcept_.getNode(), 1, 1);
-
-		GridPane.setHgrow(withConcept_.getNode(), Priority.ALWAYS);
+		retireAsParent_.setMaxWidth(Double.MAX_VALUE);
+		GridPane.setHgrow(n, Priority.ALWAYS);
 		FxUtils.preventColCollapse(root_, 0);
-		initActionListeners();
-		replaceOptions_.getItems().addAll(conceptList);
-	}
 
-	private void initActionListeners()
-	{
-		replaceOptions_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
+		retireAsParent_.getItems().addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
-			public void onChanged(ListChangeListener.Change<? extends SimpleDisplayConcept> c)
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SimpleDisplayConcept> c)
 			{
-				if (replaceOptions_.getItems().size() > 0)
+				if (retireAsParent_.getItems().size() > 0)
 				{
 					replaceOptionsInvalidString_.set(null);
-					if (replaceOptions_.getSelectionModel().getSelectedItem() == null)
+					if (retireAsParent_.getSelectionModel().getSelectedItem() == null)
 					{
-						replaceOptions_.getSelectionModel().selectFirst();
+						retireAsParent_.getSelectionModel().selectFirst();
 					}
 				}
 				else
 				{
 					replaceOptionsInvalidString_.set("A concept must be selected from this drop down");
-					replaceOptions_.getSelectionModel().clearSelection();
-					replaceOptions_.setValue(null);
-					replaceOptions_.setPromptText("-Populate the Concepts List-");
+					retireAsParent_.getSelectionModel().clearSelection();
+					retireAsParent_.setValue(null);
+					retireAsParent_.setPromptText("-Populate the Concepts List-");
 				}
 			}
 		});
-
-		operationIsReady_ = new BooleanBinding()
+		
+		allValid_ = new BooleanBinding()
 		{
 			{
-				super.bind(replaceOptionsInvalidString_, withConcept_.isValid());
+				super.bind(replaceOptionsInvalidString_);
 			}
-
+			
 			@Override
 			protected boolean computeValue()
 			{
-				if (StringUtils.isBlank(replaceOptionsInvalidString_.get()) && withConcept_.isValid().get())
-				{
-					return true;
-				}
-				return false;
+				return StringUtils.isBlank(replaceOptionsInvalidString_.get());
 			}
 		};
+		
 	}
 
 	/**
@@ -129,22 +120,16 @@ public class ParentReplace extends Operation
 	@Override
 	public String getTitle()
 	{
-		return "Parent, Replace";
+		return "Parent, Retire";
 	}
 
 	/**
 	 * @see gov.va.isaac.gui.listview.operations.Operation#conceptListChanged()
 	 */
 	@Override
-	public void conceptListChanged()
+	protected void conceptListChanged()
 	{
-		SimpleDisplayConcept sdc = replaceOptions_.getSelectionModel().getSelectedItem();
-		replaceOptions_.getItems().clear();
-		replaceOptions_.getItems().addAll(conceptList_);
-		if (sdc != null && conceptList_.size() > 0)
-		{
-			replaceOptions_.getSelectionModel().select(sdc);
-		}
+		// noop
 	}
 
 	/**
@@ -153,7 +138,7 @@ public class ParentReplace extends Operation
 	@Override
 	public BooleanExpression isValid()
 	{
-		return operationIsReady_;
+		return allValid_;
 	}
 
 	/**
@@ -162,8 +147,8 @@ public class ParentReplace extends Operation
 	@Override
 	public String getOperationDescription()
 	{
-		// TODO Describe ParentReplace
-		return "TBD";
+		//TODO write description
+		return "TODO";
 	}
 
 	/**
@@ -172,12 +157,36 @@ public class ParentReplace extends Operation
 	@Override
 	public CustomTask<String> createTask()
 	{
-		return new CustomTask<String>(ParentReplace.this)
+		return new CustomTask<String>(ParentRetire.this)
 		{
 			@Override
 			protected String call() throws Exception
 			{
-				//TODO implement ParentReplace
+				// double i = 0;
+				// for (SimpleDisplayConcept c : conceptList_)
+				// {
+				// if (cancelRequested_)
+				// {
+				// return ParentAddNew.this.getTitle() + " was cancelled";
+				// }
+				// updateProgress(i, conceptList_.size());
+				// updateMessage("processing " + c.getDescription());
+				// Thread.sleep(3000);
+				// if (cancelRequested_)
+				// {
+				// return ParentAddNew.this.getTitle() + " was cancelled";
+				// }
+				// updateProgress((i + 0.5), conceptList_.size());
+				// updateMessage("still working on " + c.getDescription());
+				// Thread.sleep(3000);
+				// if (cancelRequested_)
+				// {
+				// return ParentAddNew.this.getTitle() + " was cancelled";
+				// }
+				// updateProgress(++i, conceptList_.size());
+				// }
+				// return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";
+				//TODO implement ParentRetire
 				return "Not yet implemented";
 			}
 		};

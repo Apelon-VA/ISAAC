@@ -21,10 +21,13 @@ package gov.va.isaac.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
@@ -39,10 +42,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
@@ -126,7 +133,7 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setMaxWidth(Double.MAX_VALUE);
 		cb_.setPrefWidth(ComboBox.USE_COMPUTED_SIZE);
 		cb_.setMinWidth(200.0);
-		cb_.setPromptText("Drop or select a concept");
+		cb_.setPromptText("Type, drop or select a concept");
 		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
 		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
 		ObservableList<SimpleDisplayConcept> items = AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts();
@@ -149,6 +156,59 @@ public class ConceptNode implements ConceptLookupCallback
 		
 		cb_.setItems(FXCollections.observableArrayList(items));
 		cb_.setVisibleRowCount(11);
+		
+		ContextMenu cm = new ContextMenu();
+		
+		MenuItem copyText = new MenuItem("Copy Description");
+		copyText.setGraphic(Images.COPY.createImageView());
+		copyText.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				CustomClipboard.set(cb_.getEditor().getText());
+			}
+		});
+		cm.getItems().add(copyText);
+		
+		CommonMenus.addCommonMenus(cm, isValid, new ConceptIdProvider()
+		{
+			@Override
+			public String getConceptId()
+			{
+				if (c_ != null)
+				{
+					return c_.getPrimordialUuid().toString();
+				}
+				return null;
+			}
+			/**
+			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+			 */
+			@Override
+			public UUID getConceptUUID()
+			{
+				if (c_ != null)
+				{
+					return c_.getPrimordialUuid();
+				}
+				return null;
+			}
+
+			/**
+			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+			 */
+			@Override
+			public int getNid()
+			{
+				if (c_ != null)
+				{
+					return c_.getNid();
+				}
+				return 0;
+			}
+		});
+		cb_.getEditor().setContextMenu(cm);
 
 		updateGUI();
 		
