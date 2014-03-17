@@ -93,10 +93,10 @@ public class InformationModelDetailsDialogController {
         }
     }
 
-    private void displayFHIM(final FHIMInformationModel fhimModel) {
+    private void displayFHIM(FHIMInformationModel fhimModel) {
 
         // Do work in background.
-        Task<String> task = new Task<String>() {
+        Task<String> task = new DetailsTask(fhimModel) {
 
             @Override
             protected String call() throws Exception {
@@ -104,55 +104,15 @@ public class InformationModelDetailsDialogController {
                 // Do work.
                 return "TODO";
             }
-
-            @Override
-            protected void succeeded() {
-
-                // Update UI.
-                modelNameLabel.setText(fhimModel.getName());
-                modelTypeLabel.setText(fhimModel.getType().getDisplayName());
-                focusConceptLabel.setText(fhimModel.getFocusConceptName());
-                uuidLabel.setText(fhimModel.getFocusConceptUUID().toString());
-
-                Metadata metadata = fhimModel.getMetadata();
-                importerNameLabel.setText(metadata.getImporterName());
-                importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
-                importPathLabel.setText(metadata.getPath().toString());
-                importModuleLabel.setText(metadata.getModuleName());
-
-                String modelXML = this.getValue();
-                modelXmlTextArea.setText(modelXML);
-           }
-
-            @Override
-            protected void failed() {
-
-                // Show dialog.
-                Throwable ex = getException();
-                String title = ex.getClass().getName();
-                String msg = String.format("Unexpected error displaying FHIM model \"%s\"",
-                        fhimModel.getName());
-                LOG.error(msg, ex);
-                AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-            }
         };
 
-        // Bind cursor to task state.
-        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
-        this.stage.getScene().cursorProperty().bind(cursorBinding);
-
-        // Bind progress indicator to task state.
-        modelXmlProgress.visibleProperty().bind(task.runningProperty());
-
-        Thread t = new Thread(task, "Display_" + fhimModel.getName());
-        t.setDaemon(true);
-        t.start();
+        scheduleTask(fhimModel, task);
     }
 
-    private void displayCEM(final CEMInformationModel cemModel) {
+    private void displayCEM(CEMInformationModel cemModel) {
 
         // Do work in background.
-        Task<String> task = new Task<String>() {
+        Task<String> task = new DetailsTask(cemModel) {
 
             @Override
             protected String call() throws Exception {
@@ -160,43 +120,16 @@ public class InformationModelDetailsDialogController {
                 // Do work.
                 OutputStream out = new ByteArrayOutputStream();
                 CEMExporter exporter = new CEMExporter(out);
-                UUID conceptUUID = cemModel.getFocusConceptUUID();
-                exporter.exportModel(conceptUUID );
+                UUID conceptUUID = infoModel.getFocusConceptUUID();
+                exporter.exportModel(conceptUUID);
                 return out.toString();
-            }
-
-            @Override
-            protected void succeeded() {
-
-                // Update UI.
-                modelNameLabel.setText(cemModel.getName());
-                modelTypeLabel.setText(cemModel.getType().getDisplayName());
-                focusConceptLabel.setText(cemModel.getFocusConceptName());
-                uuidLabel.setText(cemModel.getFocusConceptUUID().toString());
-
-                Metadata metadata = cemModel.getMetadata();
-                importerNameLabel.setText(metadata.getImporterName());
-                importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
-                importPathLabel.setText(metadata.getPath().toString());
-                importModuleLabel.setText(metadata.getModuleName());
-
-                String modelXML = this.getValue();
-                modelXmlTextArea.setText(modelXML);
-           }
-
-            @Override
-            protected void failed() {
-
-                // Show dialog.
-                Throwable ex = getException();
-                String title = ex.getClass().getName();
-                String msg = String.format("Unexpected error displaying CEM model \"%s\"",
-                        cemModel.getName());
-                LOG.error(msg, ex);
-                AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
             }
         };
 
+        scheduleTask(cemModel, task);
+    }
+
+    private void scheduleTask(InformationModel infoModel, Task<String> task) {
         // Bind cursor to task state.
         ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
         this.stage.getScene().cursorProperty().bind(cursorBinding);
@@ -204,8 +137,55 @@ public class InformationModelDetailsDialogController {
         // Bind progress indicator to task state.
         modelXmlProgress.visibleProperty().bind(task.runningProperty());
 
-        Thread t = new Thread(task, "Display_" + cemModel.getName());
+        Thread t = new Thread(task, "Display_" + infoModel.getName());
         t.setDaemon(true);
         t.start();
+    }
+
+    /**
+     * Common superclass {@link Task} for showing {@link InformationModel} details.
+     *
+     * @author ocarlsen
+     */
+    private abstract class DetailsTask extends Task<String> {
+
+        protected final InformationModel infoModel;
+
+        protected DetailsTask(InformationModel infoModel) {
+            super();
+            this.infoModel = infoModel;
+        }
+
+        @Override
+        protected void succeeded() {
+
+            // Update UI.
+            modelNameLabel.setText(infoModel.getName());
+            modelTypeLabel.setText(infoModel.getType().getDisplayName());
+            focusConceptLabel.setText(infoModel.getFocusConceptName());
+            uuidLabel.setText(infoModel.getFocusConceptUUID().toString());
+
+            Metadata metadata = infoModel.getMetadata();
+            importerNameLabel.setText(metadata.getImporterName());
+            importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
+            importPathLabel.setText(metadata.getPath().toString());
+            importModuleLabel.setText(metadata.getModuleName());
+
+            String modelXML = this.getValue();
+            modelXmlTextArea.setText(modelXML);
+       }
+
+        @Override
+        protected void failed() {
+
+            // Show dialog.
+            Throwable ex = getException();
+            String title = ex.getClass().getName();
+            InformationModelType modelType = infoModel.getType();
+            String msg = String.format("Unexpected error displaying %s model \"%s\"",
+                    modelType, infoModel.getName());
+            LOG.error(msg, ex);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+        }
     }
 }
