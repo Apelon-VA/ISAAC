@@ -64,209 +64,209 @@ public class UML2ModelConverter {
     private final Map<Property, FHIMInformationModel.Attribute> propertyAttributeMap = Maps.newHashMap();
     private final Map<String, FHIMInformationModel.External> nameExternalMap = Maps.newHashMap();
 
-    public FHIMInformationModel createInformationModel(Package umlPackage) {
-        FHIMInformationModel infoModel = new FHIMInformationModel(umlPackage.getName());
+    public FHIMInformationModel createInformationModel(Package pkg) {
+        FHIMInformationModel infoModel = new FHIMInformationModel(pkg.getName());
 
         // Gather Classes & Enumerations first, they will be used as types later.
-        EList<PackageableElement> umlElements = umlPackage.getPackagedElements();
-        for (Iterator<PackageableElement> i = umlElements.iterator(); i.hasNext();) {
-            PackageableElement umlElement = i.next();
-            if (umlElement instanceof Enumeration) {
-                Enumeration umlEnumeration = (Enumeration) umlElement;
-                LOG.debug("Enumeration: " + umlEnumeration.getName());
+        EList<PackageableElement> elements = pkg.getPackagedElements();
+        for (Iterator<PackageableElement> i = elements.iterator(); i.hasNext();) {
+            PackageableElement element = i.next();
+            if (element instanceof Enumeration) {
+                Enumeration enumeration = (Enumeration) element;
+                LOG.debug("Enumeration: " + enumeration.getName());
 
-                FHIMInformationModel.Enumeration enumeration = createEnumeration(umlEnumeration);
-                infoModel.addEnumeration(enumeration);
+                FHIMInformationModel.Enumeration enumerationModel = createEnumerationModel(enumeration);
+                infoModel.addEnumeration(enumerationModel);
 
                 // Keep track of it for re-use later.
-                nameEnumerationMap.put(enumeration.getName(), enumeration);
+                nameEnumerationMap.put(enumerationModel.getName(), enumerationModel);
 
                 // Remove from packaged elements, it is fully modeled.
                 i.remove();
-            } else if (umlElement instanceof Class) {
-                Class umlClass = (Class) umlElement;
+            } else if (element instanceof Class) {
+                Class clazz = (Class) element;
 
                 // Stub for now, we will flesh out later.
-                FHIMInformationModel.Class clazz = new FHIMInformationModel.Class(umlClass.getName());
+                FHIMInformationModel.Class classModel = new FHIMInformationModel.Class(clazz.getName());
 
                 // Keep track of it for re-use later.
-                nameClassMap.put(clazz.getName(), clazz);
+                nameClassMap.put(classModel.getName(), classModel);
             }
         }
 
         // Now that we have the requisite types, we can flesh out the rest.
-        for (PackageableElement umlElement : umlElements) {
-            if (umlElement instanceof Class) {
-                Class umlClass = (Class) umlElement;
-                FHIMInformationModel.Class clazz = buildClass(umlClass);
-                infoModel.addClass(clazz);
-            } else if (umlElement instanceof Dependency) {
-                Dependency umlDependency = (Dependency) umlElement;
-                FHIMInformationModel.Dependency dependency = buildDependency(umlDependency);
-                infoModel.addDependency(dependency);
-            } else if (umlElement instanceof Association) {
-                Association umlAssociation = (Association) umlElement;
-                FHIMInformationModel.Association association = buildAssociation(umlAssociation);
-                infoModel.addAssociation(association);
+        for (PackageableElement element : elements) {
+            if (element instanceof Class) {
+                Class clazz = (Class) element;
+                FHIMInformationModel.Class classModel = buildClassModel(clazz);
+                infoModel.addClass(classModel);
+            } else if (element instanceof Dependency) {
+                Dependency dependency = (Dependency) element;
+                FHIMInformationModel.Dependency dependencyModel = buildDependencyModel(dependency);
+                infoModel.addDependency(dependencyModel);
+            } else if (element instanceof Association) {
+                Association association = (Association) element;
+                FHIMInformationModel.Association associationModel = buildAssociationModel(association);
+                infoModel.addAssociation(associationModel);
             } else {
-                LOG.warn("Unrecognized element: " + umlElement);
+                LOG.warn("Unrecognized element: " + element);
             }
         }
 
         return infoModel;
     }
 
-    private FHIMInformationModel.Association buildAssociation(Association umlAssociation) {
-        String name = umlAssociation.getName();
+    private FHIMInformationModel.Association buildAssociationModel(Association association) {
+        String name = association.getName();
         LOG.debug("Association: " + name);
 
         // Expect binary associations.
-        Preconditions.checkArgument(umlAssociation.isBinary());
+        Preconditions.checkArgument(association.isBinary());
 
         // Expect exactly one "owned" end.
-        EList<Property> umlOwnedEnds = umlAssociation.getOwnedEnds();
-        int umlOwnedEndCount = umlOwnedEnds.size();
-        if (umlOwnedEndCount != 1) {
-            LOG.warn("Expected 1 umlOwnedEnd, found " + umlOwnedEndCount);
+        EList<Property> ownedEnds = association.getOwnedEnds();
+        int ownedEndCount = ownedEnds.size();
+        if (ownedEndCount != 1) {
+            LOG.warn("Expected 1 ownedEnd, found " + ownedEndCount);
         }
-        Property umlOwnedEnd = umlOwnedEnds.get(0);
-        LOG.debug("    umlOwnedEnd: " + umlOwnedEnd);
-        FHIMInformationModel.Attribute ownedEnd = getAttribute(umlOwnedEnd);
+        Property ownedEnd = ownedEnds.get(0);
+        LOG.debug("    ownedEnd: " + ownedEnd);
+        FHIMInformationModel.Attribute ownedEndModel = getAttributeModel(ownedEnd);
 
         // Expect exactly one end left over after removing "owned" one.
-        EList<Property> memberEnds = umlAssociation.getMemberEnds();
-        List<Property> umlUnownedEnds = Lists.newArrayList(memberEnds);
-        umlUnownedEnds.remove(umlOwnedEnd);
-        int unownedEndCount = umlUnownedEnds.size();
+        EList<Property> memberEnds = association.getMemberEnds();
+        List<Property> unownedEnds = Lists.newArrayList(memberEnds);
+        unownedEnds.remove(ownedEnd);
+        int unownedEndCount = unownedEnds.size();
         if (unownedEndCount != 1) {
             LOG.warn("Expected 1 unownedEnd, found " + unownedEndCount);
         }
-        Property umlUnownedEnd = umlUnownedEnds.get(0);
-        LOG.debug("    umlUnownedEnd: " + umlUnownedEnd);
-        FHIMInformationModel.Attribute unownedEnd = getAttribute(umlUnownedEnd);
+        Property unownedEnd = unownedEnds.get(0);
+        LOG.debug("    unownedEnd: " + unownedEnd);
+        FHIMInformationModel.Attribute unownedEndModel = getAttributeModel(unownedEnd);
 
-        return new FHIMInformationModel.Association(name, ownedEnd, unownedEnd);
+        return new FHIMInformationModel.Association(name, ownedEndModel, unownedEndModel);
     }
 
-    private FHIMInformationModel.Dependency buildDependency(Dependency umlDependency) {
-        String name = umlDependency.getName();
+    private FHIMInformationModel.Dependency buildDependencyModel(Dependency dependency) {
+        String name = dependency.getName();
         LOG.debug("Dependency: " + name);
 
         // Expect exactly one client.
-        EList<NamedElement> clients = umlDependency.getClients();
+        EList<NamedElement> clients = dependency.getClients();
         int clientCount = clients.size();
         if (clientCount != 1) {
             LOG.warn("Expected 1 client, found " + clientCount);
         }
-        NamedElement umlClient = clients.get(0);
-        String clientName = umlClient.getName();
+        NamedElement client = clients.get(0);
+        String clientName = client.getName();
         LOG.debug("    client: " + clientName);
-        FHIMInformationModel.Type client = getType(clientName);
+        FHIMInformationModel.Type clientModel = getTypeModel(clientName);
 
         // Expect exactly one supplier.
-        EList<NamedElement> suppliers = umlDependency.getSuppliers();
+        EList<NamedElement> suppliers = dependency.getSuppliers();
         int supplierCount = suppliers.size();
         if (supplierCount != 1) {
             LOG.warn("Expected 1 supplier, found " + supplierCount);
         }
-        NamedElement umlSupplier = suppliers.get(0);
-        String supplierName = umlSupplier.getName();
+        NamedElement supplier = suppliers.get(0);
+        String supplierName = supplier.getName();
         LOG.debug("    supplier: " + supplierName);
-        FHIMInformationModel.Type supplier = getType(supplierName);
+        FHIMInformationModel.Type supplierModel = getTypeModel(supplierName);
 
-        return new FHIMInformationModel.Dependency(name, client, supplier);
+        return new FHIMInformationModel.Dependency(name, clientModel, supplierModel);
     }
 
-    private FHIMInformationModel.Class buildClass(Class umlClass) {
-        String name = umlClass.getName();
+    private FHIMInformationModel.Class buildClassModel(Class clazz) {
+        String name = clazz.getName();
         LOG.debug("Class: " + name);
 
-        FHIMInformationModel.Class clazz = nameClassMap.get(name);
+        FHIMInformationModel.Class classModel = nameClassMap.get(name);
 
         // Generalizations.
-        EList<Generalization> umlGenerals = umlClass.getGeneralizations();
-        for (Generalization umlGeneral : umlGenerals) {
-            FHIMInformationModel.Generalization generalization = createGeneralization(umlGeneral);
-            clazz.addGeneralization(generalization);
+        EList<Generalization> generalizations = clazz.getGeneralizations();
+        for (Generalization generalization : generalizations) {
+            FHIMInformationModel.Generalization generalizationModel = createGeneralizationModel(generalization);
+            classModel.addGeneralization(generalizationModel);
         }
 
         // Attributes.
-        EList<Property> umlAttributes = umlClass.getOwnedAttributes();
-        for (Property umlAttribute : umlAttributes) {
-            FHIMInformationModel.Attribute attribute = getAttribute(umlAttribute);
-            clazz.addAttribute(attribute);
+        EList<Property> attributes = clazz.getOwnedAttributes();
+        for (Property attribute : attributes) {
+            FHIMInformationModel.Attribute attributeModel = getAttributeModel(attribute);
+            classModel.addAttribute(attributeModel);
         }
 
-        return clazz;
+        return classModel;
     }
 
-    private FHIMInformationModel.Generalization createGeneralization(Generalization umlGeneral) {
+    private FHIMInformationModel.Generalization createGeneralizationModel(Generalization generalization) {
         LOG.debug("    generalization: ");
 
         // Expect exactly one source of type Class.
-        EList<Element> sources = umlGeneral.getSources();
+        EList<Element> sources = generalization.getSources();
         int sourceCount = sources.size();
         if (sourceCount != 1) {
             LOG.warn("Expected 1 source, found " + sourceCount);
         }
-        Class umlSource = (Class) sources.get(0);
-        String sourceName = umlSource.getName();
+        Class source = (Class) sources.get(0);
+        String sourceName = source.getName();
         LOG.debug("        source: " + sourceName);
-        FHIMInformationModel.Type source = getType(sourceName);
+        FHIMInformationModel.Type sourceModel = getTypeModel(sourceName);
 
         // Expect exactly one target of type Class.
-        EList<Element> targets = umlGeneral.getTargets();
+        EList<Element> targets = generalization.getTargets();
         int targetCount = targets.size();
         if (targetCount != 1) {
             LOG.warn("Expected 1 target, found " + targetCount);
         }
-        Class umlTarget = (Class) targets.get(0);
-        String targetName = umlTarget.getName();
+        Class target = (Class) targets.get(0);
+        String targetName = target.getName();
         LOG.debug("        target: " + targetName);
-        FHIMInformationModel.Type target = getType(targetName);
+        FHIMInformationModel.Type targetModel = getTypeModel(targetName);
 
-        return new FHIMInformationModel.Generalization(source, target);
+        return new FHIMInformationModel.Generalization(sourceModel, targetModel);
     }
 
-    private Attribute getAttribute(Property umlAttribute) {
-        Attribute attribute = propertyAttributeMap.get(umlAttribute);
+    private Attribute getAttributeModel(Property property) {
+        Attribute attribute = propertyAttributeMap.get(property);
         if (attribute == null) {
-            attribute = createAttribute(umlAttribute);
-            propertyAttributeMap.put(umlAttribute, attribute);
+            attribute = createAttributeModel(property);
+            propertyAttributeMap.put(property, attribute);
         } else {
-            LOG.trace("Cache hit: " + umlAttribute);
+            LOG.trace("Cache hit: " + property);
         }
         return attribute;
     }
 
-    private Attribute createAttribute(Property umlAttribute) {
-        String name = umlAttribute.getName();
+    private Attribute createAttributeModel(Property property) {
+        String name = property.getName();
         LOG.debug("    attribute: " + name);
 
         // Attribute type.
-        Type umlType = umlAttribute.getType();
-        String typeName = umlType.getName();
-        FHIMInformationModel.Type type = getType(typeName);
+        Type type = property.getType();
+        String typeName = type.getName();
+        FHIMInformationModel.Type typeModel = getTypeModel(typeName);
 
-        Attribute attribute = new Attribute(name, type);
+        Attribute attributeModel = new Attribute(name, typeModel);
 
         // Default value.
-        ValueSpecification valueSpec = umlAttribute.getDefaultValue();
+        ValueSpecification valueSpec = property.getDefaultValue();
         String defaultValue = (valueSpec != null ? valueSpec.stringValue() : null);
         if (defaultValue != null) {
-            attribute.setDefaultValue(defaultValue);
+            attributeModel.setDefaultValue(defaultValue);
         }
 
         // Multiplicity.
-        int lower = umlAttribute.getLower();
-        int upper = umlAttribute.getUpper();
+        int lower = property.getLower();
+        int upper = property.getUpper();
         Multiplicity multiplicity = new Multiplicity(lower, upper);
-        attribute.setMultiplicity(multiplicity);
+        attributeModel.setMultiplicity(multiplicity);
 
-        return attribute;
+        return attributeModel;
     }
 
-    private FHIMInformationModel.Type getType(String typeName) {
+    private FHIMInformationModel.Type getTypeModel(String typeName) {
         FHIMInformationModel.Type modelType = null;
 
         // Try Enumerations first.
@@ -282,7 +282,7 @@ public class UML2ModelConverter {
         }
 
         // Try OTF metadata concept type.
-        modelType = getExernalType(typeName);
+        modelType = getExernal(typeName);
         if (modelType != null) {
             return modelType;
         }
@@ -291,7 +291,7 @@ public class UML2ModelConverter {
         throw new IllegalArgumentException("Could not find type for '" + typeName + "'");
     }
 
-    private FHIMInformationModel.Type getExernalType(String typeName) {
+    private External getExernal(String typeName) {
         FHIMInformationModel.External external = nameExternalMap.get(typeName);
         if (external == null) {
             ConceptSpec conceptSpec = Preconditions.checkNotNull(getConceptSpec(typeName));
@@ -315,16 +315,16 @@ public class UML2ModelConverter {
         }
     }
 
-    private FHIMInformationModel.Enumeration createEnumeration(Enumeration umlEnumeration) {
-        String name = umlEnumeration.getName();
-        FHIMInformationModel.Enumeration enumeration = new FHIMInformationModel.Enumeration(name);
+    private FHIMInformationModel.Enumeration createEnumerationModel(Enumeration enumeration) {
+        String name = enumeration.getName();
+        FHIMInformationModel.Enumeration enumerationModel = new FHIMInformationModel.Enumeration(name);
 
-        EList<EnumerationLiteral> umlLiterals = umlEnumeration.getOwnedLiterals();
-        for (EnumerationLiteral umlLiteral : umlLiterals) {
-            String literal = umlLiteral.getName();
-            LOG.debug("    literal: " + literal);
-            enumeration.addLiteral(literal);
+        EList<EnumerationLiteral> literals = enumeration.getOwnedLiterals();
+        for (EnumerationLiteral literal : literals) {
+            String literalName = literal.getName();
+            LOG.debug("    literal: " + literalName);
+            enumerationModel.addLiteral(literalName);
         }
-        return enumeration;
+        return enumerationModel;
     }
 }
