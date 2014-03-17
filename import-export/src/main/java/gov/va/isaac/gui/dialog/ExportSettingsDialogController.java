@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 public class ExportSettingsDialogController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportSettingsDialogController.class);
-    private static final String XML_EXTENSION = ".xml";
 
     @FXML private Label folderSelectionLabel;
     @FXML private TextField fileSelectionTextField;
@@ -90,9 +89,10 @@ public class ExportSettingsDialogController {
         if ((folderName != null)  && (! folderName.isEmpty())
                 && (fileName != null) && (! fileName.isEmpty())) {
 
-            // Add ".cim" extension to fileName if it doesn't already have one.
-            if (! fileName.endsWith(XML_EXTENSION)) {
-                fileName = fileName + XML_EXTENSION;
+            // Add proper extension to fileName if it doesn't already have one.
+            String fileExtension = modelType.getFileExtension();
+            if (! fileName.endsWith(fileExtension)) {
+                fileName = fileName + '.' + fileExtension;
             }
 
             performExport(folderName, fileName);
