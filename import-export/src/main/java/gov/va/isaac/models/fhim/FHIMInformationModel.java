@@ -53,13 +53,11 @@ public class FHIMInformationModel implements InformationModel {
 
     public static final class Attribute extends Type {
         private final Type type;
-        private final String defaultValue;
-        private final Multiplicity multiplicity;
-        public Attribute(String name, Type type, String defaultValue, Multiplicity multiplicity) {
+        private String defaultValue;
+        private Multiplicity multiplicity;
+        public Attribute(String name, Type type) {
             super(name);
             this.type = type;
-            this.defaultValue = defaultValue;
-            this.multiplicity = multiplicity;
         }
         public Type getType() {
             return type;
@@ -67,8 +65,14 @@ public class FHIMInformationModel implements InformationModel {
         public String getDefaultValue() {
             return defaultValue;
         }
+        public void setDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
+        }
         public Multiplicity getMultiplicity() {
             return multiplicity;
+        }
+        public void setMultiplicity(Multiplicity multiplicity) {
+            this.multiplicity = multiplicity;
         }
     }
 

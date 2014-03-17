@@ -247,16 +247,22 @@ public class FHIMInformationModelFactory {
         String typeName = umlType.getName();
         FHIMInformationModel.Type type = getType(typeName);
 
+        Attribute attribute = new Attribute(name, type);
+
         // Default value.
         ValueSpecification valueSpec = umlAttribute.getDefaultValue();
         String defaultValue = (valueSpec != null ? valueSpec.stringValue() : null);
+        if (defaultValue != null) {
+            attribute.setDefaultValue(defaultValue);
+        }
 
         // Multiplicity.
         int lower = umlAttribute.getLower();
         int upper = umlAttribute.getUpper();
         Multiplicity multiplicity = new Multiplicity(lower, upper);
+        attribute.setMultiplicity(multiplicity);
 
-        return new Attribute(name, type, defaultValue, multiplicity);
+        return attribute;
     }
 
     private FHIMInformationModel.Type getType(String typeName) {
