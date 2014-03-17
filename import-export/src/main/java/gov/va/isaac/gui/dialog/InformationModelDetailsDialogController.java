@@ -25,6 +25,7 @@ import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.InformationModel.Metadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
+import gov.va.isaac.models.fhim.FHIMInformationModel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -84,10 +85,68 @@ public class InformationModelDetailsDialogController {
 
         if (informationModel.getType() == InformationModelType.CEM) {
             displayCEM((CEMInformationModel) informationModel);
+        } else if (informationModel.getType() == InformationModelType.FHIM) {
+                displayFHIM((FHIMInformationModel) informationModel);
         } else {
             throw new UnsupportedOperationException(informationModel.getType() +
                     " display not yet supported in ISAAC.");
         }
+    }
+
+    private void displayFHIM(final FHIMInformationModel fhimModel) {
+
+        // Do work in background.
+        Task<String> task = new Task<String>() {
+
+            @Override
+            protected String call() throws Exception {
+
+                // Do work.
+                return "TODO";
+            }
+
+            @Override
+            protected void succeeded() {
+
+                // Update UI.
+                modelNameLabel.setText(fhimModel.getName());
+                modelTypeLabel.setText(fhimModel.getType().getDisplayName());
+                focusConceptLabel.setText(fhimModel.getFocusConceptName());
+                uuidLabel.setText(fhimModel.getFocusConceptUUID().toString());
+
+                Metadata metadata = fhimModel.getMetadata();
+                importerNameLabel.setText(metadata.getImporterName());
+                importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
+                importPathLabel.setText(metadata.getPath().toString());
+                importModuleLabel.setText(metadata.getModuleName());
+
+                String modelXML = this.getValue();
+                modelXmlTextArea.setText(modelXML);
+           }
+
+            @Override
+            protected void failed() {
+
+                // Show dialog.
+                Throwable ex = getException();
+                String title = ex.getClass().getName();
+                String msg = String.format("Unexpected error displaying FHIM model \"%s\"",
+                        fhimModel.getName());
+                LOG.error(msg, ex);
+                AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+            }
+        };
+
+        // Bind cursor to task state.
+        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
+        this.stage.getScene().cursorProperty().bind(cursorBinding);
+
+        // Bind progress indicator to task state.
+        modelXmlProgress.visibleProperty().bind(task.runningProperty());
+
+        Thread t = new Thread(task, "Display_" + fhimModel.getName());
+        t.setDaemon(true);
+        t.start();
     }
 
     private void displayCEM(final CEMInformationModel cemModel) {
