@@ -21,6 +21,7 @@ package gov.va.isaac.models;
 import gov.va.isaac.model.InformationModelType;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -90,4 +91,9 @@ public interface InformationModel {
     public InformationModelType getType();
 
     public Metadata getMetadata();
+
+    public String getFocusConceptName();
+
+    public UUID getFocusConceptUUID();
+
 }

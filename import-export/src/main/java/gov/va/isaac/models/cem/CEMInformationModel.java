@@ -179,6 +179,7 @@ public class CEMInformationModel implements InformationModel {
         this.metadata = metadata;
     }
 
+    @Override
     public String getFocusConceptName() {
         return focusConceptName;
     }
@@ -187,6 +188,7 @@ public class CEMInformationModel implements InformationModel {
         this.focusConceptName = focusConceptName;
     }
 
+    @Override
     public UUID getFocusConceptUUID() {
         return focusConceptUUID;
     }

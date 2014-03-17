@@ -246,6 +246,7 @@ public class FHIMInformationModel implements InformationModel {
         this.metadata = metadata;
     }
 
+    @Override
     public String getFocusConceptName() {
         return focusConceptName;
     }
@@ -254,6 +255,7 @@ public class FHIMInformationModel implements InformationModel {
         this.focusConceptName = focusConceptName;
     }
 
+    @Override
     public UUID getFocusConceptUUID() {
         return focusConceptUUID;
     }
