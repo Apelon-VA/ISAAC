@@ -16,12 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.models.fhim.importer;
+package gov.va.isaac.models.fhim.converter;
 
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
+import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.util.Iterator;
 import java.util.List;
@@ -54,9 +55,9 @@ import com.google.common.collect.Maps;
  *
  * @author ocarlsen
  */
-public class FHIMInformationModelFactory {
+public class UML2ModelConverter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FHIMInformationModelFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UML2ModelConverter.class);
 
     private final Map<String, FHIMInformationModel.Enumeration> nameEnumerationMap = Maps.newHashMap();
     private final Map<String, FHIMInformationModel.Class> nameClassMap = Maps.newHashMap();

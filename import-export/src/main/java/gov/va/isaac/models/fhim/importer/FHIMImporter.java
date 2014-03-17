@@ -30,6 +30,7 @@ import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Generalization;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Type;
+import gov.va.isaac.models.fhim.converter.UML2ModelConverter;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
@@ -103,8 +104,8 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         Package bloodPressurePackage = umlModel.getNestedPackage("BloodPressure");
 
         // Parse into FHIM model.
-        FHIMInformationModelFactory factory = new FHIMInformationModelFactory();
-        FHIMInformationModel infoModel = factory.createInformationModel(bloodPressurePackage);
+        UML2ModelConverter converter = new UML2ModelConverter();
+        FHIMInformationModel infoModel = converter.createInformationModel(bloodPressurePackage);
 
         // Annotate focusConcept with Refset members.
         annotateWithRefsets(focusConcept, infoModel);
