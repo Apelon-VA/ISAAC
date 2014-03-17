@@ -64,8 +64,7 @@ public class FHIMInformationModelFactory {
     private final Map<String, FHIMInformationModel.External> nameExternalMap = Maps.newHashMap();
 
     public FHIMInformationModel createInformationModel(Package umlPackage) {
-
-        FHIMInformationModel infoModel = new FHIMInformationModel(umlPackage.getName() , null);
+        FHIMInformationModel infoModel = new FHIMInformationModel(umlPackage.getName());
 
         // Gather Classes & Enumerations first, they will be used as types later.
         EList<PackageableElement> umlElements = umlPackage.getPackagedElements();

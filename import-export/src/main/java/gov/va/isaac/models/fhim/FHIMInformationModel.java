@@ -22,6 +22,7 @@ import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -180,17 +181,18 @@ public class FHIMInformationModel implements InformationModel {
     }
 
     private final String name;
-    private final Metadata metadata;
     private final List<Enumeration> enumerations = Lists.newArrayList();
     private final List<Class> classes = Lists.newArrayList();
     private final List<Dependency> dependencies = Lists.newArrayList();
     private final List<Association> associations = Lists.newArrayList();
 
-    public FHIMInformationModel(String name,
-            Metadata metadata) {
+    private Metadata metadata;
+    private String focusConceptName;
+    private UUID focusConceptUUID;
+
+    public FHIMInformationModel(String name) {
         super();
         this.name = name;
-        this.metadata = metadata;
     }
 
     @Override
@@ -201,11 +203,6 @@ public class FHIMInformationModel implements InformationModel {
     @Override
     public InformationModelType getType() {
         return InformationModelType.FHIM;
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return metadata;
     }
 
     public List<Enumeration> getEnumerations() {
@@ -238,5 +235,32 @@ public class FHIMInformationModel implements InformationModel {
 
     public void addAssociation(Association association) {
         associations.add(association);
+    }
+
+    @Override
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
+    }
+
+    @Override
+    public String getFocusConceptName() {
+        return focusConceptName;
+    }
+
+    public void setFocusConceptName(String focusConceptName) {
+        this.focusConceptName = focusConceptName;
+    }
+
+    @Override
+    public UUID getFocusConceptUUID() {
+        return focusConceptUUID;
+    }
+
+    public void setFocusConceptUUID(UUID focusConceptUUID) {
+        this.focusConceptUUID = focusConceptUUID;
     }
 }

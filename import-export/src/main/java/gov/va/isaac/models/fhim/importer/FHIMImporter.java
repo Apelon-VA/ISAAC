@@ -102,7 +102,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         // Locate "BloodPressure" package
         Package bloodPressurePackage = umlModel.getNestedPackage("BloodPressure");
 
-        // Parse UML model into a POJO.
+        // Parse into FHIM model.
         FHIMInformationModelFactory factory = new FHIMInformationModelFactory();
         FHIMInformationModel infoModel = factory.createInformationModel(bloodPressurePackage);
 
