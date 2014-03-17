@@ -20,9 +20,9 @@ package gov.va.isaac.models.fhim;
 
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.util.AbstractInformationModel;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -30,7 +30,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-public class FHIMInformationModel implements InformationModel {
+public class FHIMInformationModel extends AbstractInformationModel implements InformationModel {
 
     /**
      * For unlimited values, see {@link LiteralUnlimitedNatural}
@@ -48,6 +48,14 @@ public class FHIMInformationModel implements InformationModel {
         }
         public int getUpper() {
             return upper;
+        }
+        @Override
+        public String toString() {
+            if (lower == upper) {
+                return Integer.toString(lower);
+            } else {
+                return String.format("%d..%d", lower, upper);
+            }
         }
     }
 
@@ -184,29 +192,13 @@ public class FHIMInformationModel implements InformationModel {
         }
     }
 
-    private final String name;
     private final List<Enumeration> enumerations = Lists.newArrayList();
     private final List<Class> classes = Lists.newArrayList();
     private final List<Dependency> dependencies = Lists.newArrayList();
     private final List<Association> associations = Lists.newArrayList();
 
-    private Metadata metadata;
-    private String focusConceptName;
-    private UUID focusConceptUUID;
-
     public FHIMInformationModel(String name) {
-        super();
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public InformationModelType getType() {
-        return InformationModelType.FHIM;
+        super(name, InformationModelType.FHIM);
     }
 
     public List<Enumeration> getEnumerations() {
@@ -239,32 +231,5 @@ public class FHIMInformationModel implements InformationModel {
 
     public void addAssociation(Association association) {
         associations.add(association);
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
-    }
-
-    @Override
-    public String getFocusConceptName() {
-        return focusConceptName;
-    }
-
-    public void setFocusConceptName(String focusConceptName) {
-        this.focusConceptName = focusConceptName;
-    }
-
-    @Override
-    public UUID getFocusConceptUUID() {
-        return focusConceptUUID;
-    }
-
-    public void setFocusConceptUUID(UUID focusConceptUUID) {
-        this.focusConceptUUID = focusConceptUUID;
     }
 }

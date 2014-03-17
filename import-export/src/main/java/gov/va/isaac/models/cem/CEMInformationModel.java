@@ -23,13 +23,12 @@ import static gov.va.isaac.models.cem.CEMInformationModel.ComponentType.MOD;
 import static gov.va.isaac.models.cem.CEMInformationModel.ComponentType.QUAL;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.util.AbstractInformationModel;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 /**
@@ -37,7 +36,7 @@ import com.google.common.collect.Lists;
  *
  * @author ocarlsen
  */
-public class CEMInformationModel implements InformationModel {
+public class CEMInformationModel extends AbstractInformationModel implements InformationModel {
 
     public static final class Constraint {
         private final String path;
@@ -89,7 +88,6 @@ public class CEMInformationModel implements InformationModel {
         }
     }
 
-    private final String name;
     private final List<Composition> qualComponents = Lists.newArrayList();
     private final List<Composition> modComponents = Lists.newArrayList();
     private final List<Composition> attComponents = Lists.newArrayList();
@@ -97,23 +95,9 @@ public class CEMInformationModel implements InformationModel {
 
     private String key;
     private ConceptSpec dataType;
-    private Metadata metadata;
-    private String focusConceptName;
-    private UUID focusConceptUUID;
 
-    public CEMInformationModel(String type) {
-        super();
-        this.name = type;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public InformationModelType getType() {
-        return InformationModelType.CEM;
+    public CEMInformationModel(String name) {
+        super(name, InformationModelType.CEM);
     }
 
     public String getKey() {
@@ -168,40 +152,5 @@ public class CEMInformationModel implements InformationModel {
 
     public List<Constraint> getConstraints() {
         return constraints;
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
-    }
-
-    @Override
-    public String getFocusConceptName() {
-        return focusConceptName;
-    }
-
-    public void setFocusConceptName(String focusConceptName) {
-        this.focusConceptName = focusConceptName;
-    }
-
-    @Override
-    public UUID getFocusConceptUUID() {
-        return focusConceptUUID;
-    }
-
-    public void setFocusConceptUUID(UUID focusConceptUUID) {
-        this.focusConceptUUID = focusConceptUUID;
-    }
-
-    @Override
-    public String toString() {
-        return Objects.toStringHelper(this)
-                .add("name", name)
-                .add("type", getType())
-                .toString();
     }
 }
