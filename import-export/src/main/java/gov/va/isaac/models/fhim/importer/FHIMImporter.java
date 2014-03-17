@@ -375,8 +375,9 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
 
         Resource resource = resourceSet.createResource(fileURI);
 
-        // Copied from UML2 tutorial.
-        resource.load(null);
+        // And load.
+        Map<?, ?> options = null;   // No load options needed.
+        resource.load(options);
         Package model = (Package) resource.getContents().get(0);
         LOG.info("Loaded '" + model.getQualifiedName() + "' from '" + fileURI + "'.");
 
