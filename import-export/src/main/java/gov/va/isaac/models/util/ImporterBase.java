@@ -215,4 +215,26 @@ public class ImporterBase extends CommonBase {
 
         return newRefex;
     }
+
+    protected RefexChronicleBI<?> addRefexInCidCidStrExtensionRefset(ComponentChronicleBI<?> focusComponent,
+            ConceptSpec refsetConcept, int componentExtension1Nid, int componentExtension2Nid, String stringExtension)
+            throws IOException, InvalidCAB, ContradictionException {
+        RefexCAB newRefexCab = new RefexCAB(RefexType.CID_CID_STR,
+                focusComponent.getPrimordialUuid(),
+                refsetConcept.getUuids()[0],
+                IdDirective.GENERATE_RANDOM,
+                RefexDirective.EXCLUDE);
+
+        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtension1Nid);
+        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_2_ID, componentExtension2Nid);
+        newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
+
+        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
+
+        LOG.info("newRefex composition UUID:" + newRefex.getPrimordialUuid());
+
+        focusComponent.addAnnotation(newRefex);
+
+        return newRefex;
+    }
 }
