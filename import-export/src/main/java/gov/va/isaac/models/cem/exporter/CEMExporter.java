@@ -92,6 +92,12 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         // Parse into CEM model.
         CEMInformationModel infoModel = createInformationModel(focusConceptAnnotations);
 
+        // Abort if not available.
+        if (infoModel == null) {
+            LOG.warn("No CEM model to export on " + conceptUUID);
+            return;
+        }
+
         // Build a DOM tree in the style of CEM.
         this.document = buildDom();
         Element root = buildCemTree(infoModel);
@@ -116,15 +122,14 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             throws ValidationException, IOException, ContradictionException {
 
         // Name attribute (1).
-        String name = null;
         StringMember nameAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
         if (nameAnnotation == null) {
             LOG.info("No CEM_TYPE_REFSET member found.");
-        } else {
-            name = nameAnnotation.getString1();
+            return null;
         }
 
+        String name = nameAnnotation.getString1();
         CEMInformationModel infoModel = new CEMInformationModel(name);
 
         // Key element (0-1).
