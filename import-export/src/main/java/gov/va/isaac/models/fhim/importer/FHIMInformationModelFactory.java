@@ -306,7 +306,7 @@ public class FHIMInformationModelFactory {
         switch (dataTypeName) {
         case "Code": return FHIMMetadataBinding.FHIM_CODE;
         case "ObservationQualifier": return FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER;
-        case "ObservationStatement": return FHIMMetadataBinding.FHIM_CODE;
+        case "ObservationStatement": return FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT;
         case "PhysicalQuantity": return FHIMMetadataBinding.FHIM_PHYSICALQUANTITY;
         case "PulsePosition": return FHIMMetadataBinding.FHIM_PULSEPOSITION;
         // TODO: Others as required.
