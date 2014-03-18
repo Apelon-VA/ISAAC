@@ -28,6 +28,7 @@ import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Generalization;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Type;
+import gov.va.isaac.models.fhim.converter.Model2UMLConverter;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
@@ -39,7 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
+import org.eclipse.uml2.uml.Package;
+import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -98,9 +105,12 @@ public class FHIMExporter extends ExporterBase {
             return;
         }
 
-        // TODO: Convert to UML model in the style of FHIM.
+        // Convert to UML model in the style of FHIM.
+        Model2UMLConverter converter = new Model2UMLConverter();
+        Package umlModel = converter.createUMLModel(infoModel);
 
-        // TODO: Write UML model to OutputStream.
+        // Write UML model to OutputStream.
+        saveModel(umlModel);
 
         LOG.info("Ending export of FHIM model");
     }
@@ -108,6 +118,30 @@ public class FHIMExporter extends ExporterBase {
     @Override
     protected Logger getLogger() {
         return LOG;
+    }
+
+    private void saveModel(Package pkg) throws IOException {
+
+        // Create a resource-set to contain the resource(s) that we are saving
+        ResourceSet resourceSet = new ResourceSetImpl();
+
+        // Initialize registrations of resource factories, library models,
+        // profiles, Ecore metadata, and other dependencies required for
+        // serializing and working with UML resources. This is only necessary in
+        // applications that are not hosted in the Eclipse platform run-time, in
+        // which case these registrations are discovered automatically from
+        // Eclipse extension points.
+        UMLResourcesUtil.init(resourceSet);
+
+        // Create the output resource and add our model package to it.
+//        Resource resource = resourceSet.createResource(uri);
+        Resource resource = new XMIResourceImpl();
+        resource.getContents().add(pkg);
+
+        // And save.
+        Map<?, ?> options = null;   // No save options needed.
+        resource.save(outputStream, options);
+        outputStream.close();
     }
 
     private FHIMInformationModel createInformationModel(
