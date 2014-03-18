@@ -21,6 +21,7 @@ package gov.va.isaac.models.fhim.exporter;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Class;
+import gov.va.isaac.models.fhim.FHIMInformationModel.Dependency;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Enumeration;
 import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Generalization;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_int.NidIntMember;
+import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_nid_string.NidNidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_string.NidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
 import org.slf4j.Logger;
@@ -72,7 +74,7 @@ public class FHIMExporter extends ExporterBase {
         this.outputStream = outputStream;
 
         // Build Nid-Externals map.
-        nidExternalMap = buildNidExternalsMap();
+        nidExternalMap = buildNidExternalMap();
     }
 
     public void exportModel(UUID conceptUUID) throws Exception {
@@ -120,6 +122,7 @@ public class FHIMExporter extends ExporterBase {
 
         String name = modelAnnotation.getString1();
         FHIMInformationModel infoModel = new FHIMInformationModel(name);
+        LOG.debug("Model: " + name);
 
         // Get all annotations on the model annotation.
         Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelAnnotation);
@@ -136,7 +139,7 @@ public class FHIMExporter extends ExporterBase {
             }
         }
 
-        // Stub Classes first, they will be used as types later.
+        // Stub Classes first, they will be used as types.
         List<StringMember> classAnnotations = filterAnnotations(modelAnnotations,
                 FHIMMetadataBinding.FHIM_CLASSES_REFSET, StringMember.class);
         if (classAnnotations.isEmpty()) {
@@ -152,13 +155,44 @@ public class FHIMExporter extends ExporterBase {
             }
         }
 
-        // Now that we have the requisite types, we can flesh out the rest.
+        // Now flesh out Classes.
         for (StringMember classAnnotation : classAnnotations) {
             Class c = buildClass(classAnnotation);
             infoModel.addClass(c);
         }
 
+        // Dependencies.
+        List<NidNidStringMember> dependencyAnnotations = filterAnnotations(modelAnnotations,
+                FHIMMetadataBinding.FHIM_DEPENDENCIES_REFSET, NidNidStringMember.class);
+        if (dependencyAnnotations.isEmpty()) {
+            LOG.info("No FHIM_DEPENDENCIES_REFSET member found.");
+        } else {
+            for (NidNidStringMember dependencyAnnotation : dependencyAnnotations) {
+                Dependency d = buildDependency(dependencyAnnotation);
+                infoModel.addDependency(d);
+            }
+        }
+
+        // TODO: Associations.
+
         return infoModel;
+    }
+
+    private Dependency buildDependency(NidNidStringMember dependencyAnnotation) {
+        String name = dependencyAnnotation.getStrValue();
+        LOG.debug("Dependency: " + name);
+
+        // Client.
+        int clientNid = dependencyAnnotation.getC1Nid();
+        Type client = getTypeForNid(clientNid);
+        LOG.debug("    client: " + client.getName());
+
+        // Supplier.
+        int supplierNid = dependencyAnnotation.getC2Nid();
+        Type supplier = getTypeForNid(supplierNid);
+        LOG.debug("    supplier: " + supplier.getName());
+
+        return new Dependency(name, client, supplier);
     }
 
     private Class buildClass(StringMember classAnnotation)
@@ -343,6 +377,7 @@ public class FHIMExporter extends ExporterBase {
             throws IOException, ContradictionException {
         String name = enumAnnotation.getString1();
         Enumeration e = new Enumeration(name);
+        LOG.debug("Attribute: " + e.getName());
 
         // Enumeration values.
         Collection<StringMember> valueAnnotations = filterAnnotations(
@@ -362,7 +397,7 @@ public class FHIMExporter extends ExporterBase {
     }
 
 
-    private static Map<Integer, External> buildNidExternalsMap()
+    private static Map<Integer, External> buildNidExternalMap()
             throws ValidationException, IOException {
         Map<Integer, External> m = Maps.newHashMap();
 
