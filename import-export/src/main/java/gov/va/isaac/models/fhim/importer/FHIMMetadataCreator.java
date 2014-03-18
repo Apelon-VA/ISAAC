@@ -72,6 +72,7 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
         ConceptChronicleBI FHIMGeneralizationsRefset = createNewConcept(FHIMRefsets, "FHIM Generalizations reference set (foundation metadata concept)", "FHIM Generalizations reference set");
         ConceptChronicleBI FHIMDependenciesRefset = createNewConcept(FHIMRefsets, "FHIM Dependencies reference set (foundation metadata concept)", "FHIM Dependencies reference set");
         ConceptChronicleBI FHIMAssociationsRefset = createNewConcept(FHIMRefsets, "FHIM Associations reference set (foundation metadata concept)", "FHIM Associations reference set");
+        ConceptChronicleBI FHIMAssociationEndsRefset = createNewConcept(FHIMRefsets, "FHIM Association Ends reference set (foundation metadata concept)", "FHIM Association Ends reference set");
         ConceptChronicleBI FHIMMultiplicityRefset = createNewConcept(FHIMRefsets, "FHIM Multiplicity reference set (foundation metadata concept)", "FHIM Multiplicity reference set");
 
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));

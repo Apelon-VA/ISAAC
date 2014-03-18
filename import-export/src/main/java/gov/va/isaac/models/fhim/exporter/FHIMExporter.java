@@ -19,6 +19,7 @@
 package gov.va.isaac.models.fhim.exporter;
 
 import gov.va.isaac.models.fhim.FHIMInformationModel;
+import gov.va.isaac.models.fhim.FHIMInformationModel.Association;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Class;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Dependency;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
+import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_boolean.NidBooleanMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_int.NidIntMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_nid_string.NidNidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_string.NidStringMember;
@@ -173,9 +175,58 @@ public class FHIMExporter extends ExporterBase {
             }
         }
 
-        // TODO: Associations.
+        // Create model-scoped Attributes, which will be used by Associations.
+        Collection<NidStringMember> attributeAnnotations = filterAnnotations(
+                modelAnnotations,
+                FHIMMetadataBinding.FHIM_ATTRIBUTES_REFSET,
+                NidStringMember.class);
+        for (NidStringMember attributeAnnotation : attributeAnnotations) {
+            buildAttribute(attributeAnnotation);
+        }
+
+        // Associations.
+        List<StringMember> associationAnnotations = filterAnnotations(modelAnnotations,
+                FHIMMetadataBinding.FHIM_ASSOCIATIONS_REFSET, StringMember.class);
+        if (associationAnnotations.isEmpty()) {
+            LOG.info("No FHIM_ASSOCIATIONS_REFSET member found.");
+        } else {
+            for (StringMember associationAnnotation : associationAnnotations) {
+                Association a = buildAssociation(associationAnnotation);
+                infoModel.addAssociation(a);
+            }
+        }
 
         return infoModel;
+    }
+
+    private Association buildAssociation(StringMember associationAnnotation)
+            throws ValidationException, IOException, ContradictionException {
+        String name = associationAnnotation.getString1();
+        Association a = new Association(name);
+        LOG.debug("Association: " + name);
+
+        // Association Ends.
+        List<NidBooleanMember> associationEndAnnotations = filterAnnotations(
+                getLatestAnnotations(associationAnnotation),
+                FHIMMetadataBinding.FHIM_ASSOCIATIONENDS_REFSET, NidBooleanMember.class);
+        if (associationEndAnnotations.isEmpty()) {
+            LOG.info("No FHIM_ASSOCIATIONENDS_REFSET member found.");
+        } else {
+            for (NidBooleanMember associationEndAnnotation : associationEndAnnotations) {
+                int memberEndNid = associationEndAnnotation.getNid1();
+                boolean owned = associationEndAnnotation.getBoolean1();
+
+                Attribute memberEnd = getAttribute(memberEndNid);
+                if (memberEnd == null) {
+                    LOG.warn("No memberEnd for " + memberEndNid);
+                } else {
+                    a.addMemberEnd(memberEnd);
+                    a.setOwned(memberEnd, owned);
+                }
+            }
+        }
+
+        return a;
     }
 
     private Dependency buildDependency(NidNidStringMember dependencyAnnotation) {
@@ -267,6 +318,9 @@ public class FHIMExporter extends ExporterBase {
             LOG.debug("    multiplicity: " + multiplicity);
             a.setMultiplicity(multiplicity);
         }
+
+        // Keep track for later.
+        nidAttributeMap.put(attributeAnnotation.getNid(), a);
 
         return a;
     }

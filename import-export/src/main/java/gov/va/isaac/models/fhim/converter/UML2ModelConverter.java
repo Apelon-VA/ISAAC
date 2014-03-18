@@ -25,7 +25,6 @@ import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.EList;
@@ -47,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -118,34 +116,28 @@ public class UML2ModelConverter {
 
     private FHIMInformationModel.Association buildAssociationModel(Association association) {
         String name = association.getName();
+        FHIMInformationModel.Association associationModel = new FHIMInformationModel.Association(name);
         LOG.debug("Association: " + name);
 
         // Expect binary associations.
         Preconditions.checkArgument(association.isBinary());
 
-        // Expect exactly one "owned" end.
+        // "Owned" ends.
         EList<Property> ownedEnds = association.getOwnedEnds();
-        int ownedEndCount = ownedEnds.size();
-        if (ownedEndCount != 1) {
-            LOG.warn("Expected 1 ownedEnd, found " + ownedEndCount);
-        }
-        Property ownedEnd = ownedEnds.get(0);
-        LOG.debug("    ownedEnd: " + ownedEnd);
-        FHIMInformationModel.Attribute ownedEndModel = getAttributeModel(ownedEnd);
 
-        // Expect exactly one end left over after removing "owned" one.
+        // Member ends.
         EList<Property> memberEnds = association.getMemberEnds();
-        List<Property> unownedEnds = Lists.newArrayList(memberEnds);
-        unownedEnds.remove(ownedEnd);
-        int unownedEndCount = unownedEnds.size();
-        if (unownedEndCount != 1) {
-            LOG.warn("Expected 1 unownedEnd, found " + unownedEndCount);
-        }
-        Property unownedEnd = unownedEnds.get(0);
-        LOG.debug("    unownedEnd: " + unownedEnd);
-        FHIMInformationModel.Attribute unownedEndModel = getAttributeModel(unownedEnd);
+        for (Property memberEnd : memberEnds) {
+            LOG.debug("    memberEnd: " + memberEnd.getName());
+            FHIMInformationModel.Attribute memberEndModel = getAttributeModel(memberEnd);
+            associationModel.addMemberEnd(memberEndModel);
 
-        return new FHIMInformationModel.Association(name, ownedEndModel, unownedEndModel);
+            boolean owned = ownedEnds.contains(memberEnd);
+            LOG.debug("    owned: " + owned);
+            associationModel.setOwned(memberEndModel, owned);
+        }
+
+        return associationModel;
     }
 
     private FHIMInformationModel.Dependency buildDependencyModel(Dependency dependency) {

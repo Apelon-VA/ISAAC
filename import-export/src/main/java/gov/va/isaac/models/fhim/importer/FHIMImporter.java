@@ -192,32 +192,45 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         // Associations.
         List<Association> associations = infoModel.getAssociations();
         for (Association association : associations) {
-            addAssociationRefsetMember(modelRefex, association);
+            RefexChronicleBI<?> associationRefex = addAssociationsRefsetMember(modelRefex, association);
+
+            // Association Ends.
+            for (Attribute memberEnd : association.getMemberEnds()) {
+                RefexChronicleBI<?> memberEndRefex = getAttributeRefex(memberEnd);
+
+                // Sometimes the owned ends are orphaned and no attribute refset member
+                // would have been created by this point.  Create one now.
+                if (memberEndRefex == null) {
+                    memberEndRefex = addAttributesRefsetMember(modelRefex, memberEnd);
+                }
+
+                boolean owned = association.isOwned(memberEnd);
+                addAssociationEndsRefsetMember(associationRefex, memberEnd, owned);
+            }
         }
     }
 
-    private RefexChronicleBI<?> addAssociationRefsetMember(RefexChronicleBI<?> focusComponent,
+    private RefexChronicleBI<?> addAssociationEndsRefsetMember(RefexChronicleBI<?> focusComponent,
+            Attribute memberEnd, boolean owned)
+            throws IOException, InvalidCAB, ContradictionException {
+        String memberEndName = memberEnd.getName();
+        LOG.debug("Adding refex for memberEnd: " + memberEndName);
+
+        RefexChronicleBI<?> memberEndRefex = getAttributeRefex(memberEnd);
+        int memberEndNid = memberEndRefex.getNid();
+
+        return addRefexInCidBooleanExtensionRefset(focusComponent,
+                FHIMMetadataBinding.FHIM_ASSOCIATIONENDS_REFSET, memberEndNid, owned);
+    }
+
+    private RefexChronicleBI<?> addAssociationsRefsetMember(RefexChronicleBI<?> focusComponent,
             Association association)
             throws ValidationException, IOException, InvalidCAB, ContradictionException {
         String associationName = association.getName();
         LOG.debug("Adding refex for association: " + associationName);
 
-        Attribute ownedEnd = association.getOwnedEnd();
-        Attribute unownedEnd = association.getUnownedEnd();
-
-        // Sometimes the owned ends are orphaned and no attribute refset member
-        // would have been created by this point.  Create one now.
-        RefexChronicleBI<?> ownedEndRefex = getAttributeRefex(ownedEnd);
-        if (ownedEndRefex == null) {
-            ownedEndRefex = addAttributesRefsetMember(focusComponent, ownedEnd);
-        }
-
-        // Need to find appropriate NIDs.
-        int ownedEndNid = ownedEndRefex.getNid();
-        int unownedEndNid = getNidForType(unownedEnd);
-
-        return addRefexInCidCidExtensionRefset(focusComponent,
-                FHIMMetadataBinding.FHIM_ASSOCIATIONS_REFSET, ownedEndNid, unownedEndNid);
+        return addRefexInStrExtensionRefset(focusComponent,
+                FHIMMetadataBinding.FHIM_ASSOCIATIONS_REFSET, associationName);
     }
 
     private RefexChronicleBI<?> addDependenciesRefsetMember(RefexChronicleBI<?> focusComponent,

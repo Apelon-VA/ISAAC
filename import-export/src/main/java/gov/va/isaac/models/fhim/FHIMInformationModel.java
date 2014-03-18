@@ -23,12 +23,14 @@ import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.util.AbstractInformationModel;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class FHIMInformationModel extends AbstractInformationModel implements InformationModel {
 
@@ -85,18 +87,22 @@ public class FHIMInformationModel extends AbstractInformationModel implements In
     }
 
     public static final class Association extends Type {
-        private final Attribute ownedEnd;
-        private final Attribute unownedEnd;
-        public Association(String name, Attribute ownedEnd, Attribute unownedEnd) {
+        private final List<Attribute> memberEnds = Lists.newArrayList();
+        private final Map<Attribute, Boolean> memberOwnedMap = Maps.newHashMap();
+        public Association(String name) {
             super(name);
-            this.ownedEnd = ownedEnd;
-            this.unownedEnd = unownedEnd;
         }
-        public Attribute getOwnedEnd() {
-            return ownedEnd;
+        public List<Attribute> getMemberEnds() {
+            return memberEnds;
         }
-        public Attribute getUnownedEnd() {
-            return unownedEnd;
+        public void addMemberEnd(Attribute memberEnd) {
+            memberEnds.add(memberEnd);
+        }
+        public void setOwned(Attribute memberEnd, boolean owned) {
+            memberOwnedMap.put(memberEnd, owned);
+        }
+        public boolean isOwned(Attribute memberEnd) {
+            return memberOwnedMap.get(memberEnd);
         }
     }
 

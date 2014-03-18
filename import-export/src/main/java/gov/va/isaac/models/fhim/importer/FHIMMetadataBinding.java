@@ -77,6 +77,10 @@ public class FHIMMetadataBinding extends MetadataBindingBase {
           = new ConceptSpec("FHIM Associations reference set (foundation metadata concept)",
           UUID.fromString("96391b15-b633-5d83-be9f-a4f6ae07846f"));
 
+    public static ConceptSpec FHIM_ASSOCIATIONENDS_REFSET
+            = new ConceptSpec("FHIM Association Ends reference set (foundation metadata concept)",
+            UUID.fromString("83abc822-2748-5ddc-8eea-5639a29693c7"));
+
     public static ConceptSpec FHIM_CODE
             = new ConceptSpec("FHIM Code (foundation metadata concept)",
             UUID.fromString("2ee93643-38d5-54c1-bd77-ce1bd8ed843a"));
