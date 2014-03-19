@@ -27,6 +27,9 @@ import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.uml2.uml.AggregationKind;
+import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Dependency;
 import org.eclipse.uml2.uml.Enumeration;
@@ -40,6 +43,7 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -54,6 +58,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
     private final Map<FHIMInformationModel.Enumeration, Enumeration> modelEnumerationMap = Maps.newHashMap();
     private final Map<FHIMInformationModel.Class, Class> modelClassMap = Maps.newHashMap();
+    private final Map<FHIMInformationModel.Attribute, Property> modelPropertyMap = Maps.newHashMap();
     private final Map<ConceptSpec, Class> conceptSpecClassMap;
 
     private final Package clinicalObservationPkg;
@@ -101,6 +106,11 @@ public class Model2UMLConverter implements FHIMUmlConstants {
             modelClassMap.put(classModel, c);
         }
 
+        // Associations will create some Properties that are shared by Classes.
+        for (FHIMInformationModel.Association asociationModel : infoModel.getAssociations()) {
+            createAssociation(pkg, asociationModel);
+        }
+
         // Now flesh out Classes.
         for (FHIMInformationModel.Class classModel : infoModel.getClasses()) {
             createClass(pkg, classModel);
@@ -112,6 +122,75 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         }
 
         return vitalSignsPkg;
+    }
+
+    private Association createAssociation(Package pkg, FHIMInformationModel.Association associationModel) {
+        String name = associationModel.getName();
+        LOG.debug("Association: " + name);
+
+        // To create a binary Association, we need two ends.
+        // Use the "owned" end to create an Association to the "unowned" end.
+        // Expect one of each.
+        Attribute ownedEndModel = null;
+        Attribute unownedEndModel = null;
+        for (FHIMInformationModel.Attribute memberEnd : associationModel.getMemberEnds()) {
+            boolean owned = associationModel.isOwned(memberEnd);
+            if (owned) {
+                if (ownedEndModel == null) {
+                    ownedEndModel = memberEnd;
+                } else {
+                    LOG.warn("Expected one ownedEndModel, found another: " + ownedEndModel);
+                }
+            } else {
+                if (unownedEndModel == null) {
+                    unownedEndModel = memberEnd;
+                } else {
+                    LOG.warn("Expected one unownedEndModel, found another: " + unownedEndModel);
+                }
+            }
+        }
+
+        // Sanity check.
+        Preconditions.checkNotNull(ownedEndModel, "Expected to find an ownedEndModel!");
+        Preconditions.checkNotNull(unownedEndModel, "Expected to find an unownedEndModel!");
+
+        // Use "owned" end for end1.
+        boolean end1IsNavigable = false;  // false=owned
+        AggregationKind end1Aggregation = AggregationKind.NONE_LITERAL;
+        String end1Name = ownedEndModel.getName();
+        int end1Lower = ownedEndModel.getMultiplicity().getLower();
+        int end1Upper = ownedEndModel.getMultiplicity().getUpper();
+        Type end1Type = getTypeForModel(ownedEndModel.getType());
+
+        // Use "unowned" end for end2.
+        boolean end2IsNavigable = true;  // true=unowned
+        AggregationKind end2Aggregation = AggregationKind.NONE_LITERAL;
+        String end2Name = unownedEndModel.getName();
+        int end2Lower = unownedEndModel.getMultiplicity().getLower();
+        int end2Upper = unownedEndModel.getMultiplicity().getUpper();
+        Type end2Type = getTypeForModel(unownedEndModel.getType());
+
+        // The Type#createAssociation API is awkward...
+        Association association = end1Type.createAssociation(
+                end2IsNavigable, end2Aggregation, end2Name, end2Lower, end2Upper,
+                end2Type, end1IsNavigable, end1Aggregation, end1Name, end1Lower, end1Upper);
+
+        // Two Properties should have been created, one "owned" and one "unowned".
+        EList<Property> ownedEnds = association.getOwnedEnds();
+        EList<Property> memberEnds = association.getMemberEnds();
+        Preconditions.checkState(ownedEnds.size() == 1);
+        Preconditions.checkState(memberEnds.size() == 2);
+
+        // Save the Properties that were created for later.
+        for (Property memberEnd : memberEnds) {
+            if (ownedEnds.contains(memberEnd)) {
+                modelPropertyMap.put(ownedEndModel, memberEnd);
+            } else {
+                modelPropertyMap.put(unownedEndModel, memberEnd);
+            }
+        }
+
+        return association;
     }
 
     private Dependency createDependency(Package pkg, FHIMInformationModel.Dependency dependencyModel) {
@@ -141,7 +220,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
         // Attributes.
         for (Attribute attributeModel : classModel.getAttributes()) {
-            createProperty(clazz, attributeModel);
+            getProperty(clazz, attributeModel);
         }
 
         // Generalizations.
@@ -168,6 +247,17 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
         // Something wrong!
         throw new IllegalArgumentException("Unexpected type: " + type);
+    }
+
+    private Property getProperty(Class clazz, Attribute attributeModel) {
+        Property property = modelPropertyMap.get(attributeModel);
+        if (property == null) {
+            property = createProperty(clazz, attributeModel);
+            modelPropertyMap.put(attributeModel, property);
+        } else {
+            LOG.trace("Cache hit: " + attributeModel);
+        }
+        return property;
     }
 
     private Property createProperty(Class clazz, Attribute attributeModel) {

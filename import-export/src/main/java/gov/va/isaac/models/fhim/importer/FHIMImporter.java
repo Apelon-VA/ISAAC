@@ -163,23 +163,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
             // FHIM Attributes refset.
             List<Attribute> attributes = clazz.getAttributes();
             for (Attribute attribute : attributes) {
-                RefexChronicleBI<?> attributeRefex = addAttributesRefsetMember(
-                        classRefex, attribute);
-
-                // FHIM DefaultValue refset.
-                String defaultValue = attribute.getDefaultValue();
-                if (defaultValue != null) {
-                    addDefaultValueRefsetMember(attributeRefex, defaultValue);
-                }
-
-                // FHIM Multiplicity refset.
-                Multiplicity multiplicity = attribute.getMultiplicity();
-                if (multiplicity != null) {
-                    int lower = multiplicity.getLower();
-                    addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_LOWER, lower);
-                    int upper = multiplicity.getUpper();
-                    addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_UPPER, upper);
-                }
+                annotateWithAttributeRefsets(classRefex, attribute);
             }
         }
 
@@ -201,13 +185,37 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
                 // Sometimes the owned ends are orphaned and no attribute refset member
                 // would have been created by this point.  Create one now.
                 if (memberEndRefex == null) {
-                    memberEndRefex = addAttributesRefsetMember(modelRefex, memberEnd);
+                    memberEndRefex = annotateWithAttributeRefsets(modelRefex, memberEnd);
                 }
 
                 boolean owned = association.isOwned(memberEnd);
                 addAssociationEndsRefsetMember(associationRefex, memberEnd, owned);
             }
         }
+    }
+
+    private RefexChronicleBI<?> annotateWithAttributeRefsets(RefexChronicleBI<?> focusComponent,
+            Attribute attribute) throws ValidationException, IOException,
+            InvalidCAB, ContradictionException {
+        RefexChronicleBI<?> attributeRefex = addAttributesRefsetMember(
+                focusComponent, attribute);
+
+        // FHIM DefaultValue refset.
+        String defaultValue = attribute.getDefaultValue();
+        if (defaultValue != null) {
+            addDefaultValueRefsetMember(attributeRefex, defaultValue);
+        }
+
+        // FHIM Multiplicity refset.
+        Multiplicity multiplicity = attribute.getMultiplicity();
+        if (multiplicity != null) {
+            int lower = multiplicity.getLower();
+            addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_LOWER, lower);
+            int upper = multiplicity.getUpper();
+            addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_UPPER, upper);
+        }
+        
+        return attributeRefex;
     }
 
     private RefexChronicleBI<?> addAssociationEndsRefsetMember(RefexChronicleBI<?> focusComponent,

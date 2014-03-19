@@ -99,23 +99,48 @@ public class UML2ModelConverter implements FHIMUmlConstants {
             }
         }
 
-        // Now that we have the requisite types, we can flesh out the rest.
-        for (PackageableElement element : elements) {
+        // Associations will create some Attributes that are shared by Classes.
+        for (Iterator<PackageableElement> i = elements.iterator(); i.hasNext();) {
+            PackageableElement element = i.next();
+            if (element instanceof Association) {
+                Association association = (Association) element;
+                FHIMInformationModel.Association associationModel = buildAssociationModel(association);
+                infoModel.addAssociation(associationModel);
+
+                // Remove from packaged elements, it is fully modeled.
+                i.remove();
+            }
+        }
+
+        // Now flesh out Classes, it will create the remaining Attributes.
+        for (Iterator<PackageableElement> i = elements.iterator(); i.hasNext();) {
+            PackageableElement element = i.next();
             if (element instanceof Class) {
                 Class clazz = (Class) element;
                 FHIMInformationModel.Class classModel = buildClassModel(clazz);
                 infoModel.addClass(classModel);
-            } else if (element instanceof Dependency) {
+
+                // Remove from packaged elements, it is fully modeled.
+                i.remove();
+            }
+        }
+
+        // Dependencies.
+        for (Iterator<PackageableElement> i = elements.iterator(); i.hasNext();) {
+            PackageableElement element = i.next();
+            if (element instanceof Dependency) {
                 Dependency dependency = (Dependency) element;
                 FHIMInformationModel.Dependency dependencyModel = buildDependencyModel(dependency);
                 infoModel.addDependency(dependencyModel);
-            } else if (element instanceof Association) {
-                Association association = (Association) element;
-                FHIMInformationModel.Association associationModel = buildAssociationModel(association);
-                infoModel.addAssociation(associationModel);
-            } else {
-                LOG.warn("Unrecognized element: " + element);
+
+                // Remove from packaged elements, it is fully modeled.
+                i.remove();
             }
+        }
+
+        // Shouldn't be any elements left.
+        for (PackageableElement element : elements) {
+            LOG.warn("Unrecognized element: " + element);
         }
 
         return infoModel;
@@ -240,7 +265,7 @@ public class UML2ModelConverter implements FHIMUmlConstants {
 
     private Attribute createAttributeModel(Property property) {
         String name = property.getName();
-        LOG.debug("    attribute: " + name);
+        LOG.debug("Attribute: " + name);
 
         // Attribute type.
         Type type = property.getType();
