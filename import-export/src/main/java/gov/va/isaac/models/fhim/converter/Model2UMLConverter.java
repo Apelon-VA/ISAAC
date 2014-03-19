@@ -132,11 +132,29 @@ public class Model2UMLConverter {
     private Property createProperty(Class clazz, Attribute attributeModel)
             throws ValidationException, IOException {
         String name = attributeModel.getName();
+
+        // Type.
         FHIMInformationModel.Type typeModel = attributeModel.getType();
         Type type = getTypeForModel(clazz.getPackage(), typeModel);
         Property property = clazz.createOwnedAttribute(name, type);
 
         LOG.debug("Property: " + property.getName());
+
+        // DefaultValue.
+        String defaultValue = attributeModel.getDefaultValue();
+        if (defaultValue != null) {
+            LOG.debug("    defaultValue: " + defaultValue);
+            property.setStringDefaultValue(defaultValue);
+        }
+
+        // Upper, lower.
+        FHIMInformationModel.Multiplicity multiplicity = attributeModel.getMultiplicity();
+        if (multiplicity != null) {
+            int upper = multiplicity.getUpper();
+            property.setUpper(upper);
+            int lower = multiplicity.getLower();
+            property.setLower(lower);
+        }
 
         return property;
     }
