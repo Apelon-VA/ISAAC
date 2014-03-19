@@ -28,6 +28,7 @@ import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Generalization;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Type;
+import gov.va.isaac.models.fhim.FHIMUmlConstants;
 import gov.va.isaac.models.fhim.converter.Model2UMLConverter;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
@@ -67,7 +68,7 @@ import com.google.common.collect.Maps;
  *
  * @author ocarlsen
  */
-public class FHIMExporter extends ExporterBase {
+public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(FHIMExporter.class);
 
@@ -492,23 +493,23 @@ public class FHIMExporter extends ExporterBase {
         External e = null;
 
         // Code.
-        e = new External("Code", FHIMMetadataBinding.FHIM_CODE);
+        e = new External(CODE, FHIMMetadataBinding.FHIM_CODE);
         m.put(FHIMMetadataBinding.FHIM_CODE.getNid(), e);
 
         // ObservationQualifier.
-        e = new External("ObservationQualifier", FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER);
+        e = new External(OBSERVATION_QUALIFIER, FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER);
         m.put(FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER.getNid(), e);
 
         // ObservationStatement.
-        e = new External("ObservationStatement", FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT);
+        e = new External(OBSERVATION_STATEMENT, FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT);
         m.put(FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT.getNid(), e);
 
         // PhysicalQuantity.
-        e = new External("PhysicalQuantity", FHIMMetadataBinding.FHIM_PHYSICALQUANTITY);
+        e = new External(PHYSICAL_QUANTITY, FHIMMetadataBinding.FHIM_PHYSICALQUANTITY);
         m.put(FHIMMetadataBinding.FHIM_PHYSICALQUANTITY.getNid(), e);
 
         // PulsePosition.
-        e = new External("PulsePosition", FHIMMetadataBinding.FHIM_PULSEPOSITION);
+        e = new External(PULSE_POSITION, FHIMMetadataBinding.FHIM_PULSEPOSITION);
         m.put(FHIMMetadataBinding.FHIM_PULSEPOSITION.getNid(), e);
 
         return m;

@@ -22,6 +22,7 @@ import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
+import gov.va.isaac.models.fhim.FHIMUmlConstants;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.util.Iterator;
@@ -53,7 +54,7 @@ import com.google.common.collect.Maps;
  *
  * @author ocarlsen
  */
-public class UML2ModelConverter {
+public class UML2ModelConverter implements FHIMUmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(UML2ModelConverter.class);
 
@@ -297,11 +298,11 @@ public class UML2ModelConverter {
 
     private ConceptSpec getConceptSpec(String dataTypeName) {
         switch (dataTypeName) {
-        case "Code": return FHIMMetadataBinding.FHIM_CODE;
-        case "ObservationQualifier": return FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER;
-        case "ObservationStatement": return FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT;
-        case "PhysicalQuantity": return FHIMMetadataBinding.FHIM_PHYSICALQUANTITY;
-        case "PulsePosition": return FHIMMetadataBinding.FHIM_PULSEPOSITION;
+        case CODE: return FHIMMetadataBinding.FHIM_CODE;
+        case OBSERVATION_QUALIFIER: return FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER;
+        case OBSERVATION_STATEMENT: return FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT;
+        case PHYSICAL_QUANTITY: return FHIMMetadataBinding.FHIM_PHYSICALQUANTITY;
+        case PULSE_POSITION: return FHIMMetadataBinding.FHIM_PULSEPOSITION;
         // TODO: Others as required.
         default: return null;
         }

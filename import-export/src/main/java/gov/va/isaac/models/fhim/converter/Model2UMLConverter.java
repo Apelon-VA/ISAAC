@@ -21,6 +21,7 @@ package gov.va.isaac.models.fhim.converter;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.External;
+import gov.va.isaac.models.fhim.FHIMUmlConstants;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ import com.google.common.collect.Maps;
  *
  * @author ocarlsen
  */
-public class Model2UMLConverter {
+public class Model2UMLConverter implements FHIMUmlConstants {
 
     private static final Logger LOG = LoggerFactory.getLogger(Model2UMLConverter.class);
 
@@ -241,15 +242,15 @@ public class Model2UMLConverter {
         // Find values for class name.
         int externalNid = conceptSpec.getNid();
         if (externalNid == FHIMMetadataBinding.FHIM_CODE.getNid()) {
-            className = "Code";
+            className = CODE;
         } else if (externalNid == FHIMMetadataBinding.FHIM_PHYSICALQUANTITY.getNid()) {
-            className = "PhysicalQuantity";
+            className = PHYSICAL_QUANTITY;
         } else if (externalNid == FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER.getNid()) {
-            className = "ObservationQualifier";
+            className = OBSERVATION_QUALIFIER;
         } else if (externalNid == FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT.getNid()) {
-            className = "ObservationStatement";
+            className = OBSERVATION_STATEMENT;
         } else if (externalNid == FHIMMetadataBinding.FHIM_PULSEPOSITION.getNid()) {
-            className = "PulsePosition";
+            className = PULSE_POSITION;
         } else {
             throw new IllegalArgumentException("Unrecognized conceptSpec: " + conceptSpec);
         }
