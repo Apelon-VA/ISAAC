@@ -74,7 +74,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
     private Document document;
 
-    public CEMExporter(OutputStream outputStream) throws ValidationException, IOException {
+    public CEMExporter(OutputStream outputStream) {
         super();
         this.outputStream = outputStream;
     }
@@ -349,8 +349,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return cetype;
     }
 
-	private Element buildConstraintElement(Constraint constraint)
-            throws ValidationException, IOException {
+	private Element buildConstraintElement(Constraint constraint) {
         Element e = document.createElement(CONSTRAINT);
 
         // Path attribute (1).
@@ -372,8 +371,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return e;
     }
 
-    private Element buildCompositionElement(String elementName, Composition composition)
-            throws ValidationException, IOException, ContradictionException {
+    private Element buildCompositionElement(String elementName, Composition composition) {
         Element e = document.createElement(elementName);
 
         // Type attribute.

@@ -40,7 +40,7 @@ import com.google.common.collect.Lists;
  */
 public abstract class ExporterBase extends CommonBase {
 
-    protected ExporterBase() throws ValidationException, IOException {
+    protected ExporterBase() {
         super();
     }
 

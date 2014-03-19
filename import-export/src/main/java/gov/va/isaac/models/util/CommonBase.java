@@ -20,13 +20,10 @@ package gov.va.isaac.models.util;
 
 import gov.va.isaac.util.WBUtility;
 
-import java.io.IOException;
-
 import javax.inject.Inject;
 
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
@@ -40,7 +37,7 @@ public class CommonBase {
     @Inject
     private BdbTerminologyStore dataStore;
 
-    protected CommonBase() throws ValidationException, IOException {
+    protected CommonBase() {
         super();
         Hk2Looker.get().inject(this);
     }
@@ -49,11 +46,11 @@ public class CommonBase {
         return dataStore;
     }
 
-    protected final EditCoordinate getEC() throws ValidationException, IOException {
+    protected final EditCoordinate getEC() {
         return WBUtility.getEC();
     }
 
-    protected final ViewCoordinate getVC() throws IOException {
+    protected final ViewCoordinate getVC() {
         return WBUtility.getViewCoordinate();
     }
 }

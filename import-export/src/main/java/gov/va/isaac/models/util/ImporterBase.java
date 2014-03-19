@@ -33,7 +33,6 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +45,7 @@ public class ImporterBase extends CommonBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImporterBase.class);
 
-    protected ImporterBase() throws ValidationException, IOException {
+    protected ImporterBase() {
         super();
     }
 

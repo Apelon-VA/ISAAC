@@ -21,11 +21,9 @@ package gov.va.isaac.models.fhim.importer;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.util.MetadataCreatorBase;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,7 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FHIMMetadataCreator.class);
 
-    public FHIMMetadataCreator() throws ValidationException, IOException {
+    public FHIMMetadataCreator() {
         super();
     }
 

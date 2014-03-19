@@ -24,14 +24,12 @@ import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +43,7 @@ public class FHIMFetcher extends ExporterBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FHIMFetcher.class);
 
-    public FHIMFetcher() throws ValidationException, IOException {
+    public FHIMFetcher() {
         super();
     }
 

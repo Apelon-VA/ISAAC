@@ -25,7 +25,6 @@ import gov.va.isaac.models.fhim.exporter.FHIMExporter;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 
 import javax.validation.ValidationException;
@@ -43,7 +42,7 @@ public class ExportHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportHandler.class);
 
-    public ExportHandler() throws ValidationException, IOException {
+    public ExportHandler() throws ValidationException {
         super();
     }
 

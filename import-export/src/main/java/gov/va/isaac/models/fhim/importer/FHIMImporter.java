@@ -73,7 +73,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
     private final Map<Class, RefexChronicleBI<?>> classRefexMap = Maps.newHashMap();
     private final Map<Attribute, RefexChronicleBI<?>> attributeRefexMap = Maps.newHashMap();
 
-    public FHIMImporter() throws ValidationException, IOException {
+    public FHIMImporter() {
         super();
     }
 

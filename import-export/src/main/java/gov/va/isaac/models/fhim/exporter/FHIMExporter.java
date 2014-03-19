@@ -366,7 +366,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
     private Multiplicity buildMultiplicity(
             Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
-            throws IOException, ContradictionException {
+            throws IOException {
         List<NidIntMember> multiplicityAnnotations = filterAnnotations(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_MULTIPLICITY_REFSET, NidIntMember.class);
 
