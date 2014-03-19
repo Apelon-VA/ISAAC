@@ -108,10 +108,12 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
         // Convert to UML model in the style of FHIM.
         Model2UMLConverter converter = new Model2UMLConverter();
+        @SuppressWarnings("unused")
         Package umlModel = converter.createUMLModel(infoModel);
 
         // Write UML model to OutputStream.
-        saveModel(umlModel);
+        List<Package> pkgs = converter.getTopLevelPackages();
+        saveModel(pkgs);
 
         LOG.info("Ending export of FHIM model");
     }
@@ -121,7 +123,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         return LOG;
     }
 
-    private void saveModel(Package pkg) throws IOException {
+    private void saveModel(List<Package> pkgs) throws IOException {
 
         // Create a resource-set to contain the resource(s) that we are saving
         ResourceSet resourceSet = new ResourceSetImpl();
@@ -137,7 +139,9 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         // Create the output resource and add our model package to it.
 //        Resource resource = resourceSet.createResource(uri);
         Resource resource = new XMIResourceImpl();
-        resource.getContents().add(pkg);
+        for (Package pkg : pkgs) {
+            resource.getContents().add(pkg);
+        }
 
         // And save.
         Map<?, ?> options = null;   // No save options needed.

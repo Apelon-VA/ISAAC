@@ -25,6 +25,7 @@ import gov.va.isaac.models.fhim.FHIMUmlConstants;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.uml2.uml.Class;
@@ -40,6 +41,7 @@ import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -55,14 +57,28 @@ public class Model2UMLConverter implements FHIMUmlConstants {
     private final Map<FHIMInformationModel.Class, Class> modelClassMap = Maps.newHashMap();
     private final Map<FHIMInformationModel.External, Class> externalClassMap = Maps.newHashMap();
 
+    private final Package clinicalObservationPkg;
+    private final Package datatypesPkg;
+    private final Package vitalSignsPkg;
+    private final Package pulsePkg;
+
     public Model2UMLConverter() {
         super();
+
+        // Create packages for external types.
+        this.clinicalObservationPkg = createPackage("ClinicalObservation");
+        this.datatypesPkg = createPackage("Datatypes");
+        this.vitalSignsPkg = createPackage("VitalSigns");
+        this.pulsePkg = vitalSignsPkg.createNestedPackage("Pulse");
+    }
+
+    public List<Package> getTopLevelPackages() {
+        return Lists.newArrayList(clinicalObservationPkg, datatypesPkg, vitalSignsPkg);
     }
 
     public Package createUMLModel(FHIMInformationModel infoModel)
             throws ValidationException, IOException {
         String name = infoModel.getName();
-        Package vitalSignsPkg = createPackage("VitalSigns");
         Package pkg = vitalSignsPkg.createNestedPackage(name);
 
         // Enumerations.
@@ -226,7 +242,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
         if (c == null) {
             ConceptSpec conceptSpec = externalModel.getConceptSpec();
-            c = createExternalClass(pkg, conceptSpec);
+            c = createExternalClass(conceptSpec);
             externalClassMap.put(externalModel, c);
         } else {
             LOG.trace("Cache hit: " + externalModel);
@@ -235,21 +251,27 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         return c;
     }
 
-    private Class createExternalClass(Package pkg, ConceptSpec conceptSpec)
+    private Class createExternalClass(ConceptSpec conceptSpec)
             throws ValidationException, IOException {
+        Package pkg = null;
         String className = null;
 
         // Find values for class name.
         int externalNid = conceptSpec.getNid();
         if (externalNid == FHIMMetadataBinding.FHIM_CODE.getNid()) {
+            pkg = datatypesPkg;
             className = CODE;
         } else if (externalNid == FHIMMetadataBinding.FHIM_PHYSICALQUANTITY.getNid()) {
+            pkg = datatypesPkg;
             className = PHYSICAL_QUANTITY;
         } else if (externalNid == FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER.getNid()) {
+            pkg = clinicalObservationPkg;
             className = OBSERVATION_QUALIFIER;
         } else if (externalNid == FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT.getNid()) {
+            pkg = clinicalObservationPkg;
             className = OBSERVATION_STATEMENT;
         } else if (externalNid == FHIMMetadataBinding.FHIM_PULSEPOSITION.getNid()) {
+            pkg = pulsePkg;
             className = PULSE_POSITION;
         } else {
             throw new IllegalArgumentException("Unrecognized conceptSpec: " + conceptSpec);
