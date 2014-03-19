@@ -124,12 +124,12 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
         // Client.
         FHIMInformationModel.Type clientModel = dependencyModel.getClient();
-        Type client = getTypeForModel(pkg, clientModel);
+        Type client = getTypeForModel(clientModel);
         LOG.debug("    client: " + client.getName());
 
         // Supplier.
         FHIMInformationModel.Type supplierModel = dependencyModel.getSupplier();
-        Type supplier = getTypeForModel(pkg, supplierModel);
+        Type supplier = getTypeForModel(supplierModel);
         LOG.debug("    supplier: " + supplier.getName());
 
         Dependency dependency = client.createDependency(supplier);
@@ -161,7 +161,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
             FHIMInformationModel.Generalization generalizationModel)
             throws ValidationException, IOException {
         FHIMInformationModel.Type typeModel = generalizationModel.getTarget();
-        Type type = getTypeForModel(clazz.getPackage(), typeModel);
+        Type type = getTypeForModel(typeModel);
 
         // Expect type to be an instance of Class.
         if (type instanceof Class) {
@@ -182,7 +182,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
         // Type.
         FHIMInformationModel.Type typeModel = attributeModel.getType();
-        Type type = getTypeForModel(clazz.getPackage(), typeModel);
+        Type type = getTypeForModel(typeModel);
         Property property = clazz.createOwnedAttribute(name, type);
 
         LOG.debug("Property: " + property.getName());
@@ -238,7 +238,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         return pkg;
     }
 
-    private Type getTypeForModel(Package pkg, FHIMInformationModel.Type typeModel)
+    private Type getTypeForModel(FHIMInformationModel.Type typeModel)
             throws ValidationException, IOException {
         Type type = null;
 
