@@ -240,7 +240,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         LOG.debug("Adding refex for dependency: " + dependencyName);
 
         Type client = dependency.getClient();
-        Type supplier = dependency.getClient();
+        Type supplier = dependency.getSupplier();
 
         // Need to find appropriate NIDs.
         int clientNid = getNidForType(client);

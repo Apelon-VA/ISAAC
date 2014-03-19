@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.uml2.uml.Class;
+import org.eclipse.uml2.uml.Dependency;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.Generalization;
@@ -105,7 +106,33 @@ public class Model2UMLConverter implements FHIMUmlConstants {
             createClass(pkg, classModel);
         }
 
+        // Dependencies.
+        for (FHIMInformationModel.Dependency dependencyModel : infoModel.getDependencies()) {
+            createDependency(pkg, dependencyModel);
+        }
+
         return vitalSignsPkg;
+    }
+
+    private Dependency createDependency(Package pkg, FHIMInformationModel.Dependency dependencyModel)
+            throws ValidationException, IOException {
+        String name = dependencyModel.getName();
+        LOG.debug("Dependency: " + name);
+
+        // Client.
+        FHIMInformationModel.Type clientModel = dependencyModel.getClient();
+        Type client = getTypeForModel(pkg, clientModel);
+        LOG.debug("    client: " + client.getName());
+
+        // Supplier.
+        FHIMInformationModel.Type supplierModel = dependencyModel.getSupplier();
+        Type supplier = getTypeForModel(pkg, supplierModel);
+        LOG.debug("    supplier: " + supplier.getName());
+
+        Dependency dependency = client.createDependency(supplier);
+        dependency.setName(name);
+
+        return dependency;
     }
 
     private Class createClass(Package pkg, FHIMInformationModel.Class classModel)
