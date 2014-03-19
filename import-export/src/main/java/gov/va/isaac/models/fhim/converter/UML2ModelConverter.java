@@ -42,7 +42,6 @@ import org.eclipse.uml2.uml.PackageableElement;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.ValueSpecification;
-import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +60,14 @@ public class UML2ModelConverter implements FHIMUmlConstants {
     private final Map<String, FHIMInformationModel.Enumeration> nameEnumerationMap = Maps.newHashMap();
     private final Map<String, FHIMInformationModel.Class> nameClassMap = Maps.newHashMap();
     private final Map<Property, FHIMInformationModel.Attribute> propertyAttributeMap = Maps.newHashMap();
-    private final Map<String, FHIMInformationModel.External> nameExternalMap = Maps.newHashMap();
+    private final Map<String, FHIMInformationModel.External> nameExternalMap;
+
+    public UML2ModelConverter() {
+        super();
+
+        // Build Name-External map.
+        nameExternalMap = buildNameExternalMap();
+    }
 
     public FHIMInformationModel createInformationModel(Package pkg) {
         FHIMInformationModel infoModel = new FHIMInformationModel(pkg.getName());
@@ -259,6 +265,19 @@ public class UML2ModelConverter implements FHIMUmlConstants {
         return attributeModel;
     }
 
+    private FHIMInformationModel.Enumeration createEnumerationModel(Enumeration enumeration) {
+        String name = enumeration.getName();
+        FHIMInformationModel.Enumeration enumerationModel = new FHIMInformationModel.Enumeration(name);
+
+        EList<EnumerationLiteral> literals = enumeration.getOwnedLiterals();
+        for (EnumerationLiteral literal : literals) {
+            String literalName = literal.getName();
+            LOG.debug("    literal: " + literalName);
+            enumerationModel.addLiteral(literalName);
+        }
+        return enumerationModel;
+    }
+
     private FHIMInformationModel.Type getTypeModel(String typeName) {
         FHIMInformationModel.Type modelType = null;
 
@@ -275,7 +294,7 @@ public class UML2ModelConverter implements FHIMUmlConstants {
         }
 
         // Try OTF metadata concept type.
-        modelType = getExernal(typeName);
+        modelType = nameExternalMap.get(typeName);
         if (modelType != null) {
             return modelType;
         }
@@ -284,40 +303,15 @@ public class UML2ModelConverter implements FHIMUmlConstants {
         throw new IllegalArgumentException("Could not find type for '" + typeName + "'");
     }
 
-    private External getExernal(String typeName) {
-        FHIMInformationModel.External external = nameExternalMap.get(typeName);
-        if (external == null) {
-            ConceptSpec conceptSpec = Preconditions.checkNotNull(getConceptSpec(typeName));
-            external = new External(typeName, conceptSpec);
-            nameExternalMap.put(typeName, external);
-        } else {
-            LOG.trace("Cache hit: " + typeName);
-        }
-        return external;
-    }
+    private Map<String, FHIMInformationModel.External> buildNameExternalMap() {
+        Map<String, FHIMInformationModel.External> m = Maps.newHashMap();
 
-    private ConceptSpec getConceptSpec(String dataTypeName) {
-        switch (dataTypeName) {
-        case CODE: return FHIMMetadataBinding.FHIM_CODE;
-        case OBSERVATION_QUALIFIER: return FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER;
-        case OBSERVATION_STATEMENT: return FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT;
-        case PHYSICAL_QUANTITY: return FHIMMetadataBinding.FHIM_PHYSICALQUANTITY;
-        case PULSE_POSITION: return FHIMMetadataBinding.FHIM_PULSEPOSITION;
-        // TODO: Others as required.
-        default: return null;
-        }
-    }
+        m.put(CODE, new External(CODE, FHIMMetadataBinding.FHIM_CODE));
+        m.put(OBSERVATION_QUALIFIER, new External(OBSERVATION_QUALIFIER, FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER));
+        m.put(OBSERVATION_STATEMENT, new External(OBSERVATION_STATEMENT, FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT));
+        m.put(PHYSICAL_QUANTITY, new External(PHYSICAL_QUANTITY, FHIMMetadataBinding.FHIM_PHYSICALQUANTITY));
+        m.put(PULSE_POSITION, new External(PULSE_POSITION, FHIMMetadataBinding.FHIM_PULSEPOSITION));
 
-    private FHIMInformationModel.Enumeration createEnumerationModel(Enumeration enumeration) {
-        String name = enumeration.getName();
-        FHIMInformationModel.Enumeration enumerationModel = new FHIMInformationModel.Enumeration(name);
-
-        EList<EnumerationLiteral> literals = enumeration.getOwnedLiterals();
-        for (EnumerationLiteral literal : literals) {
-            String literalName = literal.getName();
-            LOG.debug("    literal: " + literalName);
-            enumerationModel.addLiteral(literalName);
-        }
-        return enumerationModel;
+        return m;
     }
 }

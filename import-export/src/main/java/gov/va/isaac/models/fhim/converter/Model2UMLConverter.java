@@ -56,7 +56,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
     private final Map<FHIMInformationModel.Enumeration, Enumeration> modelEnumerationMap = Maps.newHashMap();
     private final Map<FHIMInformationModel.Class, Class> modelClassMap = Maps.newHashMap();
-    private final Map<FHIMInformationModel.External, Class> externalClassMap = Maps.newHashMap();
+    private final Map<ConceptSpec, Class> conceptSpecClassMap;
 
     private final Package clinicalObservationPkg;
     private final Package datatypesPkg;
@@ -71,6 +71,9 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         this.datatypesPkg = createPackage("Datatypes");
         this.vitalSignsPkg = createPackage("VitalSigns");
         this.pulsePkg = vitalSignsPkg.createNestedPackage("Pulse");
+
+        // Build ConceptSpec-Class map.
+        conceptSpecClassMap = buildConceptSpecClassMap();
     }
 
     public List<Package> getTopLevelPackages() {
@@ -253,7 +256,8 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
         // Try OTF metadata concept type.
         if (typeModel instanceof External) {
-            type = getExternalClass(pkg, (External) typeModel);
+            ConceptSpec conceptSpec = ((External) typeModel).getConceptSpec();
+            type = conceptSpecClassMap.get(conceptSpec);
             if (type != null) {
                 return type;
             }
@@ -263,47 +267,20 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         throw new IllegalArgumentException("Could not find type for '" + typeModel + "'");
     }
 
-    private Class getExternalClass(Package pkg, FHIMInformationModel.External externalModel)
-            throws ValidationException, IOException {
-        Class c = externalClassMap.get(externalModel);
+    private Map<ConceptSpec, Class> buildConceptSpecClassMap() {
+        Map<ConceptSpec, Class> m = Maps.newHashMap();
 
-        if (c == null) {
-            ConceptSpec conceptSpec = externalModel.getConceptSpec();
-            c = createExternalClass(conceptSpec);
-            externalClassMap.put(externalModel, c);
-        } else {
-            LOG.trace("Cache hit: " + externalModel);
-        }
+        m.put(FHIMMetadataBinding.FHIM_CODE,
+                datatypesPkg.createOwnedClass(CODE, false));  // Not abstract.
+        m.put(FHIMMetadataBinding.FHIM_PHYSICALQUANTITY,
+                datatypesPkg.createOwnedClass(PHYSICAL_QUANTITY, false));  // Not abstract.
+        m.put(FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER,
+                clinicalObservationPkg.createOwnedClass(OBSERVATION_QUALIFIER, false));  // Not abstract.
+        m.put(FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT,
+                clinicalObservationPkg.createOwnedClass(OBSERVATION_STATEMENT, false));  // Not abstract.
+        m.put(FHIMMetadataBinding.FHIM_PULSEPOSITION,
+                pulsePkg.createOwnedClass(PULSE_POSITION, false));  // Not abstract.
 
-        return c;
-    }
-
-    private Class createExternalClass(ConceptSpec conceptSpec)
-            throws ValidationException, IOException {
-        Package pkg = null;
-        String className = null;
-
-        // Find values for class name.
-        int externalNid = conceptSpec.getNid();
-        if (externalNid == FHIMMetadataBinding.FHIM_CODE.getNid()) {
-            pkg = datatypesPkg;
-            className = CODE;
-        } else if (externalNid == FHIMMetadataBinding.FHIM_PHYSICALQUANTITY.getNid()) {
-            pkg = datatypesPkg;
-            className = PHYSICAL_QUANTITY;
-        } else if (externalNid == FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER.getNid()) {
-            pkg = clinicalObservationPkg;
-            className = OBSERVATION_QUALIFIER;
-        } else if (externalNid == FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT.getNid()) {
-            pkg = clinicalObservationPkg;
-            className = OBSERVATION_STATEMENT;
-        } else if (externalNid == FHIMMetadataBinding.FHIM_PULSEPOSITION.getNid()) {
-            pkg = pulsePkg;
-            className = PULSE_POSITION;
-        } else {
-            throw new IllegalArgumentException("Unrecognized conceptSpec: " + conceptSpec);
-        }
-
-        return pkg.createOwnedClass(className, false);  // Not abstract.
+        return m;
     }
 }
