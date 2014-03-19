@@ -24,7 +24,6 @@ import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMUmlConstants;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +37,6 @@ import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLFactory;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,8 +78,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         return Lists.newArrayList(clinicalObservationPkg, datatypesPkg, vitalSignsPkg);
     }
 
-    public Package createUMLModel(FHIMInformationModel infoModel)
-            throws ValidationException, IOException {
+    public Package createUMLModel(FHIMInformationModel infoModel) {
         String name = infoModel.getName();
         Package pkg = vitalSignsPkg.createNestedPackage(name);
 
@@ -117,8 +114,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         return vitalSignsPkg;
     }
 
-    private Dependency createDependency(Package pkg, FHIMInformationModel.Dependency dependencyModel)
-            throws ValidationException, IOException {
+    private Dependency createDependency(Package pkg, FHIMInformationModel.Dependency dependencyModel) {
         String name = dependencyModel.getName();
         LOG.debug("Dependency: " + name);
 
@@ -138,8 +134,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         return dependency;
     }
 
-    private Class createClass(Package pkg, FHIMInformationModel.Class classModel)
-            throws ValidationException, IOException {
+    private Class createClass(Package pkg, FHIMInformationModel.Class classModel) {
         Class clazz = modelClassMap.get(classModel);
 
         LOG.debug("Class: " + clazz.getName());
@@ -158,8 +153,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
     }
 
     private Generalization createGeneralization(Class clazz,
-            FHIMInformationModel.Generalization generalizationModel)
-            throws ValidationException, IOException {
+            FHIMInformationModel.Generalization generalizationModel) {
         FHIMInformationModel.Type typeModel = generalizationModel.getTarget();
         Type type = getTypeForModel(typeModel);
 
@@ -176,8 +170,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         throw new IllegalArgumentException("Unexpected type: " + type);
     }
 
-    private Property createProperty(Class clazz, Attribute attributeModel)
-            throws ValidationException, IOException {
+    private Property createProperty(Class clazz, Attribute attributeModel) {
         String name = attributeModel.getName();
 
         // Type.
@@ -238,8 +231,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         return pkg;
     }
 
-    private Type getTypeForModel(FHIMInformationModel.Type typeModel)
-            throws ValidationException, IOException {
+    private Type getTypeForModel(FHIMInformationModel.Type typeModel) {
         Type type = null;
 
         // Try Enumerations first.
