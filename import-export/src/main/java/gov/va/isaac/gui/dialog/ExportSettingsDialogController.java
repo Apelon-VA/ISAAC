@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ExportSettingsDialogController {
 
+    private static final String FOLDER_SELECTION_PROPERTY = "gov.va.isaac.gui.dialog.export-settings.folder-selection";
+
     private static final Logger LOG = LoggerFactory.getLogger(ExportSettingsDialogController.class);
 
     @FXML private Label folderSelectionLabel;
@@ -62,6 +64,13 @@ public class ExportSettingsDialogController {
 
     @FXML
     public void initialize() {
+
+        // Properties to speed development.
+        String folderSelection = System.getProperty(FOLDER_SELECTION_PROPERTY);
+        if (folderSelection != null) {
+            LOG.debug(FOLDER_SELECTION_PROPERTY + "=" + folderSelection);
+            folderSelectionLabel.setText(folderSelection);
+        }
     }
 
     /**
