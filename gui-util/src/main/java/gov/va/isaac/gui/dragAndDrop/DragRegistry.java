@@ -80,6 +80,7 @@ public class DragRegistry
 			setDropShadows(n);
 			n.setOnDragDropped(new EventHandler<DragEvent>()
 			{
+				@Override
 				public void handle(DragEvent event)
 				{
 					/* data dropped */
@@ -125,6 +126,7 @@ public class DragRegistry
 			setDropShadows(n);
 			n.setOnDragDropped(new EventHandler<DragEvent>()
 			{
+				@Override
 				public void handle(DragEvent event)
 				{
 					/* data dropped */
@@ -162,6 +164,7 @@ public class DragRegistry
 	{
 		n.setOnDragOver(new EventHandler<DragEvent>()
 		{
+			@Override
 			public void handle(DragEvent event)
 			{
 				logger.debug("Drag Over node {}" + n);
@@ -179,6 +182,7 @@ public class DragRegistry
 
 		n.setOnDragEntered(new EventHandler<DragEvent>()
 		{
+			@Override
 			public void handle(DragEvent event)
 			{
 				logger.debug("Drag Entered node {}" + n);
@@ -190,6 +194,7 @@ public class DragRegistry
 
 		n.setOnDragExited(new EventHandler<DragEvent>()
 		{
+			@Override
 			public void handle(DragEvent event)
 			{
 				logger.debug("Drag Exited node {}" + n);

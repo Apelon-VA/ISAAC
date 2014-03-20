@@ -556,7 +556,7 @@ public class WBUtility {
 	{
 		ArrayList<ConceptVersionBI> results = new ArrayList<>();
 		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getOriginNid()));

@@ -20,5 +20,10 @@
             <artifactId>kie-services-client</artifactId>
             <version>6.0.1.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.10.1.1</version>
+        </dependency>
     </dependencies>
 </project>
