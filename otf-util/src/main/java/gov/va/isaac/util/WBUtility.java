@@ -22,6 +22,7 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
@@ -42,6 +44,7 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
 import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
@@ -536,5 +539,29 @@ public class WBUtility {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
 			LOG.error("addUncommitted failure", e);
 		}
+	}
+	
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid) throws IOException, ContradictionException
+	{
+		return getAllChildrenOfConcept(getConceptVersion(nid));
+	}
+	
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		ArrayList<ConceptVersionBI> results = new ArrayList<>();
+		
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
+		{
+			results.add(getConceptVersion(r.getOriginNid()));
+			results.addAll(getAllChildrenOfConcept(r.getOriginNid()));
+		}
+		return results;
 	}
 }

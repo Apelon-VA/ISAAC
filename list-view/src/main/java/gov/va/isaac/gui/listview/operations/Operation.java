@@ -23,29 +23,44 @@ import javafx.beans.binding.BooleanExpression;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
-import com.sun.javafx.tk.Toolkit;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  * {@link Operation}
+ * 
+ * The interface that serves as the basis for batch operations.  Extend this to create a new operation.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
+@Contract
 public abstract class Operation
 {
 	protected ObservableList<SimpleDisplayConcept> conceptList_;
 	protected GridPane root_;
+	private boolean initRun = false;
 	
-	public Operation(ObservableList<SimpleDisplayConcept> conceptList)
+	protected Operation()
+	{
+		//For HK2 to create
+	}
+	
+	public synchronized final void initIfNot(ObservableList<SimpleDisplayConcept> conceptList)
+	{
+		if(!initRun)
+		{
+			initRun = true;
+			init(conceptList);
+		}
+	}
+	
+	public void init(ObservableList<SimpleDisplayConcept> conceptList)
 	{
 		this.conceptList_ = conceptList;
 		root_ = new GridPane();
 		root_.setMaxWidth(Double.MAX_VALUE);
 		root_.setHgap(5.0);
-		root_.setVgap(3.0);
+		root_.setVgap(5.0);
 		
 		conceptList_.addListener(new ListChangeListener<SimpleDisplayConcept>()
 		{
@@ -63,32 +78,41 @@ public abstract class Operation
 	}
 	
 	/**
-	 * Call this after adding all label content to the first column, to prevent it from shrinking
+	 * The title of the operation, which will be displayed to the user.
+	 * @return
 	 */
-	protected void preventColOneCollapse()
-	{
-		Font f = new Font("System", 13.0);
-		float largestWidth = 0;
-		for (Node n : root_.getChildrenUnmodifiable())
-		{
-			if (GridPane.getColumnIndex(n) == 0 && n instanceof Label)
-			{
-				float width = Toolkit.getToolkit().getFontLoader().computeStringWidth(((Label)n).getText(), f);
-				if (width > largestWidth)
-				{
-					largestWidth = width;
-				}
-			}
-		}
-		//don't let the first column shrink less than the labels
-		ColumnConstraints cc = new ColumnConstraints();
-		cc.setMinWidth(largestWidth);
-		root_.getColumnConstraints().add(cc);
-	}
-	
 	public abstract String getTitle();
 	
+	/**
+	 * The description of the operation, which will be displayed to the user
+	 * @return
+	 */
+	public abstract String getOperationDescription();
+	
+	/**
+	 * A convenience method which will be called when the conceptList changes.
+	 */
 	protected abstract void conceptListChanged();
 	
+	/**
+	 * Implementers should return a BooleanExpression which evaluates to true when all necessary values
+	 * for task execution have been provided.
+	 */
 	public abstract BooleanExpression isValid();
+	
+	/**
+	 * Implementers should return a task - the task should update the progress value as appropriate, and 
+	 * update the message value as appropriate as the task progresses.
+	 * 
+	 * If the execution fails during the task execution, an Exception should be thrown using the 
+	 * Task API.  The returned String value should be a summary of what happened during the task execution
+	 * which will be displayed to end users.
+	 * 
+	 * Implementers should also monitor the {@code CustomTask#cancelRequested_} variable, and respond appropriately 
+	 * if the variable is set to true.
+	 * 
+	 * @return a Task implementation that performs the necessary work on the {@code #conceptList_}
+	 */
+	//TODO figure out how to return / display formatted output - String probably won't cut it.
+	public abstract CustomTask<String> createTask();
 }

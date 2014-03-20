@@ -156,7 +156,7 @@
 				</SplitPane>
 				<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
 					<tabs>
-						<Tab id="batchResultsTab" fx:id="batchResultsTab" text="Batch Results">
+						<Tab id="conceptDisplayTab" fx:id="conceptDisplayTab" text="Concept Display">
 							<content>
 								<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
 							</content>

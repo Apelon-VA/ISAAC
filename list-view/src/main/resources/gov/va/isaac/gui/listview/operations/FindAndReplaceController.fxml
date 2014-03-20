@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<GridPane fx:id="root" hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.listview.operations.FindAndReplaceController">
+	<columnConstraints>
+		<ColumnConstraints hgrow="NEVER" />
+		<ColumnConstraints hgrow="ALWAYS" />
+	</columnConstraints>
+	<rowConstraints>
+		<RowConstraints vgrow="NEVER" />
+		<RowConstraints vgrow="NEVER" />
+		<RowConstraints vgrow="NEVER" />
+	</rowConstraints>
+	<children>
+		<Label text="Find Text" GridPane.columnIndex="0" GridPane.rowIndex="0">
+			<font>
+				<Font name="System" size="13.0" />
+			</font>
+		</Label>
+		<TextField fx:id="findText" promptText="The text to search for" GridPane.columnIndex="1" />
+		<Label text="Replace With" GridPane.columnIndex="0" GridPane.rowIndex="1">
+			<font>
+				<Font name="System" size="13.0" />
+			</font>
+		</Label>
+		<TextField fx:id="replaceText" promptText="The replacement text" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+		<TitledPane fx:id="optionsTitledPane" expanded="false" animated="false" maxWidth="1.7976931348623157E308" text="Options" GridPane.columnSpan="2" GridPane.rowIndex="2">
+			<content>
+				<GridPane fx:id="optionsGridPane" hgap="10.0" layoutX="199.0" layoutY="8.5" maxWidth="1.7976931348623157E308" vgap="5.0">
+					<columnConstraints>
+						<ColumnConstraints hgrow="NEVER" />
+						<ColumnConstraints hgrow="NEVER" />
+						<ColumnConstraints hgrow="ALWAYS" />
+					</columnConstraints>
+					<rowConstraints>
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+						<RowConstraints vgrow="NEVER" />
+					</rowConstraints>
+					<children>
+						<Label text="Retire as" GridPane.columnIndex="0" GridPane.rowIndex="0">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+						</Label>
+						<ComboBox fx:id="retireAs" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="2">
+							<tooltip>
+								<Tooltip text="The status type to place on the existing description (a new description will be created with the 'Replace With' text)" />
+							</tooltip>
+						</ComboBox>
+						<Label text="Search in Language" GridPane.columnIndex="0" GridPane.rowIndex="1">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+						</Label>
+						<ComboBox fx:id="searchInLanguage" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1">
+							<tooltip>
+								<Tooltip text="Only search in descriptions from the specified language" />
+							</tooltip>
+						</ComboBox>
+						<Label text="Search Description Type" GridPane.columnIndex="0" GridPane.rowIndex="3">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+						</Label>
+						<RadioButton fx:id="descriptionTypeAll" mnemonicParsing="false" selected="true" text="All" GridPane.columnIndex="1" GridPane.rowIndex="3">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<toggleGroup>
+								<ToggleGroup fx:id="sdt" />
+							</toggleGroup>
+							<tooltip>
+								<Tooltip text="Search in all description types" />
+							</tooltip>
+						</RadioButton>
+						<RadioButton fx:id="descriptionTypeSelected" mnemonicParsing="false" text="Selected" toggleGroup="$sdt" GridPane.columnIndex="2" GridPane.rowIndex="3">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<tooltip>
+								<Tooltip text="Only search in the description types specified below" />
+							</tooltip>
+						</RadioButton>
+						<CheckBox fx:id="descriptionTypeFSN" mnemonicParsing="false" text="Fully Specified Name" GridPane.columnIndex="2" GridPane.rowIndex="4">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<tooltip>
+								<Tooltip text="Search in the Fully Specified Name Description Type" />
+							</tooltip>
+						</CheckBox>
+						<CheckBox fx:id="descriptionTypePT" mnemonicParsing="false" text="Preferred Term" GridPane.columnIndex="2" GridPane.rowIndex="5">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<tooltip>
+								<Tooltip text="Search in the Preferred Term Description Type" />
+							</tooltip>
+						</CheckBox>
+						<CheckBox fx:id="descriptionTypeSynonym" mnemonicParsing="false" text="Synonym" GridPane.columnIndex="2" GridPane.rowIndex="6">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<tooltip>
+								<Tooltip text="Search in the Synonym Description Type" />
+							</tooltip>
+						</CheckBox>
+						<CheckBox fx:id="caseSensitive" mnemonicParsing="false" text="Case Sensitive" GridPane.rowIndex="8">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<tooltip>
+								<Tooltip text="When checked, only match on descriptions where the case matches" />
+							</tooltip>
+						</CheckBox>
+						<CheckBox fx:id="regexp" mnemonicParsing="false" text="Regular Expression" GridPane.columnIndex="2" GridPane.rowIndex="8">
+							<font>
+								<Font name="System" size="13.0" />
+							</font>
+							<tooltip>
+								<Tooltip text="Treat the 'Find Text' as a Regular Expression.  Parsed according to http://download.java.net/jdk8/docs/api/java/util/regex/Pattern.html" />
+							</tooltip>
+						</CheckBox>
+						<Separator prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="2" />
+						<Separator prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="7" />
+					</children>
+				</GridPane>
+			</content>
+		</TitledPane>
+	</children>
+</GridPane>

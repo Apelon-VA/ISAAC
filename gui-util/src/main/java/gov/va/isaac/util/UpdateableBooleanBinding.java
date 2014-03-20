@@ -26,9 +26,9 @@ import com.sun.javafx.binding.BindingHelperObserver;
 /**
  * {@link UpdateableBooleanBinding}
  * 
- * No idea why BooleanBinding has these variations of these methods that are protected and final... 
+ * No idea why BooleanBinding has these variations of these methods that are protected and final...
  * And the remove was implemented in such a way that you can't remove individual items.
- * (because then nulled themselves after a remove).  Copied code here, fixed to allow individual 
+ * (because then nulled themselves after a remove). Copied code here, fixed to allow individual
  * removals.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
@@ -37,7 +37,8 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 {
 	private BindingHelperObserver observer;
 	private HashSet<Observable> listeningTo = new HashSet<>();
-	
+	private boolean computeOnInvalidate_ = false;
+
 	public final void addBinding(Observable... dependencies)
 	{
 		if ((dependencies != null) && (dependencies.length > 0))
@@ -75,7 +76,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			}
 		}
 	}
-	
+
 	public final void clearBindings()
 	{
 		while (listeningTo.size() > 0)
@@ -83,4 +84,29 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			removeBinding(listeningTo.iterator().next());
 		}
 	}
+
+	/**
+	 * @see javafx.beans.binding.BooleanBinding#onInvalidating()
+	 */
+	@Override
+	protected void onInvalidating()
+	{
+		super.onInvalidating();
+		if (computeOnInvalidate_)
+		{
+			get();
+		}
+	}
+	
+	/**
+	 * convenience method to let implementers choose to compute on invalidate, 
+	 * rather than on the next request, which is the default behavior.
+	 * @param computeOnInvalidate
+	 */
+	protected void setComputeOnInvalidate(boolean computeOnInvalidate)
+	{
+		computeOnInvalidate_ = computeOnInvalidate;
+		get();
+	}
+
 }

@@ -18,13 +18,11 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.listview.operations.Operation;
-import gov.va.isaac.gui.listview.operations.ParentReplace;
-import gov.va.isaac.gui.listview.operations.PlaceHolder;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import java.util.TreeMap;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -37,6 +35,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javax.inject.Inject;
+import org.glassfish.hk2.api.IterableProvider;
 
 /**
  * {@link OperationNode}
@@ -50,25 +50,29 @@ public class OperationNode extends VBox
 	Button removeOperation_;
 	private Operation currentOperation_;
 	
-	private TreeMap<String, Operation> operations_ = new TreeMap<>();
+	private TreeMap<String, Operation> operationsMap_ = new TreeMap<>();
 	private ListBatchViewController lbvc_;
 	
 	private UpdateableBooleanBinding isOperationReady_;
 	
+	@Inject
+	private IterableProvider<Operation> allOperations_;
+	
 	protected OperationNode(ListBatchViewController lbvc)
 	{
+		AppContext.getServiceLocator().inject(this);
 		lbvc_ = lbvc;
-		//TODO be smarter about this, build a utility
-		Operation operation = new ParentReplace(lbvc_.getConceptList());
-		operations_.put(operation.getTitle(), operation);
-		operation = new PlaceHolder(lbvc_.getConceptList());
-		operations_.put(operation.getTitle(), operation);
+		
+		for (Operation o : allOperations_)
+		{
+			operationsMap_.put(o.getTitle(), o);
+		}
 		
 		setMaxWidth(Double.MAX_VALUE);
-		setMinWidth(300);
 		setStyle("-fx-border-color: lightgrey; -fx-border-width: 2px");
 		
 		HBox operationSelectionHBox = new HBox();
+		operationSelectionHBox.setMinWidth(400);
 		operationSelectionHBox.setPadding(new Insets(5, 5, 5, 5));
 		getChildren().add(operationSelectionHBox);
 		
@@ -84,7 +88,7 @@ public class OperationNode extends VBox
 		operationSelectionHBox.getChildren().add(removeOperation_);
 		
 		operation_ = new ComboBox<String>();
-		for (String s : operations_.keySet())
+		for (String s : operationsMap_.keySet())
 		{
 			operation_.getItems().add(s);
 		}
@@ -118,7 +122,10 @@ public class OperationNode extends VBox
 				{
 					isOperationReady_.removeBinding(currentOperation_.isValid());
 				}
-				currentOperation_ = operations_.get(operation_.getSelectionModel().getSelectedItem());
+				currentOperation_ = operationsMap_.get(operation_.getSelectionModel().getSelectedItem());
+				//delay init
+				currentOperation_.initIfNot(lbvc_.getConceptList());
+				operation_.setTooltip(new Tooltip(currentOperation_.getOperationDescription()));
 				//start watching new one
 				isOperationReady_.addBinding(currentOperation_.isValid());
 				subOptionsPane_.getChildren().add(currentOperation_.getNode());
@@ -139,5 +146,10 @@ public class OperationNode extends VBox
 	protected BooleanExpression isReadyForExecution()
 	{
 		return isOperationReady_; 
+	}
+	
+	protected Operation getOperation()
+	{
+		return currentOperation_;
 	}
 }

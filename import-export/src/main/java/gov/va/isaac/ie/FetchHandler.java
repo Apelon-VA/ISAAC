@@ -22,6 +22,7 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.fetcher.CEMFetcher;
+import gov.va.isaac.models.fhim.fetcher.FHIMFetcher;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -67,7 +68,7 @@ public class FetchHandler {
             List<InformationModel> allModelTypes = Lists.newArrayList();
             allModelTypes.addAll(fetchCEMModels(conceptUUID));
             allModelTypes.addAll(fetchCIMIModels());
-            allModelTypes.addAll(fetchFHIMModels());
+            allModelTypes.addAll(fetchFHIMModels(conceptUUID));
             allModelTypes.addAll(fetchHeDModels());
             return allModelTypes;
 
@@ -80,7 +81,7 @@ public class FetchHandler {
             case CIMI:
                 return fetchCIMIModels();
             case FHIM:
-                return fetchFHIMModels();
+                return fetchFHIMModels(conceptUUID);
             case HeD:
                 return fetchHeDModels();
             default:
@@ -95,10 +96,16 @@ public class FetchHandler {
         return Collections.emptyList();
     }
 
-    private List<InformationModel> fetchFHIMModels() {
+    private List<InformationModel> fetchFHIMModels(UUID conceptUUID) throws Exception {
+        List<InformationModel> models = Lists.newArrayList();
 
-        // Not yet imported.
-        return Collections.emptyList();
+        FHIMFetcher fetcher = new FHIMFetcher();
+        InformationModel model = fetcher.fetchFHIMModel(conceptUUID);
+        if (model != null) {
+            models.add(model);
+        }
+
+        return models;
     }
 
     private List<InformationModel> fetchCIMIModels() {

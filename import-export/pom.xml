@@ -42,6 +42,78 @@
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>tcc-datastore</artifactId>
         </dependency>
+        
+        <!-- Eclipse EMF/UML2. -->
+        <dependency>
+        
+             <!-- Version 4 includes UMLResourcesUtil. -->
+            <groupId>org.eclipse.uml2.uml</groupId>
+            <artifactId>resources</artifactId>
+            <version>4.1.0-v20130902-0826</version>
+
+            <!-- However, it depends on JARs not available on any public repo.
+                 Exclude these and use local JARs instead. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.emf</groupId>
+                    <artifactId>ecore</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.emf.ecore</groupId>
+                    <artifactId>xmi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.emf.mapping</groupId>
+                    <artifactId>ecore2xml</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf.mapping</groupId>
+            <artifactId>ecore2xml</artifactId>
+            <version>2.7.0-v20120917-0436</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>ecore</artifactId>
+            <version>2.9.1.v20130827-0309</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf.ecore</groupId>
+            <artifactId>xmi</artifactId>
+            <version>2.9.1.v20130827-0309</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>common</artifactId>
+            <version>2.9.1.v20130827-0309</version>
+        </dependency>
+        
+        <!--
+            Need to make this explicit because org.eclipse.uml2.uml:resources:4.1.0-v20130902-0826
+            depends on org.eclipse.equinox:app:1.0.0, and otherwise Maven has trouble resolving it.
+            -->
+        <dependency>
+            <groupId>org.eclipse.equinox</groupId>
+            <artifactId>app</artifactId>
+            <version>1.0.0-v20070606</version>
+        </dependency>
+
+        <!-- Redirects Java logging into logback -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+
+        <!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+        </dependency>
 
     </dependencies>
 
