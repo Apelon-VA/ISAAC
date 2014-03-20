@@ -39,6 +39,7 @@ import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLFactory;
+import org.eclipse.uml2.uml.VisibilityKind;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,8 +185,12 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         // Save the Properties that were created for later.
         for (Property memberEnd : memberEnds) {
             if (ownedEnds.contains(memberEnd)) {
+                setDefaultValue(ownedEndModel, memberEnd);
+                setVisibility(ownedEndModel, memberEnd);
                 modelPropertyMap.put(ownedEndModel, memberEnd);
             } else {
+                setDefaultValue(unownedEndModel, memberEnd);
+                setVisibility(unownedEndModel, memberEnd);
                 modelPropertyMap.put(unownedEndModel, memberEnd);
             }
         }
@@ -271,22 +276,42 @@ public class Model2UMLConverter implements FHIMUmlConstants {
         LOG.debug("Property: " + property.getName());
 
         // DefaultValue.
-        String defaultValue = attributeModel.getDefaultValue();
-        if (defaultValue != null) {
-            LOG.debug("    defaultValue: " + defaultValue);
-            property.setStringDefaultValue(defaultValue);
-        }
+        setDefaultValue(attributeModel, property);
 
-        // Upper, lower.
+        // Multiplicity.
+        setMultiplicity(attributeModel, property);
+
+        // Visibility.
+        setVisibility(attributeModel, property);
+
+        return property;
+    }
+
+    private void setVisibility(Attribute attributeModel, Property property) {
+        VisibilityKind visibility = attributeModel.getVisibility();
+        if (visibility != null) {
+            LOG.debug("    visibility: " + visibility);
+            property.setVisibility(visibility);
+        }
+    }
+
+    private void setMultiplicity(Attribute attributeModel, Property property) {
         FHIMInformationModel.Multiplicity multiplicity = attributeModel.getMultiplicity();
         if (multiplicity != null) {
+            LOG.debug("    multiplicity: " + multiplicity);
             int upper = multiplicity.getUpper();
             property.setUpper(upper);
             int lower = multiplicity.getLower();
             property.setLower(lower);
         }
+    }
 
-        return property;
+    private void setDefaultValue(Attribute attributeModel, Property property) {
+        String defaultValue = attributeModel.getDefaultValue();
+        if (defaultValue != null) {
+            LOG.debug("    defaultValue: " + defaultValue);
+            property.setStringDefaultValue(defaultValue);
+        }
     }
 
     private Enumeration createEnumeration(Package pkg, FHIMInformationModel.Enumeration enumerationModel) {

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
+import org.eclipse.uml2.uml.VisibilityKind;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
 import com.google.common.base.Objects;
@@ -65,6 +66,7 @@ public class FHIMInformationModel extends AbstractInformationModel implements In
         private final Type type;
         private String defaultValue;
         private Multiplicity multiplicity;
+        private VisibilityKind visibilityKind;
         public Attribute(String name, Type type) {
             super(name);
             this.type = type;
@@ -83,6 +85,12 @@ public class FHIMInformationModel extends AbstractInformationModel implements In
         }
         public void setMultiplicity(Multiplicity multiplicity) {
             this.multiplicity = multiplicity;
+        }
+        public VisibilityKind getVisibility() {
+            return visibilityKind;
+        }
+        public void setVisibility(VisibilityKind visibilityKind) {
+            this.visibilityKind = visibilityKind;
         }
     }
 

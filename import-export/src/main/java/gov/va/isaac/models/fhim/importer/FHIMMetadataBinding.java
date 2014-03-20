@@ -65,6 +65,10 @@ public class FHIMMetadataBinding extends MetadataBindingBase {
             = new ConceptSpec("FHIM Multiplicity reference set (foundation metadata concept)",
             UUID.fromString("bd4aad66-4575-5138-85c0-b50c484522fe"));
 
+    public static ConceptSpec FHIM_VISIBILITY_REFSET
+            = new ConceptSpec("FHIM Visibility reference set (foundation metadata concept)",
+            UUID.fromString("01d31fbf-f9d9-5df8-be3d-d831f8adb91d"));
+
     public static ConceptSpec FHIM_GENERALIZATIONS_REFSET
             = new ConceptSpec("FHIM Generalizations reference set (foundation metadata concept)",
             UUID.fromString("1a3d8e30-5654-5bfb-9cee-04ec2f91b6bb"));

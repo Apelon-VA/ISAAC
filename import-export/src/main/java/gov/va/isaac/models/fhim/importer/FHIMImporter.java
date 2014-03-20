@@ -40,11 +40,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.uml2.uml.Package;
+import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
@@ -98,10 +101,22 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         }
 
         // Load UML model from file.
-        Package umlModel = loadModel(file);
+        String packageName = "VitalSigns";
+        Package umlModel = loadModel(file, packageName);
 
-        // Locate "BloodPressure" package
-        Package bloodPressurePackage = umlModel.getNestedPackage("BloodPressure");
+        // Abort if not available.
+        if (umlModel == null) {
+            throw new IllegalStateException("No UML Package found: " + packageName);
+        }
+
+        // Locate "BloodPressure" package.
+        packageName = "BloodPressure";
+        Package bloodPressurePackage = umlModel.getNestedPackage(packageName);
+
+        // Abort if not available.
+        if (bloodPressurePackage == null) {
+            throw new IllegalStateException("No UML Package found: " + packageName);
+        }
 
         // Parse into FHIM model.
         UML2ModelConverter converter = new UML2ModelConverter();
@@ -214,7 +229,13 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
             int upper = multiplicity.getUpper();
             addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_UPPER, upper);
         }
-        
+
+        // FHIM Visibility refset.
+        VisibilityKind visibility = attribute.getVisibility();
+        if (visibility != null) {
+            addVisibilityRefsetMember(attributeRefex, visibility);
+        }
+
         return attributeRefex;
     }
 
@@ -258,6 +279,16 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
                 FHIMMetadataBinding.FHIM_DEPENDENCIES_REFSET, clientNid, supplierNid, dependencyName);
     }
 
+    private RefexChronicleBI<?> addVisibilityRefsetMember(RefexChronicleBI<?> focusComponent,
+            VisibilityKind visibility)
+            throws IOException, InvalidCAB, ContradictionException {
+        LOG.debug("Adding refex for visibility: " + visibility);
+        return addRefexInStrExtensionRefset(focusComponent,
+                FHIMMetadataBinding.FHIM_VISIBILITY_REFSET,
+                visibility.name());
+    }
+
+
     private RefexChronicleBI<?> addMultiplicityRefsetMember(RefexChronicleBI<?> focusComponent,
             ConceptSpec multiplicityType, int value)
             throws IOException, InvalidCAB, ContradictionException {
@@ -272,7 +303,8 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
             throws IOException, InvalidCAB, ContradictionException {
         LOG.debug("Adding refex for default value: " + defaultValue);
         return addRefexInStrExtensionRefset(focusComponent,
-                FHIMMetadataBinding.FHIM_DEFAULTVALUES_REFSET, defaultValue);
+                FHIMMetadataBinding.FHIM_DEFAULTVALUES_REFSET,
+                defaultValue);
     }
 
     private RefexChronicleBI<?> addAttributesRefsetMember(
@@ -379,7 +411,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         return attributeRefexMap.get(a);
     }
 
-    private Package loadModel(File file) throws IOException {
+    private Package loadModel(File file, String packageName) throws IOException {
 
         URI fileURI = URI.createFileURI(file.getAbsolutePath());
 
@@ -399,10 +431,20 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         // And load.
         Map<?, ?> options = null;   // No load options needed.
         resource.load(options);
-        Package model = (Package) resource.getContents().get(0);
-        LOG.info("Loaded '" + model.getQualifiedName() + "' from '" + fileURI + "'.");
 
-        return model;
+        // Look for Package with specified name.
+        EList<EObject> contents = resource.getContents();
+        for (EObject content : contents) {
+            if (content instanceof Package) {
+                Package model = (Package) content;
+                if (model.getName().equals(packageName)) {
+                    LOG.info("Loaded '" + model.getQualifiedName() + "' from '" + fileURI + "'.");
+                    return model;
+                }
+            }
+        }
+
+        return null;
     }
 
 }

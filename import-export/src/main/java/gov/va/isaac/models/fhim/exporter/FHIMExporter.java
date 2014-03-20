@@ -47,6 +47,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.eclipse.uml2.uml.Package;
+import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -358,10 +359,31 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
             a.setMultiplicity(multiplicity);
         }
 
+        // Visibility
+        VisibilityKind visibility = getVisibility(attributeAnnotations);
+        if (visibility != null) {
+            LOG.debug("    visibility: " + visibility);
+            a.setVisibility(visibility);
+        }
+
         // Keep track for later.
         nidAttributeMap.put(attributeAnnotation.getNid(), a);
 
         return a;
+    }
+
+    private VisibilityKind getVisibility(Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
+            throws ValidationException, IOException {
+        StringMember visibilityAnnotation = getSingleAnnotation(attributeAnnotations,
+                FHIMMetadataBinding.FHIM_VISIBILITY_REFSET, StringMember.class);
+
+        // If none, abort.
+        if (visibilityAnnotation == null) {
+            return null;
+        }
+
+        String name = visibilityAnnotation.getString1();
+        return VisibilityKind.valueOf(name);
     }
 
     private Multiplicity buildMultiplicity(

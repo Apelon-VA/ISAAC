@@ -42,6 +42,7 @@ import org.eclipse.uml2.uml.PackageableElement;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.ValueSpecification;
+import org.eclipse.uml2.uml.VisibilityKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,6 +287,10 @@ public class UML2ModelConverter implements FHIMUmlConstants {
         int upper = property.getUpper();
         Multiplicity multiplicity = new Multiplicity(lower, upper);
         attributeModel.setMultiplicity(multiplicity);
+
+        // Visibility.
+        VisibilityKind visibility = property.getVisibility();
+        attributeModel.setVisibility(visibility);
 
         return attributeModel;
     }
