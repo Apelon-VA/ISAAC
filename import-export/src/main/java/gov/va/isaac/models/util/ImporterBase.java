@@ -33,7 +33,6 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +45,7 @@ public class ImporterBase extends CommonBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImporterBase.class);
 
-    protected ImporterBase() throws ValidationException, IOException {
+    protected ImporterBase() {
         super();
     }
 
@@ -65,7 +64,7 @@ public class ImporterBase extends CommonBase {
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
 
-        LOG.info("newRefex constraints UUID:" + newRefex.getPrimordialUuid());
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
         focusComponent.addAnnotation(newRefex);
 
@@ -86,7 +85,7 @@ public class ImporterBase extends CommonBase {
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
 
-        LOG.info("newRefex string UUID:" + newRefex.getPrimordialUuid());
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
         focusComponent.addAnnotation(newRefex);
 
@@ -140,7 +139,7 @@ public class ImporterBase extends CommonBase {
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
 
-        LOG.info("newRefex composition UUID:" + newRefex.getPrimordialUuid());
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
         focusComponent.addAnnotation(newRefex);
 
@@ -160,7 +159,7 @@ public class ImporterBase extends CommonBase {
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
 
-        LOG.info("newRefex composition UUID:" + newRefex.getPrimordialUuid());
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
         focusComponent.addAnnotation(newRefex);
 
@@ -172,6 +171,27 @@ public class ImporterBase extends CommonBase {
             throws IOException, InvalidCAB, ContradictionException {
         return addRefexInCidIntExtensionRefset(focusComponent,
                 refsetConcept, componentExtension.getNid(), intExtensionValue);
+    }
+
+    protected RefexChronicleBI<?> addRefexInCidBooleanExtensionRefset(ComponentChronicleBI<?> focusComponent,
+            ConceptSpec refsetConcept, int componentExtensionNid, boolean booleanExtensionValue)
+            throws IOException, InvalidCAB, ContradictionException {
+        RefexCAB newRefexCab = new RefexCAB(RefexType.CID_BOOLEAN,
+                focusComponent.getPrimordialUuid(),
+                refsetConcept.getUuids()[0],
+                IdDirective.GENERATE_RANDOM,
+                RefexDirective.EXCLUDE);
+
+        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtensionNid);
+        newRefexCab.put(ComponentProperty.BOOLEAN_EXTENSION_1, booleanExtensionValue);
+
+        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
+
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
+
+        focusComponent.addAnnotation(newRefex);
+
+        return newRefex;
     }
 
     protected RefexChronicleBI<?> addRefexInCidIntExtensionRefset(ComponentChronicleBI<?> focusComponent,
@@ -188,7 +208,7 @@ public class ImporterBase extends CommonBase {
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
 
-        LOG.info("newRefex composition UUID:" + newRefex.getPrimordialUuid());
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
         focusComponent.addAnnotation(newRefex);
 
@@ -209,7 +229,29 @@ public class ImporterBase extends CommonBase {
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
 
-        LOG.info("newRefex composition UUID:" + newRefex.getPrimordialUuid());
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
+
+        focusComponent.addAnnotation(newRefex);
+
+        return newRefex;
+    }
+
+    protected RefexChronicleBI<?> addRefexInCidCidStrExtensionRefset(ComponentChronicleBI<?> focusComponent,
+            ConceptSpec refsetConcept, int componentExtension1Nid, int componentExtension2Nid, String stringExtension)
+            throws IOException, InvalidCAB, ContradictionException {
+        RefexCAB newRefexCab = new RefexCAB(RefexType.CID_CID_STR,
+                focusComponent.getPrimordialUuid(),
+                refsetConcept.getUuids()[0],
+                IdDirective.GENERATE_RANDOM,
+                RefexDirective.EXCLUDE);
+
+        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtension1Nid);
+        newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_2_ID, componentExtension2Nid);
+        newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
+
+        RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
+
+        LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
         focusComponent.addAnnotation(newRefex);
 

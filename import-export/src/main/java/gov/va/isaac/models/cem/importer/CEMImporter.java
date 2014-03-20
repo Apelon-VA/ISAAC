@@ -43,7 +43,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -64,7 +63,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMImporter.class);
 
-    public CEMImporter() throws ValidationException, IOException {
+    public CEMImporter() {
         super();
     }
 
@@ -219,8 +218,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
         }
     }
 
-    private CEMInformationModel createInformationModel(Node rootNode)
-            throws IOException, InvalidCAB, ContradictionException {
+    private CEMInformationModel createInformationModel(Node rootNode) {
 
         // Look for CETYPE child node.
         Node cetypeNode = null;

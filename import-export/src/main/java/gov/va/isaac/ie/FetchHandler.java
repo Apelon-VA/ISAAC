@@ -24,7 +24,6 @@ import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.fetcher.CEMFetcher;
 import gov.va.isaac.models.fhim.fetcher.FHIMFetcher;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +44,7 @@ public class FetchHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(FetchHandler.class);
 
-    public FetchHandler() throws ValidationException, IOException {
+    public FetchHandler() throws ValidationException {
         super();
     }
 

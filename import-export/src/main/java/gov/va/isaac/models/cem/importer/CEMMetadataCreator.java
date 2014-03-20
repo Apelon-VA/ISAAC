@@ -21,13 +21,11 @@ package gov.va.isaac.models.cem.importer;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.util.MetadataCreatorBase;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +39,7 @@ public class CEMMetadataCreator extends MetadataCreatorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(CEMMetadataCreator.class);
 
-    public CEMMetadataCreator() throws ValidationException, IOException {
+    public CEMMetadataCreator() {
         super();
     }
 

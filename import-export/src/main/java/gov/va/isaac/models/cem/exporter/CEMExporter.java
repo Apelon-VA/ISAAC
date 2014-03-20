@@ -74,7 +74,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
     private Document document;
 
-    public CEMExporter(OutputStream outputStream) throws ValidationException, IOException {
+    public CEMExporter(OutputStream outputStream) {
         super();
         this.outputStream = outputStream;
     }
@@ -91,6 +91,12 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
         // Parse into CEM model.
         CEMInformationModel infoModel = createInformationModel(focusConceptAnnotations);
+
+        // Abort if not available.
+        if (infoModel == null) {
+            LOG.warn("No CEM model to export on " + conceptUUID);
+            return;
+        }
 
         // Build a DOM tree in the style of CEM.
         this.document = buildDom();
@@ -116,15 +122,14 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             throws ValidationException, IOException, ContradictionException {
 
         // Name attribute (1).
-        String name = null;
         StringMember nameAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
         if (nameAnnotation == null) {
             LOG.info("No CEM_TYPE_REFSET member found.");
-        } else {
-            name = nameAnnotation.getString1();
+            return null;
         }
 
+        String name = nameAnnotation.getString1();
         CEMInformationModel infoModel = new CEMInformationModel(name);
 
         // Key element (0-1).
@@ -344,8 +349,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return cetype;
     }
 
-	private Element buildConstraintElement(Constraint constraint)
-            throws ValidationException, IOException {
+	private Element buildConstraintElement(Constraint constraint) {
         Element e = document.createElement(CONSTRAINT);
 
         // Path attribute (1).
@@ -367,8 +371,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return e;
     }
 
-    private Element buildCompositionElement(String elementName, Composition composition)
-            throws ValidationException, IOException, ContradictionException {
+    private Element buildCompositionElement(String elementName, Composition composition) {
         Element e = document.createElement(elementName);
 
         // Type attribute.
