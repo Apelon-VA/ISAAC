@@ -16,11 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.isaac.workflow.impl;
+package gov.va.isaac.workflow.impl;
 
-import gov.va.isaac.isaac.workflow.LocalTaskServiceBI;
-import gov.va.isaac.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.isaac.workflow.ProcessInstanceCreationRequest;
+import gov.va.isaac.workflow.LocalTaskServiceBI;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;

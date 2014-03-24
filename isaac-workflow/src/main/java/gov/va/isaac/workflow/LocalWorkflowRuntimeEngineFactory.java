@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.isaac.workflow;
+package gov.va.isaac.workflow;
 
-import gov.va.isaac.isaac.workflow.impl.LocalWfEngine;
+import gov.va.isaac.workflow.impl.LocalWfEngine;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
