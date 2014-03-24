@@ -26,6 +26,7 @@ import gov.va.isaac.models.InformationModel.Metadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
+import gov.va.isaac.models.fhim.exporter.FHIMExporter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -102,7 +103,11 @@ public class InformationModelDetailsDialogController {
             protected String call() throws Exception {
 
                 // Do work.
-                return "TODO";
+                OutputStream out = new ByteArrayOutputStream();
+                FHIMExporter exporter = new FHIMExporter(out);
+                UUID conceptUUID = infoModel.getFocusConceptUUID();
+                exporter.exportModel(conceptUUID);
+                return out.toString();
             }
         };
 
