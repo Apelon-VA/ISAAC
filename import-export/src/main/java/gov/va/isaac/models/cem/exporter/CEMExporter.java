@@ -59,8 +59,6 @@ import org.w3c.dom.Element;
 
 import com.google.common.collect.Lists;
 
-import com.sun.xml.internal.ws.util.StringUtils;
-
 /**
  * Class for exporting a CEM model to an XML {@link File}.
  *
@@ -382,7 +380,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
         // Name attribute.
         Attr nameAttr = document.createAttribute(NAME);
-        String name = StringUtils.decapitalize(type);
+        String name = decapitalize(type);
         nameAttr.setNodeValue(name);
         e.setAttributeNode(nameAttr);
 
@@ -514,5 +512,37 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
         return transformer;
+    }
+    
+    /**
+     * Utility method to take a string and convert it to normal Java variable
+     * name capitalization. This normally means converting the first character
+     * from upper case to lower case, but in the (unusual) special case when
+     * there is more than one character and both the first and second characters
+     * are upper case, we leave it alone.
+     * 
+     * Thus "FooBah" becomes "fooBah" and "X" becomes "x", but "URL" stays as
+     * "URL".
+     * 
+     * Parameters
+     * @param name The string to be decapitalized. 
+     * Returns: 
+     * @return The decapitalized version of the string.
+     * 
+     * Note, this was copied from 1.7_40 release of the JDK, as it was removed from com.sun.xml.internal.ws.util.StringUtils in 1.8.
+     */
+
+    public static String decapitalize(String name) {
+        if (name == null || name.length() == 0) {
+            return name;
+        }
+        if (name.length() > 1 
+                && Character.isUpperCase(name.charAt(1)) 
+                && Character.isUpperCase(name.charAt(0))) {
+            return name;
+        }
+        char chars[] = name.toCharArray();
+        chars[0] = Character.toLowerCase(chars[0]);
+        return new String(chars);
     }
 }
