@@ -50,7 +50,6 @@ import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -122,47 +121,45 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         UML2ModelConverter converter = new UML2ModelConverter();
         FHIMInformationModel infoModel = converter.createInformationModel(bloodPressurePackage);
 
-        // Annotate focusConcept with Refset members.
-        annotateWithRefsets(focusConcept, infoModel);
+        // Create information model refex on focusConcept.
+        String modelName = infoModel.getName();
+        RefexChronicleBI<?> modelRefex = addModelRefsetMember(focusConcept, modelName);
+
+        // Annotate model refex with FHIM Refset members.
+        annotateWithRefsets(modelRefex, infoModel);
 
         getDataStore().addUncommitted(focusConcept);
         getDataStore().commit();
 
         LOG.debug("Long form after commit:" + focusConcept.toLongString());
-        LOG.info("Ending import of CEM model from: " + file.getName());
+        LOG.info("Ending import of FHIM model from: " + file.getName());
 
         return focusConcept;
     }
 
-    private void annotateWithRefsets(ComponentChronicleBI<?> focusComponent,
+    private void annotateWithRefsets(RefexChronicleBI<?> modelRefex,
             FHIMInformationModel infoModel)
             throws IOException, InvalidCAB, ContradictionException {
-
-        // FHIM Models refset.
-        String modelName = infoModel.getName();
-        LOG.debug("Adding refex for model: " + modelName);
-        RefexChronicleBI<?> modelRefex = addRefexInStrExtensionRefset(focusComponent,
-                FHIMMetadataBinding.FHIM_MODELS_REFSET, modelName);
 
         // Persist Classes and Enumerations first, they will be used as types later.
 
         // FHIM Enumerations refset.
         List<Enumeration> enumerations = infoModel.getEnumerations();
         for (Enumeration enumeration : enumerations) {
-            RefexChronicleBI<?> enumRefex = addEnumerationsRefsetMember(
+            RefexChronicleBI<?> enumRefex = addEnumerationsAnnotation(
                     modelRefex, enumeration);
 
             // FHIM EnumerationValues refset.
             List<String> values = enumeration.getLiterals();
             for (String value : values) {
-                addEnumerationValuesRefsetMember(enumRefex, value);
+                addEnumerationValuesAnnotation(enumRefex, value);
             }
         }
 
         // FHIM Classes refset.
         List<Class> classes = infoModel.getClasses();
         for (Class clazz : classes) {
-            addClassesRefsetMember(modelRefex, clazz);
+            addClassesAnnotation(modelRefex, clazz);
         }
 
         // Now go back through and finish the Generalizations & Attributes.
@@ -172,7 +169,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
             // FHIM Generalizations refset.
             List<Generalization> generalizations = clazz.getGeneralizations();
             for (Generalization generalization : generalizations) {
-                addGeneralizationsRefsetMember(classRefex, generalization);
+                addGeneralizationsAnnotation(classRefex, generalization);
             }
 
             // FHIM Attributes refset.
@@ -185,13 +182,13 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         // Dependencies.
         List<Dependency> dependencies = infoModel.getDependencies();
         for (Dependency dependency : dependencies) {
-            addDependenciesRefsetMember(modelRefex, dependency);
+            addDependenciesAnnotation(modelRefex, dependency);
         }
 
         // Associations.
         List<Association> associations = infoModel.getAssociations();
         for (Association association : associations) {
-            RefexChronicleBI<?> associationRefex = addAssociationsRefsetMember(modelRefex, association);
+            RefexChronicleBI<?> associationRefex = addAssociationsAnnotation(modelRefex, association);
 
             // Association Ends.
             for (Attribute memberEnd : association.getMemberEnds()) {
@@ -204,7 +201,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
                 }
 
                 boolean owned = association.isOwned(memberEnd);
-                addAssociationEndsRefsetMember(associationRefex, memberEnd, owned);
+                addAssociationEndsAnnotation(associationRefex, memberEnd, owned);
             }
         }
     }
@@ -212,34 +209,34 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
     private RefexChronicleBI<?> annotateWithAttributeRefsets(RefexChronicleBI<?> focusComponent,
             Attribute attribute) throws ValidationException, IOException,
             InvalidCAB, ContradictionException {
-        RefexChronicleBI<?> attributeRefex = addAttributesRefsetMember(
+        RefexChronicleBI<?> attributeRefex = addAttributesAnnotation(
                 focusComponent, attribute);
 
         // FHIM DefaultValue refset.
         String defaultValue = attribute.getDefaultValue();
         if (defaultValue != null) {
-            addDefaultValueRefsetMember(attributeRefex, defaultValue);
+            addDefaultValueAnnotation(attributeRefex, defaultValue);
         }
 
         // FHIM Multiplicity refset.
         Multiplicity multiplicity = attribute.getMultiplicity();
         if (multiplicity != null) {
             int lower = multiplicity.getLower();
-            addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_LOWER, lower);
+            addMultiplicityAnnotation(attributeRefex, FHIMMetadataBinding.FHIM_LOWER, lower);
             int upper = multiplicity.getUpper();
-            addMultiplicityRefsetMember(attributeRefex, FHIMMetadataBinding.FHIM_UPPER, upper);
+            addMultiplicityAnnotation(attributeRefex, FHIMMetadataBinding.FHIM_UPPER, upper);
         }
 
         // FHIM Visibility refset.
         VisibilityKind visibility = attribute.getVisibility();
         if (visibility != null) {
-            addVisibilityRefsetMember(attributeRefex, visibility);
+            addVisibilityAnnotation(attributeRefex, visibility);
         }
 
         return attributeRefex;
     }
 
-    private RefexChronicleBI<?> addAssociationEndsRefsetMember(RefexChronicleBI<?> focusComponent,
+    private RefexChronicleBI<?> addAssociationEndsAnnotation(RefexChronicleBI<?> focusComponent,
             Attribute memberEnd, boolean owned)
             throws IOException, InvalidCAB, ContradictionException {
         String memberEndName = memberEnd.getName();
@@ -248,21 +245,21 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         RefexChronicleBI<?> memberEndRefex = getAttributeRefex(memberEnd);
         int memberEndNid = memberEndRefex.getNid();
 
-        return addRefexInCidBooleanExtensionRefset(focusComponent,
+        return addCidBooleanExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_ASSOCIATIONENDS_REFSET, memberEndNid, owned);
     }
 
-    private RefexChronicleBI<?> addAssociationsRefsetMember(RefexChronicleBI<?> focusComponent,
+    private RefexChronicleBI<?> addAssociationsAnnotation(RefexChronicleBI<?> focusComponent,
             Association association)
             throws ValidationException, IOException, InvalidCAB, ContradictionException {
         String associationName = association.getName();
         LOG.debug("Adding refex for association: " + associationName);
 
-        return addRefexInStrExtensionRefset(focusComponent,
+        return addStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_ASSOCIATIONS_REFSET, associationName);
     }
 
-    private RefexChronicleBI<?> addDependenciesRefsetMember(RefexChronicleBI<?> focusComponent,
+    private RefexChronicleBI<?> addDependenciesAnnotation(RefexChronicleBI<?> focusComponent,
             Dependency dependency)
             throws ValidationException, IOException, InvalidCAB, ContradictionException {
         String dependencyName = dependency.getName();
@@ -275,39 +272,39 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         int clientNid = getNidForType(client);
         int supplierNid = getNidForType(supplier);
 
-        return addRefexInCidCidStrExtensionRefset(focusComponent,
+        return addCidCidStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_DEPENDENCIES_REFSET, clientNid, supplierNid, dependencyName);
     }
 
-    private RefexChronicleBI<?> addVisibilityRefsetMember(RefexChronicleBI<?> focusComponent,
+    private RefexChronicleBI<?> addVisibilityAnnotation(RefexChronicleBI<?> focusComponent,
             VisibilityKind visibility)
             throws IOException, InvalidCAB, ContradictionException {
         LOG.debug("Adding refex for visibility: " + visibility);
-        return addRefexInStrExtensionRefset(focusComponent,
+        return addStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_VISIBILITY_REFSET,
                 visibility.name());
     }
 
 
-    private RefexChronicleBI<?> addMultiplicityRefsetMember(RefexChronicleBI<?> focusComponent,
+    private RefexChronicleBI<?> addMultiplicityAnnotation(RefexChronicleBI<?> focusComponent,
             ConceptSpec multiplicityType, int value)
             throws IOException, InvalidCAB, ContradictionException {
         LOG.debug("Adding refex for multiplicity: " + value + " for type " + multiplicityType);
-        return addRefexInCidIntExtensionRefset(focusComponent,
+        return addCidIntExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_MULTIPLICITY_REFSET,
                 multiplicityType, value);
     }
 
-    private RefexChronicleBI<?> addDefaultValueRefsetMember(
+    private RefexChronicleBI<?> addDefaultValueAnnotation(
             RefexChronicleBI<?> focusComponent, String defaultValue)
             throws IOException, InvalidCAB, ContradictionException {
         LOG.debug("Adding refex for default value: " + defaultValue);
-        return addRefexInStrExtensionRefset(focusComponent,
+        return addStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_DEFAULTVALUES_REFSET,
                 defaultValue);
     }
 
-    private RefexChronicleBI<?> addAttributesRefsetMember(
+    private RefexChronicleBI<?> addAttributesAnnotation(
             RefexChronicleBI<?> focusComponent, Attribute attribute)
             throws ValidationException, IOException, InvalidCAB, ContradictionException {
         String attributeName = attribute.getName();
@@ -317,7 +314,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         Type attributeType = attribute.getType();
         int attributeTypeNid = getNidForType(attributeType);
 
-        RefexChronicleBI<?> attributeRefex = addRefexInCidStrExtensionRefset(focusComponent,
+        RefexChronicleBI<?> attributeRefex = addCidStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_ATTRIBUTES_REFSET, attributeTypeNid, attributeName);
 
         // Keep track of it for re-use later.
@@ -326,7 +323,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         return attributeRefex;
     }
 
-    private RefexChronicleBI<?> addGeneralizationsRefsetMember(
+    private RefexChronicleBI<?> addGeneralizationsAnnotation(
             RefexChronicleBI<?> focusComponent, Generalization generalization)
             throws ValidationException, IOException, InvalidCAB, ContradictionException {
         Type source = generalization.getSource();
@@ -336,25 +333,25 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         // Need to find appropriate NID.
         int targetNid = getNidForType(target);
 
-        return addRefexInCidExtensionRefset(focusComponent,
+        return addCidExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_GENERALIZATIONS_REFSET, targetNid);
     }
 
-    private RefexChronicleBI<?> addEnumerationValuesRefsetMember(
+    private RefexChronicleBI<?> addEnumerationValuesAnnotation(
             RefexChronicleBI<?> focusComponent, String value)
             throws IOException, InvalidCAB, ContradictionException {
         LOG.debug("Adding refex for enumeration value: " + value);
-        return addRefexInStrExtensionRefset(focusComponent,
+        return addStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_ENUMERATIONVALUES_REFSET, value);
     }
 
-    private RefexChronicleBI<?> addClassesRefsetMember(
+    private RefexChronicleBI<?> addClassesAnnotation(
             RefexChronicleBI<?> focusComponent, Class clazz)
             throws IOException, InvalidCAB, ContradictionException {
         String className = clazz.getName();
         LOG.debug("Adding refex for class: " + className);
 
-        RefexChronicleBI<?> classRefex = addRefexInStrExtensionRefset(focusComponent,
+        RefexChronicleBI<?> classRefex = addStrExtensionAnnotation(focusComponent,
                 FHIMMetadataBinding.FHIM_CLASSES_REFSET, className);
 
         // Keep track of it for re-use later.
@@ -363,19 +360,28 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         return classRefex;
     }
 
-    private RefexChronicleBI<?> addEnumerationsRefsetMember(
+    private RefexChronicleBI<?> addEnumerationsAnnotation(
             RefexChronicleBI<?> focusComponent, Enumeration enumeration)
             throws IOException, InvalidCAB, ContradictionException {
-        String name = enumeration.getName();
-        LOG.debug("Adding refex for enumeration " + name);
+        String enumName = enumeration.getName();
+        LOG.debug("Adding refex for enumeration: " + enumName);
 
-        RefexChronicleBI<?> enumRefex = addRefexInStrExtensionRefset(focusComponent,
-                FHIMMetadataBinding.FHIM_ENUMERATIONS_REFSET, name);
+        RefexChronicleBI<?> enumRefex = addStrExtensionAnnotation(focusComponent,
+                FHIMMetadataBinding.FHIM_ENUMERATIONS_REFSET, enumName);
 
         // Keep track of it for re-use later.
         enumerationRefexMap.put(enumeration, enumRefex);
 
         return enumRefex;
+    }
+
+    private RefexChronicleBI<?> addModelRefsetMember(
+            ConceptChronicleBI focusConcept, String modelName)
+            throws IOException, ValidationException, InvalidCAB,
+            ContradictionException {
+        LOG.debug("Adding refex for model: " + modelName);
+        ConceptChronicleBI refsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
+        return addStrExtensionMember(focusConcept, refsetConcept, modelName);
     }
 
     private int getNidForType(Type type) throws ValidationException,
