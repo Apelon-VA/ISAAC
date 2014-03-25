@@ -35,12 +35,12 @@ public class LocalTasksApiDemo {
         task.setComponentName("componentName");
         
         System.out.print("Saving task 2...  ");
-        tapi.saveLocalTask(task);
+        tapi.saveTask(task);
         tapi.commit();
         System.out.println("OK");
         
         System.out.print("Getting task 2...  ");
-        LocalTask retrievedTask = tapi.getLocalTask(1L);
+        LocalTask retrievedTask = tapi.getTask(1L);
         System.out.println("Done, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + retrievedTask.getComponentName());
         //tapi.closeConnection();
         

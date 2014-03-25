@@ -128,6 +128,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         Content contentById = getRemoteEngine().getTaskService().getContentById(task.getTaskData().getDocumentContentId());
         JaxbContent jaxbTaskContent = (JaxbContent) contentById;
         return jaxbTaskContent.getContentMap();
+        //return new HashMap<>();
     }
 
 }

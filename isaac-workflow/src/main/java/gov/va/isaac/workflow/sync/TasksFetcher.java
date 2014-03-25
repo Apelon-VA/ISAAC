@@ -15,6 +15,7 @@
  */
 package gov.va.isaac.workflow.sync;
 
+import gov.va.isaac.workflow.persistence.LocalTask;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,26 +49,20 @@ public class TasksFetcher {
     }
     
     public void fetchTasks(String userId) throws Exception {
-        List<TaskSummary> tasksSummaries = remoteTaskService.getTasksAssignedAsPotentialOwnerByStatus(userId, availableStatuses, locale);
+        List<TaskSummary> tasksSummaries = remoteTaskService.getTasksOwnedByStatus(userId, reservedStatuses, locale);
         for (TaskSummary loopTask : tasksSummaries) {
-            System.out.println("Potential: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
+            //System.out.println("Owned: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
+            LocalTask loopLocal = new LocalTask(loopTask);
+            persistenceApi.saveTask(loopLocal);
         }
-        
-        tasksSummaries = remoteTaskService.getTasksOwnedByStatus(userId, reservedStatuses, locale);
-        for (TaskSummary loopTask : tasksSummaries) {
-            System.out.println("Owned: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
-        }
-        
-        //remoteTaskService.claim(16L, userId);
-        //Task task = remoteTaskService.getTaskById(16L);
-        //System.out.println("16: " + task.getId() + " - " + task.getNames().iterator().next().getText() + " - " + task.getTaskData().getStatus().name() + " - " + task.getTaskData().getActualOwner());
+        persistenceApi.commit();
     }
     
     public void claimBatch(String userId, Integer limit) throws Exception {
         int count = 0;
         List<TaskSummary> tasksSummaries = remoteTaskService.getTasksAssignedAsPotentialOwnerByStatus(userId, availableStatuses, locale);
         for (TaskSummary loopTask : tasksSummaries) {
-            System.out.println("Claiming: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
+            //System.out.println("Claiming: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
             remoteTaskService.claim(loopTask.getId(), userId);
             count++;
             if (count >= limit) break;
