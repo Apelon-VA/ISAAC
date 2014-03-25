@@ -59,20 +59,20 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
         ConceptChronicleBI refsetsRoot = getDataStore().getConcept(UUID.fromString(REFSET_CONCEPT));
         LOG.debug("Refsets root:" + refsetsRoot.toString());
 
-        FHIMRefsets = createNewConcept(refsetsRoot, "FHIM reference sets (foundation metadata concept)", "FHIM reference set");
+        FHIMRefsets = createNewRefsetConcept(refsetsRoot, "FHIM reference sets (foundation metadata concept)", "FHIM reference set", false);
 
-        ConceptChronicleBI FHIMModelsRefset = createNewConcept(FHIMRefsets, "FHIM Models reference set (foundation metadata concept)", "FHIM Models reference set");
-        ConceptChronicleBI FHIMClassesRefset = createNewConcept(FHIMRefsets, "FHIM Classes reference set (foundation metadata concept)", "FHIM Classes reference set");
-        ConceptChronicleBI FHIMEnumerationsRefset = createNewConcept(FHIMRefsets, "FHIM Enumerations reference set (foundation metadata concept)", "FHIM Enumerations reference set");
-        ConceptChronicleBI FHIMEnumerationValuesRefset = createNewConcept(FHIMRefsets, "FHIM EnumerationValues reference set (foundation metadata concept)", "FHIM EnumerationValues reference set");
-        ConceptChronicleBI FHIMAttributesRefset = createNewConcept(FHIMRefsets, "FHIM Attributes reference set (foundation metadata concept)", "FHIM Attributes reference set");
-        ConceptChronicleBI FHIMDefaultValuesRefset = createNewConcept(FHIMRefsets, "FHIM DefaultValues reference set (foundation metadata concept)", "FHIM DefaultValues reference set");
-        ConceptChronicleBI FHIMGeneralizationsRefset = createNewConcept(FHIMRefsets, "FHIM Generalizations reference set (foundation metadata concept)", "FHIM Generalizations reference set");
-        ConceptChronicleBI FHIMDependenciesRefset = createNewConcept(FHIMRefsets, "FHIM Dependencies reference set (foundation metadata concept)", "FHIM Dependencies reference set");
-        ConceptChronicleBI FHIMAssociationsRefset = createNewConcept(FHIMRefsets, "FHIM Associations reference set (foundation metadata concept)", "FHIM Associations reference set");
-        ConceptChronicleBI FHIMAssociationEndsRefset = createNewConcept(FHIMRefsets, "FHIM Association Ends reference set (foundation metadata concept)", "FHIM Association Ends reference set");
-        ConceptChronicleBI FHIMMultiplicityRefset = createNewConcept(FHIMRefsets, "FHIM Multiplicity reference set (foundation metadata concept)", "FHIM Multiplicity reference set");
-        ConceptChronicleBI FHIMVisibilityRefset = createNewConcept(FHIMRefsets, "FHIM Visibility reference set (foundation metadata concept)", "FHIM Visibility reference set");
+        ConceptChronicleBI FHIMModelsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Models reference set (foundation metadata concept)", "FHIM Models reference set", true);
+        ConceptChronicleBI FHIMClassesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Classes reference set (foundation metadata concept)", "FHIM Classes reference set", true);
+        ConceptChronicleBI FHIMEnumerationsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Enumerations reference set (foundation metadata concept)", "FHIM Enumerations reference set", true);
+        ConceptChronicleBI FHIMEnumerationValuesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM EnumerationValues reference set (foundation metadata concept)", "FHIM EnumerationValues reference set", true);
+        ConceptChronicleBI FHIMAttributesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Attributes reference set (foundation metadata concept)", "FHIM Attributes reference set", true);
+        ConceptChronicleBI FHIMDefaultValuesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM DefaultValues reference set (foundation metadata concept)", "FHIM DefaultValues reference set", true);
+        ConceptChronicleBI FHIMGeneralizationsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Generalizations reference set (foundation metadata concept)", "FHIM Generalizations reference set", true);
+        ConceptChronicleBI FHIMDependenciesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Dependencies reference set (foundation metadata concept)", "FHIM Dependencies reference set", true);
+        ConceptChronicleBI FHIMAssociationsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Associations reference set (foundation metadata concept)", "FHIM Associations reference set", true);
+        ConceptChronicleBI FHIMAssociationEndsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Association Ends reference set (foundation metadata concept)", "FHIM Association Ends reference set", true);
+        ConceptChronicleBI FHIMMultiplicityRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Multiplicity reference set (foundation metadata concept)", "FHIM Multiplicity reference set", true);
+        ConceptChronicleBI FHIMVisibilityRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Visibility reference set (foundation metadata concept)", "FHIM Visibility reference set", true);
 
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));
         LOG.debug("Attributes root:" + attributesRoot.toString());
