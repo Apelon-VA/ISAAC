@@ -32,9 +32,9 @@ import org.kie.api.task.model.TaskSummary;
  * @author alo
  */
 public class TasksFetcher {
-    
+
     private final String locale = "en-UK";
-    
+
     private TaskService remoteTaskService;
     private LocalTasksApi persistenceApi;
     private List<Status> availableStatuses;
@@ -50,17 +50,43 @@ public class TasksFetcher {
         reservedStatuses.add(Status.Reserved);
         reservedStatuses.add(Status.InProgress);
     }
-    
+
     public void fetchTasks(String userId) throws Exception {
         List<TaskSummary> tasksSummaries = remoteTaskService.getTasksOwnedByStatus(userId, reservedStatuses, locale);
         for (TaskSummary loopTask : tasksSummaries) {
             //System.out.println("Owned: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
-            LocalTask loopLocal = new LocalTask(loopTask);
-            persistenceApi.saveTask(loopLocal);
+            LocalTask dbTask = persistenceApi.getTask(loopTask.getId());
+            if (dbTask == null) {
+                System.out.println("Task is new: " + loopTask.getId());
+                LocalTask loopLocal = new LocalTask(loopTask, true);
+                persistenceApi.saveTask(loopLocal);
+            } else if (!dbTask.getOwner().equals(loopTask.getActualOwner().getId()) || !dbTask.getStatus().equals(loopTask.getStatus().name())) {
+                System.out.println("Task has changed: " + loopTask.getId());
+                LocalTask loopLocal = new LocalTask(loopTask, true);
+                persistenceApi.saveTask(loopLocal);
+            } else {
+                System.out.println("Task: " + loopTask.getId() + " No changes");
+            }
+        }
+        List<LocalTask> openOwnedTasks = persistenceApi.getOpenOwnedTasks(userId);
+        System.out.println("Looking for missing tasks. LocalCount = " + openOwnedTasks.size() + ", FetchCount = " + tasksSummaries.size());
+        for (LocalTask loopLocalTask : openOwnedTasks) {
+            boolean isInFetchCursor = false;
+            for (TaskSummary loopCursorTask : tasksSummaries) {
+                if (loopCursorTask.getId() == loopLocalTask.getId()) {
+                    isInFetchCursor = true;
+                }
+            }
+            if (!isInFetchCursor) {
+                System.out.println("Missing task: " + loopLocalTask.getId());
+                Task missingTask = remoteTaskService.getTaskById(loopLocalTask.getId());
+                LocalTask missingTaskLocal = new LocalTask(missingTask, true);
+                persistenceApi.saveTask(missingTaskLocal);
+            }
         }
         persistenceApi.commit();
     }
-    
+
     public void claimBatch(String userId, Integer limit) throws Exception {
         int count = 0;
         List<TaskSummary> tasksSummaries = remoteTaskService.getTasksAssignedAsPotentialOwnerByStatus(userId, availableStatuses, locale);
@@ -68,10 +94,10 @@ public class TasksFetcher {
             //System.out.println("Claiming: " + loopTask.getId() + " - " + loopTask.getName() + " - " + loopTask.getStatus().name() + " - " + loopTask.getActualOwner());
             remoteTaskService.claim(loopTask.getId(), userId);
             count++;
-            if (count >= limit) break;
+            if (count >= limit) {
+                break;
+            }
         }
     }
-    
-    
-    
+
 }

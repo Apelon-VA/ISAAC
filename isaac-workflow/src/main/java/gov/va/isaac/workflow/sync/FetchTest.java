@@ -33,7 +33,7 @@ public class FetchTest {
     
     public static void main(String[] args) {
         LocalTasksApi tapi = new LocalTasksApi();
-        //tapi.dropSchema();
+        tapi.dropSchema();
         tapi.createSchema();
         String userId = "alejandro";
         LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
@@ -41,22 +41,28 @@ public class FetchTest {
         TasksFetcher tf = new TasksFetcher(wfEngine.getRemoteTaskService(), tapi);
         
         try {
-            System.out.println("Reading Locals 1: ");
+            System.out.println("Reading Local Tasks Repository (no filters): ");
             List<LocalTask> openTasks = tapi.getTasks();
             System.out.println("count = " + openTasks.size());
             for (LocalTask lt : openTasks) {
                 System.out.println("Local: " + lt.getId() + " - " + lt.getName() + " - " + lt.getStatus() + " - " + lt.getOwner() + " - " + lt.getComponentId()+ " - " + lt.getComponentName());
             }
-            System.out.println("Fetching");
+            System.out.println("SYNC - Fetching from remote server...");
             tf.fetchTasks(userId);
-            System.out.println("Reading Locals 2: ");
+            System.out.println("Reading Local Tasks Repository (no filters) after sync: ");
             List<LocalTask> openTasks1 = tapi.getTasks();
             System.out.println("count = " + openTasks1.size());
             for (LocalTask lt : openTasks1) {
                 System.out.println("Local: " + lt.getId() + " - " + lt.getName() + " - " + lt.getStatus() + " - " + lt.getOwner() + " - " + lt.getComponentId()+ " - " + lt.getComponentName());
             }
-            List<LocalTask> ownedTasksForAsthma = tapi.getOwnedTasksByComponentId(userId, "0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
-            System.out.println("Owned Tasks for Asthma count: " + ownedTasksForAsthma.size());
+            List<LocalTask> openOwnedTasks = tapi.getOpenOwnedTasks(userId);
+            System.out.println("Testing getOpenOwnedTasks (" + userId + "): " + openOwnedTasks.size());
+            
+            List<LocalTask> ownedTasksForAsthma = tapi.getOpenOwnedTasksByComponentId(userId, "0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
+            System.out.println("Testing getOpenOwnedTasksByComponentId (Asthma, " + userId + "): " + ownedTasksForAsthma.size());
+            
+            List<LocalTask> ownedTasksByStatus = tapi.getOwnedTasksByStatus(userId, "Reserved");
+            System.out.println("Testing ownedTasksByStatus (" + userId + ", Reserved): " + ownedTasksByStatus.size());
             
         } catch (Exception ex) {
             Logger.getLogger(FetchTest.class.getName()).log(Level.SEVERE, null, ex);

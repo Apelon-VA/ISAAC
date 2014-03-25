@@ -38,34 +38,43 @@ public class LocalTask {
     private String componentName;
     private String status;
     private String owner;
-    
+
     public LocalTask() {
     }
-    
-    public LocalTask(TaskSummary summary) {
+
+    public LocalTask(TaskSummary summary, boolean fetchAttachments) {
         this.id = summary.getId();
         this.name = summary.getName();
         this.status = summary.getStatus().name();
-        UserImpl owner = (UserImpl) summary.getActualOwner();
-        this.owner = owner.getId();
-        
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-        Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
-        this.componentId = (String) vmap.get("in_componentId");
-        this.componentName = (String) vmap.get("in_componentName");
+        if (summary.getActualOwner() != null) {
+            this.owner = summary.getActualOwner().getId();
+        } else {
+            this.owner = "";
+        }
+        if (fetchAttachments) {
+            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
+            this.componentId = (String) vmap.get("in_componentId");
+            this.componentName = (String) vmap.get("in_componentName");
+        }
     }
-    
-    public LocalTask(Task task) {
+
+    public LocalTask(Task task, boolean fetchAttachments) {
         this.id = task.getId();
         this.name = task.getNames().iterator().next().getText();
         this.status = task.getTaskData().getStatus().name();
-        UserImpl owner = (UserImpl) task.getTaskData().getActualOwner();
-        this.owner = owner.getId();
-        
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-        Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
-        this.componentId = (String) vmap.get("in_componentId");
-        this.componentName = (String) vmap.get("in_componentName");
+        if (task.getTaskData().getActualOwner() != null) {
+            this.owner = task.getTaskData().getActualOwner().getId();
+        } else {
+            this.owner = "";
+        }
+
+        if (fetchAttachments) {
+            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
+            this.componentId = (String) vmap.get("in_componentId");
+            this.componentName = (String) vmap.get("in_componentName");
+        }
     }
 
     public Long getId() {
@@ -151,5 +160,5 @@ public class LocalTask {
         }
         return true;
     }
-    
+
 }

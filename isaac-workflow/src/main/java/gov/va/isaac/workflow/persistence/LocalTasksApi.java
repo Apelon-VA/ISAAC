@@ -87,7 +87,7 @@ public class LocalTasksApi {
             psInsert.setString(6, task.getOwner());
             psInsert.executeUpdate();
             psInsert.closeOnCompletion();
-            System.out.println("Task " + task.getId() + " inserted");
+            System.out.println("Task " + task.getId() + " saved");
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("23505")) {
                 System.err.print("Task " + task.getId() + " already exists!");
@@ -97,9 +97,27 @@ public class LocalTasksApi {
                 } else {
                     if (!task.getOwner().equals(taskInDb.getOwner())) {
                         System.err.print(" User has changed from " + taskInDb.getOwner() + " to " + task.getOwner() + ".");
+                        try {
+                            PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
+                            psUpdateUser.setString(1, task.getOwner());
+                            psUpdateUser.setInt(2, Integer.parseInt(task.getId().toString()));
+                            psUpdateUser.executeUpdate();
+                            psUpdateUser.closeOnCompletion();
+                        } catch (SQLException ex1) {
+                            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
+                        }
                     }
                     if (!task.getStatus().equals(taskInDb.getStatus())) {
                         System.err.print(" Status has changed from " + taskInDb.getStatus() + " to " + task.getStatus() + ".");
+                        try {
+                            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
+                            psUpdateStatus.setString(1, task.getStatus());
+                            psUpdateStatus.setInt(2, Integer.parseInt(task.getId().toString()));
+                            psUpdateStatus.executeUpdate();
+                            psUpdateStatus.closeOnCompletion();
+                        } catch (SQLException ex1) {
+                            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
+                        }
                     }
                     System.err.println("-");
                 };
@@ -113,7 +131,7 @@ public class LocalTasksApi {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and status = 'reserved'");
+            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -122,7 +140,7 @@ public class LocalTasksApi {
         }
         return tasks;
     }
-    
+
     public List<LocalTask> getOwnedTasksByStatus(String owner, String status) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
@@ -136,12 +154,12 @@ public class LocalTasksApi {
         }
         return tasks;
     }
-    
-    public List<LocalTask> getOwnedTasksByComponentId(String owner, String componentId) {
+
+    public List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and componentId = '" + componentId + "'");
+            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -164,14 +182,13 @@ public class LocalTasksApi {
         }
         return tasks;
     }
-    
+
     public List<LocalTask> getTasks() {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks");
             while (rs.next()) {
-                //System.out.println("Navigating rs:" + rs.getLong(1));
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
@@ -213,6 +230,7 @@ public class LocalTasksApi {
 
     public void createSchema() {
         try {
+            System.out.println("Creating schema");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "LOCAL_TASKS", null);
             if (!rs.next()) {
@@ -230,6 +248,7 @@ public class LocalTasksApi {
 
     public void dropSchema() {
         try {
+            System.out.println("Dropping schema");
             Statement s = conn.createStatement();
             s.execute("drop table LOCAL_TASKS");
             s.closeOnCompletion();
