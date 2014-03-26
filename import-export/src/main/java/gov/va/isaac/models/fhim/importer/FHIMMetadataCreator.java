@@ -61,7 +61,7 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
 
         FHIMRefsets = createNewRefsetConcept(refsetsRoot, "FHIM reference sets (foundation metadata concept)", "FHIM reference set", false);
 
-        ConceptChronicleBI FHIMModelsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Models reference set (foundation metadata concept)", "FHIM Models reference set", true);
+        ConceptChronicleBI FHIMModelsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Models reference set (foundation metadata concept)", "FHIM Models reference set", false);
         ConceptChronicleBI FHIMClassesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Classes reference set (foundation metadata concept)", "FHIM Classes reference set", true);
         ConceptChronicleBI FHIMEnumerationsRefset = createNewRefsetConcept(FHIMRefsets, "FHIM Enumerations reference set (foundation metadata concept)", "FHIM Enumerations reference set", true);
         ConceptChronicleBI FHIMEnumerationValuesRefset = createNewRefsetConcept(FHIMRefsets, "FHIM EnumerationValues reference set (foundation metadata concept)", "FHIM EnumerationValues reference set", true);

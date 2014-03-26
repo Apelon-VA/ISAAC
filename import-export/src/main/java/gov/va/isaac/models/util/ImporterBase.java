@@ -21,6 +21,7 @@ package gov.va.isaac.models.util;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -34,8 +35,11 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 /**
  * Base class containing common methods for importing information models.
@@ -46,12 +50,25 @@ public class ImporterBase extends CommonBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImporterBase.class);
 
+    private final Map<ConceptSpec, ConceptChronicleBI> specConceptMap;
+
     protected ImporterBase() {
         super();
+        this.specConceptMap = Maps.newHashMap();
     }
 
     protected final TerminologyBuilderBI getBuilder() {
         return WBUtility.getBuilder();
+    }
+
+    protected ConceptChronicleBI getConcept(ConceptSpec refsetSpec)
+            throws IOException, ValidationException {
+        ConceptChronicleBI refsetConcept = specConceptMap.get(refsetSpec);
+        if (refsetConcept == null) {
+            refsetConcept = getDataStore().getConcept(refsetSpec.getNid());
+            specConceptMap.put(refsetSpec, refsetConcept);
+        }
+        return refsetConcept;
     }
 
     protected RefexChronicleBI<?> addMemberAnnotation(ComponentChronicleBI<?> focusComponent,
@@ -61,7 +78,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
         LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
@@ -72,19 +89,20 @@ public class ImporterBase extends CommonBase {
     }
 
     protected RefexChronicleBI<?> addStrExtensionMember(ConceptChronicleBI focusConcept,
-            ConceptChronicleBI refsetConcept, String stringExtension)
+            ConceptSpec refsetSpec, String stringExtension)
             throws IOException, InvalidCAB, ContradictionException {
         RefexCAB newRefexCab = new RefexCAB(RefexType.STR,
-                focusConcept.getNid(),
-                refsetConcept.getNid(),
+                focusConcept.getPrimordialUuid(),
+                refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
 
         RefexChronicleBI<?> newRefex = getBuilder().constructIfNotCurrent(newRefexCab);
         LOG.info("newRefex UUID:" + newRefex.getPrimordialUuid());
 
+        ConceptChronicleBI refsetConcept = getConcept(refsetSpec);
         if (! refsetConcept.isAnnotationStyleRefex()) {
             getDataStore().addUncommitted(refsetConcept);
         } else {
@@ -101,7 +119,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
 
@@ -126,7 +144,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, conceptExtensionNid);
 
@@ -152,7 +170,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtensionNid);
         newRefexCab.put(ComponentProperty.STRING_EXTENSION_1, stringExtension);
@@ -172,7 +190,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.INTEGER_EXTENSION_1, intExtensionValue);
 
@@ -198,7 +216,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtensionNid);
         newRefexCab.put(ComponentProperty.BOOLEAN_EXTENSION_1, booleanExtensionValue);
@@ -218,7 +236,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtensionNid);
         newRefexCab.put(ComponentProperty.INTEGER_EXTENSION_1, intExtensionValue);
@@ -238,7 +256,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtension1Nid);
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_2_ID, componentExtension2Nid);
@@ -258,7 +276,7 @@ public class ImporterBase extends CommonBase {
                 focusComponent.getPrimordialUuid(),
                 refsetSpec.getUuids()[0],
                 IdDirective.GENERATE_RANDOM,
-                RefexDirective.EXCLUDE);
+                RefexDirective.INCLUDE);
 
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, componentExtension1Nid);
         newRefexCab.put(ComponentProperty.COMPONENT_EXTENSION_2_ID, componentExtension2Nid);

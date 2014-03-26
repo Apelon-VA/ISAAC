@@ -128,7 +128,12 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         // Annotate model refex with FHIM Refset members.
         annotateWithRefsets(modelRefex, infoModel);
 
-        getDataStore().addUncommitted(focusConcept);
+//      getDataStore().addUncommitted(focusConcept);
+
+        // Add this instead to persist annotations-on-model-refex.
+        ConceptChronicleBI refsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
+        getDataStore().addUncommitted(refsetConcept);
+
         getDataStore().commit();
 
         LOG.debug("Long form after commit:" + focusConcept.toLongString());
@@ -380,8 +385,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
             throws IOException, ValidationException, InvalidCAB,
             ContradictionException {
         LOG.debug("Adding refex for model: " + modelName);
-        ConceptChronicleBI refsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
-        return addStrExtensionMember(focusConcept, refsetConcept, modelName);
+        return addStrExtensionMember(focusConcept, FHIMMetadataBinding.FHIM_MODELS_REFSET, modelName);
     }
 
     private int getNidForType(Type type) throws ValidationException,

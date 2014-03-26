@@ -24,6 +24,7 @@ import gov.va.isaac.models.util.AbstractInformationModel;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.eclipse.uml2.uml.VisibilityKind;
@@ -213,8 +214,8 @@ public class FHIMInformationModel extends AbstractInformationModel implements In
     private final List<Dependency> dependencies = Lists.newArrayList();
     private final List<Association> associations = Lists.newArrayList();
 
-    public FHIMInformationModel(String name) {
-        super(name, InformationModelType.FHIM);
+    public FHIMInformationModel(String name, UUID uuid) {
+        super(name, uuid, InformationModelType.FHIM);
     }
 
     public List<Enumeration> getEnumerations() {

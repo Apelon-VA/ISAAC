@@ -19,20 +19,23 @@
 package gov.va.isaac.models.fhim.fetcher;
 
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.InformationModel.Metadata;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Class for fetching FHIM models.
@@ -47,46 +50,46 @@ public class FHIMFetcher extends ExporterBase {
         super();
     }
 
-    public FHIMInformationModel fetchFHIMModel(UUID focusConceptUUID) throws Exception {
-        LOG.info("Starting fetch of FHIM model type");
-        LOG.debug("focusConceptUUID="+focusConceptUUID);
+    public List<InformationModel> fetchFHIMModels() throws Exception {
+        LOG.info("Starting fetch of FHIM model types");
+        List<InformationModel> models = Lists.newArrayList();
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
 
-        // Get chronicle for concept.
-        ConceptChronicleBI focusConcept = getDataStore().getConcept(focusConceptUUID);
-        LOG.debug("focusConcept="+focusConcept);
-
-        // Get all annotations on the specified concept.
-        Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations =
-                getLatestAnnotations(focusConcept);
-
-        // FHIM Models refset (1).
-        StringMember modelAnnotation = getSingleAnnotation(focusConceptAnnotations,
-                FHIMMetadataBinding.FHIM_MODELS_REFSET, StringMember.class);
-
-        // Abort if not found.
-        if (modelAnnotation == null) {
-            return  null;
+        // Get the roots of all FHIM models.
+        ConceptChronicleBI modelsRefsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
+        List<StringMember> modelRefsetMembers = getRefsetMembers(modelsRefsetConcept, StringMember.class);
+        if (modelRefsetMembers.isEmpty()) {
+            LOG.info("No FHIM_MODELS_REFSET members found.");
+            return models;
         }
 
-        String modelName = modelAnnotation.getString1();
-        FHIMInformationModel informationModel = new FHIMInformationModel(modelName);
+        // Iterate through and create information models.
+        for (StringMember modelRefsetMember : modelRefsetMembers) {
+            String modelName = modelRefsetMember.getString1();
+            UUID modelUUID = modelRefsetMember.getUUIDs().get(0);
+            FHIMInformationModel informationModel = new FHIMInformationModel(modelName, modelUUID);
 
-        Metadata metadata = Metadata.newInstance(modelAnnotation.getStamp(),
-                getDataStore(), getVC());
-        informationModel.setMetadata(metadata);
+            Metadata metadata = Metadata.newInstance(modelRefsetMember.getStamp(),
+                    getDataStore(), getVC());
+            informationModel.setMetadata(metadata);
 
-        ConceptVersionBI focusConceptVersion = focusConcept.getVersion(getVC());
-        String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
-        informationModel.setFocusConceptName(focusConceptName);
-        informationModel.setFocusConceptUUID(focusConceptUUID);
+            int focusConceptNid = modelRefsetMember.getReferencedComponentNid();
+            ComponentChronicleBI<ConceptVersionBI> focusConcept = getDataStore().getConcept(focusConceptNid);
+            ConceptVersionBI focusConceptVersion = focusConcept .getVersion(getVC());
+            String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
+            informationModel.setFocusConceptName(focusConceptName);
 
-        LOG.debug("informationModel="+informationModel);
+            UUID focusConceptUUID = focusConcept.getPrimordialUuid();
+            informationModel.setFocusConceptUUID(focusConceptUUID);
+
+            LOG.debug("informationModel="+informationModel);
+            models.add(informationModel);
+        }
+
         LOG.info("Ending fetch of FHIM model type");
-
-        return informationModel;
+        return models;
     }
 
     @Override

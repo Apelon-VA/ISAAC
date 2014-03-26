@@ -88,22 +88,32 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         nidExternalMap = buildNidExternalMap();
     }
 
-    public void exportModel(UUID conceptUUID) throws Exception {
+    public void exportModel(UUID modelUUID) throws Exception {
         LOG.info("Starting export of FHIM model");
 
-        // Get chronicle for concept.
-        ComponentChronicleBI<?> focusConcept = getDataStore().getComponent(conceptUUID);
-        LOG.debug("focusConcept="+focusConcept);
+        // Get chronicle for component.
+        ComponentChronicleBI<?> focusComponent = getDataStore().getComponent(modelUUID);
+        LOG.debug("focusComponent="+focusComponent);
 
-        // Get all annotations on the specified concept.
-        Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations = getLatestAnnotations(focusConcept);
+        // Abort if not available.
+        if (focusComponent == null) {
+            LOG.warn("No model found: " + modelUUID);
+            return;
+        }
+
+        // Expect a RefexChronicle.
+        if (! (focusComponent instanceof RefexChronicleBI<?>)) {
+            LOG.warn("Expected FHIM model to ge a refex: " + modelUUID);
+            return;
+        }
+        RefexChronicleBI<?> modelRefex = (RefexChronicleBI<?>) focusComponent;
 
         // Parse into FHIM model.
-        FHIMInformationModel infoModel = createInformationModel(focusConceptAnnotations);
+        FHIMInformationModel infoModel = createInformationModel(modelRefex);
 
         // Abort if not available.
         if (infoModel == null) {
-            LOG.warn("No FHIM model to export on " + conceptUUID);
+            LOG.warn("No model found: " + modelUUID);
             return;
         }
 
@@ -150,24 +160,19 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         outputStream.close();
     }
 
-    private FHIMInformationModel createInformationModel(
-            Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
+    private FHIMInformationModel createInformationModel(RefexChronicleBI<?> modelRefex)
             throws ValidationException, IOException, ContradictionException {
 
-        // Model name.
-        StringMember modelAnnotation = getSingleAnnotation(focusConceptAnnotations,
-                FHIMMetadataBinding.FHIM_MODELS_REFSET, StringMember.class);
-        if (modelAnnotation == null) {
-            LOG.info("No FHIM_MODELS_REFSET member found.");
-            return null;
-        }
-
-        String name = modelAnnotation.getString1();
-        FHIMInformationModel infoModel = new FHIMInformationModel(name);
-        LOG.debug("Model: " + name);
+        // Model name, UUID.
+        StringMember modelAnnotation = (StringMember) modelRefex;
+        String modelName = modelAnnotation.getString1();
+        UUID modelUUID = modelRefex.getPrimordialUuid();
+        FHIMInformationModel infoModel = new FHIMInformationModel(modelName, modelUUID);
+        LOG.debug("Model name: " + modelName);
+        LOG.debug("Model UUID: " + modelUUID);
 
         // Get all annotations on the model annotation.
-        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelAnnotation);
+        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelRefex);
 
         // Enumerations.
         List<StringMember> enumAnnotations = filterAnnotations(modelAnnotations,
