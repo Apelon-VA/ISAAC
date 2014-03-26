@@ -1,9 +1,9 @@
-/**
+/* 
  * Copyright Notice
- * 
+ *
  * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,12 +38,12 @@ public class LocalTasksApiDemo {
         task.setComponentName("componentName");
         
         System.out.print("Saving task 2...  ");
-        tapi.saveLocalTask(task);
+        tapi.saveTask(task);
         tapi.commit();
         System.out.println("OK");
         
         System.out.print("Getting task 2...  ");
-        LocalTask retrievedTask = tapi.getLocalTask(1L);
+        LocalTask retrievedTask = tapi.getTask(1L);
         System.out.println("Done, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + retrievedTask.getComponentName());
         //tapi.closeConnection();
         

@@ -1,9 +1,9 @@
-/**
+/* 
  * Copyright Notice
- * 
+ *
  * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,7 +18,13 @@
  */
 package gov.va.isaac.workflow.persistence;
 
-import java.util.UUID;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineFactory;
+import java.util.Map;
+import java.util.Objects;
+import org.jbpm.services.task.impl.model.UserImpl;
+import org.kie.api.task.model.Task;
+import org.kie.api.task.model.TaskSummary;
 
 /**
  *
@@ -30,8 +36,45 @@ public class LocalTask {
     private String name;
     private String componentId;
     private String componentName;
-    
+    private String status;
+    private String owner;
+
     public LocalTask() {
+    }
+
+    public LocalTask(TaskSummary summary, boolean fetchAttachments) {
+        this.id = summary.getId();
+        this.name = summary.getName();
+        this.status = summary.getStatus().name();
+        if (summary.getActualOwner() != null) {
+            this.owner = summary.getActualOwner().getId();
+        } else {
+            this.owner = "";
+        }
+        if (fetchAttachments) {
+            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
+            this.componentId = (String) vmap.get("in_componentId");
+            this.componentName = (String) vmap.get("in_componentName");
+        }
+    }
+
+    public LocalTask(Task task, boolean fetchAttachments) {
+        this.id = task.getId();
+        this.name = task.getNames().iterator().next().getText();
+        this.status = task.getTaskData().getStatus().name();
+        if (task.getTaskData().getActualOwner() != null) {
+            this.owner = task.getTaskData().getActualOwner().getId();
+        } else {
+            this.owner = "";
+        }
+
+        if (fetchAttachments) {
+            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
+            this.componentId = (String) vmap.get("in_componentId");
+            this.componentName = (String) vmap.get("in_componentName");
+        }
     }
 
     public Long getId() {
@@ -65,4 +108,57 @@ public class LocalTask {
     public void setComponentName(String componentName) {
         this.componentName = componentName;
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LocalTask other = (LocalTask) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.componentId, other.componentId)) {
+            return false;
+        }
+        if (!Objects.equals(this.componentName, other.componentName)) {
+            return false;
+        }
+        if (!Objects.equals(this.status, other.status)) {
+            return false;
+        }
+        if (!Objects.equals(this.owner, other.owner)) {
+            return false;
+        }
+        return true;
+    }
+
 }
