@@ -50,7 +50,6 @@ import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -92,11 +91,14 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
         LOG.info("focusConcept: " + focusConcept.toString());
 
         // Throw exception if import already performed.
-        ComponentVersionBI latestVersion = focusConcept.getVersion(getVC());
-        Collection<? extends RefexChronicleBI<?>> annotations = latestVersion.getAnnotations();
-        for (RefexChronicleBI<?> annotation : annotations) {
-            Preconditions.checkState(annotation.getAssemblageNid() != FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid(),
-                    "FHIM import has already been performed on " + focusConceptUuid);
+        ConceptChronicleBI modelsRefsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
+        Collection<? extends RefexChronicleBI<?>> modelsRefsetMembers = modelsRefsetConcept.getRefsetMembers();
+        if (! modelsRefsetMembers.isEmpty()) {
+            int focusConceptNid = focusConcept.getNid();
+            for (RefexChronicleBI<?> modelsRefsetMember : modelsRefsetMembers) {
+                Preconditions.checkState(modelsRefsetMember.getReferencedComponentNid() != focusConceptNid,
+                        "FHIM import has already been performed on " + focusConceptUuid);
+            }
         }
 
         // Load UML model from file.
