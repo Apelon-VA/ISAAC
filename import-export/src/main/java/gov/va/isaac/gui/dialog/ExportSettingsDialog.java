@@ -44,7 +44,7 @@ public class ExportSettingsDialog extends Stage {
         super();
 
         setTitle("Export Settings");
-        setResizable(false);
+        setResizable(true);
 
         Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
         initOwner(owner);

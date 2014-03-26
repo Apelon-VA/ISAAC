@@ -10,10 +10,18 @@
   <center>
     <FlowPane alignment="CENTER" hgap="10.0" prefHeight="-1.0" prefWidth="-1.0" prefWrapLength="480.0" style="-fx-background-color:white;" vgap="10.0">
       <children>
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<children>
         <Label text="Clinical Information Model:">
           <FlowPane.margin>
             <Insets />
           </FlowPane.margin>
+<opaqueInsets>
+<Insets />
+</opaqueInsets>
+<HBox.margin>
+<Insets right="5.0" />
+</HBox.margin>
         </Label>
         <ComboBox fx:id="modelTypeCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20">
           <items>
@@ -24,8 +32,17 @@
             </FXCollections>
           </items>
         </ComboBox>
-        <Button id="fileSelectionButton" mnemonicParsing="false" onAction="#handleFileSelection" text="Select File:" />
+</children>
+</HBox>
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<children>
+        <Button id="fileSelectionButton" mnemonicParsing="false" onAction="#handleFileSelection" text="Select File:">
+<HBox.margin>
+<Insets right="5.0" />
+</HBox.margin></Button>
         <Label fx:id="fileSelectionLabel" minWidth="360.0" text="" />
+</children>
+</HBox>
         <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0">
           <children>
             <Button defaultButton="true" mnemonicParsing="false" onAction="#handleOk" text="Ok" underline="false">
