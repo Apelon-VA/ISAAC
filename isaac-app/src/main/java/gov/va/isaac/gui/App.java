@@ -56,6 +56,8 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  */
 public class App extends Application implements ApplicationWindowI{
 
+    public static final String TITLE_PROPERTY = "gov.va.isaac.gui.App.title";
+
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
     private AppController controller;
@@ -78,7 +80,8 @@ public class App extends Application implements ApplicationWindowI{
         this.controller = loader.getController();
 
         primaryStage.getIcons().add(new Image("/icons/16x16/application-block.png"));
-        primaryStage.setTitle("ISAAC App");
+        String title = AppContext.getAppProperties().getProperty(TITLE_PROPERTY);
+        primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(root));
 
         // Set minimum dimensions.
@@ -118,7 +121,6 @@ public class App extends Application implements ApplicationWindowI{
         }
         else
         {
-            String title = "No Snomed Database";
             String message = "The Snomed Database was not found.";
             LOG.error(message, dataStoreLocationInitException_);
             String details = "Please download the file\n\n"
@@ -126,7 +128,7 @@ public class App extends Application implements ApplicationWindowI{
                     + "\n\nand unzip it into\n\n"
                     + System.getProperty("user.dir")
                     + "\n\nand then restart the editor.";
-            commonDialog_.showErrorDialog(title, message, details);
+            commonDialog_.showErrorDialog("No Snomed Database", message, details);
 
             // Close app since no DB to load.
             // (The #shutdown method will be also invoked by
