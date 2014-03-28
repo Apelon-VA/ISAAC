@@ -236,7 +236,7 @@ public class FindAndReplaceController
 			for (ConceptVersionBI c : WBUtility.getAllChildrenOfConcept(WBUtility.getConceptVersion(UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687")).getNid()))
 			{
 				SimpleDisplayConcept sdc = new SimpleDisplayConcept(c);
-				//TODO OTF Bug - OTF is broken, and doesn't even return hierarchies without duplicates
+				//TODO OTF Bug - OTF is broken, and doesn't even return hierarchies without duplicates https://jira.ihtsdotools.org/browse/OTFISSUE-21
 				if (!searchInLanguage.getItems().contains(sdc))
 				{
 					searchInLanguage.getItems().add(sdc);

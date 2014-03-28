@@ -32,7 +32,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
 /**
  * Abstract superclass for metadata creators.
@@ -41,7 +40,7 @@ import org.ihtsdo.otf.tcc.api.spec.ValidationException;
  */
 public abstract class MetadataCreatorBase extends CommonBase {
 
-    protected MetadataCreatorBase() throws ValidationException, IOException {
+    protected MetadataCreatorBase() {
         super();
     }
 

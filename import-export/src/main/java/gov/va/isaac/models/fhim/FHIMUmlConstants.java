@@ -16,22 +16,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.ie;
-
-import java.io.File;
-
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+package gov.va.isaac.models.fhim;
 
 /**
- * Interface for handling the ISAAC import functionality.
+ * Utility interface providing {@link String} constants for
+ * importing/exporting FHIM models from/to UML.
  *
  * @author ocarlsen
  */
-public interface ImportHandler {
+public interface FHIMUmlConstants {
 
-    /**
-     * Method called by the ISAAC application to perform the import. Will be
-     * invoked on a background thread.
-     */
-    public ConceptChronicleBI importModel(File file) throws Exception;
+    public static final String CODE = "Code";
+    public static final String OBSERVATION_QUALIFIER = "ObservationQualifier";
+    public static final String OBSERVATION_STATEMENT = "ObservationStatement";
+    public static final String PHYSICAL_QUANTITY = "PhysicalQuantity";
+    public static final String PULSE_POSITION = "PulsePosition";
+
 }

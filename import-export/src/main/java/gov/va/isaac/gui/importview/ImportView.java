@@ -27,7 +27,6 @@ import gov.va.isaac.models.cem.importer.CEMImporter;
 import gov.va.isaac.models.fhim.importer.FHIMImporter;
 
 import java.io.File;
-import java.io.IOException;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -40,7 +39,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +74,7 @@ public class ImportView extends GridPane {
         setMinWidth(600);
     }
 
-    public void doImport(InformationModelType modelType, final String fileName) throws ValidationException, IOException {
+    public void doImport(InformationModelType modelType, final String fileName) {
         Preconditions.checkNotNull(modelType);
         Preconditions.checkNotNull(fileName);
 
