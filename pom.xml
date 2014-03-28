@@ -205,7 +205,7 @@
                 <configuration>
                     <preparationGoals>clean validate</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <goals>deploy site site:stage scm-publish:publish-scm</goals>
+                    <goals>deploy</goals>
                 </configuration>
             </plugin>
         </plugins>
