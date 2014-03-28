@@ -18,6 +18,10 @@
  */
 package gov.va.isaac.models.cem.exporter;
 
+import gov.va.isaac.models.cem.CEMInformationModel;
+import gov.va.isaac.models.cem.CEMInformationModel.ComponentType;
+import gov.va.isaac.models.cem.CEMInformationModel.Composition;
+import gov.va.isaac.models.cem.CEMInformationModel.Constraint;
 import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
@@ -55,8 +59,6 @@ import org.w3c.dom.Element;
 
 import com.google.common.collect.Lists;
 
-import com.sun.xml.internal.ws.util.StringUtils;
-
 /**
  * Class for exporting a CEM model to an XML {@link File}.
  *
@@ -70,7 +72,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
     private Document document;
 
-    public CEMExporter(OutputStream outputStream) throws ValidationException, IOException {
+    public CEMExporter(OutputStream outputStream) {
         super();
         this.outputStream = outputStream;
     }
@@ -85,9 +87,18 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         // Get all annotations on the specified concept.
         Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations = getLatestAnnotations(focusConcept);
 
+        // Parse into CEM model.
+        CEMInformationModel infoModel = createInformationModel(focusConceptAnnotations);
+
+        // Abort if not available.
+        if (infoModel == null) {
+            LOG.warn("No CEM model to export on " + conceptUUID);
+            return;
+        }
+
         // Build a DOM tree in the style of CEM.
         this.document = buildDom();
-        Element root = buildCemTree(focusConceptAnnotations);
+        Element root = buildCemTree(infoModel);
         document.appendChild(root);
 
         // Transform DOM tree into stream.
@@ -104,33 +115,20 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return LOG;
     }
 
-    private Element buildCemTree(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
+    private CEMInformationModel createInformationModel(
+            Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
-        Element root = document.createElement(CEML);
-
-        // CETYPE element.
-        Element cetype = buildCetypeElement(focusConceptAnnotations);
-        root.appendChild(cetype);
-
-        return root;
-    }
-
-    /**
-     * The spec for this model is in Jay's spreadsheet (ISAAC/resources/cem.xlsx).
-     */
-    private Element buildCetypeElement(Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
-            throws ValidationException, IOException, ContradictionException {
-        Element cetype = document.createElement(CETYPE);
 
         // Name attribute (1).
         StringMember nameAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
         if (nameAnnotation == null) {
             LOG.info("No CEM_TYPE_REFSET member found.");
-        } else {
-            Attr nameAttr = buildNameAttr(nameAnnotation);
-            cetype.setAttributeNode(nameAttr);
+            return null;
         }
+
+        String name = nameAnnotation.getString1();
+        CEMInformationModel infoModel = new CEMInformationModel(name);
 
         // Key element (0-1).
         StringMember keyAnnotation = getSingleAnnotation(focusConceptAnnotations,
@@ -138,18 +136,28 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         if (keyAnnotation == null) {
             LOG.info("No CEM_KEY_REFSET member found.");
         } else {
-            Element key = buildKeyElement(keyAnnotation);
-            cetype.appendChild(key);
+            String key = keyAnnotation.getString1();
+            infoModel.setKey(key);
         }
 
         // Data element (0-1).
-        NidMember dataAnnotation = getSingleAnnotation(focusConceptAnnotations,
+        NidMember dataTypeAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_DATA_REFSET, NidMember.class);
-        if (dataAnnotation == null) {
+        if (dataTypeAnnotation == null) {
             LOG.info("No CEM_DATA_REFSET member found.");
         } else {
-            Element data = buildDataElement(dataAnnotation);
-            cetype.appendChild(data);
+
+            // Convert to ConceptSpec.
+            int nid = dataTypeAnnotation.getNid1();
+            ConceptSpec dataType = null;
+            if (nid == CEMMetadataBinding.CEM_PQ.getNid()) {
+                dataType = CEMMetadataBinding.CEM_PQ;
+            } else if (nid == CEMMetadataBinding.CEM_CD.getNid()) {
+                dataType = CEMMetadataBinding.CEM_CD;
+            } else {
+                throw new IllegalStateException("Unrecognized CEM_DATA_REFSET member nid: " + nid);
+            }
+            infoModel.setDataType(dataType);
         }
 
         // Qual elements (0-M).
@@ -159,8 +167,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             LOG.info("No CEM_QUAL members found.");
         } else {
             for (NidStringMember qualAnnotation : qualAnnotations) {
-                Element qual = buildCompositionElement(QUAL, qualAnnotation);
-                cetype.appendChild(qual);
+                ComponentType componentType = ComponentType.QUAL;
+                addComposition(componentType, infoModel, qualAnnotation);
             }
         }
 
@@ -171,20 +179,20 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             LOG.info("No CEM_MOD members found.");
         } else {
             for (NidStringMember modAnnotation : modAnnotations) {
-                Element mod = buildCompositionElement(MOD, modAnnotation);
-                cetype.appendChild(mod);
+                ComponentType componentType = ComponentType.MOD;
+                addComposition(componentType, infoModel, modAnnotation);
             }
         }
 
         // Att elements (0-M).
         List<NidStringMember> attAnnotations = getCompositionAnnotations(
-                focusConceptAnnotations, CEMMetadataBinding.CEM_ATTR);
+                focusConceptAnnotations, CEMMetadataBinding.CEM_ATT);
         if (attAnnotations.isEmpty()) {
             LOG.info("No CEM_ATTR members found.");
         } else {
             for (NidStringMember attAnnotation : attAnnotations) {
-                Element att = buildCompositionElement(ATT, attAnnotation);
-                cetype.appendChild(att);
+                ComponentType componentType = ComponentType.ATT;
+                addComposition(componentType, infoModel, attAnnotation);
             }
         }
 
@@ -196,101 +204,218 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             LOG.info("No CEM_CONSTRAINTS_REFSET members found.");
         } else {
             for (MembershipMember constraintAnnotation : constraintAnnotations) {
-                Element constraint = buildConstraintElement(constraintAnnotation);
-                cetype.appendChild(constraint);
+                addConstraint(infoModel, constraintAnnotation);
             }
+        }
+
+        return infoModel;
+    }
+
+    private void addConstraint(CEMInformationModel infoModel,
+            MembershipMember constraintAnnotation)
+            throws IOException, ContradictionException {
+        Constraint constraint = createConstraint(constraintAnnotation);
+        infoModel.addConstraint(constraint);
+    }
+
+    private void addComposition(ComponentType componentType,
+            CEMInformationModel infoModel, NidStringMember compositionAnnotation)
+            throws ValidationException, IOException, ContradictionException {
+
+        // Component composition.
+        String component = compositionAnnotation.getString1();
+        Composition composition = null;
+        switch (componentType) {
+        case ATT:
+            composition = infoModel.addAttComponent(component);
+            break;
+        case MOD:
+            composition = infoModel.addModComponent(component);
+            break;
+        case QUAL:
+            composition = infoModel.addQualComponent(component);
+            break;
+        default:
+            throw new IllegalArgumentException("Unrecognized componentType: " + componentType);
+        }
+
+        // Constraint.
+        MembershipMember constraintAnnotation = getMembershipAnnotation(compositionAnnotation,
+                CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
+        if (constraintAnnotation == null) {
+            LOG.info("No CEM_CONSTRAINTS_REFSET member found.");
+        } else {
+            Constraint constraint = createConstraint(constraintAnnotation);
+            composition.setConstraint(constraint);
+        }
+
+        // Value.
+        StringMember valueAnnotation = getCompStringAnnotation(compositionAnnotation, CEMMetadataBinding.CEM_VALUE_REFSET);
+        if (valueAnnotation == null) {
+            LOG.info("No CEM_VALUE_REFSET member found.");
+        } else {
+            String value = valueAnnotation.getString1();
+            composition.setValue(value);
+        }
+    }
+
+    private Constraint createConstraint(MembershipMember constraintAnnotation) throws IOException,
+            ContradictionException {
+        String path = null;
+        StringMember pathAnnotation = getStringAnnotation(constraintAnnotation, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET);
+        if (pathAnnotation == null) {
+            LOG.info("No CEM_CONSTRAINTS_PATH_REFSET members found.");
+        } else {
+            path = pathAnnotation.getString1();
+        }
+
+        String value = null;
+        StringMember valueAnnotation = getStringAnnotation(constraintAnnotation, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET);
+        if (valueAnnotation == null) {
+            LOG.info("No CEM_CONSTRAINTS_VALUE_REFSET members found.");
+        } else {
+            value = valueAnnotation.getString1();
+        }
+
+        return new Constraint(path, value);
+    }
+
+    private Element buildCemTree(CEMInformationModel infoModel)
+            throws ValidationException, IOException, ContradictionException {
+        Element root = document.createElement(CEML);
+
+        // CETYPE element.
+        Element cetype = buildCetypeElement(infoModel);
+        root.appendChild(cetype);
+
+        return root;
+    }
+
+    /**
+     * The spec for this model is in Jay's spreadsheet (ISAAC/resources/cem.xlsx).
+     * @throws IOException
+     * @throws ValidationException
+     * @throws ContradictionException
+     */
+    private Element buildCetypeElement(CEMInformationModel infoModel)
+            throws ValidationException, IOException, ContradictionException {
+        Element cetype = document.createElement(CETYPE);
+
+        // Name attribute (1).
+        String name = infoModel.getName();
+        Attr nameAttr = buildNameAttr(name);
+        cetype.setAttributeNode(nameAttr);
+
+        // Key element (0-1).
+        String key = infoModel.getKey();
+        Element keyElement = buildKeyElement(key);
+        cetype.appendChild(keyElement);
+
+        // Data element (0-1).
+        ConceptSpec dataType = infoModel.getDataType();
+        Element dataElement = buildDataElement(dataType);
+        cetype.appendChild(dataElement);
+
+        // Qual elements (0-M).
+        List<Composition> quals = infoModel.getQualComponents();
+        for (Composition qual : quals) {
+            Element qualElement = buildCompositionElement(QUAL, qual);
+            cetype.appendChild(qualElement);
+        }
+
+        // Mod elements (0-M).
+        List<Composition> mods = infoModel.getModComponents();
+        for (Composition mod : mods) {
+            Element modElement = buildCompositionElement(MOD, mod);
+            cetype.appendChild(modElement);
+        }
+
+        // Att elements (0-M).
+        List<Composition> atts = infoModel.getAttComponents();
+        for (Composition att : atts) {
+            Element attElement = buildCompositionElement(ATT, att);
+            cetype.appendChild(attElement);
+        }
+
+        // Constraint elements (0-M).
+        List<Constraint> constraints = infoModel.getConstraints();
+        for (Constraint constraint : constraints) {
+            Element constraintElement = buildConstraintElement(constraint);
+            cetype.appendChild(constraintElement);
         }
 
         return cetype;
     }
 
-	private Element buildConstraintElement(MembershipMember constraintAnnotation)
-            throws ValidationException, IOException {
+	private Element buildConstraintElement(Constraint constraint) {
         Element e = document.createElement(CONSTRAINT);
 
-        Collection<? extends RefexChronicleBI<?>> annotations = constraintAnnotation.getAnnotations();
-
         // Path attribute (1).
-        StringMember pathAnnotation = getSingleAnnotation(annotations,
-                CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, StringMember.class);
-        if (pathAnnotation == null) {
-            LOG.info("No CEM_CONSTRAINTS_PATH_REFSET members found.");
-        } else {
-            Attr pathAttr = document.createAttribute(PATH);
-            String path = pathAnnotation.getString1();
+        Attr pathAttr = document.createAttribute(PATH);
+        String path = constraint.getPath();
+        if (path != null) {
             pathAttr.setNodeValue(path);
-            e.setAttributeNode(pathAttr);
         }
+        e.setAttributeNode(pathAttr);
 
         // Value attribute (1).
-        StringMember valueAnnotation = getSingleAnnotation(annotations,
-                CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, StringMember.class);
-        if (valueAnnotation == null) {
-            LOG.info("No CEM_CONSTRAINTS_VALUE_REFSET members found.");
-        } else {
-            Attr valueAttr = document.createAttribute(VALUE);
-            String value = valueAnnotation.getString1();
+        Attr valueAttr = document.createAttribute(VALUE);
+        String value = constraint.getValue();
+        if (value != null) {
             valueAttr.setNodeValue(value);
-            e.setAttributeNode(valueAttr);
         }
+        e.setAttributeNode(valueAttr);
 
         return e;
     }
 
-    private Element buildCompositionElement(String elementName, NidStringMember compositionRefex)
-            throws ValidationException, IOException, ContradictionException {
+    private Element buildCompositionElement(String elementName, Composition composition) {
         Element e = document.createElement(elementName);
 
         // Type attribute.
         Attr typeAttr = document.createAttribute(TYPE);
-        String type = compositionRefex.getString1();
+        String type = composition.getComponent();
         typeAttr.setNodeValue(type);
         e.setAttributeNode(typeAttr);
 
         // Name attribute.
         Attr nameAttr = document.createAttribute(NAME);
-        String name = StringUtils.decapitalize(type);
+        String name = decapitalize(type);
         nameAttr.setNodeValue(name);
         e.setAttributeNode(nameAttr);
 
         // Constraint attribute (0-1).
-        MembershipMember constraint = getMembershipAnnotation(compositionRefex, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
-        if (constraint == null) {
-            LOG.info("No CEM_CONSTRAINTS_REFSET member found.");
-        } else {
-            StringMember pathAnnotation = getStringAnnotation(constraint, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET);
-            StringMember valueAnnotation = getStringAnnotation(constraint, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET);
-            String path = pathAnnotation.getString1();
-            String value = valueAnnotation.getString1();
+        Constraint constraint = composition.getConstraint();
+        if (constraint != null) {
+            String path = constraint.getPath();
+            String value = constraint.getValue();
             Attr constraintAttr = document.createAttribute(path);
             constraintAttr.setNodeValue(value);
             e.setAttributeNode(constraintAttr);
         }
 
-
         // Value element
-        StringMember valueAnnotation = getCompStringAnnotation(compositionRefex, CEMMetadataBinding.CEM_VALUE_REFSET);
-        if (valueAnnotation != null) {
-	        String value = valueAnnotation.getString1();
+        String value = composition.getValue();
+        if (value != null) {
 	        e.setTextContent(value);
         }
 
         return e;
     }
 
-    private Element buildDataElement(NidMember dataAnnotation)
+    private Element buildDataElement(ConceptSpec dataType)
             throws ValidationException, IOException {
         Element data = document.createElement(DATA);
 
         // Convert to string.
-        int nid = dataAnnotation.getNid1();
+        int nid = dataType.getNid();
         String type = null;
         if (nid == CEMMetadataBinding.CEM_PQ.getNid()) {
             type = "pq";
         } else if (nid == CEMMetadataBinding.CEM_CD.getNid()) {
             type = "cd";
         } else {
-            throw new IllegalStateException("Unrecognized CEM_DATA_REFSET member nid: " + nid);
+            throw new IllegalStateException("Unrecognized dataType: " + dataType);
         }
 
         // Type attribute.
@@ -301,22 +426,20 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         return data;
     }
 
-    private Element buildKeyElement(StringMember keyAnnotation) {
+    private Element buildKeyElement(String code) {
         Element key = document.createElement(KEY);
 
         // Code attribute.
         Attr codeAttr = document.createAttribute(CODE);
-        String code = keyAnnotation.getString1();
         codeAttr.setNodeValue(code);
         key.setAttributeNode(codeAttr);
 
         return key;
     }
 
-    private Attr buildNameAttr(StringMember nameAttribute) {
+    private Attr buildNameAttr(String name) {
         Attr nameAttr = document.createAttribute(NAME);
 
-        String name = nameAttribute.getString1();
         nameAttr.setNodeValue(name);
 
         return nameAttr;
@@ -389,5 +512,37 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
         return transformer;
+    }
+    
+    /**
+     * Utility method to take a string and convert it to normal Java variable
+     * name capitalization. This normally means converting the first character
+     * from upper case to lower case, but in the (unusual) special case when
+     * there is more than one character and both the first and second characters
+     * are upper case, we leave it alone.
+     * 
+     * Thus "FooBah" becomes "fooBah" and "X" becomes "x", but "URL" stays as
+     * "URL".
+     * 
+     * Parameters
+     * @param name The string to be decapitalized. 
+     * Returns: 
+     * @return The decapitalized version of the string.
+     * 
+     * Note, this was copied from 1.7_40 release of the JDK, as it was removed from com.sun.xml.internal.ws.util.StringUtils in 1.8.
+     */
+
+    public static String decapitalize(String name) {
+        if (name == null || name.length() == 0) {
+            return name;
+        }
+        if (name.length() > 1 
+                && Character.isUpperCase(name.charAt(1)) 
+                && Character.isUpperCase(name.charAt(0))) {
+            return name;
+        }
+        char chars[] = name.toCharArray();
+        chars[0] = Character.toLowerCase(chars[0]);
+        return new String(chars);
     }
 }

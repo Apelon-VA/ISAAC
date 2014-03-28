@@ -21,10 +21,10 @@ package gov.va.isaac.ie;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
+import gov.va.isaac.models.fhim.exporter.FHIMExporter;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 
 import javax.validation.ValidationException;
@@ -42,7 +42,7 @@ public class ExportHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExportHandler.class);
 
-    public ExportHandler() throws ValidationException, IOException {
+    public ExportHandler() throws ValidationException {
         super();
     }
 
@@ -62,6 +62,9 @@ public class ExportHandler {
 
         if (modelType == InformationModelType.CEM) {
             CEMExporter exporter = new CEMExporter(new FileOutputStream(file));
+            exporter.exportModel(conceptUUID);
+        } else if (modelType == InformationModelType.FHIM) {
+            FHIMExporter exporter = new FHIMExporter(new FileOutputStream(file));
             exporter.exportModel(conceptUUID);
         } else {
             throw new UnsupportedOperationException(modelType.getDisplayName() +

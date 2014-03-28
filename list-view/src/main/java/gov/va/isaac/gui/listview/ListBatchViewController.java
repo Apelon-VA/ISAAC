@@ -226,15 +226,8 @@ public class ListBatchViewController
 		executeOperationsToolbar.getItems().remove(executeOperationsButton);
 		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(executeOperationsButton, reasonWhyExecuteDisabled_));
 
-		executeOperationsButton.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				executeOperations();
-			}
-		});
-
+		executeOperationsButton.setOnAction((a) -> executeOperations());
+		
 		addOperationButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

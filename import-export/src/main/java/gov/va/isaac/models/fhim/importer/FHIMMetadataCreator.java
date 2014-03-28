@@ -21,11 +21,9 @@ package gov.va.isaac.models.fhim.importer;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.util.MetadataCreatorBase;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,7 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FHIMMetadataCreator.class);
 
-    public FHIMMetadataCreator() throws ValidationException, IOException {
+    public FHIMMetadataCreator() {
         super();
     }
 
@@ -72,7 +70,9 @@ public class FHIMMetadataCreator extends MetadataCreatorBase {
         ConceptChronicleBI FHIMGeneralizationsRefset = createNewConcept(FHIMRefsets, "FHIM Generalizations reference set (foundation metadata concept)", "FHIM Generalizations reference set");
         ConceptChronicleBI FHIMDependenciesRefset = createNewConcept(FHIMRefsets, "FHIM Dependencies reference set (foundation metadata concept)", "FHIM Dependencies reference set");
         ConceptChronicleBI FHIMAssociationsRefset = createNewConcept(FHIMRefsets, "FHIM Associations reference set (foundation metadata concept)", "FHIM Associations reference set");
+        ConceptChronicleBI FHIMAssociationEndsRefset = createNewConcept(FHIMRefsets, "FHIM Association Ends reference set (foundation metadata concept)", "FHIM Association Ends reference set");
         ConceptChronicleBI FHIMMultiplicityRefset = createNewConcept(FHIMRefsets, "FHIM Multiplicity reference set (foundation metadata concept)", "FHIM Multiplicity reference set");
+        ConceptChronicleBI FHIMVisibilityRefset = createNewConcept(FHIMRefsets, "FHIM Visibility reference set (foundation metadata concept)", "FHIM Visibility reference set");
 
         ConceptChronicleBI attributesRoot = getDataStore().getConcept(UUID.fromString(REFSET_ATTRIBUTE_CONCEPT));
         LOG.debug("Attributes root:" + attributesRoot.toString());

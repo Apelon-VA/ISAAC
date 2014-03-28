@@ -93,7 +93,9 @@ public class ImportSettingsDialogController {
 
         // Set extension filter.
         FileChooser.ExtensionFilter xmlFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
-        fileChooser.getExtensionFilters().add(xmlFilter);
+        FileChooser.ExtensionFilter umlFilter = new FileChooser.ExtensionFilter("UML files (*.uml)", "*.uml");
+        FileChooser.ExtensionFilter allFilter = new FileChooser.ExtensionFilter("All files (*.*)", "*.*");
+        fileChooser.getExtensionFilters().addAll(xmlFilter, umlFilter, allFilter);
 
         // Show open file dialog.
         File file = fileChooser.showOpenDialog(importSettingsDialog);

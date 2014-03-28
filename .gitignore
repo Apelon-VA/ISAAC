@@ -62,3 +62,4 @@ UserPreferences.xml
 *.eccs
 
 *.log
+/isaac-workflow/workflowDB/

@@ -73,32 +73,24 @@
             <groupId>org.eclipse.emf.mapping</groupId>
             <artifactId>ecore2xml</artifactId>
             <version>2.7.0-v20120917-0436</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/ecore2xml_2.7.0-v20120917-0436.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>ecore</artifactId>
             <version>2.9.1.v20130827-0309</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/org.eclipse.emf.ecore_2.9.1.v20130827-0309.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.emf.ecore</groupId>
             <artifactId>xmi</artifactId>
             <version>2.9.1.v20130827-0309</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/org.eclipse.emf.ecore.xmi_2.9.1.v20130827-0309.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>common</artifactId>
             <version>2.9.1.v20130827-0309</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/org.eclipse.emf.common_2.9.1.v20130827-0309.jar</systemPath>
         </dependency>
         
         <!--

@@ -94,7 +94,7 @@ public class CEMMetadataBinding extends MetadataBindingBase {
             = new ConceptSpec("CEM modifier (foundation metadata concept)",
             UUID.fromString("7f79313c-f9df-5096-b104-2532bcbb8ad0"));
 
-    public static ConceptSpec CEM_ATTR
+    public static ConceptSpec CEM_ATT
             = new ConceptSpec("CEM attribution (foundation metadata concept)",
             UUID.fromString("d411d80a-54f9-5121-a5a1-0c7565bab85c"));
 
