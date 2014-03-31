@@ -1,4 +1,4 @@
-_<?xml version="1.0"?>
+<?xml version="1.0"?>
 <project
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
     xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -7,7 +7,7 @@ _<?xml version="1.0"?>
     <parent>
         <groupId>gov.va.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.0-Sprint_06-SNAPSHOT</version>
+        <version>1.0-Sprint_05-SNAPSHOT</version>
     </parent>
     <groupId>gov.va.isaac.modules</groupId>
     <artifactId>isaac-app-config</artifactId>
