@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.0-Sprint_05-SNAPSHOT</version>
+    <version>1.0-Sprint_06-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -205,6 +205,7 @@
                 <configuration>
                     <preparationGoals>clean validate</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <!-- TODO disable this by default, only enable by option in maestrodev, otherwise, other branches of our code overwrite our gh-pages site -->
                     <goals>deploy</goals>
                 </configuration>
             </plugin>
