@@ -21,8 +21,6 @@ package gov.va.isaac.models.util;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
@@ -32,6 +30,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
 /**
  * Abstract superclass for metadata creators.
@@ -68,30 +67,43 @@ public abstract class MetadataCreatorBase extends CommonBase {
         return concept;
     }
 
-    protected ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
-            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
-        List<ConceptChronicleBI> oneParent = new ArrayList<ConceptChronicleBI>();
-        oneParent.add(parent);
-        return createNewConcept(oneParent, fsn, prefTerm);
+    /**
+     * Copied from Jesse's RefsetCreation demo.
+     */
+    protected ConceptChronicleBI createNewRefsetConcept(ConceptChronicleBI parent,
+            String fsn, String prefTerm, boolean isAnnotated)
+            throws IOException, InvalidCAB, ContradictionException {
+        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+
+        ConceptChronicleBI newCon = WBUtility.getBuilder().construct(newConCB);
+
+        newCon.setAnnotationStyleRefex(isAnnotated);
+
+        getDataStore().addUncommitted(newCon);
+
+        return newCon;
     }
 
-    protected ConceptChronicleBI createNewConcept(List<ConceptChronicleBI> parents, String fsn,
+    protected ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+
+        ConceptChronicleBI newCon = WBUtility.getBuilder().construct(newConCB);
+
+        getDataStore().addUncommitted(newCon);
+
+        return newCon;
+    }
+
+    protected ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm)
+            throws ValidationException, IOException, InvalidCAB,
+            ContradictionException {
         LanguageCode lc = LanguageCode.EN_US;
         UUID isA = Snomed.IS_A.getUuids()[0];
         IdDirective idDir = IdDirective.GENERATE_HASH;
         UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
-        UUID[] parentsUuids = new UUID[parents.size()];
-        int count = 0;
-        for (ConceptChronicleBI parent : parents) {
-            parentsUuids[count] = parent.getPrimordialUuid();
-            count++;
-        }
-        ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentsUuids);
-
-        ConceptChronicleBI newCon = WBUtility.getBuilder().construct(newConCB);
-        getDataStore().addUncommitted(newCon);
-
-        return newCon;
+        UUID parentUUIDs[] = new UUID[1];
+        parentUUIDs[0] = parent.getPrimordialUuid();
+        return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
     }
 }

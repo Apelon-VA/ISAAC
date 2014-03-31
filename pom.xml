@@ -256,6 +256,7 @@
 
     <modules>
         <module>isaac-app-interfaces</module>
+        <module>isaac-app-config</module>
         <module>gui-util</module>
         <module>otf-util</module>
         <module>data-model</module>

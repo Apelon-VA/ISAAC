@@ -33,21 +33,28 @@ import com.google.common.base.Objects;
 public class AbstractInformationModel implements InformationModel {
 
     private final String name;
+    private final UUID uuid;
     private final InformationModelType type;
 
     private Metadata metadata;
     private String focusConceptName;
     private UUID focusConceptUUID;
 
-    public AbstractInformationModel(String name, InformationModelType type) {
+    public AbstractInformationModel(String name, UUID uuid,
+            InformationModelType type) {
         super();
         this.name = name;
+        this.uuid = uuid;
         this.type = type;
     }
 
     @Override
     public final String getName() {
         return name;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 
     @Override

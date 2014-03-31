@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.InformationModel;
 
 import java.io.IOException;
 import java.net.URL;
@@ -40,11 +40,11 @@ public class ExportSettingsDialog extends Stage {
 
     private final ExportSettingsDialogController controller;
 
-    public ExportSettingsDialog(InformationModelType modelType) throws IOException {
+    public ExportSettingsDialog(InformationModel infoModel) throws IOException {
         super();
 
         setTitle("Export Settings");
-        setResizable(false);
+        setResizable(true);
 
         Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
         initOwner(owner);
@@ -59,6 +59,6 @@ public class ExportSettingsDialog extends Stage {
         setScene(scene);
 
         this.controller = loader.getController();
-        controller.setVariables(this, modelType);
+        controller.setVariables(this, infoModel);
     }
 }

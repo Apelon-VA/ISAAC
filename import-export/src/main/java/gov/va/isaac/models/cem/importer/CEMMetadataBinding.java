@@ -98,40 +98,21 @@ public class CEMMetadataBinding extends MetadataBindingBase {
             = new ConceptSpec("CEM attribution (foundation metadata concept)",
             UUID.fromString("d411d80a-54f9-5121-a5a1-0c7565bab85c"));
 
-    public static ConceptSpec CEM_LINK
-            = new ConceptSpec("CEM link (foundation metadata concept)",
-            UUID.fromString("77170ffa-9b54-571a-9f54-10a44510abf4"));
+    public static List<ConceptSpec> getAllRefsets() {
+        try {
+            ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
 
-     public static ConceptSpec CEM_CODE_FIELD
-            = new ConceptSpec("CEM code field (foundation metadata concept)",
-            UUID.fromString("d7fb3716-45b4-5b3d-bfa6-3dae69ec2b73"));
+            allConceptSpec.add(CEM_DATA_REFSET);
+            allConceptSpec.add(CEM_KEY_REFSET);
+            allConceptSpec.add(CEM_TYPE_REFSET);
+            allConceptSpec.add(CEM_INFO_REFSET);
+            allConceptSpec.add(CEM_COMPOSITION_REFSET);
 
-     public static ConceptSpec CEM_UNIT_FIELD
-            = new ConceptSpec("CEM unit field (foundation metadata concept)",
-            UUID.fromString("2f3fe6d9-6a7c-5d05-aa4f-3ebde57fff83"));
-
-    // TODO convert the above to an enum
-
-     public static List<ConceptSpec> getAllRefsets()
-     {
-         try
-         {
-             ArrayList<ConceptSpec> allConceptSpec = new ArrayList<>();
-
-             allConceptSpec.add(CEM_DATA_REFSET);
-             allConceptSpec.add(CEM_KEY_REFSET);
-             allConceptSpec.add(CEM_TYPE_REFSET);
-             allConceptSpec.add(CEM_INFO_REFSET);
-             allConceptSpec.add(CEM_COMPOSITION_REFSET);
-
-             return allConceptSpec;
-         }
-         catch (Exception e)
-         {
-             throw new RuntimeException("Unexpected!", e);
-         }
-     }
-
+            return allConceptSpec;
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected!", e);
+        }
+    }
 
      public static List<ConceptSpec> getAll() {
          return getAll(CEMMetadataBinding.class);

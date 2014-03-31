@@ -136,9 +136,9 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(qualRefex);
-                RefexChronicleBI pathRefex = addRefexInStrExtensionRefset(constraintRefex,
+                RefexChronicleBI pathRefex = addStrExtensionAnnotation(constraintRefex,
                         CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI qalueRefex = addRefexInStrExtensionRefset(constraintRefex,
+                RefexChronicleBI qalueRefex = addStrExtensionAnnotation(constraintRefex,
                         CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
             }
 
@@ -163,9 +163,9 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(modRefex);
-                RefexChronicleBI pathRefex = addRefexInStrExtensionRefset(constraintRefex,
+                RefexChronicleBI pathRefex = addStrExtensionAnnotation(constraintRefex,
                         CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI qalueRefex = addRefexInStrExtensionRefset(constraintRefex,
+                RefexChronicleBI qalueRefex = addStrExtensionAnnotation(constraintRefex,
                         CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
             }
 
@@ -190,9 +190,9 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
                 // Simulate String-String refset for CEM Constraints.
                 RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(attRefex);
-                RefexChronicleBI pathRefex = addRefexInStrExtensionRefset(constraintRefex,
+                RefexChronicleBI pathRefex = addStrExtensionAnnotation(constraintRefex,
                         CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI qalueRefex = addRefexInStrExtensionRefset(constraintRefex,
+                RefexChronicleBI qalueRefex = addStrExtensionAnnotation(constraintRefex,
                         CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
             }
 
@@ -211,9 +211,9 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
             // Simulate String-String refset for CEM Constraints.
             RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(focusConcept);
-            RefexChronicleBI constraintPathRefex = addRefexInStrExtensionRefset(constraintRefex,
+            RefexChronicleBI constraintPathRefex = addStrExtensionAnnotation(constraintRefex,
                     CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-            RefexChronicleBI constraintValueRefex = addRefexInStrExtensionRefset(constraintRefex,
+            RefexChronicleBI constraintValueRefex = addStrExtensionAnnotation(constraintRefex,
                     CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
         }
     }
@@ -351,40 +351,40 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
 
     private RefexChronicleBI addMemberInValueRefset(RefexChronicleBI focusComponent, String value)
             throws IOException, InvalidCAB, ContradictionException {
-        return addRefexInStrExtensionRefset(focusComponent, CEMMetadataBinding.CEM_VALUE_REFSET,
+        return addStrExtensionAnnotation(focusComponent, CEMMetadataBinding.CEM_VALUE_REFSET,
                 value);
     }
 
     private RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
             ConceptSpec conceptExtension)
             throws IOException, InvalidCAB, ContradictionException {
-        return addRefexInCidExtensionRefset(focusConcept, CEMMetadataBinding.CEM_DATA_REFSET,
+        return addCidExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_DATA_REFSET,
                 conceptExtension);
     }
 
     private RefexChronicleBI addMemberInCompositionRefset(ConceptChronicleBI focusConcept,
             ConceptSpec componentExtension, String stringExtension)
             throws IOException, InvalidCAB, ContradictionException {
-        return addRefexInCidStrExtensionRefset(focusConcept, CEMMetadataBinding.CEM_COMPOSITION_REFSET,
+        return addCidStrExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_COMPOSITION_REFSET,
                 componentExtension, stringExtension);
     }
 
     private RefexChronicleBI addMemberInConstraintsRefset(ComponentChronicleBI focusComponent)
             throws IOException, InvalidCAB, ContradictionException {
-        return addRefexInMemberRefset(focusComponent, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
+        return addMemberAnnotation(focusComponent, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
     }
 
     private RefexChronicleBI addMemberInKeyRefset(ConceptChronicleBI focusConcept,
             String key)
             throws IOException, InvalidCAB, ContradictionException {
-        return addRefexInStrExtensionRefset(focusConcept, CEMMetadataBinding.CEM_KEY_REFSET, key);
+        return addStrExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_KEY_REFSET, key);
 
     }
 
     private RefexChronicleBI addMemberInTypeRefset(ConceptChronicleBI focusConcept,
             String type)
             throws IOException, InvalidCAB, ContradictionException {
-        return addRefexInStrExtensionRefset(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
+        return addStrExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
 
     }
 

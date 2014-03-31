@@ -97,7 +97,7 @@ public class CEMInformationModel extends AbstractInformationModel implements Inf
     private ConceptSpec dataType;
 
     public CEMInformationModel(String name) {
-        super(name, InformationModelType.CEM);
+        super(name, null, InformationModelType.CEM);
     }
 
     public String getKey() {
