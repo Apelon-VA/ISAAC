@@ -1,6 +1,5 @@
 package gov.va.isaac;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -28,7 +27,8 @@ public class AppProperties {
         try {
             InputStream in = getClass().getResourceAsStream(PROPERTIES_FILE);
             if (in == null) {
-                throw new FileNotFoundException(PROPERTIES_FILE);
+                LOG.warn("App properties not found, skipping.");
+                return;
             }
             properties.load(in);
         } catch (IOException ex) {
