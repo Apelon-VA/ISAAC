@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<BorderPane fx:id="borderPane" prefHeight="450.0" prefWidth="300.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.searchview.SearchViewController">
+<BorderPane fx:id="borderPane" prefHeight="450.0" styleClass="defaultBackgroundColor" prefWidth="300.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.searchview.SearchViewController">
   <center>
     <StackPane prefHeight="150.0" prefWidth="200.0">
       <children>
