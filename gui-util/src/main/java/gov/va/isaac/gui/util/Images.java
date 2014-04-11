@@ -42,13 +42,22 @@ public enum Images {
     TAXONOMY_CLOSE(setupImage("/icons/fugue/16x16/icons-shadowless/minus-small.png")),
     
     //Other GUI Icons
+    LEGO_ADD(setupImage("/icons/silk/16x16/brick_add.png")),
+    LEGO_DELETE(setupImage("/icons/silk/16x16/brick_delete.png")),
+    LEGO_EDIT(setupImage("/icons/silk/16x16/brick_edit.png")),
+    LEGO(setupImage("/icons/silk/16x16/brick.png")),
+    LEGO_EXPORT(setupImage("/icons/silk/16x16/brick_go.png")),
     CONCEPT_VIEW(setupImage("/icons/misc/16x16/gear.png")),
     COPY(setupImage("/icons/misc/16x16/document-copy.png")),
     DELETE(setupImage("/icons/silk/16x16/delete.png")),
     EXCLAMATION(setupImage("/icons/fugue/16x16/icons-shadowless/exclamation-red.png")),
     INFORMATION(setupImage("/icons/fugue/16x16/icons-shadowless/information.png")),
+    XML_VIEW_16(setupImage("/icons/text-xml-icon-16x16.png")),
+    XML_VIEW_32(setupImage("/icons/text-xml-icon-32x32.png")),
+    HTML_VIEW_16(setupImage("/icons/xhtml-icon-16x16.png")),
     MINUS(setupImage("/icons/fugue/16x16/icons-shadowless/minus.png")), 
-    PLUS(setupImage("/icons/fugue/16x16/icons-shadowless/plus.png"));
+    PLUS(setupImage("/icons/fugue/16x16/icons-shadowless/plus.png")),
+    EXPAND_ALL(setupImage("/icons/diagona/16x16/109.png"));
 
     private final Image image;
 
