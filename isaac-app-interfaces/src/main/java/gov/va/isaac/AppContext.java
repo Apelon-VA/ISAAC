@@ -37,7 +37,7 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class AppContext
 {
-    private static ServiceLocator serviceLocator_;
+	private static ServiceLocator serviceLocator_;
 	private static AppProperties appProperties_;
 
 	/**
@@ -62,10 +62,10 @@ public class AppContext
 		appProperties_ = new AppProperties();
 	}
 
-    public static AppProperties getAppProperties()
-    {
-        return appProperties_;
-    }
+	public static AppProperties getAppProperties()
+	{
+		return appProperties_;
+	}
 
 	public static ServiceLocator getServiceLocator()
 	{
