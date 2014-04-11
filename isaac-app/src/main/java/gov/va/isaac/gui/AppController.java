@@ -179,8 +179,9 @@ public class AppController {
         ap.getStyleClass().add("headerBackground");
 
         Label l = new Label(dockedView.getViewTitle());
+        l.getStyleClass().add("titleLabel");
         AnchorPane.setLeftAnchor(l, 5.0);
-        AnchorPane.setTopAnchor(l, 5.0);
+        AnchorPane.setTopAnchor(l, 2.0);
         ap.getChildren().add(l);
 
         Button b = new Button();
@@ -195,8 +196,8 @@ public class AppController {
                 hidePanelView(bp);
             }
         });
-        AnchorPane.setTopAnchor(b, 5.0);
-        AnchorPane.setRightAnchor(b, 3.0);
+        AnchorPane.setTopAnchor(b, 0.0);
+        AnchorPane.setRightAnchor(b, 5.0);
         ap.getChildren().add(b);
 
         bp.setTop(ap);
