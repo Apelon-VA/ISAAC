@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.interfaces.gui;
 
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -71,4 +72,9 @@ public interface CommonDialogsI
 	 * @param conceptUUID
 	 */
 	public void showConceptDialog(int conceptNID);
+	
+	/**
+	 * Present a modal yes/no dialog to the user.  Returns the users answer (YES or NO) to the question.
+	 */
+	public DialogResponse showYesNoDialog(String title, String question);
 }
