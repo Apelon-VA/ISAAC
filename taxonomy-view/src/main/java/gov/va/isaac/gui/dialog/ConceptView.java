@@ -71,7 +71,7 @@ public class ConceptView extends Stage implements ConceptViewI {
         FXMLLoader loader = new FXMLLoader(resource);
         Parent root = (Parent) loader.load();
         setScene(new Scene(root));
-
+        getScene().getStylesheets().add(ConceptView.class.getResource("/isaac-shared-styles.css").toString());
         getIcons().add(Images.CONCEPT_VIEW.getImage());
 
         this.controller = loader.getController();

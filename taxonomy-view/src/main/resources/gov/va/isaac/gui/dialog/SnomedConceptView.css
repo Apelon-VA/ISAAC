@@ -1,17 +1,1 @@
 @CHARSET "ISO-8859-1";
-
-.dialogBackground {
-    -fx-background-color: linear-gradient(lightGrey, darkGrey);
-}
-
-.boldLabel {
-    -fx-font-weight: bold;
-}
-
-.itemBorder {
-    -fx-border-color: grey;
-    -fx-border-width: 2;
-    -fx-border-insets: 4;
-    -fx-border-radius: 5;
-    -fx-padding: 3;
-}
