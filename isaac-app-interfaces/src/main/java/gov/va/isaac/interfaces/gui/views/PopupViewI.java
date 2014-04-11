@@ -22,9 +22,9 @@ import javafx.stage.Window;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * PopupViewI
+ * @{link PopupViewI}
  *
- * Extends the ViewI to provide a View which will pop up a new window on top of the parent 
+ * Extends the @{link IsaacViewI} to provide a View which will pop up a new window on top of the parent 
  * window when the showView method is called.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
