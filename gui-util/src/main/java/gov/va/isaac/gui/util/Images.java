@@ -55,6 +55,7 @@ public enum Images {
     XML_VIEW_16(setupImage("/icons/text-xml-icon-16x16.png")),
     XML_VIEW_32(setupImage("/icons/text-xml-icon-32x32.png")),
     HTML_VIEW_16(setupImage("/icons/xhtml-icon-16x16.png")),
+    PROPERTIES(setupImage("/icons/document-properties-icon.png")),
     MINUS(setupImage("/icons/fugue/16x16/icons-shadowless/minus.png")), 
     PLUS(setupImage("/icons/fugue/16x16/icons-shadowless/plus.png")),
     EXPAND_ALL(setupImage("/icons/diagona/16x16/109.png"));
