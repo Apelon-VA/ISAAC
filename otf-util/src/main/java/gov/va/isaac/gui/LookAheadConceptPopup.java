@@ -99,6 +99,9 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		}
 	}
 	
+	/**
+	 * In the case where a TextField is passed in, the nid is placed in the UserData field of the text field upon a selection.
+	 */
 	@SuppressWarnings("unchecked")
 	public LookAheadConceptPopup(Control field)
 	{
@@ -383,7 +386,8 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 			{
 				if (sourceComboBox == null)
 				{
-					sourceTextField.setText(popUpResults.get(idx).description_);
+					sourceTextField.setUserData(popUpResults.get(idx).nid_);
+					sourceTextField.textProperty().setValue(popUpResults.get(idx).description_);
 				}
 				else
 				{
@@ -444,7 +448,8 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 					//In practice, its fairly harmless.
 					if (sourceComboBox == null)
 					{
-						sourceTextField.setText(popUpResults.get(currentSelection).description_);
+						sourceTextField.setUserData(popUpResults.get(currentSelection).nid_);
+						sourceTextField.textProperty().set(popUpResults.get(currentSelection).description_);
 					}
 					else
 					{
