@@ -19,10 +19,10 @@
 package gov.va.legoEdit.gui;
 
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.Utility;
 import gov.va.legoEdit.formats.LegoXMLUtils;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
-import gov.va.legoEdit.util.Utility;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -240,7 +240,7 @@ public class ExportDialogController implements Initializable
 					}
 
 					ExportRunnable r = new ExportRunnable(new File(exportTo.getText()), ss, fileExtension.getText());
-					Utility.tpe.execute(r);
+					Utility.execute(r);
 				}
 			}
 		});
