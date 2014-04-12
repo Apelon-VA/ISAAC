@@ -437,7 +437,17 @@ public class LegoFilterPaneController implements Initializable, ConceptLookupCal
 		StackPane.setAlignment(lookupFailImage, Pos.CENTER_RIGHT);
 		StackPane.setMargin(lookupFailImage, new Insets(0.0, 5.0, 0.0, 0.0));
 		
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(textField, () -> info.concept.getUuid(), true);
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(textField, () -> 
+		{
+			if (info != null && info.concept != null)
+			{
+				return info.concept.getUuid();
+			}
+			else
+			{
+				return null;
+			}
+		}, true);
 		
 		textField.textProperty().addListener(new ChangeListener<String>()
 		{
