@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -40,12 +41,14 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import com.sun.javafx.tk.Toolkit;
 
 /**
  * {@link LegoListView}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
+@SuppressWarnings("restriction")
 @Service
 @Singleton
 public class LegoListView implements DockedViewI
@@ -88,10 +91,14 @@ public class LegoListView implements DockedViewI
 				{
 					try
 					{
-						for (String id : showImportDialog(files, parent))
+						List<String> importedFiles = showImportDialog(files, parent);
+						AppContext.getService(LegoListView.class).updateListView();
+						if (importedFiles.size() < 5)
 						{
-							AppContext.getService(LegoListView.class).updateListView();
-							new LegoSummaryPane(BDBDataStoreImpl.getInstance().getLegoListByID(id)).show();
+							for (String id : importedFiles)
+							{
+								new LegoSummaryPane(BDBDataStoreImpl.getInstance().getLegoListByID(id)).show();
+							}
 						}
 					}
 					catch (IOException e)
@@ -207,7 +214,18 @@ public class LegoListView implements DockedViewI
 	
 	public void updateListView()
 	{
-		lfpc_.reloadOptions();
-		lfpc_.updateLegoList();
+		if (Toolkit.getToolkit().isFxUserThread())
+		{
+			lfpc_.reloadOptions();
+			lfpc_.updateLegoList();
+		}
+		else
+		{
+			Platform.runLater(() -> 
+			{
+				lfpc_.reloadOptions();
+				lfpc_.updateLegoList();
+			});
+		}
 	}
 }
