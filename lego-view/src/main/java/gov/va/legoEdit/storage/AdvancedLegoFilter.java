@@ -319,7 +319,8 @@ public class AdvancedLegoFilter
 			return true;
 		}
 		
-		if (filter.getUuid().equals(concept.getUuid()) || filter.getSctid() == concept.getSctid())
+		if ((filter.getUuid() != null && filter.getUuid().equals(concept.getUuid())) 
+				|| (filter.getSctid() != null && filter.getSctid().equals(concept.getSctid())))
 		{
 			return true;
 		}
