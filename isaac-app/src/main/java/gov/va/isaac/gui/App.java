@@ -31,6 +31,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -242,8 +243,8 @@ public class App extends Application implements ApplicationWindowI{
             LOG.warn(message, ex);
             commonDialog_.showErrorDialog("Oops!", message, ex.getMessage());
         }
-
         LOG.info("Finished shutting down");
+        Platform.exit();
     }
     
     /**
