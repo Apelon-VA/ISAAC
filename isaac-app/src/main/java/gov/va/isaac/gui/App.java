@@ -83,6 +83,7 @@ public class App extends Application implements ApplicationWindowI{
         String title = AppContext.getAppProperties().getProperty(TITLE_PROPERTY);
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(root));
+        primaryStage.getScene().getStylesheets().add(App.class.getResource("/isaac-shared-styles.css").toString());
 
         // Set minimum dimensions.
         primaryStage.setMinHeight(400);

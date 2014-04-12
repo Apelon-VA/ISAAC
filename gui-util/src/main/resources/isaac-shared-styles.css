@@ -4,6 +4,11 @@
 	-fx-font-weight: bold;
 }
 
+.titleLabel {
+	-fx-font-weight: bold;
+	-fx-font-size: 16;
+}
+
 .itemBorder {
 	-fx-border-color: grey;
 	-fx-border-width: 2;
@@ -14,5 +19,4 @@
 
 .defaultBackgroundColor {
 	-fx-background-color: -fx-background;
-}
 }

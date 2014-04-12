@@ -8,11 +8,6 @@
     -fx-background-color: linear-gradient(#98a8bd 0%, #8195af 25%, #6d86a4 100%);
 }
 
-.titleLabel {
-    -fx-font-weight: bold;
-    -fx-font-size: 16;
-}
-
 .tab-close-button {
     -fx-background-color: black;
     -fx-shape: "M 0,0 H1 L 4,3 7,0 H8 V1 L 5,4 8,7 V8 H7 L 4,5 1,8 H0 V7 L 3,4 0,1 Z";
