@@ -51,7 +51,7 @@
             </StackPane>
           </children>
           <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="150.0" />
+            <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="170.0" />
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
           </columnConstraints>
           <rowConstraints>
@@ -92,7 +92,7 @@
                         <Insets fx:id="x3" />
                       </HBox.margin>
                     </Label>
-                    <ComboBox fx:id="advancedDestMatchType" maxWidth="1.7976931348623157E308" prefWidth="67.0" visibleRowCount="5" HBox.hgrow="ALWAYS" />
+                    <ComboBox fx:id="advancedDestMatchType" maxWidth="1.7976931348623157E308" prefWidth="70.0" visibleRowCount="5" HBox.hgrow="ALWAYS" />
                   </children>
                   <GridPane.margin>
                     <Insets fx:id="x3" />
@@ -100,7 +100,7 @@
                 </HBox>
               </children>
               <columnConstraints>
-                <ColumnConstraints hgrow="NEVER" maxWidth="150.0" minWidth="-Infinity" prefWidth="150.0" />
+                <ColumnConstraints hgrow="NEVER" maxWidth="170.0" minWidth="-Infinity" prefWidth="170.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" prefWidth="255.0" />
               </columnConstraints>
               <rowConstraints>
