@@ -18,11 +18,13 @@
  */
 package gov.va.isaac.gui.searchview;
 
+import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 import javax.inject.Singleton;
@@ -92,7 +94,7 @@ public class SearchView implements DockedViewI
 			@Override
 			public String getMenuName()
 			{
-				return "SEARCH PANEL";
+				return "Search";
 			}
 			
 			@Override
@@ -105,6 +107,12 @@ public class SearchView implements DockedViewI
 			public boolean enableMnemonicParsing()
 			{
 				return false;
+			}
+			
+			@Override
+			public Image getImage()
+			{
+				return Images.SEARCH.getImage();
 			}
 		};
 		return menuItem;

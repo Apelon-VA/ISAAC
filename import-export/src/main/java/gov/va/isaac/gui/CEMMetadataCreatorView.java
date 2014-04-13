@@ -82,7 +82,7 @@ public class CEMMetadataCreatorView implements PopupViewI
 			@Override
 			public String getMenuName()
 			{
-				return "CREATE METADATA";
+				return "Create Metadata";
 			}
 			
 			@Override

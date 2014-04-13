@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 import javax.inject.Singleton;
@@ -105,7 +107,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 			@Override
 			public String getMenuName()
 			{
-				return "TAXONOMY VIEWER";
+				return "Taxonomy Viewer";
 			}
 			
 			@Override
@@ -119,6 +121,16 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 			{
 				return false;
 			}
+
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.ROOT.getImage();
+			}
+
 		};
 	}
 	/**
