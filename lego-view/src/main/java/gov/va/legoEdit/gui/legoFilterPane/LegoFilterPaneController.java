@@ -74,6 +74,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
@@ -89,7 +90,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
-import javafx.scene.control.IndexedCell;
 
 /**
  * 
@@ -864,5 +864,21 @@ public class LegoFilterPaneController implements Initializable, ConceptLookupCal
 			}
 		};
 		Utility.execute(r);
+	}
+	
+	public List<LegoListByReference> getCurrentlyDisplayedLegoLists()
+	{
+		ArrayList<LegoListByReference> results = new ArrayList<>(lltv_.getRoot().getChildren().size());
+		
+		for (TreeItem<String> item : lltv_.getRoot().getChildren())
+		{
+			LegoListTreeItem llti = (LegoListTreeItem)item;
+			if (LegoTreeNodeType.legoListByReference == llti.getNodeType())
+			{
+				results.add((LegoListByReference) llti.getExtraData());
+			}
+		}
+		return results;
+		
 	}
 }

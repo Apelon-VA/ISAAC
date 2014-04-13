@@ -19,11 +19,15 @@
 package gov.va.legoEdit.gui.legoListView;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.legoEdit.gui.ExportDialog;
 import gov.va.legoEdit.gui.ImportDialogController;
 import gov.va.legoEdit.gui.LegoSummaryPane;
 import gov.va.legoEdit.gui.legoFilterPane.LegoFilterPaneController;
+import gov.va.legoEdit.model.LegoListByReference;
+import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +37,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -41,6 +46,8 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -54,6 +61,7 @@ import com.sun.javafx.tk.Toolkit;
 public class LegoListView implements DockedViewI
 {
 	private LegoFilterPaneController lfpc_;
+	Logger logger = LoggerFactory.getLogger(LegoListView.class);
 	
 	private LegoListView()
 	{
@@ -123,7 +131,7 @@ public class LegoListView implements DockedViewI
 			@Override
 			public String getMenuName()
 			{
-				return "LEGO IMPORTER";
+				return "Import Legos...";
 			}
 			
 			@Override
@@ -136,6 +144,132 @@ public class LegoListView implements DockedViewI
 			public boolean enableMnemonicParsing()
 			{
 				return false;
+			}
+
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.IMPORT.getImage();
+			}
+		});
+		
+		menus.add(new MenuItemI()
+		{
+			@Override
+			public void handleMenuSelection(Window parent)
+			{
+				try
+				{
+					new ExportDialog(null, parent);
+				}
+				catch (Exception e)
+				{
+					logger.error("Unexpected error exporting LegoList ", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error exporting Lego Lists", e);
+				}
+			}
+			
+			@Override
+			public int getSortOrder()
+			{
+				return 6;
+			}
+			
+			@Override
+			public String getParentMenuId()
+			{
+				return "importExportMenu";
+			}
+			
+			@Override
+			public String getMenuName()
+			{
+				return "Export All Lego Lists...";
+			}
+			
+			@Override
+			public String getMenuId()
+			{
+				return "legoImporterMenuItem";
+			}
+			
+			@Override
+			public boolean enableMnemonicParsing()
+			{
+				return false;
+			}
+
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.LEGO_EXPORT.getImage();
+			}
+		});
+		
+		menus.add(new MenuItemI()
+		{
+			@Override
+			public void handleMenuSelection(Window parent)
+			{
+				try
+				{
+					ArrayList<LegoList> list = new ArrayList<>();
+					for (LegoListByReference llbr : getCurrentlyDisplayedLegoLists())
+					{
+						list.add(BDBDataStoreImpl.getInstance().getLegoListByID(llbr.getLegoListUUID()));
+					}
+					new ExportDialog(list, parent);
+				}
+				catch (Exception e)
+				{
+					logger.error("Unexpected error exporting LegoList ", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error exporting Lego Lists", e);
+				}
+			}
+			
+			@Override
+			public int getSortOrder()
+			{
+				return 7;
+			}
+			
+			@Override
+			public String getParentMenuId()
+			{
+				return "importExportMenu";
+			}
+			
+			@Override
+			public String getMenuName()
+			{
+				return "Export Filtered Lego Lists...";
+			}
+			
+			@Override
+			public String getMenuId()
+			{
+				return "legoImporterMenuItem";
+			}
+			
+			@Override
+			public boolean enableMnemonicParsing()
+			{
+				return false;
+			}
+
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.LEGO_EXPORT.getImage();
 			}
 		});
 		return menus;
@@ -184,6 +318,15 @@ public class LegoListView implements DockedViewI
 			{
 				return false;
 			}
+			
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.LEGO_LIST_VIEW.getImage();
+			}
 		};
 	}
 
@@ -227,5 +370,10 @@ public class LegoListView implements DockedViewI
 				lfpc_.updateLegoList();
 			});
 		}
+	}
+	
+	public List<LegoListByReference> getCurrentlyDisplayedLegoLists()
+	{
+		return lfpc_.getCurrentlyDisplayedLegoLists();
 	}
 }
