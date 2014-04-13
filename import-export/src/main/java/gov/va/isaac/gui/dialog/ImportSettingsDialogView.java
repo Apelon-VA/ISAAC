@@ -71,7 +71,7 @@ public class ImportSettingsDialogView implements PopupViewI
 			@Override
 			public String getMenuName()
 			{
-				return "Information Models Importer";
+				return "Information Models Importer...";
 			}
 
 			@Override
