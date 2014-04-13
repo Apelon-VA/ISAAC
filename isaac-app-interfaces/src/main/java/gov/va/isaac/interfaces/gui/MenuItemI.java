@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.interfaces.gui;
 
+import javafx.scene.image.Image;
 import javafx.stage.Window;
 
 /**
@@ -61,6 +62,15 @@ public abstract class MenuItemI implements Comparable<MenuItemI>
 	 * Called when the user selects the menu
 	 */
 	public abstract void handleMenuSelection(Window parent);
+	
+	/**
+	 * The image that should be used with this menu.  Null is allowed.
+	 * Not abstract, as it was added later, and I didn't want to break everything
+	 */
+	public Image getImage()
+	{
+		return null;
+	}
 
 	/**
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)

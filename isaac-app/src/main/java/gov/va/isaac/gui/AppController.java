@@ -37,6 +37,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javax.inject.Inject;
@@ -111,6 +112,10 @@ public class AppController {
                         menuItemsToCreate.handleMenuSelection(appBorderPane.getScene().getWindow());
                     }
                 });
+                if (menuItemsToCreate.getImage() != null)
+                {
+                    menuItem.setGraphic(new ImageView(menuItemsToCreate.getImage()));
+                }
                 parentMenu.getItems().add(menuItem);
             }
         }
@@ -149,6 +154,10 @@ public class AppController {
                             }
                         }
                     });
+                    if (dv.getMenuBarMenuToShowView().getImage() != null)
+                    {
+                        mi.setGraphic(new ImageView(dv.getMenuBarMenuToShowView().getImage()));
+                    }
                     mi.selectedProperty().bindBidirectional(bp.visibleProperty());
                     parentMenu.getItems().add(mi);
                 }
