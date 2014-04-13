@@ -18,12 +18,12 @@
  */
 package gov.va.legoEdit.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.util.Utility;
 import gov.va.legoEdit.model.SchemaToString;
 import gov.va.legoEdit.model.schemaModel.Lego;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 import javafx.application.Platform;
@@ -96,9 +96,10 @@ public class LegoSummaryPane extends VBox
 				{
 					new ExportDialog(temp, getScene().getWindow());
 				}
-				catch (IOException e)
+				catch (Exception e)
 				{
-					logger.error("Unexpected error launching export", e);
+					logger.error("Unexpected error exporting LegoList ", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error exporting Lego Lists", e);
 				}
 			});
 			getChildren().add(export);
