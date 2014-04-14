@@ -26,19 +26,20 @@ import gov.va.isaac.util.Utility;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public abstract class ConceptIdProvider
+@FunctionalInterface
+public interface ConceptIdProvider
 {
 	/**
 	 * Implementers of this should return a UUID, or a NID - which we would expect most drop targets to handle.
 	 * @return
 	 */
-	public abstract String getConceptId();
+	public String getConceptId();
 	
 	/**
 	 * Convenience method
 	 * @return
 	 */
-	public boolean isNid()
+	default public boolean isNid()
 	{
 		return Utility.isInt(getConceptId());
 	}
@@ -47,7 +48,7 @@ public abstract class ConceptIdProvider
 	 * Convenience method
 	 * @return
 	 */
-	public boolean isUUID()
+	default public boolean isUUID()
 	{
 		return Utility.isUUID(getConceptId());
 	}
@@ -56,7 +57,7 @@ public abstract class ConceptIdProvider
 	 * Convenience method that simply parses the UUID from {@code #getConceptId}
 	 * Will fail if it isn't a UUID (but this may be overridden to be smarter by implementations)
 	 */
-	public UUID getConceptUUID()
+	default public UUID getConceptUUID()
 	{
 		return UUID.fromString(getConceptId());
 	}
@@ -65,7 +66,7 @@ public abstract class ConceptIdProvider
 	 * Convenience method that simply parses the UUID from {@code #getConceptId}
 	 * Will fail if it isn't an int (but this may be overridden to be smarter by implementations)
 	 */
-	public int getNid()
+	default public int getNid()
 	{
 		return Integer.parseInt(getConceptId());
 	}

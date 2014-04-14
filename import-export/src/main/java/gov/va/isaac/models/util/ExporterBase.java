@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -45,6 +46,34 @@ public abstract class ExporterBase extends CommonBase {
     }
 
     protected abstract Logger getLogger();
+
+    /**
+     * Utility method to get the members of the specified refset
+     * and make sure they are of the expected type.
+     *
+     * @return A {@link List} of the refset members, or {@code null} if none found.
+     * @throws An {@link IllegalStateException} if annotations are not
+     *         instances of the specified {@code type}.
+     */
+    protected <T> List<T> getRefsetMembers(ConceptChronicleBI refsetConcept,
+            Class<T> type)
+            throws ValidationException, IOException {
+        List<T> refsetMembers = Lists.newArrayList();
+
+        for (RefexChronicleBI<?> refsetMember : refsetConcept.getRefsetMembers()) {
+
+            // Expect member type.
+            Preconditions.checkState(type.isAssignableFrom(refsetMember.getClass()),
+                    "Expected " + type + "!  Actual type is " + refsetMember.getClass());
+            @SuppressWarnings("unchecked")
+            T member = (T) refsetMember;
+
+            // What we want.
+            refsetMembers.add(member);
+        }
+
+        return refsetMembers;
+    }
 
     /**
      * Helper method to filter the specified {@link Collection} of annotations

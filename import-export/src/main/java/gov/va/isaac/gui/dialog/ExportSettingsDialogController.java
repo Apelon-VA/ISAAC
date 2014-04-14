@@ -21,6 +21,7 @@ package gov.va.isaac.gui.dialog;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ie.ExportHandler;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.util.Utility;
 
 import java.io.File;
@@ -55,11 +56,11 @@ public class ExportSettingsDialogController {
     @FXML private TextField fileSelectionTextField;
 
     private Stage stage;
-    private InformationModelType modelType;
+    private InformationModel infoModel;
 
-    public void setVariables(Stage stage, InformationModelType modelType) {
+    public void setVariables(Stage stage, InformationModel infoModel) {
         this.stage = stage;
-        this.modelType = modelType;
+        this.infoModel = infoModel;
     }
 
     @FXML
@@ -99,7 +100,8 @@ public class ExportSettingsDialogController {
                 && (fileName != null) && (! fileName.isEmpty())) {
 
             // Add proper extension to fileName if it doesn't already have one.
-            String fileExtension = modelType.getFileExtension();
+            InformationModelType modelType = infoModel.getType();
+            String fileExtension = modelType .getFileExtension();
             if (! fileName.endsWith(fileExtension)) {
                 fileName = fileName + '.' + fileExtension;
             }
@@ -137,7 +139,7 @@ public class ExportSettingsDialogController {
 
                 // Inject into an ExportHandler.
                 ExportHandler exportHandler = new ExportHandler();
-                exportHandler.doExport(modelType, file);
+                exportHandler.doExport(infoModel, file);
 
                 return true;
             }

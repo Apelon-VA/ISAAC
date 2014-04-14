@@ -105,8 +105,8 @@ public class InformationModelDetailsDialogController {
                 // Do work.
                 OutputStream out = new ByteArrayOutputStream();
                 FHIMExporter exporter = new FHIMExporter(out);
-                UUID conceptUUID = infoModel.getFocusConceptUUID();
-                exporter.exportModel(conceptUUID);
+                UUID modelUUID = ((FHIMInformationModel) infoModel).getUUID();
+                exporter.exportModel(modelUUID);
                 return out.toString();
             }
         };

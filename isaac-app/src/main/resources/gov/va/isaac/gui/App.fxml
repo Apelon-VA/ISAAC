@@ -2,17 +2,12 @@
 
 <?import java.lang.*?>
 <?import java.net.*?>
-<?import java.util.*?>
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.web.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.AppController" fx:id="appBorderPane">
+<BorderPane fx:id="appBorderPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.AppController">
   <center>
-    <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="root"/>
+    <SplitPane id="SplitPane" fx:id="mainSplitPane" dividerPositions="0.6027397260273972" orientation="HORIZONTAL" prefHeight="960.0" prefWidth="1024.0" styleClass="hashedBackground" />
   </center>
   <stylesheets>
     <URL value="@App.css" />
@@ -20,8 +15,8 @@
   <top>
     <MenuBar fx:id="menuBar">
       <menus>
-        <Menu disable="true" mnemonicParsing="false" text="PANELS" fx:id="panelsMenu" id="panelsMenu"/>
-        <Menu disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" fx:id="importExportMenu"/>
+        <Menu id="panelsMenu" fx:id="panelsMenu" disable="true" mnemonicParsing="false" text="PANELS" />
+        <Menu fx:id="importExportMenu" disable="true" mnemonicParsing="false" text="IMPORT/EXPORT" />
       </menus>
     </MenuBar>
   </top>

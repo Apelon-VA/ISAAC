@@ -18,6 +18,8 @@
  */
 package gov.va.legoEdit.formats;
 
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.XMLUtils;
 import gov.va.legoEdit.model.schemaModel.Assertion;
 import gov.va.legoEdit.model.schemaModel.Concept;
 import gov.va.legoEdit.model.schemaModel.Discernible;
@@ -26,12 +28,10 @@ import gov.va.legoEdit.model.schemaModel.Lego;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.model.schemaModel.Qualifier;
 import gov.va.legoEdit.model.schemaModel.Value;
-import gov.va.legoEdit.util.Utility;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +56,6 @@ import javax.xml.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.tidy.Tidy;
-//import org.w3c.tidy.Tidy;
 import org.xml.sax.SAXException;
 
 /**
@@ -71,7 +70,6 @@ public class LegoXMLUtils
 	static Logger logger = LoggerFactory.getLogger(LegoXMLUtils.class);
 	static Schema schema;
 	static JAXBContext jc;
-	static Transformer xmlToHTMLTransformer;
 	static Tidy htmlTidy = null;
 
 	static
@@ -81,10 +79,8 @@ public class LegoXMLUtils
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 			schema = schemaFactory.newSchema(LegoXMLUtils.class.getResource("/LEGO.xsd"));
 			jc = JAXBContext.newInstance(LegoList.class);
-			TransformerFactory tf = TransformerFactory.newInstance();
-			xmlToHTMLTransformer = tf.newTransformer(new StreamSource(LegoXMLUtils.class.getResourceAsStream("/xslTransforms/xmlRenderedAsHTML.xslt")));
 		}
-		catch (SAXException | JAXBException | TransformerConfigurationException e)
+		catch (SAXException | JAXBException e)
 		{
 			throw new RuntimeException("Build Error", e);
 		}
@@ -228,10 +224,25 @@ public class LegoXMLUtils
 	public static String toHTML(LegoList ll) throws PropertyException, JAXBException, TransformerConfigurationException, TransformerException
 	{
 		String asXML = toXML(ll);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		StreamResult result = new StreamResult(baos);
-		xmlToHTMLTransformer.transform(new StreamSource(new ByteArrayInputStream(asXML.getBytes())), result);
-		return baos.toString();
+		return XMLUtils.toHTML(asXML);
+	}
+	
+	public static String toXHTML(LegoList ll) throws PropertyException, IOException, TransformerException, JAXBException
+	{
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		TransformerFactory tf = TransformerFactory.newInstance();
+		Transformer transformer = tf.newTransformer(new StreamSource(LegoXMLUtils.class.getResourceAsStream("/xslTransforms/LegoListToXHTML.xslt")));
+		LegoXMLUtils.transform(ll, os, transformer, true);
+		return os.toString();
+	}
+	
+	public static String toXHTML(Lego l) throws PropertyException, IOException, TransformerException, JAXBException
+	{
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		TransformerFactory tf = TransformerFactory.newInstance();
+		Transformer transformer = tf.newTransformer(new StreamSource(LegoXMLUtils.class.getResourceAsStream("/xslTransforms/LegoToXHTML.xslt")));
+		LegoXMLUtils.transform(l, os, transformer, true);
+		return os.toString();
 	}
 
 	public static void schemaValidateLego(final Lego lego, final LegoValidateCallback callback)
@@ -261,7 +272,7 @@ public class LegoXMLUtils
 				}
 			}
 		};
-		Utility.tpe.execute(r);
+		Utility.execute(r);
 	}
 	
 	public static Tidy getTidy()
@@ -279,7 +290,7 @@ public class LegoXMLUtils
 		return htmlTidy;
 	}
 	
-	public static void transform(LegoList ll, FileOutputStream target, Transformer transformer, boolean tidyHtml ) throws IOException, TransformerException, PropertyException, JAXBException
+	public static void transform(LegoList ll, OutputStream target, Transformer transformer, boolean tidyHtml ) throws IOException, TransformerException, PropertyException, JAXBException
 	{
 		String legoListAsXML = toXML(ll);
 		if (transformer != null)
@@ -302,7 +313,7 @@ public class LegoXMLUtils
 		}
 	}
 	
-	public static void transform(Lego l, FileOutputStream target, Transformer transformer, boolean tidyHtml ) throws IOException, TransformerException, PropertyException, JAXBException
+	public static void transform(Lego l, OutputStream target, Transformer transformer, boolean tidyHtml ) throws IOException, TransformerException, PropertyException, JAXBException
 	{
 		String legoAsXML = toXML(l);
 		if (transformer != null)

@@ -89,7 +89,8 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		stage.initModality(Modality.NONE);
 		stage.initStyle(StageStyle.UTILITY);
 		stage.setScene(new Scene(root, 800, 600));
-		stage.getScene().getStylesheets().add("/Style.css");
+		stage.getScene().getStylesheets().add(InfoModelView.class.getResource("/info-model-view-style.css").toString());
+		stage.getScene().getStylesheets().add(InfoModelView.class.getResource("/isaac-shared-styles.css").toString());
 		stage.setTitle("Info Model View");
 	}
 

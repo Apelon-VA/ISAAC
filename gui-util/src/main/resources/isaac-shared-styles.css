@@ -1,0 +1,22 @@
+@CHARSET "ISO-8859-1";
+
+.boldLabel {
+	-fx-font-weight: bold;
+}
+
+.titleLabel {
+	-fx-font-weight: bold;
+	-fx-font-size: 16;
+}
+
+.itemBorder {
+	-fx-border-color: grey;
+	-fx-border-width: 2;
+	-fx-border-insets: 4;
+	-fx-border-radius: 5;
+	-fx-padding: 3;
+}
+
+.defaultBackgroundColor {
+	-fx-background-color: -fx-background;
+}

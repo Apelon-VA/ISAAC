@@ -1,0 +1,9 @@
+@CHARSET "ISO-8859-1";
+
+.tree-cell {
+	-fx-indent: 20;
+}
+
+.tree-cell .label {
+	-fx-font-size: 14;
+}

@@ -23,6 +23,7 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewI;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import java.io.IOException;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -46,6 +47,7 @@ public class CommonDialogs implements CommonDialogsI
 	
 	private ErrorDialog errorDialog_;
 	private InformationDialog informationDialog_;
+	private YesNoDialog yesNoDialog_;
 
 	@Inject
 	private CommonDialogs(ApplicationWindowI mainAppWindow) throws IOException
@@ -53,6 +55,7 @@ public class CommonDialogs implements CommonDialogsI
 		// hidden - constructed by HK2
 		this.errorDialog_ = new ErrorDialog(mainAppWindow.getPrimaryStage());
 		this.informationDialog_ = new InformationDialog(mainAppWindow.getPrimaryStage());
+		this.yesNoDialog_ = new YesNoDialog(mainAppWindow.getPrimaryStage());
 	}
 
 	/**
@@ -148,5 +151,14 @@ public class CommonDialogs implements CommonDialogsI
 			LOG.warn(message, ex);
 			showErrorDialog("Unexpected Error", message, ex.getMessage());
 		}
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showYesNoDialog(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public DialogResponse showYesNoDialog(String title, String question)
+	{
+		return yesNoDialog_.showYesNoDialog(title, question);
 	}
 }

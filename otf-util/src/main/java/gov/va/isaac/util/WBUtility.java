@@ -20,16 +20,19 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
@@ -123,7 +126,7 @@ public class WBUtility {
 	 * Note, this method isn't smart enough to work with multiple versions properly....
 	 * assumes you only pass in a concept with current values.
 	 */
-	public static String getDescription(ConceptVersionBI concept) {
+	public static String getDescription(ConceptChronicleBI concept) {
 		String fsn = null;
 		String preferred = null;
 		String bestFound = null;

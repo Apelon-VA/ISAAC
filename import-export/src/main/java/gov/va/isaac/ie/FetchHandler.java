@@ -67,7 +67,7 @@ public class FetchHandler {
             List<InformationModel> allModelTypes = Lists.newArrayList();
             allModelTypes.addAll(fetchCEMModels(conceptUUID));
             allModelTypes.addAll(fetchCIMIModels());
-            allModelTypes.addAll(fetchFHIMModels(conceptUUID));
+            allModelTypes.addAll(fetchFHIMModels());
             allModelTypes.addAll(fetchHeDModels());
             return allModelTypes;
 
@@ -80,7 +80,7 @@ public class FetchHandler {
             case CIMI:
                 return fetchCIMIModels();
             case FHIM:
-                return fetchFHIMModels(conceptUUID);
+                return fetchFHIMModels();
             case HeD:
                 return fetchHeDModels();
             default:
@@ -95,16 +95,9 @@ public class FetchHandler {
         return Collections.emptyList();
     }
 
-    private List<InformationModel> fetchFHIMModels(UUID conceptUUID) throws Exception {
-        List<InformationModel> models = Lists.newArrayList();
-
+    private List<InformationModel> fetchFHIMModels() throws Exception {
         FHIMFetcher fetcher = new FHIMFetcher();
-        InformationModel model = fetcher.fetchFHIMModel(conceptUUID);
-        if (model != null) {
-            models.add(model);
-        }
-
-        return models;
+        return fetcher.fetchFHIMModels();
     }
 
     private List<InformationModel> fetchCIMIModels() {

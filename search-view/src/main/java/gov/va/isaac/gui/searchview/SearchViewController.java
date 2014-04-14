@@ -90,6 +90,8 @@ public class SearchViewController implements TaskCompleteCallback {
 
     @FXML
     public void initialize() {
+        borderPane.getStylesheets().add(SearchViewController.class.getResource("/isaac-shared-styles.css").toString());
+    
         searchResults.setCellFactory(new Callback<ListView<CompositeSearchResult>, ListCell<CompositeSearchResult>>() {
             @Override
             public ListCell<CompositeSearchResult> call(ListView<CompositeSearchResult> arg0) {

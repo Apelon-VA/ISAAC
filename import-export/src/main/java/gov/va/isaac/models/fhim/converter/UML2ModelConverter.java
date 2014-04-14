@@ -71,7 +71,7 @@ public class UML2ModelConverter implements FHIMUmlConstants {
     }
 
     public FHIMInformationModel createInformationModel(Package pkg) {
-        FHIMInformationModel infoModel = new FHIMInformationModel(pkg.getName());
+        FHIMInformationModel infoModel = new FHIMInformationModel(pkg.getName(), null);
 
         // Gather Classes & Enumerations first, they will be used as types later.
         EList<PackageableElement> elements = pkg.getPackagedElements();

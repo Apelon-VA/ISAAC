@@ -19,10 +19,12 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.scene.image.Image;
 import javafx.stage.Window;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
@@ -69,7 +71,7 @@ public class ImportSettingsDialogView implements PopupViewI
 			@Override
 			public String getMenuName()
 			{
-				return "IMPORTER";
+				return "Information Models Importer...";
 			}
 
 			@Override
@@ -82,6 +84,15 @@ public class ImportSettingsDialogView implements PopupViewI
 			public boolean enableMnemonicParsing()
 			{
 				return false;
+			}
+			
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.IMPORT.getImage();
 			}
 		});
 		return menus;

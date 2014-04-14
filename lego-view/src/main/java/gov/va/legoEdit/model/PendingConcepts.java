@@ -18,9 +18,10 @@
  */
 package gov.va.legoEdit.model;
 
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.WBUtility;
 import gov.va.legoEdit.model.schemaModel.Concept;
-import gov.va.legoEdit.storage.wb.WBUtility;
-import gov.va.legoEdit.util.Utility;
+import gov.va.legoEdit.storage.wb.LegoWBUtility;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +73,7 @@ public class PendingConcepts implements Observable
 
 	private PendingConcepts()
 	{
-		Utility.tpe.submit(new ReadData());
+		Utility.execute(new ReadData());
 	}
 	
 	private void loadCheck()
@@ -112,11 +113,11 @@ public class PendingConcepts implements Observable
 			return false;
 		}
 
-		if (null != WBUtility.lookupSnomedIdentifierAsCV(potentialPendingConcept.getSctid().toString()))
+		if (null != WBUtility.lookupIdentifier(potentialPendingConcept.getSctid().toString()))
 		{
 			return false;
 		}
-		if (potentialPendingConcept.getUuid() != null && null != WBUtility.lookupSnomedIdentifierAsCV(potentialPendingConcept.getUuid().toString()))
+		if (potentialPendingConcept.getUuid() != null && null != WBUtility.lookupIdentifier(potentialPendingConcept.getUuid().toString()))
 		{
 			return false;
 		}
@@ -140,7 +141,7 @@ public class PendingConcepts implements Observable
 			if (parent != null)
 			{
 				//allow ref to pending, but not self....
-				Concept parentConcept =  WBUtility.lookupSnomedIdentifier(parent + "");
+				Concept parentConcept =  LegoWBUtility.convertConcept(WBUtility.lookupIdentifier(parent + ""));
 				if (parentConcept != null && parentConcept.getSctid().longValue() != id)
 				{
 					parentConcepts.put(id, parentConcept);
@@ -355,7 +356,7 @@ public class PendingConcepts implements Observable
 							{
 								long parentSCTID = Long.parseLong(parts[2]);
 								//Use this lookup, since it doesn't loop back to pending.
-								ConceptVersionBI wbParentConcept =  WBUtility.lookupSnomedIdentifierAsCV(parentSCTID + "");
+								ConceptVersionBI wbParentConcept =  WBUtility.lookupIdentifier(parentSCTID + "");
 								if (wbParentConcept == null)
 								{
 									//See if it is a different pending concept (must be higher in the file, for this to work)
@@ -363,7 +364,7 @@ public class PendingConcepts implements Observable
 								}
 								else if (wbParentConcept != null)
 								{
-									parent = WBUtility.convertConcept(wbParentConcept);
+									parent = LegoWBUtility.convertConcept(wbParentConcept);
 								}
 								if (parent == null)
 								{

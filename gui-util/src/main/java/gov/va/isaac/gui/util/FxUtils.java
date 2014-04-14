@@ -22,6 +22,7 @@ import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TreeItem;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -133,5 +134,24 @@ public class FxUtils {
             cc.setPrefWidth(largestWidth);
         }
         return largestWidth;
+    }
+    
+    public static void expandAll(TreeItem<?> ti)
+    {
+        ti.setExpanded(true);
+        for (TreeItem<?> tiChild : ti.getChildren())
+        {
+            expandAll(tiChild);
+        }
+    }
+
+    public static void expandParents(TreeItem<?> ti)
+    {
+        TreeItem<?> parent = ti.getParent();
+        if (parent != null)
+        {
+            ti.getParent().setExpanded(true);
+            expandParents(parent);
+        }
     }
 }

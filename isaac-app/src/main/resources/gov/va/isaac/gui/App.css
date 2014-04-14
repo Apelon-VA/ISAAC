@@ -1,6 +1,6 @@
 @CHARSET "ISO-8859-1";
 
-.root {
+.hashedBackground {
      -fx-background-image: url("background.jpg");
 }
 
@@ -8,33 +8,11 @@
     -fx-background-color: linear-gradient(#98a8bd 0%, #8195af 25%, #6d86a4 100%);
 }
 
-.centerBackground {
-    -fx-background-color: white;
-}
-
-.dialogBackground {
-    -fx-background-color: linear-gradient(lightGrey, darkGrey);
-}
-
-.boldLabel {
-    -fx-font-weight: bold;
-}
-
-.itemBorder {
-    -fx-border-color: grey;
-    -fx-border-width: 2;
-    -fx-border-insets: 4;
-    -fx-border-radius: 5;
-    -fx-padding: 3;
-}
-
 .tab-close-button {
-    -fx-background-color: -fx-mark-color;
-    -fx-shape:
-        "M 0,0 H1 L 4,3 7,0 H8 V1 L 5,4 8,7 V8 H7 L 4,5 1,8 H0 V7 L 3,4 0,1 Z";
+    -fx-background-color: black;
+    -fx-shape: "M 0,0 H1 L 4,3 7,0 H8 V1 L 5,4 8,7 V8 H7 L 4,5 1,8 H0 V7 L 3,4 0,1 Z";
     -fx-scale-shape: false;
-    -fx-effect: dropshadow(two-pass-box, rgba(255, 255, 255, 0.4), 1, 0.0, 0,
-        1);
+    -fx-effect: dropshadow(two-pass-box, rgba(255, 255, 255, 0.4), 1, 0.0, 0, 1);
 }
 
 .tab-close-button:hover {

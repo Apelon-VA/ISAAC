@@ -18,11 +18,13 @@
  */
 package gov.va.legoEdit.importer;
 
+import gov.va.isaac.AppContext;
 import gov.va.legoEdit.formats.LegoXMLUtils;
+import gov.va.legoEdit.gui.legoListView.LegoListView;
 import gov.va.legoEdit.model.schemaModel.Concept;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.storage.BDBDataStoreImpl;
-import gov.va.legoEdit.storage.wb.WBUtility;
+import gov.va.legoEdit.storage.wb.LegoWBUtility;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,7 +88,7 @@ public class LegoImporter implements Runnable
 								status.append(System.getProperty("line.separator"));
 							}
 							LegoList ll = LegoXMLUtils.readLegoList(f);
-							List<Concept> failures = WBUtility.lookupAllConcepts(ll);
+							List<Concept> failures = LegoWBUtility.lookupAllConcepts(ll);
 							BDBDataStoreImpl.getInstance().importLegoList(ll);
 							importedLegoListIds.add(ll.getLegoListUUID());
 							for (Concept c : failures)
@@ -135,10 +137,10 @@ public class LegoImporter implements Runnable
 			//LegoGUI.getInstance().getLegoGUIController().getCommonlyUsedConcept().rebuildDBStats();
 			
 			callback.appendDetails(status.toString());
-//TODO cleanup - this is where we would update whatever shows the full list of Legos...
-//			importName.setText("Updating Editor");
-//			progress.setProgress(99.0);
-//			LegoGUIModel.getInstance().updateLegoLists();
+
+			callback.setCurrentItemName("Updating Editor");
+			callback.setProgress(99.0);
+			AppContext.getService(LegoListView.class).updateListView();
 			callback.setProgress(100.0);
 			callback.setCurrentItemName("Import Complete");
 			if (missingConcepts.size() > 0)
