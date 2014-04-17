@@ -16,7 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.workflow.persistence;
+package gov.va.isaac.workflow.demo;
+
+import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.persistence.LocalTasksApi;
 
 /**
  *

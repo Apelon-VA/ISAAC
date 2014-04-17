@@ -16,10 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.workflow.impl;
+package gov.va.isaac.workflow.demo;
 
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineFactory;
+import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -48,7 +48,7 @@ public class RemoteServiceDemo {
         String rndId = UUID.randomUUID().toString();
         params.put("componentId", rndId);
         params.put("componentName", "Component with Id:" + rndId);
-        wfEngine.requestProcessInstanceCreation("terminology-authoring.test1", params);
+        //wfEngine.requestProcessInstanceCreation("terminology-authoring.test1", params);
         System.out.println("Created remote instance: " + rndId);
 
 //        List<TaskSummary> myTasks =  wfEngine.getRemoteTaskService().getTasksOwned("alejandro", "en-UK");

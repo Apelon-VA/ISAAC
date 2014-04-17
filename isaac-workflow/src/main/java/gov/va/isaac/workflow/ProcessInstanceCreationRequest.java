@@ -30,13 +30,17 @@ public class ProcessInstanceCreationRequest {
         REQUESTED, REJECTED, CREATED
     }
 
+    private int id;
     private String processName;
+    private String componentId;
+    private String componentName;
     private Map<String, Object> params;
     private String userId;
     private Long requestTime;
     private Long syncTime;
     private RequestStatus status;
     private String syncMessage;
+    private long wfId;
 
     public ProcessInstanceCreationRequest() {
     }
@@ -97,4 +101,36 @@ public class ProcessInstanceCreationRequest {
         this.syncMessage = syncMessage;
     }
 
+    public String getComponentId() {
+        return componentId;
+    }
+
+    public void setComponentId(String componentId) {
+        this.componentId = componentId;
+    }
+
+    public String getComponentName() {
+        return componentName;
+    }
+
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public long getWfId() {
+        return wfId;
+    }
+
+    public void setWfId(long wfId) {
+        this.wfId = wfId;
+    }
+    
 }

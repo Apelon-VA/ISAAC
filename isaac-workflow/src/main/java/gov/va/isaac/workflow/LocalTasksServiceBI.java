@@ -18,28 +18,24 @@
  */
 package gov.va.isaac.workflow;
 
-import gov.va.isaac.workflow.impl.LocalWfEngine;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
  *
  * @author alo
  */
-public class LocalWorkflowRuntimeEngineFactory {
+public interface LocalTasksServiceBI {
     
-    public static LocalWorkflowRuntimeEngineBI getRuntimeEngine() {
-        LocalWfEngine lwf = null;
-        try {
-            // TODO: implement, create engine based on app configuration
-            lwf = new LocalWfEngine(new URL("http://162.243.255.43:8080/kie-wb/"),
-                    "alejandro", "alejandro", "gov.va.isaac.demo:terminology-authoring:1.2");
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(LocalWorkflowRuntimeEngineFactory.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return lwf;
-    }
+    List<LocalTask> getOpenOwnedTasks(String owner);
+    List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId);
+    List<LocalTask> getOwnedTasksByStatus(String owner, String status);
+    LocalTask getTask(Long id);
+    List<LocalTask> getTasks();
+    List<LocalTask> getTasksByComponentId(String componentId);
+    void saveTask(LocalTask task);
+    void commit();
+    void createSchema();
+    void dropSchema();
+    void closeConnection();
     
 }

@@ -16,18 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.workflow.impl;
+package gov.va.isaac.workflow.engine;
 
-import gov.va.isaac.workflow.LocalTaskServiceBI;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
+import gov.va.isaac.workflow.persistence.LocalTasksApi;
+import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
+import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Content;
 import org.kie.api.task.model.Task;
@@ -43,17 +48,15 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     private String userId;
     private String password;
     private String deploymentId;
-    private RuntimeEngine remoteEngine;
+    public static RuntimeEngine remoteEngine;
+    public static ProcessInstanceCreationRequestsAPI processRequestsApi;
+    public static LocalTasksServiceBI localTasksService;
 
     public LocalWfEngine(URL url, String userId, String password, String deploymentId) {
         this.url = url;
         this.userId = userId;
         this.password = password;
         this.deploymentId = deploymentId;
-    }
-
-    public LocalWfEngine() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public URL getUrl() {
@@ -86,25 +89,29 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     }
 
     @Override
-    public ProcessInstanceCreationRequest requestProcessInstanceCreation(String processName, Map<String, Object> params) {
+    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequest instanceRequest) {
         KieSession session = getRemoteEngine().getKieSession();
-        session.startProcess(processName, params);
-        return null;
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("componentId", instanceRequest.getComponentId());
+        params.put("componentName", instanceRequest.getComponentName());
+        params.put("createdBy", instanceRequest.getUserId());
+        if (instanceRequest.getParams() != null) {
+            params.putAll(instanceRequest.getParams());
+        }
+        ProcessInstance newInstance = session.startProcess(instanceRequest.getProcessName(), params);
+        processRequestsApi.updateRequestStatus(instanceRequest.getId(),
+                ProcessInstanceCreationRequest.RequestStatus.CREATED,
+                "Instance created on KIE Server: " + getUrl().toString(), newInstance.getId());
     }
 
     @Override
-    public List<ProcessInstanceCreationRequest> getPendingProcessInstanceRequests() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<ProcessInstanceCreationRequest> getCompletedProcessInstanceRequests() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public LocalTaskServiceBI getLocalTaskService() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public LocalTasksServiceBI getLocalTaskService() {
+        if (LocalWfEngine.localTasksService != null) {
+            return LocalWfEngine.localTasksService;
+        } else {
+            LocalWfEngine.localTasksService = new LocalTasksApi();
+            return LocalWfEngine.localTasksService;
+        }
     }
 
     @Override
@@ -113,12 +120,12 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     }
 
     private RuntimeEngine getRemoteEngine() {
-        if (remoteEngine != null) {
-            return remoteEngine;
+        if (LocalWfEngine.remoteEngine != null) {
+            return LocalWfEngine.remoteEngine;
         } else {
             RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(deploymentId, url, userId, password);
-            remoteEngine = restSessionFactory.newRuntimeEngine();
-            return remoteEngine;
+            LocalWfEngine.remoteEngine = restSessionFactory.newRuntimeEngine();
+            return LocalWfEngine.remoteEngine;
         }
     }
 
@@ -130,5 +137,16 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         return jaxbTaskContent.getContentMap();
         //return new HashMap<>();
     }
+
+    @Override
+    public ProcessInstanceServiceBI getProcessInstanceService() {
+        if (LocalWfEngine.processRequestsApi != null) {
+            return LocalWfEngine.processRequestsApi;
+        } else {
+            LocalWfEngine.processRequestsApi = new ProcessInstanceCreationRequestsAPI();
+            return LocalWfEngine.processRequestsApi;
+        }
+    }
+
 
 }

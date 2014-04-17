@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.workflow.sync;
 
-import gov.va.isaac.workflow.persistence.LocalTask;
+import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import java.util.ArrayList;
 import java.util.List;

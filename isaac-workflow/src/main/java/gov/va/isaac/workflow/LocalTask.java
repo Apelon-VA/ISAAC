@@ -16,10 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.workflow.persistence;
+package gov.va.isaac.workflow;
 
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineFactory;
+import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import java.util.Map;
 import java.util.Objects;
 import org.jbpm.services.task.impl.model.UserImpl;
