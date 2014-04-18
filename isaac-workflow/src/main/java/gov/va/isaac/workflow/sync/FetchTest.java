@@ -18,8 +18,9 @@
  */
 package gov.va.isaac.workflow.sync;
 
+import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineFactory;
+import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.*;
 import java.util.List;
 import java.util.logging.Level;

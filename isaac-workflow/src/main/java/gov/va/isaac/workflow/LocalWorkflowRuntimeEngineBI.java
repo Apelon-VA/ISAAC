@@ -19,7 +19,6 @@
 package gov.va.isaac.workflow;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.kie.api.task.TaskService;
@@ -34,13 +33,11 @@ public interface LocalWorkflowRuntimeEngineBI {
     
     public void synchronizeWithRemote();
     
-    public ProcessInstanceCreationRequest requestProcessInstanceCreation(String processName, Map<String, Object> params);
+    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequest instanceRequest);
     
-    public List<ProcessInstanceCreationRequest> getPendingProcessInstanceRequests();
+    public ProcessInstanceServiceBI getProcessInstanceService();
     
-    public List<ProcessInstanceCreationRequest> getCompletedProcessInstanceRequests();
-
-    public LocalTaskServiceBI getLocalTaskService();
+    public LocalTasksServiceBI getLocalTaskService();
     
     public TaskService getRemoteTaskService();
     

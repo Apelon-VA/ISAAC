@@ -18,16 +18,16 @@
  */
 package gov.va.isaac.workflow.persistence;
 
+import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,31 +35,15 @@ import java.util.logging.Logger;
  *
  * @author alo
  */
-public class LocalTasksApi {
-
-    private String framework = "embedded";
-    private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
-    private String protocol = "jdbc:derby:";
+public class LocalTasksApi implements LocalTasksServiceBI {
 
     private Connection conn;
 
     public LocalTasksApi() {
-        loadDriver();
-        conn = null;
-        Properties props = new Properties(); // connection properties
-        props.put("user", "workflow");
-        props.put("password", "workflow");
-        String dbName = "workflowDB"; // the name of the database
-        try {
-            conn = DriverManager.getConnection(protocol + dbName + ";create=true", props);
-            conn.setAutoCommit(false);
-        } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        //System.out.println("Connected to and created database " + dbName);
+        conn = ConnectionManager.getConn();
     }
 
+    @Override
     public void commit() {
         try {
             conn.commit();
@@ -68,6 +52,7 @@ public class LocalTasksApi {
         }
     }
 
+    @Override
     public void closeConnection() {
         try {
             conn.close();
@@ -76,6 +61,7 @@ public class LocalTasksApi {
         }
     }
 
+    @Override
     public void saveTask(LocalTask task) {
         try {
             PreparedStatement psInsert = conn.prepareStatement("insert into local_tasks values (?, ?, ?, ?, ?, ?)");
@@ -127,6 +113,7 @@ public class LocalTasksApi {
         }
     }
 
+    @Override
     public List<LocalTask> getOpenOwnedTasks(String owner) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
@@ -141,6 +128,7 @@ public class LocalTasksApi {
         return tasks;
     }
 
+    @Override
     public List<LocalTask> getOwnedTasksByStatus(String owner, String status) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
@@ -155,6 +143,7 @@ public class LocalTasksApi {
         return tasks;
     }
 
+    @Override
     public List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
@@ -169,6 +158,7 @@ public class LocalTasksApi {
         return tasks;
     }
     
+    @Override
     public List<LocalTask> getTasksByComponentId(String componentId) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
@@ -183,6 +173,7 @@ public class LocalTasksApi {
         return tasks;
     }
 
+    @Override
     public List<LocalTask> getTasks() {
         List<LocalTask> tasks = new ArrayList<>();
         try {
@@ -197,6 +188,7 @@ public class LocalTasksApi {
         return tasks;
     }
 
+    @Override
     public LocalTask getTask(Long id) {
         try {
             LocalTask task = null;
@@ -228,24 +220,26 @@ public class LocalTasksApi {
         return task;
     }
 
+    @Override
     public void createSchema() {
         try {
-            System.out.println("Creating schema");
+            System.out.println("Creating LOCAL_TASKS");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "LOCAL_TASKS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
                 s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40))");
                 s.closeOnCompletion();
-                System.out.println("Created table local_tasks");
+                System.out.println("Created table LOCAL_TASKS");
             } else {
-                System.err.println("Schema already exists!");
+                System.err.println("LOCAL_TASKS already exists!");
             }
         } catch (SQLException ex) {
             Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    @Override
     public void dropSchema() {
         try {
             System.out.println("Dropping schema");
@@ -256,37 +250,4 @@ public class LocalTasksApi {
             System.err.println("Schema already deleted...");
         }
     }
-
-    private void loadDriver() {
-        /*
-         *  The JDBC driver is loaded by loading its class.
-         *  If you are using JDBC 4.0 (Java SE 6) or newer, JDBC drivers may
-         *  be automatically loaded, making this code optional.
-         *
-         *  In an embedded environment, this will also start up the Derby
-         *  engine (though not any databases), since it is not already
-         *  running. In a client environment, the Derby engine is being run
-         *  by the network server framework.
-         *
-         *  In an embedded environment, any static Derby system properties
-         *  must be set before loading the driver to take effect.
-         */
-        try {
-            Class.forName(driver).newInstance();
-            System.out.println("Loaded the appropriate driver");
-        } catch (ClassNotFoundException cnfe) {
-            System.err.println("\nUnable to load the JDBC driver " + driver);
-            System.err.println("Please check your CLASSPATH.");
-            cnfe.printStackTrace(System.err);
-        } catch (InstantiationException ie) {
-            System.err.println(
-                    "\nUnable to instantiate the JDBC driver " + driver);
-            ie.printStackTrace(System.err);
-        } catch (IllegalAccessException iae) {
-            System.err.println(
-                    "\nNot allowed to access the JDBC driver " + driver);
-            iae.printStackTrace(System.err);
-        }
-    }
-
 }
