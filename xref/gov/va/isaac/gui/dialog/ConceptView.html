@@ -81,7 +81,7 @@
 <a class="jxr_linenumber" name="71" href="#71">71</a>          FXMLLoader loader = <strong class="jxr_keyword">new</strong> FXMLLoader(resource);
 <a class="jxr_linenumber" name="72" href="#72">72</a>          Parent root = (Parent) loader.load();
 <a class="jxr_linenumber" name="73" href="#73">73</a>          setScene(<strong class="jxr_keyword">new</strong> Scene(root));
-<a class="jxr_linenumber" name="74" href="#74">74</a>  
+<a class="jxr_linenumber" name="74" href="#74">74</a>          getScene().getStylesheets().add(ConceptView.<strong class="jxr_keyword">class</strong>.getResource(<span class="jxr_string">"/isaac-shared-styles.css"</span>).toString());
 <a class="jxr_linenumber" name="75" href="#75">75</a>          getIcons().add(Images.CONCEPT_VIEW.getImage());
 <a class="jxr_linenumber" name="76" href="#76">76</a>  
 <a class="jxr_linenumber" name="77" href="#77">77</a>          <strong class="jxr_keyword">this</strong>.controller = loader.getController();

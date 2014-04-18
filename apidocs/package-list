@@ -2,6 +2,7 @@ gov.va.isaac
 gov.va.isaac.gui
 gov.va.isaac.gui.dialog
 gov.va.isaac.gui.dragAndDrop
+gov.va.isaac.gui.htmlView
 gov.va.isaac.gui.importedmodelsview
 gov.va.isaac.gui.importview
 gov.va.isaac.gui.infoModelView
@@ -11,6 +12,7 @@ gov.va.isaac.gui.refsetview
 gov.va.isaac.gui.searchview
 gov.va.isaac.gui.treeview
 gov.va.isaac.gui.util
+gov.va.isaac.gui.xmlView
 gov.va.isaac.ie
 gov.va.isaac.interfaces.gui
 gov.va.isaac.interfaces.gui.views
@@ -30,11 +32,17 @@ gov.va.isaac.models.util
 gov.va.isaac.search
 gov.va.isaac.util
 gov.va.isaac.workflow
-gov.va.isaac.workflow.impl
+gov.va.isaac.workflow.demo
+gov.va.isaac.workflow.engine
 gov.va.isaac.workflow.persistence
 gov.va.isaac.workflow.sync
 gov.va.legoEdit.formats
 gov.va.legoEdit.gui
+gov.va.legoEdit.gui.legoFilterPane
+gov.va.legoEdit.gui.legoListProperties
+gov.va.legoEdit.gui.legoListTreeView
+gov.va.legoEdit.gui.legoListView
+gov.va.legoEdit.gui.legoTreeView
 gov.va.legoEdit.importer
 gov.va.legoEdit.model
 gov.va.legoEdit.model.bdbModel

@@ -52,32 +52,46 @@
 <a class="jxr_linenumber" name="42" href="#42">42</a>      TAXONOMY_CLOSE(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/minus-small.png"</span>)),
 <a class="jxr_linenumber" name="43" href="#43">43</a>      
 <a class="jxr_linenumber" name="44" href="#44">44</a>      <em class="jxr_comment">//Other GUI Icons</em>
-<a class="jxr_linenumber" name="45" href="#45">45</a>      CONCEPT_VIEW(setupImage(<span class="jxr_string">"/icons/misc/16x16/gear.png"</span>)),
-<a class="jxr_linenumber" name="46" href="#46">46</a>      COPY(setupImage(<span class="jxr_string">"/icons/misc/16x16/document-copy.png"</span>)),
-<a class="jxr_linenumber" name="47" href="#47">47</a>      DELETE(setupImage(<span class="jxr_string">"/icons/silk/16x16/delete.png"</span>)),
-<a class="jxr_linenumber" name="48" href="#48">48</a>      EXCLAMATION(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/exclamation-red.png"</span>)),
-<a class="jxr_linenumber" name="49" href="#49">49</a>      INFORMATION(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/information.png"</span>)),
-<a class="jxr_linenumber" name="50" href="#50">50</a>      MINUS(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/minus.png"</span>)), 
-<a class="jxr_linenumber" name="51" href="#51">51</a>      PLUS(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/plus.png"</span>));
-<a class="jxr_linenumber" name="52" href="#52">52</a>  
-<a class="jxr_linenumber" name="53" href="#53">53</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Image image;
-<a class="jxr_linenumber" name="54" href="#54">54</a>  
-<a class="jxr_linenumber" name="55" href="#55">55</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/gui/util/Images.html">Images</a>(Image image) {
-<a class="jxr_linenumber" name="56" href="#56">56</a>          <strong class="jxr_keyword">this</strong>.image = image;
-<a class="jxr_linenumber" name="57" href="#57">57</a>      }
-<a class="jxr_linenumber" name="58" href="#58">58</a>  
-<a class="jxr_linenumber" name="59" href="#59">59</a>      <strong class="jxr_keyword">public</strong> Image getImage() {
-<a class="jxr_linenumber" name="60" href="#60">60</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>.image;
-<a class="jxr_linenumber" name="61" href="#61">61</a>      }
-<a class="jxr_linenumber" name="62" href="#62">62</a>  
-<a class="jxr_linenumber" name="63" href="#63">63</a>      <strong class="jxr_keyword">public</strong> ImageView createImageView() {
-<a class="jxr_linenumber" name="64" href="#64">64</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ImageView(image);
-<a class="jxr_linenumber" name="65" href="#65">65</a>      }
+<a class="jxr_linenumber" name="45" href="#45">45</a>      LEGO_ADD(setupImage(<span class="jxr_string">"/icons/silk/16x16/brick_add.png"</span>)),
+<a class="jxr_linenumber" name="46" href="#46">46</a>      LEGO_DELETE(setupImage(<span class="jxr_string">"/icons/silk/16x16/brick_delete.png"</span>)),
+<a class="jxr_linenumber" name="47" href="#47">47</a>      LEGO_EDIT(setupImage(<span class="jxr_string">"/icons/silk/16x16/brick_edit.png"</span>)),
+<a class="jxr_linenumber" name="48" href="#48">48</a>      IMPORT(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/application-import.png"</span>)),
+<a class="jxr_linenumber" name="49" href="#49">49</a>      LEGO(setupImage(<span class="jxr_string">"/icons/silk/16x16/brick.png"</span>)),
+<a class="jxr_linenumber" name="50" href="#50">50</a>      LEGO_EXPORT(setupImage(<span class="jxr_string">"/icons/silk/16x16/brick_go.png"</span>)),
+<a class="jxr_linenumber" name="51" href="#51">51</a>      LEGO_LIST_VIEW(setupImage(<span class="jxr_string">"/icons/silk/16x16/bricks.png"</span>)),
+<a class="jxr_linenumber" name="52" href="#52">52</a>      SEARCH(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/application-search-result.png"</span>)),
+<a class="jxr_linenumber" name="53" href="#53">53</a>      CONCEPT_VIEW(setupImage(<span class="jxr_string">"/icons/misc/16x16/gear.png"</span>)),
+<a class="jxr_linenumber" name="54" href="#54">54</a>      COPY(setupImage(<span class="jxr_string">"/icons/misc/16x16/document-copy.png"</span>)),
+<a class="jxr_linenumber" name="55" href="#55">55</a>      DELETE(setupImage(<span class="jxr_string">"/icons/silk/16x16/delete.png"</span>)),
+<a class="jxr_linenumber" name="56" href="#56">56</a>      EXCLAMATION(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/exclamation-red.png"</span>)),
+<a class="jxr_linenumber" name="57" href="#57">57</a>      INFORMATION(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/information.png"</span>)),
+<a class="jxr_linenumber" name="58" href="#58">58</a>      XML_VIEW_16(setupImage(<span class="jxr_string">"/icons/text-xml-icon-16x16.png"</span>)),
+<a class="jxr_linenumber" name="59" href="#59">59</a>      XML_VIEW_32(setupImage(<span class="jxr_string">"/icons/text-xml-icon-32x32.png"</span>)),
+<a class="jxr_linenumber" name="60" href="#60">60</a>      HTML_VIEW_16(setupImage(<span class="jxr_string">"/icons/xhtml-icon-16x16.png"</span>)),
+<a class="jxr_linenumber" name="61" href="#61">61</a>      PROPERTIES(setupImage(<span class="jxr_string">"/icons/document-properties-icon.png"</span>)),
+<a class="jxr_linenumber" name="62" href="#62">62</a>      MINUS(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/minus.png"</span>)), 
+<a class="jxr_linenumber" name="63" href="#63">63</a>      PLUS(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/plus.png"</span>)),
+<a class="jxr_linenumber" name="64" href="#64">64</a>      EXPAND_ALL(setupImage(<span class="jxr_string">"/icons/diagona/16x16/109.png"</span>)),
+<a class="jxr_linenumber" name="65" href="#65">65</a>      LIST_VIEW(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/edit-list.png"</span>));
 <a class="jxr_linenumber" name="66" href="#66">66</a>  
-<a class="jxr_linenumber" name="67" href="#67">67</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Image setupImage(String imageUrl) {
-<a class="jxr_linenumber" name="68" href="#68">68</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> Image(imageUrl);<em class="jxr_comment">//, false);</em>
-<a class="jxr_linenumber" name="69" href="#69">69</a>      }
-<a class="jxr_linenumber" name="70" href="#70">70</a>  }
+<a class="jxr_linenumber" name="67" href="#67">67</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Image image;
+<a class="jxr_linenumber" name="68" href="#68">68</a>  
+<a class="jxr_linenumber" name="69" href="#69">69</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/gui/util/Images.html">Images</a>(Image image) {
+<a class="jxr_linenumber" name="70" href="#70">70</a>          <strong class="jxr_keyword">this</strong>.image = image;
+<a class="jxr_linenumber" name="71" href="#71">71</a>      }
+<a class="jxr_linenumber" name="72" href="#72">72</a>  
+<a class="jxr_linenumber" name="73" href="#73">73</a>      <strong class="jxr_keyword">public</strong> Image getImage() {
+<a class="jxr_linenumber" name="74" href="#74">74</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>.image;
+<a class="jxr_linenumber" name="75" href="#75">75</a>      }
+<a class="jxr_linenumber" name="76" href="#76">76</a>  
+<a class="jxr_linenumber" name="77" href="#77">77</a>      <strong class="jxr_keyword">public</strong> ImageView createImageView() {
+<a class="jxr_linenumber" name="78" href="#78">78</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ImageView(image);
+<a class="jxr_linenumber" name="79" href="#79">79</a>      }
+<a class="jxr_linenumber" name="80" href="#80">80</a>  
+<a class="jxr_linenumber" name="81" href="#81">81</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Image setupImage(String imageUrl) {
+<a class="jxr_linenumber" name="82" href="#82">82</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> Image(imageUrl);<em class="jxr_comment">//, false);</em>
+<a class="jxr_linenumber" name="83" href="#83">83</a>      }
+<a class="jxr_linenumber" name="84" href="#84">84</a>  }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>
