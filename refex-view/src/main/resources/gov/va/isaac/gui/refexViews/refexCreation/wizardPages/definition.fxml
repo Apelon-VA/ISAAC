@@ -5,46 +5,40 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane fx:id="stack" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.DefinitionController">
+<StackPane fx:id="stack" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.DefinitionController">
 	<children>
-		<AnchorPane fx:id="refsetCreationPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-			minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+		<AnchorPane fx:id="refsetCreationPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
 			<children>
 				<Label layoutX="108.0" layoutY="81.0" text="Name" />
 				<Label layoutX="108.009765625" layoutY="123.5" text="Description" />
 				<Label layoutX="111.0" layoutY="243.0" text="Type" />
 				<Label layoutX="109.0" layoutY="276.0" text="Read-Only" />
 				<TextField fx:id="refexName" layoutX="225.0" layoutY="77.0" prefHeight="25.0" prefWidth="338.0" />
-				<RadioButton fx:id="refexTypeRefset" layoutX="293.0" layoutY="243.0" mnemonicParsing="false" selected="true"
-					text="Refset">
+				<RadioButton fx:id="refexTypeRefset" layoutX="293.0" layoutY="243.0" mnemonicParsing="false" selected="true" text="Refset">
 					<toggleGroup>
 						<ToggleGroup fx:id="refexType" />
 					</toggleGroup>
 				</RadioButton>
-				<RadioButton fx:id="refexAnnotationType" layoutX="415.0" layoutY="243.0" mnemonicParsing="false" text="Annotation"
-					toggleGroup="$refexType" />
+				<RadioButton fx:id="refexAnnotationType" layoutX="415.0" layoutY="243.0" mnemonicParsing="false" text="Annotation" toggleGroup="$refexType" />
 				<Label layoutX="208.0" layoutY="28.0" text="Refex Concept Definition">
 					<font>
 						<Font name="System Bold" size="24.0" />
 					</font>
 				</Label>
-				<RadioButton fx:id="refexIsReadOnly" layoutX="293.0" layoutY="276.0" mnemonicParsing="false" selected="true"
-					text="True">
+				<RadioButton fx:id="refexIsReadOnly" layoutX="293.0" layoutY="276.0" mnemonicParsing="false" selected="true" text="True">
 					<toggleGroup>
 						<ToggleGroup fx:id="readOnly" />
 					</toggleGroup>
 				</RadioButton>
-				<RadioButton fx:id="refexNotReadOnly" layoutX="415.0" layoutY="276.0" mnemonicParsing="false" text="False"
-					toggleGroup="$readOnly" />
+				<RadioButton fx:id="refexNotReadOnly" layoutX="415.0" layoutY="276.0" mnemonicParsing="false" text="False" toggleGroup="$readOnly" />
 				<TextArea fx:id="refexDescription" layoutX="225.0" layoutY="120.0" prefHeight="70.0" prefWidth="338.0" />
 				<Button fx:id="continueCreation" layoutX="208.0" layoutY="351.0" mnemonicParsing="false" text="Next" />
 				<Button fx:id="cancelCreation" layoutX="342.0" layoutY="351.0" mnemonicParsing="false" text="Cancel" />
 				<Label layoutX="109.0" layoutY="308.0" text="Number of Extension Fields" />
-				<TextField fx:id="extensionCount" layoutX="316.0" layoutY="304.0" prefHeight="25.0" prefWidth="114.0"
-					promptText="0 or integer" />
-				<Label layoutX="108.0" layoutY="211.0" text="Parent Concept" />
-				<TextField fx:id="parentConcept" layoutX="224.0" layoutY="207.0" prefHeight="25.0" prefWidth="338.0" />
+				<TextField fx:id="extensionCount" layoutX="316.0" layoutY="304.0" prefHeight="25.0" prefWidth="114.0" promptText="0 or integer" /><HBox fx:id="parentConceptHBox" alignment="CENTER_LEFT" layoutX="108.0" layoutY="201.0" prefHeight="35.0" prefWidth="455.0">
+<children>
+				<Label layoutX="108.0" layoutY="211.0" prefHeight="17.0" prefWidth="117.0" text="Parent Concept" />
+</children></HBox>
 			</children>
 		</AnchorPane>
 	</children>

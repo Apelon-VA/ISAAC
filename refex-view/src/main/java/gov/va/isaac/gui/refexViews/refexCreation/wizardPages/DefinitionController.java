@@ -18,11 +18,14 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
+import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
+
 import java.net.URL;
 import java.util.ResourceBundle;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -32,7 +35,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 
 /**
@@ -57,11 +62,12 @@ public class DefinitionController implements PanelControllers {
 	@FXML private TextField extensionCount;
 	@FXML private TextArea refexDescription;
 
-	@FXML private TextField parentConcept;
 	@FXML private Button continueCreation;
 	@FXML private Button cancelCreation;
-	
-	
+
+    @FXML private HBox parentConceptHBox;
+	private ConceptNode parentConcept = new ConceptNode(null, true);
+
 	static ViewCoordinate vc = null;
 
 	ScreensController processController;
@@ -69,6 +75,7 @@ public class DefinitionController implements PanelControllers {
 	@Override
 	public void initialize() {
 		vc = WBUtility.getViewCoordinate();
+		parentConceptHBox.getChildren().add(parentConcept.getNode());
 		
 //		rth_ = new RefsetTableHandler(refsetRows, this);
 		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
@@ -107,7 +114,7 @@ public class DefinitionController implements PanelControllers {
 		if (refexName.getText().isEmpty() || 
 			refexDescription.getText().isEmpty() || 
 			extensionCount.getText().isEmpty() ||
-			parentConcept.getText().isEmpty()) {
+			parentConcept.getConcept() == null) {
 			errorMsg = "Must fill out all fields";
 		} else {
 			try {
@@ -133,7 +140,7 @@ public class DefinitionController implements PanelControllers {
 	public void processValues() {
 		int count = Integer.valueOf(extensionCount.getText());
 	
-		processController.setNewRefsetConceptVals(refexName.getText(), refexDescription.getText(), parentConcept.getText(),
+		processController.setNewRefsetConceptVals(refexName.getText(), refexDescription.getText(), parentConcept.getConcept(),
 												  count, refexAnnotationType.isSelected(), 
 												  refexIsReadOnly.isSelected()); 
 	}
