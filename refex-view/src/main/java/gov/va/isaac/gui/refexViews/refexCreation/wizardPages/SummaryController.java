@@ -166,7 +166,7 @@ public class SummaryController implements PanelControllers {
 	private void setupRefexContent() {
 		actualRefexName.setText(processController.getRefexName());
 		actualRefexDescription.setText(processController.getRefexDescription());
-		actualParentConcept.setText(processController.getParentConcept());
+		actualParentConcept.setText(processController.getParentConceptFsn());
 		
 		if (processController.isReadOnlyRefex()) {
 			actualReadOnly.setText("Read-Only Refex");

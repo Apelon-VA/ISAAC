@@ -18,9 +18,13 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
+import gov.va.isaac.gui.ConceptNode;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -29,8 +33,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 /**
  * 
@@ -54,7 +60,7 @@ public class ScreensController extends StackPane {
 	private List<RefexDynamicDataType> columnTypeStrings = new ArrayList<RefexDynamicDataType>();
 	private List<String> columnDefaultValues = new ArrayList<String>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
-	private String parentConcept;
+	private ConceptVersionBI parentConcept;
 	private boolean isReadOnly;
 	
 	public static final String DEFINITION_SCREEN = "definition";
@@ -150,7 +156,7 @@ public class ScreensController extends StackPane {
 		return refsetCon;
 	}
 
-	public void setNewRefsetConceptVals(String name, String description, String parentConcept, int extendedFieldsCount, boolean isAnnotated, boolean isReadOnly) {
+	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated, boolean isReadOnly) {
 		this.refexName = name;
 		this.refsetDescription = description;
 		this.parentConcept = parentConcept;
@@ -178,8 +184,16 @@ public class ScreensController extends StackPane {
 		return refsetDescription;
 	}
 
-	public String getParentConcept() {
-		return parentConcept;
+	public String getParentConceptFsn() {
+		try {
+			if (parentConcept == null) {
+				return "";
+			}
+			return parentConcept.getFullySpecifiedDescription().getText();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Not Accessible";
+		}
 	}
 
 	public boolean isReadOnlyRefex() {
