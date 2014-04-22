@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="summaryPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.Refexpanel.Refexdef.SummaryController">
+	<children>
+		<ScrollBar layoutX="579.0" layoutY="31.0" orientation="VERTICAL" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="31.0" /><VBox fx:id="mainVBox" alignment="TOP_CENTER" spacing="40.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="25.0">
+<children>
+		<Label layoutX="189.0" layoutY="28.0" text="Refex Summary">
+			<font>
+				<Font name="System Bold" size="24.0" />
+			</font>
+<VBox.margin>
+<Insets />
+</VBox.margin>
+		</Label>
+		<HBox layoutX="32.0" layoutY="77.0" spacing="20.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="35.0">
+			<children><HBox>
+<children><VBox spacing="5.0">
+<children>
+						<Label layoutX="32.0" layoutY="77.0" text="Refex Name:">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label><Label layoutX="32.0" layoutY="77.0" text="Parent Concept:">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Label>
+						<Label layoutX="32.0" layoutY="144.0" text="Refex Type:">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label>
+						<Label layoutX="162.0" layoutY="144.0" text="Read-Only:">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label>
+</children>
+<opaqueInsets>
+<Insets />
+</opaqueInsets>
+<padding>
+<Insets right="5.0" />
+</padding></VBox>
+				<VBox layoutX="30.0" layoutY="61.0" minWidth="-Infinity" prefWidth="232.0" spacing="5.0">
+					<children>
+						<Label fx:id="actualRefexName" layoutX="157.0" layoutY="77.0" text="Actual Refex Name" textAlignment="RIGHT" /><Label fx:id="actualParentConcept" layoutX="157.0" layoutY="77.0" text="Actual Parent Concept" textAlignment="RIGHT" /><Label fx:id="actualRefexType" text="Actual Refex Type" /><Label fx:id="actualReadOnly" text="Actual Read-Only" />
+					</children>
+					<HBox.margin>
+						<Insets />
+					</HBox.margin>
+				</VBox>
+</children></HBox>
+				<VBox alignment="TOP_CENTER" layoutX="363.0" layoutY="77.0" minWidth="-Infinity" prefWidth="222.0" spacing="5.0" AnchorPane.rightAnchor="25.0">
+					<children>
+						<Label layoutX="393.0" layoutY="77.0" text="Refex Description">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+<VBox.margin>
+<Insets />
+</VBox.margin>
+						</Label>
+						<Label fx:id="actualRefexDescription" alignment="TOP_LEFT" layoutX="378.0" layoutY="77.0" text="Actual Refex Description">
+<VBox.margin>
+<Insets />
+</VBox.margin></Label>
+					</children>
+<HBox.margin>
+<Insets />
+</HBox.margin>
+				</VBox>
+			</children>
+		</HBox><VBox alignment="TOP_CENTER">
+<children><Label alignment="CENTER" layoutX="189.0" layoutY="28.0" text="Referenced Component">
+<font>
+<Font name="System Bold" size="18.0" />
+</font>
+</Label><HBox alignment="CENTER">
+<children><VBox alignment="CENTER_LEFT" spacing="5.0">
+<children><Label text="Referenced Component Description:">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label><Label text="Referenced Component Type:">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Label>
+</children>
+<opaqueInsets>
+<Insets />
+</opaqueInsets>
+<HBox.margin>
+<Insets right="5.0" />
+</HBox.margin></VBox><VBox alignment="CENTER_LEFT" prefHeight="39.0" prefWidth="360.0" spacing="5.0">
+<children><Label fx:id="actualRefCompDesc" text="Actual Referenced Component Description" /><Label fx:id="actualRefCompType" text="Actual Referenced Component Type" />
+</children></VBox>
+</children>
+<VBox.margin>
+<Insets />
+</VBox.margin></HBox>
+</children></VBox>
+</children></VBox>
+		<HBox alignment="CENTER" layoutX="6.0" layoutY="334.0" spacing="100.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0">
+			<children>
+				<Button fx:id="startOverButton" layoutX="293.0" layoutY="351.0" mnemonicParsing="false" text="Start Over" />
+				<Button fx:id="commitButton" layoutX="173.0" layoutY="351.0" mnemonicParsing="false" text="Commit" />
+				<Button fx:id="cancelButton" layoutX="415.0" layoutY="351.0" mnemonicParsing="false" text="Cancel" />
+			</children>
+		</HBox>
+	</children>
+</AnchorPane>
