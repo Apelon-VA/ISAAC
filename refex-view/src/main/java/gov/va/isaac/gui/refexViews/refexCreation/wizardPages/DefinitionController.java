@@ -18,11 +18,13 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -38,7 +40,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 
 /**
  * 
@@ -66,7 +71,7 @@ public class DefinitionController implements PanelControllers {
 	@FXML private Button cancelCreation;
 
     @FXML private HBox parentConceptHBox;
-	private ConceptNode parentConcept = new ConceptNode(null, true);
+	private ConceptNode parentConcept = null;
 
 	static ViewCoordinate vc = null;
 
@@ -75,7 +80,15 @@ public class DefinitionController implements PanelControllers {
 	@Override
 	public void initialize() {
 		vc = WBUtility.getViewCoordinate();
-		parentConceptHBox.getChildren().add(parentConcept.getNode());
+		
+		ConceptVersionBI refsetIdentity;
+		try {
+			refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_IDENTITY.getNid());
+			parentConcept = new ConceptNode(refsetIdentity, true);
+		} catch (IOException e1) {
+			parentConcept = new ConceptNode(null, true);
+		}
+			parentConceptHBox.getChildren().add(parentConcept.getNode());
 		
 //		rth_ = new RefsetTableHandler(refsetRows, this);
 		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
@@ -89,13 +102,7 @@ public class DefinitionController implements PanelControllers {
 				public void handle(ActionEvent e) {
 					if (verifyValuesExist()) {
 						processValues();
-
-						Integer val = Integer.valueOf(extensionCount.getText());
-						if (val.intValue() != 0) {
-							processController.setTotalColumnCount(val);
-	
-							processController.setScreen(ScreensController.COLUMN_SCREEN);
-						}
+						processController.setScreen(ScreensController.COLUMN_SCREEN);
 					}
 				}
 
@@ -111,36 +118,50 @@ public class DefinitionController implements PanelControllers {
 	@Override
 	public boolean verifyValuesExist() {
 		String errorMsg = null;
-		if (refexName.getText().isEmpty() || 
-			refexDescription.getText().isEmpty() || 
-			extensionCount.getText().isEmpty() ||
+		
+		if (refexName.getText().trim().isEmpty() || 
+			refexDescription.getText().trim().isEmpty() || 
+			extensionCount.getText().trim().isEmpty() ||
 			parentConcept.getConcept() == null) {
 			errorMsg = "Must fill out all fields";
 		} else {
+			boolean isAncestor = true;
 			try {
-				Integer val = Integer.valueOf(extensionCount.getText());
-				if (val < 0) {
-					errorMsg = "Number of extension fields must be either '0' or a positive integer";
-				}
-			} catch (Exception e) {
-					errorMsg = "Number of extension fields must be either '0' or a positive integer";
+				isAncestor = parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_IDENTITY.getNid()));
+			} catch (IOException | ContradictionException e1) {
+				e1.printStackTrace();
+				errorMsg = "Cannot identify parent Concept";
 			}
-		
+			
+			if (errorMsg == null) {
+				if (!isAncestor) {
+					errorMsg = "Parent concept must be descendent of Refex Identity";
+				} else {
+					try {
+						Integer val = Integer.valueOf(extensionCount.getText().trim());
+						if (val < 0) {
+							errorMsg = "Number of extension fields must be either '0' or a positive integer";
+						}
+					} catch (Exception e) {
+							errorMsg = "Number of extension fields must be either '0' or a positive integer";
+					}
+				}		
+			}
 		}
 		
 		if (errorMsg == null) {
 			return true;
 		} else {
-//			AppContext.getCommonDialogs().showInformationDialog("Bad or Missing Content", errorMsg);
+			AppContext.getCommonDialogs().showInformationDialog("Bad or Missing Content", errorMsg);
 			return false;
 		}
 	}
 
 	@Override
 	public void processValues() {
-		int count = Integer.valueOf(extensionCount.getText());
+		int count = Integer.valueOf(extensionCount.getText().trim());
 	
-		processController.setNewRefsetConceptVals(refexName.getText(), refexDescription.getText(), parentConcept.getConcept(),
+		processController.getWizard().setNewRefsetConceptVals(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(),
 												  count, refexAnnotationType.isSelected(), 
 												  refexIsReadOnly.isSelected()); 
 	}

@@ -6,14 +6,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="columnDefinitionPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-	minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
+<AnchorPane fx:id="columnDefinitionPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
 	<children>
-		<VBox alignment="CENTER" prefHeight="411.0" prefWidth="608.0" AnchorPane.bottomAnchor="10.0"
-			AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+		<VBox alignment="CENTER" prefHeight="411.0" prefWidth="608.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
 			<children>
-				<Label layoutX="189.0" layoutY="28.0" text="Column Definition #">
+				<Label fx:id="columnTitle" layoutX="189.0" layoutY="28.0" text="Column Definition #">
 					<font>
 						<Font name="System Bold" size="24.0" />
 					</font>
@@ -22,8 +19,7 @@
 					<children>
 						<Label layoutX="108.0" layoutY="89.0" text="Column Concept" />
 						<ChoiceBox fx:id="columnConSelector" layoutX="225.0" layoutY="85.0" prefHeight="25.0" prefWidth="247.0" />
-						<Button fx:id="newColConceptButton" alignment="CENTER_RIGHT" layoutX="309.0" layoutY="150.0"
-							mnemonicParsing="false" text="New Concept Column" />
+						<Button fx:id="newColConceptButton" alignment="CENTER_RIGHT" layoutX="309.0" layoutY="150.0" mnemonicParsing="false" text="New Concept Column" />
 					</children>
 				</HBox>
 				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="35.0">

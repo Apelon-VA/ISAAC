@@ -22,12 +22,12 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -38,6 +38,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -57,16 +58,16 @@ public class ColumnController implements PanelControllers {
 	@FXML private Button nextButton;
 	@FXML private Button cancelButton;
 	@FXML private TextField defaultValue;
-	@FXML private ChoiceBox<Choice> typeOption;
+	@FXML private ChoiceBox<Choice> typeOption = new ChoiceBox<Choice>();
 	@FXML private Button backButton;
 	@FXML private AnchorPane columnDefinitionPane;
 	@FXML private Label columnTitle;
-	@FXML private ChoiceBox<Choice> columnConSelector;
+	@FXML private ChoiceBox<Choice> columnConSelector = new ChoiceBox<Choice>();
 	@FXML private Button newColConceptButton;
 	@FXML private CheckBox isMandatory;
 
 	
-	private int currentCol = 0;
+	private static int currentCol = 0;
 
 	static ViewCoordinate vc = null;
 	ScreensController processController;
@@ -78,7 +79,7 @@ public class ColumnController implements PanelControllers {
 		setupTypeConcepts();
 		setupColumnConcepts();
 
-		typeOption.setDisable(true);
+		setupRefComp();
 
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -94,13 +95,14 @@ public class ColumnController implements PanelControllers {
 					processValues();
 
 					resetValues();
-					if (++currentCol <= processController.getTotalColumnCount()) {
-						typeOption.setDisable(false);
-
-						columnTitle.setText("Column " + currentCol + " Definition");
+					if (++currentCol < processController.getWizard().getExtendedFieldsCount()) {
+						setupColumnDef();
 					} else {
 						resetProcess();
+						processController.loadSummaryScreen();
 						processController.setScreen(ScreensController.SUMMARY_SCREEN);
+
+
 					}
 				}
 			}
@@ -126,34 +128,30 @@ public class ColumnController implements PanelControllers {
 	private void setupTypeConcepts() {
 
 		RefexDynamicDataType[] columnTypes = RefexDynamicDataType.values();
-
-
-		ObservableList<Choice> choices = FXCollections.observableArrayList();
-
-		choices.add(new Choice("No selection"));
+		typeOption.getItems().add(new Choice("No selection"));
 		
 		for (RefexDynamicDataType type : columnTypes) {
 			if (type == RefexDynamicDataType.UNKNOWN)
 			{
 				continue;
 			}
-			choices.add(new Choice(type));
+			typeOption.getItems().add(new Choice(type));
 		}
 
-		columnConSelector = new ChoiceBox<>(choices);
-		columnConSelector.getSelectionModel().select(0);
-		
+		typeOption.getSelectionModel().selectFirst();
 	}
 
 	private void getNewColumnConcept() {
 		try {
 			NewColumnDialog dialog = new NewColumnDialog(processController.getScene().getWindow());
-			dialog.show();
+			dialog.showAndWait();
 
 			ConceptChronicleBI newCon = dialog.getNewColumnConcept();
-			Choice newChoice = new Choice(newCon);
-			columnConSelector.getItems().add(newChoice);
 			
+			if (newCon != null) {
+				columnConSelector.getItems().add(new Choice(newCon));
+				columnConSelector.getSelectionModel().select(columnConSelector.getItems().size() - 1);
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -162,19 +160,30 @@ public class ColumnController implements PanelControllers {
 
 	private void setupColumnConcepts() {
 		try {
+			// TODO: REmove!!!
+			try {
+				ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
+			} catch (Exception e) {
+				try {
+					ConceptVersionBI refIdent = WBUtility.getConceptVersion(RefexDynamic.REFEX_IDENTITY.getNid());
+					
+					ConceptChronicleBI con = WBUtility.createNewConcept(refIdent, RefexDynamic.REFEX_DYNAMIC_COLUMNS.getDescription(), RefexDynamic.REFEX_DYNAMIC_COLUMNS.getDescription());
+					System.out.println("UUID OF NEW CON: " + con.getPrimordialUuid());
+				} catch (Exception e1) {
+					e.printStackTrace();
+				}
+			}
+				
 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
 			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon);
-			ObservableList<Choice> choices = FXCollections.observableArrayList();
 
-			choices.add(new Choice("No selection"));
+			columnConSelector.getItems().add(new Choice("No selection"));
 			
 			for (ConceptVersionBI con : colCons) {
-				choices.add(new Choice(con));
-
+				columnConSelector.getItems().add(new Choice(con));
 			}
 
-			columnConSelector = new ChoiceBox<>(choices);
-			columnConSelector.getSelectionModel().select(0);
+			columnConSelector.getSelectionModel().selectFirst();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -189,22 +198,27 @@ public class ColumnController implements PanelControllers {
 	@Override
 	public void processValues() {
 		ConceptVersionBI colCon = WBUtility.getConceptVersion(((Choice)columnConSelector.getSelectionModel().getSelectedItem()).getId());
-		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(((Choice)typeOption.getSelectionModel().getSelectedItem()).getId());
-		processController.setReferencedComponentVals(colCon, type, defaultValue.getText(), isMandatory.isSelected());
+ 		RefexDynamicDataType type = null;
+ 		
+ 		if (currentCol > 0) { 
+ 			type = RefexDynamicDataType.getFromToken(((Choice)typeOption.getSelectionModel().getSelectedItem()).getId());
+ 		}
+ 		
+		processController.getWizard().setReferencedComponentVals(colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
 	}
 
 	@Override
 	public boolean verifyValuesExist() {
 		String errorMsg = null;
-		if (columnConSelector.getSelectionModel().getSelectedIndex() > 0) {
+		if (columnConSelector.getSelectionModel().getSelectedIndex() == 0) {
 			errorMsg = "No concept selected";
-		} else if (typeOption.getSelectionModel().getSelectedIndex() > 0) {
+		} else if (currentCol > 0 && typeOption.getSelectionModel().getSelectedIndex() == 0) {
 			errorMsg = "No type selected";
 		} else {
 			if (typeOption.getValue().equals("Float")) {
 
 				try {
-					Float.valueOf(defaultValue.getText());
+					Float.valueOf(defaultValue.getText().trim());
 				} catch (Exception e) {
 					errorMsg = "Number of extension fields must be either '0' or a positive integer";
 				}
@@ -221,14 +235,29 @@ public class ColumnController implements PanelControllers {
 	}
 
 	private void resetValues() {
-		columnConSelector.getSelectionModel().select(0);
+		columnConSelector.getSelectionModel().selectFirst();
 		defaultValue.clear();
 	}
 	
 	private void resetProcess() {
+		setupRefComp();
+	}
+
+	private void setupRefComp() {
 		currentCol = 0;
 		typeOption.setDisable(true);
+		defaultValue.setDisable(true);
 		columnTitle.setText("Referenced Component Definition");
+		isMandatory.setSelected(true);
+		isMandatory.setDisable(true);
+	}
+
+	private void setupColumnDef() {
+		typeOption.setDisable(false);
+		defaultValue.setDisable(false);
+		columnTitle.setText("Column #" + currentCol + " Definition");
+		isMandatory.setSelected(false);
+		isMandatory.setDisable(false);
 	}
 }
 
@@ -239,7 +268,7 @@ class Choice {
 	public Choice(ConceptVersionBI con) {
 		this.id = con.getNid();
 		try {
-			this.displayString = con.getFullySpecifiedDescription().getText();
+			this.displayString = con.getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -253,7 +282,7 @@ class Choice {
 	public Choice(ConceptChronicleBI con) {
 		this.id = con.getNid();
 		try {
-			this.displayString = con.getPrimordialVersion().getFullySpecifiedDescription().getText();
+			this.displayString = con.getVersion(WBUtility.getViewCoordinate()).getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
