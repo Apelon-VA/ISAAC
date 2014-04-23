@@ -80,7 +80,8 @@ public class SummaryController implements PanelControllers {
 
 	private void setupColumnContent() {
 		VBox allColumnsContent = new VBox(10);
- 
+		allColumnsContent.setAlignment(Pos.TOP_CENTER);
+
 		for (int i = 1; i < processController.getWizard().getExtendedFieldsCount(); i++) {
 			VBox colBox = createColumn(i);
 			allColumnsContent.getChildren().add(colBox);
@@ -100,29 +101,49 @@ public class SummaryController implements PanelControllers {
 		String colIsMandatory = processController.getWizard().getColumnIsMandatory(column);
 		
 		// Set Column header
-		Label columnHeader = new Label("Column #" + column + " Description");
+		Label columnHeader = new Label("Description");
 		Font headerFont = new Font("System Bold", 18);
 		columnHeader.setFont(headerFont);
 		columnHeader.setAlignment(Pos.CENTER);
 		columnContent.getChildren().add(columnHeader);
 		
-		HBox attrValBox = new HBox();
-		attrValBox.setAlignment(Pos.CENTER);
+		HBox splitColumn = new HBox(50);
+		splitColumn.setAlignment(Pos.CENTER);
 		
+		// Left V/A Pairs
+		HBox attrValBoxLeft = new HBox();
+		attrValBoxLeft.setAlignment(Pos.CENTER);
+		attrValBoxLeft.setLayoutX(0);
+		attrValBoxLeft.setPrefWidth(200);
+
 		// Create Attribute/Value VBoxes
-		VBox columnAttributes = new VBox();
-		VBox columnValues = new VBox();
-		columnAttributes.setSpacing(5);
-		columnValues.setSpacing(5);
-		columnAttributes.setAlignment(Pos.CENTER_LEFT);
-		columnValues.setAlignment(Pos.CENTER_LEFT);
-		columnAttributes.setPadding(new Insets(0, 0, 0, 5));
+		VBox columnAttributesLeft = new VBox();
+		VBox columnValuesLeft = new VBox();
+		columnAttributesLeft.setSpacing(5);
+		columnValuesLeft.setSpacing(5);
+		columnAttributesLeft.setAlignment(Pos.CENTER_LEFT);
+		columnValuesLeft.setAlignment(Pos.CENTER_LEFT);
+		columnAttributesLeft.setPadding(new Insets(0, 0, 0, 5));
+
+		// Right V/A Pairs
+		HBox attrValBoxRight = new HBox();
+		attrValBoxRight.setAlignment(Pos.CENTER);
+		attrValBoxRight.setPrefWidth(200);
+
+		// Create Attribute/Value VBoxes
+		VBox columnAttributesRight = new VBox();
+		VBox columnValuesRight = new VBox();
+		columnAttributesRight.setSpacing(5);
+		columnValuesRight.setSpacing(5);
+		columnAttributesRight.setAlignment(Pos.CENTER_LEFT);
+		columnValuesRight.setAlignment(Pos.CENTER_LEFT);
+		columnAttributesRight.setPadding(new Insets(0, 0, 0, 5));
 
 		// Set Attribute Labels
-		Label colDescAttrLabel = new Label("Column #" + column + " Description:");
-		Label colTypeAttrLabel = new Label("Column #" + column + " Type:");
-		Label colDefaultValueAttrLabel = new Label("Column #" + column + " Default Value:");
-		Label colIsMandatoryAttrLabel = new Label("Column #" + column + " Is Mandatory:");
+		Label colDescAttrLabel = new Label("Description:");
+		Label colTypeAttrLabel = new Label("Type:");
+		Label colDefaultValueAttrLabel = new Label("Default Value:");
+		Label colIsMandatoryAttrLabel = new Label("Is Mandatory:");
 
 		// Set Attribute Label Fonts
 		colDescAttrLabel.setFont(new Font("System Bold", 12));
@@ -137,22 +158,28 @@ public class SummaryController implements PanelControllers {
 		Label colIsMandatoryLabel = new Label(colIsMandatory);
 
 		// Add Attribute Labels to Attribute VBox
-		columnAttributes.getChildren().add(colDescAttrLabel);
-		columnAttributes.getChildren().add(colTypeAttrLabel);
-		columnAttributes.getChildren().add(colDefaultValueAttrLabel);
-		columnAttributes.getChildren().add(colIsMandatoryAttrLabel);
+		columnAttributesLeft.getChildren().add(colDescAttrLabel);
+		columnAttributesLeft.getChildren().add(colIsMandatoryAttrLabel);
+		columnAttributesRight.getChildren().add(colTypeAttrLabel);
+		columnAttributesRight.getChildren().add(colDefaultValueAttrLabel);
 
 		// Add Value Labels to Value VBox
-		columnValues.getChildren().add(colDescLabel);
-		columnValues.getChildren().add(colTypeLabel);
-		columnValues.getChildren().add(colDefaultValueLabel);
-		columnValues.getChildren().add(colIsMandatoryLabel);
+		columnValuesLeft.getChildren().add(colDescLabel);
+		columnValuesLeft.getChildren().add(colIsMandatoryLabel);
+		columnValuesRight.getChildren().add(colTypeLabel);
+		columnValuesRight.getChildren().add(colDefaultValueLabel);
 
-		attrValBox.getChildren().add(columnAttributes);
-		attrValBox.getChildren().add(columnValues);
-		columnContent.getChildren().add(attrValBox);
+		attrValBoxLeft.getChildren().add(columnAttributesLeft);
+		attrValBoxLeft.getChildren().add(columnValuesLeft);
+		attrValBoxRight.getChildren().add(columnAttributesRight);
+		attrValBoxRight.getChildren().add(columnValuesRight);
+
+		splitColumn.getChildren().add(attrValBoxLeft);
+		splitColumn.getChildren().add(attrValBoxRight);
 		
-		return null;
+		columnContent.getChildren().add(splitColumn);
+		
+		return columnContent;
 	}
 
 
