@@ -89,15 +89,19 @@ public class WBUtility {
 	private static Integer synonymNid = null;
 
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-	private static TerminologyBuilderBI dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
+	private static TerminologyBuilderBI dataBuilder;
 	private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
 	private static String useFSN = "useFSN";
 
-	private static EditCoordinate editCoord;
-
+	private static EditCoordinate editCoord = null;
+	private static ViewCoordinate vc = null;
 	private static boolean changeSetCreated;
 
 	public static TerminologyBuilderBI getBuilder() {
+		if (dataBuilder == null) {
+			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
+		}
+		
 		return dataBuilder;
 	}
 	
@@ -444,17 +448,16 @@ public class WBUtility {
 	 */
 	public static ViewCoordinate getViewCoordinate()
 	{
-		try
-		{
-			ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
-			vc.getAllowedStatus().add(Status.INACTIVE);
-			return vc;
+		if (vc == null) {
+			try
+			{
+				vc = StandardViewCoordinates.getSnomedStatedLatest();
+			} catch (IOException e) {
+				LOG.error("Unexpected error fetching view coordinates!", e);
+			}
 		}
-		catch (IOException e)
-		{
-			LOG.error("Unexpected error fetching view coordinates!", e);
-			return null;
-		}
+		
+		return vc;
 	}
 
 	public static RefexVersionBI<?> getRefsetMember(int nid) {
@@ -462,10 +465,13 @@ public class WBUtility {
 			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
-				ViewCoordinate vc = getViewCoordinate();
-				vc.getAllowedStatus().add(Status.INACTIVE);
+				getViewCoordinate().getAllowedStatus().add(Status.INACTIVE);
 				
-				return refexChron.getVersion(vc);
+				RefexVersionBI<?> refexChronVersion = refexChron.getVersion(getViewCoordinate());
+				
+				getViewCoordinate().getAllowedStatus().remove(Status.INACTIVE);
+				
+				return refexChronVersion;
 			}
 		} catch (Exception ex) {
 			LOG.warn("perhaps unexpected?", ex);
@@ -520,9 +526,18 @@ public class WBUtility {
 		}
 	}
 
-	public static void addUncommitted(ConceptVersionBI con) {
+	public static void addUncommitted(ConceptChronicleBI newCon) {
 		try {
-			dataStore.addUncommitted(con);
+			dataStore.addUncommitted(newCon);
+		} catch (IOException e) {
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
+		}
+	}
+
+	public static void addUncommitted(ConceptVersionBI newCon) {
+		try {
+			dataStore.addUncommitted(newCon);
 		} catch (IOException e) {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
 			LOG.error("addUncommitted failure", e);
@@ -579,7 +594,8 @@ public class WBUtility {
 
         ConceptChronicleBI newCon = getBuilder().construct(newConCB);
 
-        dataStore.commit(newCon);
+        addUncommitted(newCon);
+        commit();
 
         return newCon;
     }
