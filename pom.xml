@@ -53,7 +53,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <otf-query.version>1.1-va-1.1</otf-query.version>
-        <otf-versioning.version>1.1-va-1.1</otf-versioning.version>
+        <otf-versioning.version>1.1-va-1.2-SNAPSHOT</otf-versioning.version>
     </properties>
     
     <dependencyManagement>
@@ -268,6 +268,7 @@
         <module>refset-view</module>
         <module>info-model-view</module>
         <module>list-view</module>
+        <module>mojos</module>
     </modules>
 
     <reporting>
