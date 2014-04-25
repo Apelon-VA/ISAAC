@@ -18,6 +18,8 @@
  */
 package gov.va.legoEdit.storage;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.legoEdit.model.ModelUtil;
 import gov.va.legoEdit.model.bdbModel.LegoBDB;
 import gov.va.legoEdit.model.bdbModel.LegoListBDB;
@@ -63,7 +65,7 @@ import com.sleepycat.persist.StoreConfig;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  * Copyright 2013
  */
-public class BDBDataStoreImpl implements DataStoreInterface
+public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastListenerI
 {
 	private static volatile BDBDataStoreImpl instance_;
 
@@ -116,6 +118,7 @@ public class BDBDataStoreImpl implements DataStoreInterface
 		try
 		{
 			logger.info("Configuring the Database");
+			AppContext.getMainApplicationWindow().registerShutdownListener(this);
 			EnvironmentConfig myEnvConfig = new EnvironmentConfig();
 			myEnvConfig.setTransactional(true);
 			StoreConfig storeConfig = new StoreConfig();
