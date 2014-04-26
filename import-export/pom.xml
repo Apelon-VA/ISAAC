@@ -77,20 +77,20 @@
 
         <dependency>
             <groupId>org.eclipse.emf</groupId>
-            <artifactId>ecore</artifactId>
-            <version>2.9.1.v20130827-0309</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.emf.ecore</groupId>
-            <artifactId>xmi</artifactId>
-            <version>2.9.1.v20130827-0309</version>
+            <artifactId>org.eclipse.emf.ecore</artifactId>
+            <version>2.9.1-v20130827-0309</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.emf</groupId>
-            <artifactId>common</artifactId>
-            <version>2.9.1.v20130827-0309</version>
+            <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+            <version>2.9.1-v20130827-0309</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.common</artifactId>
+            <version>2.9.1-v20130827-0309</version>
         </dependency>
         
         <!--
