@@ -87,7 +87,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					sctTreeView_.init(Taxonomies.SNOMED.getUuids()[0]);
+					sctTreeView_.init(new UUID[] {Taxonomies.SNOMED.getUuids()[0], Taxonomies.REFSET_AUX.getUuids()[0], Taxonomies.WB_AUX.getUuids()[0]});
 					hasBeenInited_ = true;
 				}
 			}
