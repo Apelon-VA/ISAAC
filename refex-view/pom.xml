@@ -17,24 +17,6 @@
 
 	<dependencies>
 	
-		<!-- OTF Query Implementation. -->
-		<dependency>
-			<groupId>org.ihtsdo.otf</groupId>
-			<artifactId>query-implementation</artifactId>
-		</dependency>
-		<!-- OTF Query Implementation. -->
-		<dependency>
-			<groupId>org.ihtsdo.otf</groupId>
-			<artifactId>tcc-model-impl</artifactId>
-			<version>1.1-va-1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.ihtsdo.otf</groupId>
-			<artifactId>tcc-api</artifactId>
-			<version>1.1-va-1.2-SNAPSHOT</version>
-		</dependency>
-	
-	
 		<!-- ISAAC App Utils. -->
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
