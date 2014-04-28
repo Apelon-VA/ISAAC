@@ -20,10 +20,8 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.util.WBUtility;
-
 import java.net.URL;
 import java.util.ResourceBundle;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -32,10 +30,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 
 /**
  * 
@@ -68,10 +66,11 @@ public class NewColumnDialogController implements Initializable
 				((Stage) rootPane.getScene().getWindow()).close();
 			}
 
+			//TODO this should have a short name and a long name
 			private void createNewColumnConcept(TextArea newColDesc) {
 				try {
-					newColumnConcept = WBUtility.createNewConcept(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getLenient(), 
-											   newColDesc.getText().trim(), newColDesc.getText().trim());
+					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColDesc.getText().trim(), 
+							newColDesc.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
 				} catch (InvalidCAB e) {
 					AppContext.getCommonDialogs().showInformationDialog("New Concept Error", "Concept Already Exists");
 					newColumnConcept = null;
