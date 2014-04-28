@@ -83,7 +83,7 @@ public class DefinitionController implements PanelControllers {
 		
 		ConceptVersionBI refsetIdentity;
 		try {
-			refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_IDENTITY.getNid());
+			refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
 			parentConcept = new ConceptNode(refsetIdentity, true);
 		} catch (IOException e1) {
 			parentConcept = new ConceptNode(null, true);
@@ -127,7 +127,7 @@ public class DefinitionController implements PanelControllers {
 		} else {
 			boolean isAncestor = true;
 			try {
-				isAncestor = parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_IDENTITY.getNid()));
+				isAncestor = parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()));
 			} catch (IOException | ContradictionException e1) {
 				e1.printStackTrace();
 				errorMsg = "Cannot identify parent Concept";
