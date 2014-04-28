@@ -268,7 +268,8 @@
         <module>refset-view</module>
         <module>info-model-view</module>
         <module>list-view</module>
-        <module>mojos</module>
+        <!--module>mojos</module-->
+        <!--module>refex-view</module-->
     </modules>
 
     <reporting>
