@@ -8,10 +8,13 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.api.io.FileIO;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
+import org.ihtsdo.otf.mojo.GenerateMetadataEConcepts;
 
 /**
  * Goal which loads a database from an eConcept file, and generates the indexes.
@@ -47,6 +50,16 @@ public class DBBuilder extends AbstractMojo
 	 * @required
 	 */
 	private String[] econFileStrings;
+	
+	/**
+	 * Whether or not to include the default metadata concepts in the constructed DB.
+	 * This includes concepts that would be created for ConceptSpec entries in {@link RefexDynamic}, 
+	 * for example.
+	 * 
+	 * @parameter default-value=true
+	 * @required
+	 */
+	private boolean loadDefaultMetadata = true;
 
 	@Override
 	public void execute() throws MojoExecutionException
@@ -74,20 +87,33 @@ public class DBBuilder extends AbstractMojo
 			
 			if (!dbExists)
 			{
+				getLog().info("DB did not exist - disabling indexers for batch index");
 				for (IndexerBI indexer : indexers)
 				{
 					indexer.setEnabled(false);
 				}
-				store.loadEconFiles(econFileStrings);
 			}
-
-			for (IndexerBI indexer : indexers)
+			store.loadEconFiles(econFileStrings);
+			if (loadDefaultMetadata)
 			{
-				indexer.setEnabled(true);
+				getLog().info("Creating and loading the metadata");
+				File metaData = File.createTempFile("WBMetaData-", ".jbin");
+				GenerateMetadataEConcepts gmc = new GenerateMetadataEConcepts(metaData, new String[] {"org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic"},
+						new ConceptSpec[0], false);
+				gmc.execute();
+				store.loadEconFiles(new File[] {metaData});
+				metaData.delete();
 			}
 
-			getLog().info("Indexing");
-			store.index();
+			if (!dbExists)
+			{
+				for (IndexerBI indexer : indexers)
+				{
+					indexer.setEnabled(true);
+				}
+				getLog().info("Batch Indexing");
+				store.index();
+			}
 
 			getLog().info("Shutting Down");
 			
