@@ -160,22 +160,8 @@ public class ColumnController implements PanelControllers {
 
 	private void setupColumnConcepts() {
 		try {
-			// TODO: REmove once RefexDynamic concepts added to official DB
-			try {
-				ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-			} catch (Exception e) {
-				try {
-					ConceptVersionBI refIdent = WBUtility.getConceptVersion(RefexDynamic.REFEX_IDENTITY.getNid());
-					ConceptChronicleBI con = WBUtility.createNewConcept(refIdent, RefexDynamic.REFEX_DYNAMIC_COLUMNS.getDescription(), RefexDynamic.REFEX_DYNAMIC_COLUMNS.getDescription());
-					
-					System.out.println("UUID OF NEW CON: " + con.getPrimordialUuid());
-				} catch (Exception e1) {
-					e.printStackTrace();
-				}
-			}
-				
 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon);
+			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
 
 			columnConSelector.getItems().add(new Choice("No selection"));
 			
@@ -187,7 +173,6 @@ public class ColumnController implements PanelControllers {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override

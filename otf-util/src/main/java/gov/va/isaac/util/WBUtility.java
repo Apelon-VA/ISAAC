@@ -567,15 +567,15 @@ public class WBUtility {
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid) throws IOException, ContradictionException
+	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
 	{
-		return getAllChildrenOfConcept(getConceptVersion(nid));
+		return getAllChildrenOfConcept(getConceptVersion(nid), recursive);
 	}
 	
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept) throws IOException, ContradictionException
+	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
 	{
 		ArrayList<ConceptVersionBI> results = new ArrayList<>();
 		
@@ -583,7 +583,10 @@ public class WBUtility {
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getOriginNid()));
-			results.addAll(getAllChildrenOfConcept(r.getOriginNid()));
+			if (recursive)
+			{
+				results.addAll(getAllChildrenOfConcept(r.getOriginNid(), recursive));
+			}
 		}
 		return results;
 	}
