@@ -2,9 +2,9 @@ package gov.va.isaac.gui.refexViews.refexCreation;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 
 public class WizardController {
@@ -118,5 +118,16 @@ public class WizardController {
 		return getConceptFsn(columnNids.get(0));
 	}
 
+	public RefexDynamicColumnInfo[] getColumnInfo()
+	{
+		//TODO this is also broken, and building two columns, when only one is specified.  funny stuff happening in the GUI.
+		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypeStrings.size()];
+		for (int i = 0; i < result.length; i++)
+		{
+			//TODO defaultValues needs to be an Object, not a String, and it needs to match the type declared in columnTypes.
+			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypeStrings.get(i), columnDefaultValues.get(i));
+		}
+		return result;
+	}
 
 }

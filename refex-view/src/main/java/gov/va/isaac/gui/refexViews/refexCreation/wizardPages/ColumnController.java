@@ -185,8 +185,14 @@ public class ColumnController implements PanelControllers {
 		ConceptVersionBI colCon = WBUtility.getConceptVersion(((Choice)columnConSelector.getSelectionModel().getSelectedItem()).getId());
  		RefexDynamicDataType type = null;
  		
+ 		//TODO this is broken - you can't add a column without a type...
  		if (currentCol > 0) { 
  			type = RefexDynamicDataType.getFromToken(((Choice)typeOption.getSelectionModel().getSelectedItem()).getId());
+ 		}
+ 		else
+ 		{
+ 			//hack
+ 			type = RefexDynamicDataType.LONG;
  		}
  		
 		processController.getWizard().setReferencedComponentVals(colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());

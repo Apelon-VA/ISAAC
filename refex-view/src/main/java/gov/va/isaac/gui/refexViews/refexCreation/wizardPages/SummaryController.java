@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
@@ -33,8 +35,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 
 /**
  * 
@@ -240,7 +244,18 @@ public class SummaryController implements PanelControllers {
 		
 	@Override
 	public void processValues() {
-		// TODO Auto-generated method stub
+		// TODO this isn't finished
+		try
+		{
+			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
+					actualRefexDescription.getText(), "later", processController.getWizard().getColumnInfo(), null, 
+					WBUtility.getEC(), WBUtility.getViewCoordinate());
+		}
+		catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
