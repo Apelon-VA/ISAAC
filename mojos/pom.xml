@@ -11,7 +11,7 @@
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>mojos</artifactId>
 	<name>ISAAC Maven Mojo Utilities</name>
-	<packaging>jar</packaging>
+	<packaging>maven-plugin</packaging>
 
 	<dependencies>
 		<dependency>
