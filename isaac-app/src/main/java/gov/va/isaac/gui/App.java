@@ -126,7 +126,7 @@ public class App extends Application implements ApplicationWindowI{
             String message = "The Snomed Database was not found.";
             LOG.error(message, dataStoreLocationInitException_);
             String details = "Please download the file\n\n"
-                    + "https://mgr.servers.aceworkspace.net/apps/va-archiva/repository/all/org/ihtsdo/otf/tcc-test-data/3.0/tcc-test-data-3.0.zip"
+                    + "https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/isaac-sct/2014.01.31-build-1/isaac-sct-2014.01.31-build-1.zip"
                     + "\n\nand unzip it into\n\n"
                     + System.getProperty("user.dir")
                     + "\n\nand then restart the editor.";

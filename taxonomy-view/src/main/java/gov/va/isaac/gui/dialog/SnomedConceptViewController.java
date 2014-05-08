@@ -25,6 +25,7 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.WBUtility;
 import java.util.ArrayList;
@@ -100,6 +101,14 @@ public class SnomedConceptViewController {
         conceptStatusLabel.setText(conceptAttributes.getStatus().name());
         fsnLabel.setText(WBUtility.getDescription(concept));
         CopyableLabel.addCopyMenu(fsnLabel);
+        
+        MenuItem copyFull = new MenuItem("Copy Full Concept");
+        copyFull.setGraphic(Images.COPY.createImageView());
+
+        copyFull.setOnAction(e -> (CustomClipboard.set(WBUtility.getConceptVersion(concept.getPrimordialUuid()).toLongString())));
+
+        fsnLabel.getContextMenu().getItems().add(copyFull);
+        
         AppContext.getService(DragRegistry.class).setupDragOnly(fsnLabel, new ConceptIdProvider()
         {
             @Override
@@ -242,7 +251,7 @@ public class SnomedConceptViewController {
         // Load the inner tree view.
         try {
             sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
-            sctTree.init(Taxonomies.SNOMED.getUuids()[0]);
+            sctTree.init(new UUID[] {Taxonomies.SNOMED.getUuids()[0], Taxonomies.REFSET_AUX.getUuids()[0], Taxonomies.WB_AUX.getUuids()[0]});
             Region r = sctTree.getView();
             splitRight.getChildren().add(r);
             VBox.setVgrow(r, Priority.ALWAYS);

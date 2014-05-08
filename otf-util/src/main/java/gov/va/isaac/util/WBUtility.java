@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
@@ -41,6 +44,7 @@ import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
@@ -48,6 +52,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
 import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
@@ -84,15 +89,19 @@ public class WBUtility {
 	private static Integer synonymNid = null;
 
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-	private static TerminologyBuilderBI dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
+	private static TerminologyBuilderBI dataBuilder;
 	private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
 	private static String useFSN = "useFSN";
 
-	private static EditCoordinate editCoord;
-
+	private static EditCoordinate editCoord = null;
+	private static ViewCoordinate vc = null;
 	private static boolean changeSetCreated;
 
 	public static TerminologyBuilderBI getBuilder() {
+		if (dataBuilder == null) {
+			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
+		}
+		
 		return dataBuilder;
 	}
 	
@@ -439,17 +448,16 @@ public class WBUtility {
 	 */
 	public static ViewCoordinate getViewCoordinate()
 	{
-		try
-		{
-			ViewCoordinate vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
-			vc.getAllowedStatus().add(Status.INACTIVE);
-			return vc;
+		if (vc == null) {
+			try
+			{
+				vc = StandardViewCoordinates.getSnomedStatedLatest();
+			} catch (IOException e) {
+				LOG.error("Unexpected error fetching view coordinates!", e);
+			}
 		}
-		catch (IOException e)
-		{
-			LOG.error("Unexpected error fetching view coordinates!", e);
-			return null;
-		}
+		
+		return vc;
 	}
 
 	public static RefexVersionBI<?> getRefsetMember(int nid) {
@@ -457,10 +465,13 @@ public class WBUtility {
 			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
-				ViewCoordinate vc = getViewCoordinate();
-				vc.getAllowedStatus().add(Status.INACTIVE);
+				getViewCoordinate().getAllowedStatus().add(Status.INACTIVE);
 				
-				return refexChron.getVersion(vc);
+				RefexVersionBI<?> refexChronVersion = refexChron.getVersion(getViewCoordinate());
+				
+				getViewCoordinate().getAllowedStatus().remove(Status.INACTIVE);
+				
+				return refexChronVersion;
 			}
 		} catch (Exception ex) {
 			LOG.warn("perhaps unexpected?", ex);
@@ -515,9 +526,18 @@ public class WBUtility {
 		}
 	}
 
-	public static void addUncommitted(ConceptVersionBI con) {
+	public static void addUncommitted(ConceptChronicleBI newCon) {
 		try {
-			dataStore.addUncommitted(con);
+			dataStore.addUncommitted(newCon);
+		} catch (IOException e) {
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
+		}
+	}
+
+	public static void addUncommitted(ConceptVersionBI newCon) {
+		try {
+			dataStore.addUncommitted(newCon);
 		} catch (IOException e) {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
 			LOG.error("addUncommitted failure", e);
@@ -547,15 +567,15 @@ public class WBUtility {
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid) throws IOException, ContradictionException
+	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
 	{
-		return getAllChildrenOfConcept(getConceptVersion(nid));
+		return getAllChildrenOfConcept(getConceptVersion(nid), recursive);
 	}
 	
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept) throws IOException, ContradictionException
+	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
 	{
 		ArrayList<ConceptVersionBI> results = new ArrayList<>();
 		
@@ -563,8 +583,33 @@ public class WBUtility {
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getOriginNid()));
-			results.addAll(getAllChildrenOfConcept(r.getOriginNid()));
+			if (recursive)
+			{
+				results.addAll(getAllChildrenOfConcept(r.getOriginNid(), recursive));
+			}
 		}
 		return results;
 	}
+
+    public static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
+            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+
+        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+
+        addUncommitted(newCon);
+        commit();
+
+        return newCon;
+    }
+
+    public static ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm) throws ValidationException, IOException, InvalidCAB, ContradictionException {
+        LanguageCode lc = LanguageCode.EN_US;
+        UUID isA = Snomed.IS_A.getUuids()[0];
+        IdDirective idDir = IdDirective.GENERATE_HASH;
+        UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
+        UUID parentUUIDs[] = new UUID[1];
+        parentUUIDs[0] = parent.getPrimordialUuid();
+        return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
+    }
 }

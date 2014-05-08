@@ -233,7 +233,8 @@ public class FindAndReplaceController
 		try
 		{
 			//84a0b03b-220c-3d69-8487-2e019c933687 Language type reference set
-			for (ConceptVersionBI c : WBUtility.getAllChildrenOfConcept(WBUtility.getConceptVersion(UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687")).getNid()))
+			for (ConceptVersionBI c : WBUtility.getAllChildrenOfConcept(WBUtility.getConceptVersion(UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687")).getNid()
+					, true))
 			{
 				SimpleDisplayConcept sdc = new SimpleDisplayConcept(c);
 				//TODO OTF Bug - OTF is broken, and doesn't even return hierarchies without duplicates https://jira.ihtsdotools.org/browse/OTFISSUE-21

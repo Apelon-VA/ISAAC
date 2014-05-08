@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?scenebuilder-stylesheet Dialog.css?>
+
+<AnchorPane id="AnchorPane" fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+	minWidth="-Infinity" prefHeight="199.0" prefWidth="400.0" styleClass="dialogBackground" stylesheets="@Dialog.css"
+	xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.NewColumnDialogController">
+	<children>
+		<VBox alignment="CENTER" prefHeight="200.0" prefWidth="400.0">
+			<children>
+				<Label alignment="TOP_LEFT" layoutX="132.0" layoutY="36.0" text="Enter Column Description">
+					<font>
+						<Font name="System Bold" size="18.0" />
+					</font>
+				</Label>
+				<TextArea fx:id="newColDesc" layoutX="34.0" layoutY="62.0" prefHeight="71.0" prefWidth="345.0" promptText="newColDesc"
+					text="Enter Description">
+					<VBox.margin>
+						<Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+					</VBox.margin>
+				</TextArea>
+				<Button fx:id="commitButton" mnemonicParsing="false" text="Commit" />
+			</children>
+			<opaqueInsets>
+				<Insets />
+			</opaqueInsets>
+		</VBox>
+	</children>
+</AnchorPane>
