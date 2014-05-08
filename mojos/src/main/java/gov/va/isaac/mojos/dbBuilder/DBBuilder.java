@@ -6,15 +6,15 @@ import java.lang.reflect.Field;
 import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.mojo.GenerateMetadataEConcepts;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.api.io.FileIO;
+import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
-import org.ihtsdo.otf.mojo.GenerateMetadataEConcepts;
 
 /**
  * Goal which loads a database from an eConcept file, and generates the indexes.
