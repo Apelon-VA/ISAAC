@@ -249,7 +249,7 @@ public class SummaryController implements PanelControllers {
 		{
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
 					actualRefexDescription.getText(), "later", processController.getWizard().getColumnInfo(), null, 
-					WBUtility.getEC(), WBUtility.getViewCoordinate());
+					actualRefexType.getText().equals("Annotated"), WBUtility.getEC(), WBUtility.getViewCoordinate());
 		}
 		catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e)
 		{
