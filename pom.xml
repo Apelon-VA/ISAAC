@@ -52,8 +52,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.2-SNAPSHOT</otf-query.version>
-        <otf-versioning.version>1.1-va-1.2-SNAPSHOT</otf-versioning.version>
+        <otf-query.version>1.1-va-1.2.2</otf-query.version>
+        <otf-versioning.version>1.1-va-1.2</otf-versioning.version>
     </properties>
     
     <dependencyManagement>
