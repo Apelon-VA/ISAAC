@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.0-Sprint_07</version>
+    <version>1.0-Sprint_08-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -30,7 +30,7 @@
         <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
         <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>
         <url>https://github.com/Apelon-VA/ISAAC</url>
-        <tag>Sprint_07-1.0</tag>
+        <tag>master</tag>
     </scm>
     <distributionManagement>
         <!-- I don't normally define these here, but the -D overrides are being problematic on the CI server... -->
