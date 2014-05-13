@@ -18,7 +18,7 @@ public class WizardController {
 	private int extendedFieldsCount;
 	private boolean isAnnotated;
 	private ConceptVersionBI parentConcept;
-	private boolean isReadOnly;
+	private boolean isMutable;
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
 	private List<RefexDynamicDataType> columnTypeStrings = new ArrayList<RefexDynamicDataType>();
@@ -34,17 +34,13 @@ public class WizardController {
 		return refsetCon;
 	}
 
-	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated, boolean isReadOnly) {
+	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated, boolean isMutable) {
 		this.refexName = name;
 		this.refsetDescription = description;
 		this.parentConcept = parentConcept;
-		this.extendedFieldsCount = extendedFieldsCount + 1;
+		this.extendedFieldsCount = extendedFieldsCount;
 		this.isAnnotated = isAnnotated;
-		this.isReadOnly = isReadOnly;
-	}
-
-	public void setReferencedComponentVals(ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
-		setColumnVals(colCon, type, defaultValue, isMandatory);
+		this.isMutable = isMutable;
 	}
 
 	public void setColumnVals(ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
@@ -78,8 +74,8 @@ public class WizardController {
 		}
 	}
 
-	public boolean isReadOnlyRefex() {
-		return isReadOnly;
+	public boolean isMutableRefex() {
+		return isMutable;
 	}
 
 	public boolean isAnnotated() {
@@ -113,10 +109,6 @@ public class WizardController {
 		} else {
 			return "Optional";
 		}
-	}
-
-	public String getRefCompDesc() {
-		return getConceptFsn(columnNids.get(0));
 	}
 
 	public RefexDynamicColumnInfo[] getColumnInfo()

@@ -52,18 +52,18 @@ import org.slf4j.LoggerFactory;
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
 public class SummaryController implements PanelControllers {
-	@FXML private AnchorPane summaryPane;
-	@FXML private VBox mainVBox;
-	@FXML private Label actualRefexName;
-	@FXML private Label actualRefexDescription;
+    @FXML private Label actualRefexName;
+    @FXML private Label actualRefexDescription;
 	@FXML private Label actualParentConcept;
-	@FXML private Label actualReadOnly;
+	@FXML private Label actualMutable;
 	@FXML private Label actualRefexType;
 	@FXML private Label actualRefCompDesc;
+	@FXML private AnchorPane summaryPane;
+	@FXML private VBox mainVBox;
 	@FXML private Button cancelButton;
 	@FXML private Button startOverButton;
 	@FXML private Button commitButton;
-	
+
 	static ViewCoordinate vc = null;
 	static ScreensController processController;
 
@@ -72,8 +72,6 @@ public class SummaryController implements PanelControllers {
 	@Override
 	public void initialize() {
 		assert mainVBox != null : "fx:id=\"mainVBox\" was not injected: check your FXML file 'Untitled'.";
-		assert actualRefexName != null : "fx:id=\"actualRefexName\" was not injected: check your FXML file 'Untitled'.";
-		assert actualRefexDescription != null : "fx:id=\"actualRefexDescription\" was not injected: check your FXML file 'Untitled'.";
 		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'Untitled'.";
 		assert startOverButton != null : "fx:id=\"startOverButton\" was not injected: check your FXML file 'Untitled'.";
 		assert commitButton != null : "fx:id=\"commitButton\" was not injected: check your FXML file 'Untitled'.";
@@ -81,7 +79,7 @@ public class SummaryController implements PanelControllers {
 		assert actualRefCompDesc != null : "fx:id=\"actualRefCompDesc\" was not injected: check your FXML file 'Untitled'.";
 		assert summaryPane != null : "fx:id=\"summaryPane\" was not injected: check your FXML file 'Untitled'.";
 		assert actualParentConcept != null : "fx:id=\"actualParentConcept\" was not injected: check your FXML file 'Untitled'.";
-		assert actualReadOnly != null : "fx:id=\"actualReadOnly\" was not injected: check your FXML file 'Untitled'.";
+		assert actualMutable != null : "fx:id=\"actualMutable\" was not injected: check your FXML file 'Untitled'.";
 	}
 
 
@@ -89,7 +87,7 @@ public class SummaryController implements PanelControllers {
 		VBox allColumnsContent = new VBox(10);
 		allColumnsContent.setAlignment(Pos.TOP_CENTER);
 
-		for (int i = 1; i < processController.getWizard().getExtendedFieldsCount(); i++) {
+		for (int i = 0; i < processController.getWizard().getExtendedFieldsCount(); i++) {
 			VBox colBox = createColumn(i);
 			allColumnsContent.getChildren().add(colBox);
 		}
@@ -191,15 +189,14 @@ public class SummaryController implements PanelControllers {
 
 
 	private void setupRefexContent() {
-		// Refset
 		actualRefexName.setText(processController.getWizard().getRefexName());
 		actualRefexDescription.setText(processController.getWizard().getRefexDescription());
 		actualParentConcept.setText(processController.getWizard().getParentConceptFsn());
 		
-		if (processController.getWizard().isReadOnlyRefex()) {
-			actualReadOnly.setText("Read-Only Refex");
+		if (processController.getWizard().isMutableRefex()) {
+			actualMutable.setText("True");
 		} else {
-			actualReadOnly.setText("Mutable Refex");
+			actualMutable.setText("False");
 		}
 		
 		if (processController.getWizard().isAnnotated()) {
@@ -207,17 +204,14 @@ public class SummaryController implements PanelControllers {
 		} else {
 			actualRefexType.setText("Refset");
 		}
-		
-		// Referenced Component
-		actualRefCompDesc.setText(processController.getWizard().getRefCompDesc());
 	}
 
 	@Override
 	public void finishInit(ScreensController screenParent){
 		processController = screenParent;
 
-		setupColumnContent();
 		setupRefexContent();
+		setupColumnContent();
 
 		vc = WBUtility.getViewCoordinate();
 

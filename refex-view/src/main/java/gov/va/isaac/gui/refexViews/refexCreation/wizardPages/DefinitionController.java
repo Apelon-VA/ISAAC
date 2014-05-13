@@ -60,9 +60,9 @@ public class DefinitionController implements PanelControllers {
 	@FXML private ToggleGroup refexType;
 	@FXML private RadioButton refexTypeRefset;
 	@FXML private RadioButton refexAnnotationType;
-	@FXML private ToggleGroup readOnly;
-	@FXML private RadioButton refexNotReadOnly;
-	@FXML private RadioButton refexIsReadOnly;
+	@FXML private ToggleGroup mutable;
+	@FXML private RadioButton refexNotMutable;
+	@FXML private RadioButton refexIsMutable;
 	@FXML private TextField refexName;
 	@FXML private TextField extensionCount;
 	@FXML private TextArea refexDescription;
@@ -79,17 +79,18 @@ public class DefinitionController implements PanelControllers {
 	@Override
 	public void initialize() {
 		vc = WBUtility.getViewCoordinate();
+		extensionCount.setText("0");
 		
-		ConceptVersionBI refsetIdentity;
 		try {
-			refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
+			ConceptVersionBI refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
 			parentConcept = new ConceptNode(refsetIdentity, true);
 		} catch (IOException e1) {
 			parentConcept = new ConceptNode(null, true);
 		}
-			parentConceptHBox.getChildren().add(parentConcept.getNode());
-		
-//		rth_ = new RefsetTableHandler(refsetRows, this);
+		parentConceptHBox.getChildren().add(parentConcept.getNode());
+			
+
+
 		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
@@ -101,7 +102,12 @@ public class DefinitionController implements PanelControllers {
 				public void handle(ActionEvent e) {
 					if (verifyValuesExist()) {
 						processValues();
-						processController.setScreen(ScreensController.COLUMN_SCREEN);
+						if (Integer.valueOf(extensionCount.getText().trim()) == 0) {
+							processController.loadSummaryScreen();
+							processController.setScreen(ScreensController.SUMMARY_SCREEN);
+						} else {
+							processController.setScreen(ScreensController.COLUMN_SCREEN);
+						}
 					}
 				}
 
@@ -162,7 +168,7 @@ public class DefinitionController implements PanelControllers {
 	
 		processController.getWizard().setNewRefsetConceptVals(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(),
 												  count, refexAnnotationType.isSelected(), 
-												  refexIsReadOnly.isSelected()); 
+												  refexIsMutable.isSelected()); 
 	}
 }
 

@@ -75,12 +75,13 @@ public class ColumnController implements PanelControllers {
 
 	@Override
 	public void initialize() {		
+		
 		vc = WBUtility.getViewCoordinate();
 
 		setupTypeConcepts();
 		setupColumnConcepts();
 
-		setupRefComp();
+		resetProcess();
 
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -125,7 +126,7 @@ public class ColumnController implements PanelControllers {
 			}
 		});
 	}
-
+	
 	private void setupTypeConcepts() {
 
 		RefexDynamicDataType[] columnTypes = RefexDynamicDataType.values();
@@ -183,19 +184,9 @@ public class ColumnController implements PanelControllers {
 	@Override
 	public void processValues() {
 		ConceptVersionBI colCon = WBUtility.getConceptVersion(((Choice)columnConSelector.getSelectionModel().getSelectedItem()).getId());
- 		RefexDynamicDataType type = null;
- 		
- 		//TODO this is broken - you can't add a column without a type...
- 		if (currentCol > 0) { 
- 			type = RefexDynamicDataType.getFromToken(((Choice)typeOption.getSelectionModel().getSelectedItem()).getId());
- 		}
- 		else
- 		{
- 			//hack
- 			type = RefexDynamicDataType.LONG;
- 		}
- 		
-		processController.getWizard().setReferencedComponentVals(colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
+		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(((Choice)typeOption.getSelectionModel().getSelectedItem()).getId());
+
+		processController.getWizard().setColumnVals(colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
 	}
 
 	@Override
@@ -206,14 +197,7 @@ public class ColumnController implements PanelControllers {
 		} else if (currentCol > 0 && typeOption.getSelectionModel().getSelectedIndex() == 0) {
 			errorMsg = "No type selected";
 		} else {
-			if (typeOption.getValue().equals("Float")) {
-
-				try {
-					Float.valueOf(defaultValue.getText().trim());
-				} catch (Exception e) {
-					errorMsg = "Number of extension fields must be either '0' or a positive integer";
-				}
-			}
+			errorMsg = verifyDefaultValue();
 		}
 
 		if (errorMsg == null) {
@@ -225,30 +209,34 @@ public class ColumnController implements PanelControllers {
 		}
 	}
 
+	private String verifyDefaultValue() {
+		String errorMsg = null;
+		
+		if (typeOption.getValue().equals("Float")) {
+
+			try {
+				Float.valueOf(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Number of extension fields must be either '0' or a positive integer";
+			}
+		}
+		return errorMsg;
+	}
+
 	private void resetValues() {
 		columnConSelector.getSelectionModel().selectFirst();
+		typeOption.getSelectionModel().selectFirst();
 		defaultValue.clear();
+		isMandatory.setSelected(false);
 	}
 	
 	private void resetProcess() {
-		setupRefComp();
-	}
-
-	private void setupRefComp() {
 		currentCol = 0;
-		typeOption.setDisable(true);
-		defaultValue.setDisable(true);
-		columnTitle.setText("Referenced Component Definition");
-		isMandatory.setSelected(true);
-		isMandatory.setDisable(true);
+		setupColumnDef();
 	}
 
 	private void setupColumnDef() {
-		typeOption.setDisable(false);
-		defaultValue.setDisable(false);
-		columnTitle.setText("Column #" + currentCol + " Definition");
-		isMandatory.setSelected(false);
-		isMandatory.setDisable(false);
+		columnTitle.setText("Column #" + (currentCol + 1) + " Definition");
 	}
 }
 
