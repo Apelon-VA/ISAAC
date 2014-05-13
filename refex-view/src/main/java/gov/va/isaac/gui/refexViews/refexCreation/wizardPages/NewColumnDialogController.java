@@ -20,8 +20,10 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.util.WBUtility;
+
 import java.net.URL;
 import java.util.ResourceBundle;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -30,10 +32,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -43,14 +47,13 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
  */
 public class NewColumnDialogController implements Initializable
 {
-	@FXML//  fx:id="rootPane"
-	private AnchorPane rootPane; // Value injected by FXMLLoader
-	@FXML 
-	private Button commitButton;
-	@FXML
-	private TextArea newColDesc;
+	@FXML private AnchorPane rootPane; // Value injected by FXMLLoader
+	@FXML private Button commitButton;
+	@FXML private TextArea newColDesc;
 	
 	private ConceptChronicleBI newColumnConcept;
+
+	private static final Logger logger = LoggerFactory.getLogger(NewColumnDialogController.class);
 
 	@Override
 	// This method is called by the FXMLLoader when initialization is complete
@@ -74,8 +77,8 @@ public class NewColumnDialogController implements Initializable
 				} catch (InvalidCAB e) {
 					AppContext.getCommonDialogs().showInformationDialog("New Concept Error", "Concept Already Exists");
 					newColumnConcept = null;
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (Exception e1) {
+					logger.error("Unable to create concept in database", e1);
 				}
 			}
 		});

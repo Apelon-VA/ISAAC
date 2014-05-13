@@ -28,6 +28,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * 
  * {@link ScreensController}
@@ -43,6 +46,8 @@ public class ScreensController extends StackPane {
 	public static final String COLUMN_SCREEN_FXML = "wizardPages/column.fxml";
 	public static final String SUMMARY_SCREEN = "summary";
 	public static final String SUMMARY_SCREEN_FXML = "wizardPages/summary.fxml";
+	
+	private static final Logger logger = LoggerFactory.getLogger(ScreensController.class);
 
 	public WizardController wizard = new WizardController();
 	protected ScreensController()
@@ -72,7 +77,7 @@ public class ScreensController extends StackPane {
 			
 			return true;
 		}catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to load new screen: " + name, e);
 			return false;
 		}
 	} 

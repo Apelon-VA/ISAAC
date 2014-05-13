@@ -20,14 +20,17 @@ package gov.va.isaac.gui.refexViews.refexCreation;
 
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefexCreationViewI;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 

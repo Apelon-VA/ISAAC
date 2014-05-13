@@ -18,11 +18,13 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
+
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -35,10 +37,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -47,25 +52,23 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptio
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
 public class SummaryController implements PanelControllers {
-
 	@FXML private AnchorPane summaryPane;
 	@FXML private VBox mainVBox;
-
 	@FXML private Label actualRefexName;
 	@FXML private Label actualRefexDescription;
 	@FXML private Label actualParentConcept;
 	@FXML private Label actualReadOnly;
 	@FXML private Label actualRefexType;
 	@FXML private Label actualRefCompDesc;
-
 	@FXML private Button cancelButton;
 	@FXML private Button startOverButton;
 	@FXML private Button commitButton;
-
 	
 	static ViewCoordinate vc = null;
 	static ScreensController processController;
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(SummaryController.class);
+
 	@Override
 	public void initialize() {
 		assert mainVBox != null : "fx:id=\"mainVBox\" was not injected: check your FXML file 'Untitled'.";
@@ -245,16 +248,12 @@ public class SummaryController implements PanelControllers {
 	@Override
 	public void processValues() {
 		// TODO this isn't finished
-		try
-		{
+		try {
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
 					actualRefexDescription.getText(), "later", processController.getWizard().getColumnInfo(), null, 
 					actualRefexType.getText().equals("Annotated"), WBUtility.getEC(), WBUtility.getViewCoordinate());
-		}
-		catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
+			logger.error("Unable to create and/or commit refset concept and metadata", e);
 		}
 		
 	}

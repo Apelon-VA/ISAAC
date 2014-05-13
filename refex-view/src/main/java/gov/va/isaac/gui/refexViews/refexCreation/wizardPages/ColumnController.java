@@ -44,6 +44,8 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -52,7 +54,6 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
 public class ColumnController implements PanelControllers {
-
 	@FXML private ResourceBundle resources;
 	@FXML private URL location;
 	@FXML private Button nextButton;
@@ -66,11 +67,11 @@ public class ColumnController implements PanelControllers {
 	@FXML private Button newColConceptButton;
 	@FXML private CheckBox isMandatory;
 
-	
-	private static int currentCol = 0;
-
 	static ViewCoordinate vc = null;
+	private static int currentCol = 0;
 	ScreensController processController;
+
+	private static final Logger logger = LoggerFactory.getLogger(ColumnController.class);
 
 	@Override
 	public void initialize() {		
@@ -153,8 +154,7 @@ public class ColumnController implements PanelControllers {
 				columnConSelector.getSelectionModel().select(columnConSelector.getItems().size() - 1);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Unable to access new dialog box from application", e);
 		}
 	}
 
@@ -171,7 +171,7 @@ public class ColumnController implements PanelControllers {
 
 			columnConSelector.getSelectionModel().selectFirst();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to access column concepts", e);
 		}
 	}
 
@@ -255,13 +255,15 @@ public class ColumnController implements PanelControllers {
 class Choice {
 	Integer id;
 	String displayString;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Choice.class);
 
 	public Choice(ConceptVersionBI con) {
 		this.id = con.getNid();
 		try {
 			this.displayString = con.getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
 		}
 	}
 
@@ -275,7 +277,7 @@ class Choice {
 		try {
 			this.displayString = con.getVersion(WBUtility.getViewCoordinate()).getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
 		}
 	}
 

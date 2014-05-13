@@ -2,29 +2,30 @@ package gov.va.isaac.gui.refexViews.refexCreation;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WizardController {
-	private int totalColumns;
-
 	private ConceptChronicleBI refsetCon;
 
 	private String refexName;
 	private String refsetDescription;
 	private int extendedFieldsCount;
 	private boolean isAnnotated;
-//	private boolean isReadOnly;
+	private ConceptVersionBI parentConcept;
+	private boolean isReadOnly;
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
 	private List<RefexDynamicDataType> columnTypeStrings = new ArrayList<RefexDynamicDataType>();
 	private List<String> columnDefaultValues = new ArrayList<String>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
-	private ConceptVersionBI parentConcept;
-	private boolean isReadOnly;
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
 	public void setRefsetConcept(ConceptChronicleBI con) {
 		refsetCon = con;
@@ -72,7 +73,7 @@ public class WizardController {
 			}
 			return con.getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
 			return "Not Accessible";
 		}
 	}
@@ -93,7 +94,7 @@ public class WizardController {
 		try {
 			return columnNids.get(column).getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to identify FSN of column #" + column, e);
 			return "Not Accessible";
 		}
 	}

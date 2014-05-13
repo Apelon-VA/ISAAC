@@ -44,6 +44,8 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -55,27 +57,24 @@ public class DefinitionController implements PanelControllers {
 	@FXML private ResourceBundle resources;
 	@FXML private URL location;
 	@FXML private AnchorPane refsetCreationPane;
-
 	@FXML private ToggleGroup refexType;
 	@FXML private RadioButton refexTypeRefset;
 	@FXML private RadioButton refexAnnotationType;
 	@FXML private ToggleGroup readOnly;
 	@FXML private RadioButton refexNotReadOnly;
 	@FXML private RadioButton refexIsReadOnly;
-	
 	@FXML private TextField refexName;
 	@FXML private TextField extensionCount;
 	@FXML private TextArea refexDescription;
-
 	@FXML private Button continueCreation;
 	@FXML private Button cancelCreation;
-
     @FXML private HBox parentConceptHBox;
-	private ConceptNode parentConcept = null;
 
-	static ViewCoordinate vc = null;
-
+    static ViewCoordinate vc = null;
 	ScreensController processController;
+	private ConceptNode parentConcept = null;
+	
+	private static final Logger logger = LoggerFactory.getLogger(DefinitionController.class);
 
 	@Override
 	public void initialize() {
@@ -128,8 +127,8 @@ public class DefinitionController implements PanelControllers {
 			boolean isAncestor = true;
 			try {
 				isAncestor = parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()));
-			} catch (IOException | ContradictionException e1) {
-				e1.printStackTrace();
+			} catch (IOException | ContradictionException e) {
+				logger.error("Unable to verify if concept is ancestor of Dynamic Refex Concept", e);
 				errorMsg = "Cannot identify parent Concept";
 			}
 			
