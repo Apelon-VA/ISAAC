@@ -40,11 +40,6 @@
 												<Font name="System Bold" size="12.0" />
 											</font>
 										</Label>
-										<Label layoutX="162.0" layoutY="144.0" text="Mutable:">
-											<font>
-												<Font name="System Bold" size="12.0" />
-											</font>
-										</Label>
 									</children>
 									<opaqueInsets>
 										<Insets />
@@ -58,7 +53,6 @@
 										<Label fx:id="actualRefexName" layoutX="157.0" layoutY="77.0" text="Actual Refex Name" textAlignment="RIGHT" />
 										<Label fx:id="actualParentConcept" layoutX="157.0" layoutY="77.0" text="Actual Parent Concept" textAlignment="RIGHT" />
 										<Label fx:id="actualRefexType" text="Actual Refex Type" />
-										<Label fx:id="actualMutable" text="Actual Mutable" />
 									</children>
 									<HBox.margin>
 										<Insets />

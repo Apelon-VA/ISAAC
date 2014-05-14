@@ -18,7 +18,6 @@ public class WizardController {
 	private int extendedFieldsCount;
 	private boolean isAnnotated;
 	private ConceptVersionBI parentConcept;
-	private boolean isMutable;
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
 	private List<RefexDynamicDataType> columnTypeStrings = new ArrayList<RefexDynamicDataType>();
@@ -34,13 +33,12 @@ public class WizardController {
 		return refsetCon;
 	}
 
-	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated, boolean isMutable) {
+	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated) {
 		this.refexName = name;
 		this.refsetDescription = description;
 		this.parentConcept = parentConcept;
 		this.extendedFieldsCount = extendedFieldsCount;
 		this.isAnnotated = isAnnotated;
-		this.isMutable = isMutable;
 	}
 
 	public void setColumnVals(ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
@@ -72,10 +70,6 @@ public class WizardController {
 			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
 			return "Not Accessible";
 		}
-	}
-
-	public boolean isMutableRefex() {
-		return isMutable;
 	}
 
 	public boolean isAnnotated() {

@@ -60,9 +60,6 @@ public class DefinitionController implements PanelControllers {
 	@FXML private ToggleGroup refexType;
 	@FXML private RadioButton refexTypeRefset;
 	@FXML private RadioButton refexAnnotationType;
-	@FXML private ToggleGroup mutable;
-	@FXML private RadioButton refexNotMutable;
-	@FXML private RadioButton refexIsMutable;
 	@FXML private TextField refexName;
 	@FXML private TextField extensionCount;
 	@FXML private TextArea refexDescription;
@@ -167,8 +164,7 @@ public class DefinitionController implements PanelControllers {
 		int count = Integer.valueOf(extensionCount.getText().trim());
 	
 		processController.getWizard().setNewRefsetConceptVals(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(),
-												  count, refexAnnotationType.isSelected(), 
-												  refexIsMutable.isSelected()); 
+												  count, refexAnnotationType.isSelected()); 
 	}
 }
 

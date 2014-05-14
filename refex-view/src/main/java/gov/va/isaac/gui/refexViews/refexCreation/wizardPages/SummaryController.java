@@ -55,7 +55,6 @@ public class SummaryController implements PanelControllers {
     @FXML private Label actualRefexName;
     @FXML private Label actualRefexDescription;
 	@FXML private Label actualParentConcept;
-	@FXML private Label actualMutable;
 	@FXML private Label actualRefexType;
 	@FXML private Label actualRefCompDesc;
 	@FXML private AnchorPane summaryPane;
@@ -79,7 +78,6 @@ public class SummaryController implements PanelControllers {
 		assert actualRefCompDesc != null : "fx:id=\"actualRefCompDesc\" was not injected: check your FXML file 'Untitled'.";
 		assert summaryPane != null : "fx:id=\"summaryPane\" was not injected: check your FXML file 'Untitled'.";
 		assert actualParentConcept != null : "fx:id=\"actualParentConcept\" was not injected: check your FXML file 'Untitled'.";
-		assert actualMutable != null : "fx:id=\"actualMutable\" was not injected: check your FXML file 'Untitled'.";
 	}
 
 
@@ -192,12 +190,6 @@ public class SummaryController implements PanelControllers {
 		actualRefexName.setText(processController.getWizard().getRefexName());
 		actualRefexDescription.setText(processController.getWizard().getRefexDescription());
 		actualParentConcept.setText(processController.getWizard().getParentConceptFsn());
-		
-		if (processController.getWizard().isMutableRefex()) {
-			actualMutable.setText("True");
-		} else {
-			actualMutable.setText("False");
-		}
 		
 		if (processController.getWizard().isAnnotated()) {
 			actualRefexType.setText("Annotated");
