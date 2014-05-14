@@ -40,7 +40,7 @@ public class NewColumnDialog extends Stage
 {
 	private NewColumnDialogController ncdc_;
 
-	public NewColumnDialog(Window owner) throws IOException
+	public NewColumnDialog(Window owner, String name) throws IOException
 	{
 		super();
 
@@ -59,6 +59,7 @@ public class NewColumnDialog extends Stage
 		setScene(scene);
 
 		ncdc_ = loader.getController();
+		ncdc_.setName(name);
 	}
 	
 	public ConceptChronicleBI getNewColumnConcept() {

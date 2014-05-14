@@ -17,9 +17,16 @@
 				</Label>
 				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="30.0">
 					<children>
-						<Label layoutX="108.0" layoutY="89.0" text="Column Concept" />
-						<ChoiceBox fx:id="columnConSelector" layoutX="225.0" layoutY="85.0" prefHeight="25.0" prefWidth="247.0" />
-						<Button fx:id="newColConceptButton" alignment="CENTER_RIGHT" layoutX="309.0" layoutY="150.0" mnemonicParsing="false" text="New Concept Column" />
+						<Label layoutX="108.0" layoutY="89.0" text="Column Name" />
+						<ChoiceBox fx:id="columnNameSelector" layoutX="225.0" layoutY="85.0" prefHeight="25.0" prefWidth="247.0" />
+						<Button fx:id="newColNameButton" alignment="CENTER_RIGHT" layoutX="309.0" layoutY="150.0" mnemonicParsing="false" text="New Column Name" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="30.0">
+					<children>
+						<Label layoutX="108.0" layoutY="89.0" text="Column Description" />
+						<ChoiceBox fx:id="columnDescSelector" layoutX="225.0" layoutY="85.0" prefHeight="25.0" prefWidth="247.0" />
+						<Button fx:id="newColDescButton" alignment="CENTER_RIGHT" layoutX="309.0" layoutY="150.0" mnemonicParsing="false" text="New Column Description" />
 					</children>
 				</HBox>
 				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="35.0">

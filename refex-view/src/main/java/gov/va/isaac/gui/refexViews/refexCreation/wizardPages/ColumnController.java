@@ -26,8 +26,14 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
+import javafx.beans.value.ObservableStringValue;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -41,6 +47,7 @@ import javafx.stage.Stage;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
@@ -63,14 +70,17 @@ public class ColumnController implements PanelControllers {
 	@FXML private Button backButton;
 	@FXML private AnchorPane columnDefinitionPane;
 	@FXML private Label columnTitle;
-	@FXML private ChoiceBox<Choice> columnConSelector = new ChoiceBox<Choice>();
-	@FXML private Button newColConceptButton;
+	@FXML private ChoiceBox columnNameSelector = new ChoiceBox();
+	@FXML private ChoiceBox columnDescSelector = new ChoiceBox();
+	@FXML private Button newColNameButton;
+	@FXML private Button newColDescButton;
 	@FXML private CheckBox isMandatory;
 
 	static ViewCoordinate vc = null;
 	private static int currentCol = 0;
 	ScreensController processController;
-
+	Map<String, Map<String, Integer>> shortLongNameColumnMap = new HashMap();
+	
 	private static final Logger logger = LoggerFactory.getLogger(ColumnController.class);
 
 	@Override
@@ -78,10 +88,12 @@ public class ColumnController implements PanelControllers {
 		
 		vc = WBUtility.getViewCoordinate();
 
-		setupTypeConcepts();
-		setupColumnConcepts();
+		initializeTypeConcepts();
+		initializeColumnConcepts();
 
 		resetProcess();
+		columnDescSelector.setDisable(true);
+		newColDescButton.setDisable(true);
 
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -119,15 +131,38 @@ public class ColumnController implements PanelControllers {
 			}
 		});
 		
-		newColConceptButton.setOnAction(new EventHandler<ActionEvent>() {
+		newColNameButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				getNewColumnConcept();
+				// Must Define Name & Desc
+				getNewColumnConcept(null);
 			}
 		});
+		
+		newColDescButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				// Must Define new Desc associated with existing name
+				if (columnNameSelector.getSelectionModel().getSelectedIndex() > 0) {
+					getNewColumnConcept(columnNameSelector.getSelectionModel().getSelectedItem().toString());
+				} else {
+					getNewColumnConcept(null);
+				}
+			}
+		});
+		
+		columnNameSelector.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>()
+        {
+			@Override
+			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
+				columnDescSelector.setDisable(false);
+				newColDescButton.setDisable(false);
+				setupDescSelector(newVal);
+			}
+        });
 	}
 	
-	private void setupTypeConcepts() {
+	private void initializeTypeConcepts() {
 
 		RefexDynamicDataType[] columnTypes = RefexDynamicDataType.values();
 		typeOption.getItems().add(new Choice("No selection"));
@@ -143,59 +178,118 @@ public class ColumnController implements PanelControllers {
 		typeOption.getSelectionModel().selectFirst();
 	}
 
-	private void getNewColumnConcept() {
+	private void getNewColumnConcept(String name) {
 		try {
-			NewColumnDialog dialog = new NewColumnDialog(processController.getScene().getWindow());
+			NewColumnDialog dialog = new NewColumnDialog(processController.getScene().getWindow(), name);
 			dialog.showAndWait();
 
 			ConceptChronicleBI newCon = dialog.getNewColumnConcept();
 			
 			if (newCon != null) {
-				columnConSelector.getItems().add(new Choice(newCon));
-				columnConSelector.getSelectionModel().select(columnConSelector.getItems().size() - 1);
-			}
-		} catch (IOException e) {
+				String lName = newCon.getVersion(vc).getFullySpecifiedDescription().getText();
+				String sName = newCon.getVersion(vc).getPreferredDescription().getText();
+				updateShortLongNameMap(newCon.getVersion(vc));
+				
+				columnNameSelector.getItems().add(sName);
+				columnNameSelector.getSelectionModel().select(columnNameSelector.getItems().size() - 1);
+
+				columnDescSelector.getItems().add(lName);
+				columnDescSelector.getSelectionModel().select(columnDescSelector.getItems().size() - 1);
+}
+		} catch (IOException | ContradictionException e) {
 			logger.error("Unable to access new dialog box from application", e);
 		}
 	}
 
-	private void setupColumnConcepts() {
+	private void setupDescSelector(String newVal) {
+		try {
+			columnDescSelector.getItems().clear();
+			columnDescSelector.getItems().add("No selection");
+			Map<String, Integer> descMap = shortLongNameColumnMap.get(newVal);
+			
+			if (descMap != null) {
+				for (String desc : descMap.keySet()) {
+					columnDescSelector.getItems().add(desc);
+				}
+	
+				columnDescSelector.getSelectionModel().selectFirst();
+			}
+		} catch (Exception e) {
+			logger.error("Unable to access concepts descriptions", e);
+		}
+	}
+
+	private void setupNameSelector() {
+		try {
+			columnNameSelector.getItems().add("No selection");
+			
+			for (String name : shortLongNameColumnMap.keySet()) {
+				columnNameSelector.getItems().add(name);
+			}
+
+			columnNameSelector.getSelectionModel().selectFirst();
+		} catch (Exception e) {
+			logger.error("Unable to access concepts names", e);
+		}
+	}
+
+	private void initializeColumnConcepts() {
 		try {
 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
 			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
 
-			columnConSelector.getItems().add(new Choice("No selection"));
-			
-			for (ConceptVersionBI con : colCons) {
-				columnConSelector.getItems().add(new Choice(con));
+			for (ConceptVersionBI col : colCons) {
+				updateShortLongNameMap(col);
 			}
-
-			columnConSelector.getSelectionModel().selectFirst();
-		} catch (Exception e) {
-			logger.error("Unable to access column concepts", e);
+			
+			setupNameSelector();
+		} catch (Exception e1) {
+			logger.error("Unable to access column concepts", e1);
 		}
 	}
 
-	@Override
+	private void updateShortLongNameMap(ConceptVersionBI col) {
+		try {
+			String lName = col.getVersion(vc).getFullySpecifiedDescription().getText();
+			String sName = col.getVersion(vc).getPreferredDescription().getText();
+			int nid = col.getNid();
+			
+			if (!shortLongNameColumnMap.containsKey(sName)) {
+				Map<String, Integer> nameNidMap = new HashMap();
+				shortLongNameColumnMap.put(sName, nameNidMap);
+			}
+			
+			shortLongNameColumnMap.get(sName).put(lName, nid);	
+		} catch (Exception e) {
+			logger.error("Unable to access column concept for processing: " + col.getPrimordialUuid(), e);
+		}
+	}
+
 	public void finishInit(ScreensController screenParent) {
 		processController = screenParent;
 	}
 
 	@Override
 	public void processValues() {
-		ConceptVersionBI colCon = WBUtility.getConceptVersion(((Choice)columnConSelector.getSelectionModel().getSelectedItem()).getId());
-		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(((Choice)typeOption.getSelectionModel().getSelectedItem()).getId());
-
+		
+		String colName = columnNameSelector.getSelectionModel().getSelectedItem().toString();
+		String colDesc = columnDescSelector.getSelectionModel().getSelectedItem().toString();
+		
+		ConceptVersionBI colCon = WBUtility.getConceptVersion(shortLongNameColumnMap.get(colName).get(colDesc));
+		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
+		
 		processController.getWizard().setColumnVals(colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
 	}
 
 	@Override
 	public boolean verifyValuesExist() {
 		String errorMsg = null;
-		if (columnConSelector.getSelectionModel().getSelectedIndex() == 0) {
-			errorMsg = "No concept selected";
-		} else if (currentCol > 0 && typeOption.getSelectionModel().getSelectedIndex() == 0) {
-			errorMsg = "No type selected";
+		if (columnNameSelector.getSelectionModel().getSelectedIndex() == 0) {
+			errorMsg = "No column name selected";
+		} else if (columnDescSelector.getSelectionModel().getSelectedIndex() == 0) {
+			errorMsg = "No column description selected";
+		} else if (typeOption.getSelectionModel().getSelectedItem().getEnumToken() == Integer.MAX_VALUE) {
+			errorMsg = "No column type selected";
 		} else {
 			errorMsg = verifyDefaultValue();
 		}
@@ -211,23 +305,95 @@ public class ColumnController implements PanelControllers {
 
 	private String verifyDefaultValue() {
 		String errorMsg = null;
+		RefexDynamicDataType enumToken = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
 		
-		if (typeOption.getValue().equals("Float")) {
-
+		if (enumToken == RefexDynamicDataType.BOOLEAN) {
+			if (!defaultValue.getText().trim().equalsIgnoreCase("true") && 
+				!defaultValue.getText().trim().equalsIgnoreCase("false")) {
+				errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
+			}
+		} else if (enumToken == RefexDynamicDataType.DOUBLE) {
+			try {
+				Double.valueOf(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Default Value is not a valid DOUBLE as specified by Column Type";
+			}
+		} else if (enumToken == RefexDynamicDataType.FLOAT) {
 			try {
 				Float.valueOf(defaultValue.getText().trim());
 			} catch (Exception e) {
-				errorMsg = "Number of extension fields must be either '0' or a positive integer";
+				errorMsg = "Default Value is not a valid FLOAT as specified by Column Type";
 			}
-		}
+		} else if (enumToken == RefexDynamicDataType.INTEGER) {
+			try {
+				Integer.valueOf(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Default Value is not a valid INTEGER as specified by Column Type";
+			}
+		} else if (enumToken == RefexDynamicDataType.LONG) {
+			try {
+				Long.valueOf(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Default Value is not a valid LONG as specified by Column Type";
+			}
+		} else if (enumToken == RefexDynamicDataType.NID) {
+			int defVal = Integer.MAX_VALUE;
+			try {
+				defVal = Integer.valueOf(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Default Value is not a valid NID as specified by Column Type.  It must be an INTEGER";
+			}
+			
+			if (errorMsg == null) {
+				if (defVal >= 0) {
+					errorMsg = "Default Value is not a valid NID.  It must be less than zero";
+				} else {
+					if (WBUtility.getConceptVersion(defVal) == null) {
+						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
+					}
+				}
+			}
+		} else if (enumToken == RefexDynamicDataType.STRING) {
+			try {
+				String.valueOf(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Default Value is not a valid STRING as specified by Column Type";
+			}
+		} else if (enumToken == RefexDynamicDataType.UUID) {
+			UUID defVal = UUID.randomUUID();
+			try {
+				defVal = UUID.fromString(defaultValue.getText().trim());
+			} catch (Exception e) {
+				errorMsg = "Default Value is not a valid UUID as specified by Column Type.";
+			}
+			
+			if (errorMsg == null) {
+				if (WBUtility.getConceptVersion(defVal) == null) {
+					errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
+				}
+			}
+		} else if (enumToken == RefexDynamicDataType.BYTEARRAY) {
+			// TODO			
+		} else if (enumToken == RefexDynamicDataType.POLYMORPHIC) {
+			// TODO
+		} else if (enumToken == RefexDynamicDataType.UNKNOWN) {
+			// TODO			
+		} 
+		
 		return errorMsg;
 	}
 
 	private void resetValues() {
-		columnConSelector.getSelectionModel().selectFirst();
 		typeOption.getSelectionModel().selectFirst();
 		defaultValue.clear();
 		isMandatory.setSelected(false);
+		columnNameSelector.getSelectionModel().selectFirst();
+
+		columnDescSelector.getSelectionModel().selectFirst();
+		columnDescSelector.setDisable(true);
+		newColDescButton.setDisable(true);
+		columnDescSelector.getItems().clear();
+		columnDescSelector.getItems().add("No selection");
 	}
 	
 	private void resetProcess() {
@@ -241,41 +407,23 @@ public class ColumnController implements PanelControllers {
 }
 
 class Choice {
-	Integer id;
+	Integer RefexDynamicDataType;
 	String displayString;
+	private int enumToken = Integer.MAX_VALUE;
 	
 	private static final Logger logger = LoggerFactory.getLogger(Choice.class);
 
-	public Choice(ConceptVersionBI con) {
-		this.id = con.getNid();
-		try {
-			this.displayString = con.getFullySpecifiedDescription().getText().trim();
-		} catch (Exception e) {
-			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
-		}
-	}
-
-	public Choice(String s) {
-		this.id = null;
-		this.displayString = s;
-	}
-
-	public Choice(ConceptChronicleBI con) {
-		this.id = con.getNid();
-		try {
-			this.displayString = con.getVersion(WBUtility.getViewCoordinate()).getFullySpecifiedDescription().getText().trim();
-		} catch (Exception e) {
-			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
-		}
-	}
-
 	public Choice(RefexDynamicDataType type) {
-		this.id = type.getTypeToken();
+		this.enumToken = type.getTypeToken();
 		this.displayString = type.getDisplayName();
 	}
 
-	public int getId() {
-		return id;
+	public Choice(String s) {
+		this.displayString = s;
+	}
+
+	public int getEnumToken() {
+		return enumToken;
 	}
 	
 	@Override
@@ -291,13 +439,13 @@ class Choice {
 			return false;
 		Choice choice = (Choice) o;
 		return displayString != null
-				&& displayString.equals(choice.displayString) || id != null
-				&& id.equals(choice.id);
+				&& displayString.equals(choice.displayString) 
+				&& enumToken == choice.enumToken;
 	}
 
 	@Override
 	public int hashCode() {
-		int result = id != null ? id.hashCode() : 0;
+		int result = new Integer(enumToken).hashCode();
 		result = 31 * result
 				+ (displayString != null ? displayString.hashCode() : 0);
 		return result;

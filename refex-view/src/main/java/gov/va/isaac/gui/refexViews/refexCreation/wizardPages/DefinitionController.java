@@ -130,25 +130,24 @@ public class DefinitionController implements PanelControllers {
 			boolean isAncestor = true;
 			try {
 				isAncestor = parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()));
+				if (!isAncestor) {
+					errorMsg = "Parent concept must be descendent of Refex Identity";
+				} 
 			} catch (IOException | ContradictionException e) {
 				logger.error("Unable to verify if concept is ancestor of Dynamic Refex Concept", e);
 				errorMsg = "Cannot identify parent Concept";
 			}
 			
 			if (errorMsg == null) {
-				if (!isAncestor) {
-					errorMsg = "Parent concept must be descendent of Refex Identity";
-				} else {
-					try {
-						Integer val = Integer.valueOf(extensionCount.getText().trim());
-						if (val < 0) {
-							errorMsg = "Number of extension fields must be either '0' or a positive integer";
-						}
-					} catch (Exception e) {
-							errorMsg = "Number of extension fields must be either '0' or a positive integer";
+				try {
+					Integer val = Integer.valueOf(extensionCount.getText().trim());
+					if (val < 0) {
+						errorMsg = "Number of extension fields must be either '0' or a positive integer";
 					}
-				}		
-			}
+				} catch (Exception e) {
+						errorMsg = "Number of extension fields must be a valid integer";
+				}
+			}		
 		}
 		
 		if (errorMsg == null) {

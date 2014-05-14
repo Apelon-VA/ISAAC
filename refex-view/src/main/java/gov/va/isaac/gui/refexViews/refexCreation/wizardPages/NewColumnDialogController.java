@@ -48,13 +48,16 @@ import org.slf4j.LoggerFactory;
 public class NewColumnDialogController implements Initializable
 {
 	@FXML private AnchorPane rootPane; // Value injected by FXMLLoader
-	@FXML private Button commitButton;
+	@FXML private TextArea newColName;
 	@FXML private TextArea newColDesc;
+	@FXML private Button commitButton;
+	@FXML private Button cancelButton;
 	
-	private ConceptChronicleBI newColumnConcept;
+	private ConceptChronicleBI newColumnConcept = null;
 
 	private static final Logger logger = LoggerFactory.getLogger(NewColumnDialogController.class);
 
+	@SuppressWarnings("restriction")
 	@Override
 	// This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources)
@@ -65,15 +68,15 @@ public class NewColumnDialogController implements Initializable
 			@Override
 			public void handle(ActionEvent event)
 			{
-				createNewColumnConcept(newColDesc);
+				createNewColumnConcept();
 				((Stage) rootPane.getScene().getWindow()).close();
 			}
 
 			//TODO this should have a short name and a long name
-			private void createNewColumnConcept(TextArea newColDesc) {
+			private void createNewColumnConcept() {
 				try {
 					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColDesc.getText().trim(), 
-							newColDesc.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
+						newColName.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
 				} catch (InvalidCAB e) {
 					AppContext.getCommonDialogs().showInformationDialog("New Concept Error", "Concept Already Exists");
 					newColumnConcept = null;
@@ -82,10 +85,25 @@ public class NewColumnDialogController implements Initializable
 				}
 			}
 		});
+
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				((Stage) rootPane.getScene().getWindow()).close();
+			}
+		});
 	}
 	
 	public ConceptChronicleBI getNewColumnConcept() {
 		return newColumnConcept;
+	}
+
+	public void setName(String name) {
+		if (name != null) {
+			newColName.setText(name);
+			newColName.setEditable(false);
+		}
+		
 	}
 
 }
