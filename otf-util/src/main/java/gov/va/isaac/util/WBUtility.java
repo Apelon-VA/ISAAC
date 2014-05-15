@@ -130,6 +130,16 @@ public class WBUtility {
 			return null;
 		}
 	}
+	
+	public static String getDescription(int nid) {
+		try {
+			ConceptVersionBI conceptVersion = dataStore.getConceptVersion(getViewCoordinate(), nid);
+			return getDescription(conceptVersion);
+		} catch (Exception ex) {
+			LOG.warn("Unexpected error looking up description", ex);
+			return null;
+		}
+	}
 
 	/**
 	 * Note, this method isn't smart enough to work with multiple versions properly....
