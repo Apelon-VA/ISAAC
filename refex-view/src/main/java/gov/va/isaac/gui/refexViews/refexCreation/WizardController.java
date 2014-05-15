@@ -99,9 +99,9 @@ public class WizardController {
 
 	public String getColumnIsMandatory(int column) {
 		if (columnIsMandatory.get(column)) {
-			return "Mandatory";
+			return "True";
 		} else {
-			return "Optional";
+			return "False";
 		}
 	}
 
@@ -116,5 +116,12 @@ public class WizardController {
 		}
 		return result;
 	}
-
+	public String getColumnName(int column) {
+		try {
+			return columnNids.get(column).getPreferredDescription().getText().trim();
+		} catch (Exception e) {
+			logger.error("Unable to identify FSN of column #" + column, e);
+			return "Not Accessible";
+		}
+	}
 }
