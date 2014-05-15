@@ -163,6 +163,11 @@ public class SearchViewController implements TaskCompleteCallback {
                                 }
                             });
                         }
+                        else
+                        {
+                            setText("");
+                            setGraphic(null);
+                        }
                     }
                 };
             }
