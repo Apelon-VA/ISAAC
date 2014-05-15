@@ -6,9 +6,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="summaryPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
-	<children>
-		<ScrollBar orientation="VERTICAL" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="31.0" />
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
+<children><ScrollPane prefHeight="335.0" prefWidth="600.0">
+<content>
 		<VBox fx:id="mainVBox" alignment="TOP_CENTER" prefHeight="130.0" prefWidth="570.0" spacing="10.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="25.0">
 			<children>
 				<Label layoutX="189.0" layoutY="28.0" text="Refex Summary">
@@ -82,15 +83,16 @@
 						</VBox>
 					</children>
 				</HBox>
-				<VBox alignment="TOP_CENTER" prefWidth="570.0" />
 			</children>
 		</VBox>
-		<HBox alignment="CENTER" spacing="100.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0">
+</content>
+</ScrollPane>
+		<HBox alignment="CENTER" spacing="100.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0">
 			<children>
 				<Button fx:id="startOverButton" layoutX="293.0" layoutY="351.0" mnemonicParsing="false" text="Start Over" />
 				<Button fx:id="commitButton" layoutX="173.0" layoutY="351.0" mnemonicParsing="false" text="Commit" />
 				<Button fx:id="cancelButton" layoutX="415.0" layoutY="351.0" mnemonicParsing="false" text="Cancel" />
 			</children>
 		</HBox>
-	</children>
+</children>
 </AnchorPane>
