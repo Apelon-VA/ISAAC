@@ -28,6 +28,7 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -85,6 +86,8 @@ public class ConceptView extends Stage implements ConceptViewI {
         // Title will change after concept is set.
         this.setTitle(controller.getTitle());
         this.show();
+        //doesn't come to the front unless you do this (on linux, at least)
+        Platform.runLater(() -> {this.toFront();});
     }
     
     public void showConcept(final UUID conceptUUID)
