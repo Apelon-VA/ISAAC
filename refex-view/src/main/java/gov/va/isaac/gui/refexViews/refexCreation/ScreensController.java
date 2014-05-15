@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
+import gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController;
+
 import java.util.HashMap;
 
 import javafx.animation.KeyFrame;
@@ -53,7 +55,6 @@ public class ScreensController extends StackPane {
 	protected ScreensController()
 	{
 		loadScreen(DEFINITION_SCREEN, DEFINITION_SCREEN_FXML);
-		loadScreen(COLUMN_SCREEN, COLUMN_SCREEN_FXML);
 		
 		setScreen(DEFINITION_SCREEN);
 	}
@@ -66,12 +67,33 @@ public class ScreensController extends StackPane {
 		loadScreen(SUMMARY_SCREEN, SUMMARY_SCREEN_FXML);
 	}
 
+	public void loadColumnScreen(int colNum) {
+		loadColumnScreen(COLUMN_SCREEN, COLUMN_SCREEN_FXML, colNum);
+	}
+
 	public boolean loadScreen(String name, String resource) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
 			Parent loadScreen = (Parent) loader.load();
 			PanelControllers processController = ((PanelControllers) loader.getController());
 
+			processController.finishInit(this);
+			addScreen(name, loadScreen);
+			
+			return true;
+		}catch(Exception e) {
+			logger.error("Unable to load new screen: " + name, e);
+			return false;
+		}
+	} 
+
+	public boolean loadColumnScreen(String name, String resource, int colNum) {
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
+			Parent loadScreen = (Parent) loader.load();
+			PanelControllers processController = ((PanelControllers) loader.getController());
+			
+			((ColumnController)processController).setColumnNumber(colNum);
 			processController.finishInit(this);
 			addScreen(name, loadScreen);
 			

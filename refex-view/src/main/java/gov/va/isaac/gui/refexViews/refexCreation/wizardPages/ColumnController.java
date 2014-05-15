@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import javafx.beans.value.ObservableStringValue;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -91,7 +90,6 @@ public class ColumnController implements PanelControllers {
 		initializeTypeConcepts();
 		initializeColumnConcepts();
 
-		resetProcess();
 		columnDescSelector.setDisable(true);
 		newColDescButton.setDisable(true);
 
@@ -107,16 +105,14 @@ public class ColumnController implements PanelControllers {
 			public void handle(ActionEvent e) {
 				if (verifyValuesExist()) {
 					processValues();
-
-					resetValues();
-					if (++currentCol < processController.getWizard().getExtendedFieldsCount()) {
-						setupColumnDef();
+					++currentCol;
+					
+					if (currentCol < processController.getWizard().getExtendedFieldsCount()) {
+						processController.loadColumnScreen(currentCol);
+						processController.setScreen(ScreensController.COLUMN_SCREEN);
 					} else {
-						resetProcess();
 						processController.loadSummaryScreen();
 						processController.setScreen(ScreensController.SUMMARY_SCREEN);
-
-
 					}
 				}
 			}
@@ -125,9 +121,13 @@ public class ColumnController implements PanelControllers {
 		backButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				resetValues();
-				resetProcess();
-				processController.setScreen(ScreensController.DEFINITION_SCREEN);
+				if (currentCol > 0) {
+					--currentCol;
+					processController.loadColumnScreen(currentCol);
+					processController.setScreen(ScreensController.COLUMN_SCREEN);
+				} else {
+					processController.setScreen(ScreensController.DEFINITION_SCREEN);
+				}
 			}
 		});
 		
@@ -267,6 +267,25 @@ public class ColumnController implements PanelControllers {
 
 	public void finishInit(ScreensController screenParent) {
 		processController = screenParent;
+		setupColumnDef();
+
+		if (processController.getWizard().previouslyFilledOut(currentCol)) {
+			updatePreviousContent();
+		}
+	}
+	
+	private void updatePreviousContent() {
+		RefexDynamicDataType type = processController.getWizard().getColumnTypeToken(currentCol);
+		String name = processController.getWizard().getColumnName(currentCol);
+		String desc = processController.getWizard().getColumnDescription(currentCol);
+		String defVal = processController.getWizard().getColumnDefaultValue(currentCol);
+		boolean isMand = processController.getWizard().isColumnMandatory(currentCol);
+
+		columnNameSelector.getSelectionModel().select(name);
+		columnDescSelector.getSelectionModel().select(desc);
+		typeOption.getSelectionModel().select(new Choice(type));
+		defaultValue.setText(defVal);
+		isMandatory.setSelected(isMand);
 	}
 
 	@Override
@@ -278,7 +297,7 @@ public class ColumnController implements PanelControllers {
 		ConceptVersionBI colCon = WBUtility.getConceptVersion(shortLongNameColumnMap.get(colName).get(colDesc));
 		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
 		
-		processController.getWizard().setColumnVals(colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
+		processController.getWizard().setColumnVals(currentCol, colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
 	}
 
 	@Override
@@ -385,26 +404,12 @@ public class ColumnController implements PanelControllers {
 		return errorMsg;
 	}
 
-	private void resetValues() {
-		typeOption.getSelectionModel().selectFirst();
-		defaultValue.clear();
-		isMandatory.setSelected(false);
-		columnNameSelector.getSelectionModel().selectFirst();
-
-		columnDescSelector.getSelectionModel().selectFirst();
-		columnDescSelector.setDisable(true);
-		newColDescButton.setDisable(true);
-		columnDescSelector.getItems().clear();
-		columnDescSelector.getItems().add("No selection");
-	}
-	
-	private void resetProcess() {
-		currentCol = 0;
-		setupColumnDef();
-	}
-
 	private void setupColumnDef() {
 		columnTitle.setText("Column #" + (currentCol + 1) + " Definition");
+	}
+
+	public void setColumnNumber(int colNum) {
+		currentCol = colNum;
 	}
 }
 

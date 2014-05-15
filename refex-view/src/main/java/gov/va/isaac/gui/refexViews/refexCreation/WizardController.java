@@ -20,7 +20,7 @@ public class WizardController {
 	private ConceptVersionBI parentConcept;
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
-	private List<RefexDynamicDataType> columnTypeStrings = new ArrayList<RefexDynamicDataType>();
+	private List<RefexDynamicDataType> columnTypes = new ArrayList<RefexDynamicDataType>();
 	private List<String> columnDefaultValues = new ArrayList<String>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
 
@@ -41,13 +41,20 @@ public class WizardController {
 		this.isAnnotated = isAnnotated;
 	}
 
-	public void setColumnVals(ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
-		columnNids.add(colCon);
-		columnTypeStrings.add(type);
-		columnDefaultValues.add(defaultValue);		
-		columnIsMandatory.add(isMandatory);
+	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
+		if (previouslyFilledOut(currentCol)) {
+			columnNids.set(currentCol, colCon);
+			columnTypes.set(currentCol, type);
+			columnDefaultValues.set(currentCol, defaultValue);		
+			columnIsMandatory.set(currentCol, isMandatory);
+		} else {
+			columnNids.add(colCon);
+			columnTypes.add(type);
+			columnDefaultValues.add(defaultValue);		
+			columnIsMandatory.add(isMandatory);
+		}
 	}
-
+	
 	public String getRefexName() {
 		return refexName;
 	}
@@ -90,7 +97,7 @@ public class WizardController {
 	}
 
 	public String getColumnType(int column) {
-		return columnTypeStrings.get(column).getDisplayName();
+		return columnTypes.get(column).getDisplayName();
 	}
 
 	public String getColumnDefaultValue(int column) {
@@ -108,11 +115,11 @@ public class WizardController {
 	public RefexDynamicColumnInfo[] getColumnInfo()
 	{
 		//TODO this is also broken, and building two columns, when only one is specified.  funny stuff happening in the GUI.
-		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypeStrings.size()];
+		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypes.size()];
 		for (int i = 0; i < result.length; i++)
 		{
 			//TODO defaultValues needs to be an Object, not a String, and it needs to match the type declared in columnTypes.
-			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypeStrings.get(i), columnDefaultValues.get(i));
+			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypes.get(i), columnDefaultValues.get(i));
 		}
 		return result;
 	}
@@ -123,5 +130,14 @@ public class WizardController {
 			logger.error("Unable to identify FSN of column #" + column, e);
 			return "Not Accessible";
 		}
+	}
+	public boolean isColumnMandatory(int column) {
+		return columnIsMandatory.get(column);
+	}
+	public RefexDynamicDataType getColumnTypeToken(int column) {
+		return columnTypes.get(column);
+	}
+	public boolean previouslyFilledOut(int column) {
+		return columnTypes.size() > column;
 	}
 }

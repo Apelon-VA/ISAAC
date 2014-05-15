@@ -103,6 +103,7 @@ public class DefinitionController implements PanelControllers {
 							processController.loadSummaryScreen();
 							processController.setScreen(ScreensController.SUMMARY_SCREEN);
 						} else {
+							processController.loadColumnScreen(0);
 							processController.setScreen(ScreensController.COLUMN_SCREEN);
 						}
 					}
