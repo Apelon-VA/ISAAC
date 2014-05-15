@@ -243,7 +243,6 @@ public class SummaryController2 implements PanelControllers {
 		
 	@Override
 	public void processValues() {
-		// TODO this isn't finished
 		try {
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
 					actualRefexDescription.getText(), "later", processController.getWizard().getColumnInfo(), null, 
