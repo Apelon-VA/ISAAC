@@ -102,7 +102,7 @@ public class SummaryController implements PanelControllers {
 		String colName = processController.getWizard().getColumnName(column);
 		String colDesc = processController.getWizard().getColumnDescription(column);
 		String colType = processController.getWizard().getColumnType(column);
-		String colDefaultValue = processController.getWizard().getColumnDefaultValue(column).getDataObject().toString();
+		String colDefaultValue = processController.getWizard().getColumnDefaultValue(column).toString();
 		String colIsMandatory = processController.getWizard().getColumnIsMandatory(column);
 
 		// Create Column Definition Holder

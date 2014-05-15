@@ -89,7 +89,7 @@ public class ColumnController implements PanelControllers {
 	private static int currentCol = 0;
 	ScreensController processController;
 	Map<String, Map<String, Integer>> shortLongNameColumnMap = new HashMap();
-	private RefexDynamicData defaultValueObject = null;
+	private Object defaultValueObject = null;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ColumnController.class);
 
@@ -339,7 +339,7 @@ public class ColumnController implements PanelControllers {
 		String errorMsg = null;
 		RefexDynamicDataType enumToken = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
 		String defVal = defaultValue.getText().trim();
-		String colName = columnNameSelector.getSelectionModel().getSelectedItem().toString();
+		//String colName = columnNameSelector.getSelectionModel().getSelectedItem().toString();
 
 		if (enumToken == RefexDynamicDataType.BOOLEAN) {
 			if (!defVal.equalsIgnoreCase("true") && 
@@ -347,32 +347,32 @@ public class ColumnController implements PanelControllers {
 				errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
 			} else {
 				try {
-					defaultValueObject = new RefexBoolean(new Boolean(defVal), colName);
-				} catch (PropertyVetoException e) {
+					defaultValueObject = new Boolean(defVal);
+				} catch (Exception e) {
 					errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
 				}
 			}
 		} else if (enumToken == RefexDynamicDataType.DOUBLE) {
 			try {
-				defaultValueObject = new RefexDouble(Double.valueOf(defVal), colName);
+				defaultValueObject = Double.valueOf(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid DOUBLE as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.FLOAT) {
 			try {
-				defaultValueObject = new RefexFloat(Float.valueOf(defVal), colName);
+				defaultValueObject = Float.valueOf(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid FLOAT as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.INTEGER) {
 			try {
-				defaultValueObject = new RefexInteger(Integer.valueOf(defVal), colName);
+				defaultValueObject = Integer.valueOf(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid INTEGER as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.LONG) {
 			try {
-				defaultValueObject = new RefexLong(Long.valueOf(defVal), colName);
+				defaultValueObject = Long.valueOf(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid LONG as specified by Column Type";
 			}
@@ -393,8 +393,8 @@ public class ColumnController implements PanelControllers {
 						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
 					} else {
 						try {
-							defaultValueObject = new RefexNid(nid, colName);
-						} catch (PropertyVetoException e) {
+							defaultValueObject = nid;
+						} catch (Exception e) {
 							errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
 						}
 					}
@@ -402,7 +402,7 @@ public class ColumnController implements PanelControllers {
 			}
 		} else if (enumToken == RefexDynamicDataType.STRING) {
 			try {
-				defaultValueObject = new RefexString(String.valueOf(defVal), colName);
+				defaultValueObject = String.valueOf(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid STRING as specified by Column Type";
 			}
@@ -420,8 +420,8 @@ public class ColumnController implements PanelControllers {
 					errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
 				} else {
 					try {
-						defaultValueObject = new RefexUUID(uid, colName);
-					} catch (PropertyVetoException e) {
+						defaultValueObject = uid;
+					} catch (Exception e) {
 						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
 					}
 				}

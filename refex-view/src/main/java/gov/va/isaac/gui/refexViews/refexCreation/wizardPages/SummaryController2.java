@@ -92,7 +92,7 @@ public class SummaryController2 implements PanelControllers {
 			String colName = processController.getWizard().getColumnName(i);
 			String colDesc = processController.getWizard().getColumnDescription(i);
 			String colType = processController.getWizard().getColumnType(i);
-			String colDefaultValue = processController.getWizard().getColumnDefaultValue(i).getDataObject().toString();
+			String colDefaultValue = processController.getWizard().getColumnDefaultValue(i).toString();
 			String colIsMandatory = processController.getWizard().getColumnIsMandatory(i);
 
 			BorderPane bp = new BorderPane();

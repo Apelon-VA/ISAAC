@@ -22,7 +22,7 @@ public class WizardController {
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
 	private List<RefexDynamicDataType> columnTypes = new ArrayList<RefexDynamicDataType>();
-	private List<RefexDynamicData> columnDefaultValues = new ArrayList<RefexDynamicData>();
+	private List<Object> columnDefaultValues = new ArrayList<>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
 
 	private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
@@ -42,7 +42,7 @@ public class WizardController {
 		this.isAnnotated = isAnnotated;
 	}
 
-	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, RefexDynamicData defaultValueObject, boolean isMandatory) {
+	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, Object defaultValueObject, boolean isMandatory) {
 		if (previouslyFilledOut(currentCol)) {
 			columnNids.set(currentCol, colCon);
 			columnTypes.set(currentCol, type);
@@ -105,7 +105,7 @@ public class WizardController {
 		return columnTypes.get(column).getDisplayName();
 	}
 
-	public RefexDynamicData getColumnDefaultValue(int column) {
+	public Object getColumnDefaultValue(int column) {
 		return columnDefaultValues.get(column);
 	}
 
