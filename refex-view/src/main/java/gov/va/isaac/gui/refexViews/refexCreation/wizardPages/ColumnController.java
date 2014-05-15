@@ -291,7 +291,9 @@ public class ColumnController implements PanelControllers {
 		} else if (typeOption.getSelectionModel().getSelectedItem().getEnumToken() == Integer.MAX_VALUE) {
 			errorMsg = "No column type selected";
 		} else {
-			errorMsg = verifyDefaultValue();
+			if (defaultValue.getText().trim().length() > 0) {
+				errorMsg = verifyDefaultValue();
+			}
 		}
 
 		if (errorMsg == null) {
