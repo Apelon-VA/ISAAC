@@ -40,8 +40,10 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +102,7 @@ public class SummaryController implements PanelControllers {
 		String colName = processController.getWizard().getColumnName(column);
 		String colDesc = processController.getWizard().getColumnDescription(column);
 		String colType = processController.getWizard().getColumnType(column);
-		String colDefaultValue = processController.getWizard().getColumnDefaultValue(column);
+		String colDefaultValue = processController.getWizard().getColumnDefaultValue(column).getDataObject().toString();
 		String colIsMandatory = processController.getWizard().getColumnIsMandatory(column);
 
 		// Create Column Definition Holder
@@ -252,11 +254,16 @@ public class SummaryController implements PanelControllers {
 		
 	@Override
 	public void processValues() {
-		// TODO this isn't finished
+		String fsn = actualRefexName.getText();
+		String prefTerm = actualRefexName.getText();
+		String desc = actualRefexDescription.getText();
+		RefexDynamicColumnInfo[] columns = processController.getWizard().getColumnInfo();
+		ConceptVersionBI parentConcept = processController.getWizard().getParentConcept();
+		
 		try {
-			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
-					actualRefexDescription.getText(), "later", processController.getWizard().getColumnInfo(), null, 
-					actualRefexType.getText().equals("Annotated"), WBUtility.getEC(), WBUtility.getViewCoordinate());
+			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(fsn, prefTerm, desc,
+					columns, parentConcept.getPrimordialUuid(), actualRefexType.getText().equals("Annotated"), 
+					WBUtility.getEC(), WBUtility.getViewCoordinate());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
 		}

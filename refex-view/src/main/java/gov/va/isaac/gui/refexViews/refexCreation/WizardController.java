@@ -7,6 +7,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public class WizardController {
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
 	private List<RefexDynamicDataType> columnTypes = new ArrayList<RefexDynamicDataType>();
-	private List<String> columnDefaultValues = new ArrayList<String>();
+	private List<RefexDynamicData> columnDefaultValues = new ArrayList<RefexDynamicData>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
 
 	private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
@@ -41,16 +42,16 @@ public class WizardController {
 		this.isAnnotated = isAnnotated;
 	}
 
-	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
+	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, RefexDynamicData defaultValueObject, boolean isMandatory) {
 		if (previouslyFilledOut(currentCol)) {
 			columnNids.set(currentCol, colCon);
 			columnTypes.set(currentCol, type);
-			columnDefaultValues.set(currentCol, defaultValue);		
+			columnDefaultValues.set(currentCol, defaultValueObject);		
 			columnIsMandatory.set(currentCol, isMandatory);
 		} else {
 			columnNids.add(colCon);
 			columnTypes.add(type);
-			columnDefaultValues.add(defaultValue);		
+			columnDefaultValues.add(defaultValueObject);		
 			columnIsMandatory.add(isMandatory);
 		}
 	}
@@ -65,6 +66,10 @@ public class WizardController {
 
 	public String getParentConceptFsn() {
 		return getConceptFsn(parentConcept);
+	}
+
+	public ConceptVersionBI getParentConcept() {
+		return parentConcept;
 	}
 
 	private String getConceptFsn(ConceptVersionBI con) {
@@ -100,7 +105,7 @@ public class WizardController {
 		return columnTypes.get(column).getDisplayName();
 	}
 
-	public String getColumnDefaultValue(int column) {
+	public RefexDynamicData getColumnDefaultValue(int column) {
 		return columnDefaultValues.get(column);
 	}
 
@@ -114,11 +119,13 @@ public class WizardController {
 
 	public RefexDynamicColumnInfo[] getColumnInfo()
 	{
-		//TODO this is also broken, and building two columns, when only one is specified.  funny stuff happening in the GUI.
+		if (columnTypes.size() == 0) {
+			return null;
+		}
+		
 		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypes.size()];
 		for (int i = 0; i < result.length; i++)
 		{
-			//TODO defaultValues needs to be an Object, not a String, and it needs to match the type declared in columnTypes.
 			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypes.get(i), columnDefaultValues.get(i));
 		}
 		return result;

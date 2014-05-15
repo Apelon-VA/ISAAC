@@ -23,6 +23,7 @@ import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,6 +51,15 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDouble;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexFloat;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexLong;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +89,7 @@ public class ColumnController implements PanelControllers {
 	private static int currentCol = 0;
 	ScreensController processController;
 	Map<String, Map<String, Integer>> shortLongNameColumnMap = new HashMap();
+	private RefexDynamicData defaultValueObject = null;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ColumnController.class);
 
@@ -278,13 +289,13 @@ public class ColumnController implements PanelControllers {
 		RefexDynamicDataType type = processController.getWizard().getColumnTypeToken(currentCol);
 		String name = processController.getWizard().getColumnName(currentCol);
 		String desc = processController.getWizard().getColumnDescription(currentCol);
-		String defVal = processController.getWizard().getColumnDefaultValue(currentCol);
+		Object defVal = processController.getWizard().getColumnDefaultValue(currentCol);
 		boolean isMand = processController.getWizard().isColumnMandatory(currentCol);
 
 		columnNameSelector.getSelectionModel().select(name);
 		columnDescSelector.getSelectionModel().select(desc);
 		typeOption.getSelectionModel().select(new Choice(type));
-		defaultValue.setText(defVal);
+		defaultValue.setText(defVal.toString());
 		isMandatory.setSelected(isMand);
 	}
 
@@ -297,7 +308,7 @@ public class ColumnController implements PanelControllers {
 		ConceptVersionBI colCon = WBUtility.getConceptVersion(shortLongNameColumnMap.get(colName).get(colDesc));
 		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
 		
-		processController.getWizard().setColumnVals(currentCol, colCon, type, defaultValue.getText().trim(), isMandatory.isSelected());
+		processController.getWizard().setColumnVals(currentCol, colCon, type, defaultValueObject, isMandatory.isSelected());
 	}
 
 	@Override
@@ -327,70 +338,92 @@ public class ColumnController implements PanelControllers {
 	private String verifyDefaultValue() {
 		String errorMsg = null;
 		RefexDynamicDataType enumToken = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
-		
+		String defVal = defaultValue.getText().trim();
+		String colName = columnNameSelector.getSelectionModel().getSelectedItem().toString();
+
 		if (enumToken == RefexDynamicDataType.BOOLEAN) {
-			if (!defaultValue.getText().trim().equalsIgnoreCase("true") && 
-				!defaultValue.getText().trim().equalsIgnoreCase("false")) {
+			if (!defVal.equalsIgnoreCase("true") && 
+				!defVal.equalsIgnoreCase("false")) {
 				errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
+			} else {
+				try {
+					defaultValueObject = new RefexBoolean(new Boolean(defVal), colName);
+				} catch (PropertyVetoException e) {
+					errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
+				}
 			}
 		} else if (enumToken == RefexDynamicDataType.DOUBLE) {
 			try {
-				Double.valueOf(defaultValue.getText().trim());
+				defaultValueObject = new RefexDouble(Double.valueOf(defVal), colName);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid DOUBLE as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.FLOAT) {
 			try {
-				Float.valueOf(defaultValue.getText().trim());
+				defaultValueObject = new RefexFloat(Float.valueOf(defVal), colName);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid FLOAT as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.INTEGER) {
 			try {
-				Integer.valueOf(defaultValue.getText().trim());
+				defaultValueObject = new RefexInteger(Integer.valueOf(defVal), colName);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid INTEGER as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.LONG) {
 			try {
-				Long.valueOf(defaultValue.getText().trim());
+				defaultValueObject = new RefexLong(Long.valueOf(defVal), colName);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid LONG as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.NID) {
-			int defVal = Integer.MAX_VALUE;
+			int nid = Integer.MAX_VALUE;
 			try {
-				defVal = Integer.valueOf(defaultValue.getText().trim());
+				nid = Integer.valueOf(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid NID as specified by Column Type.  It must be an INTEGER";
 			}
 			
 			if (errorMsg == null) {
-				if (defVal >= 0) {
+				if (nid >= 0) {
 					errorMsg = "Default Value is not a valid NID.  It must be less than zero";
 				} else {
-					if (WBUtility.getConceptVersion(defVal) == null) {
+					ConceptVersionBI comp = WBUtility.getConceptVersion(nid);
+					if (comp == null) {
 						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
+					} else {
+						try {
+							defaultValueObject = new RefexNid(nid, colName);
+						} catch (PropertyVetoException e) {
+							errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
+						}
 					}
 				}
 			}
 		} else if (enumToken == RefexDynamicDataType.STRING) {
 			try {
-				String.valueOf(defaultValue.getText().trim());
+				defaultValueObject = new RefexString(String.valueOf(defVal), colName);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid STRING as specified by Column Type";
 			}
 		} else if (enumToken == RefexDynamicDataType.UUID) {
-			UUID defVal = UUID.randomUUID();
+			UUID uid = UUID.randomUUID();
 			try {
-				defVal = UUID.fromString(defaultValue.getText().trim());
+				uid = UUID.fromString(defVal);
 			} catch (Exception e) {
 				errorMsg = "Default Value is not a valid UUID as specified by Column Type.";
 			}
 			
 			if (errorMsg == null) {
-				if (WBUtility.getConceptVersion(defVal) == null) {
+				ConceptVersionBI comp = WBUtility.getConceptVersion(uid);
+				if (comp == null) {
 					errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
+				} else {
+					try {
+						defaultValueObject = new RefexUUID(uid, colName);
+					} catch (PropertyVetoException e) {
+						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
+					}
 				}
 			}
 		} else if (enumToken == RefexDynamicDataType.BYTEARRAY) {
