@@ -72,7 +72,6 @@ public class NewColumnDialogController implements Initializable
 				((Stage) rootPane.getScene().getWindow()).close();
 			}
 
-			//TODO this should have a short name and a long name
 			private void createNewColumnConcept() {
 				try {
 					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColDesc.getText().trim(), 
