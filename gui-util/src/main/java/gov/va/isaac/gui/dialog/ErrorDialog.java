@@ -20,6 +20,9 @@ package gov.va.isaac.gui.dialog;
 
 import java.io.IOException;
 import java.net.URL;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -51,6 +54,16 @@ public class ErrorDialog extends Stage {
         setScene(new Scene(root));
 
         this.controller = loader.getController();
+        
+        //Problem on linux, where modal windows don't always stay on top...
+        iconifiedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                Platform.runLater(() -> {toFront();});
+            }
+        });
     }
 
     public void setVariables(String title, String message, String details) {

@@ -173,6 +173,8 @@ public class CommonDialogs implements CommonDialogsI
 	{
 		Runnable r = new Runnable()
 		{
+			boolean wasBackgroundThread = !Toolkit.getToolkit().isFxUserThread();
+			
 			@Override
 			public void run()
 			{
@@ -180,7 +182,18 @@ public class CommonDialogs implements CommonDialogsI
 				{
 					ErrorDialog ed = new ErrorDialog(parentWindow);
 					ed.setVariables(title, message, details);
-					ed.showAndWait();
+					if (wasBackgroundThread)
+					{
+						ed.show();
+						Platform.runLater(() -> 
+						{
+							ed.toFront();
+						});
+					}
+					else
+					{
+						ed.showAndWait();
+					}
 				}
 				catch (IOException e)
 				{
@@ -194,7 +207,7 @@ public class CommonDialogs implements CommonDialogsI
 		}
 		else
 		{
-			Platform.runLater(r);  //TODO not sure what the showAndWait will do inside a runLater... need to test.
+			Platform.runLater(r);
 		}
 	}
 }
