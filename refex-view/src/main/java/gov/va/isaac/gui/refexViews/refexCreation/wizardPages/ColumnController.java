@@ -318,7 +318,7 @@ public class ColumnController implements PanelControllers {
 			return true;
 		} else {
 			AppContext.getCommonDialogs().showInformationDialog(
-					"Bad or Missing Content", errorMsg);
+					"Bad or Missing Content", errorMsg, columnDefinitionPane.getScene().getWindow());
 			return false;
 		}
 	}

@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
  * {@link ScreensController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class ScreensController extends StackPane {
 	static private HashMap<String, Parent> screens = new HashMap<>();
@@ -51,11 +52,11 @@ public class ScreensController extends StackPane {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ScreensController.class);
 
-	public WizardController wizard = new WizardController();
+	public final WizardController wizard = new WizardController();
+	
 	protected ScreensController()
 	{
 		loadScreen(DEFINITION_SCREEN, DEFINITION_SCREEN_FXML);
-		
 		setScreen(DEFINITION_SCREEN);
 	}
 
@@ -72,19 +73,7 @@ public class ScreensController extends StackPane {
 	}
 
 	public boolean loadScreen(String name, String resource) {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
-			Parent loadScreen = (Parent) loader.load();
-			PanelControllers processController = ((PanelControllers) loader.getController());
-
-			processController.finishInit(this);
-			addScreen(name, loadScreen);
-			
-			return true;
-		}catch(Exception e) {
-			logger.error("Unable to load new screen: " + name, e);
-			return false;
-		}
+		return loadColumnScreen(name, resource, -1);
 	} 
 
 	public boolean loadColumnScreen(String name, String resource, int colNum) {
@@ -93,7 +82,10 @@ public class ScreensController extends StackPane {
 			Parent loadScreen = (Parent) loader.load();
 			PanelControllers processController = ((PanelControllers) loader.getController());
 			
-			((ColumnController)processController).setColumnNumber(colNum);
+			if (colNum >= 0)
+			{
+				((ColumnController)processController).setColumnNumber(colNum);
+			}
 			processController.finishInit(this);
 			addScreen(name, loadScreen);
 			
@@ -132,14 +124,14 @@ public class ScreensController extends StackPane {
 			}
 			return true;
 		} else {
-			System.out.println("screen hasn't been loaded!\n");
+			logger.warn("screen hasn't been loaded!");
 			return false;
 		} 
 	}
 
 	public boolean unloadScreen(String name) {
 		if(screens.remove(name) == null) {
-			System.out.println("Screen didn't exist");
+			logger.warn("Screen didn't exist");
 			return false;
 		} else {
 			return true;
@@ -149,9 +141,4 @@ public class ScreensController extends StackPane {
 	public WizardController getWizard() {
 		return wizard;
 	}
-
-	public void setWizard(WizardController wizard) {
-		this.wizard = wizard;
-	}
-
 }

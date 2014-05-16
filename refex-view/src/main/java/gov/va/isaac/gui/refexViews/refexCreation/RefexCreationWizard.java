@@ -38,6 +38,7 @@ import org.jvnet.hk2.annotations.Service;
  * {@link RefexCreationWizard}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 
 @Service
@@ -108,9 +109,7 @@ public class RefexCreationWizard implements RefexCreationViewI
 	{
 		Stage stage = new Stage(StageStyle.DECORATED);
 		stage.initModality(Modality.NONE);
-		Group root = new Group();
-		root.getChildren().addAll(new ScreensController());
-		stage.setScene(new Scene(root, 600, 400));
+		stage.setScene(new Scene(new ScreensController(), 600, 400));
 		stage.setTitle("Define Refex Assemblage");
 		stage.getScene().getStylesheets().add(RefexCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
 		stage.show();

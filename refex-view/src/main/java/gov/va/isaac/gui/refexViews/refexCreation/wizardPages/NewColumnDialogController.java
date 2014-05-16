@@ -76,7 +76,7 @@ public class NewColumnDialogController implements Initializable
 					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColDesc.getText().trim(), 
 						newColName.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
 				} catch (InvalidCAB e) {
-					AppContext.getCommonDialogs().showInformationDialog("New Concept Error", "Concept Already Exists");
+					AppContext.getCommonDialogs().showInformationDialog("New Concept Error", "Concept Already Exists", rootPane.getScene().getWindow());
 					newColumnConcept = null;
 				} catch (Exception e1) {
 					logger.error("Unable to create concept in database", e1);

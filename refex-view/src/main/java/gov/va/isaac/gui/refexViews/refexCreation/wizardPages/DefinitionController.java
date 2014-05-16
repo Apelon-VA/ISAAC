@@ -23,11 +23,9 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -36,10 +34,10 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -56,7 +54,7 @@ import org.slf4j.LoggerFactory;
 public class DefinitionController implements PanelControllers {
 	@FXML private ResourceBundle resources;
 	@FXML private URL location;
-	@FXML private AnchorPane refsetCreationPane;
+	@FXML private BorderPane refsetCreationPane;
 	@FXML private ToggleGroup refexType;
 	@FXML private RadioButton refexTypeRefset;
 	@FXML private RadioButton refexAnnotationType;
@@ -65,9 +63,9 @@ public class DefinitionController implements PanelControllers {
 	@FXML private TextArea refexDescription;
 	@FXML private Button continueCreation;
 	@FXML private Button cancelCreation;
-    @FXML private HBox parentConceptHBox;
+	@FXML private HBox parentConceptHBox;
 
-    static ViewCoordinate vc = null;
+	static ViewCoordinate vc = null;
 	ScreensController processController;
 	private ConceptNode parentConcept = null;
 	
@@ -75,6 +73,20 @@ public class DefinitionController implements PanelControllers {
 
 	@Override
 	public void initialize() {
+		
+		assert continueCreation != null : "fx:id=\"continueCreation\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexName != null : "fx:id=\"refexName\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexTypeRefset != null : "fx:id=\"refexTypeRefset\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexAnnotationType != null : "fx:id=\"refexAnnotationType\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexType != null : "fx:id=\"refexType\" was not injected: check your FXML file 'definition.fxml'.";
+		assert extensionCount != null : "fx:id=\"extensionCount\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexDescription != null : "fx:id=\"refexDescription\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refsetCreationPane != null : "fx:id=\"refsetCreationPane\" was not injected: check your FXML file 'definition.fxml'.";
+		assert cancelCreation != null : "fx:id=\"cancelCreation\" was not injected: check your FXML file 'definition.fxml'.";
+		assert parentConceptHBox != null : "fx:id=\"parentConceptHBox\" was not injected: check your FXML file 'definition.fxml'.";
+
+
+		
 		vc = WBUtility.getViewCoordinate();
 		extensionCount.setText("0");
 		
@@ -85,7 +97,7 @@ public class DefinitionController implements PanelControllers {
 			parentConcept = new ConceptNode(null, true);
 		}
 		parentConceptHBox.getChildren().add(parentConcept.getNode());
-			
+		HBox.setHgrow(parentConcept.getNode(), Priority.ALWAYS);
 
 
 		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
@@ -110,7 +122,6 @@ public class DefinitionController implements PanelControllers {
 				}
 
 			});
-
 	}
 
 	@Override
@@ -154,7 +165,7 @@ public class DefinitionController implements PanelControllers {
 		if (errorMsg == null) {
 			return true;
 		} else {
-			AppContext.getCommonDialogs().showInformationDialog("Bad or Missing Content", errorMsg);
+			AppContext.getCommonDialogs().showInformationDialog("Bad or Missing Content", errorMsg, refsetCreationPane.getScene().getWindow());
 			return false;
 		}
 	}
@@ -164,7 +175,7 @@ public class DefinitionController implements PanelControllers {
 		int count = Integer.valueOf(extensionCount.getText().trim());
 	
 		processController.getWizard().setNewRefsetConceptVals(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(),
-												  count, refexAnnotationType.isSelected()); 
+												count, refexAnnotationType.isSelected()); 
 	}
 }
 
