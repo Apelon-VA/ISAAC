@@ -20,8 +20,6 @@ package gov.va.isaac.workflow.demo;
 
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
-import java.text.Normalizer;
-import java.text.Normalizer.Form;
 
 /**
  *

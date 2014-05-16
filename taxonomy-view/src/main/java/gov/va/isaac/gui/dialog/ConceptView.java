@@ -90,7 +90,8 @@ public class ConceptView extends Stage implements ConceptViewI {
         Platform.runLater(() -> {this.toFront();});
     }
     
-    public void showConcept(final UUID conceptUUID)
+    @Override
+	public void showConcept(final UUID conceptUUID)
     {
         // TODO this needs to be rewritten so that the dialog displays immediately
         //but with a progress indicator while we wait for the concept to be found..

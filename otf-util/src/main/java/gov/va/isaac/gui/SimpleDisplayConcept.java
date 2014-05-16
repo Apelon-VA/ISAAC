@@ -139,6 +139,7 @@ public class SimpleDisplayConcept
 		return description_;
 	}
 	
+	@Override
 	public SimpleDisplayConcept clone()
 	{
 		return new SimpleDisplayConcept(this.description_, this.nid_, false);

@@ -27,13 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.jbpm.services.task.impl.model.xml.JaxbContent;
-import org.kie.api.task.model.Attachment;
-import org.kie.api.task.model.Comment;
-import org.kie.api.task.model.Content;
-import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
-import org.kie.services.client.serialization.JaxbSerializationProvider;
 
 /**
  *

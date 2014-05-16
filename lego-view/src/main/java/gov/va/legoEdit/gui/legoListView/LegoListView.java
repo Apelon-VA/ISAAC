@@ -55,7 +55,6 @@ import com.sun.javafx.tk.Toolkit;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@SuppressWarnings("restriction")
 @Service
 @Singleton
 public class LegoListView implements DockedViewI

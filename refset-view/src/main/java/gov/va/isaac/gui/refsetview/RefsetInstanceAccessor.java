@@ -56,7 +56,7 @@ public class RefsetInstanceAccessor {
 		private Status status;
 		private String time, author, module, path;
 
-		private RefsetInstance(ConceptVersionBI con, RefexVersionBI member, RefexVersionBI previousMember) {
+		private RefsetInstance(ConceptVersionBI con, RefexVersionBI<?> member, RefexVersionBI<?> previousMember) {
 			memberNid = (member == null ? 0 : member.getNid());
 
 			if (con == null) {
@@ -217,7 +217,7 @@ public class RefsetInstanceAccessor {
 
 	public static class MemberRefsetInstance extends RefsetInstance {
 		private MemberRefsetInstance(ConceptVersionBI refCompCon,
-				RefexVersionBI member,  RefexVersionBI previousMember) {
+				RefexVersionBI<?> member,  RefexVersionBI<?> previousMember) {
 			super(refCompCon, member, previousMember);
 		}
 
@@ -229,14 +229,14 @@ public class RefsetInstanceAccessor {
 	public static class StrExtRefsetInstance extends RefsetInstance {
 		private SimpleStringProperty strExt;
 
-		private StrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+		private StrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI<?> member, RefexVersionBI<?> previousMember) {
 			super(refCompCon, member, previousMember);
-			RefexStringVersionBI ext = (RefexStringVersionBI) member;
+			RefexStringVersionBI<?> ext = (RefexStringVersionBI<?>) member;
 			
 			boolean updateString = true;
 			
 			if (previousMember != null) {
-				RefexStringVersionBI prevExt = (RefexStringVersionBI) previousMember;
+				RefexStringVersionBI<?> prevExt = (RefexStringVersionBI<?>) previousMember;
 				
 				if (prevExt.getString1().equals(ext.getString1())) {
 					updateString = false;
@@ -268,14 +268,14 @@ public class RefsetInstanceAccessor {
 		private SimpleStringProperty cidExtFsn;
 		private SimpleStringProperty cidExtUuid;
 
-		private NidExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+		private NidExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI<?> member, RefexVersionBI<?> previousMember) {
 			super(refCompCon, member, previousMember);
 
-			RefexNidVersionBI ext = (RefexNidVersionBI) member;
+			RefexNidVersionBI<?> ext = (RefexNidVersionBI<?>) member;
 			
 			boolean updateComponent = true;
 			if (previousMember != null) {
-				RefexNidVersionBI prevExt = (RefexNidVersionBI) previousMember;
+				RefexNidVersionBI<?> prevExt = (RefexNidVersionBI<?>) previousMember;
 				
 				if (prevExt.getNid1() == ext.getNid1()) {
 					updateComponent = false;
@@ -328,15 +328,15 @@ public class RefsetInstanceAccessor {
 	public static class NidStrExtRefsetInstance extends NidExtRefsetInstance  {
 		private SimpleStringProperty strExt;
 
-		private NidStrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+		private NidStrExtRefsetInstance(ConceptVersionBI refCompCon, RefexVersionBI<?> member, RefexVersionBI<?> previousMember) {
 			super(refCompCon, member, previousMember);
 
-			RefexNidStringVersionBI ext = (RefexNidStringVersionBI)member;
+			RefexNidStringVersionBI<?> ext = (RefexNidStringVersionBI<?>)member;
 			this.strExt = new SimpleStringProperty(ext.getString1());
 			boolean updateString = true;
 			
 			if (previousMember != null) {
-				RefexStringVersionBI prevExt = (RefexStringVersionBI) previousMember;
+				RefexStringVersionBI<?> prevExt = (RefexStringVersionBI<?>) previousMember;
 				
 				if (prevExt.getString1().equals(ext.getString1())) {
 					updateString = false;
@@ -374,7 +374,7 @@ public class RefsetInstanceAccessor {
 		private int constraintPathMemberNid;
 		private int valMemberNid;
 
-		private CEMCompositRefestInstance(ConceptVersionBI refCompCon, RefexVersionBI member, RefexVersionBI previousMember) {
+		private CEMCompositRefestInstance(ConceptVersionBI refCompCon, RefexVersionBI<?> member, RefexVersionBI<?> previousMember) {
 			super(refCompCon, member, previousMember);
 
 			try {
@@ -384,19 +384,19 @@ public class RefsetInstanceAccessor {
 				compositeMemberNid = member.getNid();
 				
 				//TODO this should be done generically in the refset view API, not CEM specific.
-				for (RefexVersionBI parentAnnot : parentAnnots) {
+				for (RefexVersionBI<?> parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
 						
 						Collection<? extends RefexVersionBI<?>> refAnnots = parentAnnot.getAnnotationsActive(WBUtility.getViewCoordinate());
-						for (RefexVersionBI annot : refAnnots) {
+						for (RefexVersionBI<?> annot : refAnnots) {
 							if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET.getNid()) {
-								constraintPathExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
+								constraintPathExt = new SimpleStringProperty(((RefexStringVersionBI<?>)annot).getString1());
 							} else if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET.getNid()) {
-								constraintValExt = new SimpleStringProperty(((RefexStringVersionBI)annot).getString1());
+								constraintValExt = new SimpleStringProperty(((RefexStringVersionBI<?>)annot).getString1());
 							}
 						}
 					} else if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_VALUE_REFSET.getNid()) {
-						valueExt = new SimpleStringProperty(((RefexStringVersionBI)parentAnnot).getString1());
+						valueExt = new SimpleStringProperty(((RefexStringVersionBI<?>)parentAnnot).getString1());
 					}
 				}
 			} catch (Exception e) {
@@ -481,7 +481,7 @@ public class RefsetInstanceAccessor {
 	}
 
 	public static RefsetInstance getInstance(ConceptVersionBI refCompCon,
-			RefexVersionBI member, RefexVersionBI previousMember, RefexType refsetType) {
+			RefexVersionBI<?> member, RefexVersionBI<?> previousMember, RefexType refsetType) {
 		if (refsetType == RefexType.MEMBER) {
 			return new MemberRefsetInstance(refCompCon, member, previousMember);
 		} else if (refsetType == RefexType.STR) {

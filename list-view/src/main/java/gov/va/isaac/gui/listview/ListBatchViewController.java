@@ -568,6 +568,7 @@ public class ListBatchViewController
 			s.setTitle("Batch Operation Execution");
 			s.setOnCloseRequest(new EventHandler<WindowEvent>()
 			{
+				@Override
 				public void handle(WindowEvent we)
 				{
 					// disable close button
