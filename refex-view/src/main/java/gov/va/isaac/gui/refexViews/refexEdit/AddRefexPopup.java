@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -63,11 +64,9 @@ import org.glassfish.hk2.runlevel.RunLevelException;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicBuilderBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
-import org.ihtsdo.otf.tcc.api.store.Ts;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
@@ -355,8 +354,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == dt)
 		{
-			currentDataFields_.add(null);
-			//TODO potentially let them pick a file to be read and included
+			currentDataFields_.add(new byte[] {});
+			//TODO add in a file chooser button
 			return new Label("Byte Array not yet supported in the GUI");
 
 		}
@@ -464,7 +463,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == dt)
 		{
-			//TODO tricky one....
+			//TODO will need to make a data type selector, and a data field... can recurse for part of it, 
+			//but need to make sure that the error markers and such don't get confused.
 			HBox hBox = new HBox();
 			currentDataFields_.add(null);
 			hBox.getChildren().add(new Label("Polymorphic is not yet supported in the GUI"));
@@ -505,8 +505,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger_.error("Error saving refex", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "There was an error saving the refex", e.getMessage(), this);
 		}
 	}
 
@@ -514,6 +514,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	{
 		if (RefexDynamicDataType.BOOLEAN == ci.getColumnDataType())
 		{
+			@SuppressWarnings("unchecked")
 			ChoiceBox<String> cb = (ChoiceBox<String>) data;
 
 			Boolean value = null;
@@ -533,8 +534,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
-			//TODO implement
-			return new RefexByteArray(new byte[] {}, ci.getColumnName());
+			return new RefexByteArray((byte[])data, ci.getColumnName());
 		}
 		else if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType() || RefexDynamicDataType.FLOAT == ci.getColumnDataType()
 				|| RefexDynamicDataType.INTEGER == ci.getColumnDataType() || RefexDynamicDataType.LONG == ci.getColumnDataType()
@@ -578,7 +578,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
 		{
-			//TODO tricky one....
+			//TODO implement polymorphic support
 			return new RefexString("", ci.getColumnName());
 		}
 		else
