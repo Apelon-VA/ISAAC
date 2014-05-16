@@ -361,6 +361,11 @@ public class ConceptNode implements ConceptLookupCallback
 		return c_;
 	}
 	
+	public ConceptVersionBI getConceptNoWait()
+	{
+		return c_;
+	}
+	
 	protected String getDisplayedText()
 	{
 		return cb_.getValue().getDescription();
@@ -374,6 +379,11 @@ public class ConceptNode implements ConceptLookupCallback
 	public BooleanProperty isValid()
 	{
 		return isValid;
+	}
+	
+	public StringProperty getInvalidReason()
+	{
+		return invalidToolTipText;
 	}
 
 	@Override
