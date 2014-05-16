@@ -40,6 +40,15 @@ public interface CommonDialogsI
 	 * @param message
 	 */
 	public void showInformationDialog(String title, String message);
+	
+	/**
+	 * Present an information dialog to the user, above the application main window.
+	 * 
+	 * @param title
+	 * @param message
+	 * @param parentWindow
+	 */
+	public void showInformationDialog(String title, String message, Window parentWindow);
 
 	/**
 	 * Present an error dialog to the user, above the application main window.

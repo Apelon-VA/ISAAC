@@ -210,4 +210,47 @@ public class CommonDialogs implements CommonDialogsI
 			Platform.runLater(r);
 		}
 	}
+	
+	@Override
+	public void showInformationDialog(String title, String message, Window parentWindow)
+	{
+		Runnable r = new Runnable()
+		{
+			boolean wasBackgroundThread = !Toolkit.getToolkit().isFxUserThread();
+			
+			@Override
+			public void run()
+			{
+				try
+				{
+					InformationDialog id = new InformationDialog(parentWindow);
+					id.setVariables(title, message);
+					if (wasBackgroundThread)
+					{
+						id.show();
+						Platform.runLater(() -> 
+						{
+							id.toFront();
+						});
+					}
+					else
+					{
+						id.showAndWait();
+					}
+				}
+				catch (IOException e)
+				{
+					LOG.error("Unexpected error creating an information dialog!", e);
+				}
+			}
+		};
+		if (Toolkit.getToolkit().isFxUserThread())
+		{
+			r.run();
+		}
+		else
+		{
+			Platform.runLater(r);
+		}
+	}
 }
