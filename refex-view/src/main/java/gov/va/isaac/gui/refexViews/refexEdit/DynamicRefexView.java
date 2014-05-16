@@ -60,6 +60,8 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sun.javafx.tk.Toolkit;
 
 
@@ -81,6 +83,7 @@ public class DynamicRefexView implements RefexViewI
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
 	private Button removeButton_, addButton_, commitButton_, cancelButton_;
 	private BooleanBinding removeButtonEnabled_;
+	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	private DynamicRefexView() throws IOException
 	{
@@ -123,14 +126,14 @@ public class DynamicRefexView implements RefexViewI
 				DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
 				if (DialogResponse.YES == dr)
 				{
-					//TODO implement
-					System.out.println("Do remove!");
+					//TODO implement refex retire
+					System.out.println("Do retire!");
 				}
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger_.error("Unexpected error retiring refex", e);
+				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the refex", e.getMessage(), rootNode_.getScene().getWindow());
 			}
 		});
 		
@@ -153,7 +156,7 @@ public class DynamicRefexView implements RefexViewI
 		HBox.setHgrow(r, Priority.ALWAYS);
 		t.getItems().add(r);
 		
-		//TODO implement action
+		//TODO implement tossUncommitted
 		cancelButton_ = new Button("Cancel");
 		cancelButton_.setDisable(true);
 		t.getItems().add(cancelButton_);
@@ -381,8 +384,10 @@ public class DynamicRefexView implements RefexViewI
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger_.error("Unexpected error building the refex display", e);
+				//null check, as the error may happen before the scene is visible
+				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the refex display", e.getMessage(), 
+						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
 			}
 		});
 	}
