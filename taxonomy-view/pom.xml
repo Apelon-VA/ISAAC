@@ -31,6 +31,12 @@
         </dependency>
         
         <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>refex-view</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        
+        <dependency>
             <groupId>org.ihtsdo.otf</groupId>
             <artifactId>tcc-datastore</artifactId>
         </dependency>

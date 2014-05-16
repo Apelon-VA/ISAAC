@@ -26,6 +26,7 @@ import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.WBUtility;
 import java.util.ArrayList;
@@ -87,6 +88,7 @@ public class SnomedConceptViewController {
     @FXML private Label uuidLabel;
     @FXML private Button showInTreeButton;
     @FXML private ProgressIndicator treeViewProgress;
+    @FXML private VBox annotationsRegion;
 
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
@@ -194,6 +196,11 @@ public class SnomedConceptViewController {
                                 cm.getItems().add(mi1);
                             }
                         }
+                        else
+                        {
+                            setText("");
+                            setGraphic(null);
+                        }
                     }
                 };
             }
@@ -245,6 +252,12 @@ public class SnomedConceptViewController {
 
         setupTable(new String[] { "Type", "Destination" }, relationshipsTable,
                 cellValueFactory, cellFactory);
+        
+        RefexViewI v = AppContext.getService(RefexViewI.class);  //TODO annotate this to differentiate between old and dynamic
+        v.setComponent(concept.getPrimordialUuid());
+        v.getView().setMinHeight(100.0);
+        VBox.setVgrow(v.getView(), Priority.ALWAYS);
+        annotationsRegion.getChildren().add(v.getView());
 
         treeViewProgress.visibleProperty().bind(treeViewSearchRunning);
 

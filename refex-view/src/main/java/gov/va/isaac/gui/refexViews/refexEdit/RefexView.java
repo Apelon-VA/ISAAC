@@ -194,10 +194,10 @@ public class RefexView implements RefexViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setRefset(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(java.util.UUID)
 	 */
 	@Override
-	public void setRefset(UUID conceptUUID)
+	public void setComponent(UUID conceptUUID)
 	{
 		// TODO Auto-generated method stub
 		System.out.println("Refset passed in: " + conceptUUID);

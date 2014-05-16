@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.dialog.SnomedConceptViewController">
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gov.va.isaac.gui.dialog.SnomedConceptViewController">
   <children>
     <VBox alignment="CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
@@ -51,7 +51,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
           </rowConstraints>
         </GridPane>
-        <SplitPane fx:id="splitPane" dividerPositions="0.5" style="-fx-background-color: transparent" VBox.vgrow="ALWAYS">
+        <SplitPane fx:id="splitPane" dividerPositions="0.7" style="-fx-background-color: transparent" VBox.vgrow="ALWAYS">
           <items>
             <VBox spacing="1.0">
               <children>
@@ -67,6 +67,11 @@
                       <children>
                         <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Source Relationships" />
                         <TableView fx:id="relationshipsTable" maxWidth="1.7976931348623157E308" minHeight="100.0" VBox.vgrow="ALWAYS" />
+                      </children>
+                    </VBox>
+                    <VBox fx:id="annotationsRegion" alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
+                      <children>
+                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Annotations" />
                       </children>
                     </VBox>
                   </children>

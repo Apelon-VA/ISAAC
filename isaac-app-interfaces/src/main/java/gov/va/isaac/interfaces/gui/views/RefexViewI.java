@@ -35,7 +35,8 @@ import org.jvnet.hk2.annotations.Contract;
 public interface RefexViewI extends ViewI
 {
 	/**
-	 * Tell this view to display a particular refset
+	 * Tell this view to display the refexes for a particular component (typically, a concept, but could also 
+	 * be any valid thing that supportes refexes)
 	 */
-	public void setRefset(UUID conceptUUID);
+	public void setComponent(UUID componentUUID);
 }
