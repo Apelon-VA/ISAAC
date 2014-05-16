@@ -262,7 +262,7 @@ public class RefsetTableHandler {
 					// None of Comp are Str-Str. . . so simple solution to this
 					bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 
-					commitUpdate(bp, isAnnotation);
+					addUncommitted(bp, isAnnotation);
 					rvc_.reloadData();
 				}
 				catch (Exception e)
@@ -334,7 +334,7 @@ public class RefsetTableHandler {
 							}
 						}
 
-						commitUpdate(bp, isAnnotation);
+						addUncommitted(bp, isAnnotation);
 						rvc_.reloadData();
 					}
 				}
@@ -438,7 +438,7 @@ public class RefsetTableHandler {
 						instance.setStatus(t.getNewValue());
 						RefexCAB bp = createBlueprint(instance.getMemberNid());
 						bp.setStatus(t.getNewValue());
-						commitUpdate(bp, isAnnotation);
+						addUncommitted(bp, isAnnotation);
 						rvc_.reloadData();
 					}
 				} catch (Exception e) {
@@ -488,26 +488,20 @@ public class RefsetTableHandler {
 	}
 
 	private RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
-		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(nid);
+		RefexVersionBI<?> refex = (RefexVersionBI<?>)WBUtility.getRefsetMember(nid);
 		
 		return refex.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
 	
 	}
 
-	private void commitUpdate(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
-		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(member.getComponentNid());
+	private void addUncommitted(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
+		RefexVersionBI<?> refex = (RefexVersionBI<?>)WBUtility.getRefsetMember(member.getComponentNid());
 		
-		//TODO - make sense of this magical API.  Why on earth do we have to look up, and addUncommitted, on something other than what the 
-		//Builder returned to us?  Here be dragons.
-		//Also, rename this method... it doesn't commit.
-		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(member);
-		ConceptVersionBI refCompCon;
-		if (!isAnnotation) {
-			refCompCon = WBUtility.getConceptVersion(refex.getReferencedComponentNid());
-		} else {
-			refCompCon = WBUtility.getConceptVersion(refex.getAssemblageNid());
+		//TODO retest this... the old impl was quite wrong, not sure how it ever worked, when it called addUncommitted on the wrong things.
+		WBUtility.getBuilder().constructIfNotCurrent(member);
+		WBUtility.addUncommitted(WBUtility.getConceptVersion(refex.getAssemblageNid()));
+		if (isAnnotation) {
+			WBUtility.addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
 		}
-		
-		WBUtility.addUncommitted(refCompCon);
 	}
 }
