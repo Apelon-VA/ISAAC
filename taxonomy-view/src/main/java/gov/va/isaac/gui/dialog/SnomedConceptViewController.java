@@ -253,7 +253,7 @@ public class SnomedConceptViewController {
         setupTable(new String[] { "Type", "Destination" }, relationshipsTable,
                 cellValueFactory, cellFactory);
         
-        RefexViewI v = AppContext.getService(RefexViewI.class);  //TODO annotate this to differentiate between old and dynamic
+        RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
         v.setComponent(concept.getPrimordialUuid());
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);

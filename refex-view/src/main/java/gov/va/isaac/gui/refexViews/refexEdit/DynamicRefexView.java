@@ -34,6 +34,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
+import javax.inject.Named;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.FloatBinding;
@@ -73,6 +74,7 @@ import com.sun.javafx.tk.Toolkit;
  */
 
 @Service
+@Named (value="DynamicRefexView")
 @PerLookup
 public class DynamicRefexView implements RefexViewI
 {
