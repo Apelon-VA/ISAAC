@@ -38,6 +38,8 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link DataCell}
@@ -47,6 +49,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
 public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
 {
 	private Collection<RefexDynamicColumnInfo> columnInfo_;
+	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	public DataCell(Collection<RefexDynamicColumnInfo> columnInfo)
 	{
@@ -103,8 +106,9 @@ public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends Refe
 				}
 				catch (Exception e)
 				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger_.error("Unexpected error rendering data cell", e);
+					setText("-ERROR-");
+					setGraphic(null);
 				}
 			}
 			//Not applicable, for the current row.
