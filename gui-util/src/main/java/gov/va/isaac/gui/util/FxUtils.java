@@ -154,4 +154,10 @@ public class FxUtils {
             expandParents(parent);
         }
     }
+    
+    public static double calculateNecessaryWidthOfBoldLabel(Label l)
+    {
+        Font f = new Font("System Bold", 13.0);
+        return Toolkit.getToolkit().getFontLoader().computeStringWidth(l.getText(), f);
+    }
 }
