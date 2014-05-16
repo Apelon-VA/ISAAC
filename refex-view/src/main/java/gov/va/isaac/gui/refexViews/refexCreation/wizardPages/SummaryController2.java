@@ -21,12 +21,10 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
-
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -35,20 +33,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import javafx.scene.control.ScrollPane;
-
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javafx.scene.Node;
-import javafx.scene.layout.Region;
 /**
  * 
  * {@link SummaryController2}
@@ -83,7 +77,6 @@ public class SummaryController2 implements PanelControllers {
 	}
 
 
-	@SuppressWarnings("restriction")
 	private void setupColumnContent() {
 		VBox columns = new VBox(15);
 		columns.setAlignment(Pos.TOP_CENTER);
@@ -124,12 +117,12 @@ public class SummaryController2 implements PanelControllers {
 		columnSide.setAlignment(Pos.TOP_LEFT);
 		columnSide.setFillHeight(true);
 
-		List<Label> labelList = new ArrayList();
+		List<Label> labelList = new ArrayList<>();
 		labelList.add(createLabel("Name: "));
 		labelList.add(createLabel("Type: "));
 		labelList.add(createLabel("Mandatory: "));
 
-		List<Label> valueList = new ArrayList();
+		List<Label> valueList = new ArrayList<>();
 		valueList.add(new Label(colName));
 		valueList.add(new Label(colType));
 		valueList.add(new Label(colIsMand));

@@ -22,8 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
-
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -44,22 +41,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDouble;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexFloat;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexLong;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexNid;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,12 +62,12 @@ public class ColumnController implements PanelControllers {
 	@FXML private Button nextButton;
 	@FXML private Button cancelButton;
 	@FXML private TextField defaultValue;
-	@FXML private ChoiceBox<Choice> typeOption = new ChoiceBox<Choice>();
+	@FXML private ChoiceBox<Choice> typeOption = new ChoiceBox<Choice>();  //TODO why are these being constructed, while they are annotated?
 	@FXML private Button backButton;
 	@FXML private AnchorPane columnDefinitionPane;
 	@FXML private Label columnTitle;
-	@FXML private ChoiceBox columnNameSelector = new ChoiceBox();
-	@FXML private ChoiceBox columnDescSelector = new ChoiceBox();
+	@FXML private ChoiceBox<String> columnNameSelector = new ChoiceBox<>();
+	@FXML private ChoiceBox<String> columnDescSelector = new ChoiceBox<>();
 	@FXML private Button newColNameButton;
 	@FXML private Button newColDescButton;
 	@FXML private CheckBox isMandatory;
@@ -88,7 +75,7 @@ public class ColumnController implements PanelControllers {
 	static ViewCoordinate vc = null;
 	private static int currentCol = 0;
 	ScreensController processController;
-	Map<String, Map<String, Integer>> shortLongNameColumnMap = new HashMap();
+	Map<String, Map<String, Integer>> shortLongNameColumnMap = new HashMap<>();
 	private Object defaultValueObject = null;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ColumnController.class);
@@ -266,7 +253,7 @@ public class ColumnController implements PanelControllers {
 			int nid = col.getNid();
 			
 			if (!shortLongNameColumnMap.containsKey(sName)) {
-				Map<String, Integer> nameNidMap = new HashMap();
+				Map<String, Integer> nameNidMap = new HashMap<>();
 				shortLongNameColumnMap.put(sName, nameNidMap);
 			}
 			
@@ -276,6 +263,7 @@ public class ColumnController implements PanelControllers {
 		}
 	}
 
+	@Override
 	public void finishInit(ScreensController screenParent) {
 		processController = screenParent;
 		setupColumnDef();

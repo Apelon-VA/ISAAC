@@ -2,12 +2,10 @@ package gov.va.isaac.gui.refexViews.refexCreation;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -97,7 +97,6 @@ public class SummaryController implements PanelControllers {
 	}
 
 
-	@SuppressWarnings("restriction")
 	private HBox createColumn(int column) {
 		String colName = processController.getWizard().getColumnName(column);
 		String colDesc = processController.getWizard().getColumnDescription(column);
@@ -128,14 +127,14 @@ public class SummaryController implements PanelControllers {
 		columnSide.setAlignment(Pos.TOP_LEFT);
 		columnSide.setFillHeight(true);
 
-		List<Label> labelList = new ArrayList();
+		List<Label> labelList = new ArrayList<>();
 		labelList.add(createLabel("Type: "));
 		labelList.add(createLabel("Is Mandatory: "));
 		if (colDefVal.length() > 0) {
 			labelList.add(createLabel("Default Value: "));
 		}
 		
-		List<Label> valueList = new ArrayList();
+		List<Label> valueList = new ArrayList<>();
 		valueList.add(new Label(colType));
 		valueList.add(new Label(colIsMand));
 		if (colDefVal.length() > 0) {
@@ -160,11 +159,11 @@ public class SummaryController implements PanelControllers {
 		columnSide.setPrefWidth(300);
 		columnSide.setMinWidth(columnSide.getPrefWidth());
 
-		List<Label> labelList = new ArrayList();
+		List<Label> labelList = new ArrayList<>();
 		labelList.add(createLabel("Name: "));
 		labelList.add(createLabel("Description: "));
 		
-		List<Label> valueList = new ArrayList();
+		List<Label> valueList = new ArrayList<>();
 		valueList.add(new Label(colName));
 		Label colDescValue = new Label(colDesc);
 		colDescValue.setWrapText(true);

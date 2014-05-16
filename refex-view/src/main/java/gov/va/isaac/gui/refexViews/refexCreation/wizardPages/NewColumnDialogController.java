@@ -57,7 +57,6 @@ public class NewColumnDialogController implements Initializable
 
 	private static final Logger logger = LoggerFactory.getLogger(NewColumnDialogController.class);
 
-	@SuppressWarnings("restriction")
 	@Override
 	// This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources)
