@@ -28,14 +28,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
@@ -75,20 +72,21 @@ public class App extends Application implements ApplicationWindowI{
         //Set up the CommonDialogs class (which needs a references to primaryStage_ and gets it via injection)
         commonDialog_ = AppContext.getServiceLocator().getService(CommonDialogs.class);
 
-        URL resource = this.getClass().getResource("App.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        Parent root = (Parent) loader.load();
-        this.controller = loader.getController();
+        this.controller = new AppController();
 
         primaryStage.getIcons().add(new Image("/icons/16x16/application-block.png"));
         String title = AppContext.getAppProperties().getProperty(TITLE_PROPERTY);
         primaryStage.setTitle(title);
-        primaryStage.setScene(new Scene(root));
+        primaryStage.setScene(new Scene(controller.getRoot()));
         primaryStage.getScene().getStylesheets().add(App.class.getResource("/isaac-shared-styles.css").toString());
+        primaryStage.getScene().getStylesheets().add(App.class.getResource("App.css").toString());
 
         // Set minimum dimensions.
         primaryStage.setMinHeight(400);
         primaryStage.setMinWidth(400);
+        
+        primaryStage.setHeight(768);
+        primaryStage.setWidth(1024);
 
         // Handle window close event.
         primaryStage.setOnHiding(new EventHandler<WindowEvent>() {

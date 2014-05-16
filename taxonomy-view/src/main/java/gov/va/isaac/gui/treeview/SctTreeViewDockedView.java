@@ -20,6 +20,7 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
@@ -101,7 +102,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "panelsMenu";
+				return ApplicationMenus.PANELS.getMenuId();
 			}
 			
 			@Override

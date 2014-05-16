@@ -34,6 +34,8 @@ public abstract class MenuItemI implements Comparable<MenuItemI>
 	/**
 	 * The FxMenuId of the MenuItem this menu should be added to.  Leave null for this to be treated as a new top-level
 	 * menu in the applications menu bar.
+	 * 
+	 * Currently standard known top level menus are listed in {@link ApplicationMenus}
 	 */
 	public abstract String getParentMenuId();
 	

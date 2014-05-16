@@ -20,6 +20,7 @@ package gov.va.legoEdit.gui.legoListView;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.legoEdit.gui.ExportDialog;
@@ -124,7 +125,7 @@ public class LegoListView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "importExportMenu";
+				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
 			}
 			
 			@Override
@@ -180,7 +181,7 @@ public class LegoListView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "importExportMenu";
+				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
 			}
 			
 			@Override
@@ -241,7 +242,7 @@ public class LegoListView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "importExportMenu";
+				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
 			}
 			
 			@Override
@@ -297,7 +298,7 @@ public class LegoListView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "panelsMenu";
+				return ApplicationMenus.PANELS.getMenuId();
 			}
 			
 			@Override

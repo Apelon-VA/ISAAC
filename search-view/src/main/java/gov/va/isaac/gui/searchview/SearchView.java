@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.searchview;
 
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public class SearchView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "panelsMenu";
+				return ApplicationMenus.PANELS.getMenuId();
 			}
 			
 			@Override

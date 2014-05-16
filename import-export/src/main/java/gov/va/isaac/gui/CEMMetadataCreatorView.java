@@ -19,23 +19,20 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.models.cem.importer.CEMMetadataCreator;
 import gov.va.isaac.models.fhim.importer.FHIMMetadataCreator;
 import gov.va.isaac.util.Utility;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.stage.Window;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +73,7 @@ public class CEMMetadataCreatorView implements PopupViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "importExportMenu";
+				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
 			}
 			
 			@Override

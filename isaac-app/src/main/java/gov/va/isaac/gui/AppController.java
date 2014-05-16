@@ -20,6 +20,7 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewI;
@@ -29,7 +30,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
@@ -55,30 +56,43 @@ public class AppController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
-    @FXML private Menu importExportMenu;
-    @FXML private Menu panelsMenu;
-    @FXML private SplitPane mainSplitPane;
-    @FXML private BorderPane appBorderPane;
-    @FXML private MenuBar menuBar;
+    private BorderPane root_;
+    private SplitPane mainSplitPane;
+    private MenuBar menuBar;
 
     @Inject
     private IterableProvider<IsaacViewI> moduleViews_;
     @Inject
     private IterableProvider<DockedViewI> dockedViews_;
 
-    //Just a hashed view of all of the menus
+    //Just a hashed view of all of the menus (including nested menus)
     private final Hashtable<String, Menu> allMenus_ = new Hashtable<>();
 
-    @FXML
-    public void initialize() {
+    public AppController() {
 
         AppContext.getServiceLocator().inject(this);
 
-        //index these for ease in adding module menus
-        for (Menu menu : menuBar.getMenus())
+        root_ = new BorderPane();
+        mainSplitPane = new SplitPane();
+        mainSplitPane.setDividerPositions(0.60);
+        mainSplitPane.setOrientation(Orientation.HORIZONTAL);
+        mainSplitPane.getStyleClass().add("hashedBackground");
+        
+        root_.setCenter(mainSplitPane);
+        
+        menuBar = new MenuBar();
+        for (ApplicationMenus menu : ApplicationMenus.values())
         {
-            allMenus_.put(menu.getId(), menu);
+            Menu m = new Menu(menu.getMenuName());
+            m.setId(menu.getMenuId());
+            m.setDisable(true);
+            m.setMnemonicParsing(false);
+            menuBar.getMenus().add(m);
+          //index these for ease in adding module menus
+            allMenus_.put(m.getId(), m);
         }
+        
+        root_.setTop(menuBar);
 
         //Sort them...
         TreeSet<MenuItemI> menusToAdd = new TreeSet<>();
@@ -92,7 +106,6 @@ public class AppController {
 
         for (final MenuItemI menuItemsToCreate : menusToAdd)
         {
-            //TODO make an enumeration of master menu names, and put it into the interfaces module, so these don't have to be hard-coded strings...
             Menu parentMenu = allMenus_.get(menuItemsToCreate.getParentMenuId());
             if (parentMenu == null)
             {
@@ -109,7 +122,7 @@ public class AppController {
                     @Override
                     public void handle(ActionEvent arg0)
                     {
-                        menuItemsToCreate.handleMenuSelection(appBorderPane.getScene().getWindow());
+                        menuItemsToCreate.handleMenuSelection(root_.getScene().getWindow());
                     }
                 });
                 if (menuItemsToCreate.getImage() != null)
@@ -143,7 +156,7 @@ public class AppController {
                         public void invalidated(Observable observable)
                         {
                             //This is a convenience call... not expected to actually show the view.
-                            dv.getMenuBarMenuToShowView().handleMenuSelection(appBorderPane.getScene().getWindow());
+                            dv.getMenuBarMenuToShowView().handleMenuSelection(root_.getScene().getWindow());
                             if (mi.isSelected() && !mainSplitPane.getItems().contains(bp))
                             {
                                 mainSplitPane.getItems().add(bp);
@@ -168,14 +181,21 @@ public class AppController {
             }
         }
     }
+    
+    public BorderPane getRoot()
+    {
+        return root_;
+    }
 
     public void finishInit() {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
 
         // Enable the menus.
-        importExportMenu.setDisable(false);
-        panelsMenu.setDisable(false);
+        for (Menu menu : menuBar.getMenus())
+        {
+            menu.setDisable(false);
+        }
     }
 
 

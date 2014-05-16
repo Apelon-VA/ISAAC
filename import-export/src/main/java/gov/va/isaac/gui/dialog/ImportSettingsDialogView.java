@@ -20,6 +20,7 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class ImportSettingsDialogView implements PopupViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "importExportMenu";
+				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
 			}
 
 			@Override
