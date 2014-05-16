@@ -24,8 +24,11 @@ import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import com.sun.javafx.tk.Toolkit;
 import java.io.IOException;
 import java.util.UUID;
+import javafx.application.Platform;
+import javafx.stage.Window;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
@@ -160,5 +163,38 @@ public class CommonDialogs implements CommonDialogsI
 	public DialogResponse showYesNoDialog(String title, String question)
 	{
 		return yesNoDialog_.showYesNoDialog(title, question);
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.CommonDialogsI#showErrorDialog(java.lang.String, java.lang.String, java.lang.String, javafx.stage.Window)
+	 */
+	@Override
+	public void showErrorDialog(String title, String message, String details, Window parentWindow)
+	{
+		Runnable r = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					ErrorDialog ed = new ErrorDialog(parentWindow);
+					ed.setVariables(title, message, details);
+					ed.showAndWait();
+				}
+				catch (IOException e)
+				{
+					LOG.error("Unexpected error creating an error dialog!", e);
+				}
+			}
+		};
+		if (Toolkit.getToolkit().isFxUserThread())
+		{
+			r.run();
+		}
+		else
+		{
+			Platform.runLater(r);  //TODO not sure what the showAndWait will do inside a runLater... need to test.
+		}
 	}
 }

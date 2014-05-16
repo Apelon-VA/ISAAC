@@ -20,6 +20,7 @@ package gov.va.isaac.interfaces.gui;
 
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import java.util.UUID;
+import javafx.stage.Window;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -58,6 +59,16 @@ public interface CommonDialogsI
 	 * @param details
 	 */
 	public void showErrorDialog(final String title, final String message, final String details);
+	
+	/**
+	 * Present an error dialog to the user, above the specified window.
+	 * 
+	 * @param title
+	 * @param message
+	 * @param details
+	 * @param parentWindow
+	 */
+	public void showErrorDialog(final String title, final String message, final String details, final Window parentWindow);
 
 	/**
 	 * Present a non-modal pop-up window which displays the details of a concept.  Uses the default 
