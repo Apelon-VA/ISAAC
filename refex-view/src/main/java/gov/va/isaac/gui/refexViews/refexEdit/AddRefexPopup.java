@@ -139,6 +139,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		assemblageConceptLabel.getStyleClass().add("boldLabel");
 		gp.add(assemblageConceptLabel, 0, 1);
 
+		//TODO populate the dropdown with proper examples
 		assemblageConcept_ = new ConceptNode(null, true);
 
 		assemblageConcept_.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
