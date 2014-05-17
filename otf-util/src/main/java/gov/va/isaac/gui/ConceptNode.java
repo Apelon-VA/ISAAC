@@ -29,6 +29,7 @@ import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
@@ -99,13 +100,22 @@ public class ConceptNode implements ConceptLookupCallback
 	
 	private ListChangeListener<SimpleDisplayConcept> listChangeListener_;
 	private volatile boolean disableChangeListener_ = false;
-
+	private Function<ConceptVersionBI, String> descriptionReader_;
+	private ObservableList<SimpleDisplayConcept> dropDownOptions_;
+	
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank)
 	{
+		this(initialConcept, flagAsInvalidWhenBlank, null, null);
+	}
+
+	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank, ObservableList<SimpleDisplayConcept> dropDownOptions, 
+			Function<ConceptVersionBI, String> descriptionReader)
+	{
 		c_ = initialConcept;
+		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		dropDownOptions_ = dropDownOptions == null ? AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts() : dropDownOptions;
 		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
 		{
-
 			@Override
 			protected ConceptVersionBI computeValue()
 			{
@@ -136,25 +146,25 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setPromptText("Type, drop or select a concept");
 		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
 		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
-		ObservableList<SimpleDisplayConcept> items = AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts();
 		listChangeListener_ = new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
 			public void onChanged(Change<? extends SimpleDisplayConcept> c)
 			{
-				logger.debug("updating recently used dropdown");
+				//TODO I still have an infinit loop here.  Find and fix.
+				logger.debug("updating concept dropdown");
 				disableChangeListener_ = true;
 				SimpleDisplayConcept temp = cb_.getValue();
-				cb_.setItems(FXCollections.observableArrayList(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts()));
+				cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
 				cb_.setValue(temp);
 				cb_.getSelectionModel().select(temp);
 				disableChangeListener_ = false;
 			}
 		};
 		
-		items.addListener(new WeakListChangeListener<SimpleDisplayConcept>(listChangeListener_));
+		dropDownOptions_.addListener(new WeakListChangeListener<SimpleDisplayConcept>(listChangeListener_));
 		
-		cb_.setItems(FXCollections.observableArrayList(items));
+		cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
 		cb_.setVisibleRowCount(11);
 		
 		ContextMenu cm = new ContextMenu();
@@ -311,7 +321,7 @@ public class ConceptNode implements ConceptLookupCallback
 		}
 		else
 		{
-			codeSetComboBoxConcept_ = new SimpleDisplayConcept(WBUtility.getDescription(c_), c_.getNid(), true);
+			codeSetComboBoxConcept_ = new SimpleDisplayConcept(descriptionReader_.apply(c_), c_.getNid(), true);
 			
 			//In case the description is too long, also put it in a tooltip
 			Tooltip t = new Tooltip(codeSetComboBoxConcept_.getDescription());
@@ -374,6 +384,16 @@ public class ConceptNode implements ConceptLookupCallback
 	protected void set(String newValue)
 	{
 		cb_.setValue(new SimpleDisplayConcept(newValue, 0));
+	}
+	
+	public void set(ConceptVersionBI newValue)
+	{
+		cb_.setValue(new SimpleDisplayConcept(newValue, descriptionReader_));
+	}
+	
+	public void set(SimpleDisplayConcept newValue)
+	{
+		cb_.setValue(newValue);
 	}
 	
 	public BooleanProperty isValid()
