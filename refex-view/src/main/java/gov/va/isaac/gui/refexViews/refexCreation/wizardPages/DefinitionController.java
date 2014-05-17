@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
  * {@link DefinitionController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class DefinitionController implements PanelControllers {
 	@FXML private ResourceBundle resources;
@@ -129,7 +130,6 @@ public class DefinitionController implements PanelControllers {
 		processController = screenParent;
 	}
 
-	@Override
 	public boolean verifyValuesExist() {
 		String errorMsg = null;
 		
@@ -165,6 +165,7 @@ public class DefinitionController implements PanelControllers {
 		if (errorMsg == null) {
 			return true;
 		} else {
+			//TODO switch these over to live feedback error messages, disable the next button
 			AppContext.getCommonDialogs().showInformationDialog("Bad or Missing Content", errorMsg, refsetCreationPane.getScene().getWindow());
 			return false;
 		}

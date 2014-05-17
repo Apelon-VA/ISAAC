@@ -6,93 +6,97 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
-<children><ScrollPane prefHeight="335.0" prefWidth="600.0">
-<content>
-		<VBox fx:id="mainVBox" alignment="TOP_CENTER" prefHeight="130.0" prefWidth="570.0" spacing="10.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="25.0">
+<BorderPane fx:id="summaryPane" minHeight="-Infinity" minWidth="450.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
+	<top>
+		<VBox alignment="TOP_CENTER" BorderPane.alignment="TOP_CENTER">
 			<children>
-				<Label layoutX="189.0" layoutY="28.0" text="Refex Summary">
+				<Label text="Refex Summary" textAlignment="CENTER" BorderPane.alignment="CENTER" VBox.vgrow="NEVER">
 					<font>
 						<Font name="System Bold" size="24.0" />
 					</font>
-					<VBox.margin>
-						<Insets />
-					</VBox.margin>
+					<padding>
+						<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+					</padding>
 				</Label>
-				<HBox layoutX="32.0" layoutY="77.0" spacing="20.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="35.0">
+				<GridPane hgap="5.0" vgap="5.0">
+					<columnConstraints>
+						<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" />
+						<ColumnConstraints hgrow="ALWAYS" />
+					</columnConstraints>
+					<rowConstraints>
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+					</rowConstraints>
 					<children>
-						<HBox>
-							<children>
-								<VBox spacing="5.0">
-									<children>
-										<Label layoutX="32.0" layoutY="77.0" text="Refex Name:">
-											<font>
-												<Font name="System Bold" size="12.0" />
-											</font>
-										</Label>
-										<Label layoutX="32.0" layoutY="77.0" text="Parent Concept:">
-											<font>
-												<Font name="System Bold" size="12.0" />
-											</font>
-										</Label>
-										<Label layoutX="32.0" layoutY="144.0" text="Refex Type:">
-											<font>
-												<Font name="System Bold" size="12.0" />
-											</font>
-										</Label>
-									</children>
-									<opaqueInsets>
-										<Insets />
-									</opaqueInsets>
-									<padding>
-										<Insets right="5.0" />
-									</padding>
-								</VBox>
-								<VBox layoutX="30.0" layoutY="61.0" minWidth="-Infinity" prefWidth="232.0" spacing="5.0">
-									<children>
-										<Label fx:id="actualRefexName" layoutX="157.0" layoutY="77.0" text="Actual Refex Name" textAlignment="RIGHT" />
-										<Label fx:id="actualParentConcept" layoutX="157.0" layoutY="77.0" text="Actual Parent Concept" textAlignment="RIGHT" />
-										<Label fx:id="actualRefexType" text="Actual Refex Type" />
-									</children>
-									<HBox.margin>
-										<Insets />
-									</HBox.margin>
-								</VBox>
-							</children>
-						</HBox>
-						<VBox alignment="TOP_CENTER" layoutX="363.0" layoutY="77.0" minWidth="-Infinity" prefWidth="222.0" spacing="5.0" AnchorPane.rightAnchor="25.0">
-							<children>
-								<Label layoutX="393.0" layoutY="77.0" text="Refex Description">
-									<font>
-										<Font name="System Bold" size="12.0" />
-									</font>
-									<VBox.margin>
-										<Insets />
-									</VBox.margin>
-								</Label>
-								<Label fx:id="actualRefexDescription" alignment="TOP_LEFT" layoutX="378.0" layoutY="77.0" text="Actual Refex Description" wrapText="true">
-									<VBox.margin>
-										<Insets />
-									</VBox.margin>
-								</Label>
-							</children>
-							<HBox.margin>
-								<Insets />
-							</HBox.margin>
-						</VBox>
+						<Label text="Refex Name">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<Label text="Parent Concept" GridPane.rowIndex="1">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<Label text="Refex Type" GridPane.rowIndex="2">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<Label text="Refex Description" GridPane.rowIndex="3" GridPane.valignment="TOP">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<TextArea fx:id="actualRefexDescription" editable="false" minHeight="50.0" prefHeight="50.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+						<TextField fx:id="actualRefexName" editable="false" GridPane.columnIndex="1" />
+						<TextField fx:id="actualParentConcept" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+						<TextField fx:id="actualRefexType" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 					</children>
-				</HBox>
+					<VBox.margin>
+						<Insets bottom="5.0" left="5.0" right="5.0" />
+					</VBox.margin>
+				</GridPane>
 			</children>
 		</VBox>
-</content>
-</ScrollPane>
-		<HBox alignment="CENTER" spacing="100.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0">
+	</top>
+	<bottom>
+		<HBox alignment="CENTER" fillHeight="false" spacing="75.0" BorderPane.alignment="CENTER">
 			<children>
-				<Button fx:id="startOverButton" layoutX="293.0" layoutY="351.0" mnemonicParsing="false" text="Start Over" />
-				<Button fx:id="commitButton" layoutX="173.0" layoutY="351.0" mnemonicParsing="false" text="Commit" />
-				<Button fx:id="cancelButton" layoutX="415.0" layoutY="351.0" mnemonicParsing="false" text="Cancel" />
+				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+				<Button fx:id="startOverButton" mnemonicParsing="false" text="Start Over" />
+				<Button fx:id="commitButton" mnemonicParsing="false" text="Commit" />
 			</children>
+			<BorderPane.margin>
+				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+			</BorderPane.margin>
 		</HBox>
-</children>
-</AnchorPane>
+	</bottom>
+	<center>
+		<ScrollPane fitToHeight="true" fitToWidth="true" minHeight="50.0" prefHeight="50.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+			<BorderPane.margin>
+				<Insets left="2.0" right="2.0" />
+			</BorderPane.margin>
+			<VBox.margin>
+				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+			</VBox.margin>
+			<content>
+				<GridPane fx:id="columnGridPane" hgap="5.0" vgap="5.0">
+					<columnConstraints>
+						<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="115.0" minWidth="115.0" prefWidth="115.0" />
+						<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="160.0" minWidth="160.0" prefWidth="160.0" />
+						<ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="100.0" />
+					</columnConstraints>
+					<children>
+						<Label text="No Rows" GridPane.columnSpan="3" GridPane.halignment="CENTER" />
+					</children>
+					<rowConstraints>
+						<RowConstraints />
+					</rowConstraints>
+				</GridPane>
+			</content>
+		</ScrollPane>
+	</center>
+</BorderPane>

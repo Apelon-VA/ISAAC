@@ -24,7 +24,6 @@ import gov.va.isaac.interfaces.gui.views.RefexCreationViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;

@@ -20,7 +20,9 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import java.io.IOException;
 import java.net.URL;
-
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -28,7 +30,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 
 /**
@@ -40,7 +41,7 @@ public class NewColumnDialog extends Stage
 {
 	private NewColumnDialogController ncdc_;
 
-	public NewColumnDialog(Window owner, String name) throws IOException
+	public NewColumnDialog(Window owner) throws IOException
 	{
 		super();
 
@@ -59,11 +60,21 @@ public class NewColumnDialog extends Stage
 		setScene(scene);
 
 		ncdc_ = loader.getController();
-		ncdc_.setName(name);
+		
+		//Problem on linux, where modal windows don't always stay on top...
+		iconifiedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			{
+				Platform.runLater(() -> {
+					toFront();
+				});
+			}
+		});
 	}
 	
 	public ConceptChronicleBI getNewColumnConcept() {
 		return ncdc_.getNewColumnConcept();
 	}
-
 }

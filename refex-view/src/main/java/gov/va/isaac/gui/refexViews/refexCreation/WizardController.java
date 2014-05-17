@@ -115,15 +115,6 @@ public class WizardController {
 		return extendedFieldsCount;
 	}
 
-	public String getColumnDescription(int column) {
-		try {
-			return columnNids.get(column).getFullySpecifiedDescription().getText().trim();
-		} catch (Exception e) {
-			logger.error("Unable to identify FSN of column #" + column, e);
-			return "Not Accessible";
-		}
-	}
-
 	public String getColumnType(int column) {
 		return columnTypes.get(column).getDisplayName();
 	}
@@ -153,12 +144,12 @@ public class WizardController {
 		}
 		return result;
 	}
-	public String getColumnName(int column) {
+	public ConceptVersionBI getColumnName(int column) {
 		try {
-			return columnNids.get(column).getPreferredDescription().getText().trim();
+			return columnNids.get(column);
 		} catch (Exception e) {
 			logger.error("Unable to identify FSN of column #" + column, e);
-			return "Not Accessible";
+			return null;
 		}
 	}
 	public boolean isColumnMandatory(int column) {

@@ -18,19 +18,24 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
+import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.function.Function;
+import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -38,80 +43,127 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
  * 
  * {@link ColumnController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class ColumnController implements PanelControllers {
 	@FXML private ResourceBundle resources;
-	@FXML private URL location;
 	@FXML private Button nextButton;
 	@FXML private Button cancelButton;
 	@FXML private TextField defaultValue;
-	@FXML private ChoiceBox<Choice> typeOption = new ChoiceBox<Choice>();  //TODO why are these being constructed, while they are annotated?
+	@FXML private ChoiceBox<Choice> typeOption;
 	@FXML private Button backButton;
-	@FXML private AnchorPane columnDefinitionPane;
+	@FXML private BorderPane columnDefinitionPane;
 	@FXML private Label columnTitle;
-	@FXML private ChoiceBox<String> columnNameSelector = new ChoiceBox<>();
-	@FXML private ChoiceBox<String> columnDescSelector = new ChoiceBox<>();
+	@FXML private HBox columnNameHolder;
+	@FXML private TextArea columnDescription;
 	@FXML private Button newColNameButton;
-	@FXML private Button newColDescButton;
 	@FXML private CheckBox isMandatory;
+	@FXML private GridPane gridPane;
+
 
 	static ViewCoordinate vc = null;
 	private static int currentCol = 0;
 	ScreensController processController;
-	Map<String, Map<String, Integer>> shortLongNameColumnMap = new HashMap<>();
 	private Object defaultValueObject = null;
+	private ConceptNode columnNameSelection;
+	private BooleanBinding allValid_;
+	private SimpleStringProperty defaultValueInvalidReason_ = new SimpleStringProperty("");
+
+	private ObservableList<SimpleDisplayConcept> columnNameChoices = new ObservableListWrapper<>(new ArrayList<SimpleDisplayConcept>());
+	private Function<ConceptVersionBI, String> colNameReader_ = (conceptVersion) -> 
+	{
+		//other fields don't matter, just using this to read back the description.
+		RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, conceptVersion.getPrimordialUuid(), null, null);
+		return rdc.getColumnName();
+	};
+	
 	
 	private static final Logger logger = LoggerFactory.getLogger(ColumnController.class);
 
 	@Override
 	public void initialize() {		
-		
+		assert nextButton != null : "fx:id=\"nextButton\" was not injected: check your FXML file 'column.fxml'.";
+		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'column.fxml'.";
+		assert newColNameButton != null : "fx:id=\"newColNameButton\" was not injected: check your FXML file 'column.fxml'.";
+		assert defaultValue != null : "fx:id=\"defaultValue\" was not injected: check your FXML file 'column.fxml'.";
+		assert typeOption != null : "fx:id=\"typeOption\" was not injected: check your FXML file 'column.fxml'.";
+		assert backButton != null : "fx:id=\"backButton\" was not injected: check your FXML file 'column.fxml'.";
+		assert columnNameHolder != null : "fx:id=\"columnNameHolder\" was not injected: check your FXML file 'column.fxml'.";
+		assert columnTitle != null : "fx:id=\"columnTitle\" was not injected: check your FXML file 'column.fxml'.";
+		assert isMandatory != null : "fx:id=\"isMandatory\" was not injected: check your FXML file 'column.fxml'.";
+		assert columnDescription != null : "fx:id=\"columnDescription\" was not injected: check your FXML file 'column.fxml'.";
+		assert columnDefinitionPane != null : "fx:id=\"columnDefinitionPane\" was not injected: check your FXML file 'column.fxml'.";
+		assert gridPane != null : "fx:id=\"gridPane\" was not injected: check your FXML file 'column.fxml'.";
+
 		vc = WBUtility.getViewCoordinate();
+
+		columnDescription.setEditable(false);
+		
+		columnNameSelection = new ConceptNode(null, true, columnNameChoices, colNameReader_);
+		
+		columnNameHolder.getChildren().add(columnNameSelection.getNode());
+		HBox.setHgrow(columnNameSelection.getNode(), Priority.ALWAYS);
 
 		initializeTypeConcepts();
 		initializeColumnConcepts();
-
-		columnDescSelector.setDisable(true);
-		newColDescButton.setDisable(true);
-
+		
+		allValid_ = new BooleanBinding()
+		{
+			{
+				bind(columnNameSelection.getConceptProperty(), defaultValueInvalidReason_);
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				return columnNameSelection.isValid().get() && defaultValueInvalidReason_.get().length() == 0;
+			}
+		};
+		
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				((Stage) columnDefinitionPane.getScene().getWindow()).close();
 			}
 		});
+		
+		nextButton.disableProperty().bind(allValid_.not());
 
 		nextButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				if (verifyValuesExist()) {
-					processValues();
-					++currentCol;
-					
-					if (currentCol < processController.getWizard().getExtendedFieldsCount()) {
-						processController.loadColumnScreen(currentCol);
-						processController.setScreen(ScreensController.COLUMN_SCREEN);
-					} else {
-						processController.loadSummaryScreen();
-						processController.setScreen(ScreensController.SUMMARY_SCREEN);
-					}
+				processValues();
+				++currentCol;
+				
+				if (currentCol < processController.getWizard().getExtendedFieldsCount()) {
+					processController.loadColumnScreen(currentCol);
+					processController.setScreen(ScreensController.COLUMN_SCREEN);
+				} else {
+					processController.loadSummaryScreen();
+					processController.setScreen(ScreensController.SUMMARY_SCREEN);
 				}
 			}
 		});
@@ -133,37 +185,63 @@ public class ColumnController implements PanelControllers {
 			@Override
 			public void handle(ActionEvent e) {
 				// Must Define Name & Desc
-				getNewColumnConcept(null);
+				createNewColumnConcept();
 			}
 		});
 		
-		newColDescButton.setOnAction(new EventHandler<ActionEvent>() {
+		columnNameSelection.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
+		{
 			@Override
-			public void handle(ActionEvent e) {
-				// Must Define new Desc associated with existing name
-				if (columnNameSelector.getSelectionModel().getSelectedIndex() > 0) {
-					getNewColumnConcept(columnNameSelector.getSelectionModel().getSelectedItem().toString());
-				} else {
-					getNewColumnConcept(null);
+			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
+			{
+				if (newValue != null)
+				{
+					//other fields don't matter, just using this to read back the description.
+					RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, newValue.getPrimordialUuid(), null, null);
+					columnDescription.setText(rdc.getColumnDescription());
+				}
+				else
+				{
+					columnDescription.setText("");
 				}
 			}
 		});
 		
-		columnNameSelector.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>()
-        {
+		defaultValue.textProperty().addListener(new ChangeListener<String>()
+		{
 			@Override
-			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
-				columnDescSelector.setDisable(false);
-				newColDescButton.setDisable(false);
-				setupDescSelector(newVal);
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+			{
+				defaultValueInvalidReason_.set(verifyDefaultValue());
 			}
-        });
+		});
+		
+		typeOption.valueProperty().addListener(new ChangeListener<Choice>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Choice> observable, Choice oldValue, Choice newValue)
+			{
+				defaultValueInvalidReason_.set(verifyDefaultValue());
+				if (newValue.getEnumToken() == RefexDynamicDataType.POLYMORPHIC.getTypeToken())
+				{
+					defaultValue.setText("");
+					defaultValue.setDisable(true);
+				}
+				else
+				{
+					defaultValue.setDisable(false);
+				}
+			}
+		});
+		
+		StackPane sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(defaultValue, sp, gridPane);
+		ErrorMarkerUtils.setupErrorMarker(defaultValue, sp, defaultValueInvalidReason_);
 	}
 	
 	private void initializeTypeConcepts() {
 
 		RefexDynamicDataType[] columnTypes = RefexDynamicDataType.values();
-		typeOption.getItems().add(new Choice("No selection"));
 		
 		for (RefexDynamicDataType type : columnTypes) {
 			if (type == RefexDynamicDataType.UNKNOWN)
@@ -172,62 +250,23 @@ public class ColumnController implements PanelControllers {
 			}
 			typeOption.getItems().add(new Choice(type));
 		}
-
 		typeOption.getSelectionModel().selectFirst();
 	}
 
-	private void getNewColumnConcept(String name) {
+	private void createNewColumnConcept() {
 		try {
-			NewColumnDialog dialog = new NewColumnDialog(processController.getScene().getWindow(), name);
+			NewColumnDialog dialog = new NewColumnDialog(processController.getScene().getWindow());
 			dialog.showAndWait();
 
 			ConceptChronicleBI newCon = dialog.getNewColumnConcept();
 			
 			if (newCon != null) {
-				String lName = newCon.getVersion(vc).getFullySpecifiedDescription().getText();
-				String sName = newCon.getVersion(vc).getPreferredDescription().getText();
-				updateShortLongNameMap(newCon.getVersion(vc));
 				
-				columnNameSelector.getItems().add(sName);
-				columnNameSelector.getSelectionModel().select(columnNameSelector.getItems().size() - 1);
-
-				columnDescSelector.getItems().add(lName);
-				columnDescSelector.getSelectionModel().select(columnDescSelector.getItems().size() - 1);
-}
+				columnNameChoices.add(new SimpleDisplayConcept(newCon.getVersion(vc), colNameReader_));
+				columnNameSelection.set(newCon.getVersion(vc));
+			}
 		} catch (IOException | ContradictionException e) {
-			logger.error("Unable to access new dialog box from application", e);
-		}
-	}
-
-	private void setupDescSelector(String newVal) {
-		try {
-			columnDescSelector.getItems().clear();
-			columnDescSelector.getItems().add("No selection");
-			Map<String, Integer> descMap = shortLongNameColumnMap.get(newVal);
-			
-			if (descMap != null) {
-				for (String desc : descMap.keySet()) {
-					columnDescSelector.getItems().add(desc);
-				}
-	
-				columnDescSelector.getSelectionModel().selectFirst();
-			}
-		} catch (Exception e) {
-			logger.error("Unable to access concepts descriptions", e);
-		}
-	}
-
-	private void setupNameSelector() {
-		try {
-			columnNameSelector.getItems().add("No selection");
-			
-			for (String name : shortLongNameColumnMap.keySet()) {
-				columnNameSelector.getItems().add(name);
-			}
-
-			columnNameSelector.getSelectionModel().selectFirst();
-		} catch (Exception e) {
-			logger.error("Unable to access concepts names", e);
+			logger.error("Unexpected error creating new column concept", e);
 		}
 	}
 
@@ -237,29 +276,11 @@ public class ColumnController implements PanelControllers {
 			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
 
 			for (ConceptVersionBI col : colCons) {
-				updateShortLongNameMap(col);
+				columnNameChoices.add(new SimpleDisplayConcept(col, colNameReader_));
 			}
-			
-			setupNameSelector();
+			columnNameSelection.set(columnNameChoices.get(0));
 		} catch (Exception e1) {
 			logger.error("Unable to access column concepts", e1);
-		}
-	}
-
-	private void updateShortLongNameMap(ConceptVersionBI col) {
-		try {
-			String lName = col.getVersion(vc).getFullySpecifiedDescription().getText();
-			String sName = col.getVersion(vc).getPreferredDescription().getText();
-			int nid = col.getNid();
-			
-			if (!shortLongNameColumnMap.containsKey(sName)) {
-				Map<String, Integer> nameNidMap = new HashMap<>();
-				shortLongNameColumnMap.put(sName, nameNidMap);
-			}
-			
-			shortLongNameColumnMap.get(sName).put(lName, nid);	
-		} catch (Exception e) {
-			logger.error("Unable to access column concept for processing: " + col.getPrimordialUuid(), e);
 		}
 	}
 
@@ -275,154 +296,110 @@ public class ColumnController implements PanelControllers {
 	
 	private void updatePreviousContent() {
 		RefexDynamicDataType type = processController.getWizard().getColumnTypeToken(currentCol);
-		String name = processController.getWizard().getColumnName(currentCol);
-		String desc = processController.getWizard().getColumnDescription(currentCol);
+		ConceptVersionBI name = processController.getWizard().getColumnName(currentCol);
 		Object defVal = processController.getWizard().getColumnDefaultValue(currentCol);
 		boolean isMand = processController.getWizard().isColumnMandatory(currentCol);
 
-		columnNameSelector.getSelectionModel().select(name);
-		columnDescSelector.getSelectionModel().select(desc);
+		//TODO this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
+		//The Platform.runLater should _NOT_ be necessary, but it seems to prevent the infinite loop for now.
+		Platform.runLater(() -> {columnNameSelection.set(name);});
 		typeOption.getSelectionModel().select(new Choice(type));
-		defaultValue.setText(defVal.toString());
+		defaultValue.setText(defVal == null ? "" : defVal.toString());
 		isMandatory.setSelected(isMand);
 	}
 
 	@Override
 	public void processValues() {
 		
-		String colName = columnNameSelector.getSelectionModel().getSelectedItem().toString();
-		String colDesc = columnDescSelector.getSelectionModel().getSelectedItem().toString();
-		
-		ConceptVersionBI colCon = WBUtility.getConceptVersion(shortLongNameColumnMap.get(colName).get(colDesc));
+		ConceptVersionBI colCon = columnNameSelection.getConcept();
 		RefexDynamicDataType type = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
-		
 		processController.getWizard().setColumnVals(currentCol, colCon, type, defaultValueObject, isMandatory.isSelected());
 	}
 
-	@Override
-	public boolean verifyValuesExist() {
-		String errorMsg = null;
-		if (columnNameSelector.getSelectionModel().getSelectedIndex() == 0) {
-			errorMsg = "No column name selected";
-		} else if (columnDescSelector.getSelectionModel().getSelectedIndex() == 0) {
-			errorMsg = "No column description selected";
-		} else if (typeOption.getSelectionModel().getSelectedItem().getEnumToken() == Integer.MAX_VALUE) {
-			errorMsg = "No column type selected";
-		} else {
-			if (defaultValue.getText().trim().length() > 0) {
-				errorMsg = verifyDefaultValue();
-			}
-		}
-
-		if (errorMsg == null) {
-			return true;
-		} else {
-			AppContext.getCommonDialogs().showInformationDialog(
-					"Bad or Missing Content", errorMsg, columnDefinitionPane.getScene().getWindow());
-			return false;
-		}
-	}
-
 	private String verifyDefaultValue() {
-		String errorMsg = null;
-		RefexDynamicDataType enumToken = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
+		RefexDynamicDataType dataType = RefexDynamicDataType.getFromToken(typeOption.getSelectionModel().getSelectedItem().getEnumToken());
 		String defVal = defaultValue.getText().trim();
-		//String colName = columnNameSelector.getSelectionModel().getSelectedItem().toString();
+		
+		if (defVal.length() == 0)
+		{
+			return "";
+		}
 
-		if (enumToken == RefexDynamicDataType.BOOLEAN) {
-			if (!defVal.equalsIgnoreCase("true") && 
-				!defVal.equalsIgnoreCase("false")) {
-				errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
-			} else {
-				try {
-					defaultValueObject = new Boolean(defVal);
-				} catch (Exception e) {
-					errorMsg = "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
-				}
+		if (dataType == RefexDynamicDataType.BOOLEAN) {
+			if (!defVal.equalsIgnoreCase("true") && !defVal.equalsIgnoreCase("false")) {
+					return "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
+				} 
+			else {
+				//TODO this should come from a boolean picker, not a text field.
+				defaultValueObject = new Boolean(defVal);
 			}
-		} else if (enumToken == RefexDynamicDataType.DOUBLE) {
+		} else if (dataType == RefexDynamicDataType.DOUBLE) {
 			try {
 				defaultValueObject = Double.valueOf(defVal);
 			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid DOUBLE as specified by Column Type";
+				return "Default Value is not a valid DOUBLE as specified by Column Type";
 			}
-		} else if (enumToken == RefexDynamicDataType.FLOAT) {
+		} else if (dataType == RefexDynamicDataType.FLOAT) {
 			try {
 				defaultValueObject = Float.valueOf(defVal);
 			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid FLOAT as specified by Column Type";
+				return "Default Value is not a valid FLOAT as specified by Column Type";
 			}
-		} else if (enumToken == RefexDynamicDataType.INTEGER) {
+		} else if (dataType == RefexDynamicDataType.INTEGER) {
 			try {
 				defaultValueObject = Integer.valueOf(defVal);
 			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid INTEGER as specified by Column Type";
+				return "Default Value is not a valid INTEGER as specified by Column Type";
 			}
-		} else if (enumToken == RefexDynamicDataType.LONG) {
+		} else if (dataType == RefexDynamicDataType.LONG) {
 			try {
 				defaultValueObject = Long.valueOf(defVal);
 			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid LONG as specified by Column Type";
+				return "Default Value is not a valid LONG as specified by Column Type";
 			}
-		} else if (enumToken == RefexDynamicDataType.NID) {
+		} else if (dataType == RefexDynamicDataType.NID) {
+			//TODO this needs to come from a conceptNode field.
 			int nid = Integer.MAX_VALUE;
 			try {
 				nid = Integer.valueOf(defVal);
 			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid NID as specified by Column Type.  It must be an INTEGER";
+				return "Default Value is not a valid NID as specified by Column Type.  It must be an INTEGER";
 			}
-			
-			if (errorMsg == null) {
-				if (nid >= 0) {
-					errorMsg = "Default Value is not a valid NID.  It must be less than zero";
+
+			if (nid >= 0) {
+				return "Default Value is not a valid NID.  It must be less than zero";
+			} else {
+				ConceptVersionBI comp = WBUtility.getConceptVersion(nid);
+				if (comp == null) {
+					return "Default Value is not a valid NID.  The value does not refer to a component in the database";
 				} else {
-					ConceptVersionBI comp = WBUtility.getConceptVersion(nid);
-					if (comp == null) {
-						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
-					} else {
-						try {
-							defaultValueObject = nid;
-						} catch (Exception e) {
-							errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
-						}
-					}
+					defaultValueObject = nid;
 				}
 			}
-		} else if (enumToken == RefexDynamicDataType.STRING) {
+		} else if (dataType == RefexDynamicDataType.STRING) {
 			try {
 				defaultValueObject = String.valueOf(defVal);
 			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid STRING as specified by Column Type";
+				return "Default Value is not a valid STRING as specified by Column Type";
 			}
-		} else if (enumToken == RefexDynamicDataType.UUID) {
-			UUID uid = UUID.randomUUID();
-			try {
-				uid = UUID.fromString(defVal);
-			} catch (Exception e) {
-				errorMsg = "Default Value is not a valid UUID as specified by Column Type.";
+		} else if (dataType == RefexDynamicDataType.UUID) {
+			if (!Utility.isUUID(defVal))
+			{
+				return "Default Value is not a valid UUID as specified by Column Type.";
 			}
-			
-			if (errorMsg == null) {
-				ConceptVersionBI comp = WBUtility.getConceptVersion(uid);
-				if (comp == null) {
-					errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
-				} else {
-					try {
-						defaultValueObject = uid;
-					} catch (Exception e) {
-						errorMsg = "Default Value is not a valid NID.  The value does not refer to a component in the database";
-					}
-				}
+			else
+			{
+				defaultValueObject = UUID.fromString(defVal);
 			}
-		} else if (enumToken == RefexDynamicDataType.BYTEARRAY) {
-			// TODO			
-		} else if (enumToken == RefexDynamicDataType.POLYMORPHIC) {
-			// TODO
-		} else if (enumToken == RefexDynamicDataType.UNKNOWN) {
-			// TODO			
-		} 
-		
-		return errorMsg;
+		} else if (dataType == RefexDynamicDataType.BYTEARRAY) {
+			// TODO  rebuild this data field - text field isn't appropriate for all..  this needs to come from a file chooser.
+		} else if (dataType == RefexDynamicDataType.POLYMORPHIC) {
+			// not applicable
+			defaultValueObject = null;
+		} else if (dataType == RefexDynamicDataType.UNKNOWN) {
+			logger.error("Invalid case");
+		}
+		return "";
 	}
 
 	private void setupColumnDef() {
@@ -438,8 +415,6 @@ class Choice {
 	Integer RefexDynamicDataType;
 	String displayString;
 	private int enumToken = Integer.MAX_VALUE;
-	
-	private static final Logger logger = LoggerFactory.getLogger(Choice.class);
 
 	public Choice(RefexDynamicDataType type) {
 		this.enumToken = type.getTypeToken();
@@ -479,4 +454,3 @@ class Choice {
 		return result;
 	}
 }
-
