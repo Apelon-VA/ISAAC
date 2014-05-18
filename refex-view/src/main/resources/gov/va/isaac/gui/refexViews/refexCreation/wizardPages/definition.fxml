@@ -9,7 +9,7 @@
 <BorderPane fx:id="refsetCreationPane" prefHeight="419.0" prefWidth="591.0" xmlns="http://javafx.com/javafx/8"
 	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.DefinitionController">
 	<center>
-		<GridPane hgap="10.0" vgap="10.0">
+		<GridPane hgap="10.0" vgap="10.0" fx:id="gridPane">
 			<columnConstraints>
 				<ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="175.0" minWidth="160.0"
 					prefWidth="175.0" />
