@@ -22,8 +22,10 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -39,8 +41,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -113,44 +117,46 @@ public class SummaryController implements PanelControllers {
 
 			RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, col.getPrimordialUuid(), null, null);
 			
-			//row one
-			Label nameLabel = createLabel("Name", true);
-			columnGridPane.add(nameLabel, 0, row, 2, 1);
-			GridPane.setHalignment(nameLabel, HPos.CENTER);
-			Label descriptionLabel = createLabel("Description", true);
-			columnGridPane.add(descriptionLabel, 2, row++);
-			GridPane.setHalignment(descriptionLabel, HPos.CENTER);
+			//row 1
+//			Label nameLabel = createLabel("Name: " + rdc.getColumnName(), true);
+//			nameLabel.setFont(new Font(16));
+			HBox nameBox = createColumnName(rdc.getColumnName());
+			columnGridPane.add(nameBox, 0, row++, 3, 1);
+			GridPane.setHalignment(nameBox, HPos.CENTER);
 			
 			//row 2
+			Label descriptionLabel = createLabel("Description", true);
+			columnGridPane.add(descriptionLabel, 0, row);
+			GridPane.setHalignment(descriptionLabel, HPos.CENTER);
 			
-			TextField tf = new TextField(rdc.getColumnName());
-			tf.setEditable(false);
-			columnGridPane.add(tf, 0, row, 2, 1);
-			tf.setPrefWidth(Double.MAX_VALUE);
+			columnGridPane.add(createLabel("Type", true), 1, row);
+			columnGridPane.add(createLabel(colType, false), 2, row++);
+
+			//row 3
 			TextArea description = new TextArea(rdc.getColumnDescription());
 			description.setEditable(false);
 			description.setWrapText(true);
-			description.setMaxHeight(hasDefaultValue ? 90 : 80);
-			columnGridPane.add(description, 2, row++, 1, (hasDefaultValue ? 4 : 3));
-			GridPane.setValignment(description, VPos.TOP);
+			description.setMaxHeight(90);
+			columnGridPane.add(description, 0, row++, 1, 3);
 			
-			//row 3
-			columnGridPane.add(createLabel("Type", true), 0, row);
-			columnGridPane.add(createLabel(colType, false), 1, row++);
+			GridPane.setValignment(description, VPos.TOP);
+			columnGridPane.add(createLabel("Mandatory", true), 1, row);
+			columnGridPane.add(createLabel(colIsMandatory, false), 2, row++);
 			
 			//row 4
-			columnGridPane.add(createLabel("Mandatory", true), 0, row);
-			columnGridPane.add(createLabel(colIsMandatory, false), 1, row++);
-			
-			//row 5
+			Label l = createLabel("Default Value", true);
+			columnGridPane.add(l, 1, row);
+			GridPane.setValignment(l, VPos.TOP);
+
 			if (hasDefaultValue)
 			{
-				Label l = createLabel("Default Value", true);
-				columnGridPane.add(l, 0, row);
-				GridPane.setValignment(l, VPos.TOP);
 				l = createLabel(colDefaultValue.toString(), false);
 				GridPane.setValignment(l, VPos.TOP);
-				columnGridPane.add(l, 1, row++);
+				columnGridPane.add(l, 2, row++);
+			} else {
+				l = createLabel("<None>", false);
+				GridPane.setValignment(l, VPos.TOP);
+				columnGridPane.add(l, 2, row++);
 			}
 		}
 		if (row == 0)
@@ -180,6 +186,20 @@ public class SummaryController implements PanelControllers {
 		return columnHeader;
 	}
 
+	private HBox createColumnName(String colName) {
+		HBox nameBox = new HBox(5);
+		nameBox.setAlignment(Pos.CENTER);
+
+		Label nameLabel = createLabel("Name", true);
+		nameLabel.setFont(new Font(15));
+		nameBox.getChildren().add(nameLabel);
+
+		Label nameVal = new Label(colName);
+		nameVal.setFont(new Font(15));
+		nameBox.getChildren().add(nameVal);
+		
+		return nameBox;
+	}
 
 	private void setupRefexContent() {
 		actualRefexName.setText(processController.getWizard().getRefexName());
