@@ -20,8 +20,8 @@ package gov.va.isaac.gui.util;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableStringValue;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -51,7 +51,7 @@ public class ErrorMarkerUtils
 	 * Setup an 'EXCLAMATION' error marker on the component.  Automatically displays anytime that the reasonWhyControlInvalid value
 	 * is not empty.  Hides when the reasonWhyControlInvalid is empty.
 	 */
-	public static Node setupErrorMarker(Control initialControl, StringProperty reasonWhyControlInvalid)
+	public static Node setupErrorMarker(Control initialControl, ObservableStringValue reasonWhyControlInvalid)
 	{
 		return setupErrorMarker(initialControl, new StackPane(), reasonWhyControlInvalid);
 	}
@@ -60,7 +60,7 @@ public class ErrorMarkerUtils
 	 * Setup an 'EXCLAMATION' error marker on the component.  Automatically displays anytime that the reasonWhyControlInvalid value
 	 * is not empty.  Hides when the reasonWhyControlInvalid is empty.
 	 */
-	public static Node setupErrorMarker(Control initialControl, StackPane stackPane, StringProperty reasonWhyControlInvalid)
+	public static Node setupErrorMarker(Control initialControl, StackPane stackPane, ObservableStringValue reasonWhyControlInvalid)
 	{
 		ImageView exclamation = Images.EXCLAMATION.createImageView();
 		
@@ -92,7 +92,7 @@ public class ErrorMarkerUtils
 	/**
 	 * Setup an 'INFORMATION' info marker on the component.  Automatically displays anytime that the initialControl is disabled.
 	 */
-	public static Node setupDisabledInfoMarker(Control initialControl, StringProperty reasonWhyControlDisabled)
+	public static Node setupDisabledInfoMarker(Control initialControl, ObservableStringValue reasonWhyControlDisabled)
 	{
 		return setupDisabledInfoMarker(initialControl, new StackPane(), reasonWhyControlDisabled);
 	}
@@ -101,7 +101,7 @@ public class ErrorMarkerUtils
 	 * Setup an 'INFORMATION' info marker on the component.  Automatically displays anytime that the initialControl is disabled.
 	 * Put the initial control in the provided stack pane
 	 */
-	public static Node setupDisabledInfoMarker(Control initialControl, StackPane stackPane, StringProperty reasonWhyControlDisabled)
+	public static Node setupDisabledInfoMarker(Control initialControl, StackPane stackPane, ObservableStringValue reasonWhyControlDisabled)
 	{
 		ImageView information = Images.INFORMATION.createImageView();
 		
