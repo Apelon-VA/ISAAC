@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.MenuItemI;
@@ -37,6 +38,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -64,6 +66,7 @@ import org.glassfish.hk2.runlevel.RunLevelException;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
@@ -81,6 +84,7 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
  * 
@@ -139,8 +143,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		assemblageConceptLabel.getStyleClass().add("boldLabel");
 		gp.add(assemblageConceptLabel, 0, 1);
 
-		//TODO populate the dropdown with proper examples
-		assemblageConcept_ = new ConceptNode(null, true);
+		assemblageConcept_ = new ConceptNode(null, true, buildAssemblageConceptList(), null);
 
 		assemblageConcept_.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
 		{
@@ -287,56 +290,52 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 		referencedComponentValue.setText(WBUtility.getDescription(referencedComponentNid_));
 
-		assemblageIsValid_.addListener(new ChangeListener<Boolean>()
+		assemblageConcept_.getConceptProperty().addListener((observable, oldV, newV) -> 
 		{
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			if (assemblageConcept_.isValid().get())
 			{
-				if (newValue)
+				for (StringProperty ssp : currentDataFieldWarnings_)
 				{
-					for (StringProperty ssp : currentDataFieldWarnings_)
-					{
-						allValid_.removeBinding(ssp);
-					}
-					currentDataFieldWarnings_.clear();
-					currentDataFields_.clear();
+					allValid_.removeBinding(ssp);
+				}
+				currentDataFieldWarnings_.clear();
+				currentDataFields_.clear();
 
-					GridPane gp = new GridPane();
-					gp.setHgap(10.0);
-					gp.setVgap(10.0);
-					gp.setStyle("-fx-padding: 5;");
-					int row = 0;
-					for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
-					{
-						Label l = new Label(ci.getColumnName());
-						l.getStyleClass().add("boldLabel");
-						Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
-						gp.add(l, 0, row);
-						Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue());
-						gp.add(n, 1, row++);
-					}
+				GridPane gp = new GridPane();
+				gp.setHgap(10.0);
+				gp.setVgap(10.0);
+				gp.setStyle("-fx-padding: 5;");
+				int row = 0;
+				for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
+				{
+					Label l = new Label(ci.getColumnName());
+					l.getStyleClass().add("boldLabel");
+					Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
+					gp.add(l, 0, row);
+					Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue());
+					gp.add(n, 1, row++);
+				}
 
-					ColumnConstraints cc = new ColumnConstraints();
-					cc.setHgrow(Priority.NEVER);
-					gp.getColumnConstraints().add(cc);
+				ColumnConstraints cc = new ColumnConstraints();
+				cc.setHgrow(Priority.NEVER);
+				gp.getColumnConstraints().add(cc);
 
-					cc = new ColumnConstraints();
-					cc.setHgrow(Priority.ALWAYS);
-					gp.getColumnConstraints().add(cc);
+				cc = new ColumnConstraints();
+				cc.setHgrow(Priority.ALWAYS);
+				gp.getColumnConstraints().add(cc);
 
-					if (row == 0)
-					{
-						sp_.setContent(new Label("This assemblage does not allow data fields"));
-					}
-					else
-					{
-						sp_.setContent(gp);
-					}
+				if (row == 0)
+				{
+					sp_.setContent(new Label("This assemblage does not allow data fields"));
 				}
 				else
 				{
-					sp_.setContent(null);
+					sp_.setContent(gp);
 				}
+			}
+			else
+			{
+				sp_.setContent(null);
 			}
 		});
 	}
@@ -611,5 +610,25 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		setHeight(400);
 
 		show();
+	}
+	
+	private ObservableList<SimpleDisplayConcept> buildAssemblageConceptList()
+	{
+		ObservableList<SimpleDisplayConcept> assemblageConcepts = new ObservableListWrapper<>(new ArrayList<SimpleDisplayConcept>());
+		try
+		{
+			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
+			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+
+			for (ConceptVersionBI col : colCons) {
+				assemblageConcepts.add(new SimpleDisplayConcept(col));
+			}
+		}
+		catch (Exception e)
+		{
+			logger_.error("Unexpected error reading existing assemblage concepts", e);
+		}
+
+		return assemblageConcepts;
 	}
 }
