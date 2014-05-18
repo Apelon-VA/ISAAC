@@ -9,7 +9,7 @@
 <?import javafx.scene.paint.*?>
 <?scenebuilder-stylesheet Dialog.css?>
 
-<AnchorPane id="AnchorPane" fx:id="rootPane" stylesheets="@Dialog.css" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="110.0" prefWidth="400.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml" fx:controller="gov.va.isaac.gui.dialog.YesNoDialogController">
+<AnchorPane id="AnchorPane" fx:id="rootPane" stylesheets="@Dialog.css" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="125.0" prefWidth="400.0" styleClass="dialogBackground" xmlns:fx="http://javafx.com/fxml" fx:controller="gov.va.isaac.gui.dialog.YesNoDialogController">
   <children>
     <ImageView fx:id="icon" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="15.0">
       <image>

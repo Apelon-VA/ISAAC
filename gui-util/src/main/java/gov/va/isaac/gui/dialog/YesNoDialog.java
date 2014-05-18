@@ -20,6 +20,9 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import java.io.IOException;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -49,6 +52,18 @@ public class YesNoDialog
 		Scene scene = new Scene((Parent) loader.load(YesNoDialogController.class.getResourceAsStream("YesNoDialog.fxml")));
 		yndc_ = loader.getController();
 		yesNoStage_.setScene(scene);
+		
+		//Problem on linux, where modal windows don't always stay on top...
+		yesNoStage_.iconifiedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			{
+				Platform.runLater(() -> {
+					yesNoStage_.toFront();
+				});
+			}
+		});
 	}
 
 	public DialogResponse showYesNoDialog(String title, String question)
