@@ -313,7 +313,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
 					gp.add(l, 0, row);
 					Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue());
-					gp.add(n, 1, row++);
+					gp.add(n, 1, row);
+					gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
 				}
 
 				ColumnConstraints cc = new ColumnConstraints();
@@ -322,6 +323,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 				cc = new ColumnConstraints();
 				cc.setHgrow(Priority.ALWAYS);
+				gp.getColumnConstraints().add(cc);
+				
+				cc = new ColumnConstraints();
+				cc.setHgrow(Priority.NEVER);
 				gp.getColumnConstraints().add(cc);
 
 				if (row == 0)
