@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="summaryPane" minHeight="-Infinity" minWidth="450.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
+<BorderPane fx:id="summaryPane" minHeight="-Infinity" minWidth="450.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
 	<top>
 		<VBox alignment="TOP_CENTER" BorderPane.alignment="TOP_CENTER">
 			<children>
@@ -50,7 +51,8 @@
 								<Font name="System Bold" size="12.0" />
 							</font>
 						</Label>
-						<TextArea fx:id="actualRefexDescription" editable="false" minHeight="50.0" prefHeight="50.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+						<TextArea fx:id="actualRefexDescription" editable="false" minHeight="50.0" prefHeight="50.0" wrapText="true"
+							GridPane.columnIndex="1" GridPane.rowIndex="3" />
 						<TextField fx:id="actualRefexName" editable="false" GridPane.columnIndex="1" />
 						<TextField fx:id="actualParentConcept" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 						<TextField fx:id="actualRefexType" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
@@ -63,7 +65,7 @@
 		</VBox>
 	</top>
 	<bottom>
-		<HBox alignment="CENTER" fillHeight="false" spacing="75.0" BorderPane.alignment="CENTER">
+		<HBox alignment="CENTER" fillHeight="false" spacing="30.0" BorderPane.alignment="CENTER">
 			<children>
 				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
 				<Button fx:id="startOverButton" mnemonicParsing="false" text="Start Over" />
@@ -75,7 +77,8 @@
 		</HBox>
 	</bottom>
 	<center>
-		<ScrollPane fitToHeight="true" fitToWidth="true" minHeight="50.0" prefHeight="50.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+		<ScrollPane fitToHeight="true" fitToWidth="true" minHeight="50.0" prefHeight="50.0" BorderPane.alignment="CENTER"
+			VBox.vgrow="ALWAYS">
 			<BorderPane.margin>
 				<Insets left="2.0" right="2.0" />
 			</BorderPane.margin>
