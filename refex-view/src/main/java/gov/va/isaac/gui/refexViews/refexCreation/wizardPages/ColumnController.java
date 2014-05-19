@@ -32,6 +32,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -91,6 +92,7 @@ public class ColumnController implements PanelControllers {
 	private Object defaultValueObject = null;
 	private ConceptNode columnNameSelection;
 	private BooleanBinding allValid_;
+	private StringBinding typeValueInvalidReason_;
 	private SimpleStringProperty defaultValueInvalidReason_ = new SimpleStringProperty("");
 
 	private ObservableList<SimpleDisplayConcept> columnNameChoices = new ObservableListWrapper<>(new ArrayList<SimpleDisplayConcept>());
@@ -127,6 +129,22 @@ public class ColumnController implements PanelControllers {
 		
 		columnNameHolder.getChildren().add(columnNameSelection.getNode());
 		HBox.setHgrow(columnNameSelection.getNode(), Priority.ALWAYS);
+		
+		typeValueInvalidReason_ = new StringBinding()
+		{
+			{
+				bind(typeOption.valueProperty());
+			}
+			@Override
+			protected String computeValue()
+			{
+				if (typeOption.getValue().getEnumToken() == Integer.MAX_VALUE)
+				{
+					return "You must select the column type";
+				}
+				return "";
+			}
+		};
 
 		initializeTypeConcepts();
 		initializeColumnConcepts();
@@ -134,12 +152,12 @@ public class ColumnController implements PanelControllers {
 		allValid_ = new BooleanBinding()
 		{
 			{
-				bind(columnNameSelection.getConceptProperty(), defaultValueInvalidReason_);
+				bind(columnNameSelection.getConceptProperty(), defaultValueInvalidReason_, typeValueInvalidReason_);
 			}
 			@Override
 			protected boolean computeValue()
 			{
-				return columnNameSelection.isValid().get() && defaultValueInvalidReason_.get().length() == 0;
+				return columnNameSelection.isValid().get() && defaultValueInvalidReason_.get().length() == 0 && typeValueInvalidReason_.get().length() == 0;
 			}
 		};
 		
@@ -237,11 +255,17 @@ public class ColumnController implements PanelControllers {
 		StackPane sp = new StackPane();
 		ErrorMarkerUtils.swapComponents(defaultValue, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(defaultValue, sp, defaultValueInvalidReason_);
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(typeOption, sp, gridPane);
+		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
 	}
 	
 	private void initializeTypeConcepts() {
 
 		RefexDynamicDataType[] columnTypes = RefexDynamicDataType.values();
+		
+		typeOption.getItems().add(new Choice("-Make Selection-"));
 		
 		for (RefexDynamicDataType type : columnTypes) {
 			if (type == RefexDynamicDataType.UNKNOWN)
@@ -412,7 +436,6 @@ public class ColumnController implements PanelControllers {
 }
 
 class Choice {
-	Integer RefexDynamicDataType;
 	String displayString;
 	private int enumToken = Integer.MAX_VALUE;
 

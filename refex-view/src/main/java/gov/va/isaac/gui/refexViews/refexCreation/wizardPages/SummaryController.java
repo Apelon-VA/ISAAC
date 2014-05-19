@@ -30,6 +30,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -106,6 +107,7 @@ public class SummaryController implements PanelControllers {
 			if (row > 0)
 			{
 				Separator sep = new Separator(Orientation.HORIZONTAL);
+				sep.setPadding(new Insets(10, 0, 10, 0));
 				columnGridPane.add(sep, 0, row++, 3, 1);
 				GridPane.setFillWidth(sep, true);
 			}
