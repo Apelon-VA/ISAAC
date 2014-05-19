@@ -45,7 +45,7 @@ public class NewColumnDialog extends Stage
 	{
 		super();
 
-		setTitle("Export Settings");
+		setTitle("New Column Creation");
 		setResizable(true);
 
 		initOwner(owner);
