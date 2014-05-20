@@ -1,4 +1,4 @@
-package gov.va.isaac.workflow;
+package gov.va.isaac.workflow.demo;
 
 /*
  * Copyright Notice
@@ -18,8 +18,12 @@ package gov.va.isaac.workflow;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import org.junit.After;
@@ -35,64 +39,58 @@ import static org.junit.Assert.*;
  */
 public class FullSyncTest {
     
-    public FullSyncTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    @Test
-    public void syncTest() {
+   public static void main(String[] args) {
         LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+        
+        String userid = "alejandro";
         
         LocalTasksServiceBI localTasksService = wfEngine.getLocalTaskService();
         ProcessInstanceServiceBI processService = wfEngine.getProcessInstanceService();
         
-        localTasksService.dropSchema();
-        localTasksService.createSchema();
-        processService.dropSchema();
-        processService.createSchema();
+        //localTasksService.dropSchema();
+        //localTasksService.createSchema();
+        //processService.dropSchema();
+        //processService.createSchema();
         
-        assertTrue(localTasksService.getOpenOwnedTasks("alejandro").size() == 0);
-        
-        wfEngine.synchronizeWithRemote();
-        
-        assertTrue(localTasksService.getOpenOwnedTasks("alejandro").size() > 0);
-        
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks("alejandro")) {
-            System.out.println("TaskId: " + loopTask.getId());
-        }
-        
-        localTasksService.setAction(22L, "COMPLETE", "pending");
+        //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() == 0);
         
         wfEngine.synchronizeWithRemote();
         
-        assertTrue(localTasksService.getOpenOwnedTasks("alejandro").size() > 0);
+        //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
         
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks("alejandro")) {
+        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId());
         }
+        
+        //localTasksService.setAction(29L, "COMPLETE", "pending");
+        localTasksService.setAction(27L, "RELEASE", "pending");
+        //localTasksService.setAction(25L, "RELEASE", "pending");
         
         wfEngine.synchronizeWithRemote();
         
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks("alejandro")) {
+        assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
+        
+        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId());
         }
+        
+        
+        //wfEngine.claim(5, userid);
+        
+        wfEngine.synchronizeWithRemote();
+        
+        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
+            System.out.println("TaskId: " + loopTask.getId());
+        }
+        
+        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro");
+        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
+        
+        wfEngine.synchronizeWithRemote();
+        
+        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
+            System.out.println("TaskId: " + loopTask.getId());
+        }
+
     }
 }

@@ -39,6 +39,7 @@ import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Content;
 import org.kie.api.task.model.Task;
+import org.kie.api.task.model.TaskSummary;
 import org.kie.services.client.api.RemoteRestRuntimeFactory;
 
 /**
@@ -96,14 +97,30 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             int countActions = 0;
             List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(userId, "pending");
             for (LocalTask loopTask : actions) {
-                if (loopTask.getAction().equals("COMPLETE")) {
-                    //remoteService.start(loopTask.getId(), userId);
-                    remoteService.complete(loopTask.getId(), userId, new HashMap<String,Object>());
-                    ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete");
-                } else if (loopTask.getAction().equals("RELEASE")) {
-                    remoteService.release(loopTask.getId(), userId);
-                    ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released");
+                Task remoteTask = remoteService.getTaskById(loopTask.getId());
+                if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Completed)) {
+                    // too late, task not available
+                } else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Reserved)) {
+                    // start and action
+                    if (loopTask.getAction().equals("COMPLETE")) {
+                        remoteService.start(loopTask.getId(), userId);
+                        remoteService.complete(loopTask.getId(), userId, new HashMap<String,Object>());
+                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete");
+                    } else if (loopTask.getAction().equals("RELEASE")) {
+                        remoteService.release(loopTask.getId(), userId);
+                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released");
+                    }
+                }  else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().InProgress)) {
+                    // action
+                    if (loopTask.getAction().equals("COMPLETE")) {
+                        remoteService.complete(loopTask.getId(), userId, new HashMap<String,Object>());
+                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete");
+                    } else if (loopTask.getAction().equals("RELEASE")) {
+                        remoteService.release(loopTask.getId(), userId);
+                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released");
+                    }
                 }
+                
                 countActions++;
             }
             ltapi.commit();
@@ -186,6 +203,22 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         } else {
             LocalWfEngine.processRequestsApi = new ProcessInstanceCreationRequestsAPI();
             return LocalWfEngine.processRequestsApi;
+        }
+    }
+
+    @Override
+    public void claim(Integer count, String userId) {
+        TaskService remoteService = getRemoteTaskService();
+        List<TaskSummary> availableTasks = remoteService.getTasksAssignedAsPotentialOwner(userId, "en-UK");
+        //System.out.println("Available " + availableTasks.size());
+        int claimed = 0;
+        for (TaskSummary loopTask : availableTasks) {
+            //System.out.println(loopTask.getActualOwner().getId() + " " + userId);
+            if (loopTask.getActualOwner() ==  null || !loopTask.getActualOwner().getId().equals(userId)) {
+                remoteService.claim(loopTask.getId(), userId);
+                claimed++;
+            }
+            if (claimed >= count) break;
         }
     }
 

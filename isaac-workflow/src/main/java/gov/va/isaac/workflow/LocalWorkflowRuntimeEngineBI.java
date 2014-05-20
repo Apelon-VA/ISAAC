@@ -42,4 +42,6 @@ public interface LocalWorkflowRuntimeEngineBI {
     
     public Map<String,Object> getVariablesMapForTaskId(Long taskId);
     
+    public void claim(Integer count, String userId);
+    
 }

@@ -85,7 +85,7 @@ public class TasksFetcher {
                 }
             }
             if (!isInFetchCursor) {
-                //System.out.println("Missing task: " + loopLocalTask.getId());
+                System.out.println("Missing task: " + loopLocalTask.getId());
                 Task missingTask = remoteTaskService.getTaskById(loopLocalTask.getId());
                 LocalTask missingTaskLocal = new LocalTask(missingTask, true);
                 persistenceApi.saveTask(missingTaskLocal);
