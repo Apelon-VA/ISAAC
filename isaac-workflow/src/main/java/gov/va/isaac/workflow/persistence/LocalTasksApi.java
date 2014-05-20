@@ -64,15 +64,18 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     @Override
     public void saveTask(LocalTask task) {
         try {
-            PreparedStatement psInsert = conn.prepareStatement("insert into local_tasks values (?, ?, ?, ?, ?, ?)");
+            PreparedStatement psInsert = conn.prepareStatement("insert into local_tasks values (?, ?, ?, ?, ?, ?, ?, ?)");
             psInsert.setLong(1, task.getId());
             psInsert.setString(2, task.getName());
             psInsert.setString(3, task.getComponentId());
             psInsert.setString(4, task.getComponentName());
             psInsert.setString(5, task.getStatus());
             psInsert.setString(6, task.getOwner());
+            psInsert.setString(7, "NONE");
+            psInsert.setString(8, "");
             psInsert.executeUpdate();
             psInsert.closeOnCompletion();
+            conn.commit();
             System.out.println("Task " + task.getId() + " saved");
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("23505")) {
@@ -89,6 +92,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                             psUpdateUser.setInt(2, Integer.parseInt(task.getId().toString()));
                             psUpdateUser.executeUpdate();
                             psUpdateUser.closeOnCompletion();
+                            conn.commit();
                         } catch (SQLException ex1) {
                             Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
                         }
@@ -101,6 +105,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                             psUpdateStatus.setInt(2, Integer.parseInt(task.getId().toString()));
                             psUpdateStatus.executeUpdate();
                             psUpdateStatus.closeOnCompletion();
+                            conn.commit();
                         } catch (SQLException ex1) {
                             Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
                         }
@@ -112,13 +117,27 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             }
         }
     }
+    @Override
+    public void setAction(Long taskId, String action, String actionStatus) {
+        try {
+            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ? where id = ?");
+            psUpdateStatus.setString(1, action);
+            psUpdateStatus.setString(2, actionStatus);
+            psUpdateStatus.setInt(3, Integer.parseInt(taskId.toString()));
+            psUpdateStatus.executeUpdate();
+            psUpdateStatus.closeOnCompletion();
+            conn.commit();
+        } catch (SQLException ex1) {
+            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
+        }
+    }
 
     @Override
     public List<LocalTask> getOpenOwnedTasks(String owner) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and (status = 'Reserved' or status = 'InProgress')");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -133,7 +152,22 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and status = '" + status + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and status = '" + status + "'");
+            while (rs.next()) {
+                tasks.add(readTask(rs));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return tasks;
+    }
+    
+    @Override
+    public List<LocalTask> getOwnedTasksByActionStatus(String owner, String actionStatus) {
+        List<LocalTask> tasks = new ArrayList<>();
+        try {
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and actionStatus = '" + actionStatus + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -148,7 +182,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where owner = '" + owner + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -163,7 +197,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where componentId = '" + componentId + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where componentId = '" + componentId + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -178,7 +212,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -193,7 +227,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             LocalTask task = null;
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT id, name, componentId, componentName, status, owner FROM local_tasks where id = " + id);
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where id = " + id);
             if (!rs.next()) {
                 // no results
             } else {
@@ -217,6 +251,8 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         task.setComponentName(rs.getString(4));
         task.setStatus(rs.getString(5));
         task.setOwner(rs.getString(6));
+        task.setAction(rs.getString(7));
+        task.setActionStatus(rs.getString(8));
         return task;
     }
 
@@ -228,8 +264,9 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "LOCAL_TASKS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
-                s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40))");
+                s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40), action varchar(40), actionStatus varchar(40))");
                 s.closeOnCompletion();
+                conn.commit();
                 System.out.println("Created table LOCAL_TASKS");
             } else {
                 System.err.println("LOCAL_TASKS already exists!");
@@ -246,6 +283,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             Statement s = conn.createStatement();
             s.execute("drop table LOCAL_TASKS");
             s.closeOnCompletion();
+            conn.commit();
         } catch (SQLException ex) {
             System.err.println("Schema already deleted...");
         }

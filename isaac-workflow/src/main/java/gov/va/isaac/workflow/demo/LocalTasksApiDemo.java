@@ -29,7 +29,7 @@ public class LocalTasksApiDemo {
     
     public static void main(String[] args) {
         LocalTasksApi tapi = new LocalTasksApi();
-        
+        tapi.dropSchema();
         System.out.print("Creting Schema...  ");
         tapi.createSchema();
         System.out.println("OK");
@@ -39,6 +39,7 @@ public class LocalTasksApiDemo {
         task.setName("task 2 name");
         task.setComponentId("componentId");
         task.setComponentName("componentName");
+        task.setOwner("alo");
         
         System.out.print("Saving task 2...  ");
         tapi.saveTask(task);
@@ -46,9 +47,19 @@ public class LocalTasksApiDemo {
         System.out.println("OK");
         
         System.out.print("Getting task 2...  ");
-        LocalTask retrievedTask = tapi.getTask(1L);
+        LocalTask retrievedTask = tapi.getTask(2L);
         System.out.println("Done, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + retrievedTask.getComponentName());
-        //tapi.closeConnection();
+        
+        tapi.setAction(retrievedTask.getId(), "COMPLETE", "pending");
+        
+        retrievedTask = tapi.getTask(2L);
+        System.out.println("Done after action, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + 
+                retrievedTask.getComponentName() + " action: " + retrievedTask.getAction() + " Status: " + retrievedTask.getActionStatus());
+        
+        System.out.println("Count of action status = pending: " + tapi.getOwnedTasksByActionStatus("alo", "pending").size());
+        System.out.println("Count of action status = done: " + tapi.getOwnedTasksByActionStatus("alo", "done").size());
+
+        
         
     }
     

@@ -45,4 +45,8 @@ public interface ProcessInstanceServiceBI {
 
     void updateRequestStatus(int id, ProcessInstanceCreationRequest.RequestStatus status, String syncMessage, Long wfId);
     
+    void createSchema();
+    
+    void dropSchema();
+    
 }

@@ -18,15 +18,20 @@
  */
 package gov.va.isaac.workflow.engine;
 
+import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
+import gov.va.isaac.workflow.sync.TasksFetcher;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
@@ -83,7 +88,45 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
 
     @Override
     public void synchronizeWithRemote() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            // Upload pending actions
+            LocalTasksServiceBI ltapi = getLocalTaskService();
+            TaskService remoteService = getRemoteTaskService();
+            ProcessInstanceServiceBI procApi = getProcessInstanceService();
+            int countActions = 0;
+            List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(userId, "pending");
+            for (LocalTask loopTask : actions) {
+                if (loopTask.getAction().equals("COMPLETE")) {
+                    //remoteService.start(loopTask.getId(), userId);
+                    remoteService.complete(loopTask.getId(), userId, new HashMap<String,Object>());
+                    ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete");
+                } else if (loopTask.getAction().equals("RELEASE")) {
+                    remoteService.release(loopTask.getId(), userId);
+                    ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released");
+                }
+                countActions++;
+            }
+            ltapi.commit();
+
+            // Upload pending requests
+            int countInstances = 0;
+            List<ProcessInstanceCreationRequest> pendingRequests = procApi.getOpenOwnedRequests(userId);
+            for (ProcessInstanceCreationRequest loopP : pendingRequests) {
+                requestProcessInstanceCreationToServer(loopP);
+                countInstances++;
+            }
+            
+            // Sync tasks
+            TasksFetcher tf = new TasksFetcher(remoteService, ltapi);
+            String result = tf.fetchTasks(userId);
+            
+            System.out.println("Sync finished");
+            System.out.println("   - Actions processed: " + countActions);
+            System.out.println("   - Instances processed: " + countInstances);
+            System.out.println("   - " + result);
+        } catch (Exception ex) {
+            Logger.getLogger(LocalWfEngine.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

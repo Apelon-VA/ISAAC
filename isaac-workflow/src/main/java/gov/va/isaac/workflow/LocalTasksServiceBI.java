@@ -29,10 +29,12 @@ public interface LocalTasksServiceBI {
     List<LocalTask> getOpenOwnedTasks(String owner);
     List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId);
     List<LocalTask> getOwnedTasksByStatus(String owner, String status);
+    List<LocalTask> getOwnedTasksByActionStatus(String owner, String actionStatus);
     LocalTask getTask(Long id);
     List<LocalTask> getTasks();
     List<LocalTask> getTasksByComponentId(String componentId);
     void saveTask(LocalTask task);
+    void setAction(Long taskId, String action, String actionStatus);
     void commit();
     void createSchema();
     void dropSchema();

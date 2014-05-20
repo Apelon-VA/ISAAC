@@ -36,6 +36,8 @@ public class LocalTask {
     private String componentName;
     private String status;
     private String owner;
+    private String action;
+    private String actionStatus;
 
     public LocalTask() {
     }
@@ -127,6 +129,22 @@ public class LocalTask {
     public int hashCode() {
         int hash = 7;
         return hash;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getActionStatus() {
+        return actionStatus;
+    }
+
+    public void setActionStatus(String actionStatus) {
+        this.actionStatus = actionStatus;
     }
 
     @Override
