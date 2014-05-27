@@ -103,6 +103,12 @@ public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends Refe
 						}
 						return;
 					}
+					else
+					{
+						//Not applicable, for the current row.
+						setText(null);
+						setGraphic(null);
+					}
 				}
 				catch (Exception e)
 				{
@@ -120,6 +126,7 @@ public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends Refe
 	private void conceptLookup(RefexDynamicDataBI data)
 	{
 		setGraphic(new ProgressBar());
+		setText(null);
 		ContextMenu cm = new ContextMenu();
 		Utility.execute(() ->
 		{
