@@ -71,6 +71,7 @@ public class SummaryController implements PanelControllers {
 	@FXML private Button cancelButton;
 	@FXML private Button startOverButton;
 	@FXML private Button commitButton;
+	@FXML private Button backButton;
 
 	static ViewCoordinate vc = null;
 	static ScreensController processController;
@@ -84,6 +85,7 @@ public class SummaryController implements PanelControllers {
 		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'summary.fxml'.";
 		assert startOverButton != null : "fx:id=\"startOverButton\" was not injected: check your FXML file 'summary.fxml'.";
 		assert commitButton != null : "fx:id=\"commitButton\" was not injected: check your FXML file 'summary.fxml'.";
+		assert backButton != null : "fx:id=\"commitButton\" was not injected: check your FXML file 'summary.fxml'.";
 		assert actualRefexType != null : "fx:id=\"actualRefexType\" was not injected: check your FXML file 'summary.fxml'.";
 		assert summaryPane != null : "fx:id=\"summaryPane\" was not injected: check your FXML file 'summary.fxml'.";
 		assert actualParentConcept != null : "fx:id=\"actualParentConcept\" was not injected: check your FXML file 'summary.fxml'.";
@@ -242,6 +244,20 @@ public class SummaryController implements PanelControllers {
 			public void handle(ActionEvent e) {
 				processController.unloadScreen(ScreensController.SUMMARY_SCREEN);
 				processController.setScreen(ScreensController.DEFINITION_SCREEN);
+			}
+		});
+		
+		backButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				processController.unloadScreen(ScreensController.SUMMARY_SCREEN);
+				int fieldCount = processController.getWizard().getExtendedFieldsCount();
+				if (fieldCount > 0) {
+					processController.loadColumnScreen(fieldCount - 1);
+					processController.setScreen(ScreensController.COLUMN_SCREEN);
+				} else {
+					processController.setScreen(ScreensController.DEFINITION_SCREEN);
+				}
 			}
 		});
 	}
