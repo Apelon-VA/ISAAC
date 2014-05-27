@@ -283,7 +283,15 @@ public class DynamicRefexView implements RefexViewI
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyStringWrapper(new Date(callback.getValue().getValue().getTime()).toString());
+					long l = callback.getValue().getValue().getTime();
+					if (l == Long.MAX_VALUE)
+					{
+						return new ReadOnlyStringWrapper("-Uncommitted-");
+					}
+					else
+					{
+						return new ReadOnlyStringWrapper(new Date(l).toString());
+					}
 				});
 				ttCol.getColumns().add(nestedCol);
 				
