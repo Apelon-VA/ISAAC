@@ -19,6 +19,7 @@
 package gov.va.isaac.interfaces.gui.views;
 
 import java.util.UUID;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.layout.Region;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -38,5 +39,5 @@ public interface RefexViewI extends ViewI
 	 * Tell this view to display the refexes for a particular component (typically, a concept, but could also 
 	 * be any valid thing that supportes refexes)
 	 */
-	public void setComponent(UUID componentUUID);
+	public void setComponent(UUID componentUUID, ReadOnlyBooleanProperty showStampColumns);
 }

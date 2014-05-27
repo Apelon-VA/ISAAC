@@ -48,6 +48,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -89,6 +91,7 @@ public class SnomedConceptViewController {
     @FXML private Button showInTreeButton;
     @FXML private ProgressIndicator treeViewProgress;
     @FXML private VBox annotationsRegion;
+    @FXML private ToggleButton stampToggle;
 
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
@@ -129,6 +132,11 @@ public class SnomedConceptViewController {
             }
         });
         CopyableLabel.addCopyMenu(uuidLabel);
+        
+        stampToggle.setText("");
+        stampToggle.setGraphic(Images.STAMP.createImageView());
+        stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+        //TODO make the other view tables aware of the show/hide stamp call
         
         AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(concept));
 
@@ -254,7 +262,7 @@ public class SnomedConceptViewController {
                 cellValueFactory, cellFactory);
         
         RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
-        v.setComponent(concept.getPrimordialUuid());
+        v.setComponent(concept.getPrimordialUuid(), stampToggle.selectedProperty());
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());
