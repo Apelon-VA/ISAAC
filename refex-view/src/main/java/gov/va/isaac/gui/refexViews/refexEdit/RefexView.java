@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javax.inject.Named;
@@ -73,7 +74,7 @@ public class RefexView implements RefexViewI
 	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(java.util.UUID)
 	 */
 	@Override
-	public void setComponent(UUID conceptUUID)
+	public void setComponent(UUID conceptUUID, ReadOnlyBooleanProperty showStampColumns)
 	{
 		this.conceptUUID_ = conceptUUID;
 	}

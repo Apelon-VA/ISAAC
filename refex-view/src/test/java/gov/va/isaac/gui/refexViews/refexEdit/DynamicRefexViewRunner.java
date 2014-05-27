@@ -49,7 +49,7 @@ public class DynamicRefexViewRunner extends Application
 		primaryStage.setTitle("Refex View");
 
 		DynamicRefexView refexView = AppContext.getService(DynamicRefexView.class);
-		refexView.setComponent(dynamicRefexDefinition);
+		refexView.setComponent(dynamicRefexDefinition, null);
 
 		primaryStage.setScene(new Scene(refexView.getView(), 800, 600));
 

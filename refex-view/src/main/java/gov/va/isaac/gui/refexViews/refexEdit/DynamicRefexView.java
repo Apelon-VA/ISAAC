@@ -34,10 +34,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
-import javax.inject.Named;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.FloatBinding;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.control.Button;
@@ -53,6 +53,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javax.inject.Named;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
@@ -85,6 +86,8 @@ public class DynamicRefexView implements RefexViewI
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
 	private Button removeButton_, addButton_, commitButton_, cancelButton_;
 	private BooleanBinding removeButtonEnabled_;
+	private ReadOnlyBooleanProperty showStampColumns_;
+	TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	private DynamicRefexView() throws IOException
@@ -193,18 +196,26 @@ public class DynamicRefexView implements RefexViewI
 	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(java.util.UUID)
 	 */
 	@Override
-	public void setComponent(UUID componentUUID)
+	public void setComponent(UUID componentUUID, ReadOnlyBooleanProperty showStampColumns)
 	{
 		componentUUID_ = componentUUID;
 		treeRoot_.getChildren().clear();
 		ttv_.getColumns().clear();
 		ttv_.setPlaceholder(new ProgressBar());
+		if (showStampColumns != showStampColumns_)
+		{
+			showStampColumns_ = showStampColumns;
+			showStampColumns_.addListener((listener, oldV, newV) ->
+			{
+				setStampColVisibility();
+			});
+		}
 		init();
 	}
 	
 	protected void refresh()
 	{
-		setComponent(componentUUID_);
+		setComponent(componentUUID_, showStampColumns_);
 	}
 
 	private void init()
@@ -259,11 +270,11 @@ public class DynamicRefexView implements RefexViewI
 				}
 				
 				//Create the STAMP columns
-
 				ttCol = new TreeTableColumn<>();
 				ttCol.setText("STAMP");
 				ttCol.setSortable(true);
 				ttCol.setResizable(true);
+				stampColumn_ = ttCol;
 				treeColumns.add(ttCol);
 				
 				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> nestedCol = new TreeTableColumn<>();
@@ -376,6 +387,7 @@ public class DynamicRefexView implements RefexViewI
 							col.setMinWidth(nestedTotal > 0 ? nestedTotal : Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10);
 						}
 					}
+					setStampColVisibility();
 				});
 
 				
@@ -493,5 +505,13 @@ public class DynamicRefexView implements RefexViewI
 		return columns;
 	}
 	
-
+	private void setStampColVisibility()
+	{
+		boolean visible = showStampColumns_.get();
+		stampColumn_.setVisible(visible);
+		for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nested : stampColumn_.getColumns())
+		{
+			nested.setVisible(visible);
+		}
+	}
 }

@@ -62,7 +62,8 @@ public enum Images {
     MINUS(setupImage("/icons/fugue/16x16/icons-shadowless/minus.png")), 
     PLUS(setupImage("/icons/fugue/16x16/icons-shadowless/plus.png")),
     EXPAND_ALL(setupImage("/icons/diagona/16x16/109.png")),
-    LIST_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/edit-list.png"));
+    LIST_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/edit-list.png")),
+    STAMP(setupImage("/icons/fugue/16x16/icons-shadowless/stamp-medium.png"));
 
     private final Image image;
 
