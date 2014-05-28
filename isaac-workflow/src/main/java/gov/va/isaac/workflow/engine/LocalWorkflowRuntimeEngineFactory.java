@@ -30,7 +30,8 @@ import java.util.logging.Logger;
  * @author alo
  */
 public class LocalWorkflowRuntimeEngineFactory {
-    
+    //TODO this needs to be converted to HK2.  And I assume we only want one existing in the runtime at once... this shouldn't create a new 
+    //one with each call.
     public static LocalWorkflowRuntimeEngineBI getRuntimeEngine() {
         LocalWfEngine lwf = null;
         try {

@@ -30,10 +30,12 @@ public interface LocalWorkflowRuntimeEngineBI {
     
     public void setRemoteData(URL url, String userId, String password, String deploymentId);
     
+    //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
     public void synchronizeWithRemote();
     
     public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequest instanceRequest);
     
+    //TODO these APIs need to throw errors, not silently eat them
     public ProcessInstanceServiceBI getProcessInstanceService();
     
     public LocalTasksServiceBI getLocalTaskService();
@@ -42,6 +44,7 @@ public interface LocalWorkflowRuntimeEngineBI {
     
     public Map<String,Object> getVariablesMapForTaskId(Long taskId);
     
+    //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
     public void claim(Integer count, String userId);
     
 }
