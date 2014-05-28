@@ -55,9 +55,7 @@ public class RefexCreationWizard implements RefexCreationViewI
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
-		// We don't currently have any custom menus with this view
 		ArrayList<MenuItemI> menus = new ArrayList<>();
-		
 		MenuItemI mi = new MenuItemI()
 		{
 			@Override
