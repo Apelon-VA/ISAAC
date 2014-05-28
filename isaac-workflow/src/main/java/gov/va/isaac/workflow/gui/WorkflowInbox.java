@@ -30,6 +30,7 @@ import java.util.List;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -58,7 +59,7 @@ public class WorkflowInbox extends Stage implements PopupViewI
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
 		getScene().getStylesheets().add(WorkflowInbox.class.getResource("/isaac-shared-styles.css").toString());
-		getIcons().add(Images.CONCEPT_VIEW.getImage());
+		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
 		
@@ -118,6 +119,15 @@ public class WorkflowInbox extends Stage implements PopupViewI
 			public boolean enableMnemonicParsing()
 			{
 				return false;
+			}
+
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.INBOX.getImage();
 			}
 		};
 		menus.add(mi);
