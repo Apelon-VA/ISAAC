@@ -258,7 +258,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 s.closeOnCompletion();
                 System.out.println("Created table PINST_REQUESTS");
             } else {
-                System.err.println("PINST_REQUESTS already exists!");
+                System.out.println("PINST_REQUESTS already exists!");
             }
             rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS_PARAMS", null);
             if (!rs.next()) {
@@ -267,7 +267,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 s.closeOnCompletion();
                 System.out.println("Created table PINST_REQUESTS_PARAMS");
             } else {
-                System.err.println("PINST_REQUESTS_PARAMS already exists!");
+                System.out.println("PINST_REQUESTS_PARAMS already exists!");
             }
             conn.commit();
         } catch (SQLException ex) {

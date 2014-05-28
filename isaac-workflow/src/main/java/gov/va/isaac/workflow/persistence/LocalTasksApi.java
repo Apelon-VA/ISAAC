@@ -269,7 +269,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 conn.commit();
                 System.out.println("Created table LOCAL_TASKS");
             } else {
-                System.err.println("LOCAL_TASKS already exists!");
+                System.out.println("LOCAL_TASKS already exists!");
             }
         } catch (SQLException ex) {
             Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
