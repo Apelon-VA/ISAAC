@@ -28,8 +28,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -38,6 +38,8 @@ import java.util.logging.Logger;
 public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServiceBI {
 
     private Connection conn;
+    
+    private static final Logger log = LoggerFactory.getLogger(ProcessInstanceCreationRequestsAPI.class);
 
     public ProcessInstanceCreationRequestsAPI() {
         conn = ConnectionManager.getConn();
@@ -77,11 +79,11 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             conn.commit();
             return result;
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
             try {
                 conn.rollback();
             } catch (SQLException ex1) {
-                Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex1);
+                log.error("Unexpected SQL Exception during rollback from previous exception", ex1);
             }
         }
         return null;
@@ -99,7 +101,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             psUpdateRequest.closeOnCompletion();
             conn.commit();
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
     }
 
@@ -113,7 +115,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return requests;
     }
@@ -128,7 +130,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return requests;
     }
@@ -143,7 +145,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return requests;
     }
@@ -158,7 +160,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return requests;
     }
@@ -179,7 +181,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
             return request;
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return null;
     }
@@ -194,7 +196,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return requests;
     }
@@ -215,7 +217,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
             return request;
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
         return null;
     }
@@ -249,53 +251,53 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
     public void createSchema() {
         try {
-            System.out.println("Creating schema");
+            log.info("Creating schema");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
                 s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, wf_id INTEGER, component_id varchar(40), component_name varchar(255), process_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40))");
                 s.closeOnCompletion();
-                System.out.println("Created table PINST_REQUESTS");
+                log.debug("Created table PINST_REQUESTS");
             } else {
-                System.out.println("PINST_REQUESTS already exists!");
+                log.debug("PINST_REQUESTS already exists!");
             }
             rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS_PARAMS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
                 s.execute("create table PINST_REQUESTS_PARAMS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, pins_id int, param_name varchar(255), param_value varchar(255))");
                 s.closeOnCompletion();
-                System.out.println("Created table PINST_REQUESTS_PARAMS");
+                log.debug("Created table PINST_REQUESTS_PARAMS");
             } else {
-                System.out.println("PINST_REQUESTS_PARAMS already exists!");
+            	log.debug("PINST_REQUESTS_PARAMS already exists!");
             }
             conn.commit();
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
     }
 
     public void dropSchema() {
         try {
-            System.out.println("Dropping PINST_REQUESTS");
+            log.info("Dropping PINST_REQUESTS");
             Statement s = conn.createStatement();
             s.execute("drop table PINST_REQUESTS");
             s.closeOnCompletion();
         } catch (SQLException ex) {
-            System.err.println("PINST_REQUESTS already deleted...");
+            log.error("PINST_REQUESTS already deleted...");
         }
         try {
-            System.out.println("Dropping PINST_REQUESTS_PARAMS");
+            log.info("Dropping PINST_REQUESTS_PARAMS");
             Statement s = conn.createStatement();
             s.execute("drop table PINST_REQUESTS_PARAMS");
             s.closeOnCompletion();
         } catch (SQLException ex) {
-            System.err.println("PINST_REQUESTS_PARAMS already deleted...");
+            log.error("PINST_REQUESTS_PARAMS already deleted...");
         }
         try {
             conn.commit();
         } catch (SQLException ex) {
-            Logger.getLogger(ProcessInstanceCreationRequestsAPI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Exception", ex);
         }
     }
 

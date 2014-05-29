@@ -28,8 +28,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 public class LocalTasksApi implements LocalTasksServiceBI {
 
     private Connection conn;
+    private static final Logger log = LoggerFactory.getLogger(LocalTasksApi.class);
 
     public LocalTasksApi() {
         conn = ConnectionManager.getConn();
@@ -48,7 +49,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             conn.commit();
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Problem committing", ex);
         }
     }
 
@@ -57,7 +58,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             conn.close();
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Problem closing connection", ex);
         }
     }
 
@@ -76,16 +77,16 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             psInsert.executeUpdate();
             psInsert.closeOnCompletion();
             conn.commit();
-            System.out.println("Task " + task.getId() + " saved");
+            log.debug("Task {} saved", task.getId());
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("23505")) {
-                System.err.print("Task " + task.getId() + " already exists!");
+                log.error("Task " + task.getId() + " already exists!");
                 LocalTask taskInDb = getTask(task.getId());
                 if (task.equals(taskInDb)) {
-                    System.err.println(" No changes.");
+                    log.error(" No changes.");
                 } else {
                     if (!task.getOwner().equals(taskInDb.getOwner())) {
-                        System.err.print(" User has changed from " + taskInDb.getOwner() + " to " + task.getOwner() + ".");
+                        log.error(" User has changed from " + taskInDb.getOwner() + " to " + task.getOwner() + ".");
                         try {
                             PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
                             psUpdateUser.setString(1, task.getOwner());
@@ -94,11 +95,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                             psUpdateUser.closeOnCompletion();
                             conn.commit();
                         } catch (SQLException ex1) {
-                            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
+                            log.error("Unexpected SQL Error", ex1);
                         }
                     }
                     if (!task.getStatus().equals(taskInDb.getStatus())) {
-                        System.err.print(" Status has changed from " + taskInDb.getStatus() + " to " + task.getStatus() + ".");
+                        log.error(" Status has changed from " + taskInDb.getStatus() + " to " + task.getStatus() + ".");
                         try {
                             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
                             psUpdateStatus.setString(1, task.getStatus());
@@ -107,13 +108,13 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                             psUpdateStatus.closeOnCompletion();
                             conn.commit();
                         } catch (SQLException ex1) {
-                            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
+                            log.error("Unexpected SQL Error", ex1);
                         }
                     }
-                    System.err.println("-");
+                    log.error("-Unknown?-");
                 };
             } else {
-                Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+                log.error("Unexpected SQL Error", ex);
             }
         }
     }
@@ -128,7 +129,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             psUpdateStatus.closeOnCompletion();
             conn.commit();
         } catch (SQLException ex1) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex1);
+            log.error("Unexpected SQL Error", ex1);
         }
     }
 
@@ -142,7 +143,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return tasks;
     }
@@ -157,7 +158,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return tasks;
     }
@@ -172,7 +173,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return tasks;
     }
@@ -187,7 +188,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return tasks;
     }
@@ -202,7 +203,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return tasks;
     }
@@ -217,7 +218,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 tasks.add(readTask(rs));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return tasks;
     }
@@ -238,7 +239,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
             return task;
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
         return null;
     }
@@ -259,7 +260,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     @Override
     public void createSchema() {
         try {
-            System.out.println("Creating LOCAL_TASKS");
+            log.info("Creating LOCAL_TASKS");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "LOCAL_TASKS", null);
             if (!rs.next()) {
@@ -267,25 +268,25 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40), action varchar(40), actionStatus varchar(40))");
                 s.closeOnCompletion();
                 conn.commit();
-                System.out.println("Created table LOCAL_TASKS");
+                log.info("Created table LOCAL_TASKS");
             } else {
-                System.out.println("LOCAL_TASKS already exists!");
+                log.info("LOCAL_TASKS already exists!");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(LocalTasksApi.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Unexpected SQL Error", ex);
         }
     }
 
     @Override
     public void dropSchema() {
         try {
-            System.out.println("Dropping schema");
+            log.info("Dropping schema");
             Statement s = conn.createStatement();
             s.execute("drop table LOCAL_TASKS");
             s.closeOnCompletion();
             conn.commit();
         } catch (SQLException ex) {
-            System.err.println("Schema already deleted...");
+            log.error("Schema already deleted...");
         }
     }
 }

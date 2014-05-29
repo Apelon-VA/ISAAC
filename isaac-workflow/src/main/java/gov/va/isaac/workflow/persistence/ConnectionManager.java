@@ -22,8 +22,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -34,6 +34,8 @@ public class ConnectionManager {
     private static final String framework = "embedded";
     private static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String protocol = "jdbc:derby:";
+    
+    private static final Logger log = LoggerFactory.getLogger(ConnectionManager.class);
 
     private static Connection conn = null;
 
@@ -48,7 +50,7 @@ public class ConnectionManager {
                 conn = DriverManager.getConnection(protocol + dbName + ";create=true", props);
                 conn.setAutoCommit(false);
             } catch (SQLException ex) {
-                Logger.getLogger(ConnectionManager.class.getName()).log(Level.SEVERE, null, ex);
+                log.error("Unexpected error getting DB connection", ex);
             }
         }
         return conn;
@@ -70,20 +72,13 @@ public class ConnectionManager {
          */
         try {
             Class.forName(driver).newInstance();
-            System.out.println("Loaded the appropriate driver");
+            log.debug("Loaded the appropriate driver");
         } catch (ClassNotFoundException cnfe) {
-            System.err.println("\nUnable to load the JDBC driver " + driver);
-            System.err.println("Please check your CLASSPATH.");
-            cnfe.printStackTrace(System.err);
+            log.error("Unable to load the JDBC driver " + driver, cnfe);
         } catch (InstantiationException ie) {
-            System.err.println(
-                    "\nUnable to instantiate the JDBC driver " + driver);
-            ie.printStackTrace(System.err);
+            log.error("Unable to instantiate the JDBC driver " + driver, ie);
         } catch (IllegalAccessException iae) {
-            System.err.println(
-                    "\nNot allowed to access the JDBC driver " + driver);
-            iae.printStackTrace(System.err);
+            log.error("Not allowed to access the JDBC driver " + driver, iae);
         }
     }
-
 }

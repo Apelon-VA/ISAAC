@@ -30,8 +30,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
@@ -41,6 +39,8 @@ import org.kie.api.task.model.Content;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
 import org.kie.services.client.api.RemoteRestRuntimeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -55,6 +55,8 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     public static RuntimeEngine remoteEngine;
     public static ProcessInstanceCreationRequestsAPI processRequestsApi;
     public static LocalTasksServiceBI localTasksService;
+    
+    private static final Logger log = LoggerFactory.getLogger(LocalWfEngine.class);
 
     public LocalWfEngine(URL url, String userId, String password, String deploymentId) {
         this.url = url;
@@ -137,12 +139,12 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             TasksFetcher tf = new TasksFetcher(remoteService, ltapi);
             String result = tf.fetchTasks(userId);
             
-            System.out.println("Sync finished");
-            System.out.println("   - Actions processed: " + countActions);
-            System.out.println("   - Instances processed: " + countInstances);
-            System.out.println("   - " + result);
+            log.info("Sync finished");
+            log.debug("   - Actions processed: {}", countActions);
+            log.debug("   - Instances processed: {}", countInstances);
+            log.debug("   - {}", result);
         } catch (Exception ex) {
-            Logger.getLogger(LocalWfEngine.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Error synchronizing", ex);
         }
     }
 
@@ -210,10 +212,10 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     public void claim(Integer count, String userId) {
         TaskService remoteService = getRemoteTaskService();
         List<TaskSummary> availableTasks = remoteService.getTasksAssignedAsPotentialOwner(userId, "en-UK");
-        //System.out.println("Available " + availableTasks.size());
+        log.debug("Available {}", availableTasks.size());
         int claimed = 0;
         for (TaskSummary loopTask : availableTasks) {
-            //System.out.println(loopTask.getActualOwner().getId() + " " + userId);
+            log.debug(loopTask.getActualOwner().getId() + " " + userId);
             if (loopTask.getActualOwner() ==  null || !loopTask.getActualOwner().getId().equals(userId)) {
                 remoteService.claim(loopTask.getId(), userId);
                 claimed++;
