@@ -421,6 +421,7 @@ public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastLi
 		}
 	}
 
+	@Override
 	public List<Lego> getLegosContainingConceptIdentifiers(String... conceptUuidOrSCTId)
 	{
 		EntityCursor<LegoBDB> ec = null;

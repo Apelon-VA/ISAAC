@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.util.WBUtility;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -32,51 +33,78 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  * {@link NewColumnDialogController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class NewColumnDialogController implements Initializable
 {
-	@FXML//  fx:id="rootPane"
-	private AnchorPane rootPane; // Value injected by FXMLLoader
-	@FXML 
-	private Button commitButton;
-	@FXML
-	private TextArea newColDesc;
+	@FXML private AnchorPane rootPane; // Value injected by FXMLLoader
+	@FXML private TextArea newColName;
+	@FXML private TextArea newColDesc;
+	@FXML private Button commitButton;
+	@FXML private Button cancelButton;
 	
-	private ConceptChronicleBI newColumnConcept;
+	private ConceptChronicleBI newColumnConcept = null;
+	private BooleanBinding allValid_;
+
+	private static final Logger logger = LoggerFactory.getLogger(NewColumnDialogController.class);
 
 	@Override
 	// This method is called by the FXMLLoader when initialization is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources)
 	{
-
+		allValid_ = new BooleanBinding()
+		{
+			{
+				bind(newColName.textProperty(), newColDesc.textProperty());
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				if (newColName.getText().trim().length() > 0 && newColDesc.getText().trim().length() > 0)
+				{
+					return true;
+				}
+				return false;
+			}
+		};
+		
+		commitButton.disableProperty().bind(allValid_.not());
+		
 		commitButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				createNewColumnConcept(newColDesc);
+				createNewColumnConcept();
 				((Stage) rootPane.getScene().getWindow()).close();
 			}
 
-			//TODO this should have a short name and a long name
-			private void createNewColumnConcept(TextArea newColDesc) {
+			private void createNewColumnConcept() {
 				try {
-					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColDesc.getText().trim(), 
-							newColDesc.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
+					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColName.getText().trim(), 
+						newColDesc.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
 				} catch (InvalidCAB e) {
-					AppContext.getCommonDialogs().showInformationDialog("New Concept Error", "Concept Already Exists");
+					AppContext.getCommonDialogs().showInformationDialog("Concept Creation Error", e.getMessage(), rootPane.getScene().getWindow());
 					newColumnConcept = null;
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (Exception e1) {
+					logger.error("Unable to create concept in database", e1);
 				}
+			}
+		});
+
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				((Stage) rootPane.getScene().getWindow()).close();
 			}
 		});
 	}
@@ -84,5 +112,4 @@ public class NewColumnDialogController implements Initializable
 	public ConceptChronicleBI getNewColumnConcept() {
 		return newColumnConcept;
 	}
-
 }

@@ -30,13 +30,16 @@ import java.util.logging.Logger;
  * @author alo
  */
 public class LocalWorkflowRuntimeEngineFactory {
-    
+    //TODO this needs to be converted to HK2.  And I assume we only want one existing in the runtime at once... this shouldn't create a new 
+    //one with each call.
     public static LocalWorkflowRuntimeEngineBI getRuntimeEngine() {
         LocalWfEngine lwf = null;
         try {
             // TODO: implement, create engine based on app configuration
             lwf = new LocalWfEngine(new URL("http://162.243.255.43:8080/kie-wb/"),
                     "alejandro", "alejandro", "gov.va.isaac.demo:terminology-authoring:1.2");
+            lwf.getLocalTaskService().createSchema();
+            lwf.getProcessInstanceService().createSchema();
         } catch (MalformedURLException ex) {
             Logger.getLogger(LocalWorkflowRuntimeEngineFactory.class.getName()).log(Level.SEVERE, null, ex);
         }

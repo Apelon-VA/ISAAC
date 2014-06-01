@@ -18,11 +18,9 @@
  */
 package gov.va.isaac.workflow;
 
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import java.util.Map;
 import java.util.Objects;
-import org.jbpm.services.task.impl.model.UserImpl;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
 
@@ -38,6 +36,8 @@ public class LocalTask {
     private String componentName;
     private String status;
     private String owner;
+    private String action;
+    private String actionStatus;
 
     public LocalTask() {
     }
@@ -129,6 +129,22 @@ public class LocalTask {
     public int hashCode() {
         int hash = 7;
         return hash;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getActionStatus() {
+        return actionStatus;
+    }
+
+    public void setActionStatus(String actionStatus) {
+        this.actionStatus = actionStatus;
     }
 
     @Override

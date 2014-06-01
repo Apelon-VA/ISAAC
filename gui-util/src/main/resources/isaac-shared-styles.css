@@ -20,3 +20,11 @@
 .defaultBackgroundColor {
 	-fx-background-color: -fx-background;
 }
+
+.popupStyle {
+	-fx-background-color: -fx-background;
+	-fx-background-radius: 10;
+	-fx-border-color: grey;
+	-fx-border-width: 2;
+	-fx-border-radius: 10;
+}

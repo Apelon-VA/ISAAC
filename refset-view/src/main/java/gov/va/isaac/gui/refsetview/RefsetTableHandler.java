@@ -25,26 +25,19 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidStrExtRefsetInstanc
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
+import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
-import java.util.UUID;
-
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Font;
-import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
@@ -59,7 +52,6 @@ import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -240,7 +232,7 @@ public class RefsetTableHandler {
 						instance.setValueExt(t.getNewValue());
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
-							ComponentChronicleBI compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
+							ComponentChronicleBI<?> compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
 							
 							RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
@@ -262,7 +254,7 @@ public class RefsetTableHandler {
 					// None of Comp are Str-Str. . . so simple solution to this
 					bp.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 
-					commitUpdate(bp, isAnnotation);
+					addUncommitted(bp, isAnnotation);
 					rvc_.reloadData();
 				}
 				catch (Exception e)
@@ -285,9 +277,8 @@ public class RefsetTableHandler {
 			public void handle(CellEditEvent<RefsetInstance, String> t) {
 				try
 				{
-					try {
-						UUID value = UUID.fromString(t.getNewValue());
-					} catch (Exception e) {
+					if (!Utility.isUUID(t.getNewValue()))
+					{
 						AppContext.getCommonDialogs().showErrorDialog("Invalid UUID", "Value requested is not a valid UUID", t.getNewValue());
 						return;
 					}
@@ -334,7 +325,7 @@ public class RefsetTableHandler {
 							}
 						}
 
-						commitUpdate(bp, isAnnotation);
+						addUncommitted(bp, isAnnotation);
 						rvc_.reloadData();
 					}
 				}
@@ -362,9 +353,8 @@ public class RefsetTableHandler {
 			public void handle(CellEditEvent<RefsetInstance, String> t) {
 				try
 				{
-					try {
-						UUID value = UUID.fromString(t.getNewValue());
-					} catch (Exception e) {
+					if (!Utility.isUUID(t.getNewValue()))
+					{
 						AppContext.getCommonDialogs().showErrorDialog("Invalid UUID", "Value requested is not a valid UUID", t.getNewValue());
 						return;
 					}
@@ -438,7 +428,7 @@ public class RefsetTableHandler {
 						instance.setStatus(t.getNewValue());
 						RefexCAB bp = createBlueprint(instance.getMemberNid());
 						bp.setStatus(t.getNewValue());
-						commitUpdate(bp, isAnnotation);
+						addUncommitted(bp, isAnnotation);
 						rvc_.reloadData();
 					}
 				} catch (Exception e) {
@@ -447,8 +437,8 @@ public class RefsetTableHandler {
 			}
 
 			private boolean isLatestVersion(RefsetInstance instance) throws ContradictionException {
- 				RefexChronicleBI refChron = WBUtility.getAllVersionsRefsetMember(instance.getMemberNid());
-				RefexVersionBI refVersion = WBUtility.getRefsetMember(instance.getMemberNid());
+ 				RefexChronicleBI<?> refChron = WBUtility.getAllVersionsRefsetMember(instance.getMemberNid());
+				RefexVersionBI<?> refVersion = WBUtility.getRefsetMember(instance.getMemberNid());
 				
 				if (refChron.getVersion(WBUtility.getViewCoordinate()).getStamp() == refVersion.getStamp()) {
 					return true;
@@ -488,26 +478,20 @@ public class RefsetTableHandler {
 	}
 
 	private RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
-		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(nid);
+		RefexVersionBI<?> refex = (RefexVersionBI<?>)WBUtility.getRefsetMember(nid);
 		
 		return refex.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
 	
 	}
 
-	private void commitUpdate(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
-		RefexVersionBI refex = (RefexVersionBI)WBUtility.getRefsetMember(member.getComponentNid());
+	private void addUncommitted(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
+		RefexVersionBI<?> refex = (RefexVersionBI<?>)WBUtility.getRefsetMember(member.getComponentNid());
 		
-		//TODO - make sense of this magical API.  Why on earth do we have to look up, and addUncommitted, on something other than what the 
-		//Builder returned to us?  Here be dragons.
-		//Also, rename this method... it doesn't commit.
-		RefexChronicleBI<?> cabi = WBUtility.getBuilder().constructIfNotCurrent(member);
-		ConceptVersionBI refCompCon;
-		if (!isAnnotation) {
-			refCompCon = WBUtility.getConceptVersion(refex.getReferencedComponentNid());
-		} else {
-			refCompCon = WBUtility.getConceptVersion(refex.getAssemblageNid());
+		//TODO retest this... the old impl was quite wrong, not sure how it ever worked, when it called addUncommitted on the wrong things.
+		WBUtility.getBuilder().constructIfNotCurrent(member);
+		WBUtility.addUncommitted(WBUtility.getConceptVersion(refex.getAssemblageNid()));
+		if (isAnnotation) {
+			WBUtility.addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
 		}
-		
-		WBUtility.addUncommitted(refCompCon);
 	}
 }

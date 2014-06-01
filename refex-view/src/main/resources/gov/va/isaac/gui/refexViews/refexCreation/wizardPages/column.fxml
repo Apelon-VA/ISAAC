@@ -6,49 +6,85 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="columnDefinitionPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
-	<children>
-		<VBox alignment="CENTER" prefHeight="411.0" prefWidth="608.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+<BorderPane fx:id="columnDefinitionPane" prefHeight="382.0" prefWidth="580.0" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
+	<top>
+		<Label fx:id="columnTitle" text="Column Definition #" BorderPane.alignment="CENTER">
+			<font>
+				<Font name="System Bold" size="24.0" />
+			</font>
+			<BorderPane.margin>
+				<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+			</BorderPane.margin>
+		</Label>
+	</top>
+	<center>
+		<GridPane fx:id="gridPane" hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
+			<columnConstraints>
+				<ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="175.0" minWidth="175.0"
+					prefWidth="175.0" />
+				<ColumnConstraints hgrow="ALWAYS" />
+				<ColumnConstraints fillWidth="false" hgrow="NEVER" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints vgrow="NEVER" />
+				<RowConstraints vgrow="NEVER" />
+				<RowConstraints vgrow="NEVER" />
+				<RowConstraints vgrow="NEVER" />
+				<RowConstraints vgrow="NEVER" />
+			</rowConstraints>
 			<children>
-				<Label fx:id="columnTitle" layoutX="189.0" layoutY="28.0" text="Column Definition #">
-					<font>
-						<Font name="System Bold" size="24.0" />
-					</font>
-				</Label>
-				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="30.0">
-					<children>
-						<Label layoutX="108.0" layoutY="89.0" text="Column Concept" />
-						<ChoiceBox fx:id="columnConSelector" layoutX="225.0" layoutY="85.0" prefHeight="25.0" prefWidth="247.0" />
-						<Button fx:id="newColConceptButton" alignment="CENTER_RIGHT" layoutX="309.0" layoutY="150.0" mnemonicParsing="false" text="New Concept Column" />
-					</children>
-				</HBox>
-				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="35.0">
-					<children>
-						<Label layoutX="108.0" layoutY="230.0" text="Type" />
-						<ChoiceBox fx:id="typeOption" layoutX="225.0" layoutY="226.0" prefHeight="25.0" prefWidth="207.0" />
-					</children>
-				</HBox>
-				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="25.0">
-					<children>
-						<Label layoutX="108.0" layoutY="309.0" text="Default Value" />
-						<TextField fx:id="defaultValue" layoutX="225.0" layoutY="305.0" prefHeight="25.0" prefWidth="338.0" />
-					</children>
-				</HBox>
-				<CheckBox fx:id="isMandatory" mnemonicParsing="false" text="Is Manditory Column" />
-				<HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="50.0">
-					<children>
-						<Button fx:id="nextButton" layoutX="173.0" layoutY="351.0" mnemonicParsing="false" text="Next" />
-						<Button fx:id="backButton" layoutX="293.0" layoutY="351.0" mnemonicParsing="false" text="Back" />
-						<Button fx:id="cancelButton" layoutX="415.0" layoutY="351.0" mnemonicParsing="false" text="Cancel" />
-					</children>
-					<VBox.margin>
-						<Insets bottom="-5.0" top="30.0" />
-					</VBox.margin>
-				</HBox>
+				<Label text="Column Name" />
+				<Label text="Column Description" GridPane.rowIndex="1" />
+				<Label text="Type" GridPane.rowIndex="2" />
+				<Label text="Default Value" GridPane.rowIndex="3" />
+				<Button fx:id="newColNameButton" alignment="CENTER_RIGHT" minWidth="-Infinity" mnemonicParsing="false"
+					text="Create Column" GridPane.columnIndex="2" GridPane.halignment="RIGHT" />
+				<TextArea fx:id="columnDescription" minHeight="75.0" prefHeight="75.0" wrapText="true"
+					GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+				<ChoiceBox fx:id="typeOption" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1"
+					GridPane.columnSpan="2" GridPane.rowIndex="2" />
+				<TextField fx:id="defaultValue" prefHeight="25.0" prefWidth="338.0" GridPane.columnIndex="1"
+					GridPane.columnSpan="2" GridPane.rowIndex="3" />
+				<CheckBox fx:id="isMandatory" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+				<HBox fx:id="columnNameHolder" GridPane.columnIndex="1" />
+				<Label text="Is Column Manditory" GridPane.rowIndex="4" />
 			</children>
-			<opaqueInsets>
-				<Insets />
-			</opaqueInsets>
-		</VBox>
-	</children>
-</AnchorPane>
+		</GridPane>
+	</center>
+	<bottom>
+		<GridPane alignment="CENTER" BorderPane.alignment="CENTER">
+			<columnConstraints>
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0" prefWidth="100.0" />
+				<ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0" prefWidth="100.0" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+			</rowConstraints>
+			<children>
+				<Button fx:id="nextButton" mnemonicParsing="false" text="Next" GridPane.columnIndex="2">
+					<GridPane.margin>
+						<Insets bottom="5.0" left="15.0" right="5.0" top="5.0" />
+					</GridPane.margin>
+				</Button>
+				<Button fx:id="backButton" mnemonicParsing="false" text="Back" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+					<GridPane.margin>
+						<Insets left="15.0" right="15.0" />
+					</GridPane.margin>
+				</Button>
+				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" GridPane.halignment="RIGHT">
+					<GridPane.margin>
+						<Insets bottom="5.0" left="5.0" right="15.0" top="5.0" />
+					</GridPane.margin>
+				</Button>
+			</children>
+			<padding>
+				<Insets bottom="5.0" top="5.0" />
+			</padding>
+		</GridPane>
+	</bottom>
+	<padding>
+		<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+	</padding>
+</BorderPane>

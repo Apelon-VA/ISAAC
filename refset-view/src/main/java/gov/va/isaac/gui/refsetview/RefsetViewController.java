@@ -39,7 +39,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -158,10 +157,10 @@ public class RefsetViewController {
 		
 		try {
 			for (RefexChronicleBI<?> memChron : members) {
-				List<RefexVersionBI> memberVersion = new ArrayList<>();
+				List<RefexVersionBI<?>> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					RefexVersionBI version = memChron.getVersion(vc);
+					RefexVersionBI<?> version = memChron.getVersion(vc);
 					
 					if (version.isActive()) {
 						memberVersion.add(version);
@@ -171,9 +170,9 @@ public class RefsetViewController {
 				{
 					memberVersion.addAll(memChron.getVersions());
 				}
-				RefexVersionBI previousMember = null;
+				RefexVersionBI<?> previousMember = null;
 				
-				for (RefexVersionBI member : memberVersion)
+				for (RefexVersionBI<?> member : memberVersion)
 				{
 					ConceptVersionBI refCompCon;
 					if (!isAnnotation) {
@@ -202,7 +201,7 @@ public class RefsetViewController {
 	}
 
 
-	private void handleComplexRefset(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) {
+	private void handleComplexRefset(RefexVersionBI<?> member, RefexVersionBI<?> previousMember, ConceptVersionBI refCompCon) {
 		if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
 			rth_.finishTableSetup(member, isAnnotation, refsetRows, refCompCon, member.getAssemblageNid());
 			refsetType = member.getRefexType();
@@ -214,7 +213,7 @@ public class RefsetViewController {
 		data.add(instance);
 	}
 
-	private void processMembers(RefexVersionBI member, RefexVersionBI previousMember, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
+	private void processMembers(RefexVersionBI<?> member, RefexVersionBI<?> previousMember, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
 		if (member.getAssemblageNid() == refsetNid_) {
 			// Setup if Necessary
 			//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
@@ -232,21 +231,21 @@ public class RefsetViewController {
 
 		// Search for member's annotations
 		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(vc) : member.getAnnotations());
-		for (RefexChronicleBI annot : refAnnots) {
-			List<RefexVersionBI> annotVersions = new ArrayList<>();
+		for (RefexChronicleBI<?> annot : refAnnots) {
+			List<RefexVersionBI<?>> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				RefexVersionBI version = (RefexVersionBI) annot.getVersion(vc);
+				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(vc);
 				if (version.isActive()) {
 					annotVersions.add(version);
 				}
 			}
 			else {
-				annotVersions.addAll((Collection<? extends RefexVersionBI>) annot.getVersions());
+				annotVersions.addAll((Collection<? extends RefexVersionBI<?>>) annot.getVersions());
 			}
 			
-			RefexVersionBI prevAnnotVersion = null;
-			for (RefexVersionBI annotVersion : annotVersions)
+			RefexVersionBI<?> prevAnnotVersion = null;
+			for (RefexVersionBI<?> annotVersion : annotVersions)
 			{
 				processMembers(annotVersion, prevAnnotVersion, refCompCon);
 				

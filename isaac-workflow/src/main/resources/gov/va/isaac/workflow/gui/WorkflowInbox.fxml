@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowInboxController">
+	<top>
+		<HBox BorderPane.alignment="CENTER">
+			<children>
+				<Label styleClass="boldLabel" text="Workflow Inbox for User " />
+				<Label fx:id="userName" styleClass="boldLabel" text="&lt;user&gt;" />
+			</children>
+			<BorderPane.margin>
+				<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+			</BorderPane.margin>
+		</HBox>
+	</top>
+	<center>
+		<TableView fx:id="taskTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+			<columns/>
+		</TableView>
+	</center>
+	<bottom>
+		<GridPane BorderPane.alignment="CENTER">
+			<columnConstraints>
+				<ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+				<ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+			</rowConstraints>
+			<BorderPane.margin>
+				<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+			</BorderPane.margin>
+			<children>
+				<Button fx:id="synchronizeButton" mnemonicParsing="false" text="Synchronize with KIE">
+					<GridPane.margin>
+						<Insets />
+					</GridPane.margin>
+				</Button>
+				<Button fx:id="claimTasksButton" mnemonicParsing="false" text="Claim 10 more Tasks" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+			</children>
+		</GridPane>
+	</bottom>
+</BorderPane>

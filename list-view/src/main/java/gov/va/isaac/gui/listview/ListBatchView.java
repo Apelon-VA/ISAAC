@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.listview;
 
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import java.io.IOException;
@@ -90,7 +91,7 @@ public class ListBatchView implements DockedViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return "panelsMenu";
+				return ApplicationMenus.PANELS.getMenuId();
 			}
 
 			@Override

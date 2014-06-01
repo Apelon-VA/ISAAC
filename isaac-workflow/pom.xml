@@ -4,7 +4,7 @@
     <parent>
         <groupId>gov.va.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.0-Sprint_08-SNAPSHOT</version>
+        <version>1.0-Sprint_09-SNAPSHOT</version>
     </parent>
     <groupId>gov.va.isaac.modules</groupId>
     <artifactId>isaac-workflow</artifactId>
@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>gui-util</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.kie.remote</groupId>
             <artifactId>kie-services-client</artifactId>
             <version>6.0.1.Final</version>
@@ -24,6 +29,13 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
             <version>10.10.1.1</version>
+        </dependency>
+        <dependency>
+            <!-- TODO get rid of this - guessing the need for the compile-time dependency will go away later in dev cycle 
+            Junit is already on the path - but only in test scope-->
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
         </dependency>
     </dependencies>
     <properties>

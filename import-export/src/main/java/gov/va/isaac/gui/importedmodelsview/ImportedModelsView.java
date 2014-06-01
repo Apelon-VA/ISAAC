@@ -18,20 +18,17 @@
  */
 package gov.va.isaac.gui.importedmodelsview;
 
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -89,7 +86,7 @@ public class ImportedModelsView implements DockedViewI {
 
             @Override
             public String getParentMenuId() {
-                return "panelsMenu";
+                return ApplicationMenus.PANELS.getMenuId();
             }
 
             @Override

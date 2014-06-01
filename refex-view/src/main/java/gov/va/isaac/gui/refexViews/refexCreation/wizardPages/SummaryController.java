@@ -18,219 +18,225 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.util.WBUtility;
+
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * 
  * {@link SummaryController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class SummaryController implements PanelControllers {
-
-	@FXML private AnchorPane summaryPane;
-	@FXML private VBox mainVBox;
-
-	@FXML private Label actualRefexName;
-	@FXML private Label actualRefexDescription;
-	@FXML private Label actualParentConcept;
-	@FXML private Label actualReadOnly;
-	@FXML private Label actualRefexType;
-	@FXML private Label actualRefCompDesc;
-
+	@FXML private TextField actualRefexName;
+	@FXML private TextArea actualRefexDescription;
+	@FXML private TextField actualParentConcept;
+	@FXML private TextField actualRefexType;
+	@FXML private BorderPane summaryPane;
+	@FXML private GridPane columnGridPane;
 	@FXML private Button cancelButton;
 	@FXML private Button startOverButton;
 	@FXML private Button commitButton;
+	@FXML private Button backButton;
 
-	
 	static ViewCoordinate vc = null;
 	static ScreensController processController;
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(SummaryController.class);
+
 	@Override
 	public void initialize() {
-		assert mainVBox != null : "fx:id=\"mainVBox\" was not injected: check your FXML file 'Untitled'.";
-		assert actualRefexName != null : "fx:id=\"actualRefexName\" was not injected: check your FXML file 'Untitled'.";
-		assert actualRefexDescription != null : "fx:id=\"actualRefexDescription\" was not injected: check your FXML file 'Untitled'.";
-		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'Untitled'.";
-		assert startOverButton != null : "fx:id=\"startOverButton\" was not injected: check your FXML file 'Untitled'.";
-		assert commitButton != null : "fx:id=\"commitButton\" was not injected: check your FXML file 'Untitled'.";
-		assert actualRefexType != null : "fx:id=\"actualRefexType\" was not injected: check your FXML file 'Untitled'.";
-		assert actualRefCompDesc != null : "fx:id=\"actualRefCompDesc\" was not injected: check your FXML file 'Untitled'.";
-		assert summaryPane != null : "fx:id=\"summaryPane\" was not injected: check your FXML file 'Untitled'.";
-		assert actualParentConcept != null : "fx:id=\"actualParentConcept\" was not injected: check your FXML file 'Untitled'.";
-		assert actualReadOnly != null : "fx:id=\"actualReadOnly\" was not injected: check your FXML file 'Untitled'.";
-	}
+		assert actualRefexDescription != null : "fx:id=\"actualRefexDescription\" was not injected: check your FXML file 'summary.fxml'.";
+		assert actualRefexName != null : "fx:id=\"actualRefexName\" was not injected: check your FXML file 'summary.fxml'.";
+		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'summary.fxml'.";
+		assert startOverButton != null : "fx:id=\"startOverButton\" was not injected: check your FXML file 'summary.fxml'.";
+		assert commitButton != null : "fx:id=\"commitButton\" was not injected: check your FXML file 'summary.fxml'.";
+		assert backButton != null : "fx:id=\"commitButton\" was not injected: check your FXML file 'summary.fxml'.";
+		assert actualRefexType != null : "fx:id=\"actualRefexType\" was not injected: check your FXML file 'summary.fxml'.";
+		assert summaryPane != null : "fx:id=\"summaryPane\" was not injected: check your FXML file 'summary.fxml'.";
+		assert actualParentConcept != null : "fx:id=\"actualParentConcept\" was not injected: check your FXML file 'summary.fxml'.";
+		assert columnGridPane != null : "fx:id=\"mainPane\" was not injected: check your FXML file 'summary.fxml'.";
 
+	}
 
 	private void setupColumnContent() {
-		VBox allColumnsContent = new VBox(10);
-		allColumnsContent.setAlignment(Pos.TOP_CENTER);
-
-		for (int i = 1; i < processController.getWizard().getExtendedFieldsCount(); i++) {
-			VBox colBox = createColumn(i);
-			allColumnsContent.getChildren().add(colBox);
-		}
+		VBox columns = new VBox(15);
+		columns.setAlignment(Pos.TOP_CENTER);
 		
-		mainVBox.getChildren().add(allColumnsContent);
+		columnGridPane.getChildren().clear();
+		int row = 0;
+		for (int i = 0; i < processController.getWizard().getExtendedFieldsCount(); i++) {
+			ConceptVersionBI col = processController.getWizard().getColumnName(i);
+			String colType = processController.getWizard().getColumnType(i);
+			Object colDefaultValue = processController.getWizard().getColumnDefaultValue(i);
+			String colIsMandatory = processController.getWizard().getColumnIsMandatory(i);
+			boolean hasDefaultValue = colDefaultValue != null && colDefaultValue.toString().length() > 0;
+
+			if (row > 0)
+			{
+				Separator sep = new Separator(Orientation.HORIZONTAL);
+				sep.setPadding(new Insets(10, 0, 10, 0));
+				columnGridPane.add(sep, 0, row++, 3, 1);
+				GridPane.setFillWidth(sep, true);
+			}
+			
+			// Create Column header
+			Label header = createColumnHeader(i);
+			columnGridPane.add(header, 0, row++, 3, 1);
+			GridPane.setHalignment(header, HPos.CENTER);
+
+			RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, col.getPrimordialUuid(), null, null);
+			
+			//row 1
+//			Label nameLabel = createLabel("Name: " + rdc.getColumnName(), true);
+//			nameLabel.setFont(new Font(16));
+			HBox nameBox = createColumnName(rdc.getColumnName());
+			columnGridPane.add(nameBox, 0, row++, 3, 1);
+			GridPane.setHalignment(nameBox, HPos.CENTER);
+			
+			//row 2
+			Label descriptionLabel = createLabel("Description", true);
+			columnGridPane.add(descriptionLabel, 0, row);
+			GridPane.setHalignment(descriptionLabel, HPos.CENTER);
+			
+			columnGridPane.add(createLabel("Type", true), 1, row);
+			columnGridPane.add(createLabel(colType, false), 2, row++);
+
+			//row 3
+			TextArea description = new TextArea(rdc.getColumnDescription());
+			description.setEditable(false);
+			description.setWrapText(true);
+			description.setMaxHeight(90);
+			columnGridPane.add(description, 0, row++, 1, 3);
+			
+			GridPane.setValignment(description, VPos.TOP);
+			columnGridPane.add(createLabel("Mandatory", true), 1, row);
+			columnGridPane.add(createLabel(colIsMandatory, false), 2, row++);
+			
+			//row 4
+			Label l = createLabel("Default Value", true);
+			columnGridPane.add(l, 1, row);
+			GridPane.setValignment(l, VPos.TOP);
+
+			if (hasDefaultValue)
+			{
+				l = createLabel(colDefaultValue.toString(), false);
+				GridPane.setValignment(l, VPos.TOP);
+				columnGridPane.add(l, 2, row++);
+			} else {
+				l = createLabel("<None>", false);
+				GridPane.setValignment(l, VPos.TOP);
+				columnGridPane.add(l, 2, row++);
+			}
+		}
+		if (row == 0)
+		{
+			columnGridPane.add(createLabel("No Data Columns", true), 0, row, 3, 1);
+			GridPane.setHalignment(columnGridPane.getChildren().get(0), HPos.CENTER);
+		}
 	}
 
+	private Label createLabel(String val, boolean bold) {
+		Label l = new Label(val);
+		l.setWrapText(true);
+		if (bold)
+		{
+			l.getStyleClass().add("boldLabel");
+		}
 
-	private VBox createColumn(int column) {
-		String colDesc = processController.getWizard().getColumnDescription(column);
-		String colType = processController.getWizard().getColumnType(column);
+		return l;
+	}
 
-		VBox columnContent = new VBox();
-		columnContent.setAlignment(Pos.TOP_CENTER);
-		String colDefaultValue = processController.getWizard().getColumnDefaultValue(column);
-		String colIsMandatory = processController.getWizard().getColumnIsMandatory(column);
-		
-		// Set Column header
-		Label columnHeader = new Label("Description");
+	private Label createColumnHeader(int column) {
+		Label columnHeader = new Label("Column Definition #" + (column + 1));
 		Font headerFont = new Font("System Bold", 18);
 		columnHeader.setFont(headerFont);
 		columnHeader.setAlignment(Pos.CENTER);
-		columnContent.getChildren().add(columnHeader);
 		
-		HBox splitColumn = new HBox(50);
-		splitColumn.setAlignment(Pos.CENTER);
-		
-		// Left V/A Pairs
-		HBox attrValBoxLeft = new HBox();
-		attrValBoxLeft.setAlignment(Pos.CENTER);
-		attrValBoxLeft.setLayoutX(0);
-		attrValBoxLeft.setPrefWidth(200);
-
-		// Create Attribute/Value VBoxes
-		VBox columnAttributesLeft = new VBox();
-		VBox columnValuesLeft = new VBox();
-		columnAttributesLeft.setSpacing(5);
-		columnValuesLeft.setSpacing(5);
-		columnAttributesLeft.setAlignment(Pos.CENTER_LEFT);
-		columnValuesLeft.setAlignment(Pos.CENTER_LEFT);
-		columnAttributesLeft.setPadding(new Insets(0, 0, 0, 5));
-
-		// Right V/A Pairs
-		HBox attrValBoxRight = new HBox();
-		attrValBoxRight.setAlignment(Pos.CENTER);
-		attrValBoxRight.setPrefWidth(200);
-
-		// Create Attribute/Value VBoxes
-		VBox columnAttributesRight = new VBox();
-		VBox columnValuesRight = new VBox();
-		columnAttributesRight.setSpacing(5);
-		columnValuesRight.setSpacing(5);
-		columnAttributesRight.setAlignment(Pos.CENTER_LEFT);
-		columnValuesRight.setAlignment(Pos.CENTER_LEFT);
-		columnAttributesRight.setPadding(new Insets(0, 0, 0, 5));
-
-		// Set Attribute Labels
-		Label colDescAttrLabel = new Label("Description:");
-		Label colTypeAttrLabel = new Label("Type:");
-		Label colDefaultValueAttrLabel = new Label("Default Value:");
-		Label colIsMandatoryAttrLabel = new Label("Is Mandatory:");
-
-		// Set Attribute Label Fonts
-		colDescAttrLabel.setFont(new Font("System Bold", 12));
-		colTypeAttrLabel.setFont(new Font("System Bold", 12));
-		colDefaultValueAttrLabel.setFont(new Font("System Bold", 12));
-		colIsMandatoryAttrLabel.setFont(new Font("System Bold", 12));
-		
-		// Set Value Labels
-		Label colDescLabel = new Label(colDesc);
-		Label colTypeLabel = new Label(colType);
-		Label colDefaultValueLabel = new Label(colDefaultValue);
-		Label colIsMandatoryLabel = new Label(colIsMandatory);
-
-		// Add Attribute Labels to Attribute VBox
-		columnAttributesLeft.getChildren().add(colDescAttrLabel);
-		columnAttributesLeft.getChildren().add(colIsMandatoryAttrLabel);
-		columnAttributesRight.getChildren().add(colTypeAttrLabel);
-		columnAttributesRight.getChildren().add(colDefaultValueAttrLabel);
-
-		// Add Value Labels to Value VBox
-		columnValuesLeft.getChildren().add(colDescLabel);
-		columnValuesLeft.getChildren().add(colIsMandatoryLabel);
-		columnValuesRight.getChildren().add(colTypeLabel);
-		columnValuesRight.getChildren().add(colDefaultValueLabel);
-
-		attrValBoxLeft.getChildren().add(columnAttributesLeft);
-		attrValBoxLeft.getChildren().add(columnValuesLeft);
-		attrValBoxRight.getChildren().add(columnAttributesRight);
-		attrValBoxRight.getChildren().add(columnValuesRight);
-
-		splitColumn.getChildren().add(attrValBoxLeft);
-		splitColumn.getChildren().add(attrValBoxRight);
-		
-		columnContent.getChildren().add(splitColumn);
-		
-		return columnContent;
+		return columnHeader;
 	}
 
+	private HBox createColumnName(String colName) {
+		HBox nameBox = new HBox(5);
+		nameBox.setAlignment(Pos.CENTER);
+
+		Label nameLabel = createLabel("Name", true);
+		nameLabel.setFont(new Font(15));
+		nameBox.getChildren().add(nameLabel);
+
+		Label nameVal = new Label(colName);
+		nameVal.setFont(new Font(15));
+		nameBox.getChildren().add(nameVal);
+		
+		return nameBox;
+	}
 
 	private void setupRefexContent() {
-		// Refset
 		actualRefexName.setText(processController.getWizard().getRefexName());
 		actualRefexDescription.setText(processController.getWizard().getRefexDescription());
 		actualParentConcept.setText(processController.getWizard().getParentConceptFsn());
-		
-		if (processController.getWizard().isReadOnlyRefex()) {
-			actualReadOnly.setText("Read-Only Refex");
-		} else {
-			actualReadOnly.setText("Mutable Refex");
-		}
 		
 		if (processController.getWizard().isAnnotated()) {
 			actualRefexType.setText("Annotated");
 		} else {
 			actualRefexType.setText("Refset");
 		}
-		
-		// Referenced Component
-		actualRefCompDesc.setText(processController.getWizard().getRefCompDesc());
 	}
 
 	@Override
 	public void finishInit(ScreensController screenParent){
 		processController = screenParent;
 
-		setupColumnContent();
 		setupRefexContent();
-
-		vc = WBUtility.getViewCoordinate();
+		setupColumnContent();
 
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				((Stage)summaryPane.getScene().getWindow()).close();
-			}});
+			}
+		});
 	
 		commitButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				processValues();
 				((Stage)summaryPane.getScene().getWindow()).close();
-//				AppContext.getCommonDialogs().showInformationDialog("Creation Summary", "Refset Successfully Created");
-		}
+			}
 		});
 
 		startOverButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -240,27 +246,32 @@ public class SummaryController implements PanelControllers {
 				processController.setScreen(ScreensController.DEFINITION_SCREEN);
 			}
 		});
+		
+		backButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				processController.unloadScreen(ScreensController.SUMMARY_SCREEN);
+				int fieldCount = processController.getWizard().getExtendedFieldsCount();
+				if (fieldCount > 0) {
+					processController.loadColumnScreen(fieldCount - 1);
+					processController.setScreen(ScreensController.COLUMN_SCREEN);
+				} else {
+					processController.setScreen(ScreensController.DEFINITION_SCREEN);
+				}
+			}
+		});
 	}
 		
 	@Override
 	public void processValues() {
-		// TODO this isn't finished
-		try
-		{
+		try {
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
-					actualRefexDescription.getText(), "later", processController.getWizard().getColumnInfo(), null, 
-					actualRefexType.getText().equals("Annotated"), WBUtility.getEC(), WBUtility.getViewCoordinate());
+					actualRefexName.getText(), actualRefexDescription.getText(), processController.getWizard().getColumnInfo(), 
+					processController.getWizard().getParentConcept().getPrimordialUuid(), 
+					processController.getWizard().isAnnotated(), WBUtility.getEC(), WBUtility.getViewCoordinate());
+		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
+			logger.error("Unable to create and/or commit refset concept and metadata", e);
+			AppContext.getCommonDialogs().showErrorDialog("Error Creating Refex", "Unexpected error creating the Refex", e.getMessage(), summaryPane.getScene().getWindow());
 		}
-		catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	
-	@Override
-	public boolean verifyValuesExist() {
-		return true;
 	}
 }

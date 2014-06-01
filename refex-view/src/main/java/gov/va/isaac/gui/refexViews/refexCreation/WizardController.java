@@ -1,3 +1,21 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
 import java.util.ArrayList;
@@ -6,25 +24,31 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * {@link WizardController}
+ *
+ * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+ */
 public class WizardController {
-	private int totalColumns;
-
 	private ConceptChronicleBI refsetCon;
 
 	private String refexName;
 	private String refsetDescription;
 	private int extendedFieldsCount;
 	private boolean isAnnotated;
-//	private boolean isReadOnly;
+	private ConceptVersionBI parentConcept;
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
-	private List<RefexDynamicDataType> columnTypeStrings = new ArrayList<RefexDynamicDataType>();
-	private List<String> columnDefaultValues = new ArrayList<String>();
+	private List<RefexDynamicDataType> columnTypes = new ArrayList<RefexDynamicDataType>();
+	private List<Object> columnDefaultValues = new ArrayList<>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
-	private ConceptVersionBI parentConcept;
-	private boolean isReadOnly;
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
 	public void setRefsetConcept(ConceptChronicleBI con) {
 		refsetCon = con;
@@ -33,26 +57,28 @@ public class WizardController {
 		return refsetCon;
 	}
 
-	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated, boolean isReadOnly) {
+	public void setNewRefsetConceptVals(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotated) {
 		this.refexName = name;
 		this.refsetDescription = description;
 		this.parentConcept = parentConcept;
-		this.extendedFieldsCount = extendedFieldsCount + 1;
+		this.extendedFieldsCount = extendedFieldsCount;
 		this.isAnnotated = isAnnotated;
-		this.isReadOnly = isReadOnly;
 	}
 
-	public void setReferencedComponentVals(ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
-		setColumnVals(colCon, type, defaultValue, isMandatory);
+	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, Object defaultValueObject, boolean isMandatory) {
+		if (previouslyFilledOut(currentCol)) {
+			columnNids.set(currentCol, colCon);
+			columnTypes.set(currentCol, type);
+			columnDefaultValues.set(currentCol, defaultValueObject);		
+			columnIsMandatory.set(currentCol, isMandatory);
+		} else {
+			columnNids.add(colCon);
+			columnTypes.add(type);
+			columnDefaultValues.add(defaultValueObject);		
+			columnIsMandatory.add(isMandatory);
+		}
 	}
-
-	public void setColumnVals(ConceptVersionBI colCon, RefexDynamicDataType type, String defaultValue, boolean isMandatory) {
-		columnNids.add(colCon);
-		columnTypeStrings.add(type);
-		columnDefaultValues.add(defaultValue);		
-		columnIsMandatory.add(isMandatory);
-	}
-
+	
 	public String getRefexName() {
 		return refexName;
 	}
@@ -65,6 +91,10 @@ public class WizardController {
 		return getConceptFsn(parentConcept);
 	}
 
+	public ConceptVersionBI getParentConcept() {
+		return parentConcept;
+	}
+
 	private String getConceptFsn(ConceptVersionBI con) {
 		try {
 			if (con == null) {
@@ -72,13 +102,9 @@ public class WizardController {
 			}
 			return con.getFullySpecifiedDescription().getText().trim();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to identify FSN of concept" + con.getPrimordialUuid().toString(), e);
 			return "Not Accessible";
 		}
-	}
-
-	public boolean isReadOnlyRefex() {
-		return isReadOnly;
 	}
 
 	public boolean isAnnotated() {
@@ -89,45 +115,50 @@ public class WizardController {
 		return extendedFieldsCount;
 	}
 
-	public String getColumnDescription(int column) {
-		try {
-			return columnNids.get(column).getFullySpecifiedDescription().getText().trim();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "Not Accessible";
-		}
-	}
-
 	public String getColumnType(int column) {
-		return columnTypeStrings.get(column).getDisplayName();
+		return columnTypes.get(column).getDisplayName();
 	}
 
-	public String getColumnDefaultValue(int column) {
+	public Object getColumnDefaultValue(int column) {
 		return columnDefaultValues.get(column);
 	}
 
 	public String getColumnIsMandatory(int column) {
 		if (columnIsMandatory.get(column)) {
-			return "Mandatory";
+			return "True";
 		} else {
-			return "Optional";
+			return "False";
 		}
-	}
-
-	public String getRefCompDesc() {
-		return getConceptFsn(columnNids.get(0));
 	}
 
 	public RefexDynamicColumnInfo[] getColumnInfo()
 	{
-		//TODO this is also broken, and building two columns, when only one is specified.  funny stuff happening in the GUI.
-		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypeStrings.size()];
+		if (columnTypes.size() == 0) {
+			return null;
+		}
+		
+		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypes.size()];
 		for (int i = 0; i < result.length; i++)
 		{
-			//TODO defaultValues needs to be an Object, not a String, and it needs to match the type declared in columnTypes.
-			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypeStrings.get(i), columnDefaultValues.get(i));
+			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypes.get(i), columnDefaultValues.get(i));
 		}
 		return result;
 	}
-
+	public ConceptVersionBI getColumnName(int column) {
+		try {
+			return columnNids.get(column);
+		} catch (Exception e) {
+			logger.error("Unable to identify FSN of column #" + column, e);
+			return null;
+		}
+	}
+	public boolean isColumnMandatory(int column) {
+		return columnIsMandatory.get(column);
+	}
+	public RefexDynamicDataType getColumnTypeToken(int column) {
+		return columnTypes.get(column);
+	}
+	public boolean previouslyFilledOut(int column) {
+		return columnTypes.size() > column;
+	}
 }

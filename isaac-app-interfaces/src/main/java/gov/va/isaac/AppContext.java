@@ -22,9 +22,8 @@ import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializerCustom;
-
 import java.io.IOException;
-
+import java.lang.annotation.Annotation;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -72,9 +71,14 @@ public class AppContext
 		return serviceLocator_;
 	}
 
-	public static <T> T getService(Class<T> contractOrService)
+	public static <T> T getService(Class<T> contractOrService, Annotation... qualifiers)
 	{
-		return serviceLocator_.getService(contractOrService);
+		return serviceLocator_.getService(contractOrService, qualifiers);
+	}
+	
+	public static <T> T getService(Class<T> contractOrService, String name, Annotation... qualifiers)
+	{
+		return serviceLocator_.getService(contractOrService, name, qualifiers);
 	}
 
 	public static CommonDialogsI getCommonDialogs()

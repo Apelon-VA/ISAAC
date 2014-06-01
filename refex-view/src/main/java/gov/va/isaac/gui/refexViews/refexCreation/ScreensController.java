@@ -18,8 +18,8 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
+import gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController;
 import java.util.HashMap;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -28,11 +28,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * 
  * {@link ScreensController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class ScreensController extends StackPane {
 	static private HashMap<String, Parent> screens = new HashMap<>();
@@ -43,13 +46,14 @@ public class ScreensController extends StackPane {
 	public static final String COLUMN_SCREEN_FXML = "wizardPages/column.fxml";
 	public static final String SUMMARY_SCREEN = "summary";
 	public static final String SUMMARY_SCREEN_FXML = "wizardPages/summary.fxml";
+	
+	private static final Logger logger = LoggerFactory.getLogger(ScreensController.class);
 
-	public WizardController wizard = new WizardController();
+	public final WizardController wizard = new WizardController();
+	
 	protected ScreensController()
 	{
 		loadScreen(DEFINITION_SCREEN, DEFINITION_SCREEN_FXML);
-		loadScreen(COLUMN_SCREEN, COLUMN_SCREEN_FXML);
-		
 		setScreen(DEFINITION_SCREEN);
 	}
 
@@ -61,18 +65,30 @@ public class ScreensController extends StackPane {
 		loadScreen(SUMMARY_SCREEN, SUMMARY_SCREEN_FXML);
 	}
 
+	public void loadColumnScreen(int colNum) {
+		loadColumnScreen(COLUMN_SCREEN, COLUMN_SCREEN_FXML, colNum);
+	}
+
 	public boolean loadScreen(String name, String resource) {
+		return loadColumnScreen(name, resource, -1);
+	} 
+
+	public boolean loadColumnScreen(String name, String resource, int colNum) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
 			Parent loadScreen = (Parent) loader.load();
 			PanelControllers processController = ((PanelControllers) loader.getController());
-
+			
+			if (colNum >= 0)
+			{
+				((ColumnController)processController).setColumnNumber(colNum);
+			}
 			processController.finishInit(this);
 			addScreen(name, loadScreen);
 			
 			return true;
 		}catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to load new screen: " + name, e);
 			return false;
 		}
 	} 
@@ -105,14 +121,14 @@ public class ScreensController extends StackPane {
 			}
 			return true;
 		} else {
-			System.out.println("screen hasn't been loaded!\n");
+			logger.warn("screen hasn't been loaded!");
 			return false;
 		} 
 	}
 
 	public boolean unloadScreen(String name) {
 		if(screens.remove(name) == null) {
-			System.out.println("Screen didn't exist");
+			logger.warn("Screen didn't exist");
 			return false;
 		} else {
 			return true;
@@ -122,9 +138,4 @@ public class ScreensController extends StackPane {
 	public WizardController getWizard() {
 		return wizard;
 	}
-
-	public void setWizard(WizardController wizard) {
-		this.wizard = wizard;
-	}
-
 }

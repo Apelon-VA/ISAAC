@@ -142,8 +142,14 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
     protected void updateItem(TaxonomyReferenceWithConcept taxRef, boolean empty) {
         super.updateItem(taxRef, empty);
         double opacity = 0.0;
+        
+        if (empty)
+        {
+            setText("");
+            setGraphic(null);
+        }
 
-        if (taxRef != null) {
+        else if (!empty && taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
 
             if (treeItem.getMultiParentDepth() > 0) {

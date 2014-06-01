@@ -20,6 +20,9 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import java.io.IOException;
 import java.net.URL;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -42,7 +45,7 @@ public class NewColumnDialog extends Stage
 	{
 		super();
 
-		setTitle("Export Settings");
+		setTitle("New Column Creation");
 		setResizable(true);
 
 		initOwner(owner);
@@ -57,10 +60,21 @@ public class NewColumnDialog extends Stage
 		setScene(scene);
 
 		ncdc_ = loader.getController();
+		
+		//Problem on linux, where modal windows don't always stay on top...
+		iconifiedProperty().addListener(new ChangeListener<Boolean>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+			{
+				Platform.runLater(() -> {
+					toFront();
+				});
+			}
+		});
 	}
 	
 	public ConceptChronicleBI getNewColumnConcept() {
 		return ncdc_.getNewColumnConcept();
 	}
-
 }

@@ -19,6 +19,7 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.util.WBUtility;
+import java.util.function.Function;
 import org.apache.commons.lang.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
@@ -55,15 +56,25 @@ public class SimpleDisplayConcept
 	
 	public SimpleDisplayConcept(ConceptVersionBI c)
 	{
-		this(WBUtility.getDescription(c), c.getNid());
+		this(c, null);
+	}
+	
+	public SimpleDisplayConcept(ConceptVersionBI c, Function<ConceptVersionBI, String> descriptionReader)
+	{
+		Function<ConceptVersionBI, String> dr = (descriptionReader == null ? (conceptVersion) -> {return WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		description_ = dr.apply(c);
+		nid_ = c.getNid();
+		ignoreChange_ = false;
+	}
+	
+	public SimpleDisplayConcept(ConceptChronicleDdo c, Function<ConceptVersionBI, String> descriptionReader)
+	{
+		this(WBUtility.getConceptVersion(c.getPrimordialUuid()), descriptionReader);
 	}
 	
 	public SimpleDisplayConcept(ConceptChronicleDdo c)
 	{
-		ConceptVersionBI cv = WBUtility.getConceptVersion(c.getPrimordialUuid());
-		description_ = WBUtility.getDescription(cv);
-		nid_ = cv.getNid();
-		ignoreChange_ = false;
+		this(WBUtility.getConceptVersion(c.getPrimordialUuid()), null);
 	}
 	
 	public SimpleDisplayConcept(String description)
@@ -139,6 +150,7 @@ public class SimpleDisplayConcept
 		return description_;
 	}
 	
+	@Override
 	public SimpleDisplayConcept clone()
 	{
 		return new SimpleDisplayConcept(this.description_, this.nid_, false);

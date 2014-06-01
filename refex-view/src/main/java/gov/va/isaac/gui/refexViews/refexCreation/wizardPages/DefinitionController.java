@@ -20,14 +20,17 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
+import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.StringBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -36,61 +39,74 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  * {@link DefinitionController}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public class DefinitionController implements PanelControllers {
 	@FXML private ResourceBundle resources;
 	@FXML private URL location;
-	@FXML private AnchorPane refsetCreationPane;
-
+	@FXML private BorderPane refsetCreationPane;
 	@FXML private ToggleGroup refexType;
 	@FXML private RadioButton refexTypeRefset;
 	@FXML private RadioButton refexAnnotationType;
-	@FXML private ToggleGroup readOnly;
-	@FXML private RadioButton refexNotReadOnly;
-	@FXML private RadioButton refexIsReadOnly;
-	
 	@FXML private TextField refexName;
 	@FXML private TextField extensionCount;
 	@FXML private TextArea refexDescription;
-
 	@FXML private Button continueCreation;
 	@FXML private Button cancelCreation;
-
-    @FXML private HBox parentConceptHBox;
-	private ConceptNode parentConcept = null;
-
-	static ViewCoordinate vc = null;
+	@FXML private HBox parentConceptHBox;
+	@FXML private GridPane gridPane;
 
 	ScreensController processController;
+	private ConceptNode parentConcept = null;
+	
+	private StringBinding refexDescriptionInvalidReason, refexNameInvalidReason, extensionCountInvalidReason;
+	private BooleanBinding allValid;
+	
+	private static final Logger logger = LoggerFactory.getLogger(DefinitionController.class);
 
 	@Override
 	public void initialize() {
-		vc = WBUtility.getViewCoordinate();
 		
-		ConceptVersionBI refsetIdentity;
+		assert continueCreation != null : "fx:id=\"continueCreation\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexName != null : "fx:id=\"refexName\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexTypeRefset != null : "fx:id=\"refexTypeRefset\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexAnnotationType != null : "fx:id=\"refexAnnotationType\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexType != null : "fx:id=\"refexType\" was not injected: check your FXML file 'definition.fxml'.";
+		assert extensionCount != null : "fx:id=\"extensionCount\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refexDescription != null : "fx:id=\"refexDescription\" was not injected: check your FXML file 'definition.fxml'.";
+		assert refsetCreationPane != null : "fx:id=\"refsetCreationPane\" was not injected: check your FXML file 'definition.fxml'.";
+		assert cancelCreation != null : "fx:id=\"cancelCreation\" was not injected: check your FXML file 'definition.fxml'.";
+		assert parentConceptHBox != null : "fx:id=\"parentConceptHBox\" was not injected: check your FXML file 'definition.fxml'.";
+		
+		extensionCount.setText("0");
+		
 		try {
-			refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
+			ConceptVersionBI refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
 			parentConcept = new ConceptNode(refsetIdentity, true);
 		} catch (IOException e1) {
 			parentConcept = new ConceptNode(null, true);
 		}
-			parentConceptHBox.getChildren().add(parentConcept.getNode());
-		
-//		rth_ = new RefsetTableHandler(refsetRows, this);
+		parentConceptHBox.getChildren().add(parentConcept.getNode());
+		HBox.setHgrow(parentConcept.getNode(), Priority.ALWAYS);
+
+
 		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
@@ -100,14 +116,121 @@ public class DefinitionController implements PanelControllers {
 		continueCreation.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
-					if (verifyValuesExist()) {
+					if (checkParentHierarchy()) {
 						processValues();
-						processController.setScreen(ScreensController.COLUMN_SCREEN);
+						if (Integer.valueOf(extensionCount.getText().trim()) == 0) {
+							processController.loadSummaryScreen();
+							processController.setScreen(ScreensController.SUMMARY_SCREEN);
+						} else {
+							processController.loadColumnScreen(0);
+							processController.setScreen(ScreensController.COLUMN_SCREEN);
+						}
 					}
 				}
-
 			});
+		
+		refexNameInvalidReason = new StringBinding()
+		{
+			{
+				bind(refexName.textProperty());
+			}
+			@Override
+			protected String computeValue()
+			{
+				if (refexName.getText().trim().isEmpty())
+				{
+					return "The Refex Name is required";
+				}
+				else
+				{
+					return "";
+				}
+			}
+		};
 
+		extensionCountInvalidReason = new StringBinding()
+		{
+			{
+				bind(extensionCount.textProperty());
+			}
+			@Override
+			protected String computeValue()
+			{
+				if (extensionCount.getText().trim().isEmpty())
+				{
+					return "The number of extension fields must be specified";
+				}
+				else
+				{
+					try
+					{
+						int c = Integer.parseInt(extensionCount.getText().trim());
+						if (c < 0)
+						{
+							return "The extension field count must 0 or greater";
+						}
+						else
+						{
+							return "";
+						}
+					}
+					catch (Exception e)
+					{
+						return "The extension field count must be an integer >= 0";
+					}
+				}
+			}
+		};
+		
+		refexDescriptionInvalidReason = new StringBinding()
+		{
+			{
+				bind(refexDescription.textProperty());
+			}
+			@Override
+			protected String computeValue()
+			{
+				if (refexDescription.getText().trim().isEmpty())
+				{
+					return "The Refex Description is required";
+				}
+				else
+				{
+					return "";
+				}
+			}
+		};
+		
+		allValid = new BooleanBinding()
+		{
+			{
+				bind(refexDescriptionInvalidReason, refexNameInvalidReason, extensionCountInvalidReason, parentConcept.isValid());
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				if (parentConcept.isValid().get() && refexDescriptionInvalidReason.get().isEmpty() && refexNameInvalidReason.get().isEmpty() 
+						&& extensionCountInvalidReason.get().isEmpty())
+				{
+					return true;
+				}
+				return false;
+			}
+		};
+		
+		continueCreation.disableProperty().bind(allValid.not());
+		
+		StackPane sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(refexName, sp, gridPane);
+		ErrorMarkerUtils.setupErrorMarker(refexName, sp, refexNameInvalidReason);
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(refexDescription, sp, gridPane);
+		ErrorMarkerUtils.setupErrorMarker(refexDescription, sp, refexDescriptionInvalidReason);
+		
+		sp = new StackPane();
+		ErrorMarkerUtils.swapComponents(extensionCount, sp, gridPane);
+		ErrorMarkerUtils.setupErrorMarker(extensionCount, sp, extensionCountInvalidReason);
 	}
 
 	@Override
@@ -115,44 +238,25 @@ public class DefinitionController implements PanelControllers {
 		processController = screenParent;
 	}
 
-	@Override
-	public boolean verifyValuesExist() {
-		String errorMsg = null;
-		
-		if (refexName.getText().trim().isEmpty() || 
-			refexDescription.getText().trim().isEmpty() || 
-			extensionCount.getText().trim().isEmpty() ||
-			parentConcept.getConcept() == null) {
-			errorMsg = "Must fill out all fields";
-		} else {
-			boolean isAncestor = true;
-			try {
-				isAncestor = parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()));
-			} catch (IOException | ContradictionException e1) {
-				e1.printStackTrace();
-				errorMsg = "Cannot identify parent Concept";
+	public boolean checkParentHierarchy() {
+		try 
+		{
+			if (!parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()))) 
+			{
+				YesNoDialog yn = new YesNoDialog(refsetCreationPane.getScene().getWindow());
+				DialogResponse r = yn.showYesNoDialog("Continue?", "The parent concept you selected is not a descendent of the concept 'Dynamic Refsets'.\n"
+						+ "Click Yes to continue using this concept, or No to go back and make changes.");
+				if (DialogResponse.YES == r)
+				{
+					return true;
+				}
+				return false;
 			}
-			
-			if (errorMsg == null) {
-				if (!isAncestor) {
-					errorMsg = "Parent concept must be descendent of Refex Identity";
-				} else {
-					try {
-						Integer val = Integer.valueOf(extensionCount.getText().trim());
-						if (val < 0) {
-							errorMsg = "Number of extension fields must be either '0' or a positive integer";
-						}
-					} catch (Exception e) {
-							errorMsg = "Number of extension fields must be either '0' or a positive integer";
-					}
-				}		
-			}
-		}
-		
-		if (errorMsg == null) {
 			return true;
-		} else {
-			AppContext.getCommonDialogs().showInformationDialog("Bad or Missing Content", errorMsg);
+		} catch (IOException | ContradictionException e) 
+		{
+			logger.error("Unable to verify if concept is ancestor of Dynamic Refex Concept", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "Error Reading Parent Concept", e.getMessage(), refsetCreationPane.getScene().getWindow());
 			return false;
 		}
 	}
@@ -162,8 +266,7 @@ public class DefinitionController implements PanelControllers {
 		int count = Integer.valueOf(extensionCount.getText().trim());
 	
 		processController.getWizard().setNewRefsetConceptVals(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(),
-												  count, refexAnnotationType.isSelected(), 
-												  refexIsReadOnly.isSelected()); 
+												count, refexAnnotationType.isSelected()); 
 	}
 }
 

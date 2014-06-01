@@ -29,5 +29,4 @@ public interface PanelControllers {
 	void finishInit(ScreensController screenPage); 
 	void initialize();
 	void processValues(); 
-	boolean verifyValuesExist();
 }

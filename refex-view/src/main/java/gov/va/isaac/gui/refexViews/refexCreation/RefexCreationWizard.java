@@ -18,17 +18,18 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefexCreationViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import org.glassfish.hk2.api.PerLookup;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -36,21 +37,16 @@ import org.jvnet.hk2.annotations.Service;
  * {@link RefexCreationWizard}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 
 @Service
-@PerLookup
+@Singleton
 public class RefexCreationWizard implements RefexCreationViewI
 {
-	private Stage stage_;
-	
-	//created by HK2
 	private RefexCreationWizard() throws IOException
 	{
-		stage_ = new Stage(StageStyle.UTILITY);
-		Group root = new Group();
-		root.getChildren().addAll(new ScreensController());
-		stage_.setScene(new Scene(root, 600, 400));
+		//created by HK2
 	}
 
 	/**
@@ -59,8 +55,47 @@ public class RefexCreationWizard implements RefexCreationViewI
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
-		// We don't currently have any custom menus with this view
-		return new ArrayList<MenuItemI>();
+		ArrayList<MenuItemI> menus = new ArrayList<>();
+		MenuItemI mi = new MenuItemI()
+		{
+			@Override
+			public void handleMenuSelection(Window parent)
+			{
+				showView(parent);
+			}
+			
+			@Override
+			public int getSortOrder()
+			{
+				return 20;
+			}
+			
+			@Override
+			public String getParentMenuId()
+			{
+				return ApplicationMenus.ACTIONS.getMenuId();
+			}
+			
+			@Override
+			public String getMenuName()
+			{
+				return "Define Refex Assemblage";
+			}
+			
+			@Override
+			public String getMenuId()
+			{
+				return "defineRefexExtensionMenu";
+			}
+			
+			@Override
+			public boolean enableMnemonicParsing()
+			{
+				return false;
+			}
+		};
+		menus.add(mi);
+		return menus;
 	}
 
 	/**
@@ -69,6 +104,11 @@ public class RefexCreationWizard implements RefexCreationViewI
 	@Override
 	public void showView(Window parent)
 	{
-		stage_.show();
+		Stage stage = new Stage(StageStyle.DECORATED);
+		stage.initModality(Modality.NONE);
+		stage.setScene(new Scene(new ScreensController(), 600, 400));
+		stage.setTitle("Define Refex Assemblage");
+		stage.getScene().getStylesheets().add(RefexCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
+		stage.show();
 	}
 }
