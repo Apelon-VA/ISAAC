@@ -24,9 +24,13 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -43,7 +47,9 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.CaseSensitive;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +82,20 @@ public class FindAndReplaceController
 	private StringProperty findTextInvalidReason = new SimpleStringProperty("");
 	private BooleanBinding findTextValid;
 	private BooleanBinding allFieldsValid;
+
+    protected enum DescriptionType {
+        FSN, SYNONYM, PT;
+        
+        @Override
+        public String toString() {
+          switch(this) {
+            case FSN: return "Fully Specified Name";
+            case PT: return "Preferred Term";
+            case SYNONYM: return "Synonym";
+            default: throw new IllegalArgumentException();
+          }
+        }
+    }
 
 	@FXML
 	void initialize()
@@ -278,4 +298,39 @@ public class FindAndReplaceController
 	{
 		return root;
 	}
+	
+	protected Set<DescriptionType> getSelectedDescTypes() {
+		Set<DescriptionType> selectedDescTypes = new HashSet<DescriptionType>();
+		
+		if (descriptionTypeAll.isSelected() || descriptionTypeFSN.isSelected()) {
+			selectedDescTypes.add(DescriptionType.FSN);
+		}
+
+		if (descriptionTypeAll.isSelected() || descriptionTypePT.isSelected()) {
+			selectedDescTypes.add(DescriptionType.PT);
+		}
+
+		if (descriptionTypeAll.isSelected() || descriptionTypeSynonym.isSelected()) {
+			selectedDescTypes.add(DescriptionType.SYNONYM);
+		}
+		
+		return selectedDescTypes;
+	}
+		
+	protected boolean isRegExp() {
+		return regexp.isSelected();
+	}
+
+	protected boolean isCaseSens() {
+		return caseSensitive.isSelected();
+	}
+
+	protected String getSearchText() {
+		return findText.getText().trim();
+	}
+	
+	protected String getReplaceText() {
+		return replaceText.getText().trim();
+	}
+	
 }

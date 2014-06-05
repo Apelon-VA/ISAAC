@@ -19,12 +19,32 @@
 package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.listview.operations.FindAndReplaceController.DescriptionType;
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javafx.beans.binding.BooleanExpression;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +60,10 @@ import org.slf4j.LoggerFactory;
 @PerLookup
 public class FindAndReplace extends Operation
 {
+
 	private FindAndReplaceController frc_;
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
+	private Map<String, Set<String>> successCons = new HashMap();
 	
 	private FindAndReplace()
 	{
@@ -113,23 +135,160 @@ public class FindAndReplace extends Operation
 			@Override
 			protected String call() throws Exception
 			{
-//				double i = 0;
-//				for (SimpleDisplayConcept c : conceptList_)
-//				{
-//					if (cancelRequested_)
-//					{
-//						return FindAndReplace.this.getTitle() + " was cancelled";
-//					}
-//					updateProgress(i, conceptList_.size());
-//					updateMessage("Processing " + c.getDescription());
-//					
-//					//TODO Implement Find/Replace Operation
-//					
-//					updateProgress(++i, conceptList_.size());
-//				}
-//				return FindAndReplace.this.getTitle() + " completed.";
-				return "Not yet implemented";
+				double i = 0;
+				successCons.clear();
+				for (SimpleDisplayConcept c : conceptList_)
+				{
+					if (cancelRequested_)
+					{
+						return FindAndReplace.this.getTitle() + " was cancelled";
+					}
+					updateProgress(i, conceptList_.size());
+					updateMessage("Processing " + c.getDescription());
+					
+					ConceptVersionBI con = WBUtility.getConceptVersion(c.getNid());
+					Set<DescriptionVersionBI> descsToChange= getDescsToChange(con);
+					Set<String> successMatches = new HashSet();
+					String newTxt = null;
+					
+					for (DescriptionVersionBI desc : descsToChange) {
+						if (frc_.isRegExp()) {
+							newTxt = replaceRegExp(desc);
+						} else {
+							newTxt = replaceGeneric(desc);
+						}
+						
+						if (newTxt != null) {
+							String oldTxt = desc.getText();
+							
+							DescriptionType descType = getDescType(con, desc);
+							
+							successMatches.add("    --> '" + oldTxt + "' changed to '" + newTxt + "' ..... of type: " + descType);
+							updateDescription(desc, newTxt);
+						}
+					}
+
+					if (newTxt != null) {
+						successCons.put(c.getDescription() + " --- " + con.getPrimordialUuid().toString(), successMatches);
+					}
+					
+					updateProgress(++i, conceptList_.size());
+				}
+				
+				return getMsgBuffer();
+			}
+
+			private String replaceRegExp(DescriptionVersionBI desc) {
+		        // Replace all occurrences of pattern in input
+				Pattern pattern = Pattern.compile(frc_.getSearchText());
+			        
+		        Matcher matcher = pattern.matcher(desc.getText());
+		        
+		        if (!matcher.find()) {
+		        	return null;
+		        }
+		        
+		        String txt = matcher.replaceAll(frc_.getReplaceText());				
+		        
+		        return txt;
+			}
+
+			private String replaceGeneric(DescriptionVersionBI desc) {
+				String txt = desc.getText();
+				
+				if (frc_.isCaseSens()) {
+					if (!txt.contains(frc_.getSearchText())) {
+						return null;
+					}
+					
+					while (txt.contains(frc_.getSearchText())) {
+						txt = txt.replace(frc_.getSearchText(), frc_.getReplaceText());
+					}
+				} else {
+					
+					if (!StringUtils.containsIgnoreCase(txt, frc_.getSearchText())) {
+						return null;
+					}
+
+					int startIdx = StringUtils.indexOfIgnoreCase(txt, frc_.getSearchText());
+					int endIdx = startIdx + frc_.getSearchText().length();
+					
+					while (startIdx >= 0) {
+				        StringBuffer buf = new StringBuffer(txt);
+				        buf.replace(startIdx, endIdx, frc_.getReplaceText());
+				        txt = buf.toString();
+				        
+						startIdx = StringUtils.indexOfIgnoreCase(txt, frc_.getSearchText());
+					}
+				}
+				
+				return txt;
+			}
+
+			private void updateDescription(DescriptionVersionBI desc, String newTxt) throws IOException, InvalidCAB, ContradictionException {
+				DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				dcab.setText(newTxt);
+				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
+				WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+			}
+
+			private Set<DescriptionVersionBI> getDescsToChange(ConceptVersionBI con) {
+				Set<DescriptionVersionBI> descsToChange = new HashSet<DescriptionVersionBI>();
+				
+				try {
+					for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
+						DescriptionType descType = getDescType(con, desc);
+
+						if (frc_.getSelectedDescTypes().contains(DescriptionType.FSN) &&
+							con.getFullySpecifiedDescription().getNid() == desc.getNid()) {
+							descsToChange.add(desc);
+						} else if (frc_.getSelectedDescTypes().contains(DescriptionType.PT) &&
+								   con.getPreferredDescription().getNid() == desc.getNid()) {
+							descsToChange.add(desc);
+						} else if (frc_.getSelectedDescTypes().contains(DescriptionType.SYNONYM) &&
+								   con.getFullySpecifiedDescription().getNid() != desc.getNid() &&
+								   con.getPreferredDescription().getNid() != desc.getNid()) {
+							descsToChange.add(desc);
+						}
+					}
+				} catch (IOException | ContradictionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				return descsToChange;
+			}
+
+			private DescriptionType getDescType(ConceptVersionBI con, DescriptionVersionBI desc) throws IOException, ContradictionException {
+				// TODO Auto-generated method stub
+				if (con.getFullySpecifiedDescription().getNid() == desc.getNid()) {
+					return DescriptionType.FSN;
+				} else if ( con.getPreferredDescription().getNid() == desc.getNid()) {
+					return DescriptionType.PT;
+				} else {
+					return DescriptionType.SYNONYM;
+				}
 			}
 		};
+	}
+
+	protected String getMsgBuffer() {
+		StringBuffer buf = new StringBuffer();
+		
+		if (successCons.keySet().size() == 1) {
+			buf.append(this.getTitle() + " completed with changes to " + successCons.keySet().size() + " concept.");
+		} else {
+			buf.append(this.getTitle() + " completed with changes to " + successCons.keySet().size() + " concepts.");
+		}
+		
+		for (String conStr : successCons.keySet()) {
+			buf.append("\n\r\n\rConcept: " + conStr);
+			
+			for (String replace: successCons.get(conStr)) {
+				buf.append("\n\r" + replace);	
+			}
+		}
+		
+		return buf.toString();
 	}
 }

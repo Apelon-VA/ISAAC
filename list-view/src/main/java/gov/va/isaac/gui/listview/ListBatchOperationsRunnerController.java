@@ -18,12 +18,19 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
+
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -43,6 +50,8 @@ import javafx.scene.layout.BorderPane;
 
 public class ListBatchOperationsRunnerController
 {
+	private static ObservableList<SimpleDisplayConcept> changeList;
+	@FXML private Button commitButton;
 	@FXML private Button cancelButton;
 	@FXML private Label titleLabel;
 	@FXML private ProgressBar progressBar;
@@ -55,8 +64,9 @@ public class ListBatchOperationsRunnerController
 	
 	/**
 	 * Cancel requested should be passed in set to false, if the user clicks cancel, this will change it to true
+	 * @param observableList 
 	 */
-	public static ListBatchOperationsRunnerController init(BooleanProperty cancelRequested) throws IOException
+	public static ListBatchOperationsRunnerController init(BooleanProperty cancelRequested, ObservableList<SimpleDisplayConcept> items) throws IOException
 	{
 		// Load from FXML.
 		URL resource = ListBatchOperationsRunnerController.class.getResource("ListBatchOperationsRunner.fxml");
@@ -64,6 +74,8 @@ public class ListBatchOperationsRunnerController
 		loader.load();
 		ListBatchOperationsRunnerController lborc = loader.getController();
 		lborc.cancelRequested_ = cancelRequested;
+		changeList = items;
+		
 		return lborc;
 	}
 
@@ -73,6 +85,29 @@ public class ListBatchOperationsRunnerController
 		progressBar.setProgress(0);
 		summary.setEditable(false);
 		
+		commitButton.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				if (finished_)
+				{
+					for (SimpleDisplayConcept origCon : changeList) {
+						WBUtility.addUncommitted(origCon.getNid());
+					}
+					
+					WBUtility.commit();
+					
+					root.getScene().getWindow().hide();
+				}
+				else
+				{
+					// TODO: Need to disable until actions completed
+					commitButton.setText("Committing");
+				}
+			}
+		});
+
 		cancelButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -80,6 +115,10 @@ public class ListBatchOperationsRunnerController
 			{
 				if (finished_)
 				{
+					for (SimpleDisplayConcept origCon : changeList) {
+						WBUtility.cancel();
+					}
+
 					root.getScene().getWindow().hide();
 				}
 				else
@@ -103,7 +142,6 @@ public class ListBatchOperationsRunnerController
 			@Override
 			public void run()
 			{
-				cancelButton.setText("Ok");
 				cancelButton.setDisable(false);  //Just in case a race condition causes us to cancel-request and finish at the same time
 				progressBar.progressProperty().unbind();
 				progressBar.setProgress(1.0);  //In case it didn't end right

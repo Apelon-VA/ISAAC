@@ -147,7 +147,11 @@ public class ListBatchViewController
 			{
 				if (newValue != null)
 				{
-					conceptTable.getItems().add(new SimpleDisplayConcept(newValue));
+					SimpleDisplayConcept sdc = new SimpleDisplayConcept(newValue);
+					if (!conceptTable.getItems().contains(sdc)) {
+						conceptTable.getItems().add(sdc);
+					}
+					
 					cn.clear();
 				}
 			}
@@ -578,7 +582,7 @@ public class ListBatchViewController
 
 			final BooleanProperty cancelRequested = new SimpleBooleanProperty(false);
 
-			final ListBatchOperationsRunnerController lborc = ListBatchOperationsRunnerController.init(cancelRequested);
+			final ListBatchOperationsRunnerController lborc = ListBatchOperationsRunnerController.init(cancelRequested, conceptTable.getItems());
 			s.setScene(new Scene(lborc.getRoot()));
 
 			final List<CustomTask<String>> operationsToExecute = new ArrayList<>(operationsList.getChildren().size());
@@ -643,6 +647,15 @@ public class ListBatchViewController
 					{
 						finished = true;
 						taskSummary.append((String) event.getSource().getValue());
+						
+						ObservableList<SimpleDisplayConcept> originalItems = conceptTable.getItems();
+						final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
+						for (SimpleDisplayConcept origCon : originalItems) {
+							ConceptVersionBI con = WBUtility.getConceptVersion(origCon.getNid());
+							newItems .add(new SimpleDisplayConcept(con));
+						}
+						conceptTable.getItems().clear();
+						conceptTable.getItems().addAll(newItems);
 					}
 					
 					taskSummary.append("\r\n");
