@@ -136,6 +136,7 @@ public class ListBatchViewController
 	StringProperty noChangeReasonWhyExecuteDisabled_ = new SimpleStringProperty();
 	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
+	private int uncommittedCount = 0;
 
 	protected static ListBatchViewController init() throws IOException
 	{
@@ -197,7 +198,11 @@ public class ListBatchViewController
 		                	setText(item);
 		                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
 			                	setBackground(uncommittedBackground );
+		                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
+		                		currentRow.getContextMenu().getItems().get(3).setDisable(false);
 			                } else {
+		                		currentRow.getContextMenu().getItems().get(2).setDisable(true);
+		                		currentRow.getContextMenu().getItems().get(3).setDisable(true);
 			                	setBackground(defaultBackground );
 			                }
 		                }
@@ -228,6 +233,22 @@ public class ListBatchViewController
 
 		conceptTable.setRowFactory(new Callback<TableView<SimpleDisplayConcept>, TableRow<SimpleDisplayConcept>>()
 		{
+			
+/*			private UpdateableBooleanBinding isUncommittedConcept_ = new UpdateableBooleanBinding() {
+				@Override
+				protected boolean computeValue()
+				{
+					return true;
+				}
+			};
+			
+			public BooleanExpression isUncommittedForMenuItem()
+			{
+				return isUncommittedConcept_; 
+			}
+*/			
+
+
 			@Override
 			public TableRow<SimpleDisplayConcept> call(TableView<SimpleDisplayConcept> param)
 			{
@@ -264,7 +285,36 @@ public class ListBatchViewController
 						}
 					}
 				});
-				rowMenu.getItems().addAll(viewItem, removeItem);
+				MenuItem commitItem = new MenuItem("Commit Concept Change");
+				commitItem.setGraphic(Images.COMMIT.createImageView());
+				commitItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						WBUtility.commit(row.getItem().getNid());
+						updateTableItem(row.getItem(), false);
+						uncommittedCount--;
+					}
+				});
+
+				MenuItem cancelItem = new MenuItem("Cancel Concept Change");
+				cancelItem.setGraphic(Images.CANCEL.createImageView());
+				cancelItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						WBUtility.cancel(row.getItem().getNid());
+						updateTableItem(row.getItem(), false);
+						uncommittedCount--;
+					}
+				});
+				
+//				commitItem.visibleProperty().bind(isUncommittedConcept_);
+//				cancelItem.visibleProperty().bind(isUncommittedConcept_);
+				
+				rowMenu.getItems().addAll(viewItem, removeItem, commitItem, cancelItem);
 
 				// only display context menu for non-null items:
 				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
@@ -293,7 +343,7 @@ public class ListBatchViewController
 			public void handle(ActionEvent event)
 			{
 				WBUtility.commit();
-				updateTableItems(new HashSet<Integer>());
+				updateAllItems(new HashSet<Integer>());
 			}
 		});
 
@@ -303,7 +353,7 @@ public class ListBatchViewController
 			public void handle(ActionEvent event)
 			{
 				WBUtility.cancel();
-				updateTableItems(new HashSet<Integer>());
+				updateAllItems(new HashSet<Integer>());
 			}
 		});
 
@@ -723,7 +773,7 @@ public class ListBatchViewController
 						finished = true;
 						OperationResult result = (OperationResult)event.getSource().getValue();
 						taskSummary.append(result.getOperationMsg());
-						updateTableItems(result.getModifiedConcepts());
+						updateAllItems(result.getModifiedConcepts());
 					}
 					
 					taskSummary.append("\r\n");
@@ -797,20 +847,43 @@ public class ListBatchViewController
 		}
 	}
 
-	protected void updateTableItems(Set<Integer> modifiedConcepts) {
+	private void updateTableItem(SimpleDisplayConcept oldCon, boolean isUncommited) {
+		ConceptVersionBI con = WBUtility.getConceptVersion(oldCon.getNid());
+		SimpleDisplayConcept newCon = new SimpleDisplayConcept(con);
+
+		int idx = conceptTable.getItems().indexOf(oldCon);
+		conceptTable.getItems().remove(idx);
+		
+		if (isUncommited) {
+			WBUtility.addUncommitted(con);
+			newCon.setUncommitted(true);
+		} else {
+			WBUtility.cancel(con);
+			newCon.setUncommitted(false);
+		}
+
+		conceptTable.getItems().add(idx, newCon);
+		
+		if (uncommittedCount  == 0) {
+			commitButton.setDisable(true);
+			cancelButton.setDisable(true);
+		}
+	}
+
+	private void updateAllItems(Set<Integer> modifiedConcepts) {
 		final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
 		ObservableList<SimpleDisplayConcept> originalItems = conceptTable.getItems();
 		
 		for (SimpleDisplayConcept origCon : originalItems) {
-			ConceptVersionBI con = WBUtility.getConceptVersion(origCon.getNid());
-			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(con);
+			ConceptVersionBI newCon = WBUtility.getConceptVersion(origCon.getNid());
+			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(newCon);
 			
 			if (modifiedConcepts.contains(displayCon.getNid())) {
-				// Con Changed
-				WBUtility.addUncommitted(con);
+				WBUtility.addUncommitted(newCon);
 				displayCon.setUncommitted(true);
+				uncommittedCount++;
 			} else {
-				WBUtility.cancel(con);
+				WBUtility.cancel(newCon);
 				displayCon.setUncommitted(false);
 			}
 			
