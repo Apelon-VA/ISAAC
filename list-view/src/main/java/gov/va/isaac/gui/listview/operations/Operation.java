@@ -114,5 +114,5 @@ public abstract class Operation
 	 * @return a Task implementation that performs the necessary work on the {@code #conceptList_}
 	 */
 	//TODO figure out how to return / display formatted output - String probably won't cut it.
-	public abstract CustomTask<String> createTask();
+	public abstract CustomTask<OperationResult> createTask();
 }

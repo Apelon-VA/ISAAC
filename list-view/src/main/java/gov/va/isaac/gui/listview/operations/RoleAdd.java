@@ -119,12 +119,12 @@ public class RoleAdd extends Operation
 	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
 	 */
 	@Override
-	public CustomTask<String> createTask()
+	public CustomTask<OperationResult> createTask()
 	{
-		return new CustomTask<String>(RoleAdd.this)
+		return new CustomTask<OperationResult>(RoleAdd.this)
 		{
 			@Override
-			protected String call() throws Exception
+			protected OperationResult call() throws Exception
 			{
 //				double i = 0;
 //				for (SimpleDisplayConcept c : conceptList_)
@@ -151,7 +151,7 @@ public class RoleAdd extends Operation
 //				}
 //				return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";
 				//TODO implement RoleAdd
-				return "Not yet implemented";
+				return new OperationResult();
 			}
 		};
 	}

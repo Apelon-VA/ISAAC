@@ -170,15 +170,15 @@ public class ParentReplace extends Operation
 	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
 	 */
 	@Override
-	public CustomTask<String> createTask()
+	public CustomTask<OperationResult> createTask()
 	{
-		return new CustomTask<String>(ParentReplace.this)
+		return new CustomTask<OperationResult>(ParentReplace.this)
 		{
 			@Override
-			protected String call() throws Exception
+			protected OperationResult call() throws Exception
 			{
 				//TODO implement ParentReplace
-				return "Not yet implemented";
+				return new OperationResult();
 			}
 		};
 	}

@@ -128,20 +128,21 @@ public class FindAndReplace extends Operation
 	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
 	 */
 	@Override
-	public CustomTask<String> createTask()
+	public CustomTask<OperationResult> createTask()
 	{
-		return new CustomTask<String>(FindAndReplace.this)
+		return new CustomTask<OperationResult>(FindAndReplace.this)
 		{
 			@Override
-			protected String call() throws Exception
+			protected OperationResult call() throws Exception
 			{
 				double i = 0;
 				successCons.clear();
+				Set<Integer> modifiedConcepts = new HashSet<Integer>();
 				for (SimpleDisplayConcept c : conceptList_)
 				{
 					if (cancelRequested_)
 					{
-						return FindAndReplace.this.getTitle() + " was cancelled";
+						return new OperationResult(FindAndReplace.this.getTitle(), cancelRequested_);
 					}
 					updateProgress(i, conceptList_.size());
 					updateMessage("Processing " + c.getDescription());
@@ -168,14 +169,15 @@ public class FindAndReplace extends Operation
 						}
 					}
 
-					if (newTxt != null) {
+					if (successMatches.size() > 0) {
+						modifiedConcepts.add(con.getNid());
 						successCons.put(c.getDescription() + " --- " + con.getPrimordialUuid().toString(), successMatches);
 					}
 					
 					updateProgress(++i, conceptList_.size());
 				}
 				
-				return getMsgBuffer();
+				return new OperationResult(FindAndReplace.this.getTitle(), modifiedConcepts, getMsgBuffer());
 			}
 
 			private String replaceRegExp(DescriptionVersionBI desc) {
