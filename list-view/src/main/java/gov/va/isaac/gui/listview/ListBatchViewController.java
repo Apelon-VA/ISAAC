@@ -23,24 +23,29 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.listview.operations.CustomTask;
+import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -67,6 +72,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -75,6 +81,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.paint.Color;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -84,6 +94,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -92,6 +103,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -112,12 +124,17 @@ public class ListBatchViewController
 	@FXML private Button addOperationButton;
 	@FXML private Button clearListButton;
 	@FXML private Button executeOperationsButton;
+	@FXML private Button commitButton;
+	@FXML private Button cancelButton;
 	@FXML private ToolBar executeOperationsToolbar;
 	@FXML private Button saveListButton;
 	@FXML private AnchorPane rootPane;
 
 	private UpdateableBooleanBinding allOperationsReady_;
+
 	StringProperty reasonWhyExecuteDisabled_ = new SimpleStringProperty();
+	StringProperty noChangeReasonWhyExecuteDisabled_ = new SimpleStringProperty();
+	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	protected static ListBatchViewController init() throws IOException
@@ -162,6 +179,35 @@ public class ListBatchViewController
 		col1.setText("Concept");
 		col1.prefWidthProperty().bind(conceptTable.widthProperty().subtract(3.0));
 		col1.setCellValueFactory(new PropertyValueFactory<SimpleDisplayConcept, String>("description"));
+
+		col1.setCellFactory(new Callback<TableColumn<SimpleDisplayConcept,String>, TableCell<SimpleDisplayConcept,String>>() {
+			
+			@Override
+			public TableCell<SimpleDisplayConcept, String> call(TableColumn<SimpleDisplayConcept, String> param) {
+				final TableCell<SimpleDisplayConcept, String> cell = new TableCell<SimpleDisplayConcept, String>() {
+		            private final Background uncommittedBackground = new Background(new BackgroundFill(Color.YELLOW, new CornerRadii(15), new Insets(2)));
+		            private final Background defaultBackground = new Background(new BackgroundFill(null, null, null));
+
+					@Override
+		            protected void updateItem(String item, boolean empty) {
+		                super.updateItem(item, empty);
+	
+		                TableRow currentRow = getTableRow();
+		                if (!empty) {
+		                	setText(item);
+		                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
+			                	setBackground(uncommittedBackground );
+			                } else {
+			                	setBackground(defaultBackground );
+			                }
+		                }
+		            }
+		        };
+		        
+		        return cell;
+			}
+		});
+		
 		conceptTable.getColumns().add(col1);
 		conceptTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		conceptTable.setOnKeyReleased(new EventHandler<KeyEvent>()
@@ -232,6 +278,35 @@ public class ListBatchViewController
 
 		executeOperationsButton.setOnAction((a) -> executeOperations());
 		
+		reasonWhyExecuteDisabled_.set("No changes have occured from executing the List Operations");
+		cancelButton.setDisable(true);
+		executeOperationsToolbar.getItems().remove(cancelButton);
+		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(cancelButton, noChangeReasonWhyExecuteDisabled_));
+		
+		commitButton.setDisable(true);
+		executeOperationsToolbar.getItems().remove(commitButton);
+		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(commitButton, noChangeReasonWhyExecuteDisabled_));
+
+		commitButton.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				WBUtility.commit();
+				updateTableItems(new HashSet<Integer>());
+			}
+		});
+
+		cancelButton.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				WBUtility.cancel();
+				updateTableItems(new HashSet<Integer>());
+			}
+		});
+
 		addOperationButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -585,7 +660,7 @@ public class ListBatchViewController
 			final ListBatchOperationsRunnerController lborc = ListBatchOperationsRunnerController.init(cancelRequested, conceptTable.getItems());
 			s.setScene(new Scene(lborc.getRoot()));
 
-			final List<CustomTask<String>> operationsToExecute = new ArrayList<>(operationsList.getChildren().size());
+			final List<CustomTask<OperationResult>> operationsToExecute = new ArrayList<>(operationsList.getChildren().size());
 			for (Node n : operationsList.getChildren())
 			{
 				OperationNode on = (OperationNode) n;
@@ -646,16 +721,9 @@ public class ListBatchViewController
 					else if (event.getEventType() == WorkerStateEvent.WORKER_STATE_SUCCEEDED)
 					{
 						finished = true;
-						taskSummary.append((String) event.getSource().getValue());
-						
-						ObservableList<SimpleDisplayConcept> originalItems = conceptTable.getItems();
-						final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
-						for (SimpleDisplayConcept origCon : originalItems) {
-							ConceptVersionBI con = WBUtility.getConceptVersion(origCon.getNid());
-							newItems .add(new SimpleDisplayConcept(con));
-						}
-						conceptTable.getItems().clear();
-						conceptTable.getItems().addAll(newItems);
+						OperationResult result = (OperationResult)event.getSource().getValue();
+						taskSummary.append(result.getOperationMsg());
+						updateTableItems(result.getModifiedConcepts());
 					}
 					
 					taskSummary.append("\r\n");
@@ -671,7 +739,7 @@ public class ListBatchViewController
 				}
 			};
 
-			for (Task<String> task : operationsToExecute)
+			for (Task<OperationResult> task : operationsToExecute)
 			{
 				task.setOnRunning(workerStateHandler);
 				task.setOnCancelled(workerStateHandler);
@@ -687,7 +755,7 @@ public class ListBatchViewController
 				{
 					if (cancelRequested.get())
 					{
-						for (CustomTask<String> task : operationsToExecute)
+						for (CustomTask<OperationResult> task : operationsToExecute)
 						{
 							// Can't use task.cancel(false) because oracle mis-designed it... and the executor service doesn't
 							// wait for the task to actually complete when you use the awaitCompletion() method.
@@ -727,5 +795,32 @@ public class ListBatchViewController
 			logger_.error("Failure running Batch Operations", e);
 			AppContext.getCommonDialogs().showErrorDialog("Error running operations", e);
 		}
+	}
+
+	protected void updateTableItems(Set<Integer> modifiedConcepts) {
+		final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
+		ObservableList<SimpleDisplayConcept> originalItems = conceptTable.getItems();
+		
+		for (SimpleDisplayConcept origCon : originalItems) {
+			ConceptVersionBI con = WBUtility.getConceptVersion(origCon.getNid());
+			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(con);
+			
+			if (modifiedConcepts.contains(displayCon.getNid())) {
+				// Con Changed
+				WBUtility.addUncommitted(con);
+				displayCon.setUncommitted(true);
+			} else {
+				WBUtility.cancel(con);
+				displayCon.setUncommitted(false);
+			}
+			
+			newItems.add(displayCon);
+		}
+		
+		conceptTable.getItems().clear();
+		conceptTable.getItems().addAll(newItems);		
+
+		commitButton.setDisable(modifiedConcepts.isEmpty());
+		cancelButton.setDisable(modifiedConcepts.isEmpty());
 	}
 }

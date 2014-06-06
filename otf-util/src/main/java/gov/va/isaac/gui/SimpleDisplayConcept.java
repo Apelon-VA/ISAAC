@@ -39,7 +39,8 @@ public class SimpleDisplayConcept
 	private String description_;
 	private int nid_;
 	private boolean ignoreChange_ = false;
-
+	private boolean uncommitted_ = false;
+	
 	/**
 	 * 
 	 * @param description
@@ -95,6 +96,14 @@ public class SimpleDisplayConcept
 	public int getNid()
 	{
 		return nid_;
+	}
+
+	public void setUncommitted(boolean val) {
+		uncommitted_ = val;
+	}
+	
+	public boolean isUncommitted() {
+		return uncommitted_;
 	}
 	
 	protected void setNid(int nid)

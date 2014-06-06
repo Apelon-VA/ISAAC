@@ -638,6 +638,8 @@ public class WBUtility {
 	}
 
 	public static void cancel(ConceptVersionBI con) {
-		dataStore.cancel(con);
+//		dataStore.cancel(con);
+// 		TODO: Update once OTF version fixed
+		dataStore.cancel();
 	}
 }
