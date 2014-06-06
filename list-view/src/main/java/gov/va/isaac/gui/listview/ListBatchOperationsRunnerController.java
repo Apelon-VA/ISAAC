@@ -51,8 +51,7 @@ import javafx.scene.layout.BorderPane;
 public class ListBatchOperationsRunnerController
 {
 	private static ObservableList<SimpleDisplayConcept> changeList;
-	@FXML private Button commitButton;
-	@FXML private Button cancelButton;
+	@FXML private Button okButton;
 	@FXML private Label titleLabel;
 	@FXML private ProgressBar progressBar;
 	@FXML private Label statusLabel;
@@ -85,47 +84,20 @@ public class ListBatchOperationsRunnerController
 		progressBar.setProgress(0);
 		summary.setEditable(false);
 		
-		commitButton.setOnAction(new EventHandler<ActionEvent>()
+		okButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
 				if (finished_)
 				{
-					for (SimpleDisplayConcept origCon : changeList) {
-						WBUtility.addUncommitted(origCon.getNid());
-					}
-					
-					WBUtility.commit();
-					
-					root.getScene().getWindow().hide();
-				}
-				else
-				{
-					// TODO: Need to disable until actions completed
-					commitButton.setText("Committing");
-				}
-			}
-		});
-
-		cancelButton.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				if (finished_)
-				{
-					for (SimpleDisplayConcept origCon : changeList) {
-						WBUtility.cancel();
-					}
-
 					root.getScene().getWindow().hide();
 				}
 				else
 				{
 					cancelRequested_.set(true);
-					cancelButton.setDisable(true);
-					cancelButton.setText("Cancelling");
+					okButton.setDisable(true);
+					okButton.setText("Cancelling");
 				}
 			}
 		});
@@ -142,7 +114,7 @@ public class ListBatchOperationsRunnerController
 			@Override
 			public void run()
 			{
-				cancelButton.setDisable(false);  //Just in case a race condition causes us to cancel-request and finish at the same time
+				okButton.setDisable(false);  //Just in case a race condition causes us to cancel-request and finish at the same time
 				progressBar.progressProperty().unbind();
 				progressBar.setProgress(1.0);  //In case it didn't end right
 				titleLabel.setText("");
