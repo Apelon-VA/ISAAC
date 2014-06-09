@@ -30,8 +30,8 @@ import java.util.List;
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
@@ -87,7 +87,6 @@ public class SearchHandler
 			public void run()
 			{
 				//make sure the data store is loaded
-				BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 				HashMap<Integer, CompositeSearchResult> tempUserResults = new HashMap<>();
 				try
 				{
@@ -143,14 +142,14 @@ public class SearchHandler
 									}
 
 									// Get the description object.
-									ComponentChronicleBI<?> cc = dataStore.getComponent(searchResult.getNid());
+									ComponentVersionBI cc = WBUtility.getComponentVersion(searchResult.getNid());
 
 									// Create a search result for the corresponding concept.
 									final int conceptNid = cc.getConceptNid();
 									CompositeSearchResult gsr = tempUserResults.get(conceptNid);
 									if (gsr == null)
 									{
-										ConceptVersionBI concept = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredLatest(), cc.getConceptNid());
+										ConceptVersionBI concept = WBUtility.getConceptVersion(cc.getConceptNid());
 
 										// "normalize the scores between 0 and 1"
 										float normScore = (searchResult.getScore() / maxScore);
