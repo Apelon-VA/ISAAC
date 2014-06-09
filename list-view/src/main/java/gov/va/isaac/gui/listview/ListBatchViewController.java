@@ -194,8 +194,9 @@ public class ListBatchViewController
 		                super.updateItem(item, empty);
 	
 		                TableRow currentRow = getTableRow();
-		                if (!empty) {
+		                if (!empty && currentRow != null && currentRow.getItem() != null) {
 		                	setText(item);
+		                	setTextFill(Color.BLACK);
 		                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
 			                	setBackground(uncommittedBackground );
 		                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
