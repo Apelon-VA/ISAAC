@@ -23,10 +23,12 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
@@ -87,6 +89,7 @@ public class SearchHandler
 			public void run()
 			{
 				//make sure the data store is loaded
+				BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 				HashMap<Integer, CompositeSearchResult> tempUserResults = new HashMap<>();
 				try
 				{
@@ -142,14 +145,14 @@ public class SearchHandler
 									}
 
 									// Get the description object.
-									ComponentVersionBI cc = WBUtility.getComponentVersion(searchResult.getNid());
+									ComponentVersionBI cc = dataStore.getComponent(searchResult.getNid()).getVersion(WBUtility.getViewCoordinate());
 
 									// Create a search result for the corresponding concept.
 									final int conceptNid = cc.getConceptNid();
 									CompositeSearchResult gsr = tempUserResults.get(conceptNid);
 									if (gsr == null)
 									{
-										ConceptVersionBI concept = WBUtility.getConceptVersion(cc.getConceptNid());
+										ConceptVersionBI concept = dataStore.getConceptVersion(WBUtility.getViewCoordinate(), cc.getConceptNid());
 
 										// "normalize the scores between 0 and 1"
 										float normScore = (searchResult.getScore() / maxScore);

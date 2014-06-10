@@ -35,8 +35,6 @@ import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -59,15 +57,11 @@ import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
 import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.description.DescriptionChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.description.DescriptionVersionDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.refex.RefexChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.refex.type_comp.RefexCompVersionDdo;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
-import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -647,78 +641,5 @@ public class WBUtility {
 //		dataStore.cancel(con);
 // 		TODO: Update once OTF version fixed
 		dataStore.cancel();
-	}
-
-	public static ComponentChronicleBI<?> getComponent(int nid) {
-		try {
-			return dataStore.getComponent(nid);
-		} catch (IOException e) {
-			LOG.error("error accessing component: " + nid, e);
-
-			return null;
-		}
-	}
-
-	public static ComponentVersionBI getComponentVersion(int nid) {
-		try {
-			return dataStore.getComponentVersion(getViewCoordinate(), nid);
-		} catch (IOException | ContradictionException e) {
-			LOG.error("error accessing component: " + nid, e);
-
-			return null;
-		}
-	}
-
-	public static ComponentChronicleBI<?> getComponent(UUID componentUUID_) {
-		try {
-			return dataStore.getComponent(componentUUID_);
-		} catch (IOException e) {
-			LOG.error("error accessing component: " + componentUUID_, e);
-
-			return null;
-		}
-	}
-
-	public static ComponentVersionBI getComponentVersion(UUID componentUUID_) {
-		try {
-			return dataStore.getComponentVersion(getViewCoordinate(), componentUUID_);
-		} catch (IOException | ContradictionException e) {
-			LOG.error("error accessing component: " + componentUUID_, e);
-
-			return null;
-		}
-	}
-public static Collection<? extends ConceptChronicleBI> getUncommittedConcepts() {
-		return dataStore.getUncommittedConcepts();
-	}
-
-	public static Integer getNidForUuids(UUID snomedIdType) throws IOException {
-		return dataStore.getNidForUuids();
-	}
-
-	public static ConceptChronicleDdo getFxConcept(UUID uid,
-			ViewCoordinate vc, VersionPolicy verPolicy,
-			RefexPolicy refPolicy,
-			RelationshipPolicy relPolicy) throws IOException, ContradictionException {
-		return dataStore.getFxConcept(uid, vc, verPolicy, refPolicy, relPolicy);
-	}
-
-	public static ConceptChronicleBI getConcept(int nid) throws IOException {
-		return dataStore.getConcept(nid);
-	}
-
-	public static ConceptChronicleDdo getFxConcept(
-			ComponentReference reference, ViewCoordinate vc,
-			VersionPolicy verPolicy, RefexPolicy refPolicy,
-			RelationshipPolicy relPolicy) throws IOException, ContradictionException {
-		return dataStore.getFxConcept(reference, vc, verPolicy, refPolicy, relPolicy);
-	}
-
-	public static TerminologySnapshotDI getSnapshot() {
-		return dataStore.getSnapshot(getViewCoordinate());
-	}
-
-	public static void shutdown() {
-		dataStore.shutdown();		
 	}
 }
