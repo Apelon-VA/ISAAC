@@ -35,6 +35,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -642,4 +643,15 @@ public class WBUtility {
 // 		TODO: Update once OTF version fixed
 		dataStore.cancel();
 	}
+
+	public static ComponentVersionBI getComponentVersion(int nid) {
+		try {
+			return dataStore.getComponentVersion(getViewCoordinate(), nid);
+		} catch (IOException | ContradictionException e) {
+			LOG.error("error accessing component: " + nid, e);
+
+			return null;
+		}
+	}
+
 }
