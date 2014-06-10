@@ -110,7 +110,7 @@ public class SnomedConceptViewController {
         MenuItem copyFull = new MenuItem("Copy Full Concept");
         copyFull.setGraphic(Images.COPY.createImageView());
 
-        copyFull.setOnAction(e -> (CustomClipboard.set(WBUtility.getConceptVersion(concept.getPrimordialUuid()).toLongString())));
+        copyFull.setOnAction(e -> CustomClipboard.set(WBUtility.getConceptVersion(concept.getPrimordialUuid()).toLongString()));
 
         fsnLabel.getContextMenu().getItems().add(copyFull);
         
