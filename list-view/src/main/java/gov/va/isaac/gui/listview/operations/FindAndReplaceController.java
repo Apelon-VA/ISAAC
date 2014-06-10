@@ -71,7 +71,6 @@ public class FindAndReplaceController
 	@FXML private CheckBox descriptionTypePT;
 	@FXML private CheckBox descriptionTypeSynonym;
 	@FXML private CheckBox caseSensitive;
-	@FXML private ComboBox<SimpleDisplayConcept> retireAs;
 	@FXML private ComboBox<SimpleDisplayConcept> searchInLanguage;
 	@FXML private GridPane root;
 	@FXML private GridPane optionsGridPane;
@@ -110,7 +109,6 @@ public class FindAndReplaceController
 		assert descriptionTypeSynonym != null : "fx:id=\"descriptionTypeSynonym\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 		assert descriptionTypeSelected != null : "fx:id=\"descriptionTypeSelected\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 		assert caseSensitive != null : "fx:id=\"caseSensitive\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
-		assert retireAs != null : "fx:id=\"retireAs\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 		assert searchInLanguage != null : "fx:id=\"searchInLanguage\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 
 		FxUtils.preventColCollapse(root, 0);
@@ -248,7 +246,6 @@ public class FindAndReplaceController
 		searchInLanguage.getSelectionModel().select(0);
 		
 		ComboBoxSetupTool.setupComboBox(searchInLanguage);
-		ComboBoxSetupTool.setupComboBox(retireAs);
 		
 		try
 		{
@@ -272,21 +269,6 @@ public class FindAndReplaceController
 		}
 
 		allFieldsValid = findTextValid.and(descriptionTypeSelectionValid);
-		
-		try
-		{
-			//TODO these should come from user preferences
-			retireAs.getItems().add(new SimpleDisplayConcept(WBUtility.getConceptVersion(SnomedMetadataRf2.ACTIVE_VALUE_RF2.getUuids()[0])));
-			retireAs.getItems().add(new SimpleDisplayConcept(WBUtility.getConceptVersion(SnomedMetadataRf2.INACTIVE_VALUE_RF2.getUuids()[0])));
-			retireAs.getSelectionModel().select(0);
-		}
-		catch (Exception e)
-		{
-			LoggerFactory.getLogger(this.getClass()).error("Error populating 'Retire As' drop down", e);
-			AppContext.getCommonDialogs().showErrorDialog("Error populating the 'Retire As' drop down", e);
-			//JavaFX doesn't compute findTextValue, if no one is using it
-			allFieldsValid = findTextValid.and(descriptionTypeSelectionValid.and(new SimpleBooleanProperty(false)));  
-		}
 	}
 	
 	protected BooleanBinding allFieldsValid()
