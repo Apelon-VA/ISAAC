@@ -195,20 +195,32 @@ public class ListBatchViewController
 		                super.updateItem(item, empty);
 	
 		                TableRow currentRow = getTableRow();
-		                if (!empty && currentRow != null && currentRow.getItem() != null) {
-		                	setText(item);
-		                	setTextFill(Color.BLACK);
-		                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
-			                	setBackground(uncommittedBackground );
-		                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
-		                		currentRow.getContextMenu().getItems().get(3).setDisable(false);
-			                } else {
-		                		currentRow.getContextMenu().getItems().get(2).setDisable(true);
-		                		currentRow.getContextMenu().getItems().get(3).setDisable(true);
-			                	setBackground(defaultBackground );
+		                if (!empty) {
+		                	if (currentRow != null && currentRow.getItem() != null) {
+			                	setText(item);
+			                	setTextFill(Color.BLACK);
+			                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
+				                	setBackground(uncommittedBackground );
+			                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
+			                		currentRow.getContextMenu().getItems().get(3).setDisable(false);
+				                } else {
+	  		                		currentRow.getContextMenu().getItems().get(2).setDisable(true);
+			                		currentRow.getContextMenu().getItems().get(3).setDisable(true);
+				                	setBackground(defaultBackground );
+				                }
 			                }
-		                }
-		            }
+			            } else {
+		            		if (getText() != null) {
+		                		if (getBackground() != null && 
+		                			getBackground().getFills() != null && 
+		                			getBackground().getFills().size() > 0) {
+			                		setText(null);
+			                		setTextFill(null);
+			                		setBackground(null);
+		                		}
+				            }
+						}
+					}
 		        };
 		        
 		        return cell;
