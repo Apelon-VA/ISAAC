@@ -774,7 +774,10 @@ public class ListBatchViewController
 						finished = true;
 						OperationResult result = (OperationResult)event.getSource().getValue();
 						taskSummary.append(result.getOperationMsg());
-						updateAllItems(result.getModifiedConcepts());
+						
+						for (SimpleDisplayConcept oldCon: result.getModifiedConcepts()) {
+							updateTableItem(oldCon, true);
+						}
 					}
 					
 					taskSummary.append("\r\n");
