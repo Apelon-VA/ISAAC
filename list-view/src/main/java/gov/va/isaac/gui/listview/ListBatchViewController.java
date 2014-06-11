@@ -26,6 +26,7 @@ import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
@@ -82,12 +83,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
-import javafx.scene.paint.Color;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -167,7 +168,7 @@ public class ListBatchViewController
 				{
 					SimpleDisplayConcept sdc = new SimpleDisplayConcept(newValue);
 					if (!conceptTable.getItems().contains(sdc)) {
-						conceptTable.getItems().add(sdc);
+						updateTableItem(sdc, sdc.isUncommitted());
 					}
 					
 					cn.clear();
@@ -272,17 +273,21 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						if (conceptTable.getSelectionModel().getSelectedItems().size() > 1)
-						{
-							for (SimpleDisplayConcept sdc : conceptTable.getSelectionModel().getSelectedItems())
+						if (row.getItem().isUncommitted()) {
+							AppContext.getCommonDialogs().showErrorDialog("Remove From List Error", "Cannot remove uncomitted Concept.  Cancel change on concept or commit concept first.\n\r", null);
+						} else {
+							if (conceptTable.getSelectionModel().getSelectedItems().size() > 1)
 							{
-								conceptTable.getItems().remove(sdc);
+								for (SimpleDisplayConcept sdc : conceptTable.getSelectionModel().getSelectedItems())
+								{
+									conceptTable.getItems().remove(sdc);
+								}
+								conceptTable.getSelectionModel().clearSelection();
 							}
-							conceptTable.getSelectionModel().clearSelection();
-						}
-						else
-						{
-							conceptTable.getItems().remove(row.getItem());
+							else
+							{
+								conceptTable.getItems().remove(row.getItem());
+							}
 						}
 					}
 				});
@@ -295,7 +300,6 @@ public class ListBatchViewController
 					{
 						WBUtility.commit(row.getItem().getNid());
 						updateTableItem(row.getItem(), false);
-						uncommittedCount--;
 					}
 				});
 
@@ -308,7 +312,6 @@ public class ListBatchViewController
 					{
 						WBUtility.cancel(row.getItem().getNid());
 						updateTableItem(row.getItem(), false);
-						uncommittedCount--;
 					}
 				});
 				
@@ -344,7 +347,7 @@ public class ListBatchViewController
 			public void handle(ActionEvent event)
 			{
 				WBUtility.commit();
-				updateAllItems(new HashSet<Integer>());
+				uncommitAllTableItems();
 			}
 		});
 
@@ -354,7 +357,7 @@ public class ListBatchViewController
 			public void handle(ActionEvent event)
 			{
 				WBUtility.cancel();
-				updateAllItems(new HashSet<Integer>());
+				uncommitAllTableItems();
 			}
 		});
 
@@ -386,7 +389,24 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				conceptTable.getItems().clear();
+				DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Clear List Question", "Will only remove concepts without uncommitted change.  Continue?");
+
+				if (response == DialogResponse.YES) {
+					Set<SimpleDisplayConcept> removalList = new HashSet<>();
+					
+					for (SimpleDisplayConcept con : conceptTable.getItems()) {
+						if (!con.isUncommitted()) {
+							removalList.add(con);
+						}
+					}
+					
+					for (SimpleDisplayConcept con : removalList) {
+						conceptTable.getItems().remove(con);
+					}
+				
+					commitButton.setDisable(uncommittedCount == 0);
+					cancelButton.setDisable(uncommittedCount == 0);
+				}
 			}
 		});
 
@@ -526,7 +546,7 @@ public class ListBatchViewController
 											@Override
 											public void run()
 											{
-												conceptTable.getItems().addAll(newConcepts);
+												addMultipleItems(newConcepts);
 												Dialogs.create().title("Concept Import Completed").masthead(null)
 													.message("The Concept List import is complete" 
 															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""))
@@ -597,7 +617,9 @@ public class ListBatchViewController
 						{
 							try
 							{
-								concepts.add(new SimpleDisplayConcept(WBUtility.getDescription(c.getVersion(WBUtility.getViewCoordinate())), c.getNid()));
+								SimpleDisplayConcept newCon = new SimpleDisplayConcept(WBUtility.getDescription(c.getVersion(WBUtility.getViewCoordinate())), c.getNid());
+								newCon.setUncommitted(true);
+								concepts.add(newCon);
 							}
 							catch (ContradictionException e)
 							{
@@ -610,7 +632,7 @@ public class ListBatchViewController
 							@Override
 							public void run()
 							{
-								conceptTable.getItems().addAll(concepts);
+								addMultipleItems(concepts);
 								addUncommittedListButton.setDisable(false);
 							}
 						});
@@ -851,53 +873,64 @@ public class ListBatchViewController
 		}
 	}
 
-	private void updateTableItem(SimpleDisplayConcept oldCon, boolean isUncommited) {
+	private void updateTableItem(SimpleDisplayConcept oldCon, boolean isUncommitted) {
 		ConceptVersionBI con = WBUtility.getConceptVersion(oldCon.getNid());
 		SimpleDisplayConcept newCon = new SimpleDisplayConcept(con);
 
 		int idx = conceptTable.getItems().indexOf(oldCon);
-		conceptTable.getItems().remove(idx);
+		if (idx >= 0) {
+			conceptTable.getItems().remove(idx);
+		}
 		
-		if (isUncommited) {
+		if (isUncommitted) {
 			WBUtility.addUncommitted(con);
 			newCon.setUncommitted(true);
+			
+			if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
+				uncommittedCount++;
+			}
 		} else {
 			WBUtility.cancel(con);
 			newCon.setUncommitted(false);
+
+			if (!isUncommitted && oldCon.isUncommitted()) {
+				uncommittedCount--;
+			}
 		}
 
-		conceptTable.getItems().add(idx, newCon);
-		
-		if (uncommittedCount  == 0) {
-			commitButton.setDisable(true);
-			cancelButton.setDisable(true);
+		if (idx >= 0) {
+			conceptTable.getItems().add(idx, newCon);
+		} else {
+			conceptTable.getItems().add(newCon);
 		}
+		
+		commitButton.setDisable(uncommittedCount  == 0);
+		cancelButton.setDisable(uncommittedCount  == 0);
 	}
 
-	private void updateAllItems(Set<Integer> modifiedConcepts) {
+	private void uncommitAllTableItems() {
 		final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
-		ObservableList<SimpleDisplayConcept> originalItems = conceptTable.getItems();
-		
-		for (SimpleDisplayConcept origCon : originalItems) {
-			ConceptVersionBI newCon = WBUtility.getConceptVersion(origCon.getNid());
-			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(newCon);
+
+		for (SimpleDisplayConcept origCon : conceptTable.getItems()) {
+			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(WBUtility.getConceptVersion(origCon.getNid()));
 			
-			if (modifiedConcepts.contains(displayCon.getNid())) {
-				WBUtility.addUncommitted(newCon);
-				displayCon.setUncommitted(true);
-				uncommittedCount++;
-			} else {
-				WBUtility.cancel(newCon);
-				displayCon.setUncommitted(false);
-			}
-			
+			displayCon.setUncommitted(false);
 			newItems.add(displayCon);
 		}
 		
-		conceptTable.getItems().clear();
+		conceptTable.getItems().clear(); 
 		conceptTable.getItems().addAll(newItems);		
 
-		commitButton.setDisable(modifiedConcepts.isEmpty());
-		cancelButton.setDisable(modifiedConcepts.isEmpty());
+		uncommittedCount = 0;
+		commitButton.setDisable(true);
+		cancelButton.setDisable(true);
+	}
+
+
+	private void addMultipleItems(ArrayList<SimpleDisplayConcept> concepts) {
+		for (SimpleDisplayConcept con : concepts) {
+			updateTableItem(con, con.isUncommitted());
+		}
+		
 	}
 }
