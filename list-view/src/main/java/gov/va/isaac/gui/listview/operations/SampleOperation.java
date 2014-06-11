@@ -127,7 +127,7 @@ public class SampleOperation extends Operation
 					}
 					updateProgress(++i, conceptList_.size());
 				}
-				return new OperationResult(SampleOperation.this.getTitle(), new HashSet<Integer>(), "");
+				return new OperationResult(SampleOperation.this.getTitle(), new HashSet<SimpleDisplayConcept>(), "");
 			}
 		};
 	}

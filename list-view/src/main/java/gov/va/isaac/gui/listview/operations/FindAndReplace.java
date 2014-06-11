@@ -137,7 +137,7 @@ public class FindAndReplace extends Operation
 			{
 				double i = 0;
 				successCons.clear();
-				Set<Integer> modifiedConcepts = new HashSet<Integer>();
+				Set<SimpleDisplayConcept> modifiedConcepts = new HashSet<SimpleDisplayConcept>();
 				for (SimpleDisplayConcept c : conceptList_)
 				{
 					if (cancelRequested_)
@@ -170,7 +170,7 @@ public class FindAndReplace extends Operation
 					}
 
 					if (successMatches.size() > 0) {
-						modifiedConcepts.add(con.getNid());
+						modifiedConcepts.add(c);
 						successCons.put(c.getDescription() + " --- " + con.getPrimordialUuid().toString(), successMatches);
 					}
 					

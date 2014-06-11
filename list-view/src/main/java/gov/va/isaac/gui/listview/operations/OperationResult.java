@@ -1,12 +1,14 @@
 package gov.va.isaac.gui.listview.operations;
 
+import gov.va.isaac.gui.SimpleDisplayConcept;
+
 import java.util.Set;
 
 
 public class OperationResult {
 
 	private String operationMsg;
-	private Set<Integer> modifiedConcepts;
+	private Set<SimpleDisplayConcept> modifiedConcepts;
 	private String title;
 
 	public OperationResult(String title, boolean cancelRequested_) {
@@ -17,10 +19,10 @@ public class OperationResult {
 		}
 	}
 
-	public OperationResult(String title, Set<Integer> modifiedConcepts, String msgBuffer) {
+	public OperationResult(String title, Set<SimpleDisplayConcept> modifiedCons, String msgBuffer) {
 		operationMsg = msgBuffer;
 		this.title = title;
-		this.modifiedConcepts = modifiedConcepts;
+		this.modifiedConcepts = modifiedCons;
 	}
 
 	public OperationResult() {
@@ -31,7 +33,7 @@ public class OperationResult {
 		return operationMsg;
 	}
 	
-	public Set<Integer> getModifiedConcepts() {
+	public Set<SimpleDisplayConcept> getModifiedConcepts() {
 		return modifiedConcepts;
 	}
 }
