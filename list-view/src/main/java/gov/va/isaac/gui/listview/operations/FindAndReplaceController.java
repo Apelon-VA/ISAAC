@@ -24,9 +24,13 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -43,7 +47,9 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.CaseSensitive;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +71,6 @@ public class FindAndReplaceController
 	@FXML private CheckBox descriptionTypePT;
 	@FXML private CheckBox descriptionTypeSynonym;
 	@FXML private CheckBox caseSensitive;
-	@FXML private ComboBox<SimpleDisplayConcept> retireAs;
 	@FXML private ComboBox<SimpleDisplayConcept> searchInLanguage;
 	@FXML private GridPane root;
 	@FXML private GridPane optionsGridPane;
@@ -76,6 +81,20 @@ public class FindAndReplaceController
 	private StringProperty findTextInvalidReason = new SimpleStringProperty("");
 	private BooleanBinding findTextValid;
 	private BooleanBinding allFieldsValid;
+
+    protected enum DescriptionType {
+        FSN, SYNONYM, PT;
+        
+        @Override
+        public String toString() {
+          switch(this) {
+            case FSN: return "Fully Specified Name";
+            case PT: return "Preferred Term";
+            case SYNONYM: return "Synonym";
+            default: throw new IllegalArgumentException();
+          }
+        }
+    }
 
 	@FXML
 	void initialize()
@@ -90,7 +109,6 @@ public class FindAndReplaceController
 		assert descriptionTypeSynonym != null : "fx:id=\"descriptionTypeSynonym\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 		assert descriptionTypeSelected != null : "fx:id=\"descriptionTypeSelected\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 		assert caseSensitive != null : "fx:id=\"caseSensitive\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
-		assert retireAs != null : "fx:id=\"retireAs\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 		assert searchInLanguage != null : "fx:id=\"searchInLanguage\" was not injected: check your FXML file 'FindAndReplaceController.fxml'.";
 
 		FxUtils.preventColCollapse(root, 0);
@@ -228,7 +246,6 @@ public class FindAndReplaceController
 		searchInLanguage.getSelectionModel().select(0);
 		
 		ComboBoxSetupTool.setupComboBox(searchInLanguage);
-		ComboBoxSetupTool.setupComboBox(retireAs);
 		
 		try
 		{
@@ -252,21 +269,6 @@ public class FindAndReplaceController
 		}
 
 		allFieldsValid = findTextValid.and(descriptionTypeSelectionValid);
-		
-		try
-		{
-			//TODO these should come from user preferences
-			retireAs.getItems().add(new SimpleDisplayConcept(WBUtility.getConceptVersion(SnomedMetadataRf2.ACTIVE_VALUE_RF2.getUuids()[0])));
-			retireAs.getItems().add(new SimpleDisplayConcept(WBUtility.getConceptVersion(SnomedMetadataRf2.INACTIVE_VALUE_RF2.getUuids()[0])));
-			retireAs.getSelectionModel().select(0);
-		}
-		catch (Exception e)
-		{
-			LoggerFactory.getLogger(this.getClass()).error("Error populating 'Retire As' drop down", e);
-			AppContext.getCommonDialogs().showErrorDialog("Error populating the 'Retire As' drop down", e);
-			//JavaFX doesn't compute findTextValue, if no one is using it
-			allFieldsValid = findTextValid.and(descriptionTypeSelectionValid.and(new SimpleBooleanProperty(false)));  
-		}
 	}
 	
 	protected BooleanBinding allFieldsValid()
@@ -278,4 +280,39 @@ public class FindAndReplaceController
 	{
 		return root;
 	}
+	
+	protected Set<DescriptionType> getSelectedDescTypes() {
+		Set<DescriptionType> selectedDescTypes = new HashSet<DescriptionType>();
+		
+		if (descriptionTypeAll.isSelected() || descriptionTypeFSN.isSelected()) {
+			selectedDescTypes.add(DescriptionType.FSN);
+		}
+
+		if (descriptionTypeAll.isSelected() || descriptionTypePT.isSelected()) {
+			selectedDescTypes.add(DescriptionType.PT);
+		}
+
+		if (descriptionTypeAll.isSelected() || descriptionTypeSynonym.isSelected()) {
+			selectedDescTypes.add(DescriptionType.SYNONYM);
+		}
+		
+		return selectedDescTypes;
+	}
+		
+	protected boolean isRegExp() {
+		return regexp.isSelected();
+	}
+
+	protected boolean isCaseSens() {
+		return caseSensitive.isSelected();
+	}
+
+	protected String getSearchText() {
+		return findText.getText().trim();
+	}
+	
+	protected String getReplaceText() {
+		return replaceText.getText().trim();
+	}
+	
 }

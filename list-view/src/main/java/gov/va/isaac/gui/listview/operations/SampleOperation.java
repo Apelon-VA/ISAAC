@@ -18,14 +18,18 @@
  */
 package gov.va.isaac.gui.listview.operations;
 
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.FxUtils;
+
+import java.util.HashSet;
+
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
+
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * {@link SampleOperation}
@@ -93,37 +97,37 @@ public class SampleOperation extends Operation
 	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
 	 */
 	@Override
-	public CustomTask<String> createTask()
+	public CustomTask<OperationResult> createTask()
 	{
-		return new CustomTask<String>(SampleOperation.this)
+		return new CustomTask<OperationResult>(SampleOperation.this)
 		{
 			@Override
-			protected String call() throws Exception
+			protected OperationResult call() throws Exception
 			{
 				double i = 0;
 				for (SimpleDisplayConcept c : conceptList_)
 				{
 					if (cancelRequested_)
 					{
-						return SampleOperation.this.getTitle() + " was cancelled";
+						return new OperationResult(SampleOperation.this.getTitle(), cancelRequested_);
 					}
 					updateProgress(i, conceptList_.size());
 					updateMessage("processing " + c.getDescription());
 					Thread.sleep(3000);
 					if (cancelRequested_)
 					{
-						return SampleOperation.this.getTitle() + " was cancelled";
+						return new OperationResult(SampleOperation.this.getTitle(), cancelRequested_);
 					}
 					updateProgress((i + 0.5), conceptList_.size());
 					updateMessage("still working on " + c.getDescription());
 					Thread.sleep(3000);
 					if (cancelRequested_)
 					{
-						return SampleOperation.this.getTitle() + " was cancelled";
+						return new OperationResult(SampleOperation.this.getTitle(), cancelRequested_);
 					}
 					updateProgress(++i, conceptList_.size());
 				}
-				return SampleOperation.this.getTitle() + " completed - modified 0 concepts";
+				return new OperationResult(SampleOperation.this.getTitle(), new HashSet<SimpleDisplayConcept>(), "");
 			}
 		};
 	}

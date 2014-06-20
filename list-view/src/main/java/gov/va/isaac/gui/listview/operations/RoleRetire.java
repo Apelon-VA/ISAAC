@@ -119,12 +119,12 @@ public class RoleRetire extends Operation
 	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
 	 */
 	@Override
-	public CustomTask<String> createTask()
+	public CustomTask<OperationResult> createTask()
 	{
-		return new CustomTask<String>(RoleRetire.this)
+		return new CustomTask<OperationResult>(RoleRetire.this)
 		{
 			@Override
-			protected String call() throws Exception
+			protected OperationResult call() throws Exception
 			{
 //				double i = 0;
 //				for (SimpleDisplayConcept c : conceptList_)
@@ -151,7 +151,7 @@ public class RoleRetire extends Operation
 //				}
 //				return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";
 				//TODO implement RoleRetire
-				return "Not yet implemented";
+				return new OperationResult();
 			}
 		};
 	}

@@ -23,15 +23,17 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
@@ -143,14 +145,14 @@ public class SearchHandler
 									}
 
 									// Get the description object.
-									ComponentChronicleBI<?> cc = dataStore.getComponent(searchResult.getNid());
+									ComponentVersionBI cc = dataStore.getComponent(searchResult.getNid()).getVersion(WBUtility.getViewCoordinate());
 
 									// Create a search result for the corresponding concept.
 									final int conceptNid = cc.getConceptNid();
 									CompositeSearchResult gsr = tempUserResults.get(conceptNid);
 									if (gsr == null)
 									{
-										ConceptVersionBI concept = dataStore.getConceptVersion(StandardViewCoordinates.getSnomedInferredLatest(), cc.getConceptNid());
+										ConceptVersionBI concept = dataStore.getConceptVersion(WBUtility.getViewCoordinate(), cc.getConceptNid());
 
 										// "normalize the scores between 0 and 1"
 										float normScore = (searchResult.getScore() / maxScore);

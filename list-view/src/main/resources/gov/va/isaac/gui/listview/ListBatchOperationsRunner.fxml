@@ -6,16 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-	prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="gov.va.isaac.gui.listview.ListBatchOperationsRunnerController">
-	<bottom>
-		<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" BorderPane.alignment="CENTER">
-			<BorderPane.margin>
-				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-			</BorderPane.margin>
-		</Button>
-	</bottom>
+<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.listview.ListBatchOperationsRunnerController">
 	<top>
 		<VBox prefWidth="100.0" BorderPane.alignment="CENTER">
 			<children>
@@ -68,8 +59,7 @@
 						</Label>
 					</children>
 				</GridPane>
-				<ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" prefWidth="200.0" progress="0.0"
-					BorderPane.alignment="CENTER">
+				<ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" prefWidth="200.0" progress="0.0" BorderPane.alignment="CENTER">
 					<BorderPane.margin>
 						<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 					</BorderPane.margin>
@@ -87,4 +77,9 @@
 			</BorderPane.margin>
 		</TextArea>
 	</center>
+<bottom><Button fx:id="okButton" mnemonicParsing="false" text="OK" BorderPane.alignment="CENTER">
+<BorderPane.margin>
+<Insets bottom="10.0" />
+</BorderPane.margin></Button>
+</bottom>
 </BorderPane>

@@ -92,12 +92,12 @@ public class LogicAddDisjointSet extends Operation
 	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()
 	 */
 	@Override
-	public CustomTask<String> createTask()
+	public CustomTask<OperationResult> createTask()
 	{
-		return new CustomTask<String>(LogicAddDisjointSet.this)
+		return new CustomTask<OperationResult>(LogicAddDisjointSet.this)
 		{
 			@Override
-			protected String call() throws Exception
+			protected OperationResult call() throws Exception
 			{
 //				double i = 0;
 //				for (SimpleDisplayConcept c : conceptList_)
@@ -124,7 +124,7 @@ public class LogicAddDisjointSet extends Operation
 //				}
 //				return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";
 				//TODO implement LogicAddDisjointSet
-				return "Not yet implemented";
+				return new OperationResult();
 			}
 		};
 	}

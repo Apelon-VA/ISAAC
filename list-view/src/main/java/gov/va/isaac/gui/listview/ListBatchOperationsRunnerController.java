@@ -18,12 +18,19 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
+
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -43,7 +50,8 @@ import javafx.scene.layout.BorderPane;
 
 public class ListBatchOperationsRunnerController
 {
-	@FXML private Button cancelButton;
+	private static ObservableList<SimpleDisplayConcept> changeList;
+	@FXML private Button okButton;
 	@FXML private Label titleLabel;
 	@FXML private ProgressBar progressBar;
 	@FXML private Label statusLabel;
@@ -55,8 +63,9 @@ public class ListBatchOperationsRunnerController
 	
 	/**
 	 * Cancel requested should be passed in set to false, if the user clicks cancel, this will change it to true
+	 * @param observableList 
 	 */
-	public static ListBatchOperationsRunnerController init(BooleanProperty cancelRequested) throws IOException
+	public static ListBatchOperationsRunnerController init(BooleanProperty cancelRequested, ObservableList<SimpleDisplayConcept> items) throws IOException
 	{
 		// Load from FXML.
 		URL resource = ListBatchOperationsRunnerController.class.getResource("ListBatchOperationsRunner.fxml");
@@ -64,6 +73,8 @@ public class ListBatchOperationsRunnerController
 		loader.load();
 		ListBatchOperationsRunnerController lborc = loader.getController();
 		lborc.cancelRequested_ = cancelRequested;
+		changeList = items;
+		
 		return lborc;
 	}
 
@@ -73,7 +84,7 @@ public class ListBatchOperationsRunnerController
 		progressBar.setProgress(0);
 		summary.setEditable(false);
 		
-		cancelButton.setOnAction(new EventHandler<ActionEvent>()
+		okButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
@@ -85,8 +96,8 @@ public class ListBatchOperationsRunnerController
 				else
 				{
 					cancelRequested_.set(true);
-					cancelButton.setDisable(true);
-					cancelButton.setText("Cancelling");
+					okButton.setDisable(true);
+					okButton.setText("Cancelling");
 				}
 			}
 		});
@@ -103,8 +114,7 @@ public class ListBatchOperationsRunnerController
 			@Override
 			public void run()
 			{
-				cancelButton.setText("Ok");
-				cancelButton.setDisable(false);  //Just in case a race condition causes us to cancel-request and finish at the same time
+				okButton.setDisable(false);  //Just in case a race condition causes us to cancel-request and finish at the same time
 				progressBar.progressProperty().unbind();
 				progressBar.setProgress(1.0);  //In case it didn't end right
 				titleLabel.setText("");

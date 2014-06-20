@@ -64,7 +64,9 @@ public enum Images {
     EXPAND_ALL(setupImage("/icons/diagona/16x16/109.png")),
     LIST_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/edit-list.png")),
     STAMP(setupImage("/icons/fugue/16x16/icons-shadowless/stamp-medium.png")),
-    INBOX(setupImage("/icons/fugue/16x16/icons-shadowless/inbox.png"));
+    INBOX(setupImage("/icons/fugue/16x16/icons-shadowless/inbox.png")),
+    COMMIT(setupImage("/icons/fugue/16x16/icons-shadowless/commit-change.png")),
+    CANCEL(setupImage("/icons/fugue/16x16/icons-shadowless/cancel-change.png"));
 
     private final Image image;
 

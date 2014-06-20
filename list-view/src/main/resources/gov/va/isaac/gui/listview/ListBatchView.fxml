@@ -90,7 +90,9 @@
 							<bottom>
 								<HBox id="conceptTableFooter" fx:id="conceptTableFooter" fillHeight="false" prefWidth="200.0"
 									BorderPane.alignment="CENTER">
-									<children/>
+									<children>
+										<Label />
+									</children>
 								</HBox>
 							</bottom>
 						</BorderPane>
@@ -126,6 +128,8 @@
 										</Button>
 										<Region prefHeight="1.0" prefWidth="1.0" HBox.hgrow="ALWAYS" />
 										<Button id="executeOperationsButton" fx:id="executeOperationsButton" mnemonicParsing="false" text="Execute" />
+										<Button id="commitButton" fx:id="commitButton" mnemonicParsing="false" text="Commit All" />
+										<Button id="cancelButton" fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
 									</items>
 								</ToolBar>
 							</bottom>

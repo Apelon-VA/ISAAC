@@ -48,16 +48,6 @@
 						<RowConstraints vgrow="NEVER" />
 					</rowConstraints>
 					<children>
-						<Label text="Retire as" GridPane.columnIndex="0" GridPane.rowIndex="0">
-							<font>
-								<Font name="System" size="13.0" />
-							</font>
-						</Label>
-						<ComboBox fx:id="retireAs" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="2">
-							<tooltip>
-								<Tooltip text="The status type to place on the existing description (a new description will be created with the 'Replace With' text)" />
-							</tooltip>
-						</ComboBox>
 						<Label text="Search in Language" GridPane.columnIndex="0" GridPane.rowIndex="1">
 							<font>
 								<Font name="System" size="13.0" />

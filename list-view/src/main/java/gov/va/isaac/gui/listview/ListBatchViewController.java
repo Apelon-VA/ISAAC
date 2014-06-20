@@ -23,24 +23,30 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.listview.operations.CustomTask;
+import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -67,6 +73,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -75,15 +82,20 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -92,6 +104,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -112,13 +125,19 @@ public class ListBatchViewController
 	@FXML private Button addOperationButton;
 	@FXML private Button clearListButton;
 	@FXML private Button executeOperationsButton;
+	@FXML private Button commitButton;
+	@FXML private Button cancelButton;
 	@FXML private ToolBar executeOperationsToolbar;
 	@FXML private Button saveListButton;
 	@FXML private AnchorPane rootPane;
 
 	private UpdateableBooleanBinding allOperationsReady_;
+
 	StringProperty reasonWhyExecuteDisabled_ = new SimpleStringProperty();
+	StringProperty noChangeReasonWhyExecuteDisabled_ = new SimpleStringProperty();
+	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
+	private int uncommittedCount = 0;
 
 	protected static ListBatchViewController init() throws IOException
 	{
@@ -147,7 +166,11 @@ public class ListBatchViewController
 			{
 				if (newValue != null)
 				{
-					conceptTable.getItems().add(new SimpleDisplayConcept(newValue));
+					SimpleDisplayConcept sdc = new SimpleDisplayConcept(newValue);
+					if (!conceptTable.getItems().contains(sdc)) {
+						updateTableItem(sdc, sdc.isUncommitted());
+					}
+					
 					cn.clear();
 				}
 			}
@@ -158,6 +181,52 @@ public class ListBatchViewController
 		col1.setText("Concept");
 		col1.prefWidthProperty().bind(conceptTable.widthProperty().subtract(3.0));
 		col1.setCellValueFactory(new PropertyValueFactory<SimpleDisplayConcept, String>("description"));
+
+		col1.setCellFactory(new Callback<TableColumn<SimpleDisplayConcept,String>, TableCell<SimpleDisplayConcept,String>>() {
+			
+			@Override
+			public TableCell<SimpleDisplayConcept, String> call(TableColumn<SimpleDisplayConcept, String> param) {
+				final TableCell<SimpleDisplayConcept, String> cell = new TableCell<SimpleDisplayConcept, String>() {
+		            private final Background uncommittedBackground = new Background(new BackgroundFill(Color.YELLOW, new CornerRadii(15), new Insets(2)));
+		            private final Background defaultBackground = new Background(new BackgroundFill(null, null, null));
+
+					@Override
+		            protected void updateItem(String item, boolean empty) {
+		                super.updateItem(item, empty);
+	
+		                TableRow currentRow = getTableRow();
+		                if (!empty) {
+		                	if (currentRow != null && currentRow.getItem() != null) {
+			                	setText(item);
+			                	setTextFill(Color.BLACK);
+			                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
+				                	setBackground(uncommittedBackground );
+			                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
+			                		currentRow.getContextMenu().getItems().get(3).setDisable(false);
+				                } else {
+	  		                		currentRow.getContextMenu().getItems().get(2).setDisable(true);
+			                		currentRow.getContextMenu().getItems().get(3).setDisable(true);
+				                	setBackground(defaultBackground );
+				                }
+			                }
+			            } else {
+		            		if (getText() != null) {
+		                		if (getBackground() != null && 
+		                			getBackground().getFills() != null && 
+		                			getBackground().getFills().size() > 0) {
+			                		setText(null);
+			                		setTextFill(null);
+			                		setBackground(null);
+		                		}
+				            }
+						}
+					}
+		        };
+		        
+		        return cell;
+			}
+		});
+		
 		conceptTable.getColumns().add(col1);
 		conceptTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		conceptTable.setOnKeyReleased(new EventHandler<KeyEvent>()
@@ -178,6 +247,22 @@ public class ListBatchViewController
 
 		conceptTable.setRowFactory(new Callback<TableView<SimpleDisplayConcept>, TableRow<SimpleDisplayConcept>>()
 		{
+			
+/*			private UpdateableBooleanBinding isUncommittedConcept_ = new UpdateableBooleanBinding() {
+				@Override
+				protected boolean computeValue()
+				{
+					return true;
+				}
+			};
+			
+			public BooleanExpression isUncommittedForMenuItem()
+			{
+				return isUncommittedConcept_; 
+			}
+*/			
+
+
 			@Override
 			public TableRow<SimpleDisplayConcept> call(TableView<SimpleDisplayConcept> param)
 			{
@@ -200,21 +285,52 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						if (conceptTable.getSelectionModel().getSelectedItems().size() > 1)
-						{
-							for (SimpleDisplayConcept sdc : conceptTable.getSelectionModel().getSelectedItems())
+						if (row.getItem().isUncommitted()) {
+							AppContext.getCommonDialogs().showErrorDialog("Remove From List Error", "Cannot remove uncomitted Concept.  Cancel change on concept or commit concept first.\n\r", null);
+						} else {
+							if (conceptTable.getSelectionModel().getSelectedItems().size() > 1)
 							{
-								conceptTable.getItems().remove(sdc);
+								for (SimpleDisplayConcept sdc : conceptTable.getSelectionModel().getSelectedItems())
+								{
+									conceptTable.getItems().remove(sdc);
+								}
+								conceptTable.getSelectionModel().clearSelection();
 							}
-							conceptTable.getSelectionModel().clearSelection();
-						}
-						else
-						{
-							conceptTable.getItems().remove(row.getItem());
+							else
+							{
+								conceptTable.getItems().remove(row.getItem());
+							}
 						}
 					}
 				});
-				rowMenu.getItems().addAll(viewItem, removeItem);
+				MenuItem commitItem = new MenuItem("Commit Concept Change");
+				commitItem.setGraphic(Images.COMMIT.createImageView());
+				commitItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						WBUtility.commit(row.getItem().getNid());
+						updateTableItem(row.getItem(), false);
+					}
+				});
+
+				MenuItem cancelItem = new MenuItem("Cancel Concept Change");
+				cancelItem.setGraphic(Images.CANCEL.createImageView());
+				cancelItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						WBUtility.cancel(row.getItem().getNid());
+						updateTableItem(row.getItem(), false);
+					}
+				});
+				
+//				commitItem.visibleProperty().bind(isUncommittedConcept_);
+//				cancelItem.visibleProperty().bind(isUncommittedConcept_);
+				
+				rowMenu.getItems().addAll(viewItem, removeItem, commitItem, cancelItem);
 
 				// only display context menu for non-null items:
 				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
@@ -228,6 +344,35 @@ public class ListBatchViewController
 
 		executeOperationsButton.setOnAction((a) -> executeOperations());
 		
+		reasonWhyExecuteDisabled_.set("No changes have occured from executing the List Operations");
+		cancelButton.setDisable(true);
+		executeOperationsToolbar.getItems().remove(cancelButton);
+		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(cancelButton, noChangeReasonWhyExecuteDisabled_));
+		
+		commitButton.setDisable(true);
+		executeOperationsToolbar.getItems().remove(commitButton);
+		executeOperationsToolbar.getItems().add(ErrorMarkerUtils.setupDisabledInfoMarker(commitButton, noChangeReasonWhyExecuteDisabled_));
+
+		commitButton.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				WBUtility.commit();
+				uncommitAllTableItems();
+			}
+		});
+
+		cancelButton.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				WBUtility.cancel();
+				uncommitAllTableItems();
+			}
+		});
+
 		addOperationButton.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -256,7 +401,24 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				conceptTable.getItems().clear();
+				DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Clear List Question", "Will only remove concepts without uncommitted change.  Continue?");
+
+				if (response == DialogResponse.YES) {
+					Set<SimpleDisplayConcept> removalList = new HashSet<>();
+					
+					for (SimpleDisplayConcept con : conceptTable.getItems()) {
+						if (!con.isUncommitted()) {
+							removalList.add(con);
+						}
+					}
+					
+					for (SimpleDisplayConcept con : removalList) {
+						conceptTable.getItems().remove(con);
+					}
+				
+					commitButton.setDisable(uncommittedCount == 0);
+					cancelButton.setDisable(uncommittedCount == 0);
+				}
 			}
 		});
 
@@ -396,7 +558,7 @@ public class ListBatchViewController
 											@Override
 											public void run()
 											{
-												conceptTable.getItems().addAll(newConcepts);
+												addMultipleItems(newConcepts);
 												Dialogs.create().title("Concept Import Completed").masthead(null)
 													.message("The Concept List import is complete" 
 															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""))
@@ -467,7 +629,9 @@ public class ListBatchViewController
 						{
 							try
 							{
-								concepts.add(new SimpleDisplayConcept(WBUtility.getDescription(c.getVersion(WBUtility.getViewCoordinate())), c.getNid()));
+								SimpleDisplayConcept newCon = new SimpleDisplayConcept(WBUtility.getDescription(c.getVersion(WBUtility.getViewCoordinate())), c.getNid());
+								newCon.setUncommitted(true);
+								concepts.add(newCon);
 							}
 							catch (ContradictionException e)
 							{
@@ -480,7 +644,7 @@ public class ListBatchViewController
 							@Override
 							public void run()
 							{
-								conceptTable.getItems().addAll(concepts);
+								addMultipleItems(concepts);
 								addUncommittedListButton.setDisable(false);
 							}
 						});
@@ -578,10 +742,10 @@ public class ListBatchViewController
 
 			final BooleanProperty cancelRequested = new SimpleBooleanProperty(false);
 
-			final ListBatchOperationsRunnerController lborc = ListBatchOperationsRunnerController.init(cancelRequested);
+			final ListBatchOperationsRunnerController lborc = ListBatchOperationsRunnerController.init(cancelRequested, conceptTable.getItems());
 			s.setScene(new Scene(lborc.getRoot()));
 
-			final List<CustomTask<String>> operationsToExecute = new ArrayList<>(operationsList.getChildren().size());
+			final List<CustomTask<OperationResult>> operationsToExecute = new ArrayList<>(operationsList.getChildren().size());
 			for (Node n : operationsList.getChildren())
 			{
 				OperationNode on = (OperationNode) n;
@@ -642,7 +806,12 @@ public class ListBatchViewController
 					else if (event.getEventType() == WorkerStateEvent.WORKER_STATE_SUCCEEDED)
 					{
 						finished = true;
-						taskSummary.append((String) event.getSource().getValue());
+						OperationResult result = (OperationResult)event.getSource().getValue();
+						taskSummary.append(result.getOperationMsg());
+						
+						for (SimpleDisplayConcept oldCon: result.getModifiedConcepts()) {
+							updateTableItem(oldCon, true);
+						}
 					}
 					
 					taskSummary.append("\r\n");
@@ -658,7 +827,7 @@ public class ListBatchViewController
 				}
 			};
 
-			for (Task<String> task : operationsToExecute)
+			for (Task<OperationResult> task : operationsToExecute)
 			{
 				task.setOnRunning(workerStateHandler);
 				task.setOnCancelled(workerStateHandler);
@@ -674,7 +843,7 @@ public class ListBatchViewController
 				{
 					if (cancelRequested.get())
 					{
-						for (CustomTask<String> task : operationsToExecute)
+						for (CustomTask<OperationResult> task : operationsToExecute)
 						{
 							// Can't use task.cancel(false) because oracle mis-designed it... and the executor service doesn't
 							// wait for the task to actually complete when you use the awaitCompletion() method.
@@ -714,5 +883,66 @@ public class ListBatchViewController
 			logger_.error("Failure running Batch Operations", e);
 			AppContext.getCommonDialogs().showErrorDialog("Error running operations", e);
 		}
+	}
+
+	private void updateTableItem(SimpleDisplayConcept oldCon, boolean isUncommitted) {
+		ConceptVersionBI con = WBUtility.getConceptVersion(oldCon.getNid());
+		SimpleDisplayConcept newCon = new SimpleDisplayConcept(con);
+
+		int idx = conceptTable.getItems().indexOf(oldCon);
+		if (idx >= 0) {
+			conceptTable.getItems().remove(idx);
+		}
+		
+		if (isUncommitted) {
+			WBUtility.addUncommitted(con);
+			newCon.setUncommitted(true);
+			
+			if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
+				uncommittedCount++;
+			}
+		} else {
+			WBUtility.cancel(con);
+			newCon.setUncommitted(false);
+
+			if (!isUncommitted && oldCon.isUncommitted()) {
+				uncommittedCount--;
+			}
+		}
+
+		if (idx >= 0) {
+			conceptTable.getItems().add(idx, newCon);
+		} else {
+			conceptTable.getItems().add(newCon);
+		}
+		
+		commitButton.setDisable(uncommittedCount  == 0);
+		cancelButton.setDisable(uncommittedCount  == 0);
+	}
+
+	private void uncommitAllTableItems() {
+		final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
+
+		for (SimpleDisplayConcept origCon : conceptTable.getItems()) {
+			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(WBUtility.getConceptVersion(origCon.getNid()));
+			
+			displayCon.setUncommitted(false);
+			newItems.add(displayCon);
+		}
+		
+		conceptTable.getItems().clear(); 
+		conceptTable.getItems().addAll(newItems);		
+
+		uncommittedCount = 0;
+		commitButton.setDisable(true);
+		cancelButton.setDisable(true);
+	}
+
+
+	private void addMultipleItems(ArrayList<SimpleDisplayConcept> concepts) {
+		for (SimpleDisplayConcept con : concepts) {
+			updateTableItem(con, con.isUncommitted());
+		}
+		
 	}
 }

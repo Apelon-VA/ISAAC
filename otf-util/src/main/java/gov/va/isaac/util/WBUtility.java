@@ -622,4 +622,24 @@ public class WBUtility {
         parentUUIDs[0] = parent.getPrimordialUuid();
         return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
     }
+
+	public static void commit(int nid) {
+		ConceptVersionBI con = getConceptVersion(nid);
+		commit(con);
+	}
+
+	public static void cancel() {
+		dataStore.cancel();
+	}
+
+	public static void cancel(int nid) {
+		ConceptVersionBI con = getConceptVersion(nid);
+		cancel(con);
+	}
+
+	public static void cancel(ConceptVersionBI con) {
+//		dataStore.cancel(con);
+// 		TODO: Update once OTF version fixed
+		dataStore.cancel();
+	}
 }
