@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>1.0-Sprint_09-SNAPSHOT</version>
+		<version>1.0-Sprint_09</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>otf-util</artifactId>
