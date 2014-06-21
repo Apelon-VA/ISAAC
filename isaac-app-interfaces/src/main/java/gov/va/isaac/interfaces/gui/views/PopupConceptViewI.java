@@ -18,28 +18,17 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link ConceptViewI}
+ * {@link PopupConceptViewI}
  * 
  * An interface that requests a pop up window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ConceptViewI extends ViewI
+public interface PopupConceptViewI extends PopupViewI, ConceptViewI
 {
-	/**
-	 * Update the view to show the selected concept.
-	 * @param conceptUuid
-	 */
-	public void setConcept(UUID conceptUUID);
-	
-	/**
-	 * Update the view to show the selected concept.
-	 * @param conceptUuid
-	 */
-	public void setConcept(int conceptNid);
+
 }

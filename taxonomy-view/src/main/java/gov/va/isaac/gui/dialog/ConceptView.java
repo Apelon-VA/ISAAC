@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,20 +22,24 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.ConceptViewI;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
@@ -54,117 +58,145 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @PerLookup
-public class ConceptView extends Stage implements ConceptViewI {
+public class ConceptView implements PopupConceptViewI {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-    private final SnomedConceptViewController controller;
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private final SnomedConceptViewController controller;
 
-    private ConceptView() throws IOException {
-        //This is for HK2 to construct...
-        super();
+	private ConceptView() throws IOException {
+		//This is for HK2 to construct...
+		super();
 
-        initOwner(null);
-        initModality(Modality.NONE);
-        initStyle(StageStyle.DECORATED);
+		// Load from FXML.
+		URL resource = this.getClass().getResource("SnomedConceptView.fxml");
+		FXMLLoader loader = new FXMLLoader(resource);
+		loader.load();
+		controller = loader.getController();
+	}
 
-        // Load from FXML.
-        URL resource = this.getClass().getResource("SnomedConceptView.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        Parent root = (Parent) loader.load();
-        setScene(new Scene(root));
-        getScene().getStylesheets().add(ConceptView.class.getResource("/isaac-shared-styles.css").toString());
-        getIcons().add(Images.CONCEPT_VIEW.getImage());
+	public void setConcept(ConceptChronicleDdo concept) {
+		// Make sure in application thread.
+		FxUtils.checkFxUserThread();
+		controller.setConcept(concept);
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#setConcept(java.util.UUID)
+	 */
+	@Override
+	public void setConcept(UUID conceptUUID)
+	{
+		// TODO this needs to be rewritten so that the dialog displays immediately
+		//but with a progress indicator while we wait for the concept to be found..
+		Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>()
+		{
 
-        this.controller = loader.getController();
-    }
+			@Override
+			protected ConceptChronicleDdo call() throws Exception
+			{
+				LOG.info("Loading concept with UUID " + conceptUUID);
+				ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
+						VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+				 LOG.info("Finished loading concept with UUID " + conceptUUID);
 
-    public void showConcept(ConceptChronicleDdo concept) {
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
-        controller.setConcept(concept);
+				return concept;
+			}
 
-        // Title will change after concept is set.
-        this.setTitle(controller.getTitle());
-        this.show();
-        //doesn't come to the front unless you do this (on linux, at least)
-        Platform.runLater(() -> {this.toFront();});
-    }
-    
-    @Override
-	public void showConcept(final UUID conceptUUID)
-    {
-        // TODO this needs to be rewritten so that the dialog displays immediately
-        //but with a progress indicator while we wait for the concept to be found..
-         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>()
-         {
+			@Override
+			protected void succeeded()
+			{
+				try
+				{
+					ConceptChronicleDdo result = this.getValue();
+					setConcept(result);
+				}
+				catch (Exception e)
+				{
+					String title = "Unexpected error loading concept with UUID " + conceptUUID;
+					String msg = e.getClass().getName();
+					LOG.error(title, e);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+				}
+			}
 
-             @Override
-             protected ConceptChronicleDdo call() throws Exception
-             {
-                 LOG.info("Loading concept with UUID " + conceptUUID);
-                 ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
-                         VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
-                 LOG.info("Finished loading concept with UUID " + conceptUUID);
+			@Override
+			protected void failed()
+			{
+				Throwable ex = getException();
+				String title = "Unexpected error loading concept with UUID " + conceptUUID;
+				String msg = ex.getClass().getName();
+				LOG.error(title, ex);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+			}
+		};
 
-                 return concept;
-             }
+		Utility.execute(task);
+	}
 
-             @Override
-             protected void succeeded()
-             {
-                 try
-                {
-                    ConceptChronicleDdo result = this.getValue();
-                    showConcept(result);
-                }
-                catch (Exception e)
-                {
-                     String title = "Unexpected error loading concept with UUID " + conceptUUID;
-                     String msg = e.getClass().getName();
-                     LOG.error(title, e);
-                     AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-                }
-             }
+	//TODO concept-view-tree is not stopping background threaded operations when this window is closed....
+	//TODO is also seems to fall into infinite loops at times...
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#setConcept(int)
+	 */
+	@Override
+	public void setConcept(int conceptNid)
+	{
+		//TODO fix threading issues on this too...
+		try
+		{
+			ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);
+			if (concept != null)
+			{
+				setConcept(concept.getPrimordialUuid());
+			}
+		}
+		catch (IOException e)
+		{
+			String title = "Unexpected error loading concept with nid " + conceptNid;
+			String msg = e.getClass().getName();
+			LOG.error(title, e);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+		}
+	}
 
-             @Override
-             protected void failed()
-             {
-                 Throwable ex = getException();
-                 String title = "Unexpected error loading concept with UUID " + conceptUUID;
-                 String msg = ex.getClass().getName();
-                 LOG.error(title, ex);
-                 AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-             }
-         };
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
+	 */
+	@Override
+	public void showView(Window parent)
+	{
+		Stage s = new Stage();
+		s.initOwner(parent);
+		s.initModality(Modality.NONE);
+		s.initStyle(StageStyle.DECORATED);
 
-         Utility.execute(task);
-    }
+		s.setScene(new Scene(getView()));
+		s.getScene().getStylesheets().add(ConceptView.class.getResource("/isaac-shared-styles.css").toString());
+		s.getIcons().add(Images.CONCEPT_VIEW.getImage());
 
-    //TODO concept-view-tree is not stopping background threaded operations when this window is closed....
-    //TODO is also seems to fall into infinite loops at times...
-    
-    /**
-     * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#showConcept(int)
-     */
-    @Override
-    public void showConcept(int nid)
-    {
-        //TODO fix threading issues on this too...
-        try
-        {
-            ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(nid);
-            if (concept != null)
-            {
-                showConcept(concept.getPrimordialUuid());
-            }
-        }
-        catch (IOException e)
-        {
-            String title = "Unexpected error loading concept with nid " + nid;
-            String msg = e.getClass().getName();
-            LOG.error(title, e);
-            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-        }
+		// Title will change after concept is set.
+		s.setTitle(controller.getTitle());
+		s.show();
+		//doesn't come to the front unless you do this (on linux, at least)
+		Platform.runLater(() -> {s.toFront();});
+	}
 
-    }
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
+	 */
+	@Override
+	public List<MenuItemI> getMenuBarMenus()
+	{
+		return new ArrayList<>();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.ViewI#getView()
+	 */
+	@Override
+	public Region getView()
+	{
+		return controller.getRootNode();
+	}
 }
