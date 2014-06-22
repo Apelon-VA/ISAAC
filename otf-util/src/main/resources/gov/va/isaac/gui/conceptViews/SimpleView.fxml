@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="simpleConceptPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.SimpleConceptViewController">
+<children><BorderPane prefHeight="400.0" prefWidth="600.0">
+<top><Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" prefWidth="598.0" text="Body structure (body structure)" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnSpan="4">
+<font>
+<Font name="System Bold" size="24.0" />
+</font>
+<GridPane.margin>
+<Insets />
+</GridPane.margin>
+<BorderPane.margin>
+<Insets bottom="10.0" />
+</BorderPane.margin></Label>
+</top>
+<center><VBox prefHeight="200.0" prefWidth="100.0" spacing="20.0" BorderPane.alignment="CENTER">
+<children><GridPane alignment="CENTER" style="-fx-border-color: RED;">
+  <columnConstraints>
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+<children><Label fx:id="releaseIdLabel" text="123037004" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.halignment="LEFT">
+<BorderPane.margin>
+<Insets left="10.0" />
+</BorderPane.margin>
+<font>
+<Font size="18.0" />
+</font></Label><Label fx:id="isPrimLabel" style="-fx-background-color: yellow; -fx-border-color: green; -fx-border-width: 2;" text="Primitive" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+<BorderPane.margin>
+<Insets right="10.0" />
+</BorderPane.margin>
+<font>
+<Font size="18.0" />
+</font></Label>
+</children>
+</GridPane><GridPane style="-fx-border-color: RED;" VBox.vgrow="SOMETIMES">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+<children><VBox fx:id="descLabelVBox" prefHeight="200.0" prefWidth="100.0">
+<children><Label fx:id="prefTermLabel" text="Body Structure" textFill="BLUE" BorderPane.alignment="CENTER">
+<BorderPane.margin>
+<Insets left="5.0" />
+</BorderPane.margin>
+<font>
+<Font size="18.0" />
+</font></Label>
+</children></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+<children><Label style="-fx-background-color: YELLOW; -fx-border-color: Green; -fx-border-width: 2;" text="Preferred" textFill="BLUE" BorderPane.alignment="CENTER">
+<BorderPane.margin>
+<Insets right="5.0" />
+</BorderPane.margin>
+<font>
+<Font size="18.0" />
+</font></Label>
+</children></VBox>
+</children>
+</GridPane><GridPane style="-fx-border-color: RED;" VBox.vgrow="SOMETIMES">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+<children><VBox fx:id="relLabelVBox" prefHeight="200.0" prefWidth="100.0">
+<children>
+<Label text="Body Structure" textFill="BLUE" BorderPane.alignment="CENTER">
+<font>
+<Font size="18.0" />
+</font>
+<BorderPane.margin>
+<Insets left="5.0" />
+</BorderPane.margin>
+</Label>
+</children></VBox><VBox fx:id="relTypeVBox" alignment="TOP_RIGHT" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+<children>
+<Label style="-fx-background-color: YELLOW; -fx-border-color: Green; -fx-border-width: 2;" text="Is a" textFill="BLUE" BorderPane.alignment="CENTER">
+<font>
+<Font size="18.0" />
+</font>
+<BorderPane.margin>
+<Insets right="5.0" />
+</BorderPane.margin>
+</Label>
+</children></VBox>
+</children>
+</GridPane>
+</children>
+<BorderPane.margin>
+<Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+</BorderPane.margin></VBox>
+</center>
+<bottom><VBox alignment="CENTER" spacing="15.0" BorderPane.alignment="CENTER">
+<children><GridPane alignment="CENTER" BorderPane.alignment="CENTER">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+<children><Button fx:id="detailedButton" mnemonicParsing="false" text="Detailed View" GridPane.halignment="CENTER" /><Button fx:id="closeButton" mnemonicParsing="false" text="Close View" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+</children>
+</GridPane>
+</children>
+<BorderPane.margin>
+<Insets bottom="15.0" />
+</BorderPane.margin></VBox>
+</bottom></BorderPane>
+</children>
+</AnchorPane>
