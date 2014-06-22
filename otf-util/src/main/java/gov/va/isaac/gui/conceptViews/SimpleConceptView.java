@@ -100,7 +100,7 @@ public class SimpleConceptView implements ConceptViewI {
 	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
 	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
 	        LOG.info("Finished loading concept with UUID " + conceptUUID);
-	        setConcept(concept);
+	        controller.setConcept(concept);
     	} catch (IOException | ContradictionException e) {
             String title = "Unexpected error loading concept with UUID " + conceptUUID;
             String msg = e.getClass().getName();
