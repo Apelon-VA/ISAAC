@@ -159,6 +159,7 @@ public class ListBatchViewController
 		cn.setPromptText("Type, drop or select a concept to add");
 		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
 		HBox.setMargin(cn.getNode(), new Insets(6, 5, 6, 5));
+		conceptTableFooter.getChildren().clear();
 		conceptTableFooter.getChildren().add(cn.getNode());
 
 		cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
@@ -228,9 +229,10 @@ public class ListBatchViewController
 				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent event) {
-						SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
-						AppContext.getService(SimpleConceptView.class).setConcept(con.getNid());
-						conceptDisplayTab.setContent(AppContext.getService(SimpleConceptView.class).getConceptViewerPanel());		
+						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
+							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
+							conceptDisplayTab.setContent(AppContext.getService(SimpleConceptView.class).getConceptViewerPanel(con.getNid()));		
+						}
 					}
 		        });
 		        
