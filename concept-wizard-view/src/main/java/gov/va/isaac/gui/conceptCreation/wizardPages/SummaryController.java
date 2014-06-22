@@ -137,7 +137,7 @@ public class SummaryController implements PanelControllers {
 			synonymGridPane.setVisible(true);
 			for (int i = 0; i < synCount; i++) {
 				TextField term = new TextField(processController.getWizard().getTerm(i));
-				TextField accept = new TextField(processController.getWizard().getAcceptabilityString(i));
+				TextField accept = new TextField(processController.getWizard().getTypeString(i));
 				TextField caseSens = new TextField(processController.getWizard().getCaseSensitivity(i));
 				TextField lang = new TextField(processController.getWizard().getLanguage(i));
 	

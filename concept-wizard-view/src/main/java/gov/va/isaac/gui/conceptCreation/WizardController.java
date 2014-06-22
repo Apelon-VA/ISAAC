@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.conceptCreation;
 
+import gov.va.isaac.gui.conceptCreation.wizardPages.TermRow;
 import gov.va.isaac.gui.conceptCreation.wizardPages.RelRow;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -37,7 +38,6 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.description.DescriptionRevision;
-import org.ihtsdo.otf.tcc.model.cc.relationship.RelationshipRevision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class WizardController {
 	private String prefTerm;
 	private List<ConceptVersionBI> parents;
 	private boolean isPrimitive;
-	private List<DescriptionRevision> syns;
+	private List<TermRow> syns;
 	private List<RelRow> rels;
 	private int acceptableTypeNid = 0;
 
@@ -67,7 +67,7 @@ public class WizardController {
 		this.isPrimitive = isPrimitive;
 	}
 	
-	public void setConceptComponents(List<DescriptionRevision> syns, List<RelRow> rels) {
+	public void setConceptComponents(List<TermRow> syns, List<RelRow> rels) {
 		this.syns = syns;
 		this.rels = rels;
 	}
@@ -97,23 +97,19 @@ public class WizardController {
 	}
 
 	public String getTerm(int i) {
-		return syns.get(i).getText();
+		return syns.get(i).getTerm();
 	}
 
-	public int getAcceptability(int i) {
+	public int getTypeNid(int i) {
 		return syns.get(i).getTypeNid();
 	}
 
-	public String getAcceptabilityString(int i) {
-		if (getAcceptability(i) == getAcceptabilityNid()) {
-			return SnomedMetadataRf2.ACCEPTABLE_RF2.getDescription();
-		} else {
-			return SnomedMetadataRf2.SYNONYM_RF2.getDescription();
-		}
+	public String getTypeString(int i) {
+		return syns.get(i).getTypeString();
 	}
 
 	public String getCaseSensitivity(int i) {
-		if (syns.get(i).isInitialCaseSignificant()) {
+		if (syns.get(i).isInitialCaseSig()) {
 			return "True";
 		} else {
 			return "False";
@@ -121,7 +117,7 @@ public class WizardController {
 	}
 
 	public String getLanguage(int i) {
-		return syns.get(i).getLang();
+		return LanguageCode.EN_US.getFormatedLanguageCode();
 	}
 
 	public int getRelationshipsCreated() {
@@ -135,6 +131,8 @@ public class WizardController {
 	public String getTarget(int i) {
 		return getConDesc(rels.get(i).getTargetNid());
 	}
+	
+	//TODO make sure PT and FSN are case insensitive
 	
 	public String getQualRole(int i) {
 		//TODO Why are we implementing a toString on Reltype?  ROLE isn't even an option in the enum
@@ -182,10 +180,10 @@ public class WizardController {
 	
 	public void createNewDescription(ConceptChronicleBI con, int i) throws IOException, InvalidCAB, ContradictionException {
 		DescriptionCAB newDesc = new DescriptionCAB(con.getConceptNid(), 
-													getAcceptability(i), 
-													LanguageCode.getLangCode(syns.get(i).getLang()), 
-													syns.get(i).getText(), 
-													syns.get(i).isInitialCaseSignificant(), 
+													getTypeNid(i), 
+													LanguageCode.EN_US, 
+													syns.get(i).getTerm(), 
+													syns.get(i).isInitialCaseSig(), 
 													IdDirective.GENERATE_HASH);
 		
 		WBUtility.getBuilder().construct(newDesc);
@@ -201,17 +199,5 @@ public class WizardController {
 													 IdDirective.GENERATE_HASH);
 		WBUtility.getBuilder().construct(newRel);
 //		WBUtility.addUncommitted(con);
-	}
-
-	private int getAcceptabilityNid() {
-		if (acceptableTypeNid == 0) {
-			try {
-				acceptableTypeNid = SnomedMetadataRf2.ACCEPTABLE_RF2.getNid();
-			} catch (Exception e) {
-				LOG.error("Unable to identify acceptable and synonym types.  Points to larger problem", e);
-			}
-		}
-
-		return acceptableTypeNid;
 	}
 }
