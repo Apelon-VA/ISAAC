@@ -140,16 +140,19 @@ public class ComponentsController implements PanelControllers {
 						return false;
 					}
 				}
-				//TODO is one row required?
+				if (relationships.size() == 0)
+				{
+					return false;
+				}
 				return true;
 			}
 		};
 		
-		continueButton.disableProperty().bind(allValid.not());
-		
 		// Screen Components
 		addNewSynonymHandler();
 		addNewRelationshipHandler();
+		
+		continueButton.disableProperty().bind(allValid.not());
 	}
 
 	private void addNewSynonymHandler() {
