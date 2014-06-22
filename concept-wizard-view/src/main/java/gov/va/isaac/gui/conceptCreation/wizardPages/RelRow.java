@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptCreation.wizardPages;
 
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ChoiceBox;
@@ -37,7 +38,7 @@ public class RelRow
 	ChoiceBox<String> type;
 	TextField group;
 	
-	private BooleanBinding rowValid;
+	private UpdateableBooleanBinding rowValid;
 
 	public RelRow()
 	{
@@ -48,9 +49,10 @@ public class RelRow
 		type = new ChoiceBox<String>(FXCollections.observableArrayList("Role", "Qualifier"));
 		group = new TextField("0");
 		
-		rowValid = new BooleanBinding()
+		rowValid = new UpdateableBooleanBinding()
 		{
 			{
+				setComputeOnInvalidate(true);
 				bind(relationship.isValid(), target.isValid(), type.valueProperty(), group.textProperty());
 			}
 			@Override

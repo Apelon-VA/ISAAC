@@ -34,12 +34,10 @@
 								<GridPane fx:id="synonymGridPane" hgap="1.0" prefWidth="571.0" vgap="10.0" BorderPane.alignment="TOP_LEFT">
 									<columnConstraints>
 										<ColumnConstraints halignment="LEFT" hgrow="ALWAYS" />
-										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="65.0" minWidth="65.0"
-											prefWidth="65.0" />
-										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="28.0" minWidth="28.0"
-											prefWidth="28.0" />
-										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="50.0" minWidth="50.0"
-											prefWidth="50.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="90.0" minWidth="90.0"
+											prefWidth="90.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="60.0" minWidth="60.0"
+											prefWidth="60.0" />
 										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="25.0" minWidth="25.0"
 											prefWidth="25.0" />
 										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="25.0" minWidth="25.0"
@@ -58,7 +56,7 @@
 												<Insets left="5.0" />
 											</GridPane.margin>
 										</Label>
-										<Label prefHeight="20.0" prefWidth="76.0" text="Acceptable" GridPane.columnIndex="1" GridPane.halignment="CENTER"
+										<Label prefHeight="20.0" prefWidth="76.0" text="Type" GridPane.columnIndex="1" GridPane.halignment="CENTER"
 											GridPane.vgrow="NEVER">
 											<font>
 												<Font name="System Bold" size="12.0" />
@@ -69,14 +67,8 @@
 												<Font name="System Bold" size="12.0" />
 											</font>
 										</Label>
-										<Label contentDisplay="CENTER" prefHeight="20.0" text="Lang" textAlignment="CENTER" GridPane.columnIndex="3"
-											GridPane.halignment="CENTER" GridPane.vgrow="NEVER">
-											<font>
-												<Font name="System Bold" size="12.0" />
-											</font>
-										</Label>
 										<VBox fx:id="synonymVBox" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES" />
-										<VBox fx:id="acceptableVBox" fillWidth="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1"
+										<VBox fx:id="descTypeVBox" fillWidth="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1"
 											GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES" />
 										<VBox fx:id="caseVBox" fillWidth="false" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1"
 											GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES">
@@ -84,11 +76,9 @@
 												<Insets />
 											</GridPane.margin>
 										</VBox>
-										<VBox fx:id="langVBox" fillWidth="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="1"
-											GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES" />
-										<VBox fx:id="addSynonymButtonVBox" alignment="CENTER" fillWidth="false" GridPane.columnIndex="4" GridPane.halignment="CENTER"
+										<VBox fx:id="addSynonymButtonVBox" alignment="CENTER" fillWidth="false" GridPane.columnIndex="3" GridPane.halignment="CENTER"
 											GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES" />
-										<VBox fx:id="removeSynonymButtonVBox" alignment="CENTER" fillWidth="false" GridPane.columnIndex="5" GridPane.halignment="CENTER"
+										<VBox fx:id="removeSynonymButtonVBox" alignment="CENTER" fillWidth="false" GridPane.columnIndex="4" GridPane.halignment="CENTER"
 											GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES" />
 									</children>
 									<BorderPane.margin>

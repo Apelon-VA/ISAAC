@@ -52,6 +52,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 				dep.addListener(observer);
 				listeningTo.add(dep);
 			}
+			invalidate();
 		}
 	}
 
@@ -74,6 +75,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			{
 				observer = null;
 			}
+			invalidate();
 		}
 	}
 

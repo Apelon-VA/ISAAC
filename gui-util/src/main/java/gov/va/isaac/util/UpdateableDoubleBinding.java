@@ -52,6 +52,7 @@ public abstract class UpdateableDoubleBinding extends DoubleBinding
 				dep.addListener(observer);
 				listeningTo.add(dep);
 			}
+			invalidate();
 		}
 	}
 
@@ -74,6 +75,7 @@ public abstract class UpdateableDoubleBinding extends DoubleBinding
 			{
 				observer = null;
 			}
+			invalidate();
 		}
 	}
 	
