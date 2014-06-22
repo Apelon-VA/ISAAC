@@ -57,13 +57,37 @@ import org.slf4j.LoggerFactory;
 */
 
 public class SimpleConceptViewController {
+	public enum ComponentType {
+		CONCEPT, DESCRIPTION, RELATIONSHIP;
+	}
+	
+    public class CompTooltipExitHandler implements EventHandler {
+		private ComponentVersionBI  comp;
+		private ComponentType type;
 
-    public class CompTooltipHandler implements EventHandler {
+		public CompTooltipExitHandler(ComponentVersionBI comp, ComponentType type) {
+			this.comp = comp;
+			this.type = type;
+		}
 
+		@Override
+		public void handle(Event event) {
+			Label l = (Label)event.getSource();
+			if (type == ComponentType.CONCEPT) {
+				l.getTooltip().setText("");
+			} else if (type == ComponentType.DESCRIPTION) {
+				l.getTooltip().setText(createDescTooltipText((DescriptionVersionBI)comp));
+			} else {
+				l.getTooltip().setText(createRelTooltipText((RelationshipVersionBI)comp));
+			}
+
+		}
+    }
+
+	public class CompTooltipHandler implements EventHandler {
 		private ComponentVersionBI  comp;
 
-		public CompTooltipHandler(Label prefTermLabel,
-				ComponentVersionBI comp) {
+		public CompTooltipHandler(ComponentVersionBI comp) {
 			this.comp = comp;
 		}
 
@@ -71,7 +95,6 @@ public class SimpleConceptViewController {
 		public void handle(Event event) {
 			Label l = (Label)event.getSource();
 			if (controlKeyPressed) {
-				
 				String tp = "There are no refsets for this component";
 
 				try {
@@ -134,12 +157,14 @@ public class SimpleConceptViewController {
 	        // FSN
 	    	fsnLabel.setText(con.getFullySpecifiedDescription().getText());
 	    	addDescTooltip(fsnLabel, con.getFullySpecifiedDescription());
-			fsnLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(fsnLabel, con.getFullySpecifiedDescription()));
+			fsnLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(con.getFullySpecifiedDescription()));
+			fsnLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION));
 	    	
 	    	// PT 
 	    	prefTermLabel.setText(con.getPreferredDescription().getText());
 	    	addDescTooltip(prefTermLabel, con.getPreferredDescription());
-			prefTermLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(prefTermLabel, con.getPreferredDescription()));
+			prefTermLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(con.getPreferredDescription()));
+			prefTermLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(con.getPreferredDescription(), ComponentType.DESCRIPTION));
 	    	
 	        // SCT Id
 	        String sctidString = "Unreleased";
@@ -150,7 +175,8 @@ public class SimpleConceptViewController {
 				}
 			}
 			releaseIdLabel.setText(sctidString);
-			releaseIdLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(releaseIdLabel, con.getConceptAttributesActive()));
+			releaseIdLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(con.getConceptAttributesActive()));
+			releaseIdLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(con.getConceptAttributesActive(), ComponentType.CONCEPT));
 
 			// Defined Status
 			if (con.getConceptAttributesActive().isDefined()) {
@@ -158,7 +184,8 @@ public class SimpleConceptViewController {
 			} else {
 				isPrimLabel.setText("Primitive");
 			}
-			isPrimLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(isPrimLabel, con.getConceptAttributesActive()));
+			isPrimLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(con.getConceptAttributesActive()));
+			isPrimLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(con.getConceptAttributesActive(), ComponentType.CONCEPT));
 			
     	} catch (Exception e) {
     		LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
@@ -193,8 +220,10 @@ public class SimpleConceptViewController {
 	
 				    	addDescTooltip(descLabel, desc);
 				    	addDescTooltip(descTypeLabel, desc);
-				    	descLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(descLabel, desc));
-				    	descTypeLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(descTypeLabel, desc));
+				    	descLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(desc));
+				    	descTypeLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(desc));
+				    	descLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(desc, ComponentType.DESCRIPTION));
+				    	descTypeLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(desc, ComponentType.DESCRIPTION));
 		    		}
 	    		}
 	    	}
@@ -231,8 +260,10 @@ public class SimpleConceptViewController {
 	
 			    	addRelTooltip(relLabel, rel);
 		    		addRelTooltip(relTypeLabel, rel);
-			    	relLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(relLabel, rel));
-			    	relTypeLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(relTypeLabel, rel));
+			    	relLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(rel));
+			    	relTypeLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(rel));
+			    	relLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(rel, ComponentType.RELATIONSHIP));
+			    	relTypeLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(rel, ComponentType.RELATIONSHIP));
 	    		}
 			}
 				
@@ -248,8 +279,10 @@ public class SimpleConceptViewController {
 	
 				    	addRelTooltip(relLabel, rel);
 			    		addRelTooltip(relTypeLabel, rel);
-				    	relLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(relLabel, rel));
-				    	relTypeLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(relTypeLabel, rel));
+				    	relLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(rel));
+				    	relTypeLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, new CompTooltipHandler(rel));
+				    	relLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(rel, ComponentType.RELATIONSHIP));
+				    	relTypeLabel.addEventHandler(MouseEvent.MOUSE_EXITED, new CompTooltipExitHandler(rel, ComponentType.RELATIONSHIP));
 		    		}
 	    		}
 	    	}
@@ -330,6 +363,12 @@ public class SimpleConceptViewController {
 		final Tooltip tp = new Tooltip();
         tp.setFont(new Font(16));
         
+        String txt = createDescTooltipText(desc);
+		tp.setText(txt);
+		node.setTooltip(tp);
+	}
+
+	private String createDescTooltipText(DescriptionVersionBI desc) {
 		String lang = desc.getLang();
 		String text = desc.getText();
 		String type = WBUtility.getConPrefTerm(desc.getTypeNid());
@@ -341,13 +380,19 @@ public class SimpleConceptViewController {
 		String module = WBUtility.getModuleString(desc);
 		String path = WBUtility.getPathString(desc);
 
-		tp.setText("Term: " + text + "\nType: " + type + " Case Significant: " + caseSig + " Language: " + lang + " \nStatus" + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path);
-		node.setTooltip(tp);
+		return "Term: " + text + "\nType: " + type + " Case Significant: " + caseSig + " Language: " + lang + " \nStatus" + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
 	}
 
 	private void addRelTooltip(Label node, RelationshipVersionBI rel) {
 		final Tooltip tp = new Tooltip();
         tp.setFont(new Font(16));
+        
+        String txt = createRelTooltipText(rel);
+		tp.setText(txt);
+		node.setTooltip(tp);
+	}
+
+	private String createRelTooltipText(RelationshipVersionBI rel) {
 
         
         String refinCharType = "";
@@ -368,9 +413,7 @@ public class SimpleConceptViewController {
 		String module = WBUtility.getModuleString(rel);
 		String path = WBUtility.getPathString(rel);
 
-		tp.setText("Destination: " + target + " Type: " + type + "\nStated: " + statInf + " Relationship Type: " + refinCharType + " Role Group: " + group+ "\nStatus: " + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path);
-
-		node.setTooltip(tp);
+		return "Destination: " + target + " Type: " + type + "\nStated: " + statInf + " Relationship Type: " + refinCharType + " Role Group: " + group+ "\nStatus: " + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
 	}
 
 	public String getTitle() {
