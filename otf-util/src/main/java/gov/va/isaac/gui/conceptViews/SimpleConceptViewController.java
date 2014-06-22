@@ -91,7 +91,7 @@ public class SimpleConceptViewController {
 	    	addDescTooltip(prefTermLabel, con.getPreferredDescription());
 	    	
 	        // SCT Id
-	        String sctidString = "Undefined";
+	        String sctidString = "Unreleased";
 			for (RefexChronicleBI<?> annotation : con.getAnnotations()) {
 				if (annotation.getPrimordialUuid().equals(snomedAssemblageUuid)) {
 					RefexLongVersionBI sctid = (RefexLongVersionBI) annotation.getPrimordialVersion();
@@ -117,8 +117,7 @@ public class SimpleConceptViewController {
 	    	Map<Integer, Set<DescriptionVersionBI>> sortedDescs = new HashMap<>();
 
 	    	for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
-	    		if (desc.getTypeNid() != SnomedMetadataRf2.PREFERRED_RF2.getNid() &&
-    				desc.getTypeNid() != SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getNid()) {
+	    		if (desc.getTypeNid() != SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getNid()) {
 		    		if (!sortedDescs.containsKey(desc.getTypeNid())) {
 		    			Set<DescriptionVersionBI> descs = new HashSet<>();
 		    			sortedDescs.put(desc.getTypeNid(), descs);
@@ -131,14 +130,16 @@ public class SimpleConceptViewController {
 	    	// Display
 	    	for (Integer descType: sortedDescs.keySet()) {
 	    		for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
-		    		Label descLabel = getComponentLabel(desc.getText(), false);
-		    		descLabelVBox.getChildren().add(descLabel);
+	    			if (desc.getNid() != con.getPreferredDescription().getNid()) {
+			    		Label descLabel = getComponentLabel(desc.getText(), false);
+			    		descLabelVBox.getChildren().add(descLabel);
+		
+			    		Label descTypeLabel = getComponentLabel(WBUtility.getConPrefTerm(desc.getTypeNid()), true);
+			    		descTypeVBox.getChildren().add(descTypeLabel);
 	
-		    		Label descTypeLabel = getComponentLabel(WBUtility.getConPrefTerm(desc.getTypeNid()), true);
-		    		descTypeVBox.getChildren().add(descTypeLabel);
-
-			    	addDescTooltip(descLabel, desc);
-			    	addDescTooltip(descTypeLabel, desc);
+				    	addDescTooltip(descLabel, desc);
+				    	addDescTooltip(descTypeLabel, desc);
+		    		}
 	    		}
 	    	}
     	} catch (Exception e) {
@@ -166,7 +167,7 @@ public class SimpleConceptViewController {
 	    	// Display IS-As
 			for (RelationshipVersionBI rel: isaRels) {
 				if (!rel.isInferred()) {
-		    		Label relLabel = getComponentLabel(WBUtility.getConPrefTerm(rel.getConceptNid()), false);
+		    		Label relLabel = getComponentLabel(WBUtility.getConPrefTerm(rel.getDestinationNid()), false);
 		    		relLabelVBox.getChildren().add(relLabel);
 	
 		    		Label relTypeLabel = getComponentLabel(WBUtility.getConPrefTerm(rel.getTypeNid()), true);
@@ -181,7 +182,7 @@ public class SimpleConceptViewController {
 			for (Integer relType: sortedRels.keySet()) {
 	    		for (RelationshipVersionBI rel: sortedRels.get(relType)) {
 	    			if (!rel.isInferred()) {
-		    			Label relLabel = getComponentLabel(WBUtility.getConPrefTerm(rel.getConceptNid()), false);
+		    			Label relLabel = getComponentLabel(WBUtility.getConPrefTerm(rel.getDestinationNid()), false);
 			    		relLabelVBox.getChildren().add(relLabel);
 		
 			    		Label relTypeLabel = getComponentLabel(WBUtility.getConPrefTerm(rel.getTypeNid()), true);
@@ -208,7 +209,7 @@ public class SimpleConceptViewController {
 			l.setBackground(new Background(new BackgroundFill(Color.YELLOW, null, null)));
 		}
 		
-		return null;
+		return l;
 	}
 
 	private void initialize() {
@@ -221,7 +222,7 @@ public class SimpleConceptViewController {
 	}
 	private void addDescTooltip(Label node, DescriptionVersionBI desc) {
 		final Tooltip tp = new Tooltip();
-        tp.setFont(new Font("Arial", 14));
+        tp.setFont(new Font(16));
         
 		String lang = desc.getLang();
 		String text = desc.getText();
@@ -240,7 +241,7 @@ public class SimpleConceptViewController {
 
 	private void addRelTooltip(Label node, RelationshipVersionBI rel) {
 		final Tooltip tp = new Tooltip();
-        tp.setFont(new Font("Arial", 14));
+        tp.setFont(new Font(16));
 
         
         String refinCharType = "";

@@ -47,6 +47,7 @@ import javafx.stage.StageStyle;
 
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
@@ -92,8 +93,38 @@ public class SimpleConceptView implements ConceptViewI {
     }
     
     // Put this on list tab
-    public Node getConceptViewerPanel() {
+    public Node getConceptViewerPanel(UUID conceptUUID) {
+    	try
+    	{
+	        LOG.info("Loading concept with UUID " + conceptUUID);
+	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
+	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+	        LOG.info("Finished loading concept with UUID " + conceptUUID);
+	        setConcept(concept);
+    	} catch (IOException | ContradictionException e) {
+            String title = "Unexpected error loading concept with UUID " + conceptUUID;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+    	}
+
     	return root;
+    }
+
+    // Put this on list tab
+    public Node getConceptViewerPanel(int conceptNid) {        
+    	try
+    	{
+	        ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);
+	        return getConceptViewerPanel(concept.getPrimordialUuid());
+    	} catch (IOException e) {
+            String title = "Unexpected error loading concept with nid " + conceptNid;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+        	
+            return root;
+    	}
     }
 
     private void setConcept(ConceptChronicleDdo concept) {
