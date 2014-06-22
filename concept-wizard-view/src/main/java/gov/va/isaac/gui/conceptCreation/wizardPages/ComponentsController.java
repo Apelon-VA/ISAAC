@@ -18,38 +18,27 @@
  */
 package gov.va.isaac.gui.conceptCreation.wizardPages;
 
-import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptCreation.PanelControllers;
 import gov.va.isaac.gui.conceptCreation.ScreensController;
-import gov.va.isaac.util.UpdateableListBinding;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
-import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.model.cc.description.DescriptionRevision;
-import org.ihtsdo.otf.tcc.model.cc.relationship.RelationshipRevision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,19 +80,11 @@ public class ComponentsController implements PanelControllers {
 	
 	static ViewCoordinate vc = null;
 	ScreensController processController;
-	
-	
-	private Map<Node, ConceptNode> nodeToTargetMap = new HashMap<>();
-	private Map<Node, ConceptNode> nodeToRelTypeMap = new HashMap<>();
-	private ObservableList<String> relTypeOptions;
 
-	private BooleanBinding allValid;
-	private UpdateableListBinding termInvalidReason, langInvalidReason;
-
-	private List<RelationshipRevision> rels = new ArrayList<>();
-	private List<RelationshipType> relTypes = new ArrayList<>();
-	private List<ConceptVersionBI> relTargets = new ArrayList<>();
+	private ArrayList<RelRow> relationships = new ArrayList<>();
 	
+	private UpdateableBooleanBinding allValid;
+
 	private int acceptableTypeNid;
 	private int synonymTypeNid;
 
@@ -141,8 +122,30 @@ public class ComponentsController implements PanelControllers {
 				processController.setScreen(ScreensController.DEFINITION_SCREEN);
 			}
 		});
-
-//		setupQA();
+		
+		
+		allValid = new UpdateableBooleanBinding()
+		{
+			{
+				setComputeOnInvalidate(true);
+			}
+			
+			@Override
+			protected boolean computeValue()
+			{
+				for (RelRow rr : relationships)
+				{
+					if (!rr.isValid().get())
+					{
+						return false;
+					}
+				}
+				//TODO is one row required?
+				return true;
+			}
+		};
+		
+		continueButton.disableProperty().bind(allValid.not());
 		
 		// Screen Components
 		addNewSynonymHandler();
@@ -203,24 +206,22 @@ public class ComponentsController implements PanelControllers {
 	}
 
 	private void addNewRelationshipHandler() {
+		
+		RelRow rr = new RelRow();
+		relationships.add(rr);
+		allValid.addBinding(rr.isValid());
+		
 		// Setup relationship Type
-		ConceptNode relTypeConcept = new ConceptNode(null, true);
-		relationshipTypeVBox.getChildren().add(relTypeConcept.getNode());
-		nodeToRelTypeMap.put(relTypeConcept.getNode(), relTypeConcept);
+		relationshipTypeVBox.getChildren().add(rr.getRelationshipNode().getNode());
 
 		// Setup Target
-		ConceptNode targetConcept = new ConceptNode(null, true);
-		targetVBox.getChildren().add(targetConcept.getNode());
-		nodeToTargetMap.put(targetConcept.getNode(), targetConcept);
+		targetVBox.getChildren().add(rr.getTargetNode().getNode());
 
 		// Setup type
-		relTypeOptions = FXCollections.observableArrayList("Role", "Qualifier");
-		ChoiceBox<String> typeOption = new ChoiceBox<String>(relTypeOptions);
-		typeVBox.getChildren().add(typeOption);
+		typeVBox.getChildren().add(rr.getTypeNode());
 		
 		// Group
-		TextField group = new TextField("0");
-		groupVBox.getChildren().add(group);
+		groupVBox.getChildren().add(rr.getGroupNode());
 		
 		// Add new Add Parent Button
 		Button addRelationshipButton = new Button("+");
@@ -248,17 +249,13 @@ public class ComponentsController implements PanelControllers {
 	}
 	
 	private void removeNewRelationshipHandler(int idx) {
-		Node relTypeNode = relationshipTypeVBox.getChildren().get(idx);
-		nodeToRelTypeMap.remove(relTypeNode);
+		RelRow rr = relationships.remove(idx);
+		allValid.removeBinding(rr.isValid());
+		
 		relationshipTypeVBox.getChildren().remove(idx);
-
-		Node targetNode = targetVBox.getChildren().get(idx);
-		nodeToTargetMap.remove(targetNode);
 		targetVBox.getChildren().remove(idx);
-
 		typeVBox.getChildren().remove(idx);
 		groupVBox.getChildren().remove(idx);
-
 		addRelationshipButtonVBox.getChildren().remove(idx);
 		removeRelationshipButtonVBox.getChildren().remove(idx);
 
@@ -292,39 +289,8 @@ public class ComponentsController implements PanelControllers {
 	@Override
 	public void processValues() {
 		List<DescriptionRevision> descs = createNewDescriptions();
-		createNewRelationships();
 		
-		processController.getWizard().setConceptComponents(descs, rels, relTypes, relTargets); 
-	}
-
-	private void createNewRelationships() {
-		for (int i = 0; i < targetVBox.getChildren().size(); i++) {
-			RelationshipRevision r = new RelationshipRevision();
-			
-			Node relTypeNode = relationshipTypeVBox.getChildren().get(i);
-			ConceptNode relType = nodeToRelTypeMap.get(relTypeNode);
-			
-			if (relType.isValid().getValue()) {
-				r.setTypeNid(relType.getConcept().getNid());
-	
-				Node targetNode = targetVBox.getChildren().get(i);
-				ConceptNode target = nodeToTargetMap.get(targetNode);
-				
-				
-				String groupStr = ((TextField)groupVBox.getChildren().get(i)).getText().trim();
-				r.setGroup(new Integer(groupStr));
-	
-				rels.add(r);
-				relTargets.add(target.getConcept());
-				
-				String selection = (String)((ChoiceBox)typeVBox.getChildren().get(i)).getSelectionModel().getSelectedItem();
-				if (selection.equalsIgnoreCase("Role")) {
-					relTypes.add(RelationshipType.STATED_ROLE);
-				} else {
-					relTypes.add(RelationshipType.QUALIFIER);
-				}
-			}
-		}
+		processController.getWizard().setConceptComponents(descs, relationships); 
 	}
 
 	private List<DescriptionRevision> createNewDescriptions() {
@@ -364,118 +330,110 @@ public class ComponentsController implements PanelControllers {
 	}
 
 
-	private void setupQA() {
-		// QA Handling
-		termInvalidReason = new UpdateableListBinding() 
-		{
-			@Override
-			protected ObservableList<SimpleStringProperty> computeValue()
-			{
-				ObservableList<SimpleStringProperty> returnList = FXCollections.observableArrayList();
-
-				for (int i = 0; i < synonymVBox.getChildren().size(); i++)
-				{
-					// Check that not partially filled out
-					TextField tf = (TextField) synonymVBox.getChildren().get(i);
-					String term = tf.getText().trim();
-
-					int frontParenCount = countChar(term, "(");
-					int backParenCount = countChar(term, ")");
-
-					String lang = "";
-					if (i < langVBox.getChildren().size()) { 
-						lang = ((TextField)langVBox.getChildren().get(i)).getText().trim();
-					}
-					
-					if (!term.isEmpty() && lang.trim().isEmpty()) {
-						returnList.add(new SimpleStringProperty("Cannot fill out Language and not Term"));
-						invalidate();
-					} else if (frontParenCount != 0 || backParenCount != 0) {
-						returnList.add(new SimpleStringProperty("Cannot have parenthesis in synonym or it may be confused with the FSN"));
-						invalidate();
-					} else {
-						returnList.add(new SimpleStringProperty(""));
-					}
-				}
-				
-				return returnList;
-			}
-
-			private int countChar(String str, String c) {
-				int count = 0;
-				int idx = 0;
-				while ((idx = str.indexOf(c, idx)) != -1) {
-					count++;
-					idx += c.length();
-				}
-				return count;
-			}
-		};
-/*		langInvalidReason = new UpdateableStringBinding() 
-		{
-			@Override
-			protected String computeValue()
-			{
-				for (int i = 0; i < langVBox.getChildren().size(); i++)
-				{
-					// Check that not partially filled out
-					TextField tf = (TextField) langVBox.getChildren().get(i);
-					String lang = tf.getText().trim();
-					
-					String term = ((TextField)synonymVBox.getChildren().get(i)).getText().trim();
-					
-					if (!lang.isEmpty() && term.trim().isEmpty()) {
-						return "Cannot fill out Term and not Language";
-					} else if (!StringUtils.isAlpha(lang)) {
-						return "Language must be filled with only alphabetically letters";
-					} else if (lang.length() != 2) {
-						return "Language must be filled out with a 2-character string";
-					}
-				}
-
-				return "";
-			}
-		};
-*/
-		for (int i = 0; i < synonymVBox.getChildren().size(); i++)
-		{
-			// Check that not partially filled out
-			TextField tf = (TextField) synonymVBox.getChildren().get(i);
-			termInvalidReason.addBinding(tf.textProperty());
-		}
-
-		for (int i = 0; i < langVBox.getChildren().size(); i++)
-		{
-			TextField tf = (TextField) langVBox.getChildren().get(i);
-//			langInvalidReason.addBinding(tf.textProperty());
-		}
-
-		termInvalidReason.invalidate();
-//		langInvalidReason.invalidate();
-
-		allValid = new BooleanBinding()
-		{
-			{
-				bind(termInvalidReason);//, langInvalidReason);
-			}
-			@Override
-			protected boolean computeValue()
-			{
-				if (termInvalidReason.get().isEmpty())// && langInvalidReason.get().isEmpty())
-				{
-					return true;
-				}
-				return false;
-			}
-		};
-		
-		continueButton.disableProperty().bind(allValid.not());
-		
+//	private void setupQA() {
+//		// QA Handling
+//		termInvalidReason = new UpdateableBooleanBinding() 
+//		{
+//			{
+//				setComputeOnInvalidate(true);
+//			}
+//			
+//			
+//			@Override
+//			protected ObservableList<SimpleStringProperty> computeValue()
+//			{
+//				ObservableList<SimpleStringProperty> returnList = FXCollections.observableArrayList();
+//
+//				for (int i = 0; i < synonymVBox.getChildren().size(); i++)
+//				{
+//					// Check that not partially filled out
+//					TextField tf = (TextField) synonymVBox.getChildren().get(i);
+//					String term = tf.getText().trim();
+//
+//					int frontParenCount = countChar(term, "(");
+//					int backParenCount = countChar(term, ")");
+//
+//					String lang = "";
+//					if (i < langVBox.getChildren().size()) { 
+//						lang = ((TextField)langVBox.getChildren().get(i)).getText().trim();
+//					}
+//					
+//					if (!term.isEmpty() && lang.trim().isEmpty()) {
+//						returnList.add(new SimpleStringProperty("Cannot fill out Language and not Term"));
+//						invalidate();
+//					} else if (frontParenCount != 0 || backParenCount != 0) {
+//						//really?  That seems like an completely silly restriction.
+//						returnList.add(new SimpleStringProperty("Cannot have parenthesis in synonym or it may be confused with the FSN"));
+//						invalidate();
+//					} else {
+//						returnList.add(new SimpleStringProperty(""));
+//					}
+//				}
+//				
+//				return returnList;
+//			}
+//
+//			private int countChar(String str, String c) {
+//				int count = 0;
+//				int idx = 0;
+//				while ((idx = str.indexOf(c, idx)) != -1) {
+//					count++;
+//					idx += c.length();
+//				}
+//				return count;
+//			}
+//		};
+///*		langInvalidReason = new UpdateableStringBinding() 
+//		{
+//			@Override
+//			protected String computeValue()
+//			{
+//				for (int i = 0; i < langVBox.getChildren().size(); i++)
+//				{
+//					// Check that not partially filled out
+//					TextField tf = (TextField) langVBox.getChildren().get(i);
+//					String lang = tf.getText().trim();
+//					
+//					String term = ((TextField)synonymVBox.getChildren().get(i)).getText().trim();
+//					
+//					if (!lang.isEmpty() && term.trim().isEmpty()) {
+//						return "Cannot fill out Term and not Language";
+//					} else if (!StringUtils.isAlpha(lang)) {
+//						return "Language must be filled with only alphabetically letters";
+//					} else if (lang.length() != 2) {
+//						return "Language must be filled out with a 2-character string";
+//					}
+//				}
+//
+//				return "";
+//			}
+//		};
+//*/
+//		for (int i = 0; i < synonymVBox.getChildren().size(); i++)
+//		{
+//			// Check that not partially filled out
+//			TextField tf = (TextField) synonymVBox.getChildren().get(i);
+//			termInvalidReason.addBinding(tf.textProperty());
+//		}
+//
+//		for (int i = 0; i < langVBox.getChildren().size(); i++)
+//		{
+//			TextField tf = (TextField) langVBox.getChildren().get(i);
+////			langInvalidReason.addBinding(tf.textProperty());
+//		}
+//
+//		termInvalidReason.invalidate();
+////		langInvalidReason.invalidate();
+//
+//
 //		
-//		sp = new StackPane();
-//		ErrorMarkerUtils.swapComponents(prefTerm, sp, gridPane);
-//		ErrorMarkerUtils.setupErrorMarker(prefTerm, sp, prefTermInvalidReason);
-		
-	}
+//		
+//		
+////		
+////		sp = new StackPane();
+////		ErrorMarkerUtils.swapComponents(prefTerm, sp, gridPane);
+////		ErrorMarkerUtils.setupErrorMarker(prefTerm, sp, prefTermInvalidReason);
+//		
+//	}
 
 }

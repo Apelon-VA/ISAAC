@@ -18,12 +18,11 @@
  */
 package gov.va.isaac.gui.conceptCreation;
 
+import gov.va.isaac.gui.conceptCreation.wizardPages.RelRow;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -57,10 +56,8 @@ public class WizardController {
 	private List<ConceptVersionBI> parents;
 	private boolean isPrimitive;
 	private List<DescriptionRevision> syns;
-	private List<RelationshipRevision> rels;
-	private List<RelationshipType> relTypes;
+	private List<RelRow> rels;
 	private int acceptableTypeNid = 0;
-	private List<ConceptVersionBI> relTargets;
 
 	public void setConceptDefinitionVals(String fsn, String prefTerm,
 			List<ConceptVersionBI> parents, boolean isPrimitive) {
@@ -70,11 +67,9 @@ public class WizardController {
 		this.isPrimitive = isPrimitive;
 	}
 	
-	public void setConceptComponents(List<DescriptionRevision> syns, List<RelationshipRevision> rels, List<RelationshipType> relTypes, List<ConceptVersionBI> relTargets) {
+	public void setConceptComponents(List<DescriptionRevision> syns, List<RelRow> rels) {
 		this.syns = syns;
 		this.rels = rels;
-		this.relTypes = relTypes;
-		this.relTargets = relTargets;
 	}
 
 	public String getConceptFSN() {
@@ -134,15 +129,16 @@ public class WizardController {
 	}
 
 	public String getRelType(int i) {
-		return getConDesc(rels.get(i).getTypeNid());
+		return getConDesc(rels.get(i).getRelationshipNid());
 	}
 	
 	public String getTarget(int i) {
-		return getConDesc(relTargets.get(i).getNid());
+		return getConDesc(rels.get(i).getTargetNid());
 	}
 	
 	public String getQualRole(int i) {
-		if (relTypes.get(i) == RelationshipType.QUALIFIER) {
+		//TODO Why are we implementing a toString on Reltype?  ROLE isn't even an option in the enum
+		if (RelationshipType.QUALIFIER == rels.get(i).getType()) {
 			return "QUALIFIER";
 		} else {
 			return "ROLE";
@@ -198,10 +194,10 @@ public class WizardController {
 	
 	public void createNewRelationship(ConceptChronicleBI con, int i) throws IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(con.getNid(), 
-													 rels.get(i).getTypeNid(), 
-													 relTargets.get(i).getNid(),
+													 rels.get(i).getRelationshipNid(), 
+													 rels.get(i).getTargetNid(),
 													 rels.get(i).getGroup(),
-													 relTypes.get(i), 
+													 rels.get(i).getType(), 
 													 IdDirective.GENERATE_HASH);
 		WBUtility.getBuilder().construct(newRel);
 //		WBUtility.addUncommitted(con);

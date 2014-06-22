@@ -227,7 +227,7 @@ public class DefinitionController implements PanelControllers {
 
 	@Override
 	public void processValues() {
-		List<ConceptVersionBI> parents = new ArrayList();
+		List<ConceptVersionBI> parents = new ArrayList<>();
 		
 		for (Node parentNode : parentVBox.getChildren()) {
 			ConceptNode parent = nodeToConMap.get(parentNode);
