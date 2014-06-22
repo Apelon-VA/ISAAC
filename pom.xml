@@ -270,6 +270,7 @@
         <module>list-view</module>
         <module>mojos</module>
         <module>refex-view</module>
+        <module>concept-wizard-view</module>
     </modules>
 
     <reporting>

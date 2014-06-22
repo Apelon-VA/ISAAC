@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="summaryPane" minHeight="-Infinity" minWidth="450.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptCreation.wizardPages.SummaryController">
+	<top>
+		<VBox alignment="TOP_CENTER" BorderPane.alignment="TOP_CENTER">
+			<children>
+				<Label text="New Concept Summary" textAlignment="CENTER" BorderPane.alignment="CENTER" VBox.vgrow="NEVER">
+					<font>
+						<Font name="System Bold" size="24.0" />
+					</font>
+					<padding>
+						<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+					</padding>
+				</Label>
+				<GridPane hgap="5.0" vgap="5.0">
+					<columnConstraints>
+						<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="130.0" />
+						<ColumnConstraints hgrow="ALWAYS" />
+					</columnConstraints>
+					<rowConstraints>
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
+						<RowConstraints fillHeight="false" vgrow="SOMETIMES" />
+					</rowConstraints>
+					<children>
+						<Label text="Fully Specified Name" GridPane.halignment="RIGHT">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<Label text="Preferred Term" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<Label text="Primitive/Defined" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<Label text="Parents" GridPane.halignment="RIGHT" GridPane.rowIndex="3" GridPane.valignment="TOP">
+							<font>
+								<Font name="System Bold" size="12.0" />
+							</font>
+						</Label>
+						<TextField fx:id="conceptFSN" editable="false" GridPane.columnIndex="1" />
+						<TextField fx:id="conceptPT" editable="false" prefHeight="25.0" prefWidth="354.0" GridPane.columnIndex="1"
+							GridPane.rowIndex="1" />
+						<TextField fx:id="conceptPrimDef" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+						<VBox fx:id="parentVBox" prefWidth="100.0" spacing="3.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+					</children>
+					<VBox.margin>
+						<Insets bottom="5.0" left="5.0" right="5.0" />
+					</VBox.margin>
+				</GridPane>
+			</children>
+		</VBox>
+	</top>
+	<bottom>
+		<HBox alignment="CENTER" fillHeight="false" spacing="30.0" BorderPane.alignment="CENTER">
+			<children>
+				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+				<Button fx:id="startOverButton" mnemonicParsing="false" text="Start Over" />
+				<Button fx:id="backButton" mnemonicParsing="false" text="Back" />
+				<Button fx:id="commitButton" mnemonicParsing="false" text="Commit" />
+			</children>
+			<BorderPane.margin>
+				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+			</BorderPane.margin>
+		</HBox>
+	</bottom>
+	<center>
+		<ScrollPane fitToHeight="true" fitToWidth="true" minHeight="50.0" prefHeight="50.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+			<BorderPane.margin>
+				<Insets left="2.0" right="2.0" />
+			</BorderPane.margin>
+			<VBox.margin>
+				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+			</VBox.margin>
+			<content>
+				<VBox prefHeight="200.0" prefWidth="100.0">
+					<children>
+						<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
+							<children>
+								<Label alignment="CENTER" text="Additional Synonyms">
+									<font>
+										<Font name="System Bold" size="18.0" />
+									</font>
+								</Label>
+								<GridPane fx:id="synonymGridPane" hgap="5.0" vgap="5.0" BorderPane.alignment="CENTER">
+									<columnConstraints>
+										<ColumnConstraints halignment="LEFT" hgrow="ALWAYS" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="40.0"
+											prefWidth="89.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="40.0"
+											prefWidth="98.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity"
+											prefWidth="40.0" />
+									</columnConstraints>
+									<children>
+										<Label fx:id="noSynsLabel" contentDisplay="CENTER" text="None" textAlignment="CENTER" GridPane.columnSpan="4"
+											GridPane.halignment="CENTER" />
+										<Label text="Term" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<Label text="Is Acceptable?" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<Label text="is Case Sensitive?" GridPane.columnIndex="2" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<Label text="Lang" GridPane.columnIndex="3" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<VBox fx:id="termVBox" spacing="2.0" GridPane.rowIndex="1" />
+										<VBox fx:id="acceptVBox" prefHeight="200.0" prefWidth="100.0" spacing="2.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+										<VBox fx:id="caseVBox" prefHeight="200.0" prefWidth="100.0" spacing="2.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+										<VBox fx:id="langVBox" prefHeight="200.0" prefWidth="100.0" spacing="2.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+									</children>
+									<rowConstraints>
+										<RowConstraints />
+										<RowConstraints minHeight="10.0" prefHeight="30.0" />
+									</rowConstraints>
+								</GridPane>
+							</children>
+						</VBox>
+						<VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
+							<children>
+								<Label alignment="TOP_CENTER" text="Additional Relationships">
+									<font>
+										<Font name="System Bold" size="18.0" />
+									</font>
+								</Label>
+								<GridPane fx:id="relationshipGridPane" hgap="5.0" vgap="5.0">
+									<children>
+										<Label fx:id="noRelsLabel" contentDisplay="CENTER" text="None" textAlignment="CENTER" GridPane.columnSpan="4"
+											GridPane.halignment="CENTER" />
+										<Label text="Relationship Type" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<Label text="Target" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<Label text="Qualifier/Role" GridPane.columnIndex="2" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<Label prefHeight="17.0" prefWidth="89.0" text="Role Group" GridPane.columnIndex="3" GridPane.halignment="CENTER">
+											<font>
+												<Font name="System Bold" size="12.0" />
+											</font>
+										</Label>
+										<VBox fx:id="relTypeVBox" spacing="2.0" GridPane.rowIndex="1" />
+										<VBox fx:id="targetVBox" prefHeight="200.0" prefWidth="100.0" spacing="2.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+										<VBox fx:id="qualRoleVBox" prefHeight="200.0" prefWidth="100.0" spacing="2.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+										<VBox fx:id="groupVBox" prefHeight="200.0" prefWidth="100.0" spacing="2.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+									</children>
+									<columnConstraints>
+										<ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="214.0" />
+										<ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="214.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="65.0"
+											prefWidth="86.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="30.0"
+											prefWidth="65.0" />
+									</columnConstraints>
+									<rowConstraints>
+										<RowConstraints />
+										<RowConstraints minHeight="10.0" prefHeight="30.0" />
+									</rowConstraints>
+								</GridPane>
+							</children>
+						</VBox>
+					</children>
+				</VBox>
+			</content>
+		</ScrollPane>
+	</center>
+</BorderPane>
