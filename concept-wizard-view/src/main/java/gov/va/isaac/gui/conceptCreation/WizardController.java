@@ -37,7 +37,6 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.description.DescriptionRevision;
-import org.ihtsdo.otf.tcc.model.cc.relationship.RelationshipRevision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,11 +128,11 @@ public class WizardController {
 	}
 
 	public String getRelType(int i) {
-		return getConDesc(rels.get(i).getRelationshipNid());
+		return WBUtility.getConPrefTerm(rels.get(i).getRelationshipNid());
 	}
 	
 	public String getTarget(int i) {
-		return getConDesc(rels.get(i).getTargetNid());
+		return WBUtility.getConPrefTerm(rels.get(i).getTargetNid());
 	}
 	
 	public String getQualRole(int i) {
@@ -149,14 +148,6 @@ public class WizardController {
 		return String.valueOf(rels.get(i).getGroup());
 	}
 	
-	private String getConDesc(int nid) {
-		try {
-			return WBUtility.getConceptVersion(nid).getPreferredDescription().getText();
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Unable to identify description.  Points to larger problem", e);
-			return "ERROR";
-		}
-	}
 	public ConceptChronicleBI createNewConcept() throws ValidationException, IOException, InvalidCAB, ContradictionException {
 		String fsn = getConceptFSN();
 		String prefTerm = getConceptPT();

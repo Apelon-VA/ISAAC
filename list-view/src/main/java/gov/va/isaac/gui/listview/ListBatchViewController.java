@@ -286,7 +286,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						AppContext.getCommonDialogs().showConceptDialog(row.getItem().getNid());
+						AppContext.getService(SimpleConceptView.class).setConcept(row.getItem().getNid());
 					}
 				});
 				MenuItem removeItem = new MenuItem("Delete");
