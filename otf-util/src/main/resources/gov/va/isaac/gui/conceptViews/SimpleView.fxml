@@ -19,8 +19,9 @@
 <Insets bottom="10.0" />
 </BorderPane.margin></Label>
 </top>
-<center><VBox prefHeight="200.0" prefWidth="100.0" spacing="20.0" BorderPane.alignment="CENTER">
-<children><GridPane alignment="CENTER" style="-fx-border-color: RED;">
+<center><VBox BorderPane.alignment="CENTER">
+<children><VBox alignment="TOP_CENTER" fillWidth="false" spacing="20.0">
+<children><GridPane alignment="CENTER" hgap="10.0" style="-fx-border-color: RED;">
   <columnConstraints>
     <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
     <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
@@ -34,15 +35,26 @@
 </BorderPane.margin>
 <font>
 <Font size="18.0" />
-</font></Label><Label fx:id="isPrimLabel" style="-fx-background-color: yellow; -fx-border-color: green; -fx-border-width: 2;" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+</font>
+<GridPane.margin>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</GridPane.margin></Label><Label fx:id="isPrimLabel" style="-fx-background-color: yellow; -fx-border-color: green; -fx-border-width: 2;" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
 <BorderPane.margin>
 <Insets right="10.0" />
 </BorderPane.margin>
 <font>
 <Font size="18.0" />
-</font></Label>
+</font>
+<GridPane.margin>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</GridPane.margin></Label>
 </children>
-</GridPane><GridPane style="-fx-border-color: RED;" VBox.vgrow="NEVER">
+</GridPane>
+</children>
+<VBox.margin>
+<Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+</VBox.margin></VBox><VBox spacing="20.0">
+<children><GridPane style="-fx-border-color: RED;" VBox.vgrow="NEVER">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -50,7 +62,7 @@
   <rowConstraints>
     <RowConstraints fillHeight="false" />
   </rowConstraints>
-<children><VBox fx:id="descLabelVBox">
+<children><VBox fx:id="descLabelVBox" spacing="9.0">
 <children><Label fx:id="prefTermLabel" textFill="BLUE" BorderPane.alignment="CENTER">
 <BorderPane.margin>
 <Insets left="5.0" />
@@ -61,7 +73,7 @@
 </children>
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" GridPane.columnIndex="1">
+</GridPane.margin></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="1">
 <children><Label fx:id="prefTypeLabel" style="-fx-background-color: YELLOW; -fx-border-color: Green; -fx-border-width: 2;" text="Preferred" textFill="BLUE" BorderPane.alignment="CENTER">
 <BorderPane.margin>
 <Insets right="5.0" />
@@ -82,18 +94,22 @@
   <rowConstraints>
     <RowConstraints fillHeight="false" />
   </rowConstraints>
-<children><VBox fx:id="relLabelVBox">
+<children><VBox fx:id="relLabelVBox" spacing="9.0">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="relTypeVBox" alignment="TOP_RIGHT" GridPane.columnIndex="1">
+</GridPane.margin></VBox><VBox fx:id="relTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="1">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </GridPane.margin></VBox>
 </children>
 </GridPane>
 </children>
-<BorderPane.margin>
+<VBox.margin>
 <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+</VBox.margin></VBox>
+</children>
+<BorderPane.margin>
+<Insets />
 </BorderPane.margin></VBox>
 </center>
 <bottom><VBox alignment="CENTER" spacing="15.0" BorderPane.alignment="CENTER">

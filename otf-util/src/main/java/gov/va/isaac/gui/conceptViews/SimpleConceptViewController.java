@@ -86,10 +86,17 @@ public class SimpleConceptViewController {
 	    	
 	    	// PT 
     		helper.initializeLabel(prefTermLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText());
-    		helper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText());
+    		helper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText());
 
-    		ConceptAttributeVersionBI attr = con.getConceptAttributesActive();
-
+			ConceptAttributeVersionBI attr = con.getConceptAttributesActive();
+			if (attr == null) {
+				attr = con.getConceptAttributes().getVersion(WBUtility.getViewCoordinate());
+				if (attr == null) {
+					// handle Unhandled functionality
+			        attr = (ConceptAttributeVersionBI) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
+				}
+    		}
+    	
     		// SCT Id
     		helper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, helper.getSctId(attr));
 
@@ -138,7 +145,7 @@ public class SimpleConceptViewController {
         	Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
         	Set<RelationshipVersionBI> isaRels = new HashSet<>();
 			for (RelationshipVersionBI rel : con.getRelationshipsOutgoingActive()) {
-				if (rel.getNid() == Snomed.IS_A.getNid()) {
+				if (rel.getTypeNid() == Snomed.IS_A.getNid()) {
 					isaRels.add(rel);
 				} else {
 					if (!sortedRels.containsKey(rel.getTypeNid())) {
