@@ -398,6 +398,9 @@ public class SimpleConceptViewController {
         String refinCharType = "";
 		try {
 			refinCharType = RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()).toString();
+		} catch (NullPointerException npe) {
+			LOG.error("RelationshipType.getRelationshipType() doesn't handle AdditionalRelationship.  Tracker created");
+			refinCharType = "AdditionalRelationshipType not handled properly";
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
