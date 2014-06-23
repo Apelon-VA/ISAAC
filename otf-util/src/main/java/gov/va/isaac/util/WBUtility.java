@@ -38,7 +38,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
-import org.ihtsdo.otf.tcc.api.chronicle.TypedComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -658,23 +658,23 @@ public class WBUtility {
 		}
 	}
 
-	public static String getStatusString(TypedComponentVersionBI comp) {
+	public static String getStatusString(ComponentVersionBI comp) {
 		return comp.getStatus() == Status.ACTIVE ? "Active" : "Inactive";
 	}
 
-	public static String getAuthorString(TypedComponentVersionBI comp) {
+	public static String getAuthorString(ComponentVersionBI comp) {
 		return getConPrefTerm(comp.getAuthorNid());
 	}
 
-	public static String getModuleString(TypedComponentVersionBI comp) {
+	public static String getModuleString(ComponentVersionBI comp) {
 		return getConPrefTerm(comp.getModuleNid());
 	}
 
-	public static String getPathString(TypedComponentVersionBI comp) {
+	public static String getPathString(ComponentVersionBI comp) {
 		return getConPrefTerm(comp.getPathNid());
 	}
 
-	public static String getTimeString(TypedComponentVersionBI comp) {
+	public static String getTimeString(ComponentVersionBI comp) {
 	    Date date = new Date(comp.getTime());
 
 	    return format.format(date);		
