@@ -23,8 +23,11 @@ import gov.va.isaac.interfaces.utility.UserPreferencesI;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +38,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -97,7 +101,9 @@ public class WBUtility {
 	private static ViewCoordinate vc = null;
 	private static boolean changeSetCreated;
 
-	public static TerminologyBuilderBI getBuilder() {
+    static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+
+    public static TerminologyBuilderBI getBuilder() {
 		if (dataBuilder == null) {
 			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
 		}
@@ -642,4 +648,36 @@ public class WBUtility {
 // 		TODO: Update once OTF version fixed
 		dataStore.cancel();
 	}
+
+	public static String getConPrefTerm(int nid) {
+		try {
+			return WBUtility.getConceptVersion(nid).getPreferredDescription().getText();
+		} catch (IOException | ContradictionException e) {
+			LOG.error("Unable to identify description.  Points to larger problem", e);
+			return "ERROR";
+		}
+	}
+
+	public static String getStatusString(ComponentVersionBI comp) {
+		return comp.getStatus() == Status.ACTIVE ? "Active" : "Inactive";
+	}
+
+	public static String getAuthorString(ComponentVersionBI comp) {
+		return getConPrefTerm(comp.getAuthorNid());
+	}
+
+	public static String getModuleString(ComponentVersionBI comp) {
+		return getConPrefTerm(comp.getModuleNid());
+	}
+
+	public static String getPathString(ComponentVersionBI comp) {
+		return getConPrefTerm(comp.getPathNid());
+	}
+
+	public static String getTimeString(ComponentVersionBI comp) {
+	    Date date = new Date(comp.getTime());
+
+	    return format.format(date);		
+	}
+	
 }

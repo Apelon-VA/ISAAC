@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -81,6 +82,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -157,6 +159,7 @@ public class ListBatchViewController
 		cn.setPromptText("Type, drop or select a concept to add");
 		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
 		HBox.setMargin(cn.getNode(), new Insets(6, 5, 6, 5));
+		conceptTableFooter.getChildren().clear();
 		conceptTableFooter.getChildren().add(cn.getNode());
 
 		cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
@@ -221,7 +224,17 @@ public class ListBatchViewController
 				            }
 						}
 					}
-		        };
+				};
+
+				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
+							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
+							conceptDisplayTab.setContent(AppContext.getService(SimpleConceptView.class).getConceptViewerPanel(con.getNid()));		
+						}
+					}
+		        });
 		        
 		        return cell;
 			}
@@ -275,7 +288,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						AppContext.getCommonDialogs().showConceptDialog(row.getItem().getNid());
+						AppContext.getService(SimpleConceptView.class).setConcept(row.getItem().getNid());
 					}
 				});
 				MenuItem removeItem = new MenuItem("Delete");

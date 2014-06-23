@@ -132,6 +132,8 @@ public class FindAndReplace extends Operation
 	{
 		return new CustomTask<OperationResult>(FindAndReplace.this)
 		{
+			private Matcher matcher;
+
 			@Override
 			protected OperationResult call() throws Exception
 			{
@@ -144,31 +146,40 @@ public class FindAndReplace extends Operation
 					{
 						return new OperationResult(FindAndReplace.this.getTitle(), cancelRequested_);
 					}
+
+					String newTxt = null;
+					Set<String> successMatches = new HashSet();
+
 					updateProgress(i, conceptList_.size());
 					updateMessage("Processing " + c.getDescription());
 					
+
+					// For each concept, filter the descriptions to be changed based on user selected DescType
 					ConceptVersionBI con = WBUtility.getConceptVersion(c.getNid());
 					Set<DescriptionVersionBI> descsToChange= getDescsToChange(con);
-					Set<String> successMatches = new HashSet();
-					String newTxt = null;
 					
 					for (DescriptionVersionBI desc : descsToChange) {
-						if (frc_.isRegExp()) {
-							newTxt = replaceRegExp(desc);
-						} else {
-							newTxt = replaceGeneric(desc);
-						}
+						// First see if text is found in desc before moving onward
+						if (frc_.isRegExp() && hasRegExpMatch(desc) ||
+							!frc_.isRegExp() && hasGenericMatch(desc)) { 
+
+							// Now check if language is selected, that it exists in language refset
+							if (frc_.getLanguageRefset().getNid() == 0 ||
+								!desc.getAnnotationsActive(WBUtility.getViewCoordinate(), frc_.getLanguageRefset().getNid()).isEmpty()) {
 						
-						if (newTxt != null) {
-							String oldTxt = desc.getText();
-							
-							DescriptionType descType = getDescType(con, desc);
-							
-							successMatches.add("    --> '" + oldTxt + "' changed to '" + newTxt + "' ..... of type: " + descType);
-							updateDescription(desc, newTxt);
+								// Replace Text
+								if (frc_.isRegExp()) {
+									newTxt = replaceRegExp();
+								} else {
+									newTxt = replaceGeneric(desc);
+								}
+								
+								DescriptionType descType = getDescType(con, desc);
+								successMatches.add("    --> '" + desc.getText() + "' changed to '" + newTxt + "' ..... of type: " + descType);
+								updateDescription(desc, newTxt);
+							}
 						}
 					}
-
 					if (successMatches.size() > 0) {
 						modifiedConcepts.add(c);
 						successCons.put(c.getDescription() + " --- " + con.getPrimordialUuid().toString(), successMatches);
@@ -180,38 +191,31 @@ public class FindAndReplace extends Operation
 				return new OperationResult(FindAndReplace.this.getTitle(), modifiedConcepts, getMsgBuffer());
 			}
 
-			private String replaceRegExp(DescriptionVersionBI desc) {
-		        // Replace all occurrences of pattern in input
+			private boolean hasRegExpMatch(DescriptionVersionBI desc) {
 				Pattern pattern = Pattern.compile(frc_.getSearchText());
-			        
-		        Matcher matcher = pattern.matcher(desc.getText());
 		        
-		        if (!matcher.find()) {
-		        	return null;
+				matcher = pattern.matcher(desc.getText());
+		        
+				if (matcher.find()) {
+		        	return true;
+		        } else {
+		        	return false;
 		        }
-		        
-		        String txt = matcher.replaceAll(frc_.getReplaceText());				
-		        
-		        return txt;
+			}
+			
+			private String replaceRegExp() {
+		        // Replace all occurrences of pattern in input
+		        return matcher.replaceAll(frc_.getReplaceText());				
 			}
 
 			private String replaceGeneric(DescriptionVersionBI desc) {
 				String txt = desc.getText();
 				
 				if (frc_.isCaseSens()) {
-					if (!txt.contains(frc_.getSearchText())) {
-						return null;
-					}
-					
 					while (txt.contains(frc_.getSearchText())) {
 						txt = txt.replace(frc_.getSearchText(), frc_.getReplaceText());
 					}
 				} else {
-					
-					if (!StringUtils.containsIgnoreCase(txt, frc_.getSearchText())) {
-						return null;
-					}
-
 					int startIdx = StringUtils.indexOfIgnoreCase(txt, frc_.getSearchText());
 					int endIdx = startIdx + frc_.getSearchText().length();
 					
@@ -225,6 +229,22 @@ public class FindAndReplace extends Operation
 				}
 				
 				return txt;
+			}
+			
+			private boolean hasGenericMatch(DescriptionVersionBI desc) {
+				String txt = desc.getText();
+				
+				if (frc_.isCaseSens()) {
+					if (!txt.contains(frc_.getSearchText())) {
+						return false;
+					}
+				} else {
+					if (!StringUtils.containsIgnoreCase(txt, frc_.getSearchText())) {
+						return false;
+					}
+				}
+				
+				return true;
 			}
 
 			private void updateDescription(DescriptionVersionBI desc, String newTxt) throws IOException, InvalidCAB, ContradictionException {
