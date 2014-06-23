@@ -26,8 +26,7 @@
 	</dependencies>
 
 	<profiles>
-		<!-- THIS CURRENTLY ONLY WORKS WITH JDK 1.7!!!! 
-		Which means we can't bind it, or run it in combination with anything, because everything else is jdk 1.8-->
+		<!-- TODO maybe bind this in?  For now, maestrodev runs it seperately -->
 		<profile>
 			<id>docbook</id>
 			<activation>
@@ -43,16 +42,8 @@
 							<docletArtifact>
 								<groupId>org.dbdoclet</groupId>
 								<artifactId>dbdoclet</artifactId>
-								<version>7.0.0</version>
+								<version>8.0.0</version>
 							</docletArtifact>
-							<!-- Add JavaFX libraries, since this currently only works with JDK 1.7 -->
-							<additionalDependencies>
-								<additionalDependency>
-									<groupId>com.oracle</groupId>
-									<artifactId>jfxrt</artifactId>
-									<version>2.2.7</version>
-								</additionalDependency>
-							</additionalDependencies>
 							<additionalparam>-profile ${basedir}/src/docbook/docbook-javadoc.profile</additionalparam>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<doctitle>ISAAC Contract Interfaces</doctitle>
