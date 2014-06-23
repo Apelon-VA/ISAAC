@@ -26,9 +26,9 @@
     <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
   <rowConstraints>
-    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints fillHeight="false" vgrow="NEVER" />
   </rowConstraints>
-<children><Label fx:id="releaseIdLabel" text="123037004" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.halignment="LEFT">
+<children><Label fx:id="releaseIdLabel" text="Unreleased" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.halignment="LEFT">
 <BorderPane.margin>
 <Insets left="10.0" />
 </BorderPane.margin>
