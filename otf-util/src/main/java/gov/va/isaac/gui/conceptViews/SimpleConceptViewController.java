@@ -116,7 +116,7 @@ public class SimpleConceptViewController {
 	}
 
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
-	private static UUID snomedAssemblageUuid;
+	private static int snomedAssemblageNid;
 	private static boolean controlKeyPressed = false;
 	private ConceptVersionBI con;
 
@@ -145,7 +145,7 @@ public class SimpleConceptViewController {
     @FXML private Button inferredButton;
     
     public SimpleConceptViewController() {
-		snomedAssemblageUuid = TermAux.SNOMED_IDENTIFIER.getUuids()[0];
+		snomedAssemblageNid = WBUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
     }
     
     public void setConcept(ConceptChronicleDdo concept)  {
@@ -168,8 +168,9 @@ public class SimpleConceptViewController {
 	    	
 	        // SCT Id
 	        String sctidString = "Unreleased";
-			for (RefexChronicleBI<?> annotation : con.getAnnotations()) {
-				if (annotation.getPrimordialUuid().equals(snomedAssemblageUuid)) {
+            // Official approach found int AlternativeIdResource.class
+            for (RefexChronicleBI<?> annotation : con.getAnnotations()) {
+				if (annotation.getAssemblageNid() == snomedAssemblageNid) {
 					RefexLongVersionBI sctid = (RefexLongVersionBI) annotation.getPrimordialVersion();
 					sctidString = Long.toString(sctid.getLong1());
 				}
