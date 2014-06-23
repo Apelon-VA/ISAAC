@@ -315,4 +315,8 @@ public class FindAndReplaceController
 		return replaceText.getText().trim();
 	}
 	
+	protected SimpleDisplayConcept getLanguageRefset() {
+		return searchInLanguage.getSelectionModel().getSelectedItem();
+	}
+	
 }
