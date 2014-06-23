@@ -8,7 +8,7 @@
 
 <AnchorPane fx:id="simpleConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.SimpleConceptViewController">
 <children><BorderPane prefHeight="400.0" prefWidth="600.0">
-<top><Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" prefWidth="598.0" text="Body structure (body structure)" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnSpan="4">
+<top><Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" prefWidth="598.0" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnSpan="4">
 <font>
 <Font name="System Bold" size="24.0" />
 </font>
@@ -34,7 +34,7 @@
 </BorderPane.margin>
 <font>
 <Font size="18.0" />
-</font></Label><Label fx:id="isPrimLabel" style="-fx-background-color: yellow; -fx-border-color: green; -fx-border-width: 2;" text="Primitive" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+</font></Label><Label fx:id="isPrimLabel" style="-fx-background-color: yellow; -fx-border-color: green; -fx-border-width: 2;" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
 <BorderPane.margin>
 <Insets right="10.0" />
 </BorderPane.margin>
@@ -51,7 +51,7 @@
     <RowConstraints fillHeight="false" />
   </rowConstraints>
 <children><VBox fx:id="descLabelVBox">
-<children><Label fx:id="prefTermLabel" text="Body Structure" textFill="BLUE" BorderPane.alignment="CENTER">
+<children><Label fx:id="prefTermLabel" textFill="BLUE" BorderPane.alignment="CENTER">
 <BorderPane.margin>
 <Insets left="5.0" />
 </BorderPane.margin>
@@ -62,7 +62,7 @@
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </GridPane.margin></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" GridPane.columnIndex="1">
-<children><Label style="-fx-background-color: YELLOW; -fx-border-color: Green; -fx-border-width: 2;" text="Preferred" textFill="BLUE" BorderPane.alignment="CENTER">
+<children><Label fx:id="prefTypeLabel" style="-fx-background-color: YELLOW; -fx-border-color: Green; -fx-border-width: 2;" text="Preferred" textFill="BLUE" BorderPane.alignment="CENTER">
 <BorderPane.margin>
 <Insets right="5.0" />
 </BorderPane.margin>
