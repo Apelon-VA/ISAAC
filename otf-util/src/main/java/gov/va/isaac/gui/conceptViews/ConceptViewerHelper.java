@@ -185,8 +185,7 @@ public class ConceptViewerHelper {
 		l.setTextFill(Color.BLUE);
 		
 		if (isTypeLabel) {
-			l.setBackground(new Background(new BackgroundFill(Color.YELLOW, null, null)));
-			l.setBorder(new Border(new BorderStroke(Color.RED, null, null, new BorderWidths(2))));
+			l.setStyle("-fx-background-color: YELLOW; -fx-border-color: GREEN; -fx-border-width: 2");
 		}
 		
 		initializeLabel(l, comp, type, txt);
