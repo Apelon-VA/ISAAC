@@ -29,6 +29,7 @@ import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 
@@ -39,13 +40,15 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
  */
 public class TermRow
 {
-	TextField term;
 	Node synonymNode;
 	SimpleStringProperty textFieldInvalidReason_ = new SimpleStringProperty("The Term is required");
+	SimpleStringProperty termRowInvalidReason_ = new SimpleStringProperty("Must fill out all fields or none");
+
+	TextField term;
 	ChoiceBox<String> type;
 	CheckBox initialCaseSignificant;
 	
-	private UpdateableBooleanBinding descValid;
+	private UpdateableBooleanBinding descValid, emptyValid, rowValid;
 	
 	public TermRow()
 	{
@@ -82,7 +85,7 @@ public class TermRow
 		});
 		synonymNode = ErrorMarkerUtils.setupErrorMarker(term, textFieldInvalidReason_);
 		
-		type = new ChoiceBox<>(FXCollections.observableArrayList("Synonym", "Definition"));
+		type = new ChoiceBox<>(FXCollections.observableArrayList("", "Synonym", "Definition"));
 		initialCaseSignificant = new CheckBox();
 		initialCaseSignificant.minHeightProperty().bind(term.heightProperty());
 		//TODO add validators
@@ -100,11 +103,38 @@ public class TermRow
 				return textFieldInvalidReason_.get().length() == 0;
 			}
 		};
+
+		emptyValid = new UpdateableBooleanBinding()
+		{
+			{
+				setComputeOnInvalidate(true);
+				bind(type.valueProperty(), term.textProperty(), initialCaseSignificant.selectedProperty());
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				return ((type.getSelectionModel().getSelectedItem() != null || type.getSelectionModel().getSelectedIndex() == 0) &&
+						 term.getText().trim().isEmpty() && !initialCaseSignificant.isSelected());
+			}
+		};
+		
+		rowValid = new UpdateableBooleanBinding()
+		{
+			{	
+				setComputeOnInvalidate(true);
+				bind(emptyValid, descValid);
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				return (descValid.get() || emptyValid.get());
+			}
+		};
 	}
 	
 	public BooleanBinding isValid()
 	{
-		return descValid;
+		return rowValid;
 	}
 	
 	public Node getTermNode()

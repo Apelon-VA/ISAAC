@@ -38,7 +38,7 @@ public class RelRow
 	ChoiceBox<String> type;
 	TextField group;
 	
-	private UpdateableBooleanBinding rowValid;
+	private UpdateableBooleanBinding rowValid, emptyValid, fieldsValid;
 
 	public RelRow()
 	{
@@ -46,10 +46,10 @@ public class RelRow
 		target = new ConceptNode(null, true);
 		
 		//TODO add validation icons / reasons
-		type = new ChoiceBox<String>(FXCollections.observableArrayList("Role", "Qualifier"));
+		type = new ChoiceBox<String>(FXCollections.observableArrayList("", "Role", "Qualifier"));
 		group = new TextField("0");
 		
-		rowValid = new UpdateableBooleanBinding()
+		fieldsValid = new UpdateableBooleanBinding()
 		{
 			{
 				setComputeOnInvalidate(true);
@@ -58,10 +58,59 @@ public class RelRow
 			@Override
 			protected boolean computeValue()
 			{
-				//TODO validate group
-				return (relationship.isValid().get() && target.isValid().get() && type.getSelectionModel().getSelectedItem() != null);
+				String grpStr = group.getText().trim();
+				if (grpStr.length() > 0) {
+					try {
+						int a = Integer.valueOf(grpStr);
+					} catch (Exception e) {
+						return false;
+					}
+				}
+				
+				return (relationship.isValid().get() && target.isValid().get() && 
+						(type.getSelectionModel().getSelectedItem() != null || type.getSelectionModel().getSelectedIndex() == 0));
+				
 			}
 		};
+		
+		emptyValid = new UpdateableBooleanBinding()
+		{
+			{
+				setComputeOnInvalidate(true);
+				bind(relationship.isValid(), target.isValid(), type.valueProperty(), group.textProperty());
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				boolean grpFilled = false;
+				String grpStr = group.getText().trim();
+				
+				if (grpStr.length() > 0) {
+					try {
+						grpFilled = Integer.valueOf(grpStr) > 0;
+					} catch (Exception e) {
+						return false;
+					}
+				}
+
+				return (relationship.isEmpty().get() && target.isEmpty().get() && type.getSelectionModel().getSelectedItem() == null && !grpFilled);
+			}
+		};
+		
+		rowValid = new UpdateableBooleanBinding()
+		{
+			{	
+				setComputeOnInvalidate(true);
+				bind(emptyValid, fieldsValid);
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				return (fieldsValid.get() || emptyValid.get());
+			}
+		};
+		
+
 	}
 
 	public BooleanBinding isValid()
