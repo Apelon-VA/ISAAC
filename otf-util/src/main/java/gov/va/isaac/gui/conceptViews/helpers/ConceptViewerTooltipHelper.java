@@ -28,12 +28,19 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.refex.type_long.RefexLongVersionBI;
+import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
+import org.ihtsdo.otf.tcc.api.refex.type_string.RefexStringVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
@@ -46,34 +53,75 @@ import org.slf4j.LoggerFactory;
 public class ConceptViewerTooltipHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerTooltipHelper.class);
 	ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
+	private static boolean controlKeyPressed = false;
 
-	EventHandler getCompTooltipEnterHandler(ComponentVersionBI comp) {
+	EventHandler getCompTooltipEnterHandler(ComponentVersionBI comp, ComponentType type) {
 		return new EventHandler<Event> () {
 			@Override
 			public void handle(Event event) {
 				Label l = (Label)event.getSource();
-				if (viewerHelper.getControlKeyPressed()) {
-					String tp = "There are no refsets for this component";
+				if (controlKeyPressed) {
+					String tpText = "There are no refsets for this component";
 	
 					try {
 						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(WBUtility.getViewCoordinate());
 						
 						for (RefexVersionBI annot : annots) {
-							String refset = WBUtility.getConPrefTerm(annot.getAssemblageNid());
-							String s = annot.toString();
-							tp = "Assemblage: " + refset;
+							try {
+								tpText = createRefsetTooltip(annot);
+							} catch (Exception e) {
+								LOG.error("Unable to access annotations", e);
+								tpText = "Unable to access annotations";
+							}
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 	
-					l.getTooltip().setText(tp);
+					l.getTooltip().setText(tpText);
 					l.getTooltip().setFont(new Font(16));
+				} else {
+					setDefaultTooltip(l, comp, type);
 				}
+			}
+
+			private String createRefsetTooltip(RefexVersionBI annot) throws IOException, ContradictionException {
+				String refset = WBUtility.getConPrefTerm(annot.getAssemblageNid());
+				StringBuffer strBuf = new StringBuffer();
+
+				strBuf.append(refset + " is a ");
+				
+				if (annot.getRefexType() == RefexType.MEMBER) {
+					strBuf.append("Member Annotation ");
+				} else {
+					if (annot.getRefexType() == RefexType.CID) {
+						strBuf.append("Component Annotation");
+					} else if (annot.getRefexType() == RefexType.STR) {
+						strBuf.append("String Annotation");
+					} else if (annot.getRefexType() == RefexType.LONG) {
+						strBuf.append("Long Annotation");
+					}
+
+					strBuf.append(" with extension content:\n");
+
+					if (annot.getRefexType() == RefexType.CID) {
+						int nidExt = ((RefexNidVersionBI)annot).getNid1();
+						String compExt = WBUtility.getConceptVersion(nidExt).getPreferredDescription().getText();
+						strBuf.append("Component #1: " + compExt);
+					} else if (annot.getRefexType() == RefexType.STR) {
+						String strExt = ((RefexStringVersionBI)annot).getString1();
+						strBuf.append("String #1: " + strExt);
+					} else if (annot.getRefexType() == RefexType.LONG) {
+						String longExt = Long.toString(((RefexLongVersionBI)annot).getLong1());
+						strBuf.append("String #1: " + longExt);
+					}
+				}
+				
+				strBuf.append(getStampTooltip(annot));
+				return strBuf.toString();
 			}
 		};
 	}
-
 
 	EventHandler getCompTooltipExitHandler(ComponentVersionBI comp, ComponentType type) {
 		return new EventHandler<Event>() {
@@ -129,13 +177,7 @@ public class ConceptViewerTooltipHelper {
 		String target = WBUtility.getConPrefTerm(rel.getDestinationNid());
 		String statInf = rel.isInferred() ? "False" : "True";
 
-		String status = WBUtility.getStatusString(rel);
-		String time =  WBUtility.getTimeString(rel);
-		String author = WBUtility.getAuthorString(rel); 
-		String module = WBUtility.getModuleString(rel);
-		String path = WBUtility.getPathString(rel);
-
-		return "Destination: " + target + " Type: " + type + "\nStated: " + statInf + " Relationship Type: " + refinCharType + " Role Group: " + group+ "\nStatus: " + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
+		return "Destination: " + target + " Type: " + type + "\nStated: " + statInf + " Relationship Type: " + refinCharType + " Role Group: " + group + getStampTooltip(rel);
 	}
 
 	void setDefaultTooltip(Label node, ComponentVersionBI comp, ComponentType type) {
@@ -153,5 +195,45 @@ public class ConceptViewerTooltipHelper {
 		tp.setText(txt);
         tp.setFont(new Font(16));
 		node.setTooltip(tp);
+	}
+
+
+	// Control Handling Functionality
+	public EventHandler getCtrlKeyReleasedEventHandler(){
+		return new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.CONTROL)
+				{
+					controlKeyPressed = true;
+				}
+			}
+		};
+	}
+
+	public EventHandler getCtrlKeyPressEventHandler(){
+		return new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.CONTROL)
+				{
+					controlKeyPressed = true;
+				}
+			}
+		};
+	}
+
+	boolean getControlKeyPressed() {
+		return controlKeyPressed;
+	}
+
+	private String getStampTooltip(ComponentVersionBI comp) {
+		String status = WBUtility.getStatusString(comp);
+		String time =  WBUtility.getTimeString(comp);
+		String author = WBUtility.getAuthorString(comp); 
+		String module = WBUtility.getModuleString(comp);
+		String path = WBUtility.getPathString(comp);
+
+		return "\nStatus: " + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
 	}
 }

@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConceptViewerHelper {
-	private static boolean controlKeyPressed = false;
 	private static int snomedAssemblageNid;
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
 
@@ -24,14 +23,6 @@ public class ConceptViewerHelper {
 
 	public ConceptViewerHelper() {
 		snomedAssemblageNid = WBUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
-	}
-
-	boolean getControlKeyPressed() {
-		return controlKeyPressed;
-	}
-
-	void setControlKeyPressed(boolean pressed) {
-		controlKeyPressed = pressed;
 	}
 
 	public int getSnomedAssemblageNid() {

@@ -32,11 +32,8 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -67,7 +64,7 @@ public class ConceptViewerLabelHelper {
 		tooltipHelper.setDefaultTooltip(label, comp, type);
     	label.setText(txt);
 
-		label.addEventHandler(MouseEvent.MOUSE_ENTERED, tooltipHelper.getCompTooltipEnterHandler(comp));
+		label.addEventHandler(MouseEvent.MOUSE_ENTERED, tooltipHelper.getCompTooltipEnterHandler(comp, type));
 		label.addEventHandler(MouseEvent.MOUSE_EXITED, tooltipHelper.getCompTooltipExitHandler(comp, type));
 
 		createConceptContextMenu(label, txt);
@@ -76,10 +73,11 @@ public class ConceptViewerLabelHelper {
 	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isTypeLabel) {
 		Label l = new Label();
 		l.setFont(new Font(18));
-		l.setTextFill(Color.BLUE);
+//		l.setTextFill(Color.BLUE);
 		
 		if (isTypeLabel) {
-			l.setStyle("-fx-background-color: YELLOW; -fx-border-color: GREEN; -fx-border-width: 2");
+//			l.setTextFill(Color.BLUE);
+//			l.setStyle("-fx-background-color: YELLOW; -fx-border-color: GREEN; -fx-border-width: 2");
 		}
 		
 		initializeLabel(l, comp, type, txt);

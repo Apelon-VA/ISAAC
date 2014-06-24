@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.util.WBUtility;
 
@@ -99,8 +100,9 @@ public class SimpleConceptViewController {
     @FXML private Button modifyButton;
     @FXML private Button previousButton;
 
-	private ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
 	private ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
+	private ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
+	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
 	private ConceptVersionBI con;
@@ -291,5 +293,8 @@ public class SimpleConceptViewController {
 			}
 		};
 		previousButton.disableProperty().bind(prevButtonQueueFilled.not());
+		
+		simpleConceptPane.setOnKeyPressed(tooltipHelper.getCtrlKeyPressEventHandler());
+		simpleConceptPane.setOnKeyReleased(tooltipHelper.getCtrlKeyReleasedEventHandler());
 	}
 }
