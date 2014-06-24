@@ -23,7 +23,7 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.ConceptViewI;
+import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @PerLookup
-public class SimpleConceptView implements ConceptViewI {
+public class SimpleConceptView implements EnhancedConceptViewI {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private final SimpleConceptViewController controller;
@@ -92,7 +92,10 @@ public class SimpleConceptView implements ConceptViewI {
         return st;
     }
     
-    // Put this on list tab
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#getConceptViewerPanel(UUID)
+     */
+	@Override
     public Node getConceptViewerPanel(UUID conceptUUID) {
     	try
     	{
@@ -111,7 +114,10 @@ public class SimpleConceptView implements ConceptViewI {
     	return root;
     }
 
-    // Put this on list tab
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#getConceptViewerPanel(int)
+     */
+	@Override
     public Node getConceptViewerPanel(int conceptNid) {        
     	try
     	{
@@ -126,6 +132,50 @@ public class SimpleConceptView implements ConceptViewI {
             return root;
     	}
     }
+	
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#changeConcept(Stage, UUID)
+     */
+	@Override
+    public Node changeConcept(Stage stage, UUID conceptUUID) {
+    	try
+    	{
+	        LOG.info("Loading concept with UUID " + conceptUUID);
+	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
+	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+	        LOG.info("Finished loading concept with UUID " + conceptUUID);
+	        controller.setConcept(concept);
+    	} catch (IOException | ContradictionException e) {
+            String title = "Unexpected error loading concept with UUID " + conceptUUID;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+    	}
+
+    	stage.setScene(new Scene(root));
+
+    	return root;
+    }
+
+    
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#changeConcept(Stage, int)
+     */
+	@Override
+	public Node changeConcept(Stage stage, int conceptNid) {
+		try
+    	{
+	        ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);
+	        return changeConcept(stage, concept.getPrimordialUuid());
+    	} catch (IOException e) {
+            String title = "Unexpected error loading concept with nid " + conceptNid;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+        	
+            return root;
+    	}
+	}
 
     private void setConcept(ConceptChronicleDdo concept) {
         // Make sure in application thread.
@@ -141,6 +191,9 @@ public class SimpleConceptView implements ConceptViewI {
     }
     
     // Put this on right-click List 
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#showConcept(UUID)
+     */
     @Override
 	public void setConcept(final UUID conceptUUID)
     {

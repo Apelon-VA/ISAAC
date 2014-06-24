@@ -1,5 +1,24 @@
-package gov.va.isaac.gui.conceptViews;
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package gov.va.isaac.gui.conceptViews.helpers;
 
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -9,48 +28,31 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
-import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
-import org.ihtsdo.otf.tcc.api.refex.type_long.RefexLongVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConceptViewerHelper {
-	private static boolean controlKeyPressed = false;
-	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
-	private static int snomedAssemblageNid;
-
-	ConceptViewerHelper() {
-		snomedAssemblageNid = WBUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
-	}
-
-	public enum ComponentType {
-		CONCEPT, DESCRIPTION, RELATIONSHIP;
-	}
+/**
+*
+* @author <a href="jefron@apelon.com">Jesse Efron</a>
+*/
+public class ConceptViewerTooltipHelper {
+	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerTooltipHelper.class);
+	ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
 
 	EventHandler getCompTooltipEnterHandler(ComponentVersionBI comp) {
 		return new EventHandler<Event> () {
 			@Override
 			public void handle(Event event) {
 				Label l = (Label)event.getSource();
-				if (controlKeyPressed) {
+				if (viewerHelper.getControlKeyPressed()) {
 					String tp = "There are no refsets for this component";
 	
 					try {
@@ -106,7 +108,7 @@ public class ConceptViewerHelper {
 		String module = WBUtility.getModuleString(attr);
 		String path = WBUtility.getPathString(attr);
 
-		return "SctId: " + getSctId(attr)+ " " + getPrimDef(attr)+ "\nStatus" + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
+		return "SctId: " + viewerHelper.getSctId(attr)+ " " + viewerHelper.getPrimDef(attr)+ "\nStatus" + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
 	}
 	
 	private String createRelTooltipText(RelationshipVersionBI rel) {
@@ -136,32 +138,7 @@ public class ConceptViewerHelper {
 		return "Destination: " + target + " Type: " + type + "\nStated: " + statInf + " Relationship Type: " + refinCharType + " Role Group: " + group+ "\nStatus: " + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
 	}
 
-	public void handleOnKeyReleased(KeyEvent event)
-	{
-		if (event.getCode() == KeyCode.CONTROL)
-		{
-			controlKeyPressed = false;
-		}
-	}
-	
-	public void handleOnKeyPressed(KeyEvent event)
-	{
-		if (event.getCode() == KeyCode.CONTROL)
-		{
-			controlKeyPressed = true;
-		}
-	}
-
-
-	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt) {
-		setDefaultTooltip(label, comp, type);
-    	label.setText(txt);
-
-		label.addEventHandler(MouseEvent.MOUSE_ENTERED, getCompTooltipEnterHandler(comp));
-		label.addEventHandler(MouseEvent.MOUSE_EXITED, getCompTooltipExitHandler(comp, type));
-	}
-
-	private void setDefaultTooltip(Label node, ComponentVersionBI comp, ComponentType type) {
+	void setDefaultTooltip(Label node, ComponentVersionBI comp, ComponentType type) {
 		final Tooltip tp = new Tooltip();
         
         String txt;
@@ -176,48 +153,5 @@ public class ConceptViewerHelper {
 		tp.setText(txt);
         tp.setFont(new Font(16));
 		node.setTooltip(tp);
-	}
-
-
-	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isTypeLabel) {
-		Label l = new Label();
-		l.setFont(new Font(18));
-		l.setTextFill(Color.BLUE);
-		
-		if (isTypeLabel) {
-			l.setStyle("-fx-background-color: YELLOW; -fx-border-color: GREEN; -fx-border-width: 2");
-		}
-		
-		initializeLabel(l, comp, type, txt);
-		
-		return l;
-	}
-
-
-	public String getSctId(ConceptAttributeVersionBI attr)  {
-        String sctidString = "Unreleased";
-        // Official approach found int AlternativeIdResource.class
-        
-        try {
-	        for (RefexChronicleBI<?> annotation : attr.getAnnotations()) {
-				if (annotation.getAssemblageNid() == snomedAssemblageNid) {
-					RefexLongVersionBI sctid = (RefexLongVersionBI) annotation.getPrimordialVersion();
-					sctidString = Long.toString(sctid.getLong1());
-				}
-			}
-        } catch (Exception e) {
-        	LOG.error("Could not access annotations for: " + attr.getPrimordialUuid());
-        }
-        return sctidString;
-	}
-
-
-	public String getPrimDef(ConceptAttributeVersionBI attr) {
-        String status = "Primitive";
-		if (attr.isDefined()) {
-			status = "Fully Defined";
-		}
-		
-        return status;
 	}
 }

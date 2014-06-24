@@ -1,7 +1,27 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.util.WBUtility;
 
@@ -41,7 +61,8 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleConceptViewController {
 
-	private ConceptViewerHelper helper = new ConceptViewerHelper();
+	private ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
+	private ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
 	private ConceptVersionBI con;
@@ -71,10 +92,6 @@ public class SimpleConceptViewController {
     @FXML private Button detailedButton;
     @FXML private Button inferredButton;
     
-    public SimpleConceptViewController() {
-		helper = new ConceptViewerHelper();
-    }
-    
     public void setConcept(ConceptChronicleDdo concept)  {
     	initialize();
 
@@ -82,26 +99,21 @@ public class SimpleConceptViewController {
 		
     	try {
 	        // FSN
-    		helper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText());
-	    	
+    		labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText());
+    		labelHelper.createIdsContextMenu(fsnLabel, con.getNid());
+    		
 	    	// PT 
-    		helper.initializeLabel(prefTermLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText());
-    		helper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText());
+    		labelHelper.initializeLabel(prefTermLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText());
+    		labelHelper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText(), SnomedMetadataRf2.PREFERRED_RF2.getLenient().getNid());
 
-			ConceptAttributeVersionBI attr = con.getConceptAttributesActive();
-			if (attr == null) {
-				attr = con.getConceptAttributes().getVersion(WBUtility.getViewCoordinate());
-				if (attr == null) {
-					// handle Unhandled functionality
-			        attr = (ConceptAttributeVersionBI) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
-				}
-    		}
-    	
-    		// SCT Id
-    		helper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, helper.getSctId(attr));
+			ConceptAttributeVersionBI attr = viewerHelper.getConceptAttributes(con);
+		
+			// SCT Id
+    		labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, viewerHelper.getSctId(attr));
+    		labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
 
     		// Defined Status
-    		helper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, helper.getPrimDef(attr));
+    		labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, viewerHelper.getPrimDef(attr), viewerHelper.getPrimDefNid(attr));
     	} catch (Exception e) {
     		LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
     	}
@@ -127,10 +139,10 @@ public class SimpleConceptViewController {
 	    	for (Integer descType: sortedDescs.keySet()) {
 	    		for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
 	    			if (desc.getNid() != con.getPreferredDescription().getNid()) {
-			    		Label descLabel = helper.createComponentLabel(desc, desc.getText(), ComponentType.DESCRIPTION, false);
+			    		Label descLabel = labelHelper.createComponentLabel(desc, desc.getText(), ComponentType.DESCRIPTION, false);
 			    		descLabelVBox.getChildren().add(descLabel);
 		
-			    		Label descTypeLabel = helper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, true);
+			    		Label descTypeLabel = labelHelper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, true, desc.getTypeNid());
 			    		descTypeVBox.getChildren().add(descTypeLabel);
 		    		}
 	    		}
@@ -174,10 +186,10 @@ public class SimpleConceptViewController {
 	private void addRels(Set<RelationshipVersionBI> rels) {
 		for (RelationshipVersionBI rel: rels) {
 			if (!rel.isInferred()) {
-	    		Label relLabel = helper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, false);
+	    		Label relLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, false, rel.getDestinationNid());
 	    		relLabelVBox.getChildren().add(relLabel);
 
-	    		Label relTypeLabel = helper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, true);
+	    		Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, true, rel.getTypeNid());
 	    		relTypeVBox.getChildren().add(relTypeLabel);
     		}
 		}
@@ -204,6 +216,8 @@ public class SimpleConceptViewController {
 				}
 			}
 		});
+		
+		labelHelper.setPane(simpleConceptPane);
 		
 /*		if (simpleConceptPane.getScene() != null) {
 			simpleConceptPane.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
