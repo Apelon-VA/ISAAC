@@ -23,6 +23,9 @@ import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.Stack;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -50,28 +53,15 @@ import org.slf4j.LoggerFactory;
 public class ConceptViewerLabelHelper {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerLabelHelper.class);
+	
+	private AnchorPane pane;
+	private boolean isWindow = false;
+	private Stack<Integer> previousConceptStack;
+	
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
-	private AnchorPane pane;
-	
-	public void handleOnKeyReleased(KeyEvent event)
-	{
-		if (event.getCode() == KeyCode.CONTROL)
-		{
-			viewerHelper.setControlKeyPressed(false);
-		}
-	}
-	
-	public void handleOnKeyPressed(KeyEvent event)
-	{
-		if (event.getCode() == KeyCode.CONTROL)
-		{
-			viewerHelper.setControlKeyPressed(true);
-		}
-	}
 
-	
-	
+
 	// Create/Initialize without refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt) {
 		tooltipHelper.setDefaultTooltip(label, comp, type);
@@ -82,7 +72,6 @@ public class ConceptViewerLabelHelper {
 
 		createConceptContextMenu(label, txt);
 	}
-
 
 	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isTypeLabel) {
 		Label l = new Label();
@@ -111,21 +100,33 @@ public class ConceptViewerLabelHelper {
 	        }
 		});
 				
+		MenuItem copyContentItem = new MenuItem("Copy Content");
+		copyContentItem.setGraphic(Images.COPY.createImageView());
+		copyContentItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				viewerHelper.copyToClipboard(label.getTooltip().getText());
+			}
+		});
+		rtClickMenu.getItems().add(copyContentItem);
+		
 		rtClickMenu.getItems().add(copyTextItem);
+
 		label.setContextMenu(rtClickMenu);
 	}
 
 
-	
 	// Create/Initialize with refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, int refNid) {
 		initializeLabel(label, comp, type, txt);
-		createConceptContextMenu(label, refNid);
+		createConceptContextMenu(label, refNid, comp.getConceptNid());
 	}
 
 	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isTypeLabel, int refNid) {
 		Label label = createComponentLabel(comp, txt, type, isTypeLabel);
-		createConceptContextMenu(label, refNid);
+		createConceptContextMenu(label, refNid, comp.getConceptNid());
 
 		return label;
 	}
@@ -177,19 +178,24 @@ public class ConceptViewerLabelHelper {
 		label.setContextMenu(rtClickMenu);
 	}
 	
-	private void createConceptContextMenu(Label label, int refNid) {
+	private void createConceptContextMenu(Label label, int refNid, int currentConceptNid) {
 		ContextMenu rtClickMenu = label.getContextMenu();
 		
-		MenuItem viewItem = new MenuItem("View Concept");
-		viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
-		viewItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
+		if (isWindow) {
+			MenuItem viewItem = new MenuItem("View Concept");
+			viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+			viewItem.setOnAction(new EventHandler<ActionEvent>()
 			{
-				AppContext.getService(SimpleConceptView.class).changeConcept(((Stage)pane.getScene().getWindow()), refNid);
-			}
-		});
+				@Override
+				public void handle(ActionEvent event)
+				{
+					previousConceptStack.push(currentConceptNid);
+					AppContext.getService(SimpleConceptView.class).changeConcept(((Stage)pane.getScene().getWindow()), refNid);
+				}
+			});
+			
+			rtClickMenu.getItems().add(0, viewItem);
+		}
 		
 		MenuItem viewNewItem = new MenuItem("View Concept New Panel");
 		viewNewItem.setGraphic(Images.COPY.createImageView());
@@ -202,26 +208,27 @@ public class ConceptViewerLabelHelper {
 			}
 		});
 		
-		MenuItem copyContentItem = new MenuItem("Copy Content");
-		copyContentItem.setGraphic(Images.COPY.createImageView());
-		copyContentItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				viewerHelper.copyToClipboard(label.getTooltip().getText());
-			}
-		});
-		
-		rtClickMenu.getItems().add(0, viewItem);
 		rtClickMenu.getItems().add(1, viewNewItem);
-		rtClickMenu.getItems().add(copyContentItem);
 		
 		label.setContextMenu(rtClickMenu);
 		createIdsContextMenu(label, refNid);
 	}
 
+
+	// Setters&Getters
 	public void setPane(AnchorPane simpleConceptPane) {
 		pane = simpleConceptPane;
-	}		
+	}
+
+	public void setIsWindow(boolean isWindow) {
+		this.isWindow = isWindow;
+	}
+
+	public Stack<Integer> getPreviousConceptStack() {
+		return previousConceptStack;
+	}
+
+	public void setPrevConStack(Stack<Integer> stack) {
+		previousConceptStack = stack;
+	}
 }

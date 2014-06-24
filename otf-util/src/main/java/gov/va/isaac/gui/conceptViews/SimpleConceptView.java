@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.UUID;
 
 import javafx.application.Platform;
@@ -65,7 +66,21 @@ import org.slf4j.LoggerFactory;
 @PerLookup
 public class SimpleConceptView implements EnhancedConceptViewI {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    public class ConceptViewStage  extends Stage{
+
+		private Stack<Integer> previousConceptStack;
+
+		public ConceptViewStage(Stack<Integer> stack) {
+			previousConceptStack = stack;
+		}
+
+		public Stack<Integer> getPreviousConceptStack() {
+			return previousConceptStack;
+		}
+
+	}
+
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private final SimpleConceptViewController controller;
 	private Parent root;
 
@@ -78,8 +93,8 @@ public class SimpleConceptView implements EnhancedConceptViewI {
         this.controller = loader.getController();
     }
 
-    private Stage getStage() {
-    	Stage st = new Stage();
+    private ConceptViewStage getStage(Stack<Integer> stack) {
+    	ConceptViewStage st = new ConceptViewStage(stack);
     	
         st.initOwner(null);
         st.initModality(Modality.NONE);
@@ -144,7 +159,7 @@ public class SimpleConceptView implements EnhancedConceptViewI {
 	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
 	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
 	        LOG.info("Finished loading concept with UUID " + conceptUUID);
-	        controller.setConcept(concept);
+	        controller.setConcept(concept, ((ConceptViewStage)stage).getPreviousConceptStack());
     	} catch (IOException | ContradictionException e) {
             String title = "Unexpected error loading concept with UUID " + conceptUUID;
             String msg = e.getClass().getName();
@@ -180,17 +195,18 @@ public class SimpleConceptView implements EnhancedConceptViewI {
     private void setConcept(ConceptChronicleDdo concept) {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
-        controller.setConcept(concept);
+        Stack<Integer> stack = new Stack<Integer>();
+        controller.setConcept(concept, stack);
 
         // Title will change after concept is set.
-        Stage st = getStage();
+        ConceptViewStage st = getStage(stack);
         st.setTitle(controller.getTitle());
         st.show();
         //doesn't come to the front unless you do this (on linux, at least)
         Platform.runLater(() -> {st.toFront();});
     }
     
-    // Put this on right-click List 
+	// Put this on right-click List 
     /**
      * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#showConcept(UUID)
      */

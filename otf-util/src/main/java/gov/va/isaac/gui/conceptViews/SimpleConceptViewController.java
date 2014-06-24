@@ -30,13 +30,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.UUID;
 
+import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -60,17 +65,14 @@ import org.slf4j.LoggerFactory;
 */
 
 public class SimpleConceptViewController {
-
-	private ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
-	private ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
-	
-	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
-	private ConceptVersionBI con;
-
+	@FXML private AnchorPane simpleConceptPane;
+    
+	// Top Labels
     @FXML private Label releaseIdLabel;
     @FXML private Label isPrimLabel;
     @FXML private Label fsnLabel;
     
+    // Descriptions
     @FXML private VBox descriptionsBox;
     @FXML private HBox prefTermBox;
     @FXML private Label prefTermLabel;
@@ -78,23 +80,45 @@ public class SimpleConceptViewController {
     @FXML private VBox descLabelVBox;
     @FXML private VBox descTypeVBox;
     
+    // Relationships
     @FXML private VBox relationshipBox;
     @FXML private HBox isAChildBox;
     @FXML private Label isAChildLabel;
     @FXML private VBox relLabelVBox;
     @FXML private VBox relTypeVBox;
 
+    // Radio Buttons
+    @FXML private ToggleGroup viewGroup;
+    @FXML private RadioButton  historicalRadio;
+    @FXML private RadioButton basicRadio;
+    @FXML private RadioButton detailedRadio;
 
-    @FXML private AnchorPane simpleConceptPane;
+    // Buttons
     @FXML private Button closeButton;
     @FXML private Button taxonomyButton;
-    @FXML private Button historyButton;
-    @FXML private Button detailedButton;
-    @FXML private Button inferredButton;
-    
-    public void setConcept(ConceptChronicleDdo concept)  {
-    	initialize();
+    @FXML private Button modifyButton;
+    @FXML private Button previousButton;
 
+	private ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
+	private ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
+	
+	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
+	private ConceptVersionBI con;
+	private BooleanBinding prevButtonQueueFilled;
+
+	// Called on Window
+	void setConcept(ConceptChronicleDdo concept, Stack<Integer> stack) {
+		initializeWindow(stack);
+		setupConceptDetails(concept);		
+	}
+
+	// Called on Panel
+	public void setConcept(ConceptChronicleDdo concept)  {
+		intializePane();
+		setupConceptDetails(concept);		
+	}
+	
+	private void setupConceptDetails(ConceptChronicleDdo concept) {
 		con = WBUtility.getConceptVersion(concept.getPrimordialUuid());
 		
     	try {
@@ -195,12 +219,44 @@ public class SimpleConceptViewController {
 		}
 	}
 
-	private void initialize() {
+	public String getTitle() {
+		return "Simple Concept View";
+	}
+
+	private void commonInit() {
+    	// TODO (Until handled, make disabled)
+		modifyButton.setDisable(true);
+		historicalRadio.setDisable(true);
+		detailedRadio.setDisable(true);
+		
+		Tooltip notYetImplTooltip = new Tooltip("Not Yet Implemented");
+		modifyButton.setTooltip(notYetImplTooltip);
+		historicalRadio.setTooltip(notYetImplTooltip);
+		detailedRadio.setTooltip(notYetImplTooltip);
+		
+		labelHelper.setPane(simpleConceptPane);
+	}
+
+	private void intializePane() {
+		commonInit();
+		closeButton.setVisible(false);
+		previousButton.setVisible(false);
+		modifyButton.setVisible(false);
+		taxonomyButton.setVisible(false);
+	}
+
+	private void initializeWindow(Stack<Integer> stack) {
+		commonInit();
+
+		labelHelper.setPrevConStack(stack);
+		labelHelper.setIsWindow(true);
+
 		closeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				((Stage)simpleConceptPane.getScene().getWindow()).close();
-		}});
+			}
+		});
 		
 		taxonomyButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -217,25 +273,23 @@ public class SimpleConceptViewController {
 			}
 		});
 		
-		labelHelper.setPane(simpleConceptPane);
-		
-/*		if (simpleConceptPane.getScene() != null) {
-			simpleConceptPane.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
-
-				@Override
-				public void handle(KeyEvent event) {
-					int a = 2;
-					if (event.getCode() == KeyCode.CONTROL)
-					{
-						controlKeyPressed = true;
-					}
-				}
+		previousButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
 				
-			});
-		}
-*/	}
-
-	public String getTitle() {
-		return "Simple Concept View";
+				int prevConNid = labelHelper.getPreviousConceptStack().pop();
+				AppContext.getService(SimpleConceptView.class).changeConcept(((Stage)simpleConceptPane.getScene().getWindow()), prevConNid);
+			}
+		});
+		
+		prevButtonQueueFilled = new BooleanBinding()
+		{
+			@Override
+			protected boolean computeValue()
+			{
+				return !labelHelper.getPreviousConceptStack().isEmpty();
+			}
+		};
+		previousButton.disableProperty().bind(prevButtonQueueFilled.not());
 	}
 }
