@@ -82,6 +82,7 @@ public class ComponentsController implements PanelControllers {
 	
 	private UpdateableBooleanBinding allValid;
 
+	//TODO this page still needs a vertical scrollbar
 	@Override
 	public void initialize() {		
 		vc = WBUtility.getViewCoordinate();
