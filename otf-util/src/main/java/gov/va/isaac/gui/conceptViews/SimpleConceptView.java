@@ -89,6 +89,7 @@ public class SimpleConceptView implements EnhancedConceptViewI {
         URL resource = this.getClass().getResource("SimpleView.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         root = (Parent) loader.load();
+        root.getStylesheets().add(SimpleConceptView.class.getResource("SimpleView.css").toString());
 
         this.controller = loader.getController();
     }
