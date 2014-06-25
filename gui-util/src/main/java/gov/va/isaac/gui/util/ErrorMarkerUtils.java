@@ -28,6 +28,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Tooltip;
@@ -85,7 +86,19 @@ public class ErrorMarkerUtils
 		StackPane.setAlignment(initialControl, Pos.CENTER_LEFT);
 		stackPane.getChildren().add(exclamation);
 		StackPane.setAlignment(exclamation, Pos.CENTER_RIGHT);
-		double insetFromRight = (initialControl instanceof ComboBox ? 30.0 : 5.0);
+		double insetFromRight;
+		if (initialControl instanceof ComboBox)
+		{
+			insetFromRight = 30.0;
+		}
+		else if (initialControl instanceof ChoiceBox)
+		{
+			insetFromRight = 25.0;
+		}
+		else
+		{
+			insetFromRight = 5.0;
+		}
 		StackPane.setMargin(exclamation, new Insets(0.0, insetFromRight, 0.0, 0.0));
 		return stackPane;
 	}
