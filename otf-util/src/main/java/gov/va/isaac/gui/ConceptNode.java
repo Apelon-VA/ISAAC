@@ -109,6 +109,9 @@ public class ConceptNode implements ConceptLookupCallback
 		this(initialConcept, flagAsInvalidWhenBlank, null, null);
 	}
 
+	/**
+	 * descriptionReader is optional
+	 */
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank, ObservableList<SimpleDisplayConcept> dropDownOptions, 
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
