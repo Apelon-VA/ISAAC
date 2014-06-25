@@ -53,6 +53,9 @@ public class RelRow
 	private UpdateableBooleanBinding rowValid;
 	SimpleStringProperty groupFieldInvalidReason_ = new SimpleStringProperty("");
 	SimpleStringProperty typeFieldInvalidReason_ = new SimpleStringProperty("A Type selection is required");
+	
+	// TODO add validation of this type (unless drools covers it)
+	SimpleStringProperty typeTargetInvalidReason_ = new SimpleStringProperty("Relationship type may not be same as relationship target");
 
 	public RelRow()
 	{
@@ -62,7 +65,7 @@ public class RelRow
 		target = new ConceptNode(null, true);
 		
 		//TODO add validation icons / reasons
-		type = new ChoiceBox<String>(FXCollections.observableArrayList("", "Role", "Qualifier"));
+		type = new ChoiceBox<String>(FXCollections.observableArrayList("Role", "Qualifier"));
 		type.valueProperty().addListener(new ChangeListener<String>()
 		{
 			@Override

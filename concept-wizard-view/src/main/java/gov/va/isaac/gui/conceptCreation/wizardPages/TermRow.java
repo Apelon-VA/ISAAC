@@ -87,7 +87,7 @@ public class TermRow
 		});
 		synonymNode = ErrorMarkerUtils.setupErrorMarker(term, textFieldInvalidReason_);
 		
-		type = new ChoiceBox<>(FXCollections.observableArrayList("", "Synonym", "Definition"));
+		type = new ChoiceBox<>(FXCollections.observableArrayList("Synonym", "Definition"));
 		type.valueProperty().addListener(new ChangeListener<String>()
 		{
 			@Override
