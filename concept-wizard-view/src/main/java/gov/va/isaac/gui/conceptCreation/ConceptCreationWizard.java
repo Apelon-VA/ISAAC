@@ -107,6 +107,7 @@ public class ConceptCreationWizard implements ConceptCreationViewI
 		Stage stage = new Stage(StageStyle.DECORATED);
 		stage.initModality(Modality.NONE);
 		stage.setScene(new Scene(new ScreensController(), 600, 400));
+		stage.setMinWidth(600);
 		stage.setTitle("Define New Concept");
 		stage.getScene().getStylesheets().add(ConceptCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
 		stage.show();

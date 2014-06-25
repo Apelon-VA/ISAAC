@@ -136,10 +136,10 @@ public class SummaryController implements PanelControllers {
 			noSynsLabel.setVisible(false);
 			synonymGridPane.setVisible(true);
 			for (int i = 0; i < synCount; i++) {
-				TextField term = new TextField(processController.getWizard().getTerm(i));
-				TextField accept = new TextField(processController.getWizard().getTypeString(i));
-				TextField caseSens = new TextField(processController.getWizard().getCaseSensitivity(i));
-				TextField lang = new TextField(processController.getWizard().getLanguage(i));
+				Label term = new Label(processController.getWizard().getTerm(i));
+				Label accept = new Label(processController.getWizard().getTypeString(i));
+				Label caseSens = new Label(processController.getWizard().getCaseSensitivity(i));
+				Label lang = new Label(processController.getWizard().getLanguage(i));
 	
 				termVBox.getChildren().add(term);
 				acceptVBox.getChildren().add(accept);
@@ -160,10 +160,10 @@ public class SummaryController implements PanelControllers {
 			relationshipGridPane.setVisible(true);
 			
 			for (int i = 0; i < relCount; i++) {
-				TextField relType = new TextField(processController.getWizard().getRelType(i));
-				TextField target = new TextField(processController.getWizard().getTarget(i));
-				TextField qualRole = new TextField(processController.getWizard().getQualRole(i));
-				TextField group = new TextField(processController.getWizard().getGroup(i));
+				Label relType = new Label(processController.getWizard().getRelType(i));
+				Label target = new Label(processController.getWizard().getTarget(i));
+				Label qualRole = new Label(processController.getWizard().getQualRole(i));
+				Label group = new Label(processController.getWizard().getGroup(i));
 	
 				relTypeVBox.getChildren().add(relType);
 				targetVBox.getChildren().add(target);
@@ -176,7 +176,7 @@ public class SummaryController implements PanelControllers {
 	private void addAllParents(List<ConceptVersionBI> parents) {
 		try {
 			for (ConceptVersionBI p : parents) {
-				TextField tf = new TextField(p.getPreferredDescription().getText());
+				Label tf = new Label(p.getPreferredDescription().getText());
 				parentVBox.getChildren().add(tf);
 			}
 				
