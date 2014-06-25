@@ -27,8 +27,10 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -80,21 +82,10 @@ public class ComponentsController implements PanelControllers {
 	
 	private UpdateableBooleanBinding allValid;
 
-//	private int acceptableTypeNid;
-//	private int synonymTypeNid;
-
-
 	@Override
 	public void initialize() {		
 		vc = WBUtility.getViewCoordinate();
-		
-//		try {
-//			acceptableTypeNid = SnomedMetadataRf2.ACCEPTABLE_RF2.getNid();
-//			synonymTypeNid = SnomedMetadataRf2.SYNONYM_RF2.getNid();
-//		} catch (Exception e) {
-//			LOG.error("Unable to identify acceptable and synonym types.  Points to larger problem", e);
-//		}
-		
+			
 		// Buttons
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -135,10 +126,6 @@ public class ComponentsController implements PanelControllers {
 						return false;
 					}
 				}
-				if (relationships.size() == 0)
-				{
-					return false;
-				}
 				for (TermRow dr : descriptions)
 				{
 					if (!dr.isValid().get())
@@ -146,22 +133,61 @@ public class ComponentsController implements PanelControllers {
 						return false;
 					}
 				}
-				if (descriptions.size() == 0)
-				{
-					return false;
-				}
 				return true;
 			}
 		};
 		
 		// Screen Components
-		addNewSynonymHandler();
-		addNewRelationshipHandler();
+		addBlankSynonymRow();
+		addBlankRelationshipRow();
 		
 		continueButton.disableProperty().bind(allValid.not());
 	}
+	
+	private void addBlankSynonymRow()
+	{
+		synonymVBox.getChildren().add(new Label("<No Terms>                    "));//TODO HACK!
+		synonymVBox.setAlignment(Pos.CENTER_RIGHT);
+		// Setup Add Button
+		Button addSynonymButton = new Button("+");
+		addSynonymButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				addNewSynonymHandler();
+			}
+		});
+		
+		addSynonymButtonVBox.getChildren().add(addSynonymButton);
+	}
+	
+	private void addBlankRelationshipRow()
+	{
+		targetVBox.getChildren().add(new Label("<No Relationships>"));
+		
+		// Add new Add Parent Button
+		Button addRelationshipButton = new Button("+");
+		addRelationshipButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				addNewRelationshipHandler();
+			}
+		});
+		addRelationshipButtonVBox.getChildren().add(addRelationshipButton);
+	}
+	
 
 	private void addNewSynonymHandler() {
+		//remove the blank row
+		if (descriptions.size() == 0)
+		{
+			synonymVBox.getChildren().remove(0);
+			addSynonymButtonVBox.getChildren().remove(0);
+		}
+		else
+		{
+			synonymVBox.setAlignment(Pos.CENTER_LEFT);
+		}
+		
 		// Setup Term
 		TermRow dr = new TermRow();
 		descriptions.add(dr);
@@ -196,11 +222,16 @@ public class ComponentsController implements PanelControllers {
 		});
 		removeSynonymButtonVBox.getChildren().add(removeSynonymButton);
 		
-		handleRemoveButtonVisibility(removeSynonymButtonVBox);
+//		handleRemoveButtonVisibility(removeSynonymButtonVBox);
 	}
 
 	private void addNewRelationshipHandler() {
-		
+		//remove the blank row
+		if (relationships.size() == 0)
+		{
+			targetVBox.getChildren().remove(0);
+			addRelationshipButtonVBox.getChildren().remove(0);
+		}
 		RelRow rr = new RelRow();
 		relationships.add(rr);
 		allValid.addBinding(rr.isValid());
@@ -239,10 +270,10 @@ public class ComponentsController implements PanelControllers {
 		});
 		removeRelationshipButtonVBox.getChildren().add(removeRelationshipButton);
 
-		handleRemoveButtonVisibility(removeRelationshipButtonVBox);
 	}
 	
 	private void removeNewRelationshipHandler(int idx) {
+		int size = relationships.size();
 		RelRow rr = relationships.remove(idx);
 		allValid.removeBinding(rr.isValid());
 		
@@ -252,11 +283,16 @@ public class ComponentsController implements PanelControllers {
 		groupVBox.getChildren().remove(idx);
 		addRelationshipButtonVBox.getChildren().remove(idx);
 		removeRelationshipButtonVBox.getChildren().remove(idx);
-
-		handleRemoveButtonVisibility(removeRelationshipButtonVBox);
+		
+		if (size == 1)
+		{
+			addBlankRelationshipRow();
+		}
+		
 	}
 	
 	private void removeNewSynonymHandler(int idx) {
+		int size = descriptions.size();
 		TermRow dr = descriptions.remove(idx);
 		allValid.removeBinding(dr.isValid());
 
@@ -266,8 +302,12 @@ public class ComponentsController implements PanelControllers {
 
 		addSynonymButtonVBox.getChildren().remove(idx);
 		removeSynonymButtonVBox.getChildren().remove(idx);
+		
+		if (size == 1)
+		{
+			addBlankSynonymRow();
+		}
 
-		handleRemoveButtonVisibility(removeSynonymButtonVBox);
 	}
 
 	@Override
@@ -280,15 +320,4 @@ public class ComponentsController implements PanelControllers {
 		processController.getWizard().setConceptComponents(descriptions, relationships); 
 	}
 
-	private void handleRemoveButtonVisibility(VBox vb) {
-		int size = vb.getChildren().size();
-		
-		if (size == 1) {
-			((Button)vb.getChildren().get(0)).setVisible(false);
-		} else {
-			for (Node n : vb.getChildren()) {
-				((Button)n).setVisible(true);
-			}
-		}
-	}
 }

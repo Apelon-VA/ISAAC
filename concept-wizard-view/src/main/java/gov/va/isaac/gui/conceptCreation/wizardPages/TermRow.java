@@ -41,14 +41,16 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 public class TermRow
 {
 	Node synonymNode;
+	Node typeNode;
 	SimpleStringProperty textFieldInvalidReason_ = new SimpleStringProperty("The Term is required");
+	SimpleStringProperty typeFieldInvalidReason_ = new SimpleStringProperty("A Type selection is required");
 	SimpleStringProperty termRowInvalidReason_ = new SimpleStringProperty("Must fill out all fields or none");
 
 	TextField term;
 	ChoiceBox<String> type;
 	CheckBox initialCaseSignificant;
 	
-	private UpdateableBooleanBinding descValid, emptyValid, rowValid;
+	private UpdateableBooleanBinding rowValid;
 	
 	public TermRow()
 	{
@@ -86,48 +88,40 @@ public class TermRow
 		synonymNode = ErrorMarkerUtils.setupErrorMarker(term, textFieldInvalidReason_);
 		
 		type = new ChoiceBox<>(FXCollections.observableArrayList("", "Synonym", "Definition"));
+		type.valueProperty().addListener(new ChangeListener<String>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+			{
+				
+				String type = newValue.trim();
+				
+				if (type.length() == 0)
+				{
+					typeFieldInvalidReason_.set("A Type selection is required");
+				}
+				else
+				{
+					typeFieldInvalidReason_.set("");
+				}
+			}
+		});
+		
+		typeNode = ErrorMarkerUtils.setupErrorMarker(type, typeFieldInvalidReason_);
+		
 		initialCaseSignificant = new CheckBox();
 		initialCaseSignificant.minHeightProperty().bind(term.heightProperty());
-		//TODO add validators
-		
-		descValid = new UpdateableBooleanBinding()
-		{
-			{
-				setComputeOnInvalidate(true);
-				bind(textFieldInvalidReason_);
-			}
-			
-			@Override
-			protected boolean computeValue()
-			{
-				return textFieldInvalidReason_.get().length() == 0;
-			}
-		};
-
-		emptyValid = new UpdateableBooleanBinding()
-		{
-			{
-				setComputeOnInvalidate(true);
-				bind(type.valueProperty(), term.textProperty(), initialCaseSignificant.selectedProperty());
-			}
-			@Override
-			protected boolean computeValue()
-			{
-				return ((type.getSelectionModel().getSelectedItem() != null || type.getSelectionModel().getSelectedIndex() == 0) &&
-						 term.getText().trim().isEmpty() && !initialCaseSignificant.isSelected());
-			}
-		};
 		
 		rowValid = new UpdateableBooleanBinding()
 		{
 			{	
 				setComputeOnInvalidate(true);
-				bind(emptyValid, descValid);
+				bind(textFieldInvalidReason_, typeFieldInvalidReason_);
 			}
 			@Override
 			protected boolean computeValue()
 			{
-				return (descValid.get() || emptyValid.get());
+				return (textFieldInvalidReason_.get().length() == 0 && typeFieldInvalidReason_.get().length() == 0);
 			}
 		};
 	}
@@ -144,7 +138,7 @@ public class TermRow
 	
 	public Node getTypeNode()
 	{
-		return type;
+		return typeNode;
 	}
 	
 	public String getTypeString()

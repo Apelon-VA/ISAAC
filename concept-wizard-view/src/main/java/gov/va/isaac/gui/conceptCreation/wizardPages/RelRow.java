@@ -19,11 +19,21 @@
 package gov.va.isaac.gui.conceptCreation.wizardPages;
 
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
+import gov.va.isaac.util.WBUtility;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 
 /**
@@ -36,81 +46,87 @@ public class RelRow
 	ConceptNode relationship;
 	ConceptNode target;
 	ChoiceBox<String> type;
+	Node typeNode;
 	TextField group;
+	Node groupNode;
 	
-	private UpdateableBooleanBinding rowValid, emptyValid, fieldsValid;
+	private UpdateableBooleanBinding rowValid;
+	SimpleStringProperty groupFieldInvalidReason_ = new SimpleStringProperty("");
+	SimpleStringProperty typeFieldInvalidReason_ = new SimpleStringProperty("A Type selection is required");
 
 	public RelRow()
 	{
-		relationship = new ConceptNode(null, true);
+		ObservableList<SimpleDisplayConcept> dropDownOptions = FXCollections.observableArrayList();
+		dropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
+		relationship = new ConceptNode(null, true, dropDownOptions, null);
 		target = new ConceptNode(null, true);
 		
 		//TODO add validation icons / reasons
 		type = new ChoiceBox<String>(FXCollections.observableArrayList("", "Role", "Qualifier"));
+		type.valueProperty().addListener(new ChangeListener<String>()
+		{
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+			{
+				
+				String type = newValue.trim();
+				
+				if (type.length() == 0)
+				{
+					typeFieldInvalidReason_.set("A Type selection is required");
+				}
+				else
+				{
+					typeFieldInvalidReason_.set("");
+				}
+			}
+		});
+		
+		typeNode = ErrorMarkerUtils.setupErrorMarker(type, typeFieldInvalidReason_);
+		
 		group = new TextField("0");
-		
-		fieldsValid = new UpdateableBooleanBinding()
+		group.setMinWidth(45.0);  //TODO figure out why this is needed
+		group.textProperty().addListener(new ChangeListener<String>()
 		{
-			{
-				setComputeOnInvalidate(true);
-				bind(relationship.isValid(), target.isValid(), type.valueProperty(), group.textProperty());
-			}
 			@Override
-			protected boolean computeValue()
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
 			{
-				String grpStr = group.getText().trim();
-				if (grpStr.length() > 0) {
-					try {
-						int a = Integer.valueOf(grpStr);
-					} catch (Exception e) {
-						return false;
+				
+				String group = newValue.trim();
+				
+				if (group.length() == 0)
+				{
+					groupFieldInvalidReason_.set("A group is required");
+				}
+				else
+				{
+					try
+					{
+						Integer.parseInt(group);
+						groupFieldInvalidReason_.set("");
+					}
+					catch (NumberFormatException e)
+					{
+						groupFieldInvalidReason_.set("The group field must be a number");
 					}
 				}
-				
-				return (relationship.isValid().get() && target.isValid().get() && 
-						(type.getSelectionModel().getSelectedItem() != null || type.getSelectionModel().getSelectedIndex() == 0));
-				
 			}
-		};
+		});
 		
-		emptyValid = new UpdateableBooleanBinding()
-		{
-			{
-				setComputeOnInvalidate(true);
-				bind(relationship.isValid(), target.isValid(), type.valueProperty(), group.textProperty());
-			}
-			@Override
-			protected boolean computeValue()
-			{
-				boolean grpFilled = false;
-				String grpStr = group.getText().trim();
-				
-				if (grpStr.length() > 0) {
-					try {
-						grpFilled = Integer.valueOf(grpStr) > 0;
-					} catch (Exception e) {
-						return false;
-					}
-				}
-
-				return (relationship.isEmpty().get() && target.isEmpty().get() && type.getSelectionModel().getSelectedItem() == null && !grpFilled);
-			}
-		};
-		
+		groupNode = ErrorMarkerUtils.setupErrorMarker(group, groupFieldInvalidReason_);
 		rowValid = new UpdateableBooleanBinding()
 		{
-			{	
+			{
 				setComputeOnInvalidate(true);
-				bind(emptyValid, fieldsValid);
+				bind(relationship.isValid(), target.isValid(), typeFieldInvalidReason_, groupFieldInvalidReason_);
 			}
 			@Override
 			protected boolean computeValue()
 			{
-				return (fieldsValid.get() || emptyValid.get());
+				return (relationship.isValid().get() && target.isValid().get() && 
+						typeFieldInvalidReason_.get().length() == 0 && groupFieldInvalidReason_.get().length() == 0);
 			}
 		};
-		
-
 	}
 
 	public BooleanBinding isValid()
@@ -141,13 +157,12 @@ public class RelRow
 		return target.getConcept().getNid();
 	}
 
-
 	/**
 	 * @return the type
 	 */
-	public ChoiceBox<String> getTypeNode()
+	public Node getTypeNode()
 	{
-		return type;
+		return typeNode;
 	}
 
 	public RelationshipType getType()
@@ -165,9 +180,9 @@ public class RelRow
 	/**
 	 * @return the group
 	 */
-	public TextField getGroupNode()
+	public Node getGroupNode()
 	{
-		return group;
+		return groupNode;
 	}
 	
 	public int getGroup()

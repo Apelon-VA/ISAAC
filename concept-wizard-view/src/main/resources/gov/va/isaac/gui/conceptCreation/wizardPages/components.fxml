@@ -105,11 +105,11 @@
 								</Label>
 								<GridPane fx:id="relationshipGridPane" hgap="1.0" vgap="10.0">
 									<columnConstraints>
-										<ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="300.0" minWidth="-Infinity" prefWidth="208.0" />
+										<ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="300.0" minWidth="-Infinity" prefWidth="200.0" />
 										<ColumnConstraints hgrow="SOMETIMES" maxWidth="300.0" minWidth="-Infinity" prefWidth="207.0" />
 										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity"
 											prefWidth="75.0" />
-										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="38.0" />
+										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="50.0" />
 										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="25.0" />
 										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="25.0" />
 									</columnConstraints>
