@@ -34,6 +34,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -60,29 +61,29 @@ public class ConceptViewerLabelHelper {
 
 
 	// Create/Initialize without refNid
-	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt) {
-		tooltipHelper.setDefaultTooltip(label, comp, type);
+	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
     	label.setText(txt);
-
+		
+		if (isConcept) {
+			label.setTextFill(Color.BLUE);
+		} else {
+			label.setTextFill(Color.BLACK);
+		}
+		
+		tooltipHelper.setDefaultTooltip(label, comp, type);
 		label.addEventHandler(MouseEvent.MOUSE_ENTERED, tooltipHelper.getCompTooltipEnterHandler(comp, type));
 		label.addEventHandler(MouseEvent.MOUSE_EXITED, tooltipHelper.getCompTooltipExitHandler(comp, type));
 
 		createConceptContextMenu(label, txt);
 	}
 
-	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isTypeLabel) {
-		Label l = new Label();
-		l.setFont(new Font(18));
-//		l.setTextFill(Color.BLUE);
+	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isConcept) {
+		Label label = new Label();
+    	label.setFont(new Font(18));
+
+		initializeLabel(label, comp, type, txt, isConcept);
 		
-		if (isTypeLabel) {
-//			l.setTextFill(Color.BLUE);
-//			l.setStyle("-fx-background-color: YELLOW; -fx-border-color: GREEN; -fx-border-width: 2");
-		}
-		
-		initializeLabel(l, comp, type, txt);
-		
-		return l;
+		return label;
 	}
 
 	private void createConceptContextMenu(Label label, String txt) {
@@ -117,13 +118,14 @@ public class ConceptViewerLabelHelper {
 
 
 	// Create/Initialize with refNid
-	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, int refNid) {
-		initializeLabel(label, comp, type, txt);
+	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, int refNid, boolean isConcept) {
+		initializeLabel(label, comp, type, txt, isConcept);
 		createConceptContextMenu(label, refNid, comp.getConceptNid());
 	}
 
-	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isTypeLabel, int refNid) {
-		Label label = createComponentLabel(comp, txt, type, isTypeLabel);
+	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, int refNid, boolean isConcept) {
+		Label label = createComponentLabel(comp, txt, type, isConcept);
+
 		createConceptContextMenu(label, refNid, comp.getConceptNid());
 
 		return label;

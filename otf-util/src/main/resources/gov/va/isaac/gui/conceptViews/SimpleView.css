@@ -1,0 +1,24 @@
+@CHARSET "ISO-8859-1";
+
+
+.button-green {
+    -fx-background-color:
+        linear-gradient(#88dda6, #70d794),
+        radial-gradient(center 50% -40%, radius 200%, #9bdfb3 45%, #69d38e 50%);
+    -fx-background-radius: 6, 5;
+    -fx-background-insets: 0, 3;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.4) , 5, 0.0 , 0 , 1 );
+    -fx-text-fill: #000000;
+}
+
+.zone {
+    -fx-background-color: #ececec;
+	-fx-border-color: BLACK;
+    -fx-border-width: .25;
+	-fx-border-radius: 6;
+    -fx-background-insets: 0 0 -1 0,0,1;
+    -fx-background-radius: 5,5,4;
+    -fx-padding: 3 30 3 30;
+    -fx-text-fill: #242d35;
+    -fx-font-size: 14px;
+}

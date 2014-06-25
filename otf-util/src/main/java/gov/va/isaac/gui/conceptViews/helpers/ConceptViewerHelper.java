@@ -1,14 +1,21 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.util.WBUtility;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
+import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_long.RefexLongVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +48,7 @@ public class ConceptViewerHelper {
         // Official approach found int AlternativeIdResource.class
         
         try {
-	        for (RefexChronicleBI<?> annotation : attr.getAnnotations()) {
+	        for (RefexChronicleBI annotation : attr.getAnnotations()) {
 				if (annotation.getAssemblageNid() == getSnomedAssemblageNid()) {
 					RefexLongVersionBI sctid = (RefexLongVersionBI) annotation.getPrimordialVersion();
 					sctidString = Long.toString(sctid.getLong1());
@@ -93,6 +100,22 @@ public class ConceptViewerHelper {
 			LOG.debug("Cannot access concept's attributes for concept: " + con.getNid(), e);
 			return null;
 		}
+	}
+
+	public Set<RefexVersionBI> getAnnotations(ComponentVersionBI comp) {
+		Set<RefexVersionBI> retSet = new HashSet<RefexVersionBI>();
+		
+		try {
+			for (RefexVersionBI annot : comp.getAnnotationsActive(WBUtility.getViewCoordinate())) {
+				if (annot.getAssemblageNid() != getSnomedAssemblageNid()) {
+					retSet.add(annot);
+				}
+			}
+		} catch (IOException e) {
+			LOG.error("Unable to access annotations", e);
+		}
+		
+		return retSet;
 	}
 
 }

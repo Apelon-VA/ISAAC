@@ -6,11 +6,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="simpleConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.SimpleConceptViewController">
-<children><BorderPane>
+<AnchorPane stylesheets="../SimpleView.css" fx:id="simpleConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.SimpleConceptViewController">
+<children><BorderPane style="-fx-background-color: #F5F5F5;">
 <top>
+<VBox alignment="TOP_CENTER">
+<children>
 <VBox>
-<children><GridPane vgap="10.0">
+<children><GridPane alignment="TOP_CENTER" vgap="10.0">
   <columnConstraints>
 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -30,7 +32,23 @@
 </GridPane><Pane prefHeight="2.0" style="-fx-background-color: black;">
 <VBox.margin>
 <Insets bottom="5.0" left="25.0" right="25.0" top="5.0" />
-</VBox.margin></Pane><Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" prefWidth="598.0" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnSpan="4">
+</VBox.margin></Pane>
+</children>
+</VBox>
+<VBox alignment="CENTER" fillWidth="false">
+<children>
+<GridPane alignment="CENTER" hgap="3.0" VBox.vgrow="SOMETIMES">
+<columnConstraints>
+<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
+<ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" />
+<ColumnConstraints />
+<ColumnConstraints />
+<ColumnConstraints />
+</columnConstraints>
+<rowConstraints>
+<RowConstraints minHeight="10.0" valignment="CENTER" vgrow="SOMETIMES" />
+</rowConstraints>
+<children><VBox fx:id="fsnAnnotVBox" alignment="CENTER" GridPane.vgrow="NEVER" /><Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.columnSpan="4">
 <font>
 <Font name="System Bold" size="24.0" />
 </font>
@@ -41,6 +59,10 @@
 <Insets bottom="10.0" />
 </BorderPane.margin></Label>
 </children>
+</GridPane>
+</children>
+</VBox>
+</children>
 <BorderPane.margin>
 <Insets bottom="50.0" left="5.0" right="5.0" top="5.0" />
 </BorderPane.margin>
@@ -48,15 +70,16 @@
 </top>
 <center><VBox BorderPane.alignment="CENTER">
 <children><VBox alignment="TOP_CENTER" fillWidth="false" spacing="20.0">
-<children><GridPane alignment="CENTER" hgap="10.0" style="-fx-border-color: RED;">
+<children><GridPane alignment="CENTER" hgap="3.0" styleClass="zone">
   <columnConstraints>
-    <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
-    <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="192.0" minWidth="10.0" percentWidth="50.0" prefWidth="147.0" />
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="151.0" minWidth="10.0" percentWidth="50.0" prefWidth="145.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints fillHeight="false" vgrow="NEVER" />
   </rowConstraints>
-<children><Label fx:id="releaseIdLabel" text="Unreleased" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.halignment="LEFT">
+<children><VBox fx:id="conAnnotVBox" alignment="CENTER" /><Label fx:id="releaseIdLabel" styleClass="label-orig" text="Unreleased" textFill="#113357" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="LEFT">
 <BorderPane.margin>
 <Insets left="10.0" />
 </BorderPane.margin>
@@ -65,7 +88,10 @@
 </font>
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></Label><Label fx:id="isPrimLabel" style="-fx-background-color: yellow; -fx-border-color: green; -fx-border-width: 2;" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+</GridPane.margin>
+<padding>
+<Insets right="5.0" />
+</padding></Label><Label fx:id="isPrimLabel" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
 <BorderPane.margin>
 <Insets right="10.0" />
 </BorderPane.margin>
@@ -74,23 +100,27 @@
 </font>
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></Label>
+</GridPane.margin>
+<padding>
+<Insets left="5.0" />
+</padding></Label>
 </children>
 </GridPane>
 </children>
 <VBox.margin>
 <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
 </VBox.margin></VBox><VBox spacing="20.0">
-<children><GridPane style="-fx-border-color: RED;" VBox.vgrow="NEVER">
+<children><GridPane hgap="3.0" styleClass="zone" VBox.vgrow="NEVER">
   <columnConstraints>
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="404.0" minWidth="10.0" prefWidth="394.0" />
+    <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" prefWidth="94.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints fillHeight="false" />
   </rowConstraints>
-<children><VBox fx:id="descLabelVBox" spacing="9.0">
-<children><Label fx:id="prefTermLabel" textFill="BLUE" BorderPane.alignment="CENTER">
+<children><VBox fx:id="descAnnotVBox" alignment="TOP_CENTER" spacing="31.0" /><VBox fx:id="descLabelVBox" spacing="9.0" GridPane.columnIndex="1">
+<children><Label fx:id="prefLabel" textFill="BLUE" BorderPane.alignment="CENTER">
 <BorderPane.margin>
 <Insets left="5.0" />
 </BorderPane.margin>
@@ -100,8 +130,8 @@
 </children>
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="1">
-<children><Label fx:id="prefTypeLabel" style="-fx-background-color: YELLOW; -fx-border-color: Green; -fx-border-width: 2;" text="Preferred" textFill="BLUE" BorderPane.alignment="CENTER">
+</GridPane.margin></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="2">
+<children><Label fx:id="prefTypeLabel" text="Preferred" textFill="#113357" BorderPane.alignment="CENTER">
 <BorderPane.margin>
 <Insets right="5.0" />
 </BorderPane.margin>
@@ -113,18 +143,19 @@
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </GridPane.margin></VBox>
 </children>
-</GridPane><GridPane style="-fx-border-color: RED;" VBox.vgrow="NEVER">
+</GridPane><GridPane hgap="3.0" styleClass="zone" VBox.vgrow="NEVER">
   <columnConstraints>
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints fillHeight="false" />
   </rowConstraints>
-<children><VBox fx:id="relLabelVBox" spacing="9.0">
+<children><VBox fx:id="relAnnotVBox" alignment="TOP_CENTER" spacing="31.0" /><VBox fx:id="relLabelVBox" spacing="9.0" GridPane.columnIndex="1">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="relTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="1">
+</GridPane.margin></VBox><VBox fx:id="relTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="2">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </GridPane.margin></VBox>
@@ -150,7 +181,19 @@
   <rowConstraints>
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
-<children><Button fx:id="modifyButton" mnemonicParsing="false" text="Modify Concept" GridPane.halignment="CENTER" /><Button fx:id="closeButton" mnemonicParsing="false" text="Close View" GridPane.columnIndex="2" GridPane.halignment="CENTER" /><Button fx:id="taxonomyButton" mnemonicParsing="false" text="Show in Taxonomy" GridPane.columnIndex="3" GridPane.halignment="CENTER" /><Button fx:id="previousButton" mnemonicParsing="false" text="Previous Concept" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+<children><Button fx:id="modifyButton" mnemonicParsing="false" styleClass="button-green" text="Modify Concept" GridPane.halignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Button><Button fx:id="closeButton" mnemonicParsing="false" styleClass="button-green" text="Close View" GridPane.columnIndex="2" GridPane.halignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Button><Button fx:id="taxonomyButton" mnemonicParsing="false" styleClass="button-green" text="Show in Taxonomy" GridPane.columnIndex="3" GridPane.halignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Button><Button fx:id="previousButton" mnemonicParsing="false" styleClass="button-green" text="Previous Concept" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Button>
 </children>
 </GridPane>
 </children>

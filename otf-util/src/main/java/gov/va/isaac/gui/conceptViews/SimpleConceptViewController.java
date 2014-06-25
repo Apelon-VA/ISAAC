@@ -46,8 +46,11 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -72,14 +75,17 @@ public class SimpleConceptViewController {
     @FXML private Label releaseIdLabel;
     @FXML private Label isPrimLabel;
     @FXML private Label fsnLabel;
+    @FXML private VBox conAnnotVBox;
+    @FXML private VBox fsnAnnotVBox;
     
     // Descriptions
     @FXML private VBox descriptionsBox;
     @FXML private HBox prefTermBox;
-    @FXML private Label prefTermLabel;
+    @FXML private Label prefLabel;
     @FXML private Label prefTypeLabel;
     @FXML private VBox descLabelVBox;
     @FXML private VBox descTypeVBox;
+    @FXML private VBox descAnnotVBox;
     
     // Relationships
     @FXML private VBox relationshipBox;
@@ -87,7 +93,8 @@ public class SimpleConceptViewController {
     @FXML private Label isAChildLabel;
     @FXML private VBox relLabelVBox;
     @FXML private VBox relTypeVBox;
-
+    @FXML private VBox relAnnotVBox;
+    
     // Radio Buttons
     @FXML private ToggleGroup viewGroup;
     @FXML private RadioButton  historicalRadio;
@@ -125,21 +132,24 @@ public class SimpleConceptViewController {
 		
     	try {
 	        // FSN
-    		labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText());
+    		labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
     		labelHelper.createIdsContextMenu(fsnLabel, con.getNid());
-    		
+			createAnnotRectangle(fsnAnnotVBox, con.getFullySpecifiedDescription());
+
 	    	// PT 
-    		labelHelper.initializeLabel(prefTermLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText());
-    		labelHelper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText(), SnomedMetadataRf2.PREFERRED_RF2.getLenient().getNid());
+    		labelHelper.initializeLabel(prefLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText(), false);
+    		labelHelper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText(), SnomedMetadataRf2.PREFERRED_RF2.getLenient().getNid(), true);
+			createAnnotRectangle(descAnnotVBox, con.getPreferredDescription());
 
 			ConceptAttributeVersionBI attr = viewerHelper.getConceptAttributes(con);
 		
 			// SCT Id
-    		labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, viewerHelper.getSctId(attr));
+    		labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, viewerHelper.getSctId(attr), false);
     		labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
+			createAnnotRectangle(conAnnotVBox, con);
 
     		// Defined Status
-    		labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, viewerHelper.getPrimDef(attr), viewerHelper.getPrimDefNid(attr));
+    		labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, viewerHelper.getPrimDef(attr), viewerHelper.getPrimDefNid(attr), true);
     	} catch (Exception e) {
     		LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
     	}
@@ -151,7 +161,8 @@ public class SimpleConceptViewController {
 	    	Map<Integer, Set<DescriptionVersionBI>> sortedDescs = new HashMap<>();
 
 	    	for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
-	    		if (desc.getTypeNid() != SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getNid()) {
+	    		if (desc.getNid() != con.getFullySpecifiedDescription().getNid() &&
+    				desc.getNid() != con.getPreferredDescription().getNid()) {
 		    		if (!sortedDescs.containsKey(desc.getTypeNid())) {
 		    			Set<DescriptionVersionBI> descs = new HashSet<>();
 		    			sortedDescs.put(desc.getTypeNid(), descs);
@@ -165,10 +176,12 @@ public class SimpleConceptViewController {
 	    	for (Integer descType: sortedDescs.keySet()) {
 	    		for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
 	    			if (desc.getNid() != con.getPreferredDescription().getNid()) {
+	    				createAnnotRectangle(descAnnotVBox, desc);
+	    				
 			    		Label descLabel = labelHelper.createComponentLabel(desc, desc.getText(), ComponentType.DESCRIPTION, false);
 			    		descLabelVBox.getChildren().add(descLabel);
 		
-			    		Label descTypeLabel = labelHelper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, true, desc.getTypeNid());
+			    		Label descTypeLabel = labelHelper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid(), true);
 			    		descTypeVBox.getChildren().add(descTypeLabel);
 		    		}
 	    		}
@@ -203,8 +216,7 @@ public class SimpleConceptViewController {
 				addRels(sortedRels.get(relType));
 			}
 		} catch (IOException | ContradictionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+    		LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
 		}
     	
     }
@@ -212,10 +224,12 @@ public class SimpleConceptViewController {
 	private void addRels(Set<RelationshipVersionBI> rels) {
 		for (RelationshipVersionBI rel: rels) {
 			if (!rel.isInferred()) {
-	    		Label relLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, false, rel.getDestinationNid());
+				createAnnotRectangle(relAnnotVBox, rel);
+
+				Label relLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid(), true);
 	    		relLabelVBox.getChildren().add(relLabel);
 
-	    		Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, true, rel.getTypeNid());
+	    		Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid(), true);
 	    		relTypeVBox.getChildren().add(relTypeLabel);
     		}
 		}
@@ -296,5 +310,16 @@ public class SimpleConceptViewController {
 		
 		simpleConceptPane.setOnKeyPressed(tooltipHelper.getCtrlKeyPressEventHandler());
 		simpleConceptPane.setOnKeyReleased(tooltipHelper.getCtrlKeyReleasedEventHandler());
+	}
+	
+	Rectangle createAnnotRectangle(VBox vbox, ComponentVersionBI comp) {
+		Rectangle rec = new Rectangle(5, 5);
+		rec.setFill(Color.BLACK);
+		
+		rec.setVisible(!viewerHelper.getAnnotations(comp).isEmpty());
+		
+		vbox.getChildren().add(rec);
+		
+		return rec;
 	}
 }

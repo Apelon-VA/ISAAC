@@ -61,24 +61,33 @@ public class ConceptViewerTooltipHelper {
 			public void handle(Event event) {
 				Label l = (Label)event.getSource();
 				if (controlKeyPressed) {
-					String tpText = "There are no refsets for this component";
+					StringBuffer tpText = new StringBuffer("There are no refsets for this component");
 	
 					try {
-						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(WBUtility.getViewCoordinate());
+						Collection<? extends RefexVersionBI> annots = comp.getAnnotationsActive(WBUtility.getViewCoordinate());
 						
+						boolean initialIteration = true;
 						for (RefexVersionBI annot : annots) {
-							try {
-								tpText = createRefsetTooltip(annot);
-							} catch (Exception e) {
-								LOG.error("Unable to access annotations", e);
-								tpText = "Unable to access annotations";
+							if (annot.getAssemblageNid() != viewerHelper.getSnomedAssemblageNid()) {
+								try {
+									if (initialIteration) {
+										initialIteration = false;
+										tpText = new StringBuffer(createRefsetTooltip(annot));
+									} else {
+										tpText.append("\n\n");
+										tpText.append(createRefsetTooltip(annot));
+									}
+								} catch (Exception e) {
+									LOG.error("Unable to access annotations", e);
+									tpText = new StringBuffer("Unable to access annotations");
+								}
 							}
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 	
-					l.getTooltip().setText(tpText);
+					l.getTooltip().setText(tpText.toString());
 					l.getTooltip().setFont(new Font(16));
 				} else {
 					setDefaultTooltip(l, comp, type);
@@ -139,24 +148,12 @@ public class ConceptViewerTooltipHelper {
 		String text = desc.getText();
 		String type = WBUtility.getConPrefTerm(desc.getTypeNid());
 		String caseSig = desc.isInitialCaseSignificant() ? "Is Case Significant" : "Not Case Significant";
-		
-		String status = WBUtility.getStatusString(desc);
-		String time =  WBUtility.getTimeString(desc);
-		String author = WBUtility.getAuthorString(desc); 
-		String module = WBUtility.getModuleString(desc);
-		String path = WBUtility.getPathString(desc);
 
-		return "Term: " + text + "\nType: " + type + " Case Significant: " + caseSig + " Language: " + lang + " \nStatus" + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
+		return "Term: " + text + "\nType: " + type + "  Case Significant: " + caseSig + "  Language: " + lang + getStampTooltip(desc);
 	}
 
 	private String createConTooltipText(ConceptAttributeVersionBI attr) {
-		String status = WBUtility.getStatusString(attr);
-		String time =  WBUtility.getTimeString(attr);
-		String author = WBUtility.getAuthorString(attr); 
-		String module = WBUtility.getModuleString(attr);
-		String path = WBUtility.getPathString(attr);
-
-		return "SctId: " + viewerHelper.getSctId(attr)+ " " + viewerHelper.getPrimDef(attr)+ "\nStatus" + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
+		return "SctId: " + viewerHelper.getSctId(attr)+ " " + viewerHelper.getPrimDef(attr) + getStampTooltip(attr);
 	}
 	
 	private String createRelTooltipText(RelationshipVersionBI rel) {
@@ -169,15 +166,14 @@ public class ConceptViewerTooltipHelper {
 			LOG.error("RelationshipType.getRelationshipType() doesn't handle AdditionalRelationship.  Tracker created");
 			refinCharType = "AdditionalRelationshipType not handled properly";
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("Unknown error in identifying relationship type");
 		}
 		String group = Integer.toString(rel.getGroup());
 		String type = WBUtility.getConPrefTerm(rel.getTypeNid());
 		String target = WBUtility.getConPrefTerm(rel.getDestinationNid());
 		String statInf = rel.isInferred() ? "False" : "True";
 
-		return "Destination: " + target + " Type: " + type + "\nStated: " + statInf + " Relationship Type: " + refinCharType + " Role Group: " + group + getStampTooltip(rel);
+		return "Destination: " + target + "  Type: " + type + "\nStated: " + statInf + "  Relationship Type: " + refinCharType + "  Role Group: " + group + getStampTooltip(rel);
 	}
 
 	void setDefaultTooltip(Label node, ComponentVersionBI comp, ComponentType type) {
@@ -205,7 +201,7 @@ public class ConceptViewerTooltipHelper {
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.CONTROL)
 				{
-					controlKeyPressed = true;
+					controlKeyPressed = false;
 				}
 			}
 		};
@@ -234,6 +230,6 @@ public class ConceptViewerTooltipHelper {
 		String module = WBUtility.getModuleString(comp);
 		String path = WBUtility.getPathString(comp);
 
-		return "\nStatus: " + status + " Time: " + time + " Author: " + author + " Module: " + module + " Path: " + path;
+		return "\nStatus: " + status + "  Time: " + time + "  Author: " + author + "  Module: " + module + "  Path: " + path;
 	}
 }
