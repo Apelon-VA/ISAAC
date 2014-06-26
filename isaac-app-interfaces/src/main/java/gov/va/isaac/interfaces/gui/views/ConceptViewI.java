@@ -29,15 +29,17 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ConceptViewI
+public interface ConceptViewI extends ViewI
 {
 	/**
-	 * Present the default ConceptView window to the user
+	 * Update the view to show the selected concept.
+	 * @param conceptUuid
 	 */
-	public void showConcept(UUID uuid);
+	public void setConcept(UUID conceptUUID);
 	
 	/**
-	 * Present the default ConceptView window to the user
+	 * Update the view to show the selected concept.
+	 * @param conceptUuid
 	 */
-	public void showConcept(int nid);
+	public void setConcept(int conceptNid);
 }

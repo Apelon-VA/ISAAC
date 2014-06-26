@@ -240,7 +240,9 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public void handle(ActionEvent event) {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
-                Hk2Looker.get().getService(ConceptView.class).showConcept(concept);
+                ConceptView cv = Hk2Looker.get().getService(ConceptView.class);
+                cv.setConcept(concept);
+                cv.showView(null);
             }
         });
         mi.setGraphic(Images.CONCEPT_VIEW.createImageView());

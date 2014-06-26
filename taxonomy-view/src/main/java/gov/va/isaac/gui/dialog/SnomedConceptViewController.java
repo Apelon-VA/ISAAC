@@ -96,6 +96,11 @@ public class SnomedConceptViewController {
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
     private SctTreeViewIsaacView sctTree;
+    
+    public Region getRootNode()
+    {
+        return anchorPane;
+    }
 
     public void setConcept(ConceptChronicleDdo concept) {
 

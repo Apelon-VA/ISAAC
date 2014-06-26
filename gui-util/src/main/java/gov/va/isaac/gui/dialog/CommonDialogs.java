@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
-import gov.va.isaac.interfaces.gui.views.ConceptViewI;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import com.sun.javafx.tk.Toolkit;
 import java.io.IOException;
@@ -126,8 +126,9 @@ public class CommonDialogs implements CommonDialogsI
 	{
 		try
 		{
-			ConceptViewI dialog = AppContext.createConceptViewWindow();
-			dialog.showConcept(uuid);
+			PopupConceptViewI dialog = AppContext.createConceptViewWindow();
+			dialog.setConcept(uuid);
+			dialog.showView(null);
 		}
 		catch (Exception ex)
 		{
@@ -145,8 +146,9 @@ public class CommonDialogs implements CommonDialogsI
 	{
 		try
 		{
-			ConceptViewI dialog = AppContext.createConceptViewWindow();
-			dialog.showConcept(conceptNID);
+			PopupConceptViewI dialog = AppContext.createConceptViewWindow();
+			dialog.setConcept(conceptNID);
+			dialog.showView(null);
 		}
 		catch (Exception ex)
 		{

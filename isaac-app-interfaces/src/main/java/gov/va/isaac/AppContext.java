@@ -20,7 +20,7 @@ package gov.va.isaac;
 
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
-import gov.va.isaac.interfaces.gui.views.ConceptViewI;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializerCustom;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -91,8 +91,8 @@ public class AppContext
 		return getService(ApplicationWindowI.class);
 	}
 
-	public static ConceptViewI createConceptViewWindow()
+	public static PopupConceptViewI createConceptViewWindow()
 	{
-		return getService(ConceptViewI.class);
+		return getService(PopupConceptViewI.class);
 	}
 }

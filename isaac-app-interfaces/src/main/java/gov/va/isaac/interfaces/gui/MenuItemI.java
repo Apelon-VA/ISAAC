@@ -80,6 +80,14 @@ public abstract class MenuItemI implements Comparable<MenuItemI>
 	@Override
 	public int compareTo(MenuItemI o)
 	{
-		return getSortOrder() - o.getSortOrder();
+		int i = getSortOrder() - o.getSortOrder();
+		if (i == 0)
+		{
+			return getMenuName().compareTo(o.getMenuName());
+		}
+		else
+		{
+			return i;
+		}
 	}
 }

@@ -28,7 +28,7 @@ import com.sun.javafx.binding.BindingHelperObserver;
  * 
  * No idea why BooleanBinding has these variations of these methods that are protected and final...
  * And the remove was implemented in such a way that you can't remove individual items.
- * (because then nulled themselves after a remove). Copied code here, fixed to allow individual
+ * (because they nulled themselves after a remove). Copied code here, fixed to allow individual
  * removals.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
@@ -52,6 +52,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 				dep.addListener(observer);
 				listeningTo.add(dep);
 			}
+			invalidate();
 		}
 	}
 
@@ -74,6 +75,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			{
 				observer = null;
 			}
+			invalidate();
 		}
 	}
 

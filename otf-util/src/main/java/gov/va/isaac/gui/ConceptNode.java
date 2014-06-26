@@ -85,6 +85,7 @@ public class ConceptNode implements ConceptLookupCallback
 	private ObjectBinding<ConceptVersionBI> conceptBinding_;
 	private SimpleDisplayConcept codeSetComboBoxConcept_ = null;
 	private BooleanProperty isValid = new SimpleBooleanProperty(true);
+	private BooleanProperty isEmpty = new SimpleBooleanProperty(true);
 	private StringProperty invalidToolTipText = new SimpleStringProperty("The specified concept was not found in the database.");
 	private boolean flagAsInvalidWhenBlank_ = true;
 	private volatile long lookupUpdateTime_ = 0;
@@ -108,6 +109,9 @@ public class ConceptNode implements ConceptLookupCallback
 		this(initialConcept, flagAsInvalidWhenBlank, null, null);
 	}
 
+	/**
+	 * descriptionReader is optional
+	 */
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank, ObservableList<SimpleDisplayConcept> dropDownOptions, 
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
@@ -227,11 +231,13 @@ public class ConceptNode implements ConceptLookupCallback
 		if (cb_.getValue().getNid() == 0 && flagAsInvalidWhenBlank_)
 		{
 			isValid.set(false);
+			isEmpty.set(true);
 			invalidToolTipText.set("Concept Required");
 		}
 		else
 		{
 			isValid.set(true);
+			isEmpty.set(false);
 		}
 
 		cb_.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>()
@@ -401,6 +407,11 @@ public class ConceptNode implements ConceptLookupCallback
 		return isValid;
 	}
 	
+	public BooleanProperty isEmpty()
+	{
+		return isEmpty;
+	}
+	
 	public StringProperty getInvalidReason()
 	{
 		return invalidToolTipText;
@@ -438,6 +449,7 @@ public class ConceptNode implements ConceptLookupCallback
 					c_ = concept;
 					AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(c_));
 					isValid.set(true);
+					isEmpty.set(false);
 				}
 				else
 				{
@@ -447,11 +459,13 @@ public class ConceptNode implements ConceptLookupCallback
 					{
 						isValid.set(false);
 						invalidToolTipText.set("The specified concept was not found in the database");
+						isEmpty.set(false);
 					}
 					else if (flagAsInvalidWhenBlank_)
 					{
 						isValid.set(false);
 						invalidToolTipText.set("Concept required");
+						isEmpty.set(true);
 					}
 					else
 					{

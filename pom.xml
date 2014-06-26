@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.0-Sprint_09-SNAPSHOT</version>
+    <version>1.0-Sprint_10-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -270,6 +270,7 @@
         <module>list-view</module>
         <module>mojos</module>
         <module>refex-view</module>
+        <module>concept-wizard-view</module>
     </modules>
 
     <reporting>
