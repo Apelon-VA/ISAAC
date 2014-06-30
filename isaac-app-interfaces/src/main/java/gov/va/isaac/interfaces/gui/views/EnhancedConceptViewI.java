@@ -31,6 +31,11 @@ import javafx.stage.Stage;
  */
 
 public interface EnhancedConceptViewI extends ConceptViewI {
+    public enum ViewType {
+    	SIMPLE_VIEW, DETAIL_VIEW, HISTORICAL_VIEW;
+	}
+    
+
 	/**
 	 * Update the pane  to show the selected concept.
 	 * @param conceptUuid
@@ -50,12 +55,16 @@ public interface EnhancedConceptViewI extends ConceptViewI {
 	 * @param conceptUuid
 	 * @return 
 	 */
-    public Node changeConcept(Stage stage, UUID conceptUUID);
+    public Node changeConcept(Stage stage, UUID conceptUUID, ViewType view);
 
 	/**
 	 * Update the popup window to show the selected concept.
 	 * @param conceptNid
 	 * @return 
 	 */
-    public Node changeConcept(Stage stage, int conceptNid);
+    public Node changeConcept(Stage stage, int conceptNid, ViewType view);
+
+	Node changeViewType(Stage stage, UUID conceptUUID, ViewType view);
+
+	Node changeViewType(Stage stage, int conceptNid, ViewType view);
 }

@@ -19,9 +19,10 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.SimpleConceptView;
+import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
 import gov.va.isaac.util.WBUtility;
 
 import java.util.Stack;
@@ -59,6 +60,7 @@ public class ConceptViewerLabelHelper {
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
 
+	private ViewType currentView;
 
 	// Create/Initialize without refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
@@ -190,7 +192,7 @@ public class ConceptViewerLabelHelper {
 				public void handle(ActionEvent event)
 				{
 					previousConceptStack.push(currentConceptNid);
-					AppContext.getService(SimpleConceptView.class).changeConcept(((Stage)pane.getScene().getWindow()), refNid);
+					AppContext.getService(EnhancedConceptView.class).changeConcept(((Stage)pane.getScene().getWindow()), refNid, currentView);
 				}
 			});
 			
@@ -204,7 +206,7 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				AppContext.getService(SimpleConceptView.class).setConcept(refNid);
+				AppContext.getService(EnhancedConceptView.class).setConcept(refNid);
 			}
 		});
 		
@@ -230,5 +232,9 @@ public class ConceptViewerLabelHelper {
 
 	public void setPrevConStack(Stack<Integer> stack) {
 		previousConceptStack = stack;
+	}
+
+	public void setCurrentView(ViewType view) {
+		currentView = view;		
 	}
 }

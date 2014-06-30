@@ -50,7 +50,7 @@ public class SimpleConceptViewWizardRunner extends Application
 	{
 		primaryStage.setTitle("New Concept Panel");
 
-		SimpleConceptView conView = AppContext.getService(SimpleConceptView.class);
+		EnhancedConceptView conView = AppContext.getService(EnhancedConceptView.class);
 
 		primaryStage.setScene(new Scene(new Label("hello world"), 200, 100));
 		primaryStage.show();
