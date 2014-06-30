@@ -137,9 +137,9 @@ public class WizardController {
 	public String getQualRole(int i) {
 		//TODO Why are we implementing a toString on Reltype?  ROLE isn't even an option in the enum
 		if (RelationshipType.QUALIFIER == rels.get(i).getType()) {
-			return "QUALIFIER";
+			return "Qualifier";
 		} else {
-			return "ROLE";
+			return "Role";
 		}
 	}
 	

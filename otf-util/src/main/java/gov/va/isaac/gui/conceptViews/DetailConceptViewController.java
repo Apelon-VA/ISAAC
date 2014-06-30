@@ -1,9 +1,28 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,6 +30,7 @@ import java.util.Set;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
@@ -19,28 +39,51 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleConceptViewController extends BaseConceptViewController {
+/**
+*
+* @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+* @author <a href="jefron@apelon.com">Jesse Efron</a>
+*/
 
-	// Descriptions
+public class DetailConceptViewController  extends BaseConceptViewController{
+	@FXML private AnchorPane detailedConceptPane;
+    
+    // Descriptions
     @FXML private Label prefLabel;
     @FXML private Label prefTypeLabel;
+    @FXML private Label prefCaseLabel;
+    @FXML private Label prefLangLabel;
+    
     @FXML private VBox descLabelVBox;
     @FXML private VBox descTypeVBox;
     @FXML private VBox descAnnotVBox;
-    
+    @FXML private VBox descCaseVbox;
+    @FXML private VBox descLangVbox;
+
     // Relationships
+    @FXML private VBox relAnnotVBox;
     @FXML private VBox relLabelVBox;
     @FXML private VBox relTypeVBox;
-    @FXML private VBox relAnnotVBox;
+    @FXML private VBox relRefVBox;
+    @FXML private VBox relCharVBox;
     
-	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
+    // Destinations
+    @FXML private VBox destAnnotVBox;
+    @FXML private VBox destLabelVBox;
+    @FXML private VBox destTypeVBox;
+    @FXML private VBox destRefVBox;
+    @FXML private VBox destCharVBox;
+
+	private static final Logger LOG = LoggerFactory.getLogger(DetailConceptViewController.class);
 	
+
 	@Override
-	void setConceptDetails(ConceptChronicleDdo concept) {	
+	void setConceptDetails(ConceptChronicleDdo concept) {
 		con = WBUtility.getConceptVersion(concept.getPrimordialUuid());
 		
     	try {
@@ -95,59 +138,99 @@ public class SimpleConceptViewController extends BaseConceptViewController {
 		
 			    		Label descTypeLabel = labelHelper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid(), true);
 			    		descTypeVBox.getChildren().add(descTypeLabel);
-		    		}
+
+			    		Label descCaseLabel = labelHelper.createComponentLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, false);
+			    		descCaseVbox.getChildren().add(descCaseLabel);
+
+			    		Label descLangLabel = labelHelper.createComponentLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, false);
+			    		descLangVbox.getChildren().add(descLangLabel);
+	    			}
 	    		}
 	    	}
     	} catch (Exception e) {
     		LOG.error("Cannot access descriptions for concept: " + con.getPrimordialUuid());
     	}
     	
-    	// Relationships
+    	// Source Relationships
     	try {
         	// Capture for sorting (storing is-a in different collection
         	Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
         	Set<RelationshipVersionBI> isaRels = new HashSet<>();
-			for (RelationshipVersionBI rel : con.getRelationshipsOutgoingActive()) {
-				if (rel.getTypeNid() == Snomed.IS_A.getNid()) {
-					isaRels.add(rel);
-				} else {
-					if (!sortedRels.containsKey(rel.getTypeNid())) {
-						Set<RelationshipVersionBI> rels = new HashSet<>();
-						sortedRels.put(rel.getTypeNid(), rels);
-					}
+        	sortRels(sortedRels, isaRels, con.getRelationshipsOutgoingActive());
 
-					sortedRels.get(rel.getTypeNid()).add(rel);
-				}
-			}
-	    	
-	    	// Display IS-As
-			addRels(isaRels);
+        	// Display IS-As
+			addRels(isaRels, relAnnotVBox, relLabelVBox, relTypeVBox, relCharVBox, relRefVBox);
 
 			for (Integer relType: sortedRels.keySet()) {
 				// Display non-IS-As
-				addRels(sortedRels.get(relType));
+				addRels(sortedRels.get(relType), relAnnotVBox, relLabelVBox, relTypeVBox, relCharVBox, relRefVBox);
 			}
 		} catch (IOException | ContradictionException e) {
     		LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
 		}
     	
+    	
+    	// Destination Relationships
+    	try {
+        	// Capture for sorting (storing is-a in different collection
+        	Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
+        	Set<RelationshipVersionBI> isaRels = new HashSet<>();
+        	
+        	sortRels(sortedRels, isaRels, con.getRelationshipsIncomingActive());
+
+        	// Display IS-As
+			addRels(isaRels, destAnnotVBox, destLabelVBox, destTypeVBox, destCharVBox, destRefVBox);
+
+			for (Integer relType: sortedRels.keySet()) {
+				// Display non-IS-As
+				addRels(sortedRels.get(relType), destAnnotVBox, destLabelVBox, destTypeVBox, destCharVBox, destRefVBox);
+			}
+		} catch (IOException | ContradictionException e) {
+    		LOG.error("Cannot access destinations for concept: " + con.getPrimordialUuid());
+		}
     }
 
-	private void addRels(Set<RelationshipVersionBI> rels) {
-		for (RelationshipVersionBI rel: rels) {
-			if (!rel.isInferred()) {
-				createAnnotRectangle(relAnnotVBox, rel);
+	
+	
+	
+	
+	
+	
+	private void sortRels(Map<Integer, Set<RelationshipVersionBI>> sortedRels,
+						  Set<RelationshipVersionBI> isaRels,
+						  Collection<? extends RelationshipVersionBI> relsToSort) throws ValidationException, IOException 
+	{			
+		for (RelationshipVersionBI rel : relsToSort) {
+			if (rel.getTypeNid() == Snomed.IS_A.getNid()) {
+				isaRels.add(rel);
+			} else {
+				if (!sortedRels.containsKey(rel.getTypeNid())) {
+					Set<RelationshipVersionBI> rels = new HashSet<>();
+					sortedRels.put(rel.getTypeNid(), rels);
+				}
 
-				Label relLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid(), true);
-	    		relLabelVBox.getChildren().add(relLabel);
-
-	    		Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid(), true);
-	    		relTypeVBox.getChildren().add(relTypeLabel);
-    		}
+				sortedRels.get(rel.getTypeNid()).add(rel);
+			}
 		}
 	}
 
-	String getTitle() {
-		return "Enhanced Concept View";
+	private void addRels(Set<RelationshipVersionBI> rels, VBox annotVbox, VBox labelVBox, VBox typeVBox, VBox charVBox, VBox refVBox) {
+		for (RelationshipVersionBI rel: rels) {
+			if (!rel.isInferred()) {
+				createAnnotRectangle(annotVbox, rel);
+
+				Label relLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid(), true);
+	    		labelVBox.getChildren().add(relLabel);
+
+	    		Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid(), true);
+	    		typeVBox.getChildren().add(relTypeLabel);
+	    		
+	    		Label relCharLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getCharacteristicNid()), ComponentType.RELATIONSHIP, rel.getCharacteristicNid(), true);
+	    		charVBox.getChildren().add(relCharLabel);
+
+	    		Label relRefLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getRefinabilityNid()), ComponentType.RELATIONSHIP, rel.getRefinabilityNid(), true);
+	    		refVBox.getChildren().add(relRefLabel);
+    		}
+		}
 	}
 }

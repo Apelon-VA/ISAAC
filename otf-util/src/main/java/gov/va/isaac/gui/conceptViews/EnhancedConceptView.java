@@ -64,9 +64,10 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @PerLookup
-public class SimpleConceptView implements EnhancedConceptViewI {
+public class EnhancedConceptView implements EnhancedConceptViewI {
 
-    public class ConceptViewStage  extends Stage{
+
+	public class ConceptViewStage  extends Stage{
 
 		private Stack<Integer> previousConceptStack;
 
@@ -81,17 +82,26 @@ public class SimpleConceptView implements EnhancedConceptViewI {
 	}
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-    private final SimpleConceptViewController controller;
+    private final SimpleConceptViewController basicController;
+    private DetailConceptViewController detailedController = null;
+    
 	private Parent root;
-
-    private SimpleConceptView() throws IOException {
-        // Load from FXML.
+/*
         URL resource = this.getClass().getResource("SimpleView.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         root = (Parent) loader.load();
         root.getStylesheets().add(SimpleConceptView.class.getResource("SimpleView.css").toString());
 
-        this.controller = loader.getController();
+        this.basicController = loader.getController();
+
+ */
+    private EnhancedConceptView() throws IOException {
+        // Load from FXML.
+        URL basicResource = this.getClass().getResource("SimpleView.fxml");
+        FXMLLoader basicLoader = new FXMLLoader(basicResource);
+        root = (Parent) basicLoader.load();
+        root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
+        this.basicController = basicLoader.getController();
     }
 
     private ConceptViewStage getStage(Stack<Integer> stack) {
@@ -102,7 +112,7 @@ public class SimpleConceptView implements EnhancedConceptViewI {
         st.initStyle(StageStyle.DECORATED);
 
         st.setScene(new Scene(root));
-        st.getScene().getStylesheets().add(SimpleConceptView.class.getResource("/isaac-shared-styles.css").toString());
+        st.getScene().getStylesheets().add(EnhancedConceptView.class.getResource("/isaac-shared-styles.css").toString());
         st.getIcons().add(Images.CONCEPT_VIEW.getImage());
         
         return st;
@@ -119,7 +129,7 @@ public class SimpleConceptView implements EnhancedConceptViewI {
 	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
 	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
 	        LOG.info("Finished loading concept with UUID " + conceptUUID);
-	        controller.setConcept(concept);
+	        basicController.setConcept(concept, ViewType.SIMPLE_VIEW);
     	} catch (IOException | ContradictionException e) {
             String title = "Unexpected error loading concept with UUID " + conceptUUID;
             String msg = e.getClass().getName();
@@ -150,17 +160,30 @@ public class SimpleConceptView implements EnhancedConceptViewI {
     }
 	
     /**
+     * @param view 
      * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#changeConcept(Stage, UUID)
      */
 	@Override
-    public Node changeConcept(Stage stage, UUID conceptUUID) {
+    public Node changeConcept(Stage stage, UUID conceptUUID, ViewType view) {
     	try
     	{
 	        LOG.info("Loading concept with UUID " + conceptUUID);
 	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
 	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
 	        LOG.info("Finished loading concept with UUID " + conceptUUID);
-	        controller.setConcept(concept, ((ConceptViewStage)stage).getPreviousConceptStack());
+	        
+	        if (view == ViewType.SIMPLE_VIEW) {
+		        basicController.setConcept(concept, view, ((ConceptViewStage)stage).getPreviousConceptStack());
+	        } else if (view == ViewType.DETAIL_VIEW) {
+	        	if (detailedController == null) {
+	                URL detailedResource = this.getClass().getResource("DetailedView.fxml");
+	                FXMLLoader detailedLoader = new FXMLLoader(detailedResource);
+	                root = (Parent) detailedLoader.load();
+	                root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
+	                this.detailedController = detailedLoader.getController();
+	        	}
+	        	detailedController.setConcept(concept, view, ((ConceptViewStage)stage).getPreviousConceptStack());
+	        }
     	} catch (IOException | ContradictionException e) {
             String title = "Unexpected error loading concept with UUID " + conceptUUID;
             String msg = e.getClass().getName();
@@ -178,11 +201,11 @@ public class SimpleConceptView implements EnhancedConceptViewI {
      * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#changeConcept(Stage, int)
      */
 	@Override
-	public Node changeConcept(Stage stage, int conceptNid) {
+	public Node changeConcept(Stage stage, int conceptNid,ViewType view) {
 		try
     	{
 	        ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);
-	        return changeConcept(stage, concept.getPrimordialUuid());
+	        return changeConcept(stage, concept.getPrimordialUuid(), view);
     	} catch (IOException e) {
             String title = "Unexpected error loading concept with nid " + conceptNid;
             String msg = e.getClass().getName();
@@ -193,15 +216,70 @@ public class SimpleConceptView implements EnhancedConceptViewI {
     	}
 	}
 
-    private void setConcept(ConceptChronicleDdo concept) {
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#changeConcept(Stage, int)
+     */
+	@Override
+	public Node changeViewType(Stage stage, int conceptNid, ViewType view) {
+		try
+    	{
+	        ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);
+	        return changeViewType(stage, concept.getPrimordialUuid(), view);
+    	} catch (IOException e) {
+            String title = "Unexpected error loading concept with nid " + conceptNid;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+        	
+            return root;
+    	}
+	}
+	
+    /**
+     * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI#changeConcept(Stage, UUID)
+     */
+	@Override
+    public Node changeViewType(Stage stage, UUID conceptUUID, ViewType view) {
+    	try
+    	{
+	        LOG.info("Loading concept with UUID " + conceptUUID);
+	        ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
+	                VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+	        LOG.info("Finished loading concept with UUID " + conceptUUID);
+	        if (view == ViewType.SIMPLE_VIEW) {
+	        	basicController.setConcept(concept, view, ((ConceptViewStage)stage).getPreviousConceptStack());
+	        } else if (view == ViewType.DETAIL_VIEW) {
+	        	if (detailedController == null) {
+	                URL detailedResource = this.getClass().getResource("DetailedView.fxml");
+	                FXMLLoader detailedLoader = new FXMLLoader(detailedResource);
+	                root = (Parent) detailedLoader.load();
+	                root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
+	                this.detailedController = detailedLoader.getController();
+	        	}
+	        	detailedController.setConcept(concept, view, ((ConceptViewStage)stage).getPreviousConceptStack());
+	        }
+    	} catch (IOException | ContradictionException e) {
+            String title = "Unexpected error loading concept with UUID " + conceptUUID;
+            String msg = e.getClass().getName();
+            LOG.error(title, e);
+            AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+    	}
+
+    	stage.setScene(new Scene(root));
+
+    	return root;
+    }
+
+
+	private void setConcept(ConceptChronicleDdo concept) {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
         Stack<Integer> stack = new Stack<Integer>();
-        controller.setConcept(concept, stack);
+        basicController.setConcept(concept, ViewType.SIMPLE_VIEW, stack);
 
         // Title will change after concept is set.
         ConceptViewStage st = getStage(stack);
-        st.setTitle(controller.getTitle());
+        st.setTitle(basicController.getTitle());
         st.show();
         //doesn't come to the front unless you do this (on linux, at least)
         Platform.runLater(() -> {st.toFront();});
@@ -291,7 +369,7 @@ public class SimpleConceptView implements EnhancedConceptViewI {
 
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.SimpleConceptView#getView()
+	 * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptView#getView()
 	 */
 	@Override
 	public Region getView()
@@ -301,7 +379,7 @@ public class SimpleConceptView implements EnhancedConceptViewI {
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.SimpleConceptView#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.EnhancedConceptView#getMenuBarMenus()
 	 */
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
