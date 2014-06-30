@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.conceptViews.SimpleConceptView;
+import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -231,7 +231,7 @@ public class ListBatchViewController
 					public void handle(MouseEvent event) {
 						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
 							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
-							conceptDisplayTab.setContent(AppContext.getService(SimpleConceptView.class).getConceptViewerPanel(con.getNid()));		
+							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));		
 						}
 					}
 		        });
@@ -288,7 +288,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						AppContext.getService(SimpleConceptView.class).setConcept(row.getItem().getNid());
+						AppContext.getService(EnhancedConceptView.class).setConcept(row.getItem().getNid());
 					}
 				});
 				MenuItem removeItem = new MenuItem("Delete");
