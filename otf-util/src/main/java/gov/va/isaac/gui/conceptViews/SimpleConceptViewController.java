@@ -133,7 +133,6 @@ public class SimpleConceptViewController {
     	try {
 	        // FSN
     		labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
-    		labelHelper.createIdsContextMenu(fsnLabel, con.getNid());
 			createAnnotRectangle(fsnAnnotVBox, con.getFullySpecifiedDescription());
 
 	    	// PT 
