@@ -77,6 +77,22 @@ public class ConceptDetailWorkflowController
 	
 	@FXML private ComboBox<LocalTask> taskComboBox;
 	@FXML private ComboBox<Action> actionComboBox;
+	@FXML // handler to disable/enable saveActionButton based on validity of required data
+	private void handleChangeInDataRequiredForSaveAction() {
+		if (isDataRequiredForSaveOk()) {
+			saveActionButton.setDisable(false);
+		} else {
+			saveActionButton.setDisable(true);
+		}
+	}
+	
+	// Private helper method to test validity of data required for save
+	private boolean isDataRequiredForSaveOk() {
+		LocalTask selectedTask = taskComboBox.getSelectionModel().getSelectedItem();
+		Action selectedAction = actionComboBox.getSelectionModel().getSelectedItem();
+
+		return selectedTask != null && selectedAction != null;
+	}
 	
 	// This code only for embedded concept detail view
 	//@FXML private Pane simpleConceptView;
@@ -103,6 +119,8 @@ public class ConceptDetailWorkflowController
 		//assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
 		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
 		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
+		
+		saveActionButton.setDisable(true);
 		
 //		// This code only for embedded concept detail view
 //		// Use H2K to find and initialize conceptView as a ConceptView
@@ -183,32 +201,41 @@ public class ConceptDetailWorkflowController
                 }
 
             }
-        });
-		
-		saveActionButton.setOnAction((action) -> {
-			saveActionButton.setDisable(true);
-			final BusyPopover claimPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
+		});
 
-			Utility.execute(() -> {
-				try
-				{
-					final LocalTask currentlySelectedTask = taskComboBox.getValue();
-					final Action currentlySelectedAction = actionComboBox.getValue();
-					
-					taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction.toString(), ACTION_STATUS);
-					Platform.runLater(() -> 
+		saveActionButton.setOnAction((action) -> {
+			if (this.isDataRequiredForSaveOk()) {
+				saveActionButton.setDisable(true);
+				final BusyPopover claimPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
+
+				Utility.execute(() -> {
+					try
+					{
+						final LocalTask currentlySelectedTask = taskComboBox.getValue();
+						final Action currentlySelectedAction = actionComboBox.getValue();
+
+						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction.toString(), ACTION_STATUS);
+						Platform.runLater(() -> 
+						{
+							claimPopover.hide();
+							refreshContent();
+							if (this.isDataRequiredForSaveOk()) {
+								saveActionButton.setDisable(false);
+							}
+						});
+					}
+					catch (Exception e)
 					{
 						claimPopover.hide();
-						saveActionButton.setDisable(false);
-						refreshContent();
-					});
-				}
-				catch (Exception e)
-				{
-					claimPopover.hide();
-					logger.error("Error saving task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-				}
-			});
+						logger.error("Error saving task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+					}
+				});
+			} else { // ! this.isDataRequiredForSaveOk()
+				// This should never happen, if saveActionButton.setDisable(true) used in proper places
+				LocalTask selectedTask = taskComboBox.getSelectionModel().getSelectedItem();
+				Action selectedAction = actionComboBox.getSelectionModel().getSelectedItem();
+				logger.error("Error saving task: fields not set: task=" + selectedTask + ", action=" + selectedAction);
+			}
 		});
 
 		// This code only for newWorkflowInstanceButton
@@ -278,5 +305,11 @@ public class ConceptDetailWorkflowController
 	{
 		refreshTasks();
 		refreshActions();
+
+		if (this.isDataRequiredForSaveOk()) {
+			saveActionButton.setDisable(false);
+		} else {
+			saveActionButton.setDisable(true);
+		}
 	}
 }

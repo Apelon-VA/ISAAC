@@ -54,8 +54,6 @@ import org.jvnet.hk2.annotations.Service;
 public class ConceptDetailWorkflow extends Stage implements PopupViewI
 {
 	private ConceptDetailWorkflowController controller_;
-	//private SimpleConceptView simpleConcept;
-
 
 	private ConceptDetailWorkflow() throws IOException
 	{

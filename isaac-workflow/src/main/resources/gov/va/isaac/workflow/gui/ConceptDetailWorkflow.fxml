@@ -17,9 +17,9 @@
          <children>
             <Label text="Workflow Panel" />
             <Label layoutX="14.0" layoutY="38.0" text="Task" />
-            <ComboBox fx:id="taskComboBox" layoutX="49.0" layoutY="34.0" prefWidth="150.0" />
+            <ComboBox fx:id="taskComboBox" layoutX="49.0" layoutY="34.0" onAction="#handleChangeInDataRequiredForSaveAction" prefWidth="150.0" />
             <Label layoutX="206.0" layoutY="38.0" text="Action" />
-            <ComboBox fx:id="actionComboBox" layoutX="253.0" layoutY="34.0" prefWidth="150.0" />
+            <ComboBox fx:id="actionComboBox" layoutX="253.0" layoutY="34.0" onAction="#handleChangeInDataRequiredForSaveAction" prefWidth="150.0" />
           <Button fx:id="saveActionButton" layoutX="431.0" layoutY="34.0" mnemonicParsing="false" prefHeight="25.0" text="Save Action" />
          </children>
          <BorderPane.margin>
