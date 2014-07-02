@@ -271,6 +271,7 @@
         <module>mojos</module>
         <module>refex-view</module>
         <module>concept-wizard-view</module>
+        <module>concept-workflow-ui</module>
     </modules>
 
     <reporting>

@@ -37,6 +37,16 @@
             <artifactId>junit</artifactId>
             <version>4.11</version>
         </dependency>
+        <dependency>
+        	<groupId>gov.va.isaac.modules</groupId>
+        	<artifactId>otf-util</artifactId>
+        	<version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+        	<groupId>gov.va.isaac.modules</groupId>
+        	<artifactId>taxonomy-view</artifactId>
+        	<version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
     <properties>
         <netbeans.hint.license>apache20_1</netbeans.hint.license>

@@ -19,8 +19,11 @@
 package gov.va.isaac.workflow;
 
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
+
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
 
@@ -29,8 +32,11 @@ import org.kie.api.task.model.TaskSummary;
  * @author alo
  */
 public class LocalTask {
+	
+	public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
+	public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
 
-    private Long id;
+	private Long id;
     private String name;
     private String componentId;
     private String componentName;
@@ -177,4 +183,17 @@ public class LocalTask {
         return true;
     }
 
+	@Override
+	public String toString() {
+		return "LocalTask [getId()=" + getId() + ", getName()=" + getName()
+				+ ", getComponentId()=" + getComponentId()
+				+ ", getComponentName()=" + getComponentName()
+				+ ", getStatus()=" + getStatus() + ", getOwner()=" + getOwner()
+				+ ", getAction()=" + getAction() + ", getActionStatus()="
+				+ getActionStatus() + "]";
+	}
+
+//    public String toString() {
+//    	return this.id + ": " + this.name;
+//    }
 }

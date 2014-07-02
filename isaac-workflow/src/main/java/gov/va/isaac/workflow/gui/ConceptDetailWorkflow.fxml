@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="378.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.ConceptDetailWorkflowController">
+   <center>
+      <ScrollPane hbarPolicy="ALWAYS" prefViewportHeight="291.0" prefViewportWidth="530.0" vbarPolicy="ALWAYS" />
+   </center>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+   <top>
+      <AnchorPane prefHeight="90.0" prefWidth="580.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Workflow Panel" />
+            <Label layoutX="14.0" layoutY="38.0" text="Task" />
+            <ComboBox fx:id="taskComboBox" layoutX="49.0" layoutY="34.0" prefWidth="150.0" />
+            <Label layoutX="206.0" layoutY="38.0" text="Action" />
+            <ComboBox fx:id="actionComboBox" layoutX="253.0" layoutY="34.0" prefWidth="150.0" />
+          <Button fx:id="saveActionButton" layoutX="431.0" layoutY="34.0" mnemonicParsing="false" prefHeight="25.0" text="Save Action" />
+         </children>
+         <BorderPane.margin>
+            <Insets right="20.0" />
+         </BorderPane.margin>
+      </AnchorPane>
+   </top>
+</BorderPane>
