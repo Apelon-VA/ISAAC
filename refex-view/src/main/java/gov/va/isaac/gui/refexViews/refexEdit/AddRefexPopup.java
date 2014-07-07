@@ -38,6 +38,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -110,6 +111,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 	private ArrayList<StringProperty> currentDataFieldWarnings_ = new ArrayList<>();
 	private ArrayList<Object> currentDataFields_ = new ArrayList<>();
+	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 
 	private AddRefexPopup()
 	{
@@ -143,7 +145,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		assemblageConceptLabel.getStyleClass().add("boldLabel");
 		gp.add(assemblageConceptLabel, 0, 1);
 
-		assemblageConcept_ = new ConceptNode(null, true, buildAssemblageConceptList(), null);
+		assemblageConcept_ = new ConceptNode(null, true, refexDropDownOptions, null);
 
 		assemblageConcept_.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
 		{
@@ -287,6 +289,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	{
 		callingView_ = viewToRefresh;
 		referencedComponentNid_ = referencedComponentNid;
+		refexDropDownOptions.clear();
+		refexDropDownOptions.addAll(buildAssemblageConceptList());
 
 		referencedComponentValue.setText(WBUtility.getDescription(referencedComponentNid_));
 
