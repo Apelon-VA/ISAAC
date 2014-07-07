@@ -132,5 +132,15 @@ public class ProcessInstanceCreationRequest {
     public void setWfId(long wfId) {
         this.wfId = wfId;
     }
+
+	@Override
+	public String toString() {
+		return "ProcessInstanceCreationRequest [id=" + id + ", processName="
+				+ processName + ", componentId=" + componentId
+				+ ", componentName=" + componentName + ", params=" + params
+				+ ", userId=" + userId + ", requestTime=" + requestTime
+				+ ", syncTime=" + syncTime + ", status=" + status
+				+ ", syncMessage=" + syncMessage + ", wfId=" + wfId + "]";
+	}
     
 }

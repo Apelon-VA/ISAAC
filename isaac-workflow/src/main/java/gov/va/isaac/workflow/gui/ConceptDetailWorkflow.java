@@ -19,21 +19,28 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.util.FxUtils;
 //import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -41,7 +48,13 @@ import javafx.stage.Window;
 
 import javax.inject.Singleton;
 
+import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link ConceptDetailWorkflow}
@@ -50,11 +63,15 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@Singleton
-public class ConceptDetailWorkflow extends Stage implements PopupViewI
+@PerLookup
+public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 {
+	private final Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflow.class);
+
 	private ConceptDetailWorkflowController controller_;
 
+	private boolean shown = false;
+	
 	private ConceptDetailWorkflow() throws IOException
 	{
 		super();
@@ -70,10 +87,6 @@ public class ConceptDetailWorkflow extends Stage implements PopupViewI
 		
 		setTitle("Concept Detail Workflow");
 		setResizable(true);
-
-		initOwner(AppContext.getMainApplicationWindow().getPrimaryStage());
-		initModality(Modality.NONE);
-		initStyle(StageStyle.DECORATED);
 
 		setWidth(600);
 		setHeight(400);
@@ -147,7 +160,46 @@ public class ConceptDetailWorkflow extends Stage implements PopupViewI
 	@Override
 	public void showView(Window parent)
 	{
+		if (! shown) {
+			shown = true;
+
+			initOwner(parent);
+			initModality(Modality.NONE);
+			initStyle(StageStyle.DECORATED);
+		}
+
 		show();
-		controller_.loadContent();
+	}
+
+	public void setConcept(ConceptVersionBI concept) {
+		// Make sure in application thread.
+		FxUtils.checkFxUserThread();
+		controller_.setConcept(concept);
+	}
+	
+	public void setConcept(UUID conceptUUID) {
+		try {
+			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
+		} catch (IOException e) {
+			String title = "Unexpected error loading concept with UUID " + conceptUUID;
+			String msg = e.getClass().getName();
+			logger.error(title, e);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+		}
+	}
+
+	public void setConcept(int conceptNid) {
+		try {
+			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
+		} catch (IOException e) {
+			String title = "Unexpected error loading concept with Nid " + conceptNid;
+			String msg = e.getClass().getName();
+			logger.error(title, e);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+		}
+	}
+
+	public Region getView() {
+		return controller_.getRootNode();
 	}
 }
