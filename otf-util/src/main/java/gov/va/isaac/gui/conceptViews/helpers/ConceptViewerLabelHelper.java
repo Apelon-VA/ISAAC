@@ -22,8 +22,11 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
 import gov.va.isaac.util.WBUtility;
+//import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
+
 
 import java.util.Stack;
 
@@ -111,9 +114,9 @@ public class ConceptViewerLabelHelper {
 				viewerHelper.copyToClipboard(label.getTooltip().getText());
 			}
 		});
-		rtClickMenu.getItems().add(copyContentItem);
-		
+
 		rtClickMenu.getItems().add(copyTextItem);
+		rtClickMenu.getItems().add(copyContentItem);
 
 		label.setContextMenu(rtClickMenu);
 	}
@@ -198,6 +201,20 @@ public class ConceptViewerLabelHelper {
 			
 			rtClickMenu.getItems().add(0, viewItem);
 		}
+
+		MenuItem newWorkflowInstanceItem = new MenuItem("New Workflow Instance");
+		newWorkflowInstanceItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+
+				view.setConcept(currentConceptNid);
+				view.showView(null);
+	        }
+		});
+		rtClickMenu.getItems().add(newWorkflowInstanceItem);
 		
 		MenuItem viewNewItem = new MenuItem("View Concept New Panel");
 		viewNewItem.setGraphic(Images.COPY.createImageView());

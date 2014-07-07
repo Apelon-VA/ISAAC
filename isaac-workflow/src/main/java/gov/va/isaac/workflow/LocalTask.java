@@ -185,15 +185,9 @@ public class LocalTask {
 
 	@Override
 	public String toString() {
-		return "LocalTask [getId()=" + getId() + ", getName()=" + getName()
-				+ ", getComponentId()=" + getComponentId()
-				+ ", getComponentName()=" + getComponentName()
-				+ ", getStatus()=" + getStatus() + ", getOwner()=" + getOwner()
-				+ ", getAction()=" + getAction() + ", getActionStatus()="
-				+ getActionStatus() + "]";
+		return "LocalTask [id=" + id + ", name=" + name + ", componentId="
+				+ componentId + ", componentName=" + componentName
+				+ ", status=" + status + ", owner=" + owner + ", action="
+				+ action + ", actionStatus=" + actionStatus + "]";
 	}
-
-//    public String toString() {
-//    	return this.id + ": " + this.name;
-//    }
 }

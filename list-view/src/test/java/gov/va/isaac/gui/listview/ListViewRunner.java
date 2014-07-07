@@ -75,8 +75,8 @@ public class ListViewRunner extends Application implements ApplicationWindowI
 		Field f = Hk2Looker.class.getDeclaredField("looker");
 		f.setAccessible(true);
 		f.set(null, AppContext.getServiceLocator());
-		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
-		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
+		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../../ISAAC-PA/app/berkeley-db").getCanonicalPath());
+		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../../ISAAC-PA/app/berkeley-db").getCanonicalPath());
 		launch(args);
 	}
 
