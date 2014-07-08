@@ -26,8 +26,6 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -46,12 +44,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-import javax.inject.Singleton;
-
 import org.glassfish.hk2.api.PerLookup;
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
