@@ -63,7 +63,7 @@ public class FindAndReplace extends Operation
 
 	private FindAndReplaceController frc_;
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
-	private Map<String, Set<String>> successCons = new HashMap();
+	private Map<String, Set<String>> successCons = new HashMap<>();
 	
 	private FindAndReplace()
 	{
