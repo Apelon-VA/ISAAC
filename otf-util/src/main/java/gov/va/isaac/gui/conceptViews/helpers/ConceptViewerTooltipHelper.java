@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -157,8 +157,8 @@ public class ConceptViewerTooltipHelper {
 	
 	private String createRelTooltipText(RelationshipVersionBI rel) {
 
-        
-        String refinCharType = "";
+		
+		String refinCharType = "";
 		try {
 			refinCharType = RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()).toString();
 		} catch (NullPointerException npe) {
@@ -177,8 +177,8 @@ public class ConceptViewerTooltipHelper {
 
 	void setDefaultTooltip(Label node, ComponentVersionBI comp, ComponentType type) {
 		final Tooltip tp = new Tooltip();
-        
-        String txt;
+		
+		String txt;
 		if (type == ComponentType.CONCEPT) {
 			txt = createConTooltipText((ConceptAttributeVersionBI)comp);
 		} else if (type == ComponentType.DESCRIPTION) {
@@ -188,7 +188,7 @@ public class ConceptViewerTooltipHelper {
 		}
 
 		tp.setText(txt);
-        tp.setFont(new Font(16));
+		tp.setFont(new Font(16));
 		node.setTooltip(tp);
 	}
 

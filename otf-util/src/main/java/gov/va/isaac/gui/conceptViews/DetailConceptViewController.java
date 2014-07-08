@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,32 +50,32 @@ import org.slf4j.LoggerFactory;
 
 public class DetailConceptViewController  extends BaseConceptViewController{
 	@FXML private AnchorPane detailedConceptPane;
-    
-    // Descriptions
-    @FXML private Label prefLabel;
-    @FXML private Label prefTypeLabel;
-    @FXML private Label prefCaseLabel;
-    @FXML private Label prefLangLabel;
-    
-    @FXML private VBox descLabelVBox;
-    @FXML private VBox descTypeVBox;
-    @FXML private VBox descAnnotVBox;
-    @FXML private VBox descCaseVbox;
-    @FXML private VBox descLangVbox;
+	
+	// Descriptions
+	@FXML private Label prefLabel;
+	@FXML private Label prefTypeLabel;
+	@FXML private Label prefCaseLabel;
+	@FXML private Label prefLangLabel;
+	
+	@FXML private VBox descLabelVBox;
+	@FXML private VBox descTypeVBox;
+	@FXML private VBox descAnnotVBox;
+	@FXML private VBox descCaseVbox;
+	@FXML private VBox descLangVbox;
 
-    // Relationships
-    @FXML private VBox relAnnotVBox;
-    @FXML private VBox relLabelVBox;
-    @FXML private VBox relTypeVBox;
-    @FXML private VBox relRefVBox;
-    @FXML private VBox relCharVBox;
-    
-    // Destinations
-    @FXML private VBox destAnnotVBox;
-    @FXML private VBox destLabelVBox;
-    @FXML private VBox destTypeVBox;
-    @FXML private VBox destRefVBox;
-    @FXML private VBox destCharVBox;
+	// Relationships
+	@FXML private VBox relAnnotVBox;
+	@FXML private VBox relLabelVBox;
+	@FXML private VBox relTypeVBox;
+	@FXML private VBox relRefVBox;
+	@FXML private VBox relCharVBox;
+	
+	// Destinations
+	@FXML private VBox destAnnotVBox;
+	@FXML private VBox destLabelVBox;
+	@FXML private VBox destTypeVBox;
+	@FXML private VBox destRefVBox;
+	@FXML private VBox destCharVBox;
 
 	private static final Logger LOG = LoggerFactory.getLogger(DetailConceptViewController.class);
 	
@@ -84,79 +84,79 @@ public class DetailConceptViewController  extends BaseConceptViewController{
 	void setConceptDetails(ConceptChronicleDdo concept) {
 		con = WBUtility.getConceptVersion(concept.getPrimordialUuid());
 		
-    	try {
-	        // FSN
-    		labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
+		try {
+			// FSN
+			labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
 			createAnnotRectangle(fsnAnnotVBox, con.getFullySpecifiedDescription());
 
-	    	// PT 
-    		labelHelper.initializeLabel(prefLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText(), false);
-    		labelHelper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText(), SnomedMetadataRf2.PREFERRED_RF2.getLenient().getNid(), true);
+			// PT 
+			labelHelper.initializeLabel(prefLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, con.getPreferredDescription().getText(), false);
+			labelHelper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText(), SnomedMetadataRf2.PREFERRED_RF2.getLenient().getNid(), true);
 			createAnnotRectangle(descAnnotVBox, con.getPreferredDescription());
 
 			ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
 		
 			// SCT Id
-    		labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), false);
-    		labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
+			labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), false);
+			labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
 			createAnnotRectangle(conAnnotVBox, con);
 
-    		// Defined Status
-    		labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr), true);
-    	} catch (Exception e) {
-    		LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
-    	}
+			// Defined Status
+			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr), true);
+		} catch (Exception e) {
+			LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
+		}
 		
 
 		// Descriptions
-    	try {
-	    	// Capture for sorting
-	    	Map<Integer, Set<DescriptionVersionBI>> sortedDescs = new HashMap<>();
+		try {
+			// Capture for sorting
+			Map<Integer, Set<DescriptionVersionBI>> sortedDescs = new HashMap<>();
 
-	    	for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
-	    		if (desc.getNid() != con.getFullySpecifiedDescription().getNid() &&
-    				desc.getNid() != con.getPreferredDescription().getNid()) {
-		    		if (!sortedDescs.containsKey(desc.getTypeNid())) {
-		    			Set<DescriptionVersionBI> descs = new HashSet<>();
-		    			sortedDescs.put(desc.getTypeNid(), descs);
-		    		}
+			for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
+				if (desc.getNid() != con.getFullySpecifiedDescription().getNid() &&
+					desc.getNid() != con.getPreferredDescription().getNid()) {
+					if (!sortedDescs.containsKey(desc.getTypeNid())) {
+						Set<DescriptionVersionBI> descs = new HashSet<>();
+						sortedDescs.put(desc.getTypeNid(), descs);
+					}
 
-		    		sortedDescs.get(desc.getTypeNid()).add(desc);
-	    		}
-	    	}
-	       	
-	    	// Display
-	    	for (Integer descType: sortedDescs.keySet()) {
-	    		for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
-	    			if (desc.getNid() != con.getPreferredDescription().getNid()) {
-	    				createAnnotRectangle(descAnnotVBox, desc);
-	    				
-			    		Label descLabel = labelHelper.createComponentLabel(desc, desc.getText(), ComponentType.DESCRIPTION, false);
-			    		descLabelVBox.getChildren().add(descLabel);
+					sortedDescs.get(desc.getTypeNid()).add(desc);
+				}
+			}
+		   	
+			// Display
+			for (Integer descType: sortedDescs.keySet()) {
+				for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
+					if (desc.getNid() != con.getPreferredDescription().getNid()) {
+						createAnnotRectangle(descAnnotVBox, desc);
+						
+						Label descLabel = labelHelper.createComponentLabel(desc, desc.getText(), ComponentType.DESCRIPTION, false);
+						descLabelVBox.getChildren().add(descLabel);
 		
-			    		Label descTypeLabel = labelHelper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid(), true);
-			    		descTypeVBox.getChildren().add(descTypeLabel);
+						Label descTypeLabel = labelHelper.createComponentLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid(), true);
+						descTypeVBox.getChildren().add(descTypeLabel);
 
-			    		Label descCaseLabel = labelHelper.createComponentLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, false);
-			    		descCaseVbox.getChildren().add(descCaseLabel);
+						Label descCaseLabel = labelHelper.createComponentLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, false);
+						descCaseVbox.getChildren().add(descCaseLabel);
 
-			    		Label descLangLabel = labelHelper.createComponentLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, false);
-			    		descLangVbox.getChildren().add(descLangLabel);
-	    			}
-	    		}
-	    	}
-    	} catch (Exception e) {
-    		LOG.error("Cannot access descriptions for concept: " + con.getPrimordialUuid());
-    	}
-    	
-    	// Source Relationships
-    	try {
-        	// Capture for sorting (storing is-a in different collection
-        	Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-        	Set<RelationshipVersionBI> isaRels = new HashSet<>();
-        	sortRels(sortedRels, isaRels, con.getRelationshipsOutgoingActive());
+						Label descLangLabel = labelHelper.createComponentLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, false);
+						descLangVbox.getChildren().add(descLangLabel);
+					}
+				}
+			}
+		} catch (Exception e) {
+			LOG.error("Cannot access descriptions for concept: " + con.getPrimordialUuid());
+		}
+		
+		// Source Relationships
+		try {
+			// Capture for sorting (storing is-a in different collection
+			Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
+			Set<RelationshipVersionBI> isaRels = new HashSet<>();
+			sortRels(sortedRels, isaRels, con.getRelationshipsOutgoingActive());
 
-        	// Display IS-As
+			// Display IS-As
 			addRels(isaRels, relAnnotVBox, relLabelVBox, relTypeVBox, relCharVBox, relRefVBox);
 
 			for (Integer relType: sortedRels.keySet()) {
@@ -164,19 +164,19 @@ public class DetailConceptViewController  extends BaseConceptViewController{
 				addRels(sortedRels.get(relType), relAnnotVBox, relLabelVBox, relTypeVBox, relCharVBox, relRefVBox);
 			}
 		} catch (IOException | ContradictionException e) {
-    		LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
+			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
 		}
-    	
-    	
-    	// Destination Relationships
-    	try {
-        	// Capture for sorting (storing is-a in different collection
-        	Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-        	Set<RelationshipVersionBI> isaRels = new HashSet<>();
-        	
-        	sortRels(sortedRels, isaRels, con.getRelationshipsIncomingActive());
+		
+		
+		// Destination Relationships
+		try {
+			// Capture for sorting (storing is-a in different collection
+			Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
+			Set<RelationshipVersionBI> isaRels = new HashSet<>();
+			
+			sortRels(sortedRels, isaRels, con.getRelationshipsIncomingActive());
 
-        	// Display IS-As
+			// Display IS-As
 			addRels(isaRels, destAnnotVBox, destLabelVBox, destTypeVBox, destCharVBox, destRefVBox);
 
 			for (Integer relType: sortedRels.keySet()) {
@@ -184,9 +184,9 @@ public class DetailConceptViewController  extends BaseConceptViewController{
 				addRels(sortedRels.get(relType), destAnnotVBox, destLabelVBox, destTypeVBox, destCharVBox, destRefVBox);
 			}
 		} catch (IOException | ContradictionException e) {
-    		LOG.error("Cannot access destinations for concept: " + con.getPrimordialUuid());
+			LOG.error("Cannot access destinations for concept: " + con.getPrimordialUuid());
 		}
-    }
+	}
 
 	
 	
@@ -218,17 +218,17 @@ public class DetailConceptViewController  extends BaseConceptViewController{
 				createAnnotRectangle(annotVbox, rel);
 
 				Label relLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid(), true);
-	    		labelVBox.getChildren().add(relLabel);
+				labelVBox.getChildren().add(relLabel);
 
-	    		Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid(), true);
-	    		typeVBox.getChildren().add(relTypeLabel);
-	    		
-	    		Label relCharLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getCharacteristicNid()), ComponentType.RELATIONSHIP, rel.getCharacteristicNid(), true);
-	    		charVBox.getChildren().add(relCharLabel);
+				Label relTypeLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid(), true);
+				typeVBox.getChildren().add(relTypeLabel);
+				
+				Label relCharLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getCharacteristicNid()), ComponentType.RELATIONSHIP, rel.getCharacteristicNid(), true);
+				charVBox.getChildren().add(relCharLabel);
 
-	    		Label relRefLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getRefinabilityNid()), ComponentType.RELATIONSHIP, rel.getRefinabilityNid(), true);
-	    		refVBox.getChildren().add(relRefLabel);
-    		}
+				Label relRefLabel = labelHelper.createComponentLabel(rel, WBUtility.getConPrefTerm(rel.getRefinabilityNid()), ComponentType.RELATIONSHIP, rel.getRefinabilityNid(), true);
+				refVBox.getChildren().add(relRefLabel);
+			}
 		}
 	}
 }

@@ -35,32 +35,32 @@ public abstract class BaseConceptViewController {
 	@FXML private BorderPane baseConceptBorderPane;
 
 	// Top Labels
-    @FXML protected Label releaseIdLabel;
-    @FXML protected Label isPrimLabel;
-    @FXML protected Label fsnLabel;
-    @FXML protected VBox conAnnotVBox;
-    @FXML protected VBox fsnAnnotVBox;
-    
-    // Radio Buttons
-    @FXML protected ToggleGroup viewGroup;
-    @FXML protected RadioButton  historicalRadio;
-    @FXML protected RadioButton basicRadio;
-    @FXML protected RadioButton detailedRadio;
-
-    // Buttons
-    @FXML protected Button closeButton;
-    @FXML protected Button taxonomyButton;
-    @FXML protected Button modifyButton;
-    @FXML protected Button previousButton;
-    
-    protected ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
-    protected ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
+	@FXML protected Label releaseIdLabel;
+	@FXML protected Label isPrimLabel;
+	@FXML protected Label fsnLabel;
+	@FXML protected VBox conAnnotVBox;
+	@FXML protected VBox fsnAnnotVBox;
 	
-    protected ConceptVersionBI con;
+	// Radio Buttons
+	@FXML protected ToggleGroup viewGroup;
+	@FXML protected RadioButton  historicalRadio;
+	@FXML protected RadioButton basicRadio;
+	@FXML protected RadioButton detailedRadio;
+
+	// Buttons
+	@FXML protected Button closeButton;
+	@FXML protected Button taxonomyButton;
+	@FXML protected Button modifyButton;
+	@FXML protected Button previousButton;
+	
+	protected ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
+	protected ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
+	
+	protected ConceptVersionBI con;
 	private BooleanBinding prevButtonQueueFilled;
 	private ViewType currentView;
 
-    void setConcept(ConceptChronicleDdo concept, ViewType view, Stack<Integer> stack) {
+	void setConcept(ConceptChronicleDdo concept, ViewType view, Stack<Integer> stack) {
 		initializeWindow(stack, view);
 		setConceptDetails(concept);
 	}
@@ -149,7 +149,7 @@ public abstract class BaseConceptViewController {
 	}
 	
 	private void commonInit(ViewType view) {
-    	// TODO (Until handled, make disabled)
+		// TODO (Until handled, make disabled)
 		modifyButton.setDisable(true);
 		historicalRadio.setDisable(true);
 		
