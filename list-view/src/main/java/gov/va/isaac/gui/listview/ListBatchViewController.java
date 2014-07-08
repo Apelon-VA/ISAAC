@@ -190,38 +190,38 @@ public class ListBatchViewController
 			@Override
 			public TableCell<SimpleDisplayConcept, String> call(TableColumn<SimpleDisplayConcept, String> param) {
 				final TableCell<SimpleDisplayConcept, String> cell = new TableCell<SimpleDisplayConcept, String>() {
-		            private final Background uncommittedBackground = new Background(new BackgroundFill(Color.YELLOW, new CornerRadii(15), new Insets(2)));
-		            private final Background defaultBackground = new Background(new BackgroundFill(null, null, null));
+					private final Background uncommittedBackground = new Background(new BackgroundFill(Color.YELLOW, new CornerRadii(15), new Insets(2)));
+					private final Background defaultBackground = new Background(new BackgroundFill(null, null, null));
 
 					@Override
-		            protected void updateItem(String item, boolean empty) {
-		                super.updateItem(item, empty);
+					protected void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
 	
-		                TableRow currentRow = getTableRow();
-		                if (!empty) {
-		                	if (currentRow != null && currentRow.getItem() != null) {
-			                	setText(item);
-			                	setTextFill(Color.BLACK);
-			                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
-				                	setBackground(uncommittedBackground );
-			                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
-			                		currentRow.getContextMenu().getItems().get(3).setDisable(false);
-				                } else {
-	  		                		currentRow.getContextMenu().getItems().get(2).setDisable(true);
-			                		currentRow.getContextMenu().getItems().get(3).setDisable(true);
-				                	setBackground(defaultBackground );
-				                }
-			                }
-			            } else {
-		            		if (getText() != null) {
-		                		if (getBackground() != null && 
-		                			getBackground().getFills() != null && 
-		                			getBackground().getFills().size() > 0) {
-			                		setText(null);
-			                		setTextFill(null);
-			                		setBackground(null);
-		                		}
-				            }
+						TableRow currentRow = getTableRow();
+						if (!empty) {
+							if (currentRow != null && currentRow.getItem() != null) {
+								setText(item);
+								setTextFill(Color.BLACK);
+								if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
+									setBackground(uncommittedBackground );
+									currentRow.getContextMenu().getItems().get(2).setDisable(false);
+									currentRow.getContextMenu().getItems().get(3).setDisable(false);
+								} else {
+									currentRow.getContextMenu().getItems().get(2).setDisable(true);
+									currentRow.getContextMenu().getItems().get(3).setDisable(true);
+									setBackground(defaultBackground );
+								}
+							}
+						} else {
+							if (getText() != null) {
+								if (getBackground() != null && 
+									getBackground().getFills() != null && 
+									getBackground().getFills().size() > 0) {
+									setText(null);
+									setTextFill(null);
+									setBackground(null);
+								}
+							}
 						}
 					}
 				};
@@ -234,9 +234,9 @@ public class ListBatchViewController
 							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));		
 						}
 					}
-		        });
-		        
-		        return cell;
+				});
+				
+				return cell;
 			}
 		});
 		
