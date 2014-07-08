@@ -52,7 +52,6 @@ import org.slf4j.LoggerFactory;
 */
 public class ConceptViewerTooltipHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerTooltipHelper.class);
-	ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
 	private static boolean controlKeyPressed = false;
 
 	EventHandler getCompTooltipEnterHandler(ComponentVersionBI comp, ComponentType type) {
@@ -68,7 +67,7 @@ public class ConceptViewerTooltipHelper {
 						
 						boolean initialIteration = true;
 						for (RefexVersionBI annot : annots) {
-							if (annot.getAssemblageNid() != viewerHelper.getSnomedAssemblageNid()) {
+							if (annot.getAssemblageNid() != ConceptViewerHelper.getSnomedAssemblageNid()) {
 								try {
 									if (initialIteration) {
 										initialIteration = false;
@@ -153,7 +152,7 @@ public class ConceptViewerTooltipHelper {
 	}
 
 	private String createConTooltipText(ConceptAttributeVersionBI attr) {
-		return "SctId: " + viewerHelper.getSctId(attr)+ " " + viewerHelper.getPrimDef(attr) + getStampTooltip(attr);
+		return "SctId: " + ConceptViewerHelper.getSctId(attr)+ " " + ConceptViewerHelper.getPrimDef(attr) + getStampTooltip(attr);
 	}
 	
 	private String createRelTooltipText(RelationshipVersionBI rel) {

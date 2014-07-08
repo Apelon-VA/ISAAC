@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ package gov.va.isaac.gui.conceptViews.helpers;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
@@ -29,7 +30,6 @@ import gov.va.isaac.util.WBUtility;
 
 
 import java.util.Stack;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -41,7 +41,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -61,13 +60,12 @@ public class ConceptViewerLabelHelper {
 	private Stack<Integer> previousConceptStack;
 	
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
-	ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
 
 	private ViewType currentView;
 
 	// Create/Initialize without refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
-    	label.setText(txt);
+		label.setText(txt);
 		
 		if (isConcept) {
 			label.setTextFill(Color.BLUE);
@@ -84,7 +82,7 @@ public class ConceptViewerLabelHelper {
 
 	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isConcept) {
 		Label label = new Label();
-    	label.setFont(new Font(18));
+		label.setFont(new Font(18));
 
 		initializeLabel(label, comp, type, txt, isConcept);
 		
@@ -100,8 +98,8 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				viewerHelper.copyToClipboard(txt);
-	        }
+				CustomClipboard.set(txt);
+			}
 		});
 				
 		MenuItem copyContentItem = new MenuItem("Copy Content");
@@ -111,7 +109,7 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				viewerHelper.copyToClipboard(label.getTooltip().getText());
+				CustomClipboard.set(label.getTooltip().getText());
 			}
 		});
 
@@ -152,8 +150,8 @@ public class ConceptViewerLabelHelper {
 			public void handle(ActionEvent event)
 			{
 				ConceptVersionBI con = WBUtility.getConceptVersion(refNid);
-				ConceptAttributeVersionBI attr = viewerHelper.getConceptAttributes(con);
-				viewerHelper.copyToClipboard(viewerHelper.getSctId(attr));
+				ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
+				CustomClipboard.set(ConceptViewerHelper.getSctId(attr));
 			}
 		});
 
@@ -164,7 +162,7 @@ public class ConceptViewerLabelHelper {
 			public void handle(ActionEvent event)
 			{
 				ConceptVersionBI con = WBUtility.getConceptVersion(refNid);
-				viewerHelper.copyToClipboard(con.getPrimordialUuid().toString());
+				CustomClipboard.set(con.getPrimordialUuid().toString());
 			}
 		});
 
@@ -175,7 +173,7 @@ public class ConceptViewerLabelHelper {
 			public void handle(ActionEvent event)
 			{
 				ConceptVersionBI con = WBUtility.getConceptVersion(refNid);
-				viewerHelper.copyToClipboard(Integer.toString(con.getNid()));
+				CustomClipboard.set(Integer.toString(con.getNid()));
 			}
 		});
 		
@@ -212,7 +210,7 @@ public class ConceptViewerLabelHelper {
 
 				view.setConcept(currentConceptNid);
 				view.showView(null);
-	        }
+			}
 		});
 		rtClickMenu.getItems().add(newWorkflowInstanceItem);
 		

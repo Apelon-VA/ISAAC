@@ -6,9 +6,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -21,58 +18,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConceptViewerHelper {
-	private static int snomedAssemblageNid;
+	private static Integer snomedAssemblageNid;
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
 
 	public enum ComponentType {
 		CONCEPT, DESCRIPTION, RELATIONSHIP;
 	}
-
-	public ConceptViewerHelper() {
-		snomedAssemblageNid = WBUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
+	
+	private ConceptViewerHelper()
+	{
+		//helper, don't construct....
 	}
 
-	public int getSnomedAssemblageNid() {
+	public static int getSnomedAssemblageNid() {
+		if (snomedAssemblageNid == null)
+		{
+			snomedAssemblageNid = WBUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
+		}
 		return snomedAssemblageNid;
 	}
 
-	// Helper Methods
-	protected void copyToClipboard(String txt) {
-        final ClipboardContent content = new ClipboardContent();
-        content.putString(txt);
-        Clipboard.getSystemClipboard().setContent(content);
-	}
-
-	public String getSctId(ConceptAttributeVersionBI attr)  {
-        String sctidString = "Unreleased";
-        // Official approach found int AlternativeIdResource.class
-        
-        try {
-	        for (RefexChronicleBI annotation : attr.getAnnotations()) {
+	public static String getSctId(ConceptAttributeVersionBI attr)  {
+		String sctidString = "Unreleased";
+		// Official approach found int AlternativeIdResource.class
+		
+		try {
+			for (RefexChronicleBI annotation : attr.getAnnotations()) {
 				if (annotation.getAssemblageNid() == getSnomedAssemblageNid()) {
 					RefexLongVersionBI sctid = (RefexLongVersionBI) annotation.getPrimordialVersion();
 					sctidString = Long.toString(sctid.getLong1());
 				}
 			}
-        } catch (Exception e) {
-        	LOG.error("Could not access annotations for: " + attr.getPrimordialUuid());
-        }
-        return sctidString;
+		} catch (Exception e) {
+			LOG.error("Could not access annotations for: " + attr.getPrimordialUuid());
+		}
+		return sctidString;
 	}
 
 
-	public String getPrimDef(ConceptAttributeVersionBI attr) {
-        String status = "Primitive";
+	public static String getPrimDef(ConceptAttributeVersionBI attr) {
+		String status = "Primitive";
 		if (attr.isDefined()) {
 			status = "Fully Defined";
 		}
 		
-        return status;
+		return status;
 	}
 	
-	public int getPrimDefNid(ConceptAttributeVersionBI attr) {
+	public static int getPrimDefNid(ConceptAttributeVersionBI attr) {
 		try {
-	        int nid = SnomedMetadataRf2.PRIMITIVE_RF2.getLenient().getNid();
+			int nid = SnomedMetadataRf2.PRIMITIVE_RF2.getLenient().getNid();
 			if (attr.isDefined()) {
 				nid = SnomedMetadataRf2.DEFINED_RF2.getLenient().getNid();
 			}
@@ -84,14 +79,14 @@ public class ConceptViewerHelper {
 	}
 
 
-	public ConceptAttributeVersionBI getConceptAttributes(ConceptVersionBI con) {
+	public static ConceptAttributeVersionBI getConceptAttributes(ConceptVersionBI con) {
 		try {
 			ConceptAttributeVersionBI attr = con.getConceptAttributesActive();
 			if (attr == null) {
 				attr = con.getConceptAttributes().getVersion(WBUtility.getViewCoordinate());
 				if (attr == null) {
 					// handle Unhandled functionality
-			        attr = (ConceptAttributeVersionBI) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
+					attr = (ConceptAttributeVersionBI) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
 				}
 			}
 		
@@ -102,7 +97,7 @@ public class ConceptViewerHelper {
 		}
 	}
 
-	public Set<RefexVersionBI> getAnnotations(ComponentVersionBI comp) {
+	public static Set<RefexVersionBI> getAnnotations(ComponentVersionBI comp) {
 		Set<RefexVersionBI> retSet = new HashSet<RefexVersionBI>();
 		
 		try {

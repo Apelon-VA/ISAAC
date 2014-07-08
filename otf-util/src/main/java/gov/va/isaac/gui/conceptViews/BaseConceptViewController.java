@@ -53,7 +53,6 @@ public abstract class BaseConceptViewController {
     @FXML protected Button modifyButton;
     @FXML protected Button previousButton;
     
-    protected ConceptViewerHelper viewerHelper = new ConceptViewerHelper();
     protected ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
     protected ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	
@@ -77,7 +76,7 @@ public abstract class BaseConceptViewController {
 		Rectangle rec = new Rectangle(5, 5);
 		rec.setFill(Color.BLACK);
 		
-		rec.setVisible(!viewerHelper.getAnnotations(comp).isEmpty());
+		rec.setVisible(!ConceptViewerHelper.getAnnotations(comp).isEmpty());
 		
 		vbox.getChildren().add(rec);
 		

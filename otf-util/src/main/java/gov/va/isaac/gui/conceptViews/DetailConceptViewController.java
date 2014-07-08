@@ -18,21 +18,19 @@
  */
 package gov.va.isaac.gui.conceptViews;
 
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
@@ -96,15 +94,15 @@ public class DetailConceptViewController  extends BaseConceptViewController{
     		labelHelper.initializeLabel(prefTypeLabel, con.getPreferredDescription(), ComponentType.DESCRIPTION, prefTypeLabel.getText(), SnomedMetadataRf2.PREFERRED_RF2.getLenient().getNid(), true);
 			createAnnotRectangle(descAnnotVBox, con.getPreferredDescription());
 
-			ConceptAttributeVersionBI attr = viewerHelper.getConceptAttributes(con);
+			ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
 		
 			// SCT Id
-    		labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, viewerHelper.getSctId(attr), false);
+    		labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), false);
     		labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
 			createAnnotRectangle(conAnnotVBox, con);
 
     		// Defined Status
-    		labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, viewerHelper.getPrimDef(attr), viewerHelper.getPrimDefNid(attr), true);
+    		labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr), true);
     	} catch (Exception e) {
     		LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
     	}
