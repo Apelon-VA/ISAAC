@@ -38,9 +38,7 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -85,7 +83,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
     private final SimpleConceptViewController basicController;
     private DetailConceptViewController detailedController = null;
     
-	private Parent root;
+	private Region root;
 /*
         URL resource = this.getClass().getResource("SimpleView.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
@@ -99,7 +97,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
         // Load from FXML.
         URL basicResource = this.getClass().getResource("SimpleView.fxml");
         FXMLLoader basicLoader = new FXMLLoader(basicResource);
-        root = (Parent) basicLoader.load();
+        root = (Region) basicLoader.load();
         root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
         this.basicController = basicLoader.getController();
     }
@@ -137,7 +135,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
             AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
     	}
 
-    	return root;
+    	return getView();
     }
 
     /**
@@ -155,7 +153,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
             LOG.error(title, e);
             AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
         	
-            return root;
+            return getView();
     	}
     }
 	
@@ -178,7 +176,10 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
 	        	if (detailedController == null) {
 	                URL detailedResource = this.getClass().getResource("DetailedView.fxml");
 	                FXMLLoader detailedLoader = new FXMLLoader(detailedResource);
-	                root = (Parent) detailedLoader.load();
+	                //TODO umm... we have handed out references to this node previously... which could be anywhere in the GUI... and now we just swap it?
+	                //This GUI needs to figure out if it is providing a panel, or if it is providing a popup... if it is providing a panel... we can't just 
+	                //toss the old panel, and use a new one out of the blue....
+	                root = (Region) detailedLoader.load();
 	                root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
 	                this.detailedController = detailedLoader.getController();
 	        	}
@@ -191,9 +192,10 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
             AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
     	}
 
+    	//TODO this IS a stage.  Why are we mucking with a different stage???
     	stage.setScene(new Scene(root));
 
-    	return root;
+    	return getView();
     }
 
     
@@ -212,7 +214,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
             LOG.error(title, e);
             AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
         	
-            return root;
+            return getView();
     	}
 	}
 
@@ -231,7 +233,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
             LOG.error(title, e);
             AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
         	
-            return root;
+            return getView();
     	}
 	}
 	
@@ -252,7 +254,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
 	        	if (detailedController == null) {
 	                URL detailedResource = this.getClass().getResource("DetailedView.fxml");
 	                FXMLLoader detailedLoader = new FXMLLoader(detailedResource);
-	                root = (Parent) detailedLoader.load();
+	                root = (Region) detailedLoader.load();
 	                root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
 	                this.detailedController = detailedLoader.getController();
 	        	}
@@ -267,7 +269,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
 
     	stage.setScene(new Scene(root));
 
-    	return root;
+    	return getView();
     }
 
 
@@ -287,7 +289,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
     
 	// Put this on right-click List 
     /**
-     * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#showConcept(UUID)
+     * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#setConcept(UUID)
      */
     @Override
 	public void setConcept(final UUID conceptUUID)
@@ -313,6 +315,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
                  try
                 {
                     ConceptChronicleDdo result = this.getValue();
+                    //TODO this violates the interface spec.  setConcept is NOT supposed to show a popup.
                     setConcept(result);
                 }
                 catch (Exception e)
@@ -374,8 +377,7 @@ public class EnhancedConceptView implements EnhancedConceptViewI {
 	@Override
 	public Region getView()
 	{
-		//TODO 
-		return new Label("Not implemented");
+		return root;
 	}
 
 	/**
