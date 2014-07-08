@@ -25,6 +25,7 @@ import gov.va.oia.HK2Utilities.HK2RuntimeInitializerCustom;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.slf4j.LoggerFactory;
 
 /**
  * AppContext
@@ -76,9 +77,23 @@ public class AppContext
 		return serviceLocator_.getService(contractOrService, qualifiers);
 	}
 	
+	/**
+	 * Find a service by name, and automatically fall back to any service which implements the contract if the named service was not available.
+     * @param contractOrService May not be null, and is the contract or concrete implementation to get the best instance of
+     * @param name May be null (to indicate any name is ok), and is the name of the implementation to be returned
+     * @param qualifiers The set of qualifiers that must match this service definition
+	 * @return
+	 */
 	public static <T> T getService(Class<T> contractOrService, String name, Annotation... qualifiers)
 	{
-		return serviceLocator_.getService(contractOrService, name, qualifiers);
+		T service = serviceLocator_.getService(contractOrService, name, qualifiers);
+		if (service == null && name != null)
+		{
+			LoggerFactory.getLogger(AppContext.class).info("Requested service '" + name + "' was not available, returning arbitrary service " +
+					"which matches the contract (if any)");
+			return serviceLocator_.getService(contractOrService, qualifiers);
+		}
+		return service;
 	}
 
 	public static CommonDialogsI getCommonDialogs()
