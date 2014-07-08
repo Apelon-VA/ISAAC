@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="parentPane" focusTraversable="true" stylesheets="../SimpleView.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.DetailConceptViewController">
+<AnchorPane fx:id="parentPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.DetailConceptViewController">
 <children><BorderPane style="-fx-background-color: #F5F5F5;">
 <top>
 <VBox alignment="TOP_CENTER">
