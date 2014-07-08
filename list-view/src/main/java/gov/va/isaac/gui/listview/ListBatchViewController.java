@@ -27,12 +27,12 @@ import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -47,7 +47,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -97,7 +96,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -106,7 +104,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -226,12 +223,17 @@ public class ListBatchViewController
 					}
 				};
 
+				//TODO this is the wrong listener... what if they keyboard up and down?  
 				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent event) {
 						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
 							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
-							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));		
+							//TODO this is the code that should be here, but EnhancedConceptView is broken at the moment, and doesn't follow the API  
+//							ConceptViewI cv = AppContext.getService(ConceptViewI.class, "ModernStyle");
+//							cv.setConcept(con.getNid());
+//							conceptDisplayTab.setContent(cv.getView());
+							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));
 						}
 					}
 				});
@@ -288,6 +290,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
+						//TODO fix this API to use the named API, fix the mess on popup vs view
 						AppContext.getService(EnhancedConceptView.class).setConcept(row.getItem().getNid());
 					}
 				});

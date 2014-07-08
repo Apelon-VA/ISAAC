@@ -93,6 +93,6 @@ public class AppContext
 
 	public static PopupConceptViewI createConceptViewWindow()
 	{
-		return getService(PopupConceptViewI.class);
+		return getService(PopupConceptViewI.class, "LegacyStyle");
 	}
 }

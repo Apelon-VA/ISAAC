@@ -26,14 +26,13 @@ import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
-
+import javax.inject.Named;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
@@ -43,7 +42,6 @@ import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -60,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
-@Service
+@Service @Named(value="ModernStyle")
 @PerLookup
 public class EnhancedConceptView implements EnhancedConceptViewI {
 

@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.inject.Named;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
@@ -56,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  * @author ocarlsen
  */
-@Service
+@Service @Named(value="LegacyStyle")
 @PerLookup
 public class ConceptView implements PopupConceptViewI {
 
