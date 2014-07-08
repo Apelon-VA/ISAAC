@@ -18,7 +18,6 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
