@@ -1,26 +1,16 @@
-package gov.va.isaac.gui.searchview;
+package gov.va.isaac.gui.enhancedsearchview.model;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
@@ -32,61 +22,26 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI<T> {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractLuceneSearchStrategy.class);
 
-/**
- * EnhancedSearchViewController
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- */
-public class EnhancedSearchViewController {
-    private static final Logger LOG = LoggerFactory.getLogger(EnhancedSearchViewController.class);
-   
-    @FXML private Button searchButton;
-    @FXML private TextField searchText;
-    @FXML private BorderPane borderPane;
+	final List<T> userResults;
 
-    public static EnhancedSearchViewController init() throws IOException {
-    	// Load FXML
-        URL resource = EnhancedSearchViewController.class.getResource("EnhancedSearchView.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        loader.load();
-        return loader.getController();
-    }
-    
-    private boolean isSearchTextValid() {
-    	return searchText.getText().trim().length() > 0;
-    }
+    private Comparator<T> comparator;
+    private SearchResultsFilterI filter;
+	private String searchTextParameter;
 
-    @FXML
-    public void initialize() {
-        // search when button pressed
-        searchButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-            	if (isSearchTextValid()) {
-                    search();
-                }
-            }
-        });
-
-        // search on Enter
-        searchText.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                if (isSearchTextValid()) {
-                    search();
-                }
-            }
-        });
-    }
-    
-    public BorderPane getRoot() {
-        return borderPane;
-    }
-    
-    private synchronized void search() {
+	public AbstractLuceneSearchStrategy(List<T> resultsList) {
+		userResults = resultsList;
+	}
+	public AbstractLuceneSearchStrategy() {
+		userResults = new ArrayList<>();
+	}
+	
+	@Override
+	public synchronized void search() {
 		// Just strip out parens, which are common in FSNs, but also lucene search operators (which our users likely won't use)
-		String query = searchText.getText();
+		String query = searchTextParameter;
         query = query.replaceAll("\\(", "");
 		query = query.replaceAll("\\)", "");
 		
@@ -123,7 +78,7 @@ public class EnhancedSearchViewController {
 					int limit = 1000;
 					List<SearchResult> searchResults = descriptionIndexer.query(localQuery, false, field, limit, Long.MIN_VALUE);
 					final int resultCount = searchResults.size();
-					LOG.debug(resultCount + " results");
+					LOG.debug(resultCount + " prefiltered results");
 
 					if (resultCount > 0)
 					{
@@ -173,26 +128,74 @@ public class EnhancedSearchViewController {
 			}
 
 			// sort results
-			ArrayList<CompositeSearchResult> userResults = new ArrayList<>(tempUserResults.size());
-			userResults.addAll(tempUserResults.values());
-			Collections.sort(userResults, new CompositeSearchResultComparator());
-
-			for (CompositeSearchResult result : userResults) {
-
-				final ConceptVersionBI wbConcept = result.getConcept();
-                final String preferredText = wbConcept.getPreferredDescription().getText();
-				System.out.println(wbConcept.toUserString() + " (" + result.getConceptNid() + "):");
-
-                for (String matchString : result.getMatchStrings()) {
-                    if (! matchString.equals(preferredText)) {
-        				System.out.println("\t" + matchString);
-                    }
-                }
+			userResults.clear();
+			if (userResults instanceof ArrayList) {
+				((ArrayList<T>)userResults).ensureCapacity(tempUserResults.size());
 			}
+			for (CompositeSearchResult result : tempUserResults.values()) {
+				if (filter == null || filter.filter(result) != null) {
+					userResults.add(transform(result));
+				}
+			}
+			
+			if (comparator != null) {
+				Collections.sort(userResults, comparator /* new CompositeSearchResultComparator() */);
+			}
+
+//			for (T result : userResults) {
+//				final ConceptVersionBI wbConcept = result.getConcept();
+//                final String preferredText = wbConcept.getPreferredDescription().getText();
+//				System.out.println(wbConcept.toUserString() + " (" + result.getConceptNid() + "):");
+//
+//                for (String matchString : result.getMatchStrings()) {
+//                    if (! matchString.equals(preferredText)) {
+//        				System.out.println("\t" + matchString);
+//                    }
+//                }
+//			}
 		}
 		catch (Exception ex)
 		{
 			LOG.error(ex.getClass().getName() + " exception \"" + ex.getLocalizedMessage() + "\" thrown during lucene search", ex);
 		}
     }
+
+	@Override
+	public void setSearchTextParameter(String text) {
+		this.searchTextParameter = text;
+	}
+
+	@Override
+	public String getSearchTextParameter() {
+		return searchTextParameter;
+	}
+
+	@Override
+	public boolean isValid() {
+		return searchTextParameter != null && searchTextParameter.trim().length() > 0;
+	}
+
+	@Override
+	public void setSearchResultsFilter(SearchResultsFilterI filter) {
+		this.filter = filter;
+	}
+
+	@Override
+	public SearchResultsFilterI getSearchResultsFilter() {
+		return filter;
+	}
+
+	@Override
+	public void setComparator(
+			Comparator<T> comparator) {
+		this.comparator = comparator;
+	}
+
+	@Override
+	public Comparator<T> getComparator() {
+		return this.comparator;
+	}
+	
+	@Override
+	public abstract T transform(CompositeSearchResult result);
 }

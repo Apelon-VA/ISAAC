@@ -16,13 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.searchview;
+package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.gui.views.EnhancedSearchViewI;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,8 +30,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 
-import javax.inject.Singleton;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -43,7 +40,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@Singleton
+@PerLookup
 public class EnhancedSearchView // implements EnhancedSearchViewI
 {
 	private EnhancedSearchViewController svc_;
@@ -58,6 +55,7 @@ public class EnhancedSearchView // implements EnhancedSearchViewI
      */
     //@Override
     public Region getView() {
+    	svc_.load();
         return svc_.getRoot();
     }
     

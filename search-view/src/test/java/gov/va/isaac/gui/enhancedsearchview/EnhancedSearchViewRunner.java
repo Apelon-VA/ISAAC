@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.searchview;
+package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 
