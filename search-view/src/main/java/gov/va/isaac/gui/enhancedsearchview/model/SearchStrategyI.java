@@ -1,6 +1,7 @@
 package gov.va.isaac.gui.enhancedsearchview.model;
 
 import java.util.Comparator;
+import java.util.List;
 
 import gov.va.isaac.search.CompositeSearchResult;
 
@@ -12,8 +13,8 @@ public interface SearchStrategyI<T> {
 	public abstract Comparator<T> getComparator();
 	public abstract void setComparator(Comparator<T> comparator);
 	
-	public abstract SearchResultsFilterI getSearchResultsFilter();
-	public abstract void setSearchResultsFilter(SearchResultsFilterI filter);
+	public abstract List<SearchResultsFilterI> getSearchResultsFilters();
+	public abstract void setSearchResultsFilters(List<SearchResultsFilterI> filters);
 
 	public abstract T transform(CompositeSearchResult result);
 

@@ -12,6 +12,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class SearchResultModel {
+	// TODO: 
 	private StringProperty preferredName;
 	private DoubleProperty score;
     private StringProperty uuId;
@@ -19,14 +20,14 @@ public class SearchResultModel {
 	private StringProperty fsn;
 	private StringProperty matchingText;
 	private ObjectProperty<Status> status;
-	private StringProperty matchingTextType;
+	private StringProperty type;
 
 	public SearchResultModel() {
 		super();
 	}
 	public SearchResultModel(String prefName) {
 		super();
-		setPreferredName(prefName);
+		setPreferredTerm(prefName);
 	}
 	
 	public SearchResultModel(
@@ -39,7 +40,7 @@ public class SearchResultModel {
 			String matchingText,
 			String matchingTextType) {
 		super();
-		setPreferredName(preferredName);
+		setPreferredTerm(preferredName);
 		setScore(score);
 		setUuId(uuId);
 		setId(id);
@@ -78,13 +79,13 @@ public class SearchResultModel {
 	}
 
 	public StringProperty matchingTextTypeProperty() {
-		return matchingTextType;
+		return type;
 	}
 
 	public String getPreferredName() {
 		return preferredName.toString();
 	}
-	public void setPreferredName(String name) {
+	public void setPreferredTerm(String name) {
 		this.preferredName = new SimpleStringProperty(name);
 	}
 	
@@ -131,16 +132,16 @@ public class SearchResultModel {
 	}
 
 	public String getMatchingTextType() {
-		return matchingTextType.toString();
+		return type.toString();
 	}
 	public void setMatchingTextType(String matchingTextType) {
-		this.matchingTextType = new SimpleStringProperty(matchingTextType);
+		this.type = new SimpleStringProperty(matchingTextType);
 	}
 	@Override
 	public String toString() {
 		return "SearchResultModel [preferredName=" + preferredName + ", score="
 				+ score + ", uuId=" + uuId + ", id=" + id + ", fsn=" + fsn
 				+ ", matchingText=" + matchingText + ", status=" + status
-				+ ", matchingTextType=" + matchingTextType + "]";
+				+ ", type=" + type + "]";
 	}
 }

@@ -2,18 +2,24 @@ package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
+import gov.va.isaac.gui.enhancedsearchview.filter.FilterView;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchResultModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchResultModelComparator;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchResultModelLuceneSearchStrategy;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsFilterI;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchStrategyI;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -54,16 +60,24 @@ public class EnhancedSearchViewController {
 	// Cached Actions in list form for refreshing actionComboBox
 	private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(SearchStrategyType.values(), SearchStrategyType.values().length));
 
+	@FXML private Button addFilterButton;
+	@FXML private Button clearFiltersButton;
     @FXML private Button searchButton;
     @FXML private TextField searchText;
-    @FXML private VBox dynamicSearchAndFilterVBox;
+    @FXML private VBox searchAndFilterVBox;
+    @FXML private VBox dynamicFilterVBox;
     @FXML private Pane pane;
     @FXML private ComboBox<SearchStrategyType> searchStrategyComboBox;
 	@FXML private TableView<SearchResultModel> searchResultsTable;
+	
+	// All filters ready
+	private UpdateableBooleanBinding allFiltersReady_;
     
     private SearchStrategyI<SearchResultModel> searchStrategy;
     private final ObservableList<SearchResultModel> searchResults = FXCollections.observableArrayList();
-
+    private final List<SearchResultsFilterI> filters = new ArrayList<>();
+    private final ObservableList<FilterView> filterViews = FXCollections.observableArrayList();
+    
     public static EnhancedSearchViewController init() throws IOException {
     	// Load FXML
         URL resource = EnhancedSearchViewController.class.getResource("EnhancedSearchView.fxml");
@@ -81,6 +95,16 @@ public class EnhancedSearchViewController {
     	}
     }
     
+    protected void remove(FilterNode node)
+	{
+		if (!dynamicFilterVBox.getChildren().remove(node))
+		{
+			LOG.error("Unexpected error removing filter item");
+		}
+		allFiltersReady_.removeBinding(node.isReadyForExecution());
+		allFiltersReady_.invalidate();
+	}
+    
     @FXML
     public void initialize() {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
@@ -93,6 +117,8 @@ public class EnhancedSearchViewController {
 		initializeSearchResultsTable();
 		
 		initializeSearchStrategyComboBox();
+		
+		initializeFilters();
 		
 		// Default search button to disabled
 		searchButton.setDisable(true);
@@ -175,6 +201,31 @@ public class EnhancedSearchViewController {
         	);
         
         searchResultsTable.setItems(searchResults);
+    }
+    
+    private void initializeFilters() {
+    	addFilterButton.setOnAction(new EventHandler<ActionEvent>()
+    			{
+    				@Override
+    				public void handle(ActionEvent event)
+    				{
+    					FilterNode operationNode = new FilterNode(EnhancedSearchViewController.this);
+    					dynamicFilterVBox.getChildren().add(operationNode);
+    					allFiltersReady_.addBinding(operationNode.isReadyForExecution());
+    					allFiltersReady_.invalidate();
+    				}
+    			});
+
+    			clearFiltersButton.setOnAction(new EventHandler<ActionEvent>()
+    			{
+    				@Override
+    				public void handle(ActionEvent event)
+    				{
+    					dynamicFilterVBox.getChildren().clear();
+    					allFiltersReady_.clearBindings();
+    					allFiltersReady_.invalidate();
+    				}
+    			});
     }
     
     private void initializeSearchStrategyComboBox() {
@@ -268,17 +319,10 @@ public class EnhancedSearchViewController {
     	if (searchStrategyType != null) {
     		switch (searchStrategyType) {
     		case LUCENE:
-//    			searchStrategy = new AbstractLuceneSearchStrategy<CompositeSearchResult>(searchResults) {
-//					@Override
-//					public CompositeSearchResult transform(CompositeSearchResult result) {
-//						return result;
-//					}
-//    			};
-//    			searchStrategy.setSearchTextParameter(searchText.getText());
-//    			searchStrategy.setComparator(new CompositeSearchResultComparator());
     			searchStrategy = new SearchResultModelLuceneSearchStrategy(searchResults);
     			searchStrategy.setSearchTextParameter(searchText.getText());
     			searchStrategy.setComparator(new SearchResultModelComparator());
+    			searchStrategy.setSearchResultsFilters(filters);
     		break;
     		
     		default:

@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<BorderPane fx:id="pane" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
+<BorderPane fx:id="pane" prefWidth="700.0" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
   <stylesheets>
     <URL value="@EnhancedSearchView.css" />
   </stylesheets>
@@ -18,12 +18,17 @@
       <children>
             <HBox HBox.hgrow="ALWAYS">
                <children>
-                  <Button maxWidth="50.0" mnemonicParsing="false" text="Add Filter" textAlignment="CENTER" wrapText="true" HBox.hgrow="NEVER">
+                  <Button fx:id="addFilterButton" maxWidth="50.0" mnemonicParsing="false" text="Add Filter" textAlignment="CENTER" wrapText="true" HBox.hgrow="NEVER">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
                   </Button>
-                  <VBox fx:id="dynamicSearchAndFilterVBox" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                  <Button fx:id="clearFiltersButton" mnemonicParsing="false" prefWidth="50.0" text="Clear Filters" textAlignment="CENTER" wrapText="true" HBox.hgrow="NEVER">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Button>
+                  <VBox fx:id="searchAndFilterVBox" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
                      <children>
                         <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                            <children>
@@ -35,6 +40,7 @@
                               </ComboBox>
                            </children>
                         </HBox>
+                        <VBox fx:id="dynamicFilterVBox" maxWidth="1.7976931348623157E308" />
                      </children>
                   </VBox>
                </children>

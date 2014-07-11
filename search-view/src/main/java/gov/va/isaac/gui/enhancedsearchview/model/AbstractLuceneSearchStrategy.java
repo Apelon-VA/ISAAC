@@ -28,7 +28,7 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 	final List<T> userResults;
 
     private Comparator<T> comparator;
-    private SearchResultsFilterI filter;
+    private List<SearchResultsFilterI> filters;
 	private String searchTextParameter;
 
 	public AbstractLuceneSearchStrategy(List<T> resultsList) {
@@ -100,6 +100,7 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 							// Create a search result for the corresponding concept.
 							final int conceptNid = cc.getConceptNid();
 							CompositeSearchResult gsr = tempUserResults.get(conceptNid);
+							
 							if (gsr == null)
 							{
 								ConceptVersionBI concept = dataStore.getConceptVersion(WBUtility.getViewCoordinate(), cc.getConceptNid());
@@ -112,9 +113,11 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 
 							// Set the matching string.
 							String matchingString = null;
+							
 							if (cc instanceof DescriptionAnalogBI)
 							{
 								matchingString = ((DescriptionAnalogBI<?>) cc).getText();
+								//descTypeNid = ((DescriptionAnalogBI<?>) cc).getTypeNid();
 							}
 							else
 							{
@@ -122,6 +125,7 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 								matchingString = "oops";
 							}
 							gsr.addMatchingString(matchingString);
+							gsr.getComponents().add(cc);
 						}
 					}
 				}
@@ -133,7 +137,18 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 				((ArrayList<T>)userResults).ensureCapacity(tempUserResults.size());
 			}
 			for (CompositeSearchResult result : tempUserResults.values()) {
-				if (filter == null || filter.filter(result) != null) {
+				CompositeSearchResult tempResult = result;
+				if (filters != null) {
+					for (SearchResultsFilterI filter : filters) {
+						if (tempResult == null) {
+							break;
+						} else {
+							tempResult = filter.filter(tempResult);
+						}
+					}
+					
+				}
+				if (tempResult != null) {
 					userResults.add(transform(result));
 				}
 			}
@@ -141,18 +156,6 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 			if (comparator != null) {
 				Collections.sort(userResults, comparator /* new CompositeSearchResultComparator() */);
 			}
-
-//			for (T result : userResults) {
-//				final ConceptVersionBI wbConcept = result.getConcept();
-//                final String preferredText = wbConcept.getPreferredDescription().getText();
-//				System.out.println(wbConcept.toUserString() + " (" + result.getConceptNid() + "):");
-//
-//                for (String matchString : result.getMatchStrings()) {
-//                    if (! matchString.equals(preferredText)) {
-//        				System.out.println("\t" + matchString);
-//                    }
-//                }
-//			}
 		}
 		catch (Exception ex)
 		{
@@ -176,13 +179,13 @@ public abstract class AbstractLuceneSearchStrategy<T> implements SearchStrategyI
 	}
 
 	@Override
-	public void setSearchResultsFilter(SearchResultsFilterI filter) {
-		this.filter = filter;
+	public void setSearchResultsFilters(List<SearchResultsFilterI> filter) {
+		this.filters = filter;
 	}
 
 	@Override
-	public SearchResultsFilterI getSearchResultsFilter() {
-		return filter;
+	public List<SearchResultsFilterI> getSearchResultsFilters() {
+		return filters;
 	}
 
 	@Override

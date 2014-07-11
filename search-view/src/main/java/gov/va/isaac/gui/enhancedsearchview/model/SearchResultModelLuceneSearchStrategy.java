@@ -26,8 +26,8 @@ public class SearchResultModelLuceneSearchStrategy extends AbstractLuceneSearchS
 	public SearchResultModel transform(CompositeSearchResult result) {
 		SearchResultModel newModel = new SearchResultModel();
 
+		// TODO: trim
 		newModel.setId(result.getConcept().getConceptNid());
-		newModel.setMatchingText(result.getMatchStrings().toString());
 		newModel.setStatus(result.getConcept().getStatus());
 		newModel.setScore(result.getBestScore());
 		newModel.setUuId(result.getConcept().getPrimordialUuid().toString());
@@ -41,7 +41,7 @@ public class SearchResultModelLuceneSearchStrategy extends AbstractLuceneSearchS
 			e1.printStackTrace();
 		}
 		try {
-			newModel.setPreferredName(result.getConcept().getPreferredDescription().getText());
+			newModel.setPreferredTerm(result.getConcept().getPreferredDescription().getText());
 		} catch (IOException | ContradictionException e) {
 			logger.error("Error calling ConceptVersionBI.getPreferredDescription(): Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 			e.printStackTrace();
