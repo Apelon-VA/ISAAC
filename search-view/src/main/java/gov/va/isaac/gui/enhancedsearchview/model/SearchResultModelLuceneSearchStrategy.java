@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.va.isaac.search.CompositeSearchResult;
 
-public class SearchResultModelLuceneSearchStrategy extends AbstractLuceneSearchStrategy<SearchResultModel> {
+public class SearchResultModelLuceneSearchStrategy extends AbstractLuceneSearchStrategy<CompositeSearchResult> {
 	private final Logger logger = LoggerFactory.getLogger(SearchResultModelLuceneSearchStrategy.class);
 
 	public SearchResultModelLuceneSearchStrategy() {
@@ -18,35 +18,36 @@ public class SearchResultModelLuceneSearchStrategy extends AbstractLuceneSearchS
 	}
 
 	public SearchResultModelLuceneSearchStrategy(
-			List<SearchResultModel> resultsList) {
+			List<CompositeSearchResult> resultsList) {
 		super(resultsList);
 	}
 	
 	@Override
-	public SearchResultModel transform(CompositeSearchResult result) {
-		SearchResultModel newModel = new SearchResultModel();
-
-		// TODO: trim
-		newModel.setId(result.getConcept().getConceptNid());
-		newModel.setStatus(result.getConcept().getStatus());
-		newModel.setScore(result.getBestScore());
-		newModel.setUuId(result.getConcept().getPrimordialUuid().toString());
-		Set<String> matchingStrings = result.getMatchStrings();
-		newModel.setMatchingText(matchingStrings.toArray()[0].toString());
-
-		try {
-			newModel.setFsn(result.getConcept().getFullySpecifiedDescription().getText());
-		} catch (IOException | ContradictionException e1) {
-			logger.error("Error calling ConceptVersionBI.getFullySpecifiedDescription(): Caught " + e1.getClass().getName() + " \"" + e1.getLocalizedMessage() + "\"");
-			e1.printStackTrace();
-		}
-		try {
-			newModel.setPreferredTerm(result.getConcept().getPreferredDescription().getText());
-		} catch (IOException | ContradictionException e) {
-			logger.error("Error calling ConceptVersionBI.getPreferredDescription(): Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
-			e.printStackTrace();
-		}
-		
-		return newModel;
+	public CompositeSearchResult transform(CompositeSearchResult result) {
+		return result;
+//		SearchResultModel newModel = new SearchResultModel();
+//
+//		// TODO: trim
+//		newModel.setId(result.getConcept().getConceptNid());
+//		newModel.setStatus(result.getConcept().getStatus());
+//		newModel.setScore(result.getBestScore());
+//		newModel.setUuId(result.getConcept().getPrimordialUuid().toString());
+//		Set<String> matchingStrings = result.getMatchStrings();
+//		newModel.setMatchingText(matchingStrings.toArray()[0].toString());
+//
+//		try {
+//			newModel.setFsn(result.getConcept().getFullySpecifiedDescription().getText());
+//		} catch (IOException | ContradictionException e1) {
+//			logger.error("Error calling ConceptVersionBI.getFullySpecifiedDescription(): Caught " + e1.getClass().getName() + " \"" + e1.getLocalizedMessage() + "\"");
+//			e1.printStackTrace();
+//		}
+//		try {
+//			newModel.setPreferredTerm(result.getConcept().getPreferredDescription().getText());
+//		} catch (IOException | ContradictionException e) {
+//			logger.error("Error calling ConceptVersionBI.getPreferredDescription(): Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
+//			e.printStackTrace();
+//		}
+//		
+//		return newModel;
 	}
 }
