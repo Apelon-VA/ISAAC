@@ -90,7 +90,7 @@ public class EnhancedSearchViewController {
 	public static EnhancedSearchViewController init() throws IOException {
 		// Load FXML
 		URL resource = EnhancedSearchViewController.class.getResource("EnhancedSearchView.fxml");
-		System.out.println("FXML for " + EnhancedSearchViewController.class + ": " + resource);
+		LOG.debug("FXML for " + EnhancedSearchViewController.class + ": " + resource);
 		FXMLLoader loader = new FXMLLoader(resource);
 		loader.load();
 		return loader.getController();
@@ -125,7 +125,7 @@ public class EnhancedSearchViewController {
 
 		char delimiter = '\t';
 		
-		System.out.println("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
+		LOG.debug("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
 		
 		Writer writer = null;
 		try {
@@ -144,7 +144,7 @@ public class EnhancedSearchViewController {
 					row.append("\n");
 				}
 			}
-			System.out.print(row.toString());
+			LOG.trace(row.toString());
 			writer.write(row.toString());
 			
 			for (int rowIndex = 0; rowIndex < searchResults.size(); ++rowIndex) {
@@ -162,11 +162,11 @@ public class EnhancedSearchViewController {
 					}
 				}
 				
-				System.out.print(row.toString());
+				LOG.trace(row.toString());
 				writer.write(row.toString());
 			}
 
-			System.out.println("Wrote " + searchResults.size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
+			LOG.debug("Wrote " + searchResults.size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
 		} catch (IOException e) {
 			LOG.error("FAILED writing TableView data to file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
 			e.printStackTrace();
@@ -385,7 +385,7 @@ public class EnhancedSearchViewController {
 		});
 		searchStrategyComboBox.setOnAction((event) -> {
 			SearchStrategyType type = searchStrategyComboBox.getSelectionModel().getSelectedItem();
-			System.out.println("searchStrategyComboBox Action (selected: " + type + ")");
+			LOG.trace("searchStrategyComboBox Action (selected: " + type + ")");
 
 			load();
 			refresh();
@@ -393,7 +393,7 @@ public class EnhancedSearchViewController {
 	}
 
 	public void executeSearch() {
-		System.out.println("Running executeSearch()...");
+		LOG.trace("Running executeSearch()...");
 
 		if (searchStrategy != null) {
 			searchStrategy.setSearchTextParameter(searchText.getText());
@@ -401,24 +401,8 @@ public class EnhancedSearchViewController {
 				searchStrategy.search();
 
 				for (CompositeSearchResult result : searchResults) {
-					System.out.println(result);
+					LOG.trace(result.toString());
 				}
-				//    			for (CompositeSearchResult result : searchResults) {
-				//    				final ConceptVersionBI wbConcept = result.getConcept();
-				//    				String preferredText = null;
-				//					try {
-				//						preferredText = wbConcept.getPreferredDescription().getText();
-				//					} catch (IOException | ContradictionException e) {
-				//						e.printStackTrace();
-				//					}
-				//    				System.out.println(wbConcept.toUserString() + " (" + result.getConceptNid() + "):");
-				//
-				//    				for (String matchString : result.getMatchStrings()) {
-				//    					if (! matchString.equals(preferredText)) {
-				//    						System.out.println("\t" + matchString);
-				//    					}
-				//    				}
-				//    			}
 			}
 		} else {
 			String title = "Search Strategy Not Set";
@@ -433,7 +417,7 @@ public class EnhancedSearchViewController {
 	}
 
 	public void loadSearchStrategy() {
-		System.out.println("Running loadSearchStrategy()...");
+		LOG.trace("Running loadSearchStrategy()...");
 		searchStrategyComboBox.getSelectionModel().select(SearchStrategyType.LUCENE);
 		SearchStrategyType searchStrategyType = searchStrategyComboBox.getValue();
 		if (searchStrategyType != null) {
@@ -462,17 +446,17 @@ public class EnhancedSearchViewController {
 	}
 
 	public void refresh() {
-		System.out.println("Running refresh()...");
+		LOG.trace("Running refresh()...");
 
 		// refresh searchStrategiesComboBox
 		searchStrategyComboBox.setItems(searchStrategyTypes);
 
 		if (isSearchValid()) {
-			System.out.println("Search parameters valid.  Enabling search controls...");
+			LOG.debug("Search parameters valid.  Enabling search controls...");
 
 			searchButton.setDisable(false);
 		} else {
-			System.out.println("Search parameters invalid.  Disabling search controls...");
+			LOG.debug("Search parameters invalid.  Disabling search controls...");
 
 			searchButton.setDisable(true);
 		}
