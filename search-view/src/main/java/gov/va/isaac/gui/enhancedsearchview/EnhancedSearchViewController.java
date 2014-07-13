@@ -2,12 +2,14 @@ package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.gui.enhancedsearchview.model.LuceneSearchStrategy;
+import gov.va.isaac.gui.enhancedsearchview.model.PerConceptLuceneSearchStrategy;
+import gov.va.isaac.gui.enhancedsearchview.model.PerMatchLuceneSearchStrategy;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsFilterI;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchStrategyI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -59,13 +61,20 @@ import com.sun.javafx.UnmodifiableArrayList;
 public class EnhancedSearchViewController {
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedSearchViewController.class);
 
+	enum AggregationType {
+		PER_CONCEPT,
+		PER_MATCH
+	}
 	enum SearchStrategyType {
 		LUCENE,
 		//REGEX,
 		//REFSET
 	}
+	
+	// Cached AggregationType in list form for refreshing aggregationType ComboBox
+	private final static ObservableList<AggregationType> aggregationTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(AggregationType.values(), AggregationType.values().length));
 
-	// Cached Actions in list form for refreshing actionComboBox
+	// Cached SearchStrategyType in list form for refreshing searchStrategy ComboBox
 	private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(SearchStrategyType.values(), SearchStrategyType.values().length));
 	//private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(new SearchStrategyType[] { SearchStrategyType.LUCENE }, 1));
 
@@ -73,6 +82,7 @@ public class EnhancedSearchViewController {
 	@FXML private TextField searchText;
 	@FXML private VBox searchAndFilterVBox;
 	@FXML private Pane pane;
+	@FXML private ComboBox<AggregationType> aggregationTypeComboBox;
 	@FXML private ComboBox<SearchStrategyType> searchStrategyComboBox;
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
@@ -80,7 +90,7 @@ public class EnhancedSearchViewController {
 	//@FXML private VBox dynamicFilterVBox; // only if using dynamic filters
 	//@FXML private Button addFilterButton;
 	//@FXML private Button clearFiltersButton;
-
+	
 	private Window windowForTableViewExportDialog;
 	
 	private SearchStrategyI<CompositeSearchResult> searchStrategy;
@@ -195,10 +205,11 @@ public class EnhancedSearchViewController {
 		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchStrategyComboBox != null : "fx:id=\"searchStrategyComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchResultsTable != null : "fx:id=\"searchResultsTable\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert aggregationTypeComboBox != null : "fx:id=\"aggregationTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		// Search results table
 		initializeSearchResultsTable();
-
+		initializeAggregationTypeComboBox();
 		initializeSearchStrategyComboBox();
 
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -256,8 +267,15 @@ public class EnhancedSearchViewController {
 
 		TableColumn<CompositeSearchResult, Number> scoreCol = new TableColumn<>("Score");
 		TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
-		TableColumn<CompositeSearchResult, Number> numMatchesCol = new TableColumn<>("Matches");
 
+		// Only meaningful for AggregationType PER_CONCEPT
+		// When AggregationTyppe is PER_MATCH should always be 1
+		TableColumn<CompositeSearchResult, Number> numMatchesCol = new TableColumn<>("Matches");
+		
+		// Only meaningful for AggregationType PER_MATCH
+		// When AggregationTyppe is PER_CONCEPT should always be type of first match
+		TableColumn<CompositeSearchResult, String> matchingDescTypeCol = new TableColumn<>("Type");
+		
 		TableColumn<CompositeSearchResult, String> preferredTermCol = new TableColumn<>("Term");
 		preferredTermCol.setMaxWidth(Double.MAX_VALUE);
 		TableColumn<CompositeSearchResult, String> fsnCol = new TableColumn<>("FSN");
@@ -266,23 +284,50 @@ public class EnhancedSearchViewController {
 		TableColumn<CompositeSearchResult, String> matchingTextCol = new TableColumn<>("Text");
 		matchingTextCol.setMaxWidth(Double.MAX_VALUE);
 
-		//TableColumn<SearchResultModel, Integer> nidCol = new TableColumn<>("NID");
+		TableColumn<CompositeSearchResult, Number> nidCol = new TableColumn<>("NID");
+		nidCol.setVisible(false);
 
 		TableColumn<CompositeSearchResult, String> uuIdCol = new TableColumn<>("UUID");
 		uuIdCol.setMaxWidth(Double.MAX_VALUE);
 		uuIdCol.setVisible(false);
+		
+		searchResultsTable.getColumns().clear();
+		searchResultsTable.getColumns().add(scoreCol);
+		searchResultsTable.getColumns().add(statusCol);
+		searchResultsTable.getColumns().add(preferredTermCol);
+		searchResultsTable.getColumns().add(matchingTextCol);
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.PER_MATCH) {
+			searchResultsTable.getColumns().add(matchingDescTypeCol);
+		}
+		searchResultsTable.getColumns().add(fsnCol);
+		searchResultsTable.getColumns().add(numMatchesCol);
+		searchResultsTable.getColumns().add(uuIdCol);
+		searchResultsTable.getColumns().add(nidCol);
 
-		searchResultsTable.getColumns().addAll(
-				scoreCol, 
-				statusCol, 
-				numMatchesCol,
-				preferredTermCol,
-				matchingTextCol, 
-				//nidCol, 
-				uuIdCol,
-				fsnCol
-				);
+		matchingDescTypeCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
+				return new SimpleStringProperty( WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid()));
+			}
+		});
+		
+		// Do not display numMatchesCol if AggregationType is PER_MATCH
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.PER_MATCH) {
+			numMatchesCol.setVisible(false);
+		}
+		numMatchesCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,Number>, ObservableValue<Number>>() {
+			@Override
+			public ObservableValue<Number> call(CellDataFeatures<CompositeSearchResult, Number> param) {
+				return new SimpleIntegerProperty(param.getValue().getMatchingDescriptionComponents().size());
+			}
+		});
 
+		nidCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,Number>, ObservableValue<Number>>() {
+			@Override
+			public ObservableValue<Number> call(CellDataFeatures<CompositeSearchResult, Number> param) {
+					return new SimpleIntegerProperty(param.getValue().getConcept().getNid());
+			}
+		});
 		uuIdCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
 			@Override
 			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
@@ -325,12 +370,6 @@ public class EnhancedSearchViewController {
 				return new SimpleDoubleProperty(param.getValue().getBestScore());
 			}
 		});
-		numMatchesCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,Number>, ObservableValue<Number>>() {
-			@Override
-			public ObservableValue<Number> call(CellDataFeatures<CompositeSearchResult, Number> param) {
-				return new SimpleIntegerProperty(param.getValue().getMatchingDescriptionComponents().size());
-			}
-		});
 		statusCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult, String>, ObservableValue<String>>() {
 			@Override
 			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
@@ -346,7 +385,62 @@ public class EnhancedSearchViewController {
 
 		searchResultsTable.setItems(searchResults);
 	}
+	
+	private void initializeAggregationTypeComboBox() {
+		// Force single selection
+		aggregationTypeComboBox.getSelectionModel().selectFirst();
+		aggregationTypeComboBox.setCellFactory(new Callback<ListView<AggregationType>,ListCell<AggregationType>>(){
+			@Override
+			public ListCell<AggregationType> call(ListView<AggregationType> p) {
 
+				final ListCell<AggregationType> cell = new ListCell<AggregationType>(){
+
+					@Override
+					protected void updateItem(AggregationType a, boolean bln) {
+						super.updateItem(a, bln);
+
+						if(a != null){
+							setText(a.toString());
+						}else{
+							setText(null);
+						}
+					}
+
+				};
+
+				return cell;
+			}
+		});
+		aggregationTypeComboBox.setButtonCell(new ListCell<AggregationType>() {
+			@Override
+			protected void updateItem(AggregationType t, boolean bln) {
+				super.updateItem(t, bln); 
+				if (bln) {
+					setText("");
+				} else {
+					setText(t.toString());
+				}
+			}
+		});
+		aggregationTypeComboBox.setOnAction((event) -> {
+			LOG.trace("aggregationTypeComboBox event (selected: " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			searchResults.clear();
+			
+			initializeSearchResultsTable();
+			
+			load();
+			refresh();
+			
+			// TODO: enable auto search after AggregationType change. Currently messes up formats.
+//			if (this.isSearchValid()) {
+//				this.executeSearch();
+//			}
+		});
+		
+		aggregationTypeComboBox.getSelectionModel().select(AggregationType.PER_CONCEPT);
+	}
+	
 	private void initializeSearchStrategyComboBox() {
 		// Force single selection
 		searchStrategyComboBox.getSelectionModel().selectFirst();
@@ -385,7 +479,7 @@ public class EnhancedSearchViewController {
 		});
 		searchStrategyComboBox.setOnAction((event) -> {
 			SearchStrategyType type = searchStrategyComboBox.getSelectionModel().getSelectedItem();
-			LOG.trace("searchStrategyComboBox Action (selected: " + type + ")");
+			LOG.trace("searchStrategyComboBox event (selected: " + type + ")");
 
 			load();
 			refresh();
@@ -422,12 +516,31 @@ public class EnhancedSearchViewController {
 		SearchStrategyType searchStrategyType = searchStrategyComboBox.getValue();
 		if (searchStrategyType != null) {
 			switch (searchStrategyType) {
-			case LUCENE:
-				searchStrategy = new LuceneSearchStrategy(searchResults);
-				searchStrategy.setSearchTextParameter(searchText.getText());
-				searchStrategy.setComparator(new CompositeSearchResultComparator());
-				searchStrategy.setSearchResultsFilters(filters);
-				break;
+			case LUCENE: {
+				switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
+				case  PER_CONCEPT:
+					searchStrategy = new PerConceptLuceneSearchStrategy(searchResults);
+					break;
+				case  PER_MATCH:
+					searchStrategy = new PerMatchLuceneSearchStrategy(searchResults);
+					break;
+
+				default:
+					searchStrategy = null;
+					String title = "Unsupported Aggregation Type";
+					String msg = "Unsupported AggregationType \"" + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + "\"";
+					LOG.error(title);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only AggregationType(s) " + AggregationType.values() + " currently supported");
+					break;
+				}
+
+				if (searchStrategy != null) {
+					searchStrategy.setSearchTextParameter(searchText.getText());
+					searchStrategy.setComparator(new CompositeSearchResultComparator());
+					searchStrategy.setSearchResultsFilters(filters);
+				}
+			}
+			break;
 
 			default:
 				searchStrategy = null;
@@ -438,6 +551,7 @@ public class EnhancedSearchViewController {
 			}
 		}
 	}
+
 	public void load() {
 		// Load searchStrategy
 		loadSearchStrategy();
@@ -447,6 +561,9 @@ public class EnhancedSearchViewController {
 
 	public void refresh() {
 		LOG.trace("Running refresh()...");
+
+		// refresh searchStrategiesComboBox
+		aggregationTypeComboBox.setItems(aggregationTypes);
 
 		// refresh searchStrategiesComboBox
 		searchStrategyComboBox.setItems(searchStrategyTypes);

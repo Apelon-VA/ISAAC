@@ -4,12 +4,12 @@ import java.util.List;
 
 import gov.va.isaac.search.CompositeSearchResult;
 
-public class LuceneSearchStrategy extends AbstractLuceneSearchStrategy<CompositeSearchResult> {
-	public LuceneSearchStrategy() {
+public class PerMatchLuceneSearchStrategy extends AbstractPerMatchLuceneSearchStrategy<CompositeSearchResult> {
+	public PerMatchLuceneSearchStrategy() {
 		super();
 	}
 
-	public LuceneSearchStrategy(List<CompositeSearchResult> resultsList) {
+	public PerMatchLuceneSearchStrategy(List<CompositeSearchResult> resultsList) {
 		super(resultsList);
 	}
 
