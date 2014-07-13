@@ -2,15 +2,15 @@ package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchResultModelLuceneSearchStrategy;
+import gov.va.isaac.gui.enhancedsearchview.model.LuceneSearchStrategy;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsFilterI;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchStrategyI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.util.Utility;
 
-import java.io.File;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -29,7 +29,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
@@ -41,6 +40,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.util.Callback;
 
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -60,13 +61,13 @@ public class EnhancedSearchViewController {
 
 	enum SearchStrategyType {
 		LUCENE,
-		REGEX,
-		REFSET
+		//REGEX,
+		//REFSET
 	}
 
 	// Cached Actions in list form for refreshing actionComboBox
-	//private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(SearchStrategyType.values(), SearchStrategyType.values().length));
-	private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(new SearchStrategyType[] { SearchStrategyType.LUCENE }, 1));
+	private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(SearchStrategyType.values(), SearchStrategyType.values().length));
+	//private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(new SearchStrategyType[] { SearchStrategyType.LUCENE }, 1));
 
 	@FXML private Button searchButton;
 	@FXML private TextField searchText;
@@ -80,6 +81,8 @@ public class EnhancedSearchViewController {
 	//@FXML private Button addFilterButton;
 	//@FXML private Button clearFiltersButton;
 
+	private Window windowForTableViewExportDialog;
+	
 	private SearchStrategyI<CompositeSearchResult> searchStrategy;
 	private final ObservableList<CompositeSearchResult> searchResults = FXCollections.observableArrayList();
 	private final List<SearchResultsFilterI> filters = new ArrayList<>();
@@ -101,13 +104,24 @@ public class EnhancedSearchViewController {
 		}
 	}
 
+	protected void windowForTableViewExportDialog(Window window) {
+		this.windowForTableViewExportDialog = window;
+	}
+	
 	private void exportSearchResultsAsTabDelimitedValues() {
+		FileChooser fileChooser = new FileChooser();
+		  
+        //Set extension filter
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(windowForTableViewExportDialog);
+
+		//String tempDir = System.getenv("TEMP");
+		//File file = new File(tempDir + File.separator + "EnhanceSearchViewControllerTableViewData.csv");
 
 		ObservableList<TableColumn<CompositeSearchResult, ?>> columns = searchResultsTable.getColumns();
-
-		String tempDir = System.getenv("TEMP");
-		
-		File file = new File(tempDir + File.separator + "EnhanceSearchViewControllerTableViewData.csv");
 
 		char delimiter = '\t';
 		
@@ -235,7 +249,7 @@ public class EnhancedSearchViewController {
 			}
 		});
 	}
-
+	
 	private void initializeSearchResultsTable() {
 		searchResultsTable.setTableMenuButtonVisible(true);
 		searchResultsTable.setEditable(false);
@@ -281,7 +295,10 @@ public class EnhancedSearchViewController {
 				try {
 					return new SimpleStringProperty(param.getValue().getConcept().getFullySpecifiedDescription().getText().trim());
 				} catch (IOException | ContradictionException e) {
-					// TODO Auto-generated catch block
+					String title = "Failed getting FSN";
+					String msg = "Failed getting fully specified description";
+					LOG.error(title);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
 					e.printStackTrace();
 					return null;
 				}
@@ -293,7 +310,10 @@ public class EnhancedSearchViewController {
 				try {
 					return new SimpleStringProperty(param.getValue().getConcept().getPreferredDescription().getText().trim());
 				} catch (IOException | ContradictionException e) {
-					// TODO Auto-generated catch block
+					String title = "Failed getting preferred description";
+					String msg = "Failed getting preferred description";
+					LOG.error(title);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
 					e.printStackTrace();
 					return null;
 				}
@@ -419,7 +439,7 @@ public class EnhancedSearchViewController {
 		if (searchStrategyType != null) {
 			switch (searchStrategyType) {
 			case LUCENE:
-				searchStrategy = new SearchResultModelLuceneSearchStrategy(searchResults);
+				searchStrategy = new LuceneSearchStrategy(searchResults);
 				searchStrategy.setSearchTextParameter(searchText.getText());
 				searchStrategy.setComparator(new CompositeSearchResultComparator());
 				searchStrategy.setSearchResultsFilters(filters);

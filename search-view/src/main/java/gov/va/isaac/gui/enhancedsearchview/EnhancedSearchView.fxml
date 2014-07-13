@@ -46,7 +46,7 @@
             </HBox>
             <ToolBar HBox.hgrow="ALWAYS">
                <items>
-              <Button fx:id="searchButton" mnemonicParsing="false" text="Run" textAlignment="CENTER" />
+              <Button fx:id="searchButton" mnemonicParsing="false" text="Search" textAlignment="CENTER" />
                   <Button fx:id="exportSearchResultsAsTabDelimitedValuesButton" mnemonicParsing="false" text="Export" />
                </items>
                <HBox.margin>
