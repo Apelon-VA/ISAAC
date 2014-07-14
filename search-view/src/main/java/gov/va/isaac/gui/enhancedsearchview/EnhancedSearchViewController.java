@@ -1,6 +1,7 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.enhancedsearchview.model.PerConceptLuceneSearchStrategy;
 import gov.va.isaac.gui.enhancedsearchview.model.PerMatchLuceneSearchStrategy;
@@ -211,6 +212,8 @@ public class EnhancedSearchViewController {
 		uuIdCol.setMaxWidth(Double.MAX_VALUE);
 		uuIdCol.setVisible(false);
 		
+		TableColumn<CompositeSearchResult, String> sctIdCol = new TableColumn<>("SCTID");
+		
 		searchResultsTable.getColumns().clear();
 		searchResultsTable.getColumns().add(scoreCol);
 		searchResultsTable.getColumns().add(statusCol);
@@ -221,6 +224,7 @@ public class EnhancedSearchViewController {
 		}
 		searchResultsTable.getColumns().add(fsnCol);
 		searchResultsTable.getColumns().add(numMatchesCol);
+		searchResultsTable.getColumns().add(sctIdCol);
 		searchResultsTable.getColumns().add(uuIdCol);
 		searchResultsTable.getColumns().add(nidCol);
 
@@ -252,6 +256,12 @@ public class EnhancedSearchViewController {
 			@Override
 			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
 					return new SimpleStringProperty(param.getValue().getConcept().getPrimordialUuid().toString().trim());
+			}
+		});
+		sctIdCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
+				return new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getConcept())).trim());
 			}
 		});
 		fsnCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {

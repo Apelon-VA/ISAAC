@@ -40,6 +40,26 @@ public class PerMatchLuceneSearchStrategy<T> extends AbstractLuceneSearchStrateg
 	        }
 	        
 	        // else same score
+	        String o1FSN = null;
+	        try {
+				o1FSN = o1.getConcept().getFullySpecifiedDescription().getText().trim();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
+				e.printStackTrace();
+			}
+	        String o2FSN = null;
+	        try {
+	        	o2FSN = o2.getConcept().getFullySpecifiedDescription().getText().trim();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
+				e.printStackTrace();
+			}
+	        int fsnComparison = o1FSN.compareTo(o2FSN);
+	        if (fsnComparison != 0) {
+	            return fsnComparison;
+	        }
+	        
+	        // else same score and FSN
 	        String o1PreferredDescription = null;
 			try {
 				o1PreferredDescription = o1.getConcept().getPreferredDescription().getText().trim();
@@ -61,20 +81,26 @@ public class PerMatchLuceneSearchStrategy<T> extends AbstractLuceneSearchStrateg
 	            return prefDescComparison;
 	        }
 	        
-	        // else same score and same preferred description
+	        // else same score and FSN and preferred description
 	        String o1matchingComponentType = WBUtility.getConPrefTerm(o1.getMatchingDescriptionComponents().iterator().next().getTypeNid()).trim();
 	        String o2matchingComponentType = WBUtility.getConPrefTerm(o2.getMatchingDescriptionComponents().iterator().next().getTypeNid()).trim();
 	
 	        final String fullySpecifiedNameStr = "Fully specified name";
-	        //final String synonymStr = "Synonym";
-	        
 	        if (o1matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {
 	        	return -1;
 	        } else if (o2matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {
 	        	return 1;
 	        }
 	        
-	        // else same score and same preferred description and equivalent component types
+	        // else same score and FSN and preferred description and both FSNs
+	        final String synonymStr = "Synonym";
+	        if (o1matchingComponentType.equalsIgnoreCase(synonymStr)) {
+	        	return -1;
+	        } else if (o2matchingComponentType.equalsIgnoreCase(synonymStr)) {
+	        	return 1;
+	        }
+	        
+	        // else same score and FSN and preferred description and both Synonyms
 	        return 0;
 	    }
 	}
