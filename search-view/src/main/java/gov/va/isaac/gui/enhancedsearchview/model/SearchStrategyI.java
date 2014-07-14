@@ -13,8 +13,8 @@ public interface SearchStrategyI<T> {
 	public abstract Comparator<T> getComparator();
 	public abstract void setComparator(Comparator<T> comparator);
 	
-	public abstract List<SearchResultsFilterI> getSearchResultsFilters();
-	public abstract void setSearchResultsFilters(List<SearchResultsFilterI> filters);
+	public abstract List<SearchResultFilterI> getSearchResultFilters();
+	public abstract void setSearchResultFilters(List<SearchResultFilterI> filters);
 
 	public abstract T transform(CompositeSearchResult result);
 

@@ -4,7 +4,8 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.enhancedsearchview.model.PerConceptLuceneSearchStrategy;
 import gov.va.isaac.gui.enhancedsearchview.model.PerMatchLuceneSearchStrategy;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsFilterI;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchResultFactoryI;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchResultFilterI;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchStrategyI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
@@ -95,7 +96,7 @@ public class EnhancedSearchViewController {
 	
 	private SearchStrategyI<CompositeSearchResult> searchStrategy;
 	private final ObservableList<CompositeSearchResult> searchResults = FXCollections.observableArrayList();
-	private final List<SearchResultsFilterI> filters = new ArrayList<>();
+	private final List<SearchResultFilterI> filters = new ArrayList<>();
 
 	public static EnhancedSearchViewController init() throws IOException {
 		// Load FXML
@@ -117,87 +118,6 @@ public class EnhancedSearchViewController {
 	protected void windowForTableViewExportDialog(Window window) {
 		this.windowForTableViewExportDialog = window;
 	}
-	
-	private void exportSearchResultsAsTabDelimitedValues() {
-		FileChooser fileChooser = new FileChooser();
-		  
-        //Set extension filter
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
-        fileChooser.getExtensionFilters().add(extFilter);
-        
-        //Show save file dialog
-        File file = fileChooser.showSaveDialog(windowForTableViewExportDialog);
-
-		//String tempDir = System.getenv("TEMP");
-		//File file = new File(tempDir + File.separator + "EnhanceSearchViewControllerTableViewData.csv");
-
-		ObservableList<TableColumn<CompositeSearchResult, ?>> columns = searchResultsTable.getColumns();
-
-		char delimiter = '\t';
-		
-		LOG.debug("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
-		
-		Writer writer = null;
-		try {
-			writer = new BufferedWriter(new FileWriter(file));
-
-			StringBuilder row = new StringBuilder();
-			for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
-				TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
-				if (! col.isVisible()) {
-					continue;
-				}
-				row.append(col.getText());
-				if (colIndex < (columns.size() - 1)) {
-					row.append(delimiter);
-				} else if (colIndex == (columns.size() - 1)) {
-					row.append("\n");
-				}
-			}
-			LOG.trace(row.toString());
-			writer.write(row.toString());
-			
-			for (int rowIndex = 0; rowIndex < searchResults.size(); ++rowIndex) {
-				row = new StringBuilder();
-				for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
-					TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
-					if (! col.isVisible()) {
-						continue;
-					}
-					row.append(col.getCellObservableValue(rowIndex).getValue().toString());
-					if (colIndex < (columns.size() - 1)) {
-						row.append(delimiter);
-					} else if (colIndex == (columns.size() - 1)) {
-						row.append("\n");
-					}
-				}
-				
-				LOG.trace(row.toString());
-				writer.write(row.toString());
-			}
-
-			LOG.debug("Wrote " + searchResults.size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
-		} catch (IOException e) {
-			LOG.error("FAILED writing TableView data to file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-			e.printStackTrace();
-		}
-		finally {
-			try {
-				writer.flush();
-			} catch (IOException e) {
-				LOG.error("FAILED flushing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-				e.printStackTrace();
-			}
-			try {
-				writer.close();
-			} catch (IOException e) {
-				LOG.error("FAILED closing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-				e.printStackTrace();
-			}
-		} 
-		
-	}
-
 	@FXML
 	public void initialize() {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
@@ -442,6 +362,9 @@ public class EnhancedSearchViewController {
 	}
 	
 	private void initializeSearchStrategyComboBox() {
+		// TODO: Make visible in order to use search strategy ComboBox
+		searchAndFilterVBox.setVisible(false);
+		
 		// Force single selection
 		searchStrategyComboBox.getSelectionModel().selectFirst();
 		searchStrategyComboBox.setCellFactory(new Callback<ListView<SearchStrategyType>,ListCell<SearchStrategyType>>(){
@@ -515,14 +438,21 @@ public class EnhancedSearchViewController {
 		searchStrategyComboBox.getSelectionModel().select(SearchStrategyType.LUCENE);
 		SearchStrategyType searchStrategyType = searchStrategyComboBox.getValue();
 		if (searchStrategyType != null) {
+			final SearchResultFactoryI<CompositeSearchResult> srf = new SearchResultFactoryI<CompositeSearchResult> () {
+				@Override
+				public CompositeSearchResult transform(CompositeSearchResult result) {
+					return result;
+				}
+			};
+			
 			switch (searchStrategyType) {
 			case LUCENE: {
 				switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
 				case  PER_CONCEPT:
-					searchStrategy = new PerConceptLuceneSearchStrategy(searchResults);
+					searchStrategy = new PerConceptLuceneSearchStrategy<CompositeSearchResult>(srf, searchResults);
 					break;
 				case  PER_MATCH:
-					searchStrategy = new PerMatchLuceneSearchStrategy(searchResults);
+					searchStrategy = new PerMatchLuceneSearchStrategy<CompositeSearchResult>(srf, searchResults);
 					break;
 
 				default:
@@ -537,7 +467,7 @@ public class EnhancedSearchViewController {
 				if (searchStrategy != null) {
 					searchStrategy.setSearchTextParameter(searchText.getText());
 					searchStrategy.setComparator(new CompositeSearchResultComparator());
-					searchStrategy.setSearchResultsFilters(filters);
+					searchStrategy.setSearchResultFilters(filters);
 				}
 			}
 			break;
@@ -550,6 +480,89 @@ public class EnhancedSearchViewController {
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchStrategyType \"LUCENE\" currently supported");
 			}
 		}
+	}
+
+	private void exportSearchResultsAsTabDelimitedValues() {
+		FileChooser fileChooser = new FileChooser();
+		  
+        //Set extension filter
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(windowForTableViewExportDialog);
+
+		//String tempDir = System.getenv("TEMP");
+		//File file = new File(tempDir + File.separator + "EnhanceSearchViewControllerTableViewData.csv");
+
+        if (file == null) {
+        	LOG.warn("FileChooser returned null export file.  Cancel possibly requested.");
+        } else { // if (file != null)
+        	ObservableList<TableColumn<CompositeSearchResult, ?>> columns = searchResultsTable.getColumns();
+
+        	char delimiter = '\t';
+
+        	LOG.debug("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
+
+        	Writer writer = null;
+        	try {
+        		writer = new BufferedWriter(new FileWriter(file));
+
+        		StringBuilder row = new StringBuilder();
+        		for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
+        			TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
+        			if (! col.isVisible()) {
+        				continue;
+        			}
+        			row.append(col.getText());
+        			if (colIndex < (columns.size() - 1)) {
+        				row.append(delimiter);
+        			} else if (colIndex == (columns.size() - 1)) {
+        				row.append("\n");
+        			}
+        		}
+        		LOG.trace(row.toString());
+        		writer.write(row.toString());
+
+        		for (int rowIndex = 0; rowIndex < searchResults.size(); ++rowIndex) {
+        			row = new StringBuilder();
+        			for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
+        				TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
+        				if (! col.isVisible()) {
+        					continue;
+        				}
+        				row.append(col.getCellObservableValue(rowIndex).getValue().toString());
+        				if (colIndex < (columns.size() - 1)) {
+        					row.append(delimiter);
+        				} else if (colIndex == (columns.size() - 1)) {
+        					row.append("\n");
+        				}
+        			}
+
+        			LOG.trace(row.toString());
+        			writer.write(row.toString());
+        		}
+
+        		LOG.debug("Wrote " + searchResults.size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
+        	} catch (IOException e) {
+        		LOG.error("FAILED writing TableView data to file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+        		e.printStackTrace();
+        	}
+        	finally {
+        		try {
+        			writer.flush();
+        		} catch (IOException e) {
+        			LOG.error("FAILED flushing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+        			e.printStackTrace();
+        		}
+        		try {
+        			writer.close();
+        		} catch (IOException e) {
+        			LOG.error("FAILED closing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+        			e.printStackTrace();
+        		}
+        	}
+        }
 	}
 
 	public void load() {

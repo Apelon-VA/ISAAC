@@ -21,6 +21,7 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.EnhancedSearchViewI;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @PerLookup
-public class EnhancedSearchView // implements EnhancedSearchViewI
+public class EnhancedSearchView implements EnhancedSearchViewI
 {
 	private EnhancedSearchViewController svc_;
 	
