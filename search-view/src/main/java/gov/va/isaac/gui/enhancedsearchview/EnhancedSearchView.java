@@ -59,7 +59,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
     /**
      * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
      */
-    //@Override
     public Region getView() {
     	svc_.load();
         return svc_.getRoot();
@@ -68,7 +67,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
-	//@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
 		//We don't currently have any custom menus with this view
@@ -78,7 +76,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
 	 */
-	//@Override
 	public MenuItemI getMenuBarMenuToShowView()
 	{
 		MenuItemI menuItem = new MenuItemI()
@@ -131,7 +128,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
-	//@Override
 	public String getViewTitle()
 	{
 		return "Enhanced Snomed Search";

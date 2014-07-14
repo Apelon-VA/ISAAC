@@ -19,24 +19,6 @@
    <top>
       <FlowPane maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
          <children>
-            <HBox>
-               <children>
-                  <VBox fx:id="searchAndFilterVBox" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="NEVER">
-                     <children>
-                        <HBox alignment="CENTER_LEFT" VBox.vgrow="ALWAYS">
-                           <children>
-                              <Label alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="50.0" text="Search Strategy" textAlignment="CENTER" wrapText="true" />
-                              <ComboBox fx:id="searchStrategyComboBox" maxWidth="-Infinity" minWidth="-Infinity" onAction="#load" prefWidth="100.0" HBox.hgrow="ALWAYS">
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </HBox.margin>
-                              </ComboBox>
-                           </children>
-                        </HBox>
-                     </children>
-                  </VBox>
-               </children>
-            </HBox>
             <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308">
                <children>
                   <Label maxWidth="-Infinity" minWidth="-Infinity" prefWidth="50.0" text="Search Param" textAlignment="CENTER" wrapText="true" HBox.hgrow="NEVER" />
@@ -47,7 +29,21 @@
               </TextField>
                </children>
             </HBox>
-            <ToolBar maxWidth="275.0">
+            <VBox fx:id="searchAndFilterVBox" alignment="CENTER" disable="true" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="0.0" visible="false">
+               <children>
+                  <HBox alignment="CENTER_LEFT" disable="true" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="0.0" visible="false" VBox.vgrow="ALWAYS">
+                     <children>
+                        <Label alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="50.0" text="Search Strategy" textAlignment="CENTER" wrapText="true" />
+                        <ComboBox fx:id="searchStrategyComboBox" maxWidth="-Infinity" minWidth="-Infinity" onAction="#load" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </HBox.margin>
+                        </ComboBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <ToolBar maxWidth="-Infinity" minWidth="-Infinity" prefWidth="245.0">
                <items>
               <Button fx:id="searchButton" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="55.0" text="Search" textAlignment="CENTER" />
                   <ComboBox fx:id="aggregationTypeComboBox" maxWidth="120.0" minWidth="120.0" />
