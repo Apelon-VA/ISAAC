@@ -6,13 +6,16 @@ import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
@@ -20,7 +23,63 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PerMatchLuceneSearchStrategy<T> extends AbstractLuceneSearchStrategy<T> {
-    private static final Logger LOG = LoggerFactory.getLogger(PerMatchLuceneSearchStrategy.class);
+    public static class PerMatchCompositeSearchResultComparator implements Comparator<CompositeSearchResult> {
+		protected static final Logger LOG = LoggerFactory.getLogger(PerMatchCompositeSearchResultComparator.class);
+	
+	    /**
+	     * Note, the primary getBestScore() sort is in reverse, so it goes highest to lowest
+	     *
+	     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	     */
+	    @Override
+	    public int compare(CompositeSearchResult o1, CompositeSearchResult o2) {
+	        if (o1.getBestScore() < o2.getBestScore()) {
+	            return 1;
+	        } else if (o1.getBestScore() > o2.getBestScore()) {
+	            return -1;
+	        }
+	        
+	        // else same score
+	        String o1PreferredDescription = null;
+			try {
+				o1PreferredDescription = o1.getConcept().getPreferredDescription().getText().trim();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
+				e.printStackTrace();
+			}
+	
+	        String o2PreferredDescription = null;
+			try {
+				o2PreferredDescription = o2.getConcept().getPreferredDescription().getText().trim();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
+				e.printStackTrace();
+			}
+	        
+	        int prefDescComparison = o1PreferredDescription.compareTo(o2PreferredDescription);
+	        if (prefDescComparison != 0) {
+	            return prefDescComparison;
+	        }
+	        
+	        // else same score and same preferred description
+	        String o1matchingComponentType = WBUtility.getConPrefTerm(o1.getMatchingDescriptionComponents().iterator().next().getTypeNid()).trim();
+	        String o2matchingComponentType = WBUtility.getConPrefTerm(o2.getMatchingDescriptionComponents().iterator().next().getTypeNid()).trim();
+	
+	        final String fullySpecifiedNameStr = "Fully specified name";
+	        //final String synonymStr = "Synonym";
+	        
+	        if (o1matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {
+	        	return -1;
+	        } else if (o2matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {
+	        	return 1;
+	        }
+	        
+	        // else same score and same preferred description and equivalent component types
+	        return 0;
+	    }
+	}
+
+	private static final Logger LOG = LoggerFactory.getLogger(PerMatchLuceneSearchStrategy.class);
 
 	public PerMatchLuceneSearchStrategy(SearchResultFactoryI<T> srf) {
 		super(srf);
@@ -32,9 +91,7 @@ public class PerMatchLuceneSearchStrategy<T> extends AbstractLuceneSearchStrateg
 	@Override
 	public synchronized void search() {
 		// Just strip out parens, which are common in FSNs, but also lucene search operators (which our users likely won't use)
-		String query = searchTextParameter;
-        query = query.replaceAll("\\(", "");
-		query = query.replaceAll("\\)", "");
+		String query = searchTextParameter.replaceAll("\\(", "").replaceAll("\\)", "").trim();
 		
 		final String localQuery = query;
 		BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();

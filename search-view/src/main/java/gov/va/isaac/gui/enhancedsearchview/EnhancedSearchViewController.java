@@ -227,7 +227,7 @@ public class EnhancedSearchViewController {
 		matchingDescTypeCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
 			@Override
 			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				return new SimpleStringProperty( WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid()));
+				return new SimpleStringProperty(WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid()));
 			}
 		});
 		
@@ -450,9 +450,11 @@ public class EnhancedSearchViewController {
 				switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
 				case  PER_CONCEPT:
 					searchStrategy = new PerConceptLuceneSearchStrategy<CompositeSearchResult>(srf, searchResults);
+					searchStrategy.setComparator(new CompositeSearchResultComparator());
 					break;
 				case  PER_MATCH:
 					searchStrategy = new PerMatchLuceneSearchStrategy<CompositeSearchResult>(srf, searchResults);
+					searchStrategy.setComparator(new PerMatchLuceneSearchStrategy.PerMatchCompositeSearchResultComparator());
 					break;
 
 				default:
@@ -466,7 +468,6 @@ public class EnhancedSearchViewController {
 
 				if (searchStrategy != null) {
 					searchStrategy.setSearchTextParameter(searchText.getText());
-					searchStrategy.setComparator(new CompositeSearchResultComparator());
 					searchStrategy.setSearchResultFilters(filters);
 				}
 			}

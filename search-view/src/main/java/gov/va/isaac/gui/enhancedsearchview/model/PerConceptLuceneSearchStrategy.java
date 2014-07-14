@@ -28,9 +28,7 @@ public class PerConceptLuceneSearchStrategy<T> extends AbstractLuceneSearchStrat
 	@Override
 	public synchronized void search() {
 		// Just strip out parens, which are common in FSNs, but also lucene search operators (which our users likely won't use)
-		String query = searchTextParameter;
-        query = query.replaceAll("\\(", "");
-		query = query.replaceAll("\\)", "");
+		String query = searchTextParameter.replaceAll("\\(", "").replaceAll("\\)", "").trim();
 		
 		final String localQuery = query;
 		BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();

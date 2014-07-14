@@ -43,7 +43,7 @@
                   </HBox>
                </children>
             </VBox>
-            <ToolBar maxWidth="-Infinity" minWidth="-Infinity" prefWidth="245.0">
+            <ToolBar maxWidth="1.7976931348623157E308" minWidth="255.0" nodeOrientation="LEFT_TO_RIGHT">
                <items>
               <Button fx:id="searchButton" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="55.0" text="Search" textAlignment="CENTER" />
                   <ComboBox fx:id="aggregationTypeComboBox" maxWidth="120.0" minWidth="120.0" />
