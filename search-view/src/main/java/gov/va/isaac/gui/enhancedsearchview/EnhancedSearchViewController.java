@@ -96,7 +96,6 @@ public class EnhancedSearchViewController {
 	private Window windowForTableViewExportDialog;
 	
 	private SearchStrategyI<CompositeSearchResult> searchStrategy;
-	private final ObservableList<CompositeSearchResult> searchResults = FXCollections.observableArrayList();
 	private final List<SearchResultFilterI> filters = new ArrayList<>();
 
 	public static EnhancedSearchViewController init() throws IOException {
@@ -313,7 +312,7 @@ public class EnhancedSearchViewController {
 			}
 		});
 
-		searchResultsTable.setItems(searchResults);
+		//searchResultsTable.setItems(searchResults);
 	}
 	
 	private void initializeAggregationTypeComboBox() {
@@ -355,17 +354,12 @@ public class EnhancedSearchViewController {
 		aggregationTypeComboBox.setOnAction((event) -> {
 			LOG.trace("aggregationTypeComboBox event (selected: " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + ")");
 
-			searchResults.clear();
+			searchResultsTable.getItems().clear();
 			
 			initializeSearchResultsTable();
 			
 			load();
 			refresh();
-			
-			// TODO: enable auto search after AggregationType change. Currently messes up formats.
-//			if (this.isSearchValid()) {
-//				this.executeSearch();
-//			}
 		});
 		
 		aggregationTypeComboBox.getSelectionModel().select(AggregationType.PER_CONCEPT);
@@ -427,7 +421,7 @@ public class EnhancedSearchViewController {
 			if (isSearchValid()) {
 				searchStrategy.search();
 
-				for (CompositeSearchResult result : searchResults) {
+				for (CompositeSearchResult result : searchResultsTable.getItems()) {
 					LOG.trace(result.toString());
 				}
 			}
@@ -459,11 +453,11 @@ public class EnhancedSearchViewController {
 			case LUCENE: {
 				switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
 				case  PER_CONCEPT:
-					searchStrategy = new PerConceptLuceneSearchStrategy<CompositeSearchResult>(srf, searchResults);
+					searchStrategy = new PerConceptLuceneSearchStrategy<CompositeSearchResult>(srf, searchResultsTable.getItems());
 					searchStrategy.setComparator(new CompositeSearchResultComparator());
 					break;
 				case  PER_MATCH:
-					searchStrategy = new PerMatchLuceneSearchStrategy<CompositeSearchResult>(srf, searchResults);
+					searchStrategy = new PerMatchLuceneSearchStrategy<CompositeSearchResult>(srf, searchResultsTable.getItems());
 					searchStrategy.setComparator(new PerMatchLuceneSearchStrategy.PerMatchCompositeSearchResultComparator());
 					break;
 
@@ -523,11 +517,24 @@ public class EnhancedSearchViewController {
         		for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
         			TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
         			if (! col.isVisible()) {
+        				if (colIndex == (columns.size() - 1)) {
+             				row.append("\n");
+        				}
+
         				continue;
         			}
         			row.append(col.getText());
         			if (colIndex < (columns.size() - 1)) {
-        				row.append(delimiter);
+        				boolean hasMoreVisibleCols = false;
+        				for (int remainingColsIndex = colIndex + 1; remainingColsIndex < columns.size(); ++remainingColsIndex) {
+        					if (columns.get(remainingColsIndex).isVisible()) {
+        						hasMoreVisibleCols = true;
+        						break;
+        					}
+        				}
+        				if (hasMoreVisibleCols) {
+        					row.append(delimiter);
+        				}
         			} else if (colIndex == (columns.size() - 1)) {
         				row.append("\n");
         			}
@@ -535,16 +542,28 @@ public class EnhancedSearchViewController {
         		LOG.trace(row.toString());
         		writer.write(row.toString());
 
-        		for (int rowIndex = 0; rowIndex < searchResults.size(); ++rowIndex) {
+        		for (int rowIndex = 0; rowIndex < searchResultsTable.getItems().size(); ++rowIndex) {
         			row = new StringBuilder();
         			for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
         				TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
         				if (! col.isVisible()) {
+            				if (colIndex == (columns.size() - 1)) {
+                 				row.append("\n");
+            				}
         					continue;
         				}
         				row.append(col.getCellObservableValue(rowIndex).getValue().toString());
         				if (colIndex < (columns.size() - 1)) {
-        					row.append(delimiter);
+        					boolean hasMoreVisibleCols = false;
+            				for (int remainingColsIndex = colIndex + 1; remainingColsIndex < columns.size(); ++remainingColsIndex) {
+            					if (columns.get(remainingColsIndex).isVisible()) {
+            						hasMoreVisibleCols = true;
+            						break;
+            					}
+            				}
+            				if (hasMoreVisibleCols) {
+            					row.append(delimiter);
+            				}
         				} else if (colIndex == (columns.size() - 1)) {
         					row.append("\n");
         				}
@@ -554,7 +573,7 @@ public class EnhancedSearchViewController {
         			writer.write(row.toString());
         		}
 
-        		LOG.debug("Wrote " + searchResults.size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
+        		LOG.debug("Wrote " + searchResultsTable.getItems().size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
         	} catch (IOException e) {
         		LOG.error("FAILED writing TableView data to file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
         		e.printStackTrace();
