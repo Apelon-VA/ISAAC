@@ -306,7 +306,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 				synchronized (runningSearches)
 				{
 					int id = searchCounter++;
-					SearchHandle ssh = SearchHandler.prefixSearch(text, 5, this, id);
+					SearchHandle ssh = SearchHandler.conceptPrefixSearch(text, 5, this, id);
 					runningSearches.put(id, ssh);
 				}
 			}

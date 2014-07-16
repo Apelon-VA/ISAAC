@@ -60,7 +60,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
      * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
      */
     public Region getView() {
-    	svc_.load();
         return svc_.getRoot();
     }
     

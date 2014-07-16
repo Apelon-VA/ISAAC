@@ -1,16 +1,33 @@
+/**
+ * Copyright Notice
+ * 
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
-import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.gui.enhancedsearchview.model.PerConceptLuceneSearchStrategy;
-import gov.va.isaac.gui.enhancedsearchview.model.PerMatchLuceneSearchStrategy;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchResultFactoryI;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchResultFilterI;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchStrategyI;
+import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
-import gov.va.isaac.util.Utility;
+import gov.va.isaac.search.SearchBuilder;
+import gov.va.isaac.search.SearchHandle;
+import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedWriter;
@@ -19,40 +36,37 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.Callback;
 
+import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.javafx.UnmodifiableArrayList;
 
 
 /**
@@ -60,44 +74,37 @@ import com.sun.javafx.UnmodifiableArrayList;
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-public class EnhancedSearchViewController {
+public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedSearchViewController.class);
 
 	enum AggregationType {
-		PER_CONCEPT,
-		PER_MATCH
+		CONCEPT("Concept"),
+		DESCRIPTION("Description");
+		
+		private final String display;
+		
+		private AggregationType(String display) {
+			this.display = display;
+		}
+		
+		public String toString() {
+			return display;
+		}
 	}
-	enum SearchStrategyType {
-		LUCENE,
-		//REGEX,
-		//REFSET
-	}
-	
-	// Cached AggregationType in list form for refreshing aggregationType ComboBox
-	private final static ObservableList<AggregationType> aggregationTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(AggregationType.values(), AggregationType.values().length));
-
-	// Cached SearchStrategyType in list form for refreshing searchStrategy ComboBox
-	private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(SearchStrategyType.values(), SearchStrategyType.values().length));
-	//private final static ObservableList<SearchStrategyType> searchStrategyTypes = FXCollections.observableArrayList(new UnmodifiableArrayList<>(new SearchStrategyType[] { SearchStrategyType.LUCENE }, 1));
 
 	@FXML private Button searchButton;
 	@FXML private TextField searchText;
-	@FXML private VBox searchAndFilterVBox;
 	@FXML private Pane pane;
 	@FXML private ComboBox<AggregationType> aggregationTypeComboBox;
-	@FXML private ComboBox<SearchStrategyType> searchStrategyComboBox;
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
+    @FXML private ProgressIndicator searchProgress;
+    
+    private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
+    private SearchHandle ssh = null;
 
-	//@FXML private VBox dynamicFilterVBox; // only if using dynamic filters
-	//@FXML private Button addFilterButton;
-	//@FXML private Button clearFiltersButton;
-	
 	private Window windowForTableViewExportDialog;
 	
-	private SearchStrategyI<CompositeSearchResult> searchStrategy;
-	private final List<SearchResultFilterI> filters = new ArrayList<>();
-
 	public static EnhancedSearchViewController init() throws IOException {
 		// Load FXML
 		URL resource = EnhancedSearchViewController.class.getResource("EnhancedSearchView.fxml");
@@ -106,239 +113,286 @@ public class EnhancedSearchViewController {
 		loader.load();
 		return loader.getController();
 	}
-
-	private boolean isSearchValid() {
-		if (searchStrategy == null) {
-			return false;
-		} else {
-			return searchStrategy.isValid();
-		}
-	}
-
-	protected void windowForTableViewExportDialog(Window window) {
-		this.windowForTableViewExportDialog = window;
-	}
+	
 	@FXML
 	public void initialize() {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert searchStrategyComboBox != null : "fx:id=\"searchStrategyComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert searchResultsTable != null : "fx:id=\"searchResultsTable\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert aggregationTypeComboBox != null : "fx:id=\"aggregationTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+    
+		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
+		if (! pane.getStylesheets().contains(styleSheet)) {
+			pane.getStylesheets().add(styleSheet);
+		}
 
+        final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
+        searchProgress.visibleProperty().bind(searchRunning);
+        searchButton.disableProperty().bind(searchTextValid.not());
+        //clearButton.disableProperty().bind(searchRunning);
+        
 		// Search results table
 		initializeSearchResultsTable();
 		initializeAggregationTypeComboBox();
-		initializeSearchStrategyComboBox();
 
-		exportSearchResultsAsTabDelimitedValuesButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e)  {
-				try {
-					exportSearchResultsAsTabDelimitedValues();
-				}
-				catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			} 
+		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> {
+			try {
+				exportSearchResultsAsTabDelimitedValues();
+			}
+			catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		});
 
-		// Default search button to disabled
-		searchButton.setDisable(true);
 		searchButton.setOnAction((action) -> {
-			searchButton.setDisable(true);
-			final BusyPopover searchButtonPopover = BusyPopover.createBusyPopover("Running search...", searchButton);
+			 if (searchRunning.get() && ssh != null) {
+                 ssh.cancel();
+             } else {
+                 search();
+             }
+		});
+		searchRunning.addListener((observable, oldValue, newValue) -> {
+			if (searchRunning.get()) {
+				searchButton.setText("Cancel");
+			} else {
+				searchButton.setText("Search");
+			}
 
-			Utility.execute(() -> {
-				try
-				{
-					executeSearch();
-
-					Platform.runLater(() -> 
-					{
-						searchButtonPopover.hide();
-						if (isSearchValid()) {
-							searchButton.setDisable(false);
-						}
-						refresh();
-					});
-				}
-				catch (Exception e)
-				{
-					searchButtonPopover.hide();
-					LOG.error("Error executing search: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-				}
-			});
 		});
 
 		// This code only for searchText
 		searchText.setPromptText("Enter search text");
-		searchText.setOnKeyReleased(new EventHandler<KeyEvent>() {
-			public void handle(KeyEvent ke) {
-				load();
+		searchText.setOnAction((e) -> {
+			if (searchTextValid.getValue() && ! searchRunning.get()) {
+				search();
+			}
+		});
+		
+		// Search text must be greater than one character.
+		searchText.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue.length() > 1) {
+				searchTextValid.set(true);
+			} else {
+				searchTextValid.set(false);
 			}
 		});
 	}
+
+	protected void windowForTableViewExportDialog(Window window) {
+		this.windowForTableViewExportDialog = window;
+	}
 	
+	@Override
+	public void taskComplete(long taskStartTime, Integer taskId) {
+        // Run on JavaFX thread.
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (! ssh.isCancelled()) {
+                        searchResultsTable.getItems().addAll(ssh.getResults());
+                    }
+                } catch (Exception ex) {
+                    String title = "Unexpected Search Error";
+                    LOG.error(title, ex);
+                    AppContext.getCommonDialogs().showErrorDialog(title,
+                            "There was an unexpected error running the search",
+                            ex.toString());
+                    searchResultsTable.getItems().clear();
+                } finally {
+                    searchRunning.set(false);
+                }
+            }
+        });
+    }
+
+	// MyTableCellCallback adds hooks for double-click and/or other mouse actions to String cells
+	private static class MyTableCellCallback<T> implements Callback<TableColumn<CompositeSearchResult, T>, TableCell<CompositeSearchResult, T>> {
+		/* (non-Javadoc)
+		 * @see javafx.util.Callback#call(java.lang.Object)
+		 */
+		@Override
+		public TableCell<CompositeSearchResult, T> call(
+				TableColumn<CompositeSearchResult, T> param) {
+			TableCell<CompositeSearchResult, T> cell = new TableCell<CompositeSearchResult, T>() {
+				@Override
+				public void updateItem(T item, boolean empty) {
+					super.updateItem(item, empty);
+					setText(empty ? null : getString());
+					setGraphic(null);
+				}
+
+				private String getString() {
+					return getItem() == null ? "" : getItem().toString();
+				}
+			};
+
+			cell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent event) {
+					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+					
+					if (event.getClickCount() == 1) {
+						LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
+					} else if (event.getClickCount() > 1) {
+						LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
+					}
+				}
+			});
+			return cell;
+		}	
+	}
+
 	private void initializeSearchResultsTable() {
+		assert searchResultsTable != null : "fx:id=\"searchResultsTable\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+
+		// Clear underlying data structure
+		searchResultsTable.getItems().clear();
+		
+		// Enable optional menu to make visible columns invisible and currently invisible columns visible
 		searchResultsTable.setTableMenuButtonVisible(true);
+		
+		// Disable editing of table data
 		searchResultsTable.setEditable(false);
 
+		// Match quality between 0 and 1
 		TableColumn<CompositeSearchResult, Number> scoreCol = new TableColumn<>("Score");
+		scoreCol.setCellValueFactory((param) -> new SimpleDoubleProperty(param.getValue().getBestScore()));
+		scoreCol.setCellFactory(new MyTableCellCallback<Number>());
+
+		// Active status
 		TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
+		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getStatus().toString().trim()));
+		statusCol.setCellFactory(new MyTableCellCallback<String>());
 
-		// Only meaningful for AggregationType PER_CONCEPT
-		// When AggregationTyppe is PER_MATCH should always be 1
+		// numMatchesCol only meaningful for AggregationType CONCEPT
+		// When AggregationTyppe is DESCRIPTION should always be 1
 		TableColumn<CompositeSearchResult, Number> numMatchesCol = new TableColumn<>("Matches");
-		
-		// Only meaningful for AggregationType PER_MATCH
-		// When AggregationTyppe is PER_CONCEPT should always be type of first match
-		TableColumn<CompositeSearchResult, String> matchingDescTypeCol = new TableColumn<>("Type");
-		
+		numMatchesCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getMatchingDescriptionComponents().size()));
+		numMatchesCol.setCellFactory(new MyTableCellCallback<Number>());
+		// Do not display numMatchesCol if AggregationType is DESCRIPTION
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+			numMatchesCol.setVisible(false);
+		}
+
+		// Preferred term
 		TableColumn<CompositeSearchResult, String> preferredTermCol = new TableColumn<>("Term");
-		preferredTermCol.setMaxWidth(Double.MAX_VALUE);
+		preferredTermCol.setCellFactory(new MyTableCellCallback<String>());
+		preferredTermCol.setCellValueFactory((param) -> {
+			try {
+				return new SimpleStringProperty(param.getValue().getConcept().getPreferredDescription().getText().trim());
+			} catch (IOException | ContradictionException e) {
+				String title = "Failed getting preferred description";
+				String msg = "Failed getting preferred description";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+				e.printStackTrace();
+				return null;
+			}
+		});
+
+		// Fully Specified Name
 		TableColumn<CompositeSearchResult, String> fsnCol = new TableColumn<>("FSN");
-		fsnCol.setMaxWidth(Double.MAX_VALUE);
+		fsnCol.setCellFactory(new MyTableCellCallback<String>());
+		fsnCol.setCellValueFactory((param) -> {
+			try {
+				return new SimpleStringProperty(param.getValue().getConcept().getFullySpecifiedDescription().getText().trim());
+			} catch (IOException | ContradictionException e) {
+				String title = "Failed getting FSN";
+				String msg = "Failed getting fully specified description";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+				e.printStackTrace();
+				return null;
+			}
+		});
 
+		// Matching description text.
+		// If AggregationType is CONCEPT then arbitrarily picks first matching description
 		TableColumn<CompositeSearchResult, String> matchingTextCol = new TableColumn<>("Text");
-		matchingTextCol.setMaxWidth(Double.MAX_VALUE);
+		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchStrings().iterator().next().trim()));
+		matchingTextCol.setCellFactory(new MyTableCellCallback<String>());
 
+		// matchingDescTypeCol is string value type of matching description term displayed
+		// Only meaningful for AggregationType DESCRIPTION
+		// When AggregationTyppe is CONCEPT should always be type of first match
+		TableColumn<CompositeSearchResult, String> matchingDescTypeCol = new TableColumn<>("Type");
+		matchingDescTypeCol.setCellValueFactory((param) -> new SimpleStringProperty(WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid())));
+		matchingDescTypeCol.setCellFactory(new MyTableCellCallback<String>());
+		// matchingDescTypeCol defaults to invisible for anything but DESCRIPTION
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() != AggregationType.DESCRIPTION) {
+			matchingDescTypeCol.setVisible(false);
+		}
+
+		// NID set to invisible because largely for debugging purposes only
 		TableColumn<CompositeSearchResult, Number> nidCol = new TableColumn<>("NID");
+		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getConcept().getNid()));
+		nidCol.setCellFactory(new MyTableCellCallback<Number>());
 		nidCol.setVisible(false);
 
+		// UUID set to invisible because largely for debugging purposes only
 		TableColumn<CompositeSearchResult, String> uuIdCol = new TableColumn<>("UUID");
-		uuIdCol.setMaxWidth(Double.MAX_VALUE);
+		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getPrimordialUuid().toString().trim()));
 		uuIdCol.setVisible(false);
-		
+		uuIdCol.setCellFactory(new MyTableCellCallback<String>());
+
+		// Optional SCT ID
 		TableColumn<CompositeSearchResult, String> sctIdCol = new TableColumn<>("SCTID");
-		
+		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getConcept())).trim()));
+		sctIdCol.setCellFactory(new MyTableCellCallback<String>());
+
 		searchResultsTable.getColumns().clear();
+		
+		// Default column ordering. May be changed within session
 		searchResultsTable.getColumns().add(scoreCol);
 		searchResultsTable.getColumns().add(statusCol);
+		searchResultsTable.getColumns().add(fsnCol);
 		searchResultsTable.getColumns().add(preferredTermCol);
-		searchResultsTable.getColumns().add(matchingTextCol);
-		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.PER_MATCH) {
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+			searchResultsTable.getColumns().add(numMatchesCol);
+		}
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+			searchResultsTable.getColumns().add(matchingTextCol);
 			searchResultsTable.getColumns().add(matchingDescTypeCol);
 		}
-		searchResultsTable.getColumns().add(fsnCol);
-		searchResultsTable.getColumns().add(numMatchesCol);
 		searchResultsTable.getColumns().add(sctIdCol);
 		searchResultsTable.getColumns().add(uuIdCol);
 		searchResultsTable.getColumns().add(nidCol);
 
-		matchingDescTypeCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				return new SimpleStringProperty(WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid()));
-			}
-		});
-		
-		// Do not display numMatchesCol if AggregationType is PER_MATCH
-		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.PER_MATCH) {
-			numMatchesCol.setVisible(false);
-		}
-		numMatchesCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,Number>, ObservableValue<Number>>() {
-			@Override
-			public ObservableValue<Number> call(CellDataFeatures<CompositeSearchResult, Number> param) {
-				return new SimpleIntegerProperty(param.getValue().getMatchingDescriptionComponents().size());
-			}
-		});
-
-		nidCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,Number>, ObservableValue<Number>>() {
-			@Override
-			public ObservableValue<Number> call(CellDataFeatures<CompositeSearchResult, Number> param) {
-					return new SimpleIntegerProperty(param.getValue().getConcept().getNid());
-			}
-		});
-		uuIdCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-					return new SimpleStringProperty(param.getValue().getConcept().getPrimordialUuid().toString().trim());
-			}
-		});
-		sctIdCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				return new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getConcept())).trim());
-			}
-		});
-		fsnCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				try {
-					return new SimpleStringProperty(param.getValue().getConcept().getFullySpecifiedDescription().getText().trim());
-				} catch (IOException | ContradictionException e) {
-					String title = "Failed getting FSN";
-					String msg = "Failed getting fully specified description";
-					LOG.error(title);
-					AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
-					e.printStackTrace();
-					return null;
-				}
-			}
-		});
-		preferredTermCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				try {
-					return new SimpleStringProperty(param.getValue().getConcept().getPreferredDescription().getText().trim());
-				} catch (IOException | ContradictionException e) {
-					String title = "Failed getting preferred description";
-					String msg = "Failed getting preferred description";
-					LOG.error(title);
-					AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
-					e.printStackTrace();
-					return null;
-				}
-			}
-		});
-		scoreCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult,Number>, ObservableValue<Number>>() {
-			@Override
-			public ObservableValue<Number> call(CellDataFeatures<CompositeSearchResult, Number> param) {
-				return new SimpleDoubleProperty(param.getValue().getBestScore());
-			}
-		});
-		statusCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult, String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				return new SimpleStringProperty(param.getValue().getConcept().getStatus().toString().trim());
-			}
-		});
-		matchingTextCol.setCellValueFactory(new Callback<CellDataFeatures<CompositeSearchResult, String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(CellDataFeatures<CompositeSearchResult, String> param) {
-				return new SimpleStringProperty(param.getValue().getMatchStrings().iterator().next().trim());
-			}
-		});
-
-		//searchResultsTable.setItems(searchResults);
+		AppContext.getService(DragRegistry.class).setupDragOnly(searchResultsTable, new ConceptIdProvider() {
+            @Override
+            public String getConceptId()
+            {
+                CompositeSearchResult dragItem = searchResultsTable.getSelectionModel().getSelectedItem();
+                if (dragItem != null)
+                {
+                	LOG.debug("Dragging concept id " + dragItem.getConceptNid());
+                    return dragItem.getConceptNid() + "";
+                }
+                return null;
+            }
+        });
 	}
 	
 	private void initializeAggregationTypeComboBox() {
+		assert aggregationTypeComboBox != null : "fx:id=\"aggregationTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+
 		// Force single selection
 		aggregationTypeComboBox.getSelectionModel().selectFirst();
-		aggregationTypeComboBox.setCellFactory(new Callback<ListView<AggregationType>,ListCell<AggregationType>>(){
-			@Override
-			public ListCell<AggregationType> call(ListView<AggregationType> p) {
+		aggregationTypeComboBox.setCellFactory((p) -> {
+			final ListCell<AggregationType> cell = new ListCell<AggregationType>() {
+				@Override
+				protected void updateItem(AggregationType a, boolean bln) {
+					super.updateItem(a, bln);
 
-				final ListCell<AggregationType> cell = new ListCell<AggregationType>(){
-
-					@Override
-					protected void updateItem(AggregationType a, boolean bln) {
-						super.updateItem(a, bln);
-
-						if(a != null){
-							setText(a.toString());
-						}else{
-							setText(null);
-						}
+					if(a != null){
+						setText(a.toString() + " search");
+					}else{
+						setText(null);
 					}
+				}
+			};
 
-				};
-
-				return cell;
-			}
+			return cell;
 		});
 		aggregationTypeComboBox.setButtonCell(new ListCell<AggregationType>() {
 			@Override
@@ -347,149 +401,103 @@ public class EnhancedSearchViewController {
 				if (bln) {
 					setText("");
 				} else {
-					setText(t.toString());
+					setText(t.toString() + " search");
 				}
 			}
 		});
 		aggregationTypeComboBox.setOnAction((event) -> {
 			LOG.trace("aggregationTypeComboBox event (selected: " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + ")");
 
-			searchResultsTable.getItems().clear();
-			
 			initializeSearchResultsTable();
-			
-			load();
-			refresh();
 		});
-		
-		aggregationTypeComboBox.getSelectionModel().select(AggregationType.PER_CONCEPT);
+
+        aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
+        aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
 	}
 	
-	private void initializeSearchStrategyComboBox() {
-		// TODO: Make visible in order to use search strategy ComboBox
-		searchAndFilterVBox.setVisible(false);
-		
-		// Force single selection
-		searchStrategyComboBox.getSelectionModel().selectFirst();
-		searchStrategyComboBox.setCellFactory(new Callback<ListView<SearchStrategyType>,ListCell<SearchStrategyType>>(){
-			@Override
-			public ListCell<SearchStrategyType> call(ListView<SearchStrategyType> p) {
+	private synchronized void search() {
+        // Sanity check if search already running.
+        if (searchRunning.get()) {
+            return;
+        }
 
-				final ListCell<SearchStrategyType> cell = new ListCell<SearchStrategyType>(){
+        searchRunning.set(true);
+        searchResultsTable.getItems().clear();
+        // "we get called back when the results are ready."
+        switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
+        case  CONCEPT:
+            ssh = SearchHandler.conceptSearch(searchText.getText(), this);
+            break;
+        case DESCRIPTION:
+        	SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(searchText.getText());
+        	builder.setCallback(this);
+        	builder.setComparator(new CompositeSearchResultComparator());
+            ssh = SearchHandler.doDescriptionSearch(builder);
+            break;
+            
+            default:
+    			String title = "Unsupported Aggregation Type";
+    			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
+    			LOG.error(title);
+    			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()));
 
-					@Override
-					protected void updateItem(SearchStrategyType a, boolean bln) {
-						super.updateItem(a, bln);
-
-						if(a != null){
-							setText(a.toString());
-						}else{
-							setText(null);
-						}
-					}
-
-				};
-
-				return cell;
-			}
-		});
-		searchStrategyComboBox.setButtonCell(new ListCell<SearchStrategyType>() {
-			@Override
-			protected void updateItem(SearchStrategyType t, boolean bln) {
-				super.updateItem(t, bln); 
-				if (bln) {
-					setText("");
-				} else {
-					setText(t.toString());
-				}
-			}
-		});
-		searchStrategyComboBox.setOnAction((event) -> {
-			SearchStrategyType type = searchStrategyComboBox.getSelectionModel().getSelectedItem();
-			LOG.trace("searchStrategyComboBox event (selected: " + type + ")");
-
-			load();
-			refresh();
-		});
-	}
-
-	public void executeSearch() {
-		LOG.trace("Running executeSearch()...");
-
-		if (searchStrategy != null) {
-			searchStrategy.setSearchTextParameter(searchText.getText());
-			if (isSearchValid()) {
-				searchStrategy.search();
-
-				for (CompositeSearchResult result : searchResultsTable.getItems()) {
-					LOG.trace(result.toString());
-				}
-			}
-		} else {
-			String title = "Search Strategy Not Set";
-			String msg = "Search Strategy must be set";
-			LOG.error(title);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Search Strategy must be set");
-		}
-	}
+    			break;
+        }
+    }
 
 	public Pane getRoot() {
 		return pane;
 	}
 
-	public void loadSearchStrategy() {
-		LOG.trace("Running loadSearchStrategy()...");
-		searchStrategyComboBox.getSelectionModel().select(SearchStrategyType.LUCENE);
-		SearchStrategyType searchStrategyType = searchStrategyComboBox.getValue();
-		if (searchStrategyType != null) {
-			final SearchResultFactoryI<CompositeSearchResult> srf = new SearchResultFactoryI<CompositeSearchResult> () {
-				@Override
-				public CompositeSearchResult transform(CompositeSearchResult result) {
-					return result;
-				}
-			};
-			
-			switch (searchStrategyType) {
-			case LUCENE: {
-				switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
-				case  PER_CONCEPT:
-					searchStrategy = new PerConceptLuceneSearchStrategy<CompositeSearchResult>(srf, searchResultsTable.getItems());
-					searchStrategy.setComparator(new CompositeSearchResultComparator());
-					break;
-				case  PER_MATCH:
-					searchStrategy = new PerMatchLuceneSearchStrategy<CompositeSearchResult>(srf, searchResultsTable.getItems());
-					searchStrategy.setComparator(new PerMatchLuceneSearchStrategy.PerMatchCompositeSearchResultComparator());
-					break;
+	interface ColumnValueExtractor {
+		String extract(TableColumn<CompositeSearchResult, ?> col);
+	}
+	private static String getTableViewRow(TableView<CompositeSearchResult> table, String delimiter, String lineTerminator, ColumnValueExtractor extractor) {
+    	ObservableList<TableColumn<CompositeSearchResult, ?>> columns = table.getColumns();
+		StringBuilder row = new StringBuilder();
 
-				default:
-					searchStrategy = null;
-					String title = "Unsupported Aggregation Type";
-					String msg = "Unsupported AggregationType \"" + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + "\"";
-					LOG.error(title);
-					AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only AggregationType(s) " + AggregationType.values() + " currently supported");
-					break;
+		for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
+			TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
+			if (! col.isVisible()) {
+				// Ensure that newline is written even if column is not
+				if (colIndex == (columns.size() - 1) && lineTerminator != null) {
+					// Append newline to row
+     				row.append(lineTerminator);
 				}
 
-				if (searchStrategy != null) {
-					searchStrategy.setSearchTextParameter(searchText.getText());
-					searchStrategy.setSearchResultFilters(filters);
-				}
+				continue;
 			}
-			break;
-
-			default:
-				searchStrategy = null;
-				String title = "Unsupported Search Strategy";
-				String msg = "Unsupported SearchStrategyType \"" + searchStrategyType + "\"";
-				LOG.error(title);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchStrategyType \"LUCENE\" currently supported");
+			// Extract text or data from column and append to row
+			row.append(extractor.extract(col));
+			if (colIndex < (columns.size() - 1)) {
+				if (delimiter != null) {
+					// Ensure that delimiter is written only if there are remaining visible columns to be written
+					boolean hasMoreVisibleCols = false;
+					for (int remainingColsIndex = colIndex + 1; remainingColsIndex < columns.size(); ++remainingColsIndex) {
+						if (columns.get(remainingColsIndex).isVisible()) {
+							hasMoreVisibleCols = true;
+							break;
+						}
+					}
+					if (hasMoreVisibleCols) {
+						// Append delimiter to row
+						row.append(delimiter);
+					}
+				}
+			} else if (colIndex == (columns.size() - 1) && lineTerminator != null) {
+				// Append newline to row
+				row.append(lineTerminator);
 			}
 		}
+		
+		return row.toString();
 	}
 
 	private void exportSearchResultsAsTabDelimitedValues() {
 		FileChooser fileChooser = new FileChooser();
-		  
+		final String delimiter = "\t";
+		final String newLine = "\n";
+		
         //Set extension filter
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
         fileChooser.getExtensionFilters().add(extFilter);
@@ -503,74 +511,21 @@ public class EnhancedSearchViewController {
         if (file == null) {
         	LOG.warn("FileChooser returned null export file.  Cancel possibly requested.");
         } else { // if (file != null)
-        	ObservableList<TableColumn<CompositeSearchResult, ?>> columns = searchResultsTable.getColumns();
-
-        	char delimiter = '\t';
-
         	LOG.debug("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
 
         	Writer writer = null;
         	try {
         		writer = new BufferedWriter(new FileWriter(file));
+        		String headerRow = getTableViewRow(searchResultsTable, delimiter, newLine, (col) -> col.getText());
 
-        		StringBuilder row = new StringBuilder();
-        		for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
-        			TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
-        			if (! col.isVisible()) {
-        				if (colIndex == (columns.size() - 1)) {
-             				row.append("\n");
-        				}
-
-        				continue;
-        			}
-        			row.append(col.getText());
-        			if (colIndex < (columns.size() - 1)) {
-        				boolean hasMoreVisibleCols = false;
-        				for (int remainingColsIndex = colIndex + 1; remainingColsIndex < columns.size(); ++remainingColsIndex) {
-        					if (columns.get(remainingColsIndex).isVisible()) {
-        						hasMoreVisibleCols = true;
-        						break;
-        					}
-        				}
-        				if (hasMoreVisibleCols) {
-        					row.append(delimiter);
-        				}
-        			} else if (colIndex == (columns.size() - 1)) {
-        				row.append("\n");
-        			}
-        		}
-        		LOG.trace(row.toString());
-        		writer.write(row.toString());
+        		LOG.trace(headerRow);
+        		writer.write(headerRow);
 
         		for (int rowIndex = 0; rowIndex < searchResultsTable.getItems().size(); ++rowIndex) {
-        			row = new StringBuilder();
-        			for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
-        				TableColumn<CompositeSearchResult, ?> col = columns.get(colIndex);
-        				if (! col.isVisible()) {
-            				if (colIndex == (columns.size() - 1)) {
-                 				row.append("\n");
-            				}
-        					continue;
-        				}
-        				row.append(col.getCellObservableValue(rowIndex).getValue().toString());
-        				if (colIndex < (columns.size() - 1)) {
-        					boolean hasMoreVisibleCols = false;
-            				for (int remainingColsIndex = colIndex + 1; remainingColsIndex < columns.size(); ++remainingColsIndex) {
-            					if (columns.get(remainingColsIndex).isVisible()) {
-            						hasMoreVisibleCols = true;
-            						break;
-            					}
-            				}
-            				if (hasMoreVisibleCols) {
-            					row.append(delimiter);
-            				}
-        				} else if (colIndex == (columns.size() - 1)) {
-        					row.append("\n");
-        				}
-        			}
-
-        			LOG.trace(row.toString());
-        			writer.write(row.toString());
+        			final int finalRowIndex = rowIndex;
+        			String dataRow = getTableViewRow(searchResultsTable, delimiter, newLine, (col) -> col.getCellObservableValue(finalRowIndex).getValue().toString());
+        			LOG.trace(dataRow);
+        			writer.write(dataRow);
         		}
 
         		LOG.debug("Wrote " + searchResultsTable.getItems().size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
@@ -593,32 +548,5 @@ public class EnhancedSearchViewController {
         		}
         	}
         }
-	}
-
-	public void load() {
-		// Load searchStrategy
-		loadSearchStrategy();
-
-		refresh();
-	}
-
-	public void refresh() {
-		LOG.trace("Running refresh()...");
-
-		// refresh searchStrategiesComboBox
-		aggregationTypeComboBox.setItems(aggregationTypes);
-
-		// refresh searchStrategiesComboBox
-		searchStrategyComboBox.setItems(searchStrategyTypes);
-
-		if (isSearchValid()) {
-			LOG.debug("Search parameters valid.  Enabling search controls...");
-
-			searchButton.setDisable(false);
-		} else {
-			LOG.debug("Search parameters invalid.  Disabling search controls...");
-
-			searchButton.setDisable(true);
-		}
 	}
 }
