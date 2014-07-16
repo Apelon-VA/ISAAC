@@ -28,6 +28,7 @@ import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
 import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 
@@ -40,7 +41,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -50,13 +51,12 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
@@ -214,7 +214,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
     }
 
 	// MyTableCellCallback adds hooks for double-click and/or other mouse actions to String cells
-	private static class MyTableCellCallback<T> implements Callback<TableColumn<CompositeSearchResult, T>, TableCell<CompositeSearchResult, T>> {
+	private class MyTableCellCallback<T> implements Callback<TableColumn<CompositeSearchResult, T>, TableCell<CompositeSearchResult, T>> {
 		/* (non-Javadoc)
 		 * @see javafx.util.Callback#call(java.lang.Object)
 		 */
@@ -235,7 +235,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			return cell;
 		}
 		
+		// This method can be overridden to customize cells
 		public TableCell<CompositeSearchResult, T> modifyCell(TableCell<CompositeSearchResult, T> cell) {
+//			// This is an example of an EventFilter			
 //			cell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 //				@Override
 //				public void handle(MouseEvent event) {
@@ -248,7 +250,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 //					}
 //				}
 //			});
-			
+
 			return cell;
 		}
 		
@@ -257,6 +259,43 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				TableColumn<CompositeSearchResult, T> param) {
 			TableCell<CompositeSearchResult, T> newCell = createNewCell();
 			newCell.setUserData(param.getCellData(newCell.getIndex()));
+			
+			// This event filter adds a concept-specific context menu to all cells based on underlying concept
+			// It is in this method because it should be common to all cells, even those overriding modifyCell()
+			newCell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent event) {
+					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+					ContextMenu cm = new ContextMenu();
+					CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
+
+		            CommonMenus.addCommonMenus(cm, null, new ConceptIdProvider() {
+		                @Override
+		                public String getConceptId() {
+		                    return result.getConceptNid() + "";
+		                }
+
+		                /**
+		                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+		                 */
+		                @Override
+		                public UUID getConceptUUID() {
+		                    return result.getConcept().getPrimordialUuid();
+		                }
+
+		                /**
+		                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+		                 */
+		                @Override
+		                public int getNid() {
+		                    return result.getConceptNid();
+		                }
+		            });
+
+		            c.setContextMenu(cm);
+				}
+			});
+				
 			return modifyCell(newCell);
 		}	
 	}
