@@ -24,6 +24,7 @@ import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
+import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
 import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
@@ -36,6 +37,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import javafx.application.Platform;
@@ -46,7 +50,9 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -57,6 +63,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -65,6 +72,7 @@ import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,9 +218,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		/* (non-Javadoc)
 		 * @see javafx.util.Callback#call(java.lang.Object)
 		 */
-		@Override
-		public TableCell<CompositeSearchResult, T> call(
-				TableColumn<CompositeSearchResult, T> param) {
+		public TableCell<CompositeSearchResult, T> createNewCell() {
 			TableCell<CompositeSearchResult, T> cell = new TableCell<CompositeSearchResult, T>() {
 				@Override
 				public void updateItem(T item, boolean empty) {
@@ -225,20 +231,33 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					return getItem() == null ? "" : getItem().toString();
 				}
 			};
-
-			cell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent event) {
-					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
-					
-					if (event.getClickCount() == 1) {
-						LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
-					} else if (event.getClickCount() > 1) {
-						LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
-					}
-				}
-			});
+			
 			return cell;
+		}
+		
+		public TableCell<CompositeSearchResult, T> modifyCell(TableCell<CompositeSearchResult, T> cell) {
+//			cell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+//				@Override
+//				public void handle(MouseEvent event) {
+//					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+//					
+//					if (event.getClickCount() == 1) {
+//						LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
+//					} else if (event.getClickCount() > 1) {
+//						LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
+//					}
+//				}
+//			});
+			
+			return cell;
+		}
+		
+		@Override
+		public TableCell<CompositeSearchResult, T> call(
+				TableColumn<CompositeSearchResult, T> param) {
+			TableCell<CompositeSearchResult, T> newCell = createNewCell();
+			newCell.setUserData(param.getCellData(newCell.getIndex()));
+			return modifyCell(newCell);
 		}	
 	}
 
@@ -268,11 +287,43 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// When AggregationTyppe is DESCRIPTION should always be 1
 		TableColumn<CompositeSearchResult, Number> numMatchesCol = new TableColumn<>("Matches");
 		numMatchesCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getMatchingDescriptionComponents().size()));
-		numMatchesCol.setCellFactory(new MyTableCellCallback<Number>());
-		// Do not display numMatchesCol if AggregationType is DESCRIPTION
-		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
-			numMatchesCol.setVisible(false);
-		}
+		numMatchesCol.setCellFactory(new MyTableCellCallback<Number>() {
+			@Override
+			public TableCell<CompositeSearchResult, Number> modifyCell(TableCell<CompositeSearchResult, Number> cell) {
+				
+				cell.addEventFilter(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+						
+						CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
+						StringBuilder buffer = new StringBuilder();
+						String fsn = null;
+						try {
+							fsn = result.getConcept().getFullySpecifiedDescription().getText().trim();
+						} catch (IOException | ContradictionException e) {
+							String title = "Failed getting FSN";
+							String msg = "Failed getting fully specified description";
+							LOG.error(title);
+							AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+							e.printStackTrace();
+						}
+						
+						List<DescriptionAnalogBI<?>> matchingDescComponents = new ArrayList<DescriptionAnalogBI<?>>(result.getMatchingDescriptionComponents());
+						Collections.sort(matchingDescComponents, new DescriptionAnalogBITypeComparator());
+						for (DescriptionAnalogBI<?> descComp : matchingDescComponents) {
+							String type = WBUtility.getConPrefTerm(descComp.getTypeNid());
+							buffer.append(type + ": " + descComp.getText() + "\n");
+						}
+						Tooltip tooltip = new Tooltip("Matching descriptions for \"" + fsn + "\":\n" + buffer.toString());
+						
+						Tooltip.install(cell, tooltip);
+					}
+				});
+				
+				return cell;
+			}
+		});
 
 		// Preferred term
 		TableColumn<CompositeSearchResult, String> preferredTermCol = new TableColumn<>("Term");
