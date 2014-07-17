@@ -271,7 +271,6 @@ public class SearchViewController implements TaskCompleteCallback {
     }
 
     private synchronized void search() {
-
         // Sanity check if search already running.
         if (searchRunning.get()) {
             return;
@@ -280,6 +279,6 @@ public class SearchViewController implements TaskCompleteCallback {
         searchRunning.set(true);
         searchResults.getItems().clear();
         // "we get called back when the results are ready."
-        ssh = SearchHandler.descriptionSearch(searchText.getText(), this);
+        ssh = SearchHandler.conceptSearch(searchText.getText(), this);
     }
 }

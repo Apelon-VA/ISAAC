@@ -16,12 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.searchview;
+package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.EnhancedSearchViewI;
 
 import java.io.IOException;
@@ -32,8 +31,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 
-import javax.inject.Singleton;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -43,8 +41,8 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@Singleton
-public class EnhancedSearchView // implements EnhancedSearchViewI
+@PerLookup
+public class EnhancedSearchView implements EnhancedSearchViewI
 {
 	private EnhancedSearchViewController svc_;
 	
@@ -53,10 +51,14 @@ public class EnhancedSearchView // implements EnhancedSearchViewI
 		//created by HK2
 		svc_ = EnhancedSearchViewController.init();
 	}
+	
+	protected void setWindow(Window window) {
+		
+	}
+	
     /**
      * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
      */
-    //@Override
     public Region getView() {
         return svc_.getRoot();
     }
@@ -64,7 +66,6 @@ public class EnhancedSearchView // implements EnhancedSearchViewI
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */
-	//@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
 		//We don't currently have any custom menus with this view
@@ -74,7 +75,6 @@ public class EnhancedSearchView // implements EnhancedSearchViewI
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
 	 */
-	//@Override
 	public MenuItemI getMenuBarMenuToShowView()
 	{
 		MenuItemI menuItem = new MenuItemI()
@@ -127,7 +127,6 @@ public class EnhancedSearchView // implements EnhancedSearchViewI
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
-	//@Override
 	public String getViewTitle()
 	{
 		return "Enhanced Snomed Search";

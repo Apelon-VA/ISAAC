@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.searchview;
+package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 
@@ -8,8 +8,6 @@ import java.lang.reflect.Field;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
