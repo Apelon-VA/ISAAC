@@ -21,6 +21,7 @@ package gov.va.isaac.workflow;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -36,14 +37,35 @@ public class LocalTask {
 	public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
 	public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
 
-	private Long id;
+	// Task ID in KIE
+    private Long id;
+
+    // Name of the step in the workflow (i.e. Review, Approve, etc)
     private String name;
+
+    // Id of the associated component, usually UUID
     private String componentId;
+
+    // Name of the component
     private String componentName;
+
+    // Current status of the task, in the task lifecycle
     private String status;
+
+    // User owner of the task, name that matches KIE name
     private String owner;
+
+    // Proposed action, added by the user in the client
     private String action;
+
+    // Status of the action execution, will be completed when is synchronized and executed in the server
     private String actionStatus;
+
+    // Input variables for the user, come from the KIE Task
+    private Map<String, String> inputVariables;
+
+    // Output variables from the user, created by the user and sent to KIE to influence on the workflow flow
+    private Map<String, String> outputVariables;
 
     public LocalTask() {
     }
@@ -62,6 +84,10 @@ public class LocalTask {
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
             this.componentId = (String) vmap.get("in_componentId");
             this.componentName = (String) vmap.get("in_componentName");
+            this.setInputVariables(new HashMap<String, String>());
+            for (String key : vmap.keySet()) {
+                this.getInputVariables().put(key, vmap.get(key).toString());
+            }
         }
     }
 
@@ -80,6 +106,10 @@ public class LocalTask {
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
             this.componentId = (String) vmap.get("in_componentId");
             this.componentName = (String) vmap.get("in_componentName");
+            this.setInputVariables(new HashMap<String, String>());
+            for (String key : vmap.keySet()) {
+                this.getInputVariables().put(key, vmap.get(key).toString());
+            }
         }
     }
 
@@ -151,6 +181,22 @@ public class LocalTask {
 
     public void setActionStatus(String actionStatus) {
         this.actionStatus = actionStatus;
+    }
+
+    public Map<String, String> getInputVariables() {
+        return inputVariables;
+    }
+
+    public void setInputVariables(Map<String, String> inputVariables) {
+        this.inputVariables = inputVariables;
+    }
+
+    public Map<String, String> getOutputVariables() {
+        return outputVariables;
+    }
+
+    public void setOutputVariables(Map<String, String> outputVariables) {
+        this.outputVariables = outputVariables;
     }
 
     @Override

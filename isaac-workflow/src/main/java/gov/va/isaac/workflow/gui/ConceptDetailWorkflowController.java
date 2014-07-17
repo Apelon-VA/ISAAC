@@ -32,6 +32,7 @@ import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import javafx.application.Platform;
@@ -264,7 +265,7 @@ public class ConceptDetailWorkflowController
 						final LocalTask currentlySelectedTask = taskComboBox.getValue();
 						final Action currentlySelectedAction = actionComboBox.getValue();
 
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction.toString(), ACTION_STATUS);
+						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction.toString(), ACTION_STATUS, new HashMap<String, String>());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();

@@ -31,6 +31,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.HashMap;
+
 import static org.junit.Assert.*;
 
 /**
@@ -47,36 +50,44 @@ public class FullSyncTest {
         LocalTasksServiceBI localTasksService = wfEngine.getLocalTaskService();
         ProcessInstanceServiceBI processService = wfEngine.getProcessInstanceService();
         
-        //localTasksService.dropSchema();
-        //localTasksService.createSchema();
-        //processService.dropSchema();
-        //processService.createSchema();
+//        localTasksService.dropSchema();
+//        localTasksService.createSchema();
+//        processService.dropSchema();
+//        processService.createSchema();
         
         //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() == 0);
         
         wfEngine.synchronizeWithRemote();
         
         //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
-        
+
+       Long lastTaskId = null;
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId());
+            lastTaskId = loopTask.getId();
+            if (loopTask.getInputVariables() != null) {
+                for (String key : loopTask.getInputVariables().keySet()) {
+                    System.out.println("Input variable: " + key + ": " + loopTask.getInputVariables().get(key));
+                }
+            }
         }
-        
+
         //localTasksService.setAction(29L, "COMPLETE", "pending");
-        localTasksService.setAction(27L, "RELEASE", "pending");
+       System.out.println("LastTaskId: " + lastTaskId);
+       HashMap<String, String> variables = new HashMap<String, String>();
+       variables.put("out_evaluation", "value1");
+       localTasksService.setAction(lastTaskId, "COMPLETE", "pending", variables);
         //localTasksService.setAction(25L, "RELEASE", "pending");
         
         wfEngine.synchronizeWithRemote();
         
-        assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
-        
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId());
         }
         
         
-        //wfEngine.claim(5, userid);
-        
+       wfEngine.claim(2, userid);
+       System.out.println("After claim");
         wfEngine.synchronizeWithRemote();
         
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
@@ -85,9 +96,10 @@ public class FullSyncTest {
         
         processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro");
         processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
-        
+
+        System.out.println("After new instances");
         wfEngine.synchronizeWithRemote();
-        
+
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId());
         }
