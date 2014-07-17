@@ -44,9 +44,9 @@ public class FullSyncTest {
     
    public static void main(String[] args) {
         LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-        
+
         String userid = "alejandro";
-        
+
         LocalTasksServiceBI localTasksService = wfEngine.getLocalTaskService();
         ProcessInstanceServiceBI processService = wfEngine.getProcessInstanceService();
         
@@ -63,7 +63,7 @@ public class FullSyncTest {
 
        Long lastTaskId = null;
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
-            System.out.println("TaskId: " + loopTask.getId());
+            System.out.println("TaskId: " + loopTask.getId() + " " + loopTask.getName());
             lastTaskId = loopTask.getId();
             if (loopTask.getInputVariables() != null) {
                 for (String key : loopTask.getInputVariables().keySet()) {
@@ -86,7 +86,7 @@ public class FullSyncTest {
         }
         
         
-       wfEngine.claim(2, userid);
+       wfEngine.claim(1, userid);
        System.out.println("After claim");
         wfEngine.synchronizeWithRemote();
         
@@ -95,7 +95,7 @@ public class FullSyncTest {
         }
         
         processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro");
-        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
+//        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
 
         System.out.println("After new instances");
         wfEngine.synchronizeWithRemote();

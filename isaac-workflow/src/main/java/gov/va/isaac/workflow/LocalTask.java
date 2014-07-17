@@ -84,6 +84,7 @@ public class LocalTask {
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
             this.componentId = (String) vmap.get("in_componentId");
             this.componentName = (String) vmap.get("in_componentName");
+            this.name = (String) vmap.get("NodeName");
             this.setInputVariables(new HashMap<String, String>());
             for (String key : vmap.keySet()) {
                 this.getInputVariables().put(key, vmap.get(key).toString());
@@ -106,6 +107,7 @@ public class LocalTask {
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
             this.componentId = (String) vmap.get("in_componentId");
             this.componentName = (String) vmap.get("in_componentName");
+            this.name = (String) vmap.get("NodeName");
             this.setInputVariables(new HashMap<String, String>());
             for (String key : vmap.keySet()) {
                 this.getInputVariables().put(key, vmap.get(key).toString());
