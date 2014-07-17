@@ -37,7 +37,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.math.RoundingMode;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -316,7 +318,39 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		TableColumn<CompositeSearchResult, Number> scoreCol = new TableColumn<>("Score");
 		scoreCol.setCellValueFactory((param) -> new SimpleDoubleProperty(param.getValue().getBestScore()));
 		scoreCol.setCellFactory(new MyTableCellCallback<Number>());
+		scoreCol.setCellFactory(new MyTableCellCallback<Number>() {
+			public TableCell<CompositeSearchResult, Number> createNewCell() {
 
+				final DecimalFormat fmt = new DecimalFormat("#.####");
+				
+				TableCell<CompositeSearchResult, Number> cell = new TableCell<CompositeSearchResult, Number>() {
+					@Override
+					public void updateItem(Number item, boolean empty) {
+						super.updateItem(item, empty);
+						setText(empty ? null : getString());
+						setGraphic(null);
+					}
+
+					private String getString() {	
+						fmt.setRoundingMode(RoundingMode.HALF_UP);
+						return getItem() == null ? "" : fmt.format(getItem().doubleValue());
+					}
+				};
+				
+				cell.addEventFilter(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+				
+						Tooltip tooltip = new Tooltip(c.getItem().toString());
+						Tooltip.install(cell, tooltip);
+					}
+				});
+				
+				return cell;
+			}
+		});
+		
 		// Active status
 		TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
 		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getStatus().toString().trim()));
