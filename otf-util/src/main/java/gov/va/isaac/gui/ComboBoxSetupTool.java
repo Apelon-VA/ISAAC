@@ -85,7 +85,7 @@ public class ComboBoxSetupTool
 			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
 			 */
 			@Override
-			public int getNid()
+			public Integer getNid()
 			{
 				return comboBox.getValue().getNid();
 			}

@@ -309,6 +309,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		                public String getSctId() {
 		            		String sctId = ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(result.getConcept())).trim();
 		            		LOG.debug("Using context menu to copy SCTID \"" + sctId + "\"");
+
 		            		return sctId;
 		                }
 		                @Override
@@ -326,7 +327,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		                    return uuid;
 		                }
 		                @Override
-		                public int getNid() {
+		                public Integer getNid() {
 		                	int nid = result.getConceptNid();
 		            		LOG.debug("Using context menu to copy NID " + nid);
 

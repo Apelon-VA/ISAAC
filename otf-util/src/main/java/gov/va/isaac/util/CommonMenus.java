@@ -20,19 +20,13 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptView.ConceptViewStage;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
-import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
 
-import java.util.Stack;
 import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
@@ -41,7 +35,9 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.stage.Stage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link CommonMenus}
@@ -121,40 +117,34 @@ public class CommonMenus
 			cm.getItems().add(viewConceptMenuItem);
 		}
 
-//		if (idProvider != null && idProvider.getConceptId() != null) {
-//			// Menu item to show concept details.
-//			MenuItem enhancedConceptViewMenuItem = new MenuItem("View Concept (enhanced)");
-//			enhancedConceptViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
-//			enhancedConceptViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-//				@Override
-//				public void handle(ActionEvent event)
-//				{
-//					int id = idProvider.getNid();
-//					if (true)
-//					{
-//						System.out.println("Using \"View Concept (enhanced)\" menu item to display concept with id \"" + id + "\"");
-//
-//						// TODO: this interface isn't working
-//						Stack<Integer> stack = new Stack<>();
-//						EnhancedConceptView ecView = AppContext.getService(EnhancedConceptView.class);
-//						ConceptViewStage cvStage = ecView.new ConceptViewStage(stack);
-//						ecView.changeConcept(cvStage, id, ViewType.SIMPLE_VIEW);
-//
-//						// TODO: this interface should work, but doesn't
-//						//AppContext.getService(EnhancedConceptView.class).setConcept(Integer.valueOf(id));
-//					}
-//					else
-//					{
-//						AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
-//					}
-//				}
-//			});
-//			if (invisibleWhenFalse != null)
-//			{
-//				enhancedConceptViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
-//			}
-//			cm.getItems().add(enhancedConceptViewMenuItem);
-//		}
+		if (idProvider != null && idProvider.getConceptId() != null) {
+			// Menu item to show concept details.
+			MenuItem enhancedConceptViewMenuItem = new MenuItem("View Concept (enhanced)");
+			enhancedConceptViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+			enhancedConceptViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					Integer id = idProvider.getNid();
+					if (id != null)
+					{
+						LOG.debug("Using \"View Concept (enhanced)\" menu item to display concept with id \"" + id + "\"");
+
+						//TODO: this interface should work, but doesn't
+						AppContext.getService(EnhancedConceptView.class).setConcept(Integer.valueOf(id));
+					}
+					else
+					{
+						AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
+			{
+				enhancedConceptViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			}
+			cm.getItems().add(enhancedConceptViewMenuItem);
+		}
 
 		if (idProvider != null && idProvider.getConceptUUID() != null) {
 			// Menu item to find concept in tree.

@@ -122,7 +122,6 @@ public class SearchViewController implements TaskCompleteCallback {
 
                             CommonMenus.addCommonMenus(cm, null, new ConceptIdProvider()
                             {
-                                
                                 @Override
                                 public String getConceptId()
                                 {
@@ -142,7 +141,7 @@ public class SearchViewController implements TaskCompleteCallback {
                                  * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
                                  */
                                 @Override
-                                public int getNid()
+                                public Integer getNid()
                                 {
                                     return item.getConceptNid();
                                 }

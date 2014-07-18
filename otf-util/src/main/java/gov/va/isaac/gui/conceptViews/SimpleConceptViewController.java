@@ -37,6 +37,32 @@ public class SimpleConceptViewController extends BaseConceptViewController {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
 	
+	@FXML
+    void initialize() {
+        assert releaseIdLabel != null : "fx:id=\"releaseIdLabel\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert descAnnotVBox != null : "fx:id=\"descAnnotVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert previousButton != null : "fx:id=\"previousButton\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert historicalRadio != null : "fx:id=\"historicalRadio\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert taxonomyButton != null : "fx:id=\"taxonomyButton\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert fsnLabel != null : "fx:id=\"fsnLabel\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert prefLabel != null : "fx:id=\"prefLabel\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert prefTypeLabel != null : "fx:id=\"prefTypeLabel\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert basicRadio != null : "fx:id=\"basicRadio\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert fsnAnnotVBox != null : "fx:id=\"fsnAnnotVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert viewGroup != null : "fx:id=\"viewGroup\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert relTypeVBox != null : "fx:id=\"relTypeVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert modifyButton != null : "fx:id=\"modifyButton\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert conAnnotVBox != null : "fx:id=\"conAnnotVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert relAnnotVBox != null : "fx:id=\"relAnnotVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert descLabelVBox != null : "fx:id=\"descLabelVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert parentPane != null : "fx:id=\"parentPane\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert isPrimLabel != null : "fx:id=\"isPrimLabel\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert relLabelVBox != null : "fx:id=\"relLabelVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert descTypeVBox != null : "fx:id=\"descTypeVBox\" was not injected: check your FXML file 'SimpleView.fxml'.";
+        assert detailedRadio != null : "fx:id=\"detailedRadio\" was not injected: check your FXML file 'SimpleView.fxml'.";
+    }
+	
 	@Override
 	void setConceptDetails(ConceptChronicleDdo concept) {	
 		con = WBUtility.getConceptVersion(concept.getPrimordialUuid());

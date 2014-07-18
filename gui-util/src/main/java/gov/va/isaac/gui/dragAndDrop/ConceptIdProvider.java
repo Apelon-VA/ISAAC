@@ -84,7 +84,7 @@ public interface ConceptIdProvider
 	 * Convenience method that simply parses the UUID from {@code #getConceptId}
 	 * Will fail if it isn't an int (but this may be overridden to be smarter by implementations)
 	 */
-	default public int getNid()
+	default public Integer getNid()
 	{
 		return Integer.parseInt(getConceptId());
 	}

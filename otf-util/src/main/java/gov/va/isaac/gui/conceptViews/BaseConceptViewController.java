@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseConceptViewController {
 	private static final Logger LOG = LoggerFactory.getLogger(BaseConceptViewController.class);
 
-	@FXML private AnchorPane parentPane;
+	@FXML protected AnchorPane parentPane;
 	@FXML private BorderPane baseConceptBorderPane;
 
 	// Top Labels

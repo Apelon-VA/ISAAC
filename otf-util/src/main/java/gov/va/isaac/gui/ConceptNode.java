@@ -213,7 +213,7 @@ public class ConceptNode implements ConceptLookupCallback
 			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
 			 */
 			@Override
-			public int getNid()
+			public Integer getNid()
 			{
 				if (c_ != null)
 				{
