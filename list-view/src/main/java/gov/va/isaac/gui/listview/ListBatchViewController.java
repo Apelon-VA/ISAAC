@@ -27,12 +27,12 @@ import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.ConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -96,6 +97,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -104,6 +106,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -954,11 +957,20 @@ public class ListBatchViewController
 		cancelButton.setDisable(true);
 	}
 
-
-	private void addMultipleItems(ArrayList<SimpleDisplayConcept> concepts) {
+	private void addMultipleItems(List<SimpleDisplayConcept> concepts) {
 		for (SimpleDisplayConcept con : concepts) {
 			updateTableItem(con, con.isUncommitted());
 		}
+	}
+	
+	protected void addConcepts(List<Integer> nids) {
+		List<SimpleDisplayConcept> displayConcepts = new ArrayList<>();
 		
+		for (int nid : nids) {
+			ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+			displayConcepts.add(new SimpleDisplayConcept(concept));
+		}
+		
+		addMultipleItems(displayConcepts);
 	}
 }

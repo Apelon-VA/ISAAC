@@ -6,6 +6,7 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
+import gov.va.isaac.util.CommonMenus;
 
 import java.util.Stack;
 import java.util.UUID;
@@ -29,8 +30,12 @@ import javafx.stage.Stage;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseConceptViewController {
+	private static final Logger LOG = LoggerFactory.getLogger(BaseConceptViewController.class);
+
 	@FXML private AnchorPane parentPane;
 	@FXML private BorderPane baseConceptBorderPane;
 
@@ -129,7 +134,13 @@ public abstract class BaseConceptViewController {
 			}
 		};
 		previousButton.disableProperty().bind(prevButtonQueueFilled.not());
-		
+
+		if (parentPane == null) {
+			LOG.error("parentPane is null");
+		}
+		if (tooltipHelper == null) {
+			LOG.error("tooltipHelper is null");
+		}
 		parentPane.setOnKeyPressed(tooltipHelper.getCtrlKeyPressEventHandler());
 		parentPane.setOnKeyReleased(tooltipHelper.getCtrlKeyReleasedEventHandler());
 		

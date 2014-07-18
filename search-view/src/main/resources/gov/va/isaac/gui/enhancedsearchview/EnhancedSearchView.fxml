@@ -37,19 +37,39 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </HBox.margin>
               </TextField>
+              <Button fx:id="searchButton" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="55.0" text="Search" textAlignment="CENTER" />
                </children>
             </HBox>
-        <Button fx:id="searchButton" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="55.0" text="Search" textAlignment="CENTER">
-               <FlowPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </FlowPane.margin>
-            </Button>
-            <Button fx:id="exportSearchResultsAsTabDelimitedValuesButton" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="50.0" text="Export">
-               <FlowPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </FlowPane.margin>
-            </Button>
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <Label text="Export">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin></Label>
+                  <Button fx:id="exportSearchResultsAsTabDelimitedValuesButton" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="File">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="exportSearchResultsToListBatchViewButton" mnemonicParsing="false" text="List">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
          </children>
       </FlowPane>
    </top>
+   <bottom>
+      <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="totalResultsDisplayedLabel" text="Total" HBox.hgrow="NEVER">
+               <HBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
 </BorderPane>

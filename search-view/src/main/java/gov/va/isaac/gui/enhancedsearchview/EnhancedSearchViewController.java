@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
@@ -29,6 +30,7 @@ import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenus.ObjectContainer;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 
@@ -66,6 +68,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -104,10 +107,12 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	@FXML private Button searchButton;
 	@FXML private TextField searchText;
+	@FXML private Label totalResultsDisplayedLabel;
 	@FXML private Pane pane;
 	@FXML private ComboBox<AggregationType> aggregationTypeComboBox;
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
+	@FXML private Button exportSearchResultsToListBatchViewButton;
     @FXML private ProgressIndicator searchProgress;
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
@@ -129,7 +134,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-    
+		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! pane.getStylesheets().contains(styleSheet)) {
 			pane.getStylesheets().add(styleSheet);
@@ -138,21 +144,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
         final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
         searchProgress.visibleProperty().bind(searchRunning);
         searchButton.disableProperty().bind(searchTextValid.not());
-        //clearButton.disableProperty().bind(searchRunning);
-        
+
 		// Search results table
 		initializeSearchResultsTable();
 		initializeAggregationTypeComboBox();
 
-		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> {
-			try {
-				exportSearchResultsAsTabDelimitedValues();
-			}
-			catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		});
-
+		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
+		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
+		
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
                  ssh.cancel();
@@ -187,8 +186,29 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 
+	private void exportSearchResultsToListBatchView() {
+		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
+		
+		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+		
+		List<Integer> nids = new ArrayList<>();
+		for (CompositeSearchResult result : searchResultsTable.getItems()) {
+			nids.add(result.getConceptNid());
+		}
+		
+		lv.addConcepts(nids);
+	}
+
 	protected void windowForTableViewExportDialog(Window window) {
 		this.windowForTableViewExportDialog = window;
+	}
+	
+	private void refreshTotalResultsDisplayedLabel() {
+		if (searchResultsTable.getItems().size() == 1) {
+			totalResultsDisplayedLabel.setText(searchResultsTable.getItems().size() + " entry displayed");
+		} else {
+			totalResultsDisplayedLabel.setText(searchResultsTable.getItems().size() + " entries displayed");
+		}
 	}
 	
 	@Override
@@ -200,6 +220,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
                 try {
                     if (! ssh.isCancelled()) {
                         searchResultsTable.getItems().addAll(ssh.getResults());
+
+                		refreshTotalResultsDisplayedLabel();
                     }
                 } catch (Exception ex) {
                     String title = "Unexpected Search Error";
@@ -208,6 +230,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
                             "There was an unexpected error running the search",
                             ex.toString());
                     searchResultsTable.getItems().clear();
+            		refreshTotalResultsDisplayedLabel();
                 } finally {
                     searchRunning.set(false);
                 }
@@ -233,7 +256,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					return getItem() == null ? "" : getItem().toString();
 				}
 			};
-			
+
 			return cell;
 		}
 		
@@ -271,26 +294,43 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					ContextMenu cm = new ContextMenu();
 					CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
 
-		            CommonMenus.addCommonMenus(cm, null, new ConceptIdProvider() {
+					CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+						@Override
+						public String getString() {
+							return c.getItem().toString();
+						}
+						@Override
+						public ObjectContainer getObjectContainer() {
+							return new ObjectContainer(c.getItem());
+						}
+					};
+		            CommonMenus.addCommonMenus(cm, new SimpleBooleanProperty(true), dp, new ConceptIdProvider() {
+		            	@Override
+		                public String getSctId() {
+		            		String sctId = ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(result.getConcept())).trim();
+		            		LOG.debug("Using context menu to copy SCTID \"" + sctId + "\"");
+		            		return sctId;
+		                }
 		                @Override
 		                public String getConceptId() {
-		                    return result.getConceptNid() + "";
-		                }
+		                	String nid = result.getConceptNid() + "";
+		            		LOG.debug("Using context menu to copy ConceptId \"" + nid + "\"");
 
-		                /**
-		                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
-		                 */
+		                    return nid;
+		                }
 		                @Override
 		                public UUID getConceptUUID() {
-		                    return result.getConcept().getPrimordialUuid();
-		                }
+		                	UUID uuid = result.getConcept().getPrimordialUuid();
+		            		LOG.debug("Using context menu to copy UUID \"" + uuid + "\"");
 
-		                /**
-		                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
-		                 */
+		                    return uuid;
+		                }
 		                @Override
 		                public int getNid() {
-		                    return result.getConceptNid();
+		                	int nid = result.getConceptNid();
+		            		LOG.debug("Using context menu to copy NID " + nid);
+
+		                    return nid;
 		                }
 		            });
 
@@ -302,6 +342,25 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}	
 	}
 
+//	private void populateConceptSearchResultsTableFromDescriptionSearchResultsTable() {		
+//		Map<Integer, CompositeSearchResult> concepts = new HashMap<>();
+//		for (CompositeSearchResult result : descriptionSearchResultsTable.getItems()) {
+//			if (concepts.get(result.getConceptNid()) == null) {
+//				concepts.put(result.getConceptNid(), new CompositeSearchResult(result));
+//			} else if (concepts.get(result.getConceptNid()).getBestScore() < result.getBestScore()) {
+//				CompositeSearchResult copyOfResult = new CompositeSearchResult(result);
+//				copyOfResult.getMatchStrings().addAll(concepts.get(result.getConceptNid()).getMatchStrings());
+//				copyOfResult.getComponents().addAll(concepts.get(result.getConceptNid()).getComponents());
+//				concepts.put(result.getConceptNid(), copyOfResult);
+//			} else {
+//				concepts.get(result.getConceptNid()).getComponents().addAll(result.getComponents());
+//			}
+//		}
+//
+//		List<CompositeSearchResult> conceptResults = new ArrayList<>(concepts.values());
+//		Collections.sort(conceptResults, new CompositeSearchResultComparator());
+//		conceptSearchResultsTable.getItems().setAll(conceptResults);
+//	}
 	private void initializeSearchResultsTable() {
 		assert searchResultsTable != null : "fx:id=\"searchResultsTable\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
@@ -495,6 +554,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
                 return null;
             }
         });
+		
+		refreshTotalResultsDisplayedLabel();
 	}
 	
 	private void initializeAggregationTypeComboBox() {
@@ -547,6 +608,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
         searchRunning.set(true);
         searchResultsTable.getItems().clear();
+
+		refreshTotalResultsDisplayedLabel();
+		
         // "we get called back when the results are ready."
         switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
         case  CONCEPT:

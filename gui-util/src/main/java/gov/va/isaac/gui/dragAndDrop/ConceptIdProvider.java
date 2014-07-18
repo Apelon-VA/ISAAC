@@ -39,6 +39,15 @@ public interface ConceptIdProvider
 	 * Convenience method
 	 * @return
 	 */
+	default public boolean isSctId()
+	{
+		return getSctId() != null;
+	}
+	
+	/**
+	 * Convenience method
+	 * @return
+	 */
 	default public boolean isNid()
 	{
 		return Utility.isInt(getConceptId());
@@ -51,6 +60,15 @@ public interface ConceptIdProvider
 	default public boolean isUUID()
 	{
 		return Utility.isUUID(getConceptId());
+	}
+
+	/**
+	 * Convenience method that simply parses the UUID from {@code #getConceptId}
+	 * Will fail if it isn't overridden
+	 */
+	default public String getSctId()
+	{
+		return null;
 	}
 	
 	/**
