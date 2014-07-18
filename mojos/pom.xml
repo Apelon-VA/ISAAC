@@ -31,10 +31,15 @@
 			<groupId>org.ihtsdo.otf</groupId>
 			<artifactId>query-implementation</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>gov.va.isaac.modules</groupId>
-			<artifactId>isaac-app-interfaces</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>isaac-app-interfaces</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>otf-util</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 	</dependencies>
 </project>
