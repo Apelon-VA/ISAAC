@@ -119,15 +119,15 @@ public class FindAndReplaceController
 		//swap out some components, wrap them up in a stack pane so that we can set up the 
 		//error and info markers.  Note, do this early, swapComponents isn't real smart, and might mess other things up
 		StackPane sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(caseSensitive, sp, optionsGridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(caseSensitive, sp, optionsGridPane);
 		ErrorMarkerUtils.setupDisabledInfoMarker(caseSensitive, sp, new SimpleStringProperty("Not available during a Regular Expression search"));
 		
 		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(descriptionTypeSelected, sp, optionsGridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(descriptionTypeSelected, sp, optionsGridPane);
 		ErrorMarkerUtils.setupErrorMarker(descriptionTypeSelected, sp, descriptionTypeInvalidReason);
 		
 		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(findText, sp, root);
+		ErrorMarkerUtils.swapGridPaneComponents(findText, sp, root);
 		ErrorMarkerUtils.setupErrorMarker(findText, sp, findTextInvalidReason);
 
 		//Sigh - TitlePane doesn't advertise its size properly, unless you manually set the min sizes.

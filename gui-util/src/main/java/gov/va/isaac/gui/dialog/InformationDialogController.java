@@ -21,8 +21,6 @@ package gov.va.isaac.gui.dialog;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-import com.google.common.base.Preconditions;
-
 /**
  * Controller class for {@link InformationDialog}.
  *
@@ -39,7 +37,7 @@ public class InformationDialogController {
     }
 
     public void setMessageText(String message) {
-        messageLabel.setText(Preconditions.checkNotNull(message));
+        messageLabel.setText(message);
     }
 
     public void handleOk() {
