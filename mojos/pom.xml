@@ -31,15 +31,13 @@
 			<groupId>org.ihtsdo.otf</groupId>
 			<artifactId>query-implementation</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>gov.va.isaac.modules</groupId>
-            <artifactId>isaac-app-interfaces</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>gov.va.isaac.modules</groupId>
-            <artifactId>otf-util</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>isaac-app-interfaces</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<!-- WARNING - adding otf-util as a dependency breaks maven 3.2.2, because, well... maven can't seem to parse valid java anymore.
+		It doesn't appear to be needed at the moment - so removed.  Will have to figure out the latest sillyness from maven if we need
+		to put it back.... -->
 	</dependencies>
 </project>

@@ -27,8 +27,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
-import com.google.common.base.Preconditions;
-
 /**
  * Controller class for {@link ErrorDialog}.
  *
@@ -57,7 +55,7 @@ public class ErrorDialogController {
     }
 
     public void setMessageText(String message) {
-        messageLabel.setText(Preconditions.checkNotNull(message));
+        messageLabel.setText(message);
     }
 
     public void setDetailsText(String details) {

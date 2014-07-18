@@ -253,11 +253,11 @@ public class ColumnController implements PanelControllers {
 		});
 		
 		StackPane sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(defaultValue, sp, gridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(defaultValue, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(defaultValue, sp, defaultValueInvalidReason_);
 		
 		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(typeOption, sp, gridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(typeOption, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
 	}
 	

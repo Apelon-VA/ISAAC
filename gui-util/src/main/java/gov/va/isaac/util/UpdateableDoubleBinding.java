@@ -32,6 +32,10 @@ import com.sun.javafx.binding.BindingHelperObserver;
  * (because they nulled themselves after a remove).  Copied code here, fixed to allow individual 
  * removals.
  * 
+ * *** WARNING *** - make _sure_ you maintain a reference to your UpdateableBooleanBinding object.
+ * Because the addBinding mechanism makes use of WeakReferences - if you don't maintain a reference, 
+ * the binding will be dropped at a random point - and you will stop getting invalidation calls!
+ * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 public abstract class UpdateableDoubleBinding extends DoubleBinding

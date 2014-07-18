@@ -50,6 +50,8 @@ public class RelRow
 	TextField group;
 	Node groupNode;
 	
+	//TODO rework this binding code - the updates to the utility code merge the SimpleStringProperty aspect into the UpdatedableBooleanBinding - 
+	//so the binding now carries the details about valid, and the reason why not valid, if not - which vastly simplifies piecing this together.  Ask Dan...
 	private UpdateableBooleanBinding rowValid;
 	SimpleStringProperty groupFieldInvalidReason_ = new SimpleStringProperty("");
 	SimpleStringProperty typeFieldInvalidReason_ = new SimpleStringProperty("A Type selection is required");
