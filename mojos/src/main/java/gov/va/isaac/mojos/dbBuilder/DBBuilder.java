@@ -140,14 +140,15 @@ public class DBBuilder extends AbstractMojo {
         for (IndexerBI indexer : indexers) {
           indexer.closeWriter();
         }
-      }
 
-      if (!dbExists && moveToReadOnly) {
-        getLog().info("moving mutable to read-only");
-        File readOnlyDir = new File(bdbFolderLocation, "read-only");
-        FileIO.recursiveDelete(readOnlyDir);
-        File mutableDir = new File(bdbFolderLocation, "mutable");
-        mutableDir.renameTo(readOnlyDir);
+        if (!dbExists && moveToReadOnly) {
+          getLog().info("moving mutable to read-only");
+          File readOnlyDir = new File(bdbFolderLocation, "read-only");
+          FileIO.recursiveDelete(readOnlyDir);
+          File mutableDir = new File(bdbFolderLocation, "mutable");
+          mutableDir.renameTo(readOnlyDir);
+        }
+
       }
 
       getLog().info(

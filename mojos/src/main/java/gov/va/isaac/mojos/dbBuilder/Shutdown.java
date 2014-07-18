@@ -2,10 +2,12 @@ package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.tcc.api.io.FileIO;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 
@@ -17,6 +19,23 @@ import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
  * @phase process-sources
  */
 public class Shutdown extends AbstractMojo {
+
+  /**
+   * true if the mutable database should replace the read-only database after
+   * load is complete.
+   * 
+   * @parameter default-value=true
+   * @required
+   */
+  private boolean moveToReadOnly = true;
+
+  /**
+   * Location of the file.
+   * 
+   * @parameter
+   * @required
+   */
+  private String bdbFolderLocation;
 
   /*
    * (non-Javadoc)
@@ -47,6 +66,14 @@ public class Shutdown extends AbstractMojo {
         indexer.closeWriter();
       }
 
+      if (moveToReadOnly) {
+        getLog().info("moving mutable to read-only");
+        File readOnlyDir = new File(bdbFolderLocation, "read-only");
+        FileIO.recursiveDelete(readOnlyDir);
+        File mutableDir = new File(bdbFolderLocation, "mutable");
+        mutableDir.renameTo(readOnlyDir);
+      }
+      
       getLog().info("Done shutting down terminology store");
     } catch (Exception e) {
       throw new MojoExecutionException("Database build failure", e);

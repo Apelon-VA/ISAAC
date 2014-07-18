@@ -1,7 +1,6 @@
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -153,6 +152,7 @@ public class PathBuilder extends AbstractMojo {
       addNidLongMember(pathOriginRefset, pathConcept, originConcept);
 
       // Make sure each origin concept is correctly modeled as a path
+      // NOTE: this is probably not necessary 
       // getLog().info("    Add origin path to PATH_REFSET");
       // getLog().info("    " + originConcept.toUserString());
       // addNidMember(pathRefset, path, originConcept);
@@ -195,9 +195,11 @@ public class PathBuilder extends AbstractMojo {
    */
   private void addNidMember(ConceptChronicleBI refCon,
     ConceptChronicleBI refComp, ConceptChronicleBI value) throws Exception {
+    // GENERATE_HASH is OK because we only have one entry per member
+    // EXCLUDE is OK because these things dont have connected reset members
     RefexCAB newMember =
         new RefexCAB(RefexType.CID, refComp.getNid(), refCon.getNid(),
-            IdDirective.GENERATE_HASH, RefexDirective.INCLUDE);
+            IdDirective.GENERATE_HASH, RefexDirective.EXCLUDE);
     newMember.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, value.getNid());
 
     @SuppressWarnings("unused")
@@ -222,11 +224,16 @@ public class PathBuilder extends AbstractMojo {
   private void addNidLongMember(ConceptChronicleBI refCon,
     ConceptChronicleBI refComp, ConceptChronicleBI value) throws Exception {
     RefexCAB newMember;
+    // GENERATE_REFEX_CONTENT_HASH is ideal here but there is an OTF bug
+    // Use GENERATE_RANDOM for now instead.
+    // will have more than one entry.
+    // EXCLUDE is OK because these things dont have connected reset members
     newMember =
         new RefexCAB(RefexType.CID_LONG, refComp.getConceptNid(),
-            refCon.getNid(), IdDirective.GENERATE_HASH, RefexDirective.INCLUDE);
+            refCon.getNid(), IdDirective.GENERATE_RANDOM,
+            RefexDirective.EXCLUDE);
     newMember.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, value.getNid());
-    // The "LONG" is a version for a position, I think max value is "latest"
+    // The "INT" is a version for a position, I think max value is "latest"
     newMember.put(ComponentProperty.LONG_EXTENSION_1, Long.MAX_VALUE);
 
     @SuppressWarnings("unused")

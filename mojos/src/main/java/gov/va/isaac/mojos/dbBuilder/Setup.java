@@ -26,7 +26,7 @@ public class Setup extends AbstractMojo {
   /**
    * Location of the file.
    * 
-   * @parameter expression="${project.build.directory}/berkeley-db"
+   * @parameter
    * @required
    */
   private String bdbFolderLocation;
