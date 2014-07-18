@@ -1,7 +1,6 @@
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.UUID;
