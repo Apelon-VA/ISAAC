@@ -64,14 +64,14 @@ public class DragRegistry
 		codeDropTargets.add(node);
 	}
 	
-	public void setupDragOnly(final Node n, ConceptIdProvider conceptIdProvider)
+	public void setupDragOnly(final Node n, SingleConceptIdProvider singleConceptIdProvider)
 	{
 		logger.debug("Configure drag support for node {}", n);
-		n.setOnDragDetected(new DragDetectedEventHandler(n, conceptIdProvider));
+		n.setOnDragDetected(new DragDetectedEventHandler(n, singleConceptIdProvider));
 		n.setOnDragDone(new DragDoneEventHandler());
 	}
 
-	public void setupDragAndDrop(final ComboBox<?> n, ConceptIdProvider conceptIdProvider, boolean allowDrop)
+	public void setupDragAndDrop(final ComboBox<?> n, SingleConceptIdProvider singleConceptIdProvider, boolean allowDrop)
 	{
 		logger.debug("Configure drag and drop for node {} - allow Drop {}", n, allowDrop);
 		if (allowDrop)
@@ -113,11 +113,11 @@ public class DragRegistry
 			});
 		}
 
-		n.setOnDragDetected(new DragDetectedEventHandler(n, conceptIdProvider));
+		n.setOnDragDetected(new DragDetectedEventHandler(n, singleConceptIdProvider));
 		n.setOnDragDone(new DragDoneEventHandler());
 	}
 
-	public void setupDragAndDrop(final TextField n, ConceptIdProvider conceptIdProvider, boolean allowDrop)
+	public void setupDragAndDrop(final TextField n, SingleConceptIdProvider singleConceptIdProvider, boolean allowDrop)
 	{
 		logger.debug("Configure drag and drop for node {} - allow Drop {}", n, allowDrop);
 		if (allowDrop)
@@ -156,7 +156,7 @@ public class DragRegistry
 				}
 			});
 		}
-		n.setOnDragDetected(new DragDetectedEventHandler(n, conceptIdProvider));
+		n.setOnDragDetected(new DragDetectedEventHandler(n, singleConceptIdProvider));
 		n.setOnDragDone(new DragDoneEventHandler());
 	}
 

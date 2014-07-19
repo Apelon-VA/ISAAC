@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.searchview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
@@ -120,7 +120,7 @@ public class SearchViewController implements TaskCompleteCallback {
 
                             ContextMenu cm = new ContextMenu();
 
-                            CommonMenus.addCommonMenus(cm, null, new ConceptIdProvider()
+                            CommonMenus.addCommonMenus(cm, null, new SingleConceptIdProvider()
                             {
                                 @Override
                                 public String getConceptId()
@@ -129,16 +129,16 @@ public class SearchViewController implements TaskCompleteCallback {
                                 }
 
                                 /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
                                  */
                                 @Override
-                                public UUID getConceptUUID()
+                                public UUID getUUID()
                                 {
                                     return item.getConcept().getPrimordialUuid();
                                 }
 
                                 /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
                                  */
                                 @Override
                                 public Integer getNid()
@@ -172,7 +172,7 @@ public class SearchViewController implements TaskCompleteCallback {
             }
         });
 
-        AppContext.getService(DragRegistry.class).setupDragOnly(searchResults, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(searchResults, new SingleConceptIdProvider()
         {
             @Override
             public String getConceptId()

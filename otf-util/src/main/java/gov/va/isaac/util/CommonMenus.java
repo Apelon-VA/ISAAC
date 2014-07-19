@@ -92,14 +92,14 @@ public class CommonMenus
 	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final ConceptIdProvider idProvider)
 	{
 		// Menu item to show concept details.
-		if (idProvider != null && idProvider.getConceptUUID() != null) {
+		if (idProvider != null && idProvider.getUUID() != null) {
 			MenuItem viewConceptMenuItem = new MenuItem("View Concept");
 			viewConceptMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
 			viewConceptMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event)
 				{
-					UUID id = idProvider.getConceptUUID();
+					UUID id = idProvider.getUUID();
 					if (id != null)
 					{
 						AppContext.getCommonDialogs().showConceptDialog(id);
@@ -117,7 +117,7 @@ public class CommonMenus
 			cm.getItems().add(viewConceptMenuItem);
 		}
 
-		if (idProvider != null && idProvider.getConceptId() != null) {
+		if (idProvider != null && idProvider.getNid() != null) {
 			// Menu item to show concept details.
 			MenuItem enhancedConceptViewMenuItem = new MenuItem("View Concept (enhanced)");
 			enhancedConceptViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
@@ -146,7 +146,7 @@ public class CommonMenus
 			cm.getItems().add(enhancedConceptViewMenuItem);
 		}
 
-		if (idProvider != null && idProvider.getConceptUUID() != null) {
+		if (idProvider != null && idProvider.getUUID() != null) {
 			// Menu item to find concept in tree.
 			MenuItem findInTaxonomyViewMenuItem = new MenuItem("Find Concept in Taxonomy View");
 			findInTaxonomyViewMenuItem.setGraphic(Images.ROOT.createImageView());
@@ -154,7 +154,7 @@ public class CommonMenus
 				@Override
 				public void handle(ActionEvent arg0)
 				{
-					UUID id = idProvider.getConceptUUID();
+					UUID id = idProvider.getUUID();
 					if (id != null)
 					{
 						AppContext.getService(TaxonomyViewI.class).locateConcept(id, null);
@@ -172,7 +172,7 @@ public class CommonMenus
 			cm.getItems().add(findInTaxonomyViewMenuItem);
 		}
 
-		if (idProvider != null && idProvider.getConceptId() != null) {
+		if (idProvider != null && idProvider.getNid() != null) {
 			// Menu item to generate New Workflow Instance.
 			MenuItem newWorkflowInstanceItem = new MenuItem("New Workflow Instance");
 			newWorkflowInstanceItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
@@ -180,11 +180,11 @@ public class CommonMenus
 				@Override
 				public void handle(ActionEvent event)
 				{
-					String id = idProvider.getConceptId();
+					Integer id = idProvider.getNid();
 					if (id != null)
 					{
 						ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-						view.setConcept(Integer.valueOf(id));
+						view.setConcept(id);
 						view.showView(null);
 					}
 					else
@@ -199,7 +199,6 @@ public class CommonMenus
 			}
 			cm.getItems().add(newWorkflowInstanceItem);
 		}
-
 
 		Menu copyMenu = new Menu("Copy");
 		
@@ -287,7 +286,7 @@ public class CommonMenus
 		}
 		
 		// Menu item to copy UUID.
-		if (idProvider != null && idProvider.getConceptUUID() != null) {
+		if (idProvider != null && idProvider.getUUID() != null) {
 			MenuItem copyUuidMenuItem = new MenuItem("Copy UUID");
 			copyUuidMenuItem.setGraphic(Images.COPY.createImageView());
 			copyUuidMenuItem.setOnAction(new EventHandler<ActionEvent>()
@@ -295,7 +294,7 @@ public class CommonMenus
 				@Override
 				public void handle(ActionEvent event)
 				{
-					UUID id = idProvider.getConceptUUID();
+					UUID id = idProvider.getUUID();
 					if (id != null)
 					{
 						CustomClipboard.set(id.toString());
@@ -314,17 +313,17 @@ public class CommonMenus
 			copyMenu.getItems().add(copyUuidMenuItem);
 		}
 
-		if (idProvider != null && idProvider.isNid()) {
+		if (idProvider != null && idProvider.getNid() != null) {
 			MenuItem copyNidMenuItem = new MenuItem("Copy NID");
 			copyNidMenuItem.setGraphic(Images.COPY.createImageView());
 			copyNidMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event)
 				{
-					String id = idProvider.getNid() + "";
+					Integer id = idProvider.getNid();
 					if (id != null)
 					{
-						CustomClipboard.set(id);
+						CustomClipboard.set(id, id.toString());
 					}
 				}
 			});

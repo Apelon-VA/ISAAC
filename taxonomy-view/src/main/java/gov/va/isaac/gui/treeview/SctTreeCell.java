@@ -20,7 +20,7 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.ConceptView;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.WBUtility;
@@ -73,7 +73,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         setContextMenu(cm);
         
         //Allow drags
-        AppContext.getService(DragRegistry.class).setupDragOnly(this, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(this, new SingleConceptIdProvider()
         {
             
             @Override

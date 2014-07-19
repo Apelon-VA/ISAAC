@@ -21,6 +21,7 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -313,14 +314,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		            		return sctId;
 		                }
 		                @Override
-		                public String getConceptId() {
-		                	String nid = result.getConceptNid() + "";
-		            		LOG.debug("Using context menu to copy ConceptId \"" + nid + "\"");
-
-		                    return nid;
-		                }
-		                @Override
-		                public UUID getConceptUUID() {
+		                public UUID getUUID() {
 		                	UUID uuid = result.getConcept().getPrimordialUuid();
 		            		LOG.debug("Using context menu to copy UUID \"" + uuid + "\"");
 
@@ -542,7 +536,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		searchResultsTable.getColumns().add(uuIdCol);
 		searchResultsTable.getColumns().add(nidCol);
 
-		AppContext.getService(DragRegistry.class).setupDragOnly(searchResultsTable, new ConceptIdProvider() {
+		AppContext.getService(DragRegistry.class).setupDragOnly(searchResultsTable, new SingleConceptIdProvider() {
             @Override
             public String getConceptId()
             {

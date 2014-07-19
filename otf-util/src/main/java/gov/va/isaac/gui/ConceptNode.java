@@ -19,7 +19,7 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
@@ -185,7 +185,7 @@ public class ConceptNode implements ConceptLookupCallback
 		});
 		cm.getItems().add(copyText);
 		
-		CommonMenus.addCommonMenus(cm, isValid, new ConceptIdProvider()
+		CommonMenus.addCommonMenus(cm, isValid, new SingleConceptIdProvider()
 		{
 			@Override
 			public String getConceptId()
@@ -197,10 +197,10 @@ public class ConceptNode implements ConceptLookupCallback
 				return null;
 			}
 			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
 			 */
 			@Override
-			public UUID getConceptUUID()
+			public UUID getUUID()
 			{
 				if (c_ != null)
 				{
@@ -210,7 +210,7 @@ public class ConceptNode implements ConceptLookupCallback
 			}
 
 			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
 			 */
 			@Override
 			public Integer getNid()
@@ -275,7 +275,7 @@ public class ConceptNode implements ConceptLookupCallback
 			}
 		});
 
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(cb_, new ConceptIdProvider()
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(cb_, new SingleConceptIdProvider()
 		{
 			@Override
 			public String getConceptId()
