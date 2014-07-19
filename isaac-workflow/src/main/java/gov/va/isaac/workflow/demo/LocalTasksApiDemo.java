@@ -21,6 +21,9 @@ package gov.va.isaac.workflow.demo;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author alo
@@ -35,7 +38,7 @@ public class LocalTasksApiDemo {
         System.out.println("OK");
         
         LocalTask task = new LocalTask();
-        task.setId(2L);
+        task.setId(70L);
         task.setName("task 2 name");
         task.setComponentId("componentId");
         task.setComponentName("componentName");
@@ -47,14 +50,22 @@ public class LocalTasksApiDemo {
         System.out.println("OK");
         
         System.out.print("Getting task 2...  ");
-        LocalTask retrievedTask = tapi.getTask(2L);
+        LocalTask retrievedTask = tapi.getTask(70L);
         System.out.println("Done, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + retrievedTask.getComponentName());
+        if (retrievedTask.getInputVariables() != null) {
+            for (String key : retrievedTask.getInputVariables().keySet()) {
+                System.out.println("Input variable: " + key + ": " + retrievedTask.getInputVariables().get(key));
+            }
+        }
+
+        Map<String, String> outputVariables = new HashMap<String, String>();
+        outputVariables.put("assessment", "correct");
+        tapi.setAction(retrievedTask.getId(), "COMPLETE", "pending", outputVariables);
         
-        tapi.setAction(retrievedTask.getId(), "COMPLETE", "pending");
-        
-        retrievedTask = tapi.getTask(2L);
+        retrievedTask = tapi.getTask(70L);
         System.out.println("Done after action, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + 
                 retrievedTask.getComponentName() + " action: " + retrievedTask.getAction() + " Status: " + retrievedTask.getActionStatus());
+        System.out.println("Variable in outputmap: " + retrievedTask.getOutputVariables().get("assessment"));
         
         System.out.println("Count of action status = pending: " + tapi.getOwnedTasksByActionStatus("alo", "pending").size());
         System.out.println("Count of action status = done: " + tapi.getOwnedTasksByActionStatus("alo", "done").size());

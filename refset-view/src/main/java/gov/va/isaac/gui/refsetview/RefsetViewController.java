@@ -62,8 +62,6 @@ public class RefsetViewController {
 	@FXML private Button commitButton;
 	@FXML private Label refsetLabel;
 	
-	static ViewCoordinate vc = null;
-	
 	ObservableList<RefsetInstance> data = FXCollections.observableArrayList();
 	private boolean isAnnotation = false;
 	private UUID refsetUUID_;
@@ -85,8 +83,6 @@ public class RefsetViewController {
 
 	@FXML 
 	void initialize() {
-		vc = WBUtility.getViewCoordinate();
-
 		rth_ = new RefsetTableHandler(refsetRows, this);
 		addButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
@@ -144,7 +140,7 @@ public class RefsetViewController {
 				}
 				else
 				{
-					members = (activeOnly_ ? component.getAnnotationsActive(vc) : component.getAnnotations());
+					members = (activeOnly_ ? component.getAnnotationsActive(WBUtility.getViewCoordinate()) : component.getAnnotations());
 				}
 //			}
 		} catch (Exception e) {
@@ -160,7 +156,7 @@ public class RefsetViewController {
 				List<RefexVersionBI<?>> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					RefexVersionBI<?> version = memChron.getVersion(vc);
+					RefexVersionBI<?> version = memChron.getVersion(WBUtility.getViewCoordinate());
 					
 					if (version.isActive()) {
 						memberVersion.add(version);
@@ -230,12 +226,12 @@ public class RefsetViewController {
 		}
 
 		// Search for member's annotations
-		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(vc) : member.getAnnotations());
+		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(WBUtility.getViewCoordinate()) : member.getAnnotations());
 		for (RefexChronicleBI<?> annot : refAnnots) {
 			List<RefexVersionBI<?>> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(vc);
+				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(WBUtility.getViewCoordinate());
 				if (version.isActive()) {
 					annotVersions.add(version);
 				}

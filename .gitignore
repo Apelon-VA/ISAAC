@@ -63,3 +63,7 @@ UserPreferences.xml
 
 *.log
 /isaac-workflow/workflowDB/
+
+# IntelliJ IDEA stuff
+*.iml
+.idea

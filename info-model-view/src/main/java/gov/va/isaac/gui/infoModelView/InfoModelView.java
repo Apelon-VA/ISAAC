@@ -169,6 +169,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		
 		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
+		//TODO this shouldn't require a hard import on the import-export project... need to refactor, use interfaces
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			list.getItems().add(cs.getDescription());

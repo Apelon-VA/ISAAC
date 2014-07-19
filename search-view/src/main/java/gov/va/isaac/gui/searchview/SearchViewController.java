@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.searchview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
@@ -120,9 +120,8 @@ public class SearchViewController implements TaskCompleteCallback {
 
                             ContextMenu cm = new ContextMenu();
 
-                            CommonMenus.addCommonMenus(cm, null, new ConceptIdProvider()
+                            CommonMenus.addCommonMenus(cm, null, new SingleConceptIdProvider()
                             {
-                                
                                 @Override
                                 public String getConceptId()
                                 {
@@ -130,19 +129,19 @@ public class SearchViewController implements TaskCompleteCallback {
                                 }
 
                                 /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
                                  */
                                 @Override
-                                public UUID getConceptUUID()
+                                public UUID getUUID()
                                 {
                                     return item.getConcept().getPrimordialUuid();
                                 }
 
                                 /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
                                  */
                                 @Override
-                                public int getNid()
+                                public Integer getNid()
                                 {
                                     return item.getConceptNid();
                                 }
@@ -173,7 +172,7 @@ public class SearchViewController implements TaskCompleteCallback {
             }
         });
 
-        AppContext.getService(DragRegistry.class).setupDragOnly(searchResults, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(searchResults, new SingleConceptIdProvider()
         {
             @Override
             public String getConceptId()
@@ -271,7 +270,6 @@ public class SearchViewController implements TaskCompleteCallback {
     }
 
     private synchronized void search() {
-
         // Sanity check if search already running.
         if (searchRunning.get()) {
             return;
@@ -280,6 +278,6 @@ public class SearchViewController implements TaskCompleteCallback {
         searchRunning.set(true);
         searchResults.getItems().clear();
         // "we get called back when the results are ready."
-        ssh = SearchHandler.descriptionSearch(searchText.getText(), this);
+        ssh = SearchHandler.conceptSearch(searchText.getText(), this);
     }
 }

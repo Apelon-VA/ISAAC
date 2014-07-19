@@ -124,7 +124,9 @@ public class App extends Application implements ApplicationWindowI{
             String message = "The Snomed Database was not found.";
             LOG.error(message, dataStoreLocationInitException_);
             String details = "Please download the file\n\n"
-                    + "https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/isaac-sct/2014.01.31-build-1/isaac-sct-2014.01.31-build-1.zip"
+                    + "https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/isaac-sct/2014.01.31-build-2/isaac-sct-2014.01.31-build-2.zip"
+                    + "\nor"
+                    + "\nhttps://csfe.aceworkspace.net/sf/frs/do/downloadFile/projects.veterans_administration_project/frs.isaac.isaac_databases/frs13977?dl=1"
                     + "\n\nand unzip it into\n\n"
                     + System.getProperty("user.dir")
                     + "\n\nand then restart the editor.";
@@ -228,7 +230,11 @@ public class App extends Application implements ApplicationWindowI{
         try {
             //TODO OTF fix note - the current BDB access model gives me no way to know if I should call shutdown, as I don't know if it was started.
             //If it wasn't started, calling shutdown tries to start the DB, because it inits in the constructor call.  https://jira.ihtsdotools.org/browse/OTFISSUE-13
-            ExtendedAppContext.getDataStore().shutdown();
+            //don't bother with shutdown if we know the path was bad... other wise, this actually tries to init the DB.  Sigh.
+            if (dataStoreLocationInitException_ == null)
+            {
+                ExtendedAppContext.getDataStore().shutdown();
+            }
             for (ShutdownBroadcastListenerI s : shutdownListeners_)
             {
                 if (s != null)

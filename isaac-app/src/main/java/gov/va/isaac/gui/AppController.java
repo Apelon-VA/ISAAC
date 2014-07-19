@@ -230,7 +230,16 @@ public class AppController {
         ap.getChildren().add(b);
 
         bp.setTop(ap);
-        bp.setCenter(dockedView.getView());
+        Label placeholder = new Label("");
+        bp.setCenter(placeholder);
+        //Delay this, so we don't force the init of all of these panels up front
+        bp.visibleProperty().addListener((change) -> 
+        {
+            if (bp.isVisible() && bp.getCenter() == placeholder)
+            {
+                bp.setCenter(dockedView.getView());
+            }
+        });
         return bp;
     }
 

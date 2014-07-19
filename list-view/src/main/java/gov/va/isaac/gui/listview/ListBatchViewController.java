@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -81,6 +82,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -157,6 +159,7 @@ public class ListBatchViewController
 		cn.setPromptText("Type, drop or select a concept to add");
 		HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
 		HBox.setMargin(cn.getNode(), new Insets(6, 5, 6, 5));
+		conceptTableFooter.getChildren().clear();
 		conceptTableFooter.getChildren().add(cn.getNode());
 
 		cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
@@ -187,43 +190,58 @@ public class ListBatchViewController
 			@Override
 			public TableCell<SimpleDisplayConcept, String> call(TableColumn<SimpleDisplayConcept, String> param) {
 				final TableCell<SimpleDisplayConcept, String> cell = new TableCell<SimpleDisplayConcept, String>() {
-		            private final Background uncommittedBackground = new Background(new BackgroundFill(Color.YELLOW, new CornerRadii(15), new Insets(2)));
-		            private final Background defaultBackground = new Background(new BackgroundFill(null, null, null));
+					private final Background uncommittedBackground = new Background(new BackgroundFill(Color.YELLOW, new CornerRadii(15), new Insets(2)));
+					private final Background defaultBackground = new Background(new BackgroundFill(null, null, null));
 
 					@Override
-		            protected void updateItem(String item, boolean empty) {
-		                super.updateItem(item, empty);
+					protected void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
 	
-		                TableRow currentRow = getTableRow();
-		                if (!empty) {
-		                	if (currentRow != null && currentRow.getItem() != null) {
-			                	setText(item);
-			                	setTextFill(Color.BLACK);
-			                	if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
-				                	setBackground(uncommittedBackground );
-			                		currentRow.getContextMenu().getItems().get(2).setDisable(false);
-			                		currentRow.getContextMenu().getItems().get(3).setDisable(false);
-				                } else {
-	  		                		currentRow.getContextMenu().getItems().get(2).setDisable(true);
-			                		currentRow.getContextMenu().getItems().get(3).setDisable(true);
-				                	setBackground(defaultBackground );
-				                }
-			                }
-			            } else {
-		            		if (getText() != null) {
-		                		if (getBackground() != null && 
-		                			getBackground().getFills() != null && 
-		                			getBackground().getFills().size() > 0) {
-			                		setText(null);
-			                		setTextFill(null);
-			                		setBackground(null);
-		                		}
-				            }
+						TableRow currentRow = getTableRow();
+						if (!empty) {
+							if (currentRow != null && currentRow.getItem() != null) {
+								setText(item);
+								setTextFill(Color.BLACK);
+								if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
+									setBackground(uncommittedBackground );
+									currentRow.getContextMenu().getItems().get(2).setDisable(false);
+									currentRow.getContextMenu().getItems().get(3).setDisable(false);
+								} else {
+									currentRow.getContextMenu().getItems().get(2).setDisable(true);
+									currentRow.getContextMenu().getItems().get(3).setDisable(true);
+									setBackground(defaultBackground );
+								}
+							}
+						} else {
+							if (getText() != null) {
+								if (getBackground() != null && 
+									getBackground().getFills() != null && 
+									getBackground().getFills().size() > 0) {
+									setText(null);
+									setTextFill(null);
+									setBackground(null);
+								}
+							}
 						}
 					}
-		        };
-		        
-		        return cell;
+				};
+
+				//TODO this is the wrong listener... what if they keyboard up and down?  
+				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
+							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
+							//TODO this is the code that should be here, but EnhancedConceptView is broken at the moment, and doesn't follow the API  
+//							ConceptViewI cv = AppContext.getService(ConceptViewI.class, "ModernStyle");
+//							cv.setConcept(con.getNid());
+//							conceptDisplayTab.setContent(cv.getView());
+							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));
+						}
+					}
+				});
+				
+				return cell;
 			}
 		});
 		
@@ -275,7 +293,8 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						AppContext.getCommonDialogs().showConceptDialog(row.getItem().getNid());
+						//TODO fix this API to use the named API, fix the mess on popup vs view
+						AppContext.getService(EnhancedConceptView.class).setConcept(row.getItem().getNid());
 					}
 				});
 				MenuItem removeItem = new MenuItem("Delete");
@@ -938,11 +957,20 @@ public class ListBatchViewController
 		cancelButton.setDisable(true);
 	}
 
-
-	private void addMultipleItems(ArrayList<SimpleDisplayConcept> concepts) {
+	private void addMultipleItems(List<SimpleDisplayConcept> concepts) {
 		for (SimpleDisplayConcept con : concepts) {
 			updateTableItem(con, con.isUncommitted());
 		}
+	}
+	
+	protected void addConcepts(List<Integer> nids) {
+		List<SimpleDisplayConcept> displayConcepts = new ArrayList<>();
 		
+		for (int nid : nids) {
+			ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+			displayConcepts.add(new SimpleDisplayConcept(concept));
+		}
+		
+		addMultipleItems(displayConcepts);
 	}
 }

@@ -19,6 +19,7 @@
 package gov.va.isaac.workflow;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -34,7 +35,7 @@ public interface LocalTasksServiceBI {
     List<LocalTask> getTasks();
     List<LocalTask> getTasksByComponentId(String componentId);
     void saveTask(LocalTask task);
-    void setAction(Long taskId, String action, String actionStatus);
+    void setAction(Long taskId, String action, String actionStatus, Map<String, String> outputVariables);
     void commit();
     void createSchema();
     void dropSchema();

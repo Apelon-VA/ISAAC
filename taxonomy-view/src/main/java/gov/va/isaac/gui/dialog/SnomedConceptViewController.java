@@ -20,7 +20,7 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
@@ -96,6 +96,11 @@ public class SnomedConceptViewController {
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
     private SctTreeViewIsaacView sctTree;
+    
+    public Region getRootNode()
+    {
+        return anchorPane;
+    }
 
     public void setConcept(ConceptChronicleDdo concept) {
 
@@ -114,7 +119,7 @@ public class SnomedConceptViewController {
 
         fsnLabel.getContextMenu().getItems().add(copyFull);
         
-        AppContext.getService(DragRegistry.class).setupDragOnly(fsnLabel, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(fsnLabel, new SingleConceptIdProvider()
         {
             @Override
             public String getConceptId()
@@ -123,7 +128,7 @@ public class SnomedConceptViewController {
             }
         });
         uuidLabel.setText(concept.getPrimordialUuid().toString());
-        AppContext.getService(DragRegistry.class).setupDragOnly(uuidLabel, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(uuidLabel, new SingleConceptIdProvider()
         {
             @Override
             public String getConceptId()

@@ -20,7 +20,6 @@ package gov.va.isaac.util;
 
 import java.util.HashSet;
 import javafx.beans.Observable;
-import javafx.beans.binding.BooleanBinding;
 import com.sun.javafx.binding.BindingHelperObserver;
 
 /**
@@ -28,16 +27,19 @@ import com.sun.javafx.binding.BindingHelperObserver;
  * 
  * No idea why BooleanBinding has these variations of these methods that are protected and final...
  * And the remove was implemented in such a way that you can't remove individual items.
- * (because then nulled themselves after a remove). Copied code here, fixed to allow individual
+ * (because they nulled themselves after a remove). Copied code here, fixed to allow individual
  * removals.
+ * 
+ * *** WARNING *** - make _sure_ you maintain a reference to your UpdateableBooleanBinding object.
+ * Because the addBinding mechanism makes use of WeakReferences - if you don't maintain a reference, 
+ * the binding will be dropped at a random point - and you will stop getting invalidation calls!
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public abstract class UpdateableBooleanBinding extends BooleanBinding
+public abstract class UpdateableBooleanBinding extends ValidBooleanBinding
 {
 	private BindingHelperObserver observer;
 	private HashSet<Observable> listeningTo = new HashSet<>();
-	private boolean computeOnInvalidate_ = false;
 
 	public final void addBinding(Observable... dependencies)
 	{
@@ -52,6 +54,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 				dep.addListener(observer);
 				listeningTo.add(dep);
 			}
+			invalidate();
 		}
 	}
 
@@ -74,6 +77,7 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			{
 				observer = null;
 			}
+			invalidate();
 		}
 	}
 
@@ -84,29 +88,55 @@ public abstract class UpdateableBooleanBinding extends BooleanBinding
 			removeBinding(listeningTo.iterator().next());
 		}
 	}
-
+	
 	/**
-	 * @see javafx.beans.binding.BooleanBinding#onInvalidating()
+	 * Iterate through all current bindings, return the message associated with the binding (if the binding is invalid)
+	 * otherwise, return an empty string.
+	 * 
+	 * This method only works if all of the binding targets are {@link ValidBooleanBinding} objects - otherwise, throws a RuntimeException.
 	 */
-	@Override
-	protected void onInvalidating()
+	public String getInvalidReasonFromAllBindings()
 	{
-		super.onInvalidating();
-		if (computeOnInvalidate_)
+		for (Observable b : listeningTo)
 		{
-			get();
+			if (b instanceof ValidBooleanBinding)
+			{
+				ValidBooleanBinding vbb = (ValidBooleanBinding)b;
+				if (!vbb.get())
+				{
+					return vbb.getReasonWhyInvalid().get();
+				}
+			}
+			else
+			{
+				throw new RuntimeException("The method getInvalidReasonFromAllBindings can only be used if all of the binding are type 'ValidBooleanBinding'");
+			}
 		}
+		return "";
 	}
 	
 	/**
-	 * convenience method to let implementers choose to compute on invalidate, 
-	 * rather than on the next request, which is the default behavior.
-	 * @param computeOnInvalidate
+	 * Iterate through all current bindings, return true if all are valid, false otherwise.
+	 * 
+	 * This method only works if all of the binding targets are {@link ValidBooleanBinding} objects - otherwise, throws a RuntimeException.
 	 */
-	protected void setComputeOnInvalidate(boolean computeOnInvalidate)
+	public boolean allBindingsValid()
 	{
-		computeOnInvalidate_ = computeOnInvalidate;
-		get();
+		for (Observable b : listeningTo)
+		{
+			if (b instanceof ValidBooleanBinding)
+			{
+				ValidBooleanBinding vbb = (ValidBooleanBinding)b;
+				if (!vbb.get())
+				{
+					return false;
+				}
+			}
+			else
+			{
+				throw new RuntimeException("The method getInvalidReasonFromAllBindings can only be used if all of the binding are type 'ValidBooleanBinding'");
+			}
+		}
+		return true;
 	}
-
 }

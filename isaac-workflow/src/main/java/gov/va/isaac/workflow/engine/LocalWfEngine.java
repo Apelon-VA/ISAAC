@@ -100,26 +100,28 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(userId, "pending");
             for (LocalTask loopTask : actions) {
                 Task remoteTask = remoteService.getTaskById(loopTask.getId());
-                if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Completed)) {
-                    // too late, task not available
-                } else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Reserved)) {
-                    // start and action
-                    if (loopTask.getAction().equals("COMPLETE")) {
-                        remoteService.start(loopTask.getId(), userId);
-                        remoteService.complete(loopTask.getId(), userId, new HashMap<String,Object>());
-                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete");
-                    } else if (loopTask.getAction().equals("RELEASE")) {
-                        remoteService.release(loopTask.getId(), userId);
-                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released");
-                    }
-                }  else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().InProgress)) {
-                    // action
-                    if (loopTask.getAction().equals("COMPLETE")) {
-                        remoteService.complete(loopTask.getId(), userId, new HashMap<String,Object>());
-                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete");
-                    } else if (loopTask.getAction().equals("RELEASE")) {
-                        remoteService.release(loopTask.getId(), userId);
-                        ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released");
+                if (remoteTask != null) {
+                    if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Completed)) {
+                        // too late, task not available
+                    } else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Reserved)) {
+                        // start and action
+                        if (loopTask.getAction().equals("COMPLETE")) {
+                            remoteService.start(loopTask.getId(), userId);
+                            remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete",  loopTask.getOutputVariables());
+                        } else if (loopTask.getAction().equals("RELEASE")) {
+                            remoteService.release(loopTask.getId(), userId);
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
+                        }
+                    }  else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().InProgress)) {
+                        // action
+                        if (loopTask.getAction().equals("COMPLETE")) {
+                            remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete",  loopTask.getOutputVariables());
+                        } else if (loopTask.getAction().equals("RELEASE")) {
+                            remoteService.release(loopTask.getId(), userId);
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
+                        }
                     }
                 }
                 
@@ -144,6 +146,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             log.debug("   - Instances processed: {}", countInstances);
             log.debug("   - {}", result);
         } catch (Exception ex) {
+            ex.printStackTrace();
             log.error("Error synchronizing", ex);
         }
     }
@@ -215,7 +218,6 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         log.debug("Available {}", availableTasks.size());
         int claimed = 0;
         for (TaskSummary loopTask : availableTasks) {
-            log.debug(loopTask.getActualOwner().getId() + " " + userId);
             if (loopTask.getActualOwner() ==  null || !loopTask.getActualOwner().getId().equals(userId)) {
                 remoteService.claim(loopTask.getId(), userId);
                 claimed++;
@@ -223,6 +225,14 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             if (claimed >= count) break;
         }
     }
+
+private HashMap<String, Object> toObjectValueMap(Map<String, String> sourceMap) {
+    HashMap<String, Object> result = new HashMap<String, Object>();
+    for (String loopSourceKey : sourceMap.keySet()) {
+        result.put(loopSourceKey, sourceMap.get(loopSourceKey));
+    }
+    return result;
+}
 
 
 }

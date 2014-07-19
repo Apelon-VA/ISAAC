@@ -89,9 +89,9 @@ public class TasksFetcher {
             }
             if (!isInFetchCursor) {
                 log.info("Missing task: " + loopLocalTask.getId());
-                Task missingTask = remoteTaskService.getTaskById(loopLocalTask.getId());
-                LocalTask missingTaskLocal = new LocalTask(missingTask, true);
-                persistenceApi.saveTask(missingTaskLocal);
+                loopLocalTask.setStatus("released");
+                loopLocalTask.setActionStatus("done");
+                persistenceApi.saveTask(loopLocalTask);
                 countRemoved++;
             }
         }

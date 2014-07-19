@@ -18,18 +18,25 @@
  */
 package gov.va.isaac.gui.listview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
+
 import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.LoggerFactory;
 
 /**
  * ListView
@@ -39,14 +46,13 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @Singleton
-public class ListBatchView implements DockedViewI
+public class ListBatchView implements ListBatchViewI
 {
 	ListBatchViewController lbvc_;
 
-	private ListBatchView() throws IOException
+	private ListBatchView()
 	{
 		// created by HK2
-		lbvc_ = ListBatchViewController.init();
 	}
 
 	/**
@@ -55,6 +61,20 @@ public class ListBatchView implements DockedViewI
 	@Override
 	public Region getView()
 	{
+		if (lbvc_ == null)
+		{
+			try
+			{
+				lbvc_ = ListBatchViewController.init();
+			}
+			catch (IOException e)
+			{
+				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing ListBatchView", e);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating List Batch View", e);
+				return new Label("Unexpected error initializing view, see log file");
+			}
+			
+		}
 		return lbvc_.getRoot();
 	}
 
@@ -131,5 +151,13 @@ public class ListBatchView implements DockedViewI
 	public String getViewTitle()
 	{
 		return "List";
+	}
+	
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.listview.ListBatchViewI#addConcepts(java.util.List)
+	 */
+	@Override
+	public void addConcepts(List<Integer> nids) {
+		lbvc_.addConcepts(nids);
 	}
 }

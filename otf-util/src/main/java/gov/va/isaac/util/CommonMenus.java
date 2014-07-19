@@ -19,16 +19,25 @@
 package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
+import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+
 import java.util.UUID;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link CommonMenus}
@@ -37,98 +46,297 @@ import javafx.scene.control.MenuItem;
  */
 public class CommonMenus
 {
+	private static final Logger LOG = LoggerFactory.getLogger(CommonMenus.class);
+
+	public interface DataProvider {
+		default public String getString() { return null; }
+
+		default public Number getNumber() { return null; }
+
+		default public ObjectContainer getObjectContainer() { return null; }
+	}
+
+	public static class ObjectContainer {
+		final Object object;
+		final String string;
+
+		public ObjectContainer(Object object, String string) {
+			super();
+			this.object = object;
+			this.string = string;
+		}
+		public ObjectContainer(Object object) {
+			super();
+			this.object = object;
+			this.string = object.toString();
+		}
+
+		/**
+		 * @return the object
+		 */
+		public Object getObject() {
+			return object;
+		}
+		/**
+		 * @return the string
+		 */
+		public String getString() {
+			return string;
+		}
+	}
+
 	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, final ConceptIdProvider idProvider)
 	{
-		// Menu item to copy UUID.
-		MenuItem mi0 = new MenuItem("Copy UUID");
-		mi0.setGraphic(Images.COPY.createImageView());
-		mi0.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				UUID id = idProvider.getConceptUUID();
-				if (id != null)
-				{
-					CustomClipboard.set(id.toString());
-				}
-			}
-		});
-		if (invisibleWhenFalse != null)
-		{
-			mi0.visibleProperty().bind(invisibleWhenFalse);
-		}
-		cm.getItems().add(mi0);
-		
-		MenuItem mi1 = new MenuItem("Copy NID");
-		mi1.setGraphic(Images.COPY.createImageView());
-		mi1.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				String id = idProvider.getNid() + "";
-				if (id != null)
-				{
-					CustomClipboard.set(id);
-				}
-			}
-		});
-		if (invisibleWhenFalse != null)
-		{
-			mi1.visibleProperty().bind(invisibleWhenFalse);
-		}
-		cm.getItems().add(mi1);
-
+		addCommonMenus(cm, invisibleWhenFalse, null, idProvider);
+	}
+	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final ConceptIdProvider idProvider)
+	{
 		// Menu item to show concept details.
-		MenuItem mi2 = new MenuItem("View Concept");
-		mi2.setGraphic(Images.CONCEPT_VIEW.createImageView());
-		mi2.setOnAction(new EventHandler<ActionEvent>()
-		{
-
-			@Override
-			public void handle(ActionEvent event)
+		if (idProvider != null && idProvider.getUUID() != null) {
+			MenuItem viewConceptMenuItem = new MenuItem("View Concept");
+			viewConceptMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+			viewConceptMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					UUID id = idProvider.getUUID();
+					if (id != null)
+					{
+						AppContext.getCommonDialogs().showConceptDialog(id);
+					}
+					else
+					{
+						AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
 			{
-				UUID id = idProvider.getConceptUUID();
-				if (id != null)
-				{
-					AppContext.getCommonDialogs().showConceptDialog(id);
-				}
-				else
-				{
-					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
-				}
+				viewConceptMenuItem.visibleProperty().bind(invisibleWhenFalse);
 			}
-		});
-		if (invisibleWhenFalse != null)
-		{
-			mi2.visibleProperty().bind(invisibleWhenFalse);
+			cm.getItems().add(viewConceptMenuItem);
 		}
-		cm.getItems().add(mi2);
 
-		// Menu item to find concept in tree.
-		MenuItem mi3 = new MenuItem("Find Concept in Taxonomy View");
-		mi3.setGraphic(Images.ROOT.createImageView());
-		mi3.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent arg0)
+		if (idProvider != null && idProvider.getNid() != null) {
+			// Menu item to show concept details.
+			MenuItem enhancedConceptViewMenuItem = new MenuItem("View Concept (enhanced)");
+			enhancedConceptViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+			enhancedConceptViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					Integer id = idProvider.getNid();
+					if (id != null)
+					{
+						LOG.debug("Using \"View Concept (enhanced)\" menu item to display concept with id \"" + id + "\"");
+
+						//TODO: this interface should work, but doesn't
+						AppContext.getService(EnhancedConceptView.class).setConcept(Integer.valueOf(id));
+					}
+					else
+					{
+						AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
 			{
-				UUID id = idProvider.getConceptUUID();
-				if (id != null)
-				{
-					AppContext.getService(TaxonomyViewI.class).locateConcept(id, null);
-				}
-				else
-				{
-					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");
-				}
+				enhancedConceptViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
 			}
-		});
-		if (invisibleWhenFalse != null)
-		{
-			mi3.visibleProperty().bind(invisibleWhenFalse);
+			cm.getItems().add(enhancedConceptViewMenuItem);
 		}
-		cm.getItems().add(mi3);
+
+		if (idProvider != null && idProvider.getUUID() != null) {
+			// Menu item to find concept in tree.
+			MenuItem findInTaxonomyViewMenuItem = new MenuItem("Find Concept in Taxonomy View");
+			findInTaxonomyViewMenuItem.setGraphic(Images.ROOT.createImageView());
+			findInTaxonomyViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent arg0)
+				{
+					UUID id = idProvider.getUUID();
+					if (id != null)
+					{
+						AppContext.getService(TaxonomyViewI.class).locateConcept(id, null);
+					}
+					else
+					{
+						AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
+			{
+				findInTaxonomyViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			}
+			cm.getItems().add(findInTaxonomyViewMenuItem);
+		}
+
+		if (idProvider != null && idProvider.getNid() != null) {
+			// Menu item to generate New Workflow Instance.
+			MenuItem newWorkflowInstanceItem = new MenuItem("New Workflow Instance");
+			newWorkflowInstanceItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+			newWorkflowInstanceItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					Integer id = idProvider.getNid();
+					if (id != null)
+					{
+						ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+						view.setConcept(id);
+						view.showView(null);
+					}
+					else
+					{
+						AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't create workflow for invalid concept");
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
+			{
+				newWorkflowInstanceItem.visibleProperty().bind(invisibleWhenFalse);
+			}
+			cm.getItems().add(newWorkflowInstanceItem);
+		}
+
+		Menu copyMenu = new Menu("Copy");
+		
+		addCopyMenuItems(copyMenu, invisibleWhenFalse, dataProvider, idProvider);
+		
+		// Only add copyMenu if it has usable items
+		if (copyMenu.getItems().size() > 0) {
+			cm.getItems().add(copyMenu);
+		}
+	}
+	
+	private static void addCopyMenuItems(Menu copyMenu, BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final ConceptIdProvider idProvider) {
+		// The following code is for the Copy submenu
+
+		SeparatorMenuItem separator = new SeparatorMenuItem();
+		
+		if (dataProvider != null) {
+			if (dataProvider.getString() != null) {
+				MenuItem copyTextItem = new MenuItem("Copy Text");
+				copyTextItem.setGraphic(Images.COPY.createImageView());
+				copyTextItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
+						LOG.debug("Using \"Copy Text\" menu item to copy text \"" + dataProvider.getString() + "\"");
+						CustomClipboard.set(dataProvider.getString());
+					}
+				});
+				if (invisibleWhenFalse != null)
+				{
+					copyTextItem.visibleProperty().bind(invisibleWhenFalse);
+				}
+
+				copyMenu.getItems().add(copyTextItem);
+			}
+			
+			if (dataProvider.getObjectContainer() != null) {
+				MenuItem copyContentItem = new MenuItem("Copy Content");
+				copyContentItem = new MenuItem("Copy Content");
+				copyContentItem.setGraphic(Images.COPY.createImageView());
+				copyContentItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
+						LOG.debug("Using \"Copy Content\" menu item to copy " + dataProvider.getObjectContainer().getObject().getClass() + " object \"" + dataProvider.getObjectContainer().getString() + "\"");
+						CustomClipboard.set(dataProvider.getObjectContainer().getObject(), dataProvider.getObjectContainer().getString());
+					}
+				});
+				if (invisibleWhenFalse != null)
+				{
+					copyContentItem.visibleProperty().bind(invisibleWhenFalse);
+				}
+
+				copyMenu.getItems().add(copyContentItem);
+			}
+		}
+		
+		// The following are ID-related and will be under a separator
+		
+		// Menu item to copy UUID.
+		if (idProvider != null && idProvider.getSctId() != null) {
+			MenuItem copySctIdMenuItem = new MenuItem("Copy SCT ID");
+			copySctIdMenuItem.setGraphic(Images.COPY.createImageView());
+			copySctIdMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					String id = idProvider.getSctId();
+					if (id != null)
+					{
+						CustomClipboard.set(id.toString());
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
+			{
+				copySctIdMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			}
+
+			// Add menu separator IFF there were non-ID items AND this is the first ID item
+			if (copyMenu.getItems().size() > 0 && ! copyMenu.getItems().contains(separator)) {
+				copyMenu.getItems().add(separator);
+			}
+			copyMenu.getItems().add(copySctIdMenuItem);
+		}
+		
+		// Menu item to copy UUID.
+		if (idProvider != null && idProvider.getUUID() != null) {
+			MenuItem copyUuidMenuItem = new MenuItem("Copy UUID");
+			copyUuidMenuItem.setGraphic(Images.COPY.createImageView());
+			copyUuidMenuItem.setOnAction(new EventHandler<ActionEvent>()
+					{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					UUID id = idProvider.getUUID();
+					if (id != null)
+					{
+						CustomClipboard.set(id.toString());
+					}
+				}
+					});
+			if (invisibleWhenFalse != null)
+			{
+				copyUuidMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			}
+			
+			// Add menu separator IFF there were non-ID items AND this is the first ID item
+			if (copyMenu.getItems().size() > 0 && ! copyMenu.getItems().contains(separator)) {
+				copyMenu.getItems().add(separator);
+			}
+			copyMenu.getItems().add(copyUuidMenuItem);
+		}
+
+		if (idProvider != null && idProvider.getNid() != null) {
+			MenuItem copyNidMenuItem = new MenuItem("Copy NID");
+			copyNidMenuItem.setGraphic(Images.COPY.createImageView());
+			copyNidMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					Integer id = idProvider.getNid();
+					if (id != null)
+					{
+						CustomClipboard.set(id, id.toString());
+					}
+				}
+			});
+			if (invisibleWhenFalse != null)
+			{
+				copyNidMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			}
+			
+			// Add menu separator IFF there were non-ID items AND this is the first ID item
+			if (copyMenu.getItems().size() > 0 && ! copyMenu.getItems().contains(separator)) {
+				copyMenu.getItems().add(separator);
+			}
+			copyMenu.getItems().add(copyNidMenuItem);
+		}
 	}
 }

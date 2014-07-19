@@ -19,7 +19,7 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.WBUtility;
@@ -59,7 +59,7 @@ public class ComboBoxSetupTool
 			}
 		});
 
-		CommonMenus.addCommonMenus(cm, isComboBoxPopulated, new ConceptIdProvider()
+		CommonMenus.addCommonMenus(cm, isComboBoxPopulated, new SingleConceptIdProvider()
 		{
 			@Override
 			public String getConceptId()
@@ -68,10 +68,10 @@ public class ComboBoxSetupTool
 			}
 
 			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
+			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
 			 */
 			@Override
-			public UUID getConceptUUID()
+			public UUID getUUID()
 			{
 				ConceptVersionBI c = WBUtility.getConceptVersion(getNid());
 				if (c == null)
@@ -82,10 +82,10 @@ public class ComboBoxSetupTool
 			}
 
 			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
+			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
 			 */
 			@Override
-			public int getNid()
+			public Integer getNid()
 			{
 				return comboBox.getValue().getNid();
 			}
@@ -93,7 +93,7 @@ public class ComboBoxSetupTool
 
 		comboBox.setContextMenu(cm);
 
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(comboBox, new ConceptIdProvider()
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(comboBox, new SingleConceptIdProvider()
 		{
 			@Override
 			public String getConceptId()

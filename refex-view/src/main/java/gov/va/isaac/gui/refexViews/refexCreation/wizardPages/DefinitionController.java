@@ -221,15 +221,15 @@ public class DefinitionController implements PanelControllers {
 		continueCreation.disableProperty().bind(allValid.not());
 		
 		StackPane sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(refexName, sp, gridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(refexName, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(refexName, sp, refexNameInvalidReason);
 		
 		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(refexDescription, sp, gridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(refexDescription, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(refexDescription, sp, refexDescriptionInvalidReason);
 		
 		sp = new StackPane();
-		ErrorMarkerUtils.swapComponents(extensionCount, sp, gridPane);
+		ErrorMarkerUtils.swapGridPaneComponents(extensionCount, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(extensionCount, sp, extensionCountInvalidReason);
 	}
 

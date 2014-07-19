@@ -18,10 +18,13 @@
  */
 package gov.va.isaac.search;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 
 /**
  * Encapsulates a data store search result.
@@ -37,6 +40,7 @@ public class CompositeSearchResult {
     private final HashSet<String> matchingStrings = new HashSet<>();
     private final int conceptNid;
     private final ConceptVersionBI concept;
+    private final Set<ComponentVersionBI> components = new HashSet<>();
 
     private float bestScore; // "best score, rather than score, as multiple matches may go into a SearchResult"
 
@@ -69,4 +73,20 @@ public class CompositeSearchResult {
     public ConceptVersionBI getConcept() {
         return concept;
     }
+
+	public Set<ComponentVersionBI> getComponents() {
+		return components;
+	}
+	
+	// Convenience method only
+	public Set<DescriptionAnalogBI<?>> getMatchingDescriptionComponents() {
+		Set<DescriptionAnalogBI<?>> setToReturn = new HashSet<>();
+		for (ComponentVersionBI comp : components) {
+			if (comp instanceof DescriptionAnalogBI) {
+				setToReturn.add((DescriptionAnalogBI<?>)comp);
+			}
+		}
+		
+		return Collections.unmodifiableSet(setToReturn);
+	}
 }

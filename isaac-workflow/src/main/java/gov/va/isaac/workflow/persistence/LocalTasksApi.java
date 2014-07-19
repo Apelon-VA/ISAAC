@@ -20,6 +20,11 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
+
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -27,7 +32,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +73,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     @Override
     public void saveTask(LocalTask task) {
         try {
-            PreparedStatement psInsert = conn.prepareStatement("insert into local_tasks values (?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement psInsert = conn.prepareStatement("insert into local_tasks values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             psInsert.setLong(1, task.getId());
             psInsert.setString(2, task.getName());
             psInsert.setString(3, task.getComponentId());
@@ -74,6 +82,8 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             psInsert.setString(6, task.getOwner());
             psInsert.setString(7, "NONE");
             psInsert.setString(8, "");
+            psInsert.setString(9, serializeMap(task.getInputVariables()));
+            psInsert.setString(10, "");
             psInsert.executeUpdate();
             psInsert.closeOnCompletion();
             conn.commit();
@@ -118,13 +128,15 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             }
         }
     }
+
     @Override
-    public void setAction(Long taskId, String action, String actionStatus) {
+    public void setAction(Long taskId, String action, String actionStatus, Map<String,String> outputVariables) {
         try {
-            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ? where id = ?");
+            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action);
             psUpdateStatus.setString(2, actionStatus);
-            psUpdateStatus.setInt(3, Integer.parseInt(taskId.toString()));
+            psUpdateStatus.setString(3, serializeMap(outputVariables));
+            psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
             psUpdateStatus.executeUpdate();
             psUpdateStatus.closeOnCompletion();
             conn.commit();
@@ -254,7 +266,32 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         task.setOwner(rs.getString(6));
         task.setAction(rs.getString(7));
         task.setActionStatus(rs.getString(8));
+        task.setInputVariables(deserializeMap(rs.getString(9)));
+        task.setOutputVariables(deserializeMap(rs.getString(10)));
         return task;
+    }
+
+    private String serializeMap(Map<String, String> map ) {
+        if (map == null) {
+            return "";
+        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        XMLEncoder xmlEncoder = new XMLEncoder(bos);
+        xmlEncoder.writeObject(map);
+        xmlEncoder.close();
+
+        String serializedMap = bos.toString();
+        return serializedMap;
+    }
+
+    private Map<String, String> deserializeMap(String serializedMap) {
+        if (serializedMap == null || serializedMap.isEmpty()) {
+            return new HashMap<String, String>();
+        } else {
+            XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMap.getBytes()));
+            Map<String, String> parsedMap = (Map<String, String>) xmlDecoder.readObject();
+            return parsedMap;
+        }
     }
 
     @Override
@@ -265,7 +302,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "LOCAL_TASKS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
-                s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40), action varchar(40), actionStatus varchar(40))");
+                s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40), action varchar(40), actionStatus varchar(40), inputVariables long varchar, outputVariables long varchar)");
                 s.closeOnCompletion();
                 conn.commit();
                 log.info("Created table LOCAL_TASKS");
