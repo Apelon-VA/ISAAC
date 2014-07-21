@@ -963,6 +963,14 @@ public class ListBatchViewController
 		}
 	}
 	
+	protected void addConcept(int id) {
+		List<Integer> idList = new ArrayList<>();
+		
+		idList.add(id);
+		
+		addConcepts(idList);
+	}
+
 	protected void addConcepts(List<Integer> nids) {
 		List<SimpleDisplayConcept> displayConcepts = new ArrayList<>();
 		

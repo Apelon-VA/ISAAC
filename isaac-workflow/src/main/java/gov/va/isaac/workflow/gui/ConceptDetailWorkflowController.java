@@ -22,11 +22,11 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.dialog.BusyPopover;
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
@@ -160,7 +160,7 @@ public class ConceptDetailWorkflowController
 		// TODO: determine how creation of request should be reflected in GUI
 		// TODO: replace calls to System.out with calls to logger
 		System.out.println("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
-		ProcessInstanceCreationRequest createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName());
+		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName());
 		System.out.println("Created ProcessInstanceCreationRequest: " + createdRequest);
 	}
 

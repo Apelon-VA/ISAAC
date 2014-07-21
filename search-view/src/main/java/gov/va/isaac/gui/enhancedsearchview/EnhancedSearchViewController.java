@@ -24,6 +24,8 @@ import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
+import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
@@ -45,7 +47,9 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javafx.application.Platform;
@@ -77,6 +81,7 @@ import javafx.stage.Window;
 import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.slf4j.Logger;
@@ -90,6 +95,11 @@ import org.slf4j.LoggerFactory;
  */
 public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedSearchViewController.class);
+
+	enum Tasks {
+		SEARCH,
+		WORKFLOW_EXPORT
+	}
 
 	enum AggregationType {
 		CONCEPT("Concept"),
@@ -114,12 +124,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
 	@FXML private Button exportSearchResultsToListBatchViewButton;
+	@FXML private Button exportSearchResultsToWorkflowButton;
     @FXML private ProgressIndicator searchProgress;
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
+    //private TaskHandle taskHandle = null;
 
 	private Window windowForTableViewExportDialog;
+
+	ConceptWorkflowServiceI conceptWorkflowService;
 	
 	public static EnhancedSearchViewController init() throws IOException {
 		// Load FXML
@@ -136,12 +150,15 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! pane.getStylesheets().contains(styleSheet)) {
 			pane.getStylesheets().add(styleSheet);
 		}
 
+		initializeWorkflowServices();
+				 
         final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
         searchProgress.visibleProperty().bind(searchRunning);
         searchButton.disableProperty().bind(searchTextValid.not());
@@ -152,7 +169,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
-		
+		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
+
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
                  ssh.cancel();
@@ -186,7 +204,54 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 		});
 	}
+	
+	// TODO: This doesn't make sense here.  Should be exported to listView, then Workflow
+	private void exportSearchResultsToWorkflow() {
+		initializeWorkflowServices();
 
+		// Use HashSet to ensure that only one workflow is created for each concept
+		if (searchResultsTable.getItems().size() > 0) {
+			conceptWorkflowService.synchronizeWithRemote();
+		}
+		
+		Set<Integer> concepts = new HashSet<>();
+		for (CompositeSearchResult result : searchResultsTable.getItems()) {
+			if (! concepts.contains(result.getConceptNid())) {
+				concepts.add(result.getConceptNid());
+				
+				exportSearchResultToWorkflow(result.getConcept());
+			}
+		}
+
+		if (searchResultsTable.getItems().size() > 0) {
+			conceptWorkflowService.synchronizeWithRemote();
+		}
+	}
+
+	// TODO: this should be invoked by context menu
+	private void exportSearchResultToWorkflow(ConceptVersionBI conceptVersion) {
+		initializeWorkflowServices();
+		
+		// TODO: eliminate hard-coding of processName "terminology-authoring.test1"
+		final String processName = "terminology-authoring.test1";
+		// TODO: eliminate hard-coding of userName
+		final String userName = "alejandro";
+		String preferredDescription = null;
+		try {
+			preferredDescription = conceptVersion.getPreferredDescription().getText();
+		} catch (IOException | ContradictionException e1) {
+			String title = "Failed creating new concept workflow";
+			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion (nid=" + conceptVersion.getConceptNid() + ", uuid=" + conceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName();
+			LOG.error(title, e1);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
+			e1.printStackTrace();
+		}
+		
+		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + processName + "\")");
+		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName);
+		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
+	}
+	
 	private void exportSearchResultsToListBatchView() {
 		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
 		
@@ -214,29 +279,31 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	
 	@Override
 	public void taskComplete(long taskStartTime, Integer taskId) {
-        // Run on JavaFX thread.
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (! ssh.isCancelled()) {
-                        searchResultsTable.getItems().addAll(ssh.getResults());
+		if (taskId == Tasks.SEARCH.ordinal()) {
+			// Run on JavaFX thread.
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						if (! ssh.isCancelled()) {
+							searchResultsTable.getItems().addAll(ssh.getResults());
 
-                		refreshTotalResultsDisplayedLabel();
-                    }
-                } catch (Exception ex) {
-                    String title = "Unexpected Search Error";
-                    LOG.error(title, ex);
-                    AppContext.getCommonDialogs().showErrorDialog(title,
-                            "There was an unexpected error running the search",
-                            ex.toString());
-                    searchResultsTable.getItems().clear();
-            		refreshTotalResultsDisplayedLabel();
-                } finally {
-                    searchRunning.set(false);
-                }
-            }
-        });
+							refreshTotalResultsDisplayedLabel();
+						}
+					} catch (Exception ex) {
+						String title = "Unexpected Search Error";
+						LOG.error(title, ex);
+						AppContext.getCommonDialogs().showErrorDialog(title,
+								"There was an unexpected error running the search",
+								ex.toString());
+						searchResultsTable.getItems().clear();
+						refreshTotalResultsDisplayedLabel();
+					} finally {
+						searchRunning.set(false);
+					}
+				}
+			});
+		}
     }
 
 	// MyTableCellCallback adds hooks for double-click and/or other mouse actions to String cells
@@ -559,6 +626,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		refreshTotalResultsDisplayedLabel();
 	}
 	
+	private void initializeWorkflowServices() {
+		if (conceptWorkflowService == null) {
+			conceptWorkflowService = AppContext.getService(ConceptWorkflowServiceI.class);
+		}
+		
+		assert conceptWorkflowService != null;
+	}
+	
 	private void initializeAggregationTypeComboBox() {
 		assert aggregationTypeComboBox != null : "fx:id=\"aggregationTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
@@ -615,14 +690,22 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
         // "we get called back when the results are ready."
         switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
         case  CONCEPT:
-            ssh = SearchHandler.conceptSearch(searchText.getText(), this);
+        {
+        	SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(searchText.getText());
+        	builder.setCallback(this);
+        	builder.setTaskId(Tasks.SEARCH.ordinal());
+            ssh = SearchHandler.doConceptSearch(builder);
             break;
+        }
         case DESCRIPTION:
+        {
         	SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(searchText.getText());
         	builder.setCallback(this);
         	builder.setComparator(new CompositeSearchResultComparator());
+        	builder.setTaskId(Tasks.SEARCH.ordinal());
             ssh = SearchHandler.doDescriptionSearch(builder);
             break;
+        }
             
             default:
     			String title = "Unsupported Aggregation Type";
