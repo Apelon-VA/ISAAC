@@ -292,44 +292,46 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				@Override
 				public void handle(MouseEvent event) {
 					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
-					ContextMenu cm = new ContextMenu();
-					CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
+					if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
+						ContextMenu cm = new ContextMenu();
+						CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
 
-					CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
-						@Override
-						public String getString() {
-							return c.getItem().toString();
-						}
-						@Override
-						public ObjectContainer getObjectContainer() {
-							return new ObjectContainer(c.getItem());
-						}
-					};
-		            CommonMenus.addCommonMenus(cm, new SimpleBooleanProperty(true), dp, new ConceptIdProvider() {
-		            	@Override
-		                public String getSctId() {
-		            		String sctId = ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(result.getConcept())).trim();
-		            		LOG.debug("Using context menu to copy SCTID \"" + sctId + "\"");
+						CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+							@Override
+							public String getString() {
+								return c.getItem().toString();
+							}
+							@Override
+							public ObjectContainer getObjectContainer() {
+								return new ObjectContainer(c.getItem());
+							}
+						};
+						CommonMenus.addCommonMenus(cm, new SimpleBooleanProperty(true), dp, new ConceptIdProvider() {
+							@Override
+							public String getSctId() {
+								String sctId = ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(result.getConcept())).trim();
+								LOG.debug("Using context menu to copy SCTID \"" + sctId + "\"");
 
-		            		return sctId;
-		                }
-		                @Override
-		                public UUID getUUID() {
-		                	UUID uuid = result.getConcept().getPrimordialUuid();
-		            		LOG.debug("Using context menu to copy UUID \"" + uuid + "\"");
+								return sctId;
+							}
+							@Override
+							public UUID getUUID() {
+								UUID uuid = result.getConcept().getPrimordialUuid();
+								LOG.debug("Using context menu to copy UUID \"" + uuid + "\"");
 
-		                    return uuid;
-		                }
-		                @Override
-		                public Integer getNid() {
-		                	int nid = result.getConceptNid();
-		            		LOG.debug("Using context menu to copy NID " + nid);
+								return uuid;
+							}
+							@Override
+							public Integer getNid() {
+								int nid = result.getConceptNid();
+								LOG.debug("Using context menu to copy NID " + nid);
 
-		                    return nid;
-		                }
-		            });
+								return nid;
+							}
+						});
 
-		            c.setContextMenu(cm);
+						c.setContextMenu(cm);
+					}
 				}
 			});
 				
@@ -396,8 +398,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					public void handle(MouseEvent event) {
 						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
 				
-						Tooltip tooltip = new Tooltip(c.getItem().toString());
-						Tooltip.install(cell, tooltip);
+						if (c != null && c.getItem() != null) {
+							Tooltip tooltip = new Tooltip(c.getItem().toString());
+							Tooltip.install(cell, tooltip);
+						}
 					}
 				});
 				
@@ -422,29 +426,31 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					@Override
 					public void handle(MouseEvent event) {
 						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
-						
-						CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
-						StringBuilder buffer = new StringBuilder();
-						String fsn = null;
-						try {
-							fsn = result.getConcept().getFullySpecifiedDescription().getText().trim();
-						} catch (IOException | ContradictionException e) {
-							String title = "Failed getting FSN";
-							String msg = "Failed getting fully specified description";
-							LOG.error(title);
-							AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
-							e.printStackTrace();
+
+						if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
+							CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
+							StringBuilder buffer = new StringBuilder();
+							String fsn = null;
+							try {
+								fsn = result.getConcept().getFullySpecifiedDescription().getText().trim();
+							} catch (IOException | ContradictionException e) {
+								String title = "Failed getting FSN";
+								String msg = "Failed getting fully specified description";
+								LOG.error(title);
+								AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+								e.printStackTrace();
+							}
+
+							List<DescriptionAnalogBI<?>> matchingDescComponents = new ArrayList<DescriptionAnalogBI<?>>(result.getMatchingDescriptionComponents());
+							Collections.sort(matchingDescComponents, new DescriptionAnalogBITypeComparator());
+							for (DescriptionAnalogBI<?> descComp : matchingDescComponents) {
+								String type = WBUtility.getConPrefTerm(descComp.getTypeNid());
+								buffer.append(type + ": " + descComp.getText() + "\n");
+							}
+							Tooltip tooltip = new Tooltip("Matching descriptions for \"" + fsn + "\":\n" + buffer.toString());
+
+							Tooltip.install(cell, tooltip);
 						}
-						
-						List<DescriptionAnalogBI<?>> matchingDescComponents = new ArrayList<DescriptionAnalogBI<?>>(result.getMatchingDescriptionComponents());
-						Collections.sort(matchingDescComponents, new DescriptionAnalogBITypeComparator());
-						for (DescriptionAnalogBI<?> descComp : matchingDescComponents) {
-							String type = WBUtility.getConPrefTerm(descComp.getTypeNid());
-							buffer.append(type + ": " + descComp.getText() + "\n");
-						}
-						Tooltip tooltip = new Tooltip("Matching descriptions for \"" + fsn + "\":\n" + buffer.toString());
-						
-						Tooltip.install(cell, tooltip);
 					}
 				});
 				

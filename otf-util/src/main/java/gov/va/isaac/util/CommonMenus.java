@@ -26,6 +26,8 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javafx.beans.property.BooleanProperty;
@@ -84,12 +86,13 @@ public class CommonMenus
 			return string;
 		}
 	}
-
+	
+	
 	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, final ConceptIdProvider idProvider)
 	{
 		addCommonMenus(cm, invisibleWhenFalse, null, idProvider);
 	}
-	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final ConceptIdProvider idProvider)
+	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, final DataProvider dataProvider, final ConceptIdProvider idProvider)
 	{
 		// Menu item to show concept details.
 		if (idProvider != null && idProvider.getUUID() != null) {
@@ -200,19 +203,33 @@ public class CommonMenus
 			cm.getItems().add(newWorkflowInstanceItem);
 		}
 
-		Menu copyMenu = new Menu("Copy");
+		// Get copy menu items
+		// If no copyable data avail, then don't add menu
+		// If no other ContextMenu items, then add as items, not as submenu
+		List<MenuItem> copyMenuItems = getCopyMenuItems(invisibleWhenFalse, dataProvider, idProvider);
 		
-		addCopyMenuItems(copyMenu, invisibleWhenFalse, dataProvider, idProvider);
-		
-		// Only add copyMenu if it has usable items
-		if (copyMenu.getItems().size() > 0) {
-			cm.getItems().add(copyMenu);
+		if (cm.getItems().size() > 0) {
+			// ContextMenu already has view actions, so possibly add submenu
+			if (copyMenuItems.size() > 0) {
+				// Copy menu items exist, so add in submenu
+				Menu copyMenu = new Menu("Copy");
+				copyMenu.getItems().addAll(copyMenuItems);
+				cm.getItems().add(copyMenu);
+			}
+		} else {
+			// ContextMenu has no view actions, so possibly add items directly
+			if (copyMenuItems.size() > 0) {
+				// Copy menu items exist, so add directly to ContextMenu
+				cm.getItems().addAll(copyMenuItems);
+			}
 		}
 	}
 	
-	private static void addCopyMenuItems(Menu copyMenu, BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final ConceptIdProvider idProvider) {
+	private static List<MenuItem> getCopyMenuItems(BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final ConceptIdProvider idProvider) {
 		// The following code is for the Copy submenu
 
+		List<MenuItem> menuItems = new ArrayList<>();
+		
 		SeparatorMenuItem separator = new SeparatorMenuItem();
 		
 		if (dataProvider != null) {
@@ -232,7 +249,7 @@ public class CommonMenus
 					copyTextItem.visibleProperty().bind(invisibleWhenFalse);
 				}
 
-				copyMenu.getItems().add(copyTextItem);
+				menuItems.add(copyTextItem);
 			}
 			
 			if (dataProvider.getObjectContainer() != null) {
@@ -252,7 +269,7 @@ public class CommonMenus
 					copyContentItem.visibleProperty().bind(invisibleWhenFalse);
 				}
 
-				copyMenu.getItems().add(copyContentItem);
+				menuItems.add(copyContentItem);
 			}
 		}
 		
@@ -279,10 +296,10 @@ public class CommonMenus
 			}
 
 			// Add menu separator IFF there were non-ID items AND this is the first ID item
-			if (copyMenu.getItems().size() > 0 && ! copyMenu.getItems().contains(separator)) {
-				copyMenu.getItems().add(separator);
+			if (menuItems.size() > 0 && ! menuItems.contains(separator)) {
+				menuItems.add(separator);
 			}
-			copyMenu.getItems().add(copySctIdMenuItem);
+			menuItems.add(copySctIdMenuItem);
 		}
 		
 		// Menu item to copy UUID.
@@ -307,10 +324,10 @@ public class CommonMenus
 			}
 			
 			// Add menu separator IFF there were non-ID items AND this is the first ID item
-			if (copyMenu.getItems().size() > 0 && ! copyMenu.getItems().contains(separator)) {
-				copyMenu.getItems().add(separator);
+			if (menuItems.size() > 0 && ! menuItems.contains(separator)) {
+				menuItems.add(separator);
 			}
-			copyMenu.getItems().add(copyUuidMenuItem);
+			menuItems.add(copyUuidMenuItem);
 		}
 
 		if (idProvider != null && idProvider.getNid() != null) {
@@ -333,10 +350,12 @@ public class CommonMenus
 			}
 			
 			// Add menu separator IFF there were non-ID items AND this is the first ID item
-			if (copyMenu.getItems().size() > 0 && ! copyMenu.getItems().contains(separator)) {
-				copyMenu.getItems().add(separator);
+			if (menuItems.size() > 0 && ! menuItems.contains(separator)) {
+				menuItems.add(separator);
 			}
-			copyMenu.getItems().add(copyNidMenuItem);
+			menuItems.add(copyNidMenuItem);
 		}
+		
+		return menuItems;
 	}
 }
