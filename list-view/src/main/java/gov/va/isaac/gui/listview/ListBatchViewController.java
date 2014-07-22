@@ -22,11 +22,11 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
@@ -141,6 +141,8 @@ public class ListBatchViewController
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 	private int uncommittedCount = 0;
 
+	private PopupConceptViewI conceptView;
+
 	protected static ListBatchViewController init() throws IOException
 	{
 		// Load from FXML.
@@ -153,6 +155,8 @@ public class ListBatchViewController
 	@FXML
 	public void initialize()
 	{
+		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		
 		operationsList.getChildren().add(new OperationNode(this));
 
 		final ConceptNode cn = new ConceptNode(null, false);
@@ -232,11 +236,8 @@ public class ListBatchViewController
 					public void handle(MouseEvent event) {
 						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
 							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
-							//TODO this is the code that should be here, but EnhancedConceptView is broken at the moment, and doesn't follow the API  
-//							ConceptViewI cv = AppContext.getService(ConceptViewI.class, "ModernStyle");
-//							cv.setConcept(con.getNid());
-//							conceptDisplayTab.setContent(cv.getView());
-							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));
+							conceptView.setConcept(con.getNid());
+							conceptDisplayTab.setContent(conceptView.getView());
 						}
 					}
 				});
@@ -293,8 +294,8 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						//TODO fix this API to use the named API, fix the mess on popup vs view
-						AppContext.getService(EnhancedConceptView.class).setConcept(row.getItem().getNid());
+						conceptView.setConcept(row.getItem().getNid());
+						conceptView.showView(rootPane.getScene().getWindow());
 					}
 				});
 				MenuItem removeItem = new MenuItem("Delete");

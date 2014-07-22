@@ -20,8 +20,8 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
@@ -29,8 +29,10 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
 import java.util.UUID;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -57,6 +59,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesChronicleDdo;
@@ -97,14 +100,18 @@ public class SnomedConceptViewController {
 
     private SctTreeViewIsaacView sctTree;
     
+    private UUID conceptUuid;
+    private int conceptNid = 0;
+    
     public Region getRootNode()
     {
         return anchorPane;
     }
 
     public void setConcept(ConceptChronicleDdo concept) {
+    	conceptUuid = concept.getPrimordialUuid();
 
-        // Update text of labels.
+    	// Update text of labels.
         ConceptAttributesChronicleDdo attributeChronicle = concept.getConceptAttributes();
         final ConceptAttributesVersionDdo conceptAttributes = attributeChronicle.getVersions().get(attributeChronicle.getVersions().size() - 1);
         conceptDefinedLabel.setText(conceptAttributes.isDefined() + "");
@@ -293,7 +300,19 @@ public class SnomedConceptViewController {
         return fsnLabel.getText();
     }
 
-    private void setupTable(String[] columns, TableView<StringWithRefList> tableView,
+    public UUID getConceptUuid() {
+		return conceptUuid;
+	}
+
+	public int getConceptNid() {
+		if (conceptNid == 0) {
+			conceptNid = WBUtility.getConceptVersion(conceptUuid).getNid();
+		}
+		
+		return conceptNid;
+	}
+
+	private void setupTable(String[] columns, TableView<StringWithRefList> tableView,
             Callback<TableColumn.CellDataFeatures<StringWithRefList, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory,
             Callback<TableColumn<StringWithRefList, StringWithRef>, TableCell<StringWithRefList, StringWithRef>> cellFactory) {
 

@@ -1,3 +1,21 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *	 http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
@@ -5,8 +23,7 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
-import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 
 import java.util.Stack;
 import java.util.UUID;
@@ -22,6 +39,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -29,7 +47,6 @@ import javafx.stage.Stage;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,19 +80,19 @@ public abstract class BaseConceptViewController {
 	
 	protected ConceptVersionBI con;
 	private BooleanBinding prevButtonQueueFilled;
-	private ViewType currentView;
+	private ConceptViewMode currentView;
 
-	void setConcept(ConceptChronicleDdo concept, ViewType view, Stack<Integer> stack) {
+	void setConcept(UUID currentCon, ConceptViewMode view, Stack<Integer> stack) {
 		initializeWindow(stack, view);
-		setConceptDetails(concept);
+		setConceptInfo(currentCon);
 	}
 	
-	void setConcept(ConceptChronicleDdo concept, ViewType view) {
+	void setConcept(UUID currentCon, ConceptViewMode view) {
 		intializePane(view);
-		setConceptDetails(concept);
+		setConceptInfo(currentCon);
 	}
 	
-	abstract void setConceptDetails(ConceptChronicleDdo concept);
+	abstract void setConceptInfo(UUID currentCon);
 
 	Rectangle createAnnotRectangle(VBox vbox, ComponentVersionBI comp) {
 		Rectangle rec = new Rectangle(5, 5);
@@ -88,7 +105,7 @@ public abstract class BaseConceptViewController {
 		return rec;
 	}
 
-	void initializeWindow(Stack<Integer> stack, ViewType view) {
+	void initializeWindow(Stack<Integer> stack, ConceptViewMode view) {
 		commonInit(view);
 		
 		labelHelper.setPrevConStack(stack);
@@ -121,7 +138,7 @@ public abstract class BaseConceptViewController {
 			public void handle(ActionEvent arg0) {
 				
 				int prevConNid = labelHelper.getPreviousConceptStack().pop();
-				AppContext.getService(EnhancedConceptView.class).changeConcept(((Stage)parentPane.getScene().getWindow()), prevConNid, currentView);
+				AppContext.getService(EnhancedConceptView.class).setConcept(prevConNid);
 			}
 		});
 		
@@ -147,19 +164,19 @@ public abstract class BaseConceptViewController {
 		detailedRadio.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				AppContext.getService(EnhancedConceptView.class).changeViewType(((Stage)parentPane.getScene().getWindow()), con.getNid(), ViewType.DETAIL_VIEW);
+				AppContext.getService(EnhancedConceptView.class).setViewMode(ConceptViewMode.DETAIL_VIEW);
 			}
 		});
 
 		basicRadio.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				AppContext.getService(EnhancedConceptView.class).changeViewType(((Stage)parentPane.getScene().getWindow()), con.getNid(), ViewType.SIMPLE_VIEW);
+				AppContext.getService(EnhancedConceptView.class).setViewMode(ConceptViewMode.SIMPLE_VIEW);
 			}
 		});
 	}
 	
-	private void commonInit(ViewType view) {
+	private void commonInit(ConceptViewMode view) {
 		// TODO (Until handled, make disabled)
 		modifyButton.setDisable(true);
 		historicalRadio.setDisable(true);
@@ -172,7 +189,7 @@ public abstract class BaseConceptViewController {
 		labelHelper.setPane(parentPane);
 	}
 
-	void intializePane(ViewType view) {
+	void intializePane(ConceptViewMode view) {
 		commonInit(view);
 		closeButton.setVisible(false);
 		previousButton.setVisible(false);
@@ -188,15 +205,28 @@ public abstract class BaseConceptViewController {
 		}
 	}
 	
-	public void setViewType(ViewType view) {
+	public void setViewType(ConceptViewMode view) {
 		currentView = view;
-		labelHelper.setCurrentView(view);
+//		labelHelper.setCurrentMode(view);
 		
-		if (view == ViewType.SIMPLE_VIEW) {
+		if (view == ConceptViewMode.SIMPLE_VIEW) {
 			basicRadio.setSelected(true);
-		} else if (view == ViewType.DETAIL_VIEW) {
+		} else if (view == ConceptViewMode.DETAIL_VIEW) {
 			detailedRadio.setSelected(true);
 		}
 		
 	}
+
+	public ConceptViewMode getViewMode() {
+		return currentView;
+	}
+	
+	public String getTitle() {
+        return fsnLabel.getText();
+    }
+	
+    public Region getRootNode()
+    {
+        return parentPane;
+    }
 }

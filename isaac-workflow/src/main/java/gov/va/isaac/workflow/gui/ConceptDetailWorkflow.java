@@ -25,6 +25,7 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.util.WBUtility;
 
@@ -195,5 +196,29 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 
 	public Region getView() {
 		return controller_.getRootNode();
+	}
+
+	@Override
+	public UUID getConceptUuid() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getConceptNid() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setViewMode(ConceptViewMode mode) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public ConceptViewMode getViewMode() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
