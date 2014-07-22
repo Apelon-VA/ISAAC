@@ -16,25 +16,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+
+/**
+ * ConceptWorkflowServiceI
+ * 
+ * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
+ */
+package gov.va.isaac.interfaces.workflow;
+
+import java.util.UUID;
 
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ListBatchViewI
+ * ConceptWorkflowServiceI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- */
-
-import java.util.List;
-
-/**
- * @author joel
  *
  */
 @Contract
-public interface ListBatchViewI extends DockedViewI {
+public interface ConceptWorkflowServiceI {
+	public abstract void synchronizeWithRemote();
 
-	public abstract void addConcepts(List<Integer> nids);
-	public abstract void addConcept(int nid);
+	public abstract ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(
+			String preferredDescription,
+			UUID UUID,
+			String userName,
+			String processName);
 }
