@@ -20,13 +20,13 @@ package gov.va.isaac.workflow.gui;
 
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.dialog.BusyPopover;
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
@@ -88,7 +88,7 @@ public class ConceptDetailWorkflowController
 	private ConceptVersionBI conceptVersion;
 
 	// Embedded concept detail pane
-	EnhancedConceptView conceptView;
+	PopupConceptViewI conceptView;
 	
 	@FXML private BorderPane borderPane;
 	@FXML private ScrollPane conceptScrollPane;
@@ -160,7 +160,7 @@ public class ConceptDetailWorkflowController
 		// TODO: determine how creation of request should be reflected in GUI
 		// TODO: replace calls to System.out with calls to logger
 		System.out.println("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
-		ProcessInstanceCreationRequest createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName());
+		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName());
 		System.out.println("Created ProcessInstanceCreationRequest: " + createdRequest);
 	}
 
@@ -178,7 +178,7 @@ public class ConceptDetailWorkflowController
 		
 		// This code only for embedded concept detail view
 		// Use H2K to find and initialize conceptView as a ConceptView
-		conceptView = AppContext.getService(EnhancedConceptView.class);
+		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
 
 		// Force single selection
 		actionComboBox.getSelectionModel().selectFirst();
@@ -353,7 +353,8 @@ public class ConceptDetailWorkflowController
 //		}
 			
 		// loadConcept() must not be called before setConcept().  conceptVersion must not be null  
-		conceptScrollPane.setContent((conceptView.getConceptViewerPanel(conceptVersion.getNid())));
+		conceptView.setConcept(conceptVersion.getNid());
+		conceptScrollPane.setContent(conceptView.getView());
 	}
 	
 	// Refresh all content

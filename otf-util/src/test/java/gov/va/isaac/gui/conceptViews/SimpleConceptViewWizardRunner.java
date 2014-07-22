@@ -55,6 +55,7 @@ public class SimpleConceptViewWizardRunner extends Application
 		primaryStage.setScene(new Scene(new Label("hello world"), 200, 100));
 		primaryStage.show();
 		conView.setConcept(UUID.fromString("dcf9db9f-7d84-367f-85e1-7b51c4d962f6"));
+		conView.showView(primaryStage);
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException

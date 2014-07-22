@@ -24,12 +24,12 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
-import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.WBUtility;
 //import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
 
-
 import java.util.Stack;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -40,7 +40,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -61,7 +61,9 @@ public class ConceptViewerLabelHelper {
 	
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 
-	private ViewType currentView;
+//	private ConceptViewMode currentMode;
+
+	private PopupConceptViewI conceptView = null;
 
 	// Create/Initialize without refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
@@ -193,7 +195,10 @@ public class ConceptViewerLabelHelper {
 				public void handle(ActionEvent event)
 				{
 					previousConceptStack.push(currentConceptNid);
-					AppContext.getService(EnhancedConceptView.class).changeConcept(((Stage)pane.getScene().getWindow()), refNid, currentView);
+					if (conceptView == null) {
+						conceptView = AppContext.getService(EnhancedConceptView.class);
+					}
+					conceptView.setConcept(refNid);
 				}
 			});
 			
@@ -221,7 +226,12 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				AppContext.getService(EnhancedConceptView.class).setConcept(refNid);
+				if (conceptView == null) {
+					conceptView = AppContext.getService(EnhancedConceptView.class);
+				}
+				
+				conceptView.setConcept(refNid);
+				conceptView.showView(pane.getScene().getWindow());
 			}
 		});
 		
@@ -249,7 +259,7 @@ public class ConceptViewerLabelHelper {
 		previousConceptStack = stack;
 	}
 
-	public void setCurrentView(ViewType view) {
-		currentView = view;		
-	}
+//	public void setCurrentView(ConceptViewMode view) {
+//		currentMode = view;		
+//	}
 }

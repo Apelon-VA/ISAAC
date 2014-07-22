@@ -30,7 +30,7 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface ConceptViewI extends ViewI
-{
+{   
 	/**
 	 * Update the view to show the selected concept.
 	 * @param conceptUuid
@@ -42,4 +42,28 @@ public interface ConceptViewI extends ViewI
 	 * @param conceptUuid
 	 */
 	public void setConcept(int conceptNid);
+	
+	/**
+	 * Update the view to get the selected concept as UUID.
+	 * @param conceptUuid
+	 */
+	public UUID getConceptUuid();
+	
+	/**
+	 * Update the view to get the selected concept as int.
+	 * @param conceptUuid
+	 */
+	public int getConceptNid();
+
+	/**
+	 * Update the view to show the selected concept.
+	 * @param conceptUuid
+	 */
+	public void setViewMode(ConceptViewMode mode);
+
+	/**
+	 * Update the view to show the selected concept.
+	 * @param conceptUuid
+	 */
+	public ConceptViewMode getViewMode();
 }

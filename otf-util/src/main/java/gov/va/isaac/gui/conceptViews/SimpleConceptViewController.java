@@ -3,21 +3,24 @@ package gov.va.isaac.gui.conceptViews;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
-import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +67,8 @@ public class SimpleConceptViewController extends BaseConceptViewController {
     }
 	
 	@Override
-	void setConceptDetails(ConceptChronicleDdo concept) {	
-		con = WBUtility.getConceptVersion(concept.getPrimordialUuid());
+	void setConceptInfo(UUID currentCon) {	
+		con = WBUtility.getConceptVersion(currentCon);
 		
 		try {
 			// FSN
@@ -169,9 +172,5 @@ public class SimpleConceptViewController extends BaseConceptViewController {
 				relTypeVBox.getChildren().add(relTypeLabel);
 			}
 		}
-	}
-
-	String getTitle() {
-		return "Enhanced Concept View";
 	}
 }
