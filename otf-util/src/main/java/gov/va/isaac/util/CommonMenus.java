@@ -144,7 +144,7 @@ public class CommonMenus
 
 	public static class CommonMenuBuilder implements CommonMenuBuilderI {
 		CommonMenuItem[] menuItemsToExclude;
-		MergeMode mergeMode = MergeMode.ADD_TO_EXISTING;
+		MergeMode mergeMode = MergeMode.REPLACE_EXISTING;
 		BooleanProperty invisibleWhenfalse;
 
 		public static CommonMenuBuilderI newInstance() {

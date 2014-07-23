@@ -390,7 +390,6 @@ public class ListBatchViewController
 								}
 							};
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
-							menuBuilder.setMergeMode(CommonMenus.MergeMode.REPLACE_EXISTING);
 							menuBuilder.setMenuItemsToExclude(CommonMenus.CommonMenuItem.LIST_VIEW);
 							CommonMenus.addCommonMenus(r.getContextMenu(), menuBuilder, dp, nidProvider);
 						}
