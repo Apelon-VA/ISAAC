@@ -1,29 +1,11 @@
-/**
- * Copyright Notice
- *
- * This is a work of the U.S. Government and is not subject to copyright 
- * protection in the United States. Foreign copyrights may apply.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *	 http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 
 import java.util.Stack;
 import java.util.UUID;
@@ -38,23 +20,19 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseConceptViewController {
-	private static final Logger LOG = LoggerFactory.getLogger(BaseConceptViewController.class);
+public class EnhancedConceptViewController {
+	@FXML protected AnchorPane simpleConceptPane;
 
-	@FXML protected AnchorPane parentPane;
-	@FXML private BorderPane baseConceptBorderPane;
+	// Descriptions & Relationships
+	@FXML private VBox termVBox;
+	@FXML private VBox relVBox;
 
 	// Top Labels
 	@FXML protected Label releaseIdLabel;
@@ -75,34 +53,39 @@ public abstract class BaseConceptViewController {
 	@FXML protected Button modifyButton;
 	@FXML protected Button previousButton;
 	
-	protected ConceptViewerLabelHelper labelHelper = new ConceptViewerLabelHelper();
+	protected ConceptViewerLabelHelper labelHelper;
 	protected ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	
-	protected ConceptVersionBI con;
+	protected UUID conceptUuid;
 	private BooleanBinding prevButtonQueueFilled;
-	private ConceptViewMode currentView;
+	
+	public PopupConceptViewI conceptView;
+	private ConceptViewMode currentMode;
 
-	void setConcept(UUID currentCon, ConceptViewMode view, Stack<Integer> stack) {
-		initializeWindow(stack, view);
-		setConceptInfo(currentCon);
+	private ConceptValueCreator creator;
+
+	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
+
+	AnchorPane getRootNode() {
+		return simpleConceptPane;
+	}
+
+	public void setConceptView(EnhancedConceptView enhancedConceptView) {
+		conceptView = enhancedConceptView;		
+	}
+
+	void setConcept(UUID currentCon, ConceptViewMode mode, Stack<Integer> stack) {
+		initializeWindow(stack, mode);
+		clearContents();
+		conceptUuid = currentCon;
+		creator.setConceptValues(currentCon, mode);
 	}
 	
-	void setConcept(UUID currentCon, ConceptViewMode view) {
-		intializePane(view);
-		setConceptInfo(currentCon);
-	}
-	
-	abstract void setConceptInfo(UUID currentCon);
-
-	Rectangle createAnnotRectangle(VBox vbox, ComponentVersionBI comp) {
-		Rectangle rec = new Rectangle(5, 5);
-		rec.setFill(Color.BLACK);
-		
-		rec.setVisible(!ConceptViewerHelper.getAnnotations(comp).isEmpty());
-		
-		vbox.getChildren().add(rec);
-		
-		return rec;
+	void setConcept(UUID currentCon, ConceptViewMode mode) {
+		intializePane(mode);
+		conceptUuid = currentCon;
+		clearContents();
+		creator.setConceptValues(currentCon, mode);
 	}
 
 	void initializeWindow(Stack<Integer> stack, ConceptViewMode view) {
@@ -114,17 +97,16 @@ public abstract class BaseConceptViewController {
 		closeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				((Stage)parentPane.getScene().getWindow()).close();
+				((Stage)getRootNode().getScene().getWindow()).close();
 			}
 		});
 		
 		taxonomyButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				UUID id = con.getPrimordialUuid();
-				if (id != null)
+				if (conceptUuid != null)
 				{
-					AppContext.getService(TaxonomyViewI.class).locateConcept(id, null);
+					AppContext.getService(TaxonomyViewI.class).locateConcept(conceptUuid, null);
 				}
 				else
 				{
@@ -138,7 +120,7 @@ public abstract class BaseConceptViewController {
 			public void handle(ActionEvent arg0) {
 				
 				int prevConNid = labelHelper.getPreviousConceptStack().pop();
-				AppContext.getService(EnhancedConceptView.class).setConcept(prevConNid);
+				conceptView.setConcept(prevConNid);
 			}
 		});
 		
@@ -152,41 +134,52 @@ public abstract class BaseConceptViewController {
 		};
 		previousButton.disableProperty().bind(prevButtonQueueFilled.not());
 
-		if (parentPane == null) {
-			LOG.error("parentPane is null");
+		if (getRootNode() == null) {
+			LOG.error("getRootNode() is null");
 		}
 		if (tooltipHelper == null) {
 			LOG.error("tooltipHelper is null");
 		}
-		parentPane.setOnKeyPressed(tooltipHelper.getCtrlKeyPressEventHandler());
-		parentPane.setOnKeyReleased(tooltipHelper.getCtrlKeyReleasedEventHandler());
+		getRootNode().setOnKeyPressed(tooltipHelper.getCtrlKeyPressEventHandler());
+		getRootNode().setOnKeyReleased(tooltipHelper.getCtrlKeyReleasedEventHandler());
 		
 		detailedRadio.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				AppContext.getService(EnhancedConceptView.class).setViewMode(ConceptViewMode.DETAIL_VIEW);
+				setViewMode(ConceptViewMode.DETAIL_VIEW);
 			}
 		});
 
 		basicRadio.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				AppContext.getService(EnhancedConceptView.class).setViewMode(ConceptViewMode.SIMPLE_VIEW);
+				setViewMode(ConceptViewMode.SIMPLE_VIEW);
 			}
 		});
 	}
 	
-	private void commonInit(ConceptViewMode view) {
+	public void setViewMode(ConceptViewMode mode) {
+		currentMode = mode;
+		clearContents();
+		creator.setConceptValues(conceptUuid, mode);
+	}
+
+	private void commonInit(ConceptViewMode mode) {
+		creator = new ConceptValueCreator(termVBox, relVBox, fsnAnnotVBox, conAnnotVBox, fsnLabel, releaseIdLabel, isPrimLabel);
+		
+		labelHelper = new ConceptViewerLabelHelper(conceptView);
+		labelHelper.setPane(getRootNode());
+		creator.setLabelHelper(labelHelper);
+		
+		setModeType(mode);
+
 		// TODO (Until handled, make disabled)
 		modifyButton.setDisable(true);
 		historicalRadio.setDisable(true);
-		
+
 		Tooltip notYetImplTooltip = new Tooltip("Not Yet Implemented");
 		modifyButton.setTooltip(notYetImplTooltip);
 		historicalRadio.setTooltip(notYetImplTooltip);
-		
-		setViewType(view);
-		labelHelper.setPane(parentPane);
 	}
 
 	void intializePane(ConceptViewMode view) {
@@ -197,36 +190,31 @@ public abstract class BaseConceptViewController {
 		taxonomyButton.setVisible(false);
 	}
 
-	String getBooleanValue(boolean val) {
-		if (val) {
-			return "true";
-		} else {
-			return "false";
-		}
-	}
-	
-	public void setViewType(ConceptViewMode view) {
-		currentView = view;
-//		labelHelper.setCurrentMode(view);
+	public void setModeType(ConceptViewMode mode) {
+		currentMode = mode;
 		
-		if (view == ConceptViewMode.SIMPLE_VIEW) {
+		if (mode == ConceptViewMode.SIMPLE_VIEW) {
 			basicRadio.setSelected(true);
-		} else if (view == ConceptViewMode.DETAIL_VIEW) {
+		} else if (mode == ConceptViewMode.DETAIL_VIEW) {
 			detailedRadio.setSelected(true);
 		}
-		
 	}
 
 	public ConceptViewMode getViewMode() {
-		return currentView;
+		return currentMode;
 	}
 	
 	public String getTitle() {
         return fsnLabel.getText();
     }
 	
-    public Region getRootNode()
-    {
-        return parentPane;
-    }
+	private void clearContents() {
+		releaseIdLabel.setText("");
+		isPrimLabel.setText("");
+		fsnLabel.setText("");
+		termVBox.getChildren().clear();
+		relVBox.getChildren().clear();
+		conAnnotVBox.getChildren().clear();
+		fsnAnnotVBox.getChildren().clear();
+	}
 }

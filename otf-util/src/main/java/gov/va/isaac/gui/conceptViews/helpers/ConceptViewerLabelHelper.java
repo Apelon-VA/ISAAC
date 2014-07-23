@@ -61,9 +61,11 @@ public class ConceptViewerLabelHelper {
 	
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 
-//	private ConceptViewMode currentMode;
-
 	private PopupConceptViewI conceptView = null;
+
+	public ConceptViewerLabelHelper(PopupConceptViewI conceptView) {
+		this.conceptView = conceptView;
+	}
 
 	// Create/Initialize without refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
@@ -187,7 +189,7 @@ public class ConceptViewerLabelHelper {
 		ContextMenu rtClickMenu = label.getContextMenu();
 		
 		if (isWindow) {
-			MenuItem viewItem = new MenuItem("View Concept");
+			MenuItem viewItem = new MenuItem("Chancge Concept");
 			viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
 			viewItem.setOnAction(new EventHandler<ActionEvent>()
 			{
@@ -196,9 +198,10 @@ public class ConceptViewerLabelHelper {
 				{
 					previousConceptStack.push(currentConceptNid);
 					if (conceptView == null) {
-						conceptView = AppContext.getService(EnhancedConceptView.class);
+						AppContext.getService(EnhancedConceptView.class).setConcept(refNid);
+					} else {
+						conceptView.setConcept(refNid);
 					}
-					conceptView.setConcept(refNid);
 				}
 			});
 			
@@ -226,12 +229,10 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				if (conceptView == null) {
-					conceptView = AppContext.getService(EnhancedConceptView.class);
-				}
-				
-				conceptView.setConcept(refNid);
-				conceptView.showView(pane.getScene().getWindow());
+				EnhancedConceptView cv = AppContext.getService(EnhancedConceptView.class);
+			
+				cv.setConcept(refNid);
+				cv.showView(pane.getScene().getWindow());
 			}
 		});
 		
@@ -259,7 +260,4 @@ public class ConceptViewerLabelHelper {
 		previousConceptStack = stack;
 	}
 
-//	public void setCurrentView(ConceptViewMode view) {
-//		currentMode = view;		
-//	}
 }

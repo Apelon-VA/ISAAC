@@ -65,81 +65,54 @@ import org.slf4j.LoggerFactory;
 @Service @Named(value="ModernStyle")
 @PerLookup
 public class EnhancedConceptView implements PopupConceptViewI {
-	private BaseConceptViewController controller = null;
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-	private SimpleConceptViewController simpleController = null;
-	private DetailConceptViewController detailController = null;
-	private ConceptViewMode currentMode = ConceptViewMode.SIMPLE_VIEW;
-	private static Stage conceptViewStage;
+	
+	private Stage s;
+	private EnhancedConceptViewController controller = null;
+
+	private Stack<Integer> conceptHistoryStack = new Stack<Integer>();
 	
 	private static int currentConNid;
 	private static UUID currentConUuid;
 	private static ConceptChronicleDdo currentCon;
-
-	private static Stack<Integer> conceptHistoryStack = new Stack<Integer>();
 	
 	private EnhancedConceptView() throws IOException {
 		//This is for HK2 to construct...
 		super();
 
 		// Load from FXML.
-		loadSimpleView();
-		loadDetailedView();
-		
-		controller = simpleController;
-	}
-
-	private void loadSimpleView() throws IOException {
 		URL resource = this.getClass().getResource("SimpleView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Region root = loader.load();
 		root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
-		simpleController = loader.getController();
-	}
-
-	private void loadDetailedView() throws IOException {
-		URL resource = this.getClass().getResource("DetailedView.fxml");
-		FXMLLoader loader = new FXMLLoader(resource);
-		Region root = loader.load();
-		root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
-		detailController = loader.getController();
+		controller = loader.getController();
+		controller.setConceptView(this);
 	}
 
 	private void setConcept(ConceptChronicleDdo concept) {
 		// Make sure in application thread.
 		FxUtils.checkFxUserThread();
-		controller.setConcept(concept.getPrimordialUuid(), currentMode, conceptHistoryStack);
-		
-//		if (currentConUuid == null || !currentConUuid.equals(concept.getPrimordialUuid())) {		
-//			if (currentConUuid != null) {
-//				updateViewContents();
-//			}
-//			
-//			currentConUuid = concept.getPrimordialUuid();
-//			currentConNid = WBUtility.getConceptVersion(currentConUuid).getNid();
-//		}
+		controller.setConcept(concept.getPrimordialUuid(), ConceptViewMode.SIMPLE_VIEW, conceptHistoryStack);
 	}
 
 	@Override
 	public void showView(Window parent) {
-		conceptViewStage = new Stage();
-		conceptViewStage.initOwner(parent);
-		conceptViewStage.initModality(Modality.NONE);
-		conceptViewStage.initStyle(StageStyle.DECORATED);
+		s = new Stage();
+		s.initOwner(parent);
+		s.initModality(Modality.NONE);
+		s.initStyle(StageStyle.DECORATED);
 
-		updateViewContents();
-		//doesn't come to the front unless you do this (on linux, at least)
-		Platform.runLater(() -> {conceptViewStage.toFront();});
-	}
-
-	private void updateViewContents() {
-		conceptViewStage.setScene(new Scene(getView()));
-		conceptViewStage.getScene().getStylesheets().add(EnhancedConceptView.class.getResource("/isaac-shared-styles.css").toString());
-		conceptViewStage.getIcons().add(Images.CONCEPT_VIEW.getImage());
+		s.setScene(new Scene(getView()));
+		
+		s.getScene().getStylesheets().add(EnhancedConceptView.class.getResource("/isaac-shared-styles.css").toString());
+		s.getIcons().add(Images.CONCEPT_VIEW.getImage());
 
 		// Title will change after concept is set.
-		conceptViewStage.setTitle(controller.getTitle());
-		conceptViewStage.show();
+		s.setTitle(controller.getTitle());
+		s.show();
+
+		//doesn't come to the front unless you do this (on linux, at least)
+		Platform.runLater(() -> {s.toFront();});
 	}
 
 	@Override
@@ -151,6 +124,7 @@ public class EnhancedConceptView implements PopupConceptViewI {
 	public void setConcept(UUID conceptUUID) {
 		// TODO this needs to be rewritten so that the dialog displays immediately
 		//but with a progress indicator while we wait for the concept to be found..
+		
 		Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>()
 		{
 
@@ -227,15 +201,7 @@ public class EnhancedConceptView implements PopupConceptViewI {
 
 	@Override
 	public void setViewMode(ConceptViewMode mode) {
-		if (mode == ConceptViewMode.SIMPLE_VIEW) {
-			controller = simpleController;
-		} else if (mode== ConceptViewMode.DETAIL_VIEW) {
-			controller = detailController;
-		}
-		
-		currentMode = mode;
-		setConcept(currentCon);
-		updateViewContents();
+		controller.setViewMode(mode);
 	}
 
 	@Override
