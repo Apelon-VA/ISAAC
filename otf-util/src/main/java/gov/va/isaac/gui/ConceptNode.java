@@ -203,7 +203,7 @@ public class ConceptNode implements ConceptLookupCallback
 		};
 		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 		menuBuilder.setInvisibleWhenfalse(isValid);
-		CommonMenus.addCommonMenus(cm, menuBuilder, null, nidProvider);
+		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 		
 		cb_.getEditor().setContextMenu(cm);
 

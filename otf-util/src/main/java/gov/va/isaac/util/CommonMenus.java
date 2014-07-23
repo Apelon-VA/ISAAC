@@ -64,15 +64,18 @@ public class CommonMenus
 		// including across non-CommonMenu items that may exist on any passed ContextMenu
 		CONCEPT_VIEW("View Concept"),
 		TAXONOMY_VIEW("Find in Taxonomy View"),
+		
 		SEND_TO("Send To"),
-		LIST_VIEW("List View"),
-		WORKFLOW_VIEW("Workflow View"),
+			LIST_VIEW("List View"),
+			WORKFLOW_VIEW("Workflow View"),
+		
 		COPY("Copy"),
-		COPY_TEXT("Copy Text"),
-		COPY_CONTENT("Copy Content"),
-		COPY_SCTID("Copy SCTID"),
-		COPY_UUID("Copy UUID"),
-		COPY_NID("Copy NID");
+			COPY_TEXT("Copy Text"),
+			COPY_CONTENT("Copy Content"),
+			
+			COPY_SCTID("Copy SCTID"),
+			COPY_UUID("Copy UUID"),
+			COPY_NID("Copy NID");
 
 		final String text;
 
@@ -218,26 +221,38 @@ public class CommonMenus
 		}
 	}
 	
-	public static void addCommonMenus(
-			ContextMenu existingMenu, 
-			CommonMenuBuilderI builder, 
-			final DataProvider data)
-	{
+	public static void addCommonMenus(ContextMenu existingMenu, final DataProvider data) {
+		addCommonMenus(existingMenu, null, data, null);
+	}
+	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final DataProvider data) {
 		addCommonMenus(existingMenu, builder, data, null);
 	}
-	public static void addCommonMenus(
-			ContextMenu existingMenu, 
-			CommonMenuBuilderI builder, 
-			final NIdProvider nids)
-	{
+
+	public static void addCommonMenus(ContextMenu existingMenu, final NIdProvider nids) {
+		addCommonMenus(existingMenu, null, null, nids);
+	}
+	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final NIdProvider nids) {
 		addCommonMenus(existingMenu, builder, null, nids);
+	}
+
+	public static void addCommonMenus(ContextMenu existingMenu, final DataProvider dataProvider, final NIdProvider nids) {
+		addCommonMenus(existingMenu, null, dataProvider, nids);
 	}
 	public static void addCommonMenus(
 			ContextMenu existingMenu, 
-			CommonMenuBuilderI builder, 
+			CommonMenuBuilderI passedBuilder, 
 			final DataProvider dataProvider, 
 			final NIdProvider nids)
 	{
+		CommonMenuBuilder builder = null;
+		if (passedBuilder == null) {
+			builder = new CommonMenuBuilder();
+		} else if (! (passedBuilder instanceof CommonMenuBuilder)) {
+			builder = new CommonMenuBuilder(passedBuilder);
+		} else {
+			builder = (CommonMenuBuilder)passedBuilder;
+		}
+		
 		List<MenuItem> menuItems = getCommonMenus(builder, dataProvider, nids);
 
 		if (menuItems.size() > 0) {
@@ -278,11 +293,19 @@ public class CommonMenus
 			}
 		}
 	}
+
 	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final DataProvider dataProvider, final NIdProvider nidProvider)
 	{
 		List<MenuItem> menuItems = new ArrayList<>();
-
-		CommonMenuBuilder builder = new CommonMenuBuilder(passedBuilder);
+		
+		CommonMenuBuilder builder = null;
+		if (passedBuilder == null) {
+			builder = new CommonMenuBuilder();
+		} else if (! (passedBuilder instanceof CommonMenuBuilder)) {
+			builder = new CommonMenuBuilder(passedBuilder);
+		} else {
+			builder = (CommonMenuBuilder)passedBuilder;
+		}
 		
 		Integer[] nids = nidProvider.getNIds().toArray(new Integer[nidProvider.getNIds().size()]);
 

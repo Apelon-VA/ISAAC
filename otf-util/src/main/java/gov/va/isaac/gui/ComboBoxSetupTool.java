@@ -73,7 +73,7 @@ public class ComboBoxSetupTool
 		};
 		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 		menuBuilder.setInvisibleWhenfalse(isComboBoxPopulated);
-		CommonMenus.addCommonMenus(cm, menuBuilder, null, nidProvider);
+		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 
 		comboBox.setContextMenu(cm);
 

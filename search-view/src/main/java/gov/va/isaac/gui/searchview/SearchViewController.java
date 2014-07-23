@@ -137,7 +137,7 @@ public class SearchViewController implements TaskCompleteCallback {
     						};
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 
-                            CommonMenus.addCommonMenus(cm, menuBuilder, null, nidProvider);
+                            CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 
                             setContextMenu(cm);
 

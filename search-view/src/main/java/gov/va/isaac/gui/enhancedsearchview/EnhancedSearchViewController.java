@@ -377,7 +377,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								}
 							};
 							
-							CommonMenus.addCommonMenus(cm, CommonMenus.CommonMenuBuilder.newInstance(), dp, nidProvider);
+							CommonMenus.addCommonMenus(cm, dp, nidProvider);
 
 							c.setContextMenu(cm);
 						}
