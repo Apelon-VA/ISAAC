@@ -81,10 +81,10 @@ public class EnhancedConceptView implements PopupConceptViewI {
 		super();
 
 		// Load from FXML.
-		URL resource = this.getClass().getResource("SimpleView.fxml");
+		URL resource = this.getClass().getResource("EnhancedView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Region root = loader.load();
-		root.getStylesheets().add(EnhancedConceptView.class.getResource("SimpleView.css").toString());
+		root.getStylesheets().add(EnhancedConceptView.class.getResource("EnhancedView.css").toString());
 		controller = loader.getController();
 		controller.setConceptView(this);
 	}

@@ -1,6 +1,7 @@
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptValueCreator;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
@@ -23,12 +24,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EnhancedConceptViewController {
-	@FXML protected AnchorPane simpleConceptPane;
+	@FXML protected AnchorPane enhancedConceptPane;
 
 	// Descriptions & Relationships
 	@FXML private VBox termVBox;
@@ -64,10 +64,10 @@ public class EnhancedConceptViewController {
 
 	private ConceptValueCreator creator;
 
-	private static final Logger LOG = LoggerFactory.getLogger(SimpleConceptViewController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(EnhancedConceptViewController.class);
 
 	AnchorPane getRootNode() {
-		return simpleConceptPane;
+		return enhancedConceptPane;
 	}
 
 	public void setConceptView(EnhancedConceptView enhancedConceptView) {

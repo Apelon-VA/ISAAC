@@ -1,11 +1,9 @@
-package gov.va.isaac.gui.conceptViews;
+package gov.va.isaac.gui.conceptViews.componentRows;
 
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import javafx.scene.layout.GridPane;
 
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
-
-import gov.va.isaac.gui.conceptViews.componentRows.Row;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 
 public abstract class RelRow extends Row {
 

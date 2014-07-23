@@ -1,5 +1,8 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
+import gov.va.isaac.util.WBUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Label;
@@ -9,11 +12,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-
-import gov.va.isaac.gui.conceptViews.TermRow;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.util.WBUtility;
 
 public class DetailTermRow extends TermRow {
 

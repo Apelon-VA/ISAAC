@@ -1,13 +1,12 @@
-package gov.va.isaac.gui.conceptViews;
+package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.gui.conceptViews.componentRows.DetailRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailTermRow;
+import gov.va.isaac.gui.conceptViews.componentRows.RelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
-import gov.va.isaac.gui.conceptViews.helpers.AnnotationRectangle;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
+import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.util.WBUtility;
 
@@ -62,7 +61,7 @@ public class ConceptValueCreator {
 		this.isPrimLabel = isPrimLabel;
 	}
 	
-	void setConceptValues(UUID currentCon, ConceptViewMode mode) {
+	public void setConceptValues(UUID currentCon, ConceptViewMode mode) {
 		setMode(mode);
 		con = WBUtility.getConceptVersion(currentCon);
 		

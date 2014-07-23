@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.conceptViews;
+package gov.va.isaac.gui.conceptViews.componentRows;
 
 import gov.va.isaac.gui.conceptViews.componentRows.Row;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;

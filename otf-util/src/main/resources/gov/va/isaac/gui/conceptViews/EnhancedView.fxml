@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="simpleConceptPane" focusTraversable="true" minHeight="400.0" minWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.EnhancedConceptViewController">
+<AnchorPane fx:id="enhancedConceptPane" focusTraversable="true" minHeight="400.0" minWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.EnhancedConceptViewController">
 <children><BorderPane style="-fx-background-color: #F5F5F5;" AnchorPane.leftAnchor="0.0">
 <top>
 <VBox alignment="TOP_CENTER">
@@ -71,7 +71,7 @@
 </BorderPane.margin>
 </VBox>
 </top>
-<center><VBox fx:id="simpleConceptView" BorderPane.alignment="CENTER">
+<center><VBox fx:id="enhancedConceptView" BorderPane.alignment="CENTER">
 <children><VBox alignment="TOP_CENTER" fillWidth="false" spacing="20.0">
 <children><GridPane alignment="CENTER" hgap="3.0" styleClass="zone">
   <columnConstraints>
