@@ -141,7 +141,7 @@ public class CommonMenus
 
 		return count;
 	}
-
+	
 	public static class CommonMenuBuilder implements CommonMenuBuilderI {
 		CommonMenuItem[] menuItemsToExclude;
 		MergeMode mergeMode = MergeMode.REPLACE_EXISTING;
@@ -461,56 +461,49 @@ public class CommonMenus
 
 		SeparatorMenuItem separator = new SeparatorMenuItem();
 
-		if (dataProvider != null) {
-
-				MenuItem copyTextItem = new MenuItem(CommonMenuItem.COPY_TEXT.getText());
-				copyTextItem.setGraphic(Images.COPY.createImageView());
-				copyTextItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
-						LOG.debug("Using \"" + CommonMenuItem.COPY_TEXT.getText() + "\" menu item to copy text \"" + dataProvider.getStrings()[0] + "\"");
-						CustomClipboard.set(dataProvider.getStrings()[0]);
-					}
-				});
-				if (builder.getInvisibleWhenfalse() != null)
-				{
-					copyTextItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
-				} else {
-					if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_TEXT) || dataProvider == null || dataProvider.getStrings() == null || dataProvider.getStrings().length != 1 || dataProvider.getStrings()[0] == null) {
-						copyTextItem.setVisible(false);
-					}
-				}
-
-				menuItems.add(copyTextItem);
-			
-
-			if (dataProvider.getObjectContainers() != null) {
-				MenuItem copyContentItem = new MenuItem(CommonMenuItem.COPY_CONTENT.getText());
-				copyContentItem.setGraphic(Images.COPY.createImageView());
-				copyContentItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
-						LOG.debug("Using \"" + CommonMenuItem.COPY_CONTENT.getText() + "\" menu item to copy " + dataProvider.getObjectContainers()[0].getObject().getClass() + " object \"" + dataProvider.getObjectContainers()[0].getString() + "\"");
-						CustomClipboard.set(dataProvider.getObjectContainers()[0].getObject(), dataProvider.getObjectContainers()[0].getString());
-					}
-				});
-				if (builder.getInvisibleWhenfalse() != null)
-				{
-					copyContentItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
-				} else {
-					if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_CONTENT) || dataProvider == null || dataProvider.getObjectContainers() == null || dataProvider.getObjectContainers().length != 1 || dataProvider.getObjectContainers()[0] == null) {
-						copyContentItem.setVisible(false);
-					}
-				}
-
-				menuItems.add(copyContentItem);
+		MenuItem copyTextItem = new MenuItem(CommonMenuItem.COPY_TEXT.getText());
+		copyTextItem.setGraphic(Images.COPY.createImageView());
+		copyTextItem.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event)
+			{
+				LOG.debug("Using \"" + CommonMenuItem.COPY_TEXT.getText() + "\" menu item to copy text \"" + dataProvider.getStrings()[0] + "\"");
+				CustomClipboard.set(dataProvider.getStrings()[0]);
+			}
+		});
+		if (builder.getInvisibleWhenfalse() != null)
+		{
+			copyTextItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
+		} else {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_TEXT) || dataProvider == null || dataProvider.getStrings() == null || dataProvider.getStrings().length != 1 || dataProvider.getStrings()[0] == null) {
+				copyTextItem.setVisible(false);
 			}
 		}
+		menuItems.add(copyTextItem);
 
+		MenuItem copyContentItem = new MenuItem(CommonMenuItem.COPY_CONTENT.getText());
+		copyContentItem.setGraphic(Images.COPY.createImageView());
+		copyContentItem.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event)
+			{
+				LOG.debug("Using \"" + CommonMenuItem.COPY_CONTENT.getText() + "\" menu item to copy " + dataProvider.getObjectContainers()[0].getObject().getClass() + " object \"" + dataProvider.getObjectContainers()[0].getString() + "\"");
+				CustomClipboard.set(dataProvider.getObjectContainers()[0].getObject(), dataProvider.getObjectContainers()[0].getString());
+			}
+		});
+		if (builder.getInvisibleWhenfalse() != null)
+		{
+			copyContentItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
+		} else {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_CONTENT) || dataProvider == null || dataProvider.getObjectContainers() == null || dataProvider.getObjectContainers().length != 1 || dataProvider.getObjectContainers()[0] == null) {
+				copyContentItem.setVisible(false);
+			}
+		}
+		menuItems.add(copyContentItem);
+		
+		boolean separatorNecessary = copyTextItem.isVisible() || copyContentItem.isVisible();
+		
 		// The following are ID-related and will be under a separator
-
 		UUID[] uuids = new UUID[nids.length];
 		String[] sctIds = new String[nids.length];
 
@@ -546,7 +539,7 @@ public class CommonMenus
 		}
 
 		// Add menu separator IFF there were non-ID items AND this is the first ID item
-		if (getNumVisibleMenuItems(menuItems) > 0 && ! menuItems.contains(separator)) {
+		if (separatorNecessary && ! menuItems.contains(separator)) {
 			menuItems.add(separator);
 		}
 		menuItems.add(copySctIdMenuItem);
@@ -575,7 +568,7 @@ public class CommonMenus
 		}
 
 		// Add menu separator IFF there were non-ID items AND this is the first ID item
-		if (getNumVisibleMenuItems(menuItems) > 0 && ! menuItems.contains(separator)) {
+		if (separatorNecessary && ! menuItems.contains(separator)) {
 			menuItems.add(separator);
 		}
 		menuItems.add(copyUuidMenuItem);
@@ -603,7 +596,7 @@ public class CommonMenus
 		}
 
 		// Add menu separator IFF there were non-ID items AND this is the first ID item
-		if (getNumVisibleMenuItems(menuItems) > 0 && ! menuItems.contains(separator)) {
+		if (separatorNecessary && ! menuItems.contains(separator)) {
 			menuItems.add(separator);
 		}
 		menuItems.add(copyNidMenuItem);
