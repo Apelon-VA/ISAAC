@@ -368,10 +368,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							public String getString() {
 								return c.getItem().toString();
 							}
-							@Override
-							public ObjectContainer getObjectContainer() {
-								return new ObjectContainer(c.getItem());
-							}
+//							@Override
+//							public ObjectContainer getObjectContainer() {
+//								return new ObjectContainer(c.getItem());
+//							}
 						};
 						CommonMenus.addCommonMenus(cm, new SimpleBooleanProperty(true), dp, new ConceptIdProvider() {
 							@Override
