@@ -146,14 +146,14 @@ public class EnhancedConceptViewController {
 		detailedRadio.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				setViewMode(ConceptViewMode.DETAIL_VIEW);
+				conceptView.setViewMode(ConceptViewMode.DETAIL_VIEW);
 			}
 		});
 
 		basicRadio.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				setViewMode(ConceptViewMode.SIMPLE_VIEW);
+				conceptView.setViewMode(ConceptViewMode.SIMPLE_VIEW);
 			}
 		});
 	}

@@ -93,13 +93,14 @@ public class EnhancedConceptView implements PopupConceptViewI {
 		// Make sure in application thread.
 		FxUtils.checkFxUserThread();
 		controller.setConcept(concept.getPrimordialUuid(), ConceptViewMode.SIMPLE_VIEW, conceptHistoryStack);
+        s.sizeToScene(); 
 	}
 
 	@Override
 	public void showView(Window parent) {
 		s = new Stage();
 		s.initOwner(parent);
-		s.initModality(Modality.NONE);
+        s.initModality(Modality.NONE);
 		s.initStyle(StageStyle.DECORATED);
 
 		s.setScene(new Scene(getView()));
@@ -202,6 +203,7 @@ public class EnhancedConceptView implements PopupConceptViewI {
 	@Override
 	public void setViewMode(ConceptViewMode mode) {
 		controller.setViewMode(mode);
+        s.sizeToScene(); 
 	}
 
 	@Override
