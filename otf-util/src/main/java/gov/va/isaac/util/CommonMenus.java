@@ -55,11 +55,13 @@ import org.slf4j.LoggerFactory;
 public class CommonMenus
 {
 	public enum MergeMode {
-		USE_EXISTING,
-		REPLACE_EXISTING,
-		ADD_TO_EXISTING
+		USE_EXISTING, // Will not replace existing menu items with matching text
+		REPLACE_EXISTING, // Will replace existing menu items with matching text
+		ADD_TO_EXISTING // Will add, ignoring any existing menu items with matching text
 	}
-	enum CommonMenuItems {
+	public enum CommonMenuItem {
+		// These text values must be distinct
+		// including across non-CommonMenu items that may exist on any passed ContextMenu
 		CONCEPT_VIEW("View Concept"),
 		TAXONOMY_VIEW("Find in Taxonomy View"),
 		SEND_TO("Send To"),
@@ -74,7 +76,7 @@ public class CommonMenus
 
 		final String text;
 
-		private CommonMenuItems(String text) {
+		private CommonMenuItem(String text) {
 			this.text = text;
 		}
 
@@ -140,37 +142,103 @@ public class CommonMenus
 		return count;
 	}
 
-	public static class CommonMenuBuilder {
-		MergeMode mergeMode;
+	public static class CommonMenuBuilder implements CommonMenuBuilderI {
+		CommonMenuItem[] menuItemsToExclude;
+		MergeMode mergeMode = MergeMode.ADD_TO_EXISTING;
 		BooleanProperty invisibleWhenfalse;
+
+		public static CommonMenuBuilderI newInstance() {
+			return new CommonMenuBuilder();
+		}
 		
-	}
-	
-	public static void addCommonMenus(ContextMenu cm, BooleanProperty invisibleWhenFalse, final NIdProvider nids)
-	{
-		addCommonMenus(cm, MergeMode.ADD_TO_EXISTING, invisibleWhenFalse, null, nids);
-	}
-	public static void addCommonMenus(ContextMenu cm, MergeMode mergeMode, BooleanProperty invisibleWhenFalse, final NIdProvider nids)
-	{
-		addCommonMenus(cm, mergeMode, invisibleWhenFalse, null, nids);
-	}
-	public static void addCommonMenus(
-			ContextMenu cm, 
-			BooleanProperty invisibleWhenFalse, 
-			final DataProvider dataProvider, 
-			final NIdProvider nids)
-	{
-		addCommonMenus(cm, MergeMode.ADD_TO_EXISTING, invisibleWhenFalse, dataProvider, nids);
+		private CommonMenuBuilder() {}
+		
+		private CommonMenuBuilder(CommonMenuBuilderI toCopy) {
+			super();
+			if (toCopy != null) {
+				this.menuItemsToExclude = toCopy.getMenuItemsToExclude();
+				this.mergeMode = toCopy.getMergeMode();
+				this.invisibleWhenfalse = toCopy.getInvisibleWhenfalse();
+			}
+		}
+
+		/* (non-Javadoc)
+		 * @see gov.va.isaac.util.CommonMenuBuilderI#getMenuItemsToExclude()
+		 */
+		@Override
+		public CommonMenuItem[] getMenuItemsToExclude() {
+			return menuItemsToExclude;
+		}
+		/* (non-Javadoc)
+		 * @see gov.va.isaac.util.CommonMenuBuilderI#setMenuItemsToExclude(gov.va.isaac.util.CommonMenus.CommonMenuItem)
+		 */
+		@Override
+		public void setMenuItemsToExclude(CommonMenuItem...menuItemsToExclude) {
+			this.menuItemsToExclude = menuItemsToExclude;
+		}
+		/* (non-Javadoc)
+		 * @see gov.va.isaac.util.CommonMenuBuilderI#getMergeMode()
+		 */
+		@Override
+		public MergeMode getMergeMode() {
+			return mergeMode;
+		}
+		/* (non-Javadoc)
+		 * @see gov.va.isaac.util.CommonMenuBuilderI#setMergeMode(gov.va.isaac.util.CommonMenus.MergeMode)
+		 */
+		@Override
+		public void setMergeMode(MergeMode mergeMode) {
+			this.mergeMode = mergeMode;
+		}
+		/* (non-Javadoc)
+		 * @see gov.va.isaac.util.CommonMenuBuilderI#getInvisibleWhenfalse()
+		 */
+		@Override
+		public BooleanProperty getInvisibleWhenfalse() {
+			return invisibleWhenfalse;
+		}
+		/* (non-Javadoc)
+		 * @see gov.va.isaac.util.CommonMenuBuilderI#setInvisibleWhenfalse(javafx.beans.property.BooleanProperty)
+		 */
+		@Override
+		public void setInvisibleWhenfalse(BooleanProperty invisibleWhenfalse) {
+			this.invisibleWhenfalse = invisibleWhenfalse;
+		}
+		
+		private boolean isCommonMenuItemExcluded(CommonMenuItem item) {
+			if (menuItemsToExclude != null) {
+				for (CommonMenuItem itemToExclude : menuItemsToExclude) {
+					if (item == itemToExclude) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		}
 	}
 	
 	public static void addCommonMenus(
 			ContextMenu existingMenu, 
-			MergeMode mergeMode, 
-			BooleanProperty invisibleWhenFalse, 
+			CommonMenuBuilderI builder, 
+			final DataProvider data)
+	{
+		addCommonMenus(existingMenu, builder, data, null);
+	}
+	public static void addCommonMenus(
+			ContextMenu existingMenu, 
+			CommonMenuBuilderI builder, 
+			final NIdProvider nids)
+	{
+		addCommonMenus(existingMenu, builder, null, nids);
+	}
+	public static void addCommonMenus(
+			ContextMenu existingMenu, 
+			CommonMenuBuilderI builder, 
 			final DataProvider dataProvider, 
 			final NIdProvider nids)
 	{
-		List<MenuItem> menuItems = getCommonMenus(invisibleWhenFalse, dataProvider, nids);
+		List<MenuItem> menuItems = getCommonMenus(builder, dataProvider, nids);
 
 		if (menuItems.size() > 0) {
 			for (MenuItem newItem : menuItems) {
@@ -183,7 +251,7 @@ public class CommonMenus
 					}
 				}
 
-				switch (mergeMode) {
+				switch (builder.getMergeMode()) {
 				case ADD_TO_EXISTING:
 					if (existingMatch != null) {
 						Log.debug("Adding MenuItem with same name as existing MenuItem \"" + existingMatch.getText() + "\"");
@@ -205,19 +273,21 @@ public class CommonMenus
 					}
 					break;
 				default:
-					throw new RuntimeException("Unsupported enum value " + mergeMode + " for " + MergeMode.class.getName());
+					throw new RuntimeException("Unsupported enum value " + builder.getMergeMode() + " for " + MergeMode.class.getName());
 				}
 			}
 		}
 	}
-	public static List<MenuItem> getCommonMenus(BooleanProperty invisibleWhenFalse, final DataProvider dataProvider, final NIdProvider nidProvider)
+	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final DataProvider dataProvider, final NIdProvider nidProvider)
 	{
 		List<MenuItem> menuItems = new ArrayList<>();
 
+		CommonMenuBuilder builder = new CommonMenuBuilder(passedBuilder);
+		
 		Integer[] nids = nidProvider.getNIds().toArray(new Integer[nidProvider.getNIds().size()]);
 
 		// Menu item to show concept details.
-		MenuItem enhancedConceptViewMenuItem = new MenuItem(CommonMenuItems.CONCEPT_VIEW.getText());
+		MenuItem enhancedConceptViewMenuItem = new MenuItem(CommonMenuItem.CONCEPT_VIEW.getText());
 		enhancedConceptViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
 		enhancedConceptViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -226,7 +296,7 @@ public class CommonMenus
 				Integer id = nids[0];
 				if (id != null)
 				{
-					LOG.debug("Using \"" + CommonMenuItems.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" + id + "\"");
+					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" + id + "\"");
 
 					EnhancedConceptView cv = AppContext.getService(EnhancedConceptView.class);
 					cv.setConcept(id);
@@ -239,18 +309,18 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			enhancedConceptViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			enhancedConceptViewMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (nids == null || nids.length != 1) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.CONCEPT_VIEW) || nids == null || nids.length != 1) {
 				enhancedConceptViewMenuItem.setVisible(false);
 			}
 		}
 		menuItems.add(enhancedConceptViewMenuItem);
 
 		// Menu item to find concept in tree.
-		MenuItem findInTaxonomyViewMenuItem = new MenuItem(CommonMenuItems.TAXONOMY_VIEW.getText());
+		MenuItem findInTaxonomyViewMenuItem = new MenuItem(CommonMenuItem.TAXONOMY_VIEW.getText());
 		findInTaxonomyViewMenuItem.setGraphic(Images.ROOT.createImageView());
 		findInTaxonomyViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -267,49 +337,52 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			findInTaxonomyViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			findInTaxonomyViewMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (nids == null || nids.length != 1) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.TAXONOMY_VIEW) || nids == null || nids.length != 1) {
 				findInTaxonomyViewMenuItem.setVisible(false);
 			}
 		}
 		menuItems.add(findInTaxonomyViewMenuItem);
 
-		List<MenuItem> sendToMenuItems = getSendToMenuItems(invisibleWhenFalse, dataProvider, nids);
+		List<MenuItem> sendToMenuItems = getSendToMenuItems(builder, dataProvider, nids);
 		// ContextMenu already has view actions, so possibly add submenu
-		if (getNumVisibleMenuItems(sendToMenuItems) > 0) {
 			// Copy menu items exist, so add in submenu
-			Menu sendToMenu = new Menu(CommonMenuItems.SEND_TO.getText());
-			sendToMenu.getItems().addAll(sendToMenuItems);
-			menuItems.add(sendToMenu);
+		Menu sendToMenu = new Menu(CommonMenuItem.SEND_TO.getText());
+		sendToMenu.getItems().addAll(sendToMenuItems);
+		if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || getNumVisibleMenuItems(sendToMenuItems) == 0) {
+			sendToMenu.setVisible(false);
 		}
-
+		menuItems.add(sendToMenu);
+		
 		// Get copy menu items
 		// If no copyable data avail, then don't add menu
 		// If no other ContextMenu items, then add as items, not as submenu
-		List<MenuItem> copyMenuItems = getCopyMenuItems(invisibleWhenFalse, dataProvider, nids);
+		List<MenuItem> copyMenuItems = getCopyMenuItems(builder, dataProvider, nids);
 
 		// ContextMenu already has view actions, so possibly add submenu
-		if (getNumVisibleMenuItems(copyMenuItems) > 0) {
-			// Copy menu items exist, so add in submenu
-			Menu copyMenu = new Menu(CommonMenuItems.COPY.getText());
-			copyMenu.getItems().addAll(copyMenuItems);
-			menuItems.add(copyMenu);
+		// Copy menu items exist, so add in submenu
+		Menu copyMenu = new Menu(CommonMenuItem.COPY.getText());
+		copyMenu.getItems().addAll(copyMenuItems);
+		if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || getNumVisibleMenuItems(copyMenuItems) == 0) {
+			copyMenu.setVisible(false);
 		}
+		menuItems.add(copyMenu);
+
 
 		return menuItems;
 	}
 
-	private static List<MenuItem> getSendToMenuItems(BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final Integer...nids) {
+	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer...nids) {
 		// The following code is for the Copy submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
 
 		// Menu item to show concept details.
-		MenuItem listViewMenuItem = new MenuItem(CommonMenuItems.LIST_VIEW.getText());
-		listViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+		MenuItem listViewMenuItem = new MenuItem(CommonMenuItem.LIST_VIEW.getText());
+		listViewMenuItem.setGraphic(Images.LIST_VIEW.createImageView());
 		listViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event)
@@ -334,11 +407,11 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			listViewMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			listViewMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (nids == null || nids.length == 0) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.LIST_VIEW) || nids == null || nids.length == 0) {
 				listViewMenuItem.setVisible(false);
 			}
 		}
@@ -346,7 +419,7 @@ public class CommonMenus
 
 
 		// Menu item to generate New Workflow Instance.
-		MenuItem newWorkflowInstanceItem = new MenuItem(CommonMenuItems.WORKFLOW_VIEW.getText());
+		MenuItem newWorkflowInstanceItem = new MenuItem(CommonMenuItem.WORKFLOW_VIEW.getText());
 		newWorkflowInstanceItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
 		newWorkflowInstanceItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -365,11 +438,11 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			newWorkflowInstanceItem.visibleProperty().bind(invisibleWhenFalse);
+			newWorkflowInstanceItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (nids == null || nids.length != 1) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.WORKFLOW_VIEW) || nids == null || nids.length != 1) {
 				newWorkflowInstanceItem.setVisible(false);
 			}
 		}
@@ -379,7 +452,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getCopyMenuItems(BooleanProperty invisibleWhenFalse, DataProvider dataProvider, final Integer...nids) {
+	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer...nids) {
 		// The following code is for the Copy submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -390,21 +463,21 @@ public class CommonMenus
 
 		if (dataProvider != null) {
 
-				MenuItem copyTextItem = new MenuItem(CommonMenuItems.COPY_TEXT.getText());
+				MenuItem copyTextItem = new MenuItem(CommonMenuItem.COPY_TEXT.getText());
 				copyTextItem.setGraphic(Images.COPY.createImageView());
 				copyTextItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event)
 					{
-						LOG.debug("Using \"" + CommonMenuItems.CONCEPT_VIEW.getText() + "\" menu item to copy text \"" + dataProvider.getStrings()[0] + "\"");
+						LOG.debug("Using \"" + CommonMenuItem.COPY_TEXT.getText() + "\" menu item to copy text \"" + dataProvider.getStrings()[0] + "\"");
 						CustomClipboard.set(dataProvider.getStrings()[0]);
 					}
 				});
-				if (invisibleWhenFalse != null)
+				if (builder.getInvisibleWhenfalse() != null)
 				{
-					copyTextItem.visibleProperty().bind(invisibleWhenFalse);
+					copyTextItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 				} else {
-					if (dataProvider == null || dataProvider.getStrings() == null || dataProvider.getStrings().length != 1 || dataProvider.getStrings()[0] == null) {
+					if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_TEXT) || dataProvider == null || dataProvider.getStrings() == null || dataProvider.getStrings().length != 1 || dataProvider.getStrings()[0] == null) {
 						copyTextItem.setVisible(false);
 					}
 				}
@@ -413,21 +486,21 @@ public class CommonMenus
 			
 
 			if (dataProvider.getObjectContainers() != null) {
-				MenuItem copyContentItem = new MenuItem(CommonMenuItems.COPY_CONTENT.getText());
+				MenuItem copyContentItem = new MenuItem(CommonMenuItem.COPY_CONTENT.getText());
 				copyContentItem.setGraphic(Images.COPY.createImageView());
 				copyContentItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event)
 					{
-						LOG.debug("Using \"" + CommonMenuItems.COPY_CONTENT.getText() + "\" menu item to copy " + dataProvider.getObjectContainers()[0].getObject().getClass() + " object \"" + dataProvider.getObjectContainers()[0].getString() + "\"");
+						LOG.debug("Using \"" + CommonMenuItem.COPY_CONTENT.getText() + "\" menu item to copy " + dataProvider.getObjectContainers()[0].getObject().getClass() + " object \"" + dataProvider.getObjectContainers()[0].getString() + "\"");
 						CustomClipboard.set(dataProvider.getObjectContainers()[0].getObject(), dataProvider.getObjectContainers()[0].getString());
 					}
 				});
-				if (invisibleWhenFalse != null)
+				if (builder.getInvisibleWhenfalse() != null)
 				{
-					copyContentItem.visibleProperty().bind(invisibleWhenFalse);
+					copyContentItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 				} else {
-					if (dataProvider == null || dataProvider.getObjectContainers() == null || dataProvider.getObjectContainers().length != 1 || dataProvider.getObjectContainers()[0] == null) {
+					if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_CONTENT) || dataProvider == null || dataProvider.getObjectContainers() == null || dataProvider.getObjectContainers().length != 1 || dataProvider.getObjectContainers()[0] == null) {
 						copyContentItem.setVisible(false);
 					}
 				}
@@ -451,7 +524,7 @@ public class CommonMenus
 		}
 
 		// Menu item to copy SCT ID
-		MenuItem copySctIdMenuItem = new MenuItem(CommonMenuItems.COPY_SCTID.getText());
+		MenuItem copySctIdMenuItem = new MenuItem(CommonMenuItem.COPY_SCTID.getText());
 		copySctIdMenuItem.setGraphic(Images.COPY.createImageView());
 		copySctIdMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -463,11 +536,11 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			copySctIdMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			copySctIdMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (sctIds == null || sctIds.length != 1 || sctIds[0] == null) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_SCTID) || sctIds == null || sctIds.length != 1 || sctIds[0] == null) {
 				copySctIdMenuItem.setVisible(false);
 			}
 		}
@@ -480,7 +553,7 @@ public class CommonMenus
 
 
 		// Menu item to copy UUID.
-		MenuItem copyUuidMenuItem = new MenuItem(CommonMenuItems.COPY_UUID.getText());
+		MenuItem copyUuidMenuItem = new MenuItem(CommonMenuItem.COPY_UUID.getText());
 		copyUuidMenuItem.setGraphic(Images.COPY.createImageView());
 		copyUuidMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -492,11 +565,11 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			copyUuidMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			copyUuidMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (uuids == null || uuids.length != 1 || uuids[0] == null) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_UUID) || uuids == null || uuids.length != 1 || uuids[0] == null) {
 				copyUuidMenuItem.setVisible(false);
 			}
 		}
@@ -508,7 +581,7 @@ public class CommonMenus
 		menuItems.add(copyUuidMenuItem);
 
 
-		MenuItem copyNidMenuItem = new MenuItem(CommonMenuItems.COPY_NID.getText());
+		MenuItem copyNidMenuItem = new MenuItem(CommonMenuItem.COPY_NID.getText());
 		copyNidMenuItem.setGraphic(Images.COPY.createImageView());
 		copyNidMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -520,11 +593,11 @@ public class CommonMenus
 				}
 			}
 		});
-		if (invisibleWhenFalse != null)
+		if (builder.getInvisibleWhenfalse() != null)
 		{
-			copyNidMenuItem.visibleProperty().bind(invisibleWhenFalse);
+			copyNidMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
 		} else {
-			if (nids == null || nids.length != 1) {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY_NID) || nids == null || nids.length != 1) {
 				copyNidMenuItem.setVisible(false);
 			}
 		}

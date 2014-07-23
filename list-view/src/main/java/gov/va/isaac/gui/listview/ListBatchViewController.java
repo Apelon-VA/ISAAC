@@ -28,6 +28,7 @@ import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
@@ -100,7 +101,6 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
-import org.apache.mahout.math.Arrays;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -369,7 +369,7 @@ public class ListBatchViewController
 										descs[i] = selected.get(i).getDescription();
 									}
 									
-									System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
+									//System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
 
 									return descs;
 								}
@@ -389,7 +389,10 @@ public class ListBatchViewController
 									return nids;
 								}
 							};
-							CommonMenus.addCommonMenus(r.getContextMenu(), CommonMenus.MergeMode.REPLACE_EXISTING, null, dp, nidProvider);
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+							menuBuilder.setMergeMode(CommonMenus.MergeMode.REPLACE_EXISTING);
+							menuBuilder.setMenuItemsToExclude(CommonMenus.CommonMenuItem.LIST_VIEW);
+							CommonMenus.addCommonMenus(r.getContextMenu(), menuBuilder, dp, nidProvider);
 						}
 					}
 

@@ -24,6 +24,7 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
@@ -134,7 +135,9 @@ public class SearchViewController implements TaskCompleteCallback {
     								return nids;
     							}
     						};
-                            CommonMenus.addCommonMenus(cm, null, nidProvider);
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+
+                            CommonMenus.addCommonMenus(cm, menuBuilder, null, nidProvider);
 
                             setContextMenu(cm);
 

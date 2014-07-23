@@ -19,22 +19,19 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.WBUtility;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
-
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 
 /**
  * {@link ComboBoxSetupTool}
@@ -74,7 +71,9 @@ public class ComboBoxSetupTool
 				return nids;
 			}
 		};
-		CommonMenus.addCommonMenus(cm, isComboBoxPopulated, nidProvider);
+		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+		menuBuilder.setInvisibleWhenfalse(isComboBoxPopulated);
+		CommonMenus.addCommonMenus(cm, menuBuilder, null, nidProvider);
 
 		comboBox.setContextMenu(cm);
 

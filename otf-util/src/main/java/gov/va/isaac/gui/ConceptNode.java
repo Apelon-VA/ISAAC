@@ -23,6 +23,7 @@ import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
@@ -200,7 +201,9 @@ public class ConceptNode implements ConceptLookupCallback
 				return nids;
 			}
 		};
-		CommonMenus.addCommonMenus(cm, isValid, nidProvider);
+		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+		menuBuilder.setInvisibleWhenfalse(isValid);
+		CommonMenus.addCommonMenus(cm, menuBuilder, null, nidProvider);
 		
 		cb_.getEditor().setContextMenu(cm);
 
