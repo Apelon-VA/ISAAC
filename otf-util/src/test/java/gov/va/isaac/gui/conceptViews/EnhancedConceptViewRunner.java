@@ -35,12 +35,12 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
- * SimpleConceptViewWizardRunner
+ * EnhancedConceptViewRunner
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a>
  */
-public class SimpleConceptViewWizardRunner extends Application
+public class EnhancedConceptViewRunner extends Application
 {
 	/**
 	 * @see javafx.application.Application#start(javafx.stage.Stage)
