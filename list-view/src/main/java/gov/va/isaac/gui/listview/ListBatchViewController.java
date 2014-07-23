@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -84,8 +83,8 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -101,6 +100,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
+import org.apache.mahout.math.Arrays;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -204,7 +204,7 @@ public class ListBatchViewController
 					protected void updateItem(String item, boolean empty) {
 						super.updateItem(item, empty);
 	
-						TableRow currentRow = getTableRow();
+						TableRow<?> currentRow = getTableRow();
 						if (!empty) {
 							if (currentRow != null && currentRow.getItem() != null) {
 								setText(item);
@@ -237,8 +237,8 @@ public class ListBatchViewController
 				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent event) {
-						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
-							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
+						if (((TableCell<?,?>)event.getSource()).getIndex() < conceptTable.getItems().size()) {
+							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell<?,?>)event.getSource()).getIndex());
 							conceptView.setConcept(con.getNid());
 							conceptDisplayTab.setContent(conceptView.getView());
 						}
@@ -362,25 +362,34 @@ public class ListBatchViewController
 							TableRow<SimpleDisplayConcept> r = (TableRow<SimpleDisplayConcept>)event.getSource();
 							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
 								@Override
-								public String getString() {
-									if (r.getTableView().getSelectionModel().getSelectedItems().size() == 1) {
-										return r.getItem() != null ? r.getItem().getDescription() : null;
-									} else {
-										return null;
+								public String[] getStrings() {
+									List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+									String descs[] = new String[selected.size()];
+									for (int i = 0; i < selected.size(); ++i) {
+										descs[i] = selected.get(i).getDescription();
 									}
+									
+									System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
+
+									return descs;
 								}
 							};
-							ConceptIdProvider idProvider = new ConceptIdProvider() {
+							
+							CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
 								@Override
-								public Integer getNid() {
-									if (r.getTableView().getSelectionModel().getSelectedItems().size() == 1) {
-										return r.getItem() != null ? r.getItem().getNid() : null;
-									} else {
-										return null;
+								public Set<Integer> getNIds() {
+									List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+									Set<Integer> nids = new HashSet<>();
+									for (SimpleDisplayConcept concept : selected) {
+										nids.add(concept.getNid());
 									}
+
+									//System.out.println(selected.size() + " item(s) selected: " + nids);
+									
+									return nids;
 								}
 							};
-							CommonMenus.addCommonMenus(r.getContextMenu(), CommonMenus.MergeMode.REPLACE_EXISTING, new SimpleBooleanProperty(true), dp, idProvider);
+							CommonMenus.addCommonMenus(r.getContextMenu(), CommonMenus.MergeMode.REPLACE_EXISTING, null, dp, nidProvider);
 						}
 					}
 

@@ -23,12 +23,17 @@ import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 
 /**
@@ -58,38 +63,18 @@ public class ComboBoxSetupTool
 				isComboBoxPopulated.set(comboBox.getItems().size() > 0);
 			}
 		});
-
-		CommonMenus.addCommonMenus(cm, isComboBoxPopulated, new SingleConceptIdProvider()
-		{
+		
+		CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
 			@Override
-			public String getConceptId()
-			{
-				return comboBox.getValue().getNid() + "";
-			}
-
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
-			 */
-			@Override
-			public UUID getUUID()
-			{
-				ConceptVersionBI c = WBUtility.getConceptVersion(getNid());
-				if (c == null)
-				{
-					return null;
+			public Set<Integer> getNIds() {
+				Set<Integer> nids = new HashSet<>();
+				if (comboBox.getValue() != null) {
+					nids.add(comboBox.getValue().getNid());
 				}
-				return c.getPrimordialUuid();
+				return nids;
 			}
-
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
-			 */
-			@Override
-			public Integer getNid()
-			{
-				return comboBox.getValue().getNid();
-			}
-		});
+		};
+		CommonMenus.addCommonMenus(cm, isComboBoxPopulated, nidProvider);
 
 		comboBox.setContextMenu(cm);
 

@@ -27,9 +27,13 @@ import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
@@ -58,6 +62,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.util.StringConverter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -184,44 +189,19 @@ public class ConceptNode implements ConceptLookupCallback
 			}
 		});
 		cm.getItems().add(copyText);
-		
-		CommonMenus.addCommonMenus(cm, isValid, new SingleConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				if (c_ != null)
-				{
-					return c_.getPrimordialUuid().toString();
-				}
-				return null;
-			}
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
-			 */
-			@Override
-			public UUID getUUID()
-			{
-				if (c_ != null)
-				{
-					return c_.getPrimordialUuid();
-				}
-				return null;
-			}
 
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
-			 */
+		CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
 			@Override
-			public Integer getNid()
-			{
-				if (c_ != null)
-				{
-					return c_.getNid();
+			public Set<Integer> getNIds() {
+				Set<Integer> nids = new HashSet<>();
+				if (c_ != null) {
+					nids.add(c_.getNid());
 				}
-				return 0;
+				return nids;
 			}
-		});
+		};
+		CommonMenus.addCommonMenus(cm, isValid, nidProvider);
+		
 		cb_.getEditor().setContextMenu(cm);
 
 		updateGUI();
