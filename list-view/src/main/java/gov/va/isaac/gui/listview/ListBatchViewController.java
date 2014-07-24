@@ -294,8 +294,9 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						conceptView.setConcept(row.getItem().getNid());
-						conceptView.showView(rootPane.getScene().getWindow());
+						PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+						cv.setConcept(row.getItem().getNid());
+						cv.showView(rootPane.getScene().getWindow());
 					}
 				});
 				MenuItem removeItem = new MenuItem("Delete");
