@@ -94,16 +94,13 @@ public class EnhancedConceptView implements PopupConceptViewI {
 		// Make sure in application thread.
 		FxUtils.checkFxUserThread();
 		controller.setConcept(concept.getPrimordialUuid(), controller.getViewMode(), conceptHistoryStack);
-		if (s != null) {
-			s.sizeToScene(); 
-		}
 	}
 
 	@Override
 	public void showView(Window parent) {
 		s = new Stage();
 		s.initOwner(parent);
-        s.initModality(Modality.NONE);
+		s.initModality(Modality.NONE);
 		s.initStyle(StageStyle.DECORATED);
 
 		s.setScene(new Scene(getView()));
@@ -115,9 +112,14 @@ public class EnhancedConceptView implements PopupConceptViewI {
 		// Title will change after concept is set.
 		s.setTitle(controller.getTitle());
 		s.show();
+		
 
 		//doesn't come to the front unless you do this (on linux, at least)
-		Platform.runLater(() -> {s.toFront();});
+		Platform.runLater(() -> 
+		{
+			s.setHeight(s.getHeight() + 30);  //coming up slightly to small on linux for some reason
+			s.toFront();
+		});
 	}
 
 	@Override
@@ -207,9 +209,6 @@ public class EnhancedConceptView implements PopupConceptViewI {
 	@Override
 	public void setViewMode(ConceptViewMode mode) {
 		controller.setViewMode(mode);
-		if (s != null) {
-			s.sizeToScene(); 
-		}
 	}
 	
 	@Override
