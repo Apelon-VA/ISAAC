@@ -357,7 +357,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				@Override
 				public void handle(MouseEvent event) {
 					if (event.getButton() == MouseButton.SECONDARY) {
-						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+						TableCell<CompositeSearchResult, T> c = (TableCell<CompositeSearchResult, T>) event.getSource();
 						if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
 							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
 								@Override
