@@ -32,10 +32,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.UUID;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -70,7 +71,7 @@ public class EnhancedConceptView implements PopupConceptViewI {
 	private Stage s;
 	private EnhancedConceptViewController controller = null;
 
-	private Stack<Integer> conceptHistoryStack = new Stack<Integer>();
+	private ObservableList<Integer> conceptHistoryStack = FXCollections.observableArrayList();
 	
 	private static int currentConNid;
 	private static UUID currentConUuid;

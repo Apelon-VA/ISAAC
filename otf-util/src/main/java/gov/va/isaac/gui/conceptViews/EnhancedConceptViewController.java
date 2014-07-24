@@ -9,9 +9,9 @@ import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 
-import java.util.Stack;
 import java.util.UUID;
 
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -79,11 +79,11 @@ public class EnhancedConceptViewController {
 		conceptView = enhancedConceptView;		
 	}
 
-	void setConcept(UUID currentCon, ConceptViewMode mode, Stack<Integer> stack) {
-//		if (!initialized ) {
+	void setConcept(UUID currentCon, ConceptViewMode mode, ObservableList<Integer> conceptHistoryStack) {
+		if (!initialized ) {
 			initialized = true;
-			initializeWindow(stack, mode);
-//		}
+			initializeWindow(conceptHistoryStack, mode);
+		}
 		clearContents();
 		conceptUuid = currentCon;
 		creator.setConceptValues(currentCon, mode);
@@ -96,10 +96,10 @@ public class EnhancedConceptViewController {
 		creator.setConceptValues(currentCon, mode);
 	}
 
-	void initializeWindow(Stack<Integer> stack, ConceptViewMode view) {
+	void initializeWindow(ObservableList<Integer> conceptHistoryStack, ConceptViewMode view) {
 		commonInit(view);
 		
-		labelHelper.setPrevConStack(stack);
+		labelHelper.setPrevConStack(conceptHistoryStack);
 		labelHelper.setIsWindow(true);
 
 		closeButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -126,8 +126,8 @@ public class EnhancedConceptViewController {
 		previousButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				
-				int prevConNid = labelHelper.getPreviousConceptStack().pop();
+				int lastItemIdx = labelHelper.getPreviousConceptStack().size() - 1;
+				int prevConNid = labelHelper.getPreviousConceptStack().remove(lastItemIdx);
 				conceptView.setConcept(prevConNid);
 			}
 		});
@@ -135,8 +135,8 @@ public class EnhancedConceptViewController {
 		prevButtonQueueFilled = new UpdateableBooleanBinding()
 		{
 			{
-//				addBinding(labelHelper.getPreviousConceptStack().);
-//				setComputeOnInvalidate(true);
+				addBinding(labelHelper.getPreviousConceptStack());
+				setComputeOnInvalidate(true);
 			}
 			
 			@Override
