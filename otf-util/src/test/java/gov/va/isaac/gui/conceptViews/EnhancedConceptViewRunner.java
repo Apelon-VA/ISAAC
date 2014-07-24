@@ -54,7 +54,7 @@ public class EnhancedConceptViewRunner extends Application
 
 		primaryStage.setScene(new Scene(new Label("hello world"), 200, 100));
 		primaryStage.show();
-		conView.setConcept(UUID.fromString("dcf9db9f-7d84-367f-85e1-7b51c4d962f6"));
+		conView.setConcept(UUID.fromString("49064bb7-cda5-3cb3-b8f7-085139486fa8"));
 		conView.showView(primaryStage);
 	}
 

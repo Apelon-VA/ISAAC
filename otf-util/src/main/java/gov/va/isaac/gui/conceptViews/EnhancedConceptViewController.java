@@ -1,23 +1,24 @@
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptValueCreator;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
+import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 
 import java.util.Stack;
 import java.util.UUID;
 
-import javafx.beans.binding.BooleanBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
@@ -33,7 +34,9 @@ public class EnhancedConceptViewController {
 	// Descriptions & Relationships
 	@FXML private VBox termVBox;
 	@FXML private VBox relVBox;
-
+	@FXML private VBox destVBox;
+	@FXML private ScrollPane destScrollPane;
+	
 	// Top Labels
 	@FXML protected Label releaseIdLabel;
 	@FXML protected Label isPrimLabel;
@@ -57,12 +60,14 @@ public class EnhancedConceptViewController {
 	protected ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	
 	protected UUID conceptUuid;
-	private BooleanBinding prevButtonQueueFilled;
+	private UpdateableBooleanBinding prevButtonQueueFilled;
 	
 	public PopupConceptViewI conceptView;
 	private ConceptViewMode currentMode;
 
-	private ConceptValueCreator creator;
+	private EnhancedConceptBuilder creator;
+
+	private boolean initialized = false;
 
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedConceptViewController.class);
 
@@ -75,7 +80,10 @@ public class EnhancedConceptViewController {
 	}
 
 	void setConcept(UUID currentCon, ConceptViewMode mode, Stack<Integer> stack) {
-		initializeWindow(stack, mode);
+//		if (!initialized ) {
+			initialized = true;
+			initializeWindow(stack, mode);
+//		}
 		clearContents();
 		conceptUuid = currentCon;
 		creator.setConceptValues(currentCon, mode);
@@ -124,8 +132,13 @@ public class EnhancedConceptViewController {
 			}
 		});
 		
-		prevButtonQueueFilled = new BooleanBinding()
+		prevButtonQueueFilled = new UpdateableBooleanBinding()
 		{
+			{
+//				addBinding(labelHelper.getPreviousConceptStack().);
+//				setComputeOnInvalidate(true);
+			}
+			
 			@Override
 			protected boolean computeValue()
 			{
@@ -165,7 +178,7 @@ public class EnhancedConceptViewController {
 	}
 
 	private void commonInit(ConceptViewMode mode) {
-		creator = new ConceptValueCreator(termVBox, relVBox, fsnAnnotVBox, conAnnotVBox, fsnLabel, releaseIdLabel, isPrimLabel);
+		creator = new EnhancedConceptBuilder(termVBox, relVBox, destVBox, destScrollPane, fsnAnnotVBox, conAnnotVBox, fsnLabel, releaseIdLabel, isPrimLabel);
 		
 		labelHelper = new ConceptViewerLabelHelper(conceptView);
 		labelHelper.setPane(getRootNode());
@@ -213,6 +226,7 @@ public class EnhancedConceptViewController {
 		isPrimLabel.setText("");
 		fsnLabel.setText("");
 		termVBox.getChildren().clear();
+		destVBox.getChildren().clear();
 		relVBox.getChildren().clear();
 		conAnnotVBox.getChildren().clear();
 		fsnAnnotVBox.getChildren().clear();

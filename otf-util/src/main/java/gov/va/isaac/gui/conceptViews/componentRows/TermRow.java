@@ -7,6 +7,7 @@ import javafx.scene.layout.GridPane;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 
 public abstract class TermRow extends Row {
+	int counter = 0;
 
 	public TermRow(ConceptViewerLabelHelper labelHelper) {
 		super(labelHelper);
@@ -21,6 +22,6 @@ public abstract class TermRow extends Row {
 	}
 	
 
-	abstract public GridPane createTermGridPane(DescriptionVersionBI rel);
+	abstract public void addTermRow(DescriptionVersionBI rel);
 
 }

@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -34,10 +36,12 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConceptValueCreator {
+public class EnhancedConceptBuilder {
 	
 	private VBox termVBox;
 	private VBox relVBox;
+	private VBox destVBox;
+	private ScrollPane destScrollPane;
 	private VBox fsnAnnotVBox;
 	private VBox conAnnotVBox;
 	private ConceptVersionBI con;
@@ -49,11 +53,14 @@ public class ConceptValueCreator {
 	private RelRow rr;
 	private ConceptViewerLabelHelper labelHelper;
 
-	private static final Logger LOG = LoggerFactory.getLogger(ConceptValueCreator.class);
+	private static final Logger LOG = LoggerFactory.getLogger(EnhancedConceptBuilder.class);
 
-	public ConceptValueCreator (VBox termVBox, VBox relVBox, VBox fsnAnnotVBox, VBox conAnnotVBox, Label fsnLabel, Label releaseIdLabel, Label isPrimLabel) {
+	public EnhancedConceptBuilder (VBox termVBox, VBox relVBox, VBox destVBox, ScrollPane destScrollPane, VBox fsnAnnotVBox, VBox conAnnotVBox, Label fsnLabel, Label releaseIdLabel, Label isPrimLabel) {
 		this.termVBox = termVBox;
 		this.relVBox = relVBox;
+		this.destVBox = destVBox;
+		this.destScrollPane = destScrollPane;
+		
 		this.fsnAnnotVBox = fsnAnnotVBox;
 		this.conAnnotVBox = conAnnotVBox;
 		this.fsnLabel = fsnLabel;
@@ -65,6 +72,35 @@ public class ConceptValueCreator {
 		setMode(mode);
 		con = WBUtility.getConceptVersion(currentCon);
 		
+		executeConceptBuilder();
+		executeTermBuilder();
+
+		try {
+			rr.createGridPane();
+			executeRelBuilder(con.getRelationshipsOutgoingActive());
+			relVBox.getChildren().add(rr.getGridPane());
+
+			if (mode != ConceptViewMode.SIMPLE_VIEW) {
+				rr.resetCounter();
+				executeRelBuilder(con.getRelationshipsIncomingActive());
+				GridPane gp = ((DetailRelRow)rr).getDestinationGridPane();
+
+				if (!gp.getChildren().isEmpty()) {
+					destVBox.getChildren().add(gp);
+					destVBox.setVisible(true);
+					destScrollPane.setVisible(true);
+				}
+			} else {
+				destVBox.setVisible(false);
+				destScrollPane.setVisible(false);
+			}
+		} catch (IOException | ContradictionException e) {
+			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
+		}
+	}
+	
+
+	private void executeConceptBuilder() {
 		try {
 			// FSN
 			labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
@@ -84,11 +120,28 @@ public class ConceptValueCreator {
 		} catch (Exception e) {
 			LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
 		}
-		
 
+	}
+
+	private void executeRelBuilder(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
+		// Capture for sorting (storing is-a in different collection
+		Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
+		Set<RelationshipVersionBI> isaRels = new HashSet<>();
+		sortRels(sortedRels, isaRels, rels);
+
+		// Display IS-As
+		addRels(isaRels);
+
+		for (Integer relType: sortedRels.keySet()) {
+			// Display non-IS-As
+			addRels(sortedRels.get(relType));
+		}
+	}
+
+	private void executeTermBuilder() {
 		// Descriptions
 		try {
-			// Capture for sorting
+			// Sort Descriptions filtering out FSN and special storage for PT
 			Map<Integer, Set<DescriptionVersionBI>> sortedDescs = new HashMap<>();
 			DescriptionVersionBI ptDesc = null;
 			
@@ -107,60 +160,27 @@ public class ConceptValueCreator {
 				}
 			}
 		   	
-			// Display
-			termVBox.getChildren().add(tr.createTermGridPane(ptDesc));
+			// Create GridPane
+			tr.createGridPane();
+
+			// Add PT Row to GridPane
+			tr.addTermRow(ptDesc);
+
+			// Add other terms to GridPane
 			for (Integer descType: sortedDescs.keySet()) {
 				for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
 					if (desc.getNid() != con.getPreferredDescription().getNid()) {
-						termVBox.getChildren().add(tr.createTermGridPane(desc));
+						tr.addTermRow(desc);
 					}
 				}
 			}
+			
+			// Add GridPane to VBox
+			termVBox.getChildren().add(tr.getGridPane());
 		} catch (Exception e) {
 			LOG.error("Cannot access descriptions for concept: " + con.getPrimordialUuid());
-		}
-		
-		// Relationships
-		try {
-			// Capture for sorting (storing is-a in different collection
-			Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-			Set<RelationshipVersionBI> isaRels = new HashSet<>();
-			sortRels(sortedRels, isaRels, con.getRelationshipsOutgoingActive());
-
-			// Display IS-As
-			addRels(isaRels);
-
-			for (Integer relType: sortedRels.keySet()) {
-				// Display non-IS-As
-				addRels(sortedRels.get(relType));
-			}
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
-		}
-
-		if (mode != ConceptViewMode.SIMPLE_VIEW) {
-			// Destination Relationships
-			try {
-				// Capture for sorting (storing is-a in different collection
-				Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-				Set<RelationshipVersionBI> isaRels = new HashSet<>();
-				
-				sortRels(sortedRels, isaRels, con.getRelationshipsIncomingActive());
-	
-				// Display IS-As
-				addRels(isaRels);
-	
-				for (Integer relType: sortedRels.keySet()) {
-					// Display non-IS-As
-					addRels(sortedRels.get(relType));
-				}
-			} catch (IOException | ContradictionException e) {
-				LOG.error("Cannot access destinations for concept: " + con.getPrimordialUuid());
-			}
-		}	
-		
+		}		
 	}
-	
 
 	private void setMode(ConceptViewMode mode) {
 		if (mode == ConceptViewMode.SIMPLE_VIEW) {
@@ -175,10 +195,7 @@ public class ConceptValueCreator {
 
 	private void addRels(Set<RelationshipVersionBI> rels) {
 		for (RelationshipVersionBI rel: rels) {
-			GridPane row = rr.createRelGridPane(rel);
-			if (row != null) {
-				relVBox.getChildren().add(row);
-			}
+			rr.addRelRow(rel);
 		}
 	}
 

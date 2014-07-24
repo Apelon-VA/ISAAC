@@ -6,10 +6,18 @@ import javafx.scene.layout.GridPane;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public abstract class RelRow extends Row {
+	int counter = 0;
+	protected GridPane dgp = new GridPane();
+	protected GridPane currentPane;
+
+	public void resetCounter() {
+		counter = 0;
+		currentPane = dgp;
+	}
 
 	public RelRow(ConceptViewerLabelHelper labelHelper) {
 		super(labelHelper);
 	}
-	
-	abstract public GridPane createRelGridPane(RelationshipVersionBI rel);
+
+	abstract public void addRelRow(RelationshipVersionBI rel);
 }
