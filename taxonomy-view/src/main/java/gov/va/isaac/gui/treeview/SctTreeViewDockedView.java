@@ -37,8 +37,6 @@ import javafx.stage.Window;
 
 import javax.inject.Singleton;
 
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -94,7 +92,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					sctTreeView_.init(new UUID[] {Taxonomies.SNOMED.getUuids()[0], Taxonomies.REFSET_AUX.getUuids()[0], Taxonomies.WB_AUX.getUuids()[0]});
+					sctTreeView_.init(WBUtility.getTreeRoots());
 					hasBeenInited_ = true;
 				}
 			}

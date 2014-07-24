@@ -50,6 +50,7 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -694,6 +695,24 @@ public class WBUtility {
 	    Date date = new Date(comp.getTime());
 
 	    return format.format(date);		
+	}
+	
+	//TODO this will be removed, when the DB Builder starts building a single 
+	// root node, and constructing the hierarcy from there....
+	public static UUID[] getTreeRoots()
+	{
+		ArrayList<UUID> roots = new ArrayList<>();
+		roots.add(Taxonomies.SNOMED.getUuids()[0]);
+		roots.add(Taxonomies.REFSET_AUX.getUuids()[0]);
+		roots.add(Taxonomies.WB_AUX.getUuids()[0]);
+		
+		UUID uuid = UUID.fromString("3958d043-9e8c-508e-bf6d-fd9c83a856da");  //loinc root
+		if (getConceptVersion(uuid) != null)
+		{
+			roots.add(uuid);
+		}
+		//RxNorm doesn't have a root...
+		return roots.toArray(new UUID[roots.size()]);
 	}
 	
 }
