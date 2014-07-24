@@ -7,6 +7,8 @@ import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.util.WBUtility;
 
@@ -18,9 +20,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Side;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -52,10 +61,13 @@ public class EnhancedConceptBuilder {
 	private TermRow tr;
 	private RelRow rr;
 	private ConceptViewerLabelHelper labelHelper;
+	private AnchorPane enhancedConceptPane;
 
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedConceptBuilder.class);
 
-	public EnhancedConceptBuilder (VBox termVBox, VBox relVBox, VBox destVBox, ScrollPane destScrollPane, VBox fsnAnnotVBox, VBox conAnnotVBox, Label fsnLabel, Label releaseIdLabel, Label isPrimLabel) {
+	public EnhancedConceptBuilder (AnchorPane enhancedConceptPane, VBox termVBox, VBox relVBox, VBox destVBox, ScrollPane destScrollPane, VBox fsnAnnotVBox, VBox conAnnotVBox, Label fsnLabel, Label releaseIdLabel, Label isPrimLabel) {
+		this.enhancedConceptPane = enhancedConceptPane;
+		
 		this.termVBox = termVBox;
 		this.relVBox = relVBox;
 		this.destVBox = destVBox;
@@ -117,10 +129,49 @@ public class EnhancedConceptBuilder {
 
 			// Defined Status
 			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr), true);
+
+			// Concept ContextMenu
+			createConceptContextMenu();
+			
 		} catch (Exception e) {
 			LOG.error("Cannot access basic attributes for concept: " + con.getPrimordialUuid());
 		}
 
+	}
+
+	private void createConceptContextMenu() {
+		final ContextMenu rtClickMenu = new ContextMenu();
+
+		MenuItem copyTextItem = new MenuItem("Copy Text");
+		copyTextItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				CustomClipboard.set("Testing this");
+			}
+		});
+				
+		MenuItem copyContentItem = new MenuItem("Copy Content");
+		copyContentItem.setGraphic(Images.COPY.createImageView());
+		copyContentItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				CustomClipboard.set("Testing this two");
+			}
+		});
+
+		rtClickMenu.getItems().add(copyTextItem);
+		rtClickMenu.getItems().add(copyContentItem);
+
+		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
+		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
+            public void handle(ContextMenuEvent e) {  
+                rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
+            }  
+        }); 
 	}
 
 	private void executeRelBuilder(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {

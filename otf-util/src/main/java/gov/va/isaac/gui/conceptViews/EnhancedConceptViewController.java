@@ -63,7 +63,7 @@ public class EnhancedConceptViewController {
 	private UpdateableBooleanBinding prevButtonQueueFilled;
 	
 	public PopupConceptViewI conceptView;
-	private ConceptViewMode currentMode;
+	private ConceptViewMode currentMode = ConceptViewMode.SIMPLE_VIEW;
 
 	private EnhancedConceptBuilder creator;
 
@@ -90,7 +90,11 @@ public class EnhancedConceptViewController {
 	}
 	
 	void setConcept(UUID currentCon, ConceptViewMode mode) {
-		intializePane(mode);
+		if (!initialized ) {
+			initialized = true;
+			intializePane(mode);
+		}
+		
 		conceptUuid = currentCon;
 		clearContents();
 		creator.setConceptValues(currentCon, mode);
@@ -178,7 +182,7 @@ public class EnhancedConceptViewController {
 	}
 
 	private void commonInit(ConceptViewMode mode) {
-		creator = new EnhancedConceptBuilder(termVBox, relVBox, destVBox, destScrollPane, fsnAnnotVBox, conAnnotVBox, fsnLabel, releaseIdLabel, isPrimLabel);
+		creator = new EnhancedConceptBuilder(enhancedConceptPane, termVBox, relVBox, destVBox, destScrollPane, fsnAnnotVBox, conAnnotVBox, fsnLabel, releaseIdLabel, isPrimLabel);
 		
 		labelHelper = new ConceptViewerLabelHelper(conceptView);
 		labelHelper.setPane(getRootNode());

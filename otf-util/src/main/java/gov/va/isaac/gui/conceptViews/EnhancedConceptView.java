@@ -93,8 +93,10 @@ public class EnhancedConceptView implements PopupConceptViewI {
 	private void setConcept(ConceptChronicleDdo concept) {
 		// Make sure in application thread.
 		FxUtils.checkFxUserThread();
-		controller.setConcept(concept.getPrimordialUuid(), ConceptViewMode.SIMPLE_VIEW, conceptHistoryStack);
-        s.sizeToScene(); 
+		controller.setConcept(concept.getPrimordialUuid(), controller.getViewMode(), conceptHistoryStack);
+		if (s != null) {
+			s.sizeToScene(); 
+		}
 	}
 
 	@Override
@@ -105,6 +107,7 @@ public class EnhancedConceptView implements PopupConceptViewI {
 		s.initStyle(StageStyle.DECORATED);
 
 		s.setScene(new Scene(getView()));
+		s.sizeToScene(); 
 		
 		s.getScene().getStylesheets().add(EnhancedConceptView.class.getResource("/isaac-shared-styles.css").toString());
 		s.getIcons().add(Images.CONCEPT_VIEW.getImage());
@@ -204,9 +207,11 @@ public class EnhancedConceptView implements PopupConceptViewI {
 	@Override
 	public void setViewMode(ConceptViewMode mode) {
 		controller.setViewMode(mode);
-        s.sizeToScene(); 
+		if (s != null) {
+			s.sizeToScene(); 
+		}
 	}
-
+	
 	@Override
 	public ConceptViewMode getViewMode() {
 		return controller.getViewMode();
