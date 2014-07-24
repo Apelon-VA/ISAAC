@@ -362,7 +362,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
 								@Override
 								public String[] getStrings() {
-									ArrayList<String> items = new ArrayList<>();
+									List<String> items = new ArrayList<>();
 									for (Integer index : c.getTableView().getSelectionModel().getSelectedIndices()) {
 										items.add(c.getTableColumn().getCellData(index).toString());
 									}
