@@ -20,7 +20,6 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.Format;
@@ -30,7 +29,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -43,6 +41,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
+import org.ihtsdo.otf.tcc.api.coordinate.Position;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -56,6 +55,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
@@ -81,6 +81,8 @@ import org.slf4j.LoggerFactory;
  * @author jefron
  */
 public class WBUtility {
+	
+	public static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
 
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
@@ -114,16 +116,22 @@ public class WBUtility {
 	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-				int authorNid   = TermAux.USER.getLenient().getConceptNid();
+				int authorNid = TermAux.USER.getLenient().getConceptNid();
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
-				
+
+				//If the ISAAC_DEV_PATH concept exists, use it.
+				if (dataStore.getConcept(ISAAC_DEV_PATH.getUuids()[0]).getUUIDs().size() > 0)
+				{
+					LOG.info("Using path " + ISAAC_DEV_PATH.getDescription() + " as the Edit Coordinate");
+					// Override edit path nid with "ISAAC development path"
+					editPathNid = ISAAC_DEV_PATH.getLenient().getConceptNid();
+				}
 				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
 			} catch (IOException e) {
 				LOG.error("error configuring edit coordinate", e);
 			}
 		}
-
 		return editCoord;
 	}
 
@@ -468,6 +476,14 @@ public class WBUtility {
 			try
 			{
 				vc = StandardViewCoordinates.getSnomedStatedLatest();
+				//If the ISAAC_DEV_PATH concept exists, use it.
+				if (dataStore.getConcept(ISAAC_DEV_PATH.getUuids()[0]).getUUIDs().size() > 0)
+				{
+					LOG.info("Using path " + ISAAC_DEV_PATH.getDescription() + " as the View Coordinate");
+					// Start with standard view coordinate and override the path setting to use the ISAAC development path
+					Position position = dataStore.newPosition(dataStore.getPath(ISAAC_DEV_PATH.getLenient().getConceptNid()), Long.MAX_VALUE);
+					vc.setViewPosition(position);
+				}
 			} catch (IOException e) {
 				LOG.error("Unexpected error fetching view coordinates!", e);
 			}
