@@ -60,7 +60,7 @@ import com.sun.javafx.UnmodifiableArrayList;
  */
 public class ConceptDetailWorkflowController
 {	
-	private final Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflowController.class);
+	private final static Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflowController.class);
 
 	// TODO: this should be based on a value from the API
 	private final static String ACTION_STATUS = "pending";
@@ -158,10 +158,9 @@ public class ConceptDetailWorkflowController
 		}
 		
 		// TODO: determine how creation of request should be reflected in GUI
-		// TODO: replace calls to System.out with calls to logger
-		System.out.println("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
+		logger.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
 		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName());
-		System.out.println("Created ProcessInstanceCreationRequest: " + createdRequest);
+		logger.debug("Created ProcessInstanceCreationRequest: " + createdRequest);
 	}
 
 	// Initialize GUI (invoked by FXML)
@@ -387,8 +386,7 @@ public class ConceptDetailWorkflowController
 		Collections.sort(tasks, LocalTask.ID_COMPARATOR);
 		taskComboBox.getItems().addAll(tasks);
 		try {
-			// TODO: replace calls to System.out with calls to logger
-			System.out.println("DEBUG: Loaded " + taskComboBox.getItems().size() + " open tasks for user \"" + getUserName() + "\" for concept UUID \"" + conceptVersion.getPrimordialUuid() + "\" (" + conceptVersion.getPreferredDescription().getText() + ")");
+			logger.debug("DEBUG: Loaded " + taskComboBox.getItems().size() + " open tasks for user \"" + getUserName() + "\" for concept UUID \"" + conceptVersion.getPrimordialUuid() + "\" (" + conceptVersion.getPreferredDescription().getText() + ")");
 		} catch (IOException | ContradictionException e1) {
 			String title = "Failed getting preferred description";
 			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion: caught " + e1.getClass().getName();
