@@ -20,9 +20,8 @@ package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -33,7 +32,6 @@ import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.CommonMenus.ObjectContainer;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 
@@ -50,7 +48,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -66,6 +63,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
@@ -73,7 +71,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.Label;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -358,46 +356,31 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			newCell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
-					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
-					if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
-						ContextMenu cm = new ContextMenu();
-						CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
+					if (event.getButton() == MouseButton.SECONDARY) {
+						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+						if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
+							ContextMenu cm = new ContextMenu();
+							CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
 
-						CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
-							@Override
-							public String getString() {
-								return c.getItem().toString();
-							}
-							@Override
-							public ObjectContainer getObjectContainer() {
-								return new ObjectContainer(c.getItem());
-							}
-						};
-						CommonMenus.addCommonMenus(cm, new SimpleBooleanProperty(true), dp, new ConceptIdProvider() {
-							@Override
-							public String getSctId() {
-								String sctId = ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(result.getConcept())).trim();
-								LOG.debug("Using context menu to copy SCTID \"" + sctId + "\"");
+							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+								@Override
+								public String[] getStrings() {
+									return new String[] { c.getItem().toString() };
+								}
+							};
+							CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+								@Override
+								public Set<Integer> getNIds() {
+									Set<Integer> nids = new HashSet<>();
+									nids.add(result.getConceptNid());
+									return nids;
+								}
+							};
+							
+							CommonMenus.addCommonMenus(cm, dp, nidProvider);
 
-								return sctId;
-							}
-							@Override
-							public UUID getUUID() {
-								UUID uuid = result.getConcept().getPrimordialUuid();
-								LOG.debug("Using context menu to copy UUID \"" + uuid + "\"");
-
-								return uuid;
-							}
-							@Override
-							public Integer getNid() {
-								int nid = result.getConceptNid();
-								LOG.debug("Using context menu to copy NID " + nid);
-
-								return nid;
-							}
-						});
-
-						c.setContextMenu(cm);
+							c.setContextMenu(cm);
+						}
 					}
 				}
 			});

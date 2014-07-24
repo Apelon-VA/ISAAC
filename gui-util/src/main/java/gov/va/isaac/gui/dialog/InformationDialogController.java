@@ -20,31 +20,51 @@ package gov.va.isaac.gui.dialog;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.Pane;
 
 /**
  * Controller class for {@link InformationDialog}.
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class InformationDialogController {
+public class InformationDialogController
+{
 
-    @FXML private Label messageLabel;
+	@FXML private Pane messageHolder;
 
-    private InformationDialog informationDialog;
+	private InformationDialog informationDialog;
 
-    @FXML
-    public void initialize() {
-    }
+	@FXML
+	public void initialize()
+	{
+	}
 
-    public void setMessageText(String message) {
-        messageLabel.setText(message);
-    }
+	public void setMessageText(String message)
+	{
+		messageHolder.getChildren().clear();
+		if (message.length() > 100)
+		{
+			TextArea ta = new TextArea(message);
+			ta.setPrefSize(500, 150);
+			ta.setEditable(false);
+			ta.setWrapText(true);
+			messageHolder.getChildren().add(ta);
+		}
+		else
+		{
+			messageHolder.getChildren().add(new Label(message));
+		}
+	}
 
-    public void handleOk() {
-        informationDialog.close();
-    }
+	public void handleOk()
+	{
+		informationDialog.close();
+	}
 
-    public void setVariables(InformationDialog informationDialog) {
-        this.informationDialog = informationDialog;
-    }
+	public void setVariables(InformationDialog informationDialog)
+	{
+		this.informationDialog = informationDialog;
+	}
 }

@@ -24,12 +24,17 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -52,6 +57,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,32 +126,18 @@ public class SearchViewController implements TaskCompleteCallback {
 
                             ContextMenu cm = new ContextMenu();
 
-                            CommonMenus.addCommonMenus(cm, null, new SingleConceptIdProvider()
-                            {
-                                @Override
-                                public String getConceptId()
-                                {
-                                    return item.getConceptNid() + "";
-                                }
 
-                                /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
-                                 */
-                                @Override
-                                public UUID getUUID()
-                                {
-                                    return item.getConcept().getPrimordialUuid();
-                                }
+    						CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+    							@Override
+    							public Set<Integer> getNIds() {
+    								Set<Integer> nids = new HashSet<>();
+    								nids.add(item.getConceptNid());
+    								return nids;
+    							}
+    						};
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 
-                                /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
-                                 */
-                                @Override
-                                public Integer getNid()
-                                {
-                                    return item.getConceptNid();
-                                }
-                            });
+                            CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 
                             setContextMenu(cm);
 

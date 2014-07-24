@@ -28,6 +28,8 @@ import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.CommonMenuBuilderI;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
@@ -82,6 +84,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -201,7 +204,7 @@ public class ListBatchViewController
 					protected void updateItem(String item, boolean empty) {
 						super.updateItem(item, empty);
 	
-						TableRow currentRow = getTableRow();
+						TableRow<?> currentRow = getTableRow();
 						if (!empty) {
 							if (currentRow != null && currentRow.getItem() != null) {
 								setText(item);
@@ -234,8 +237,8 @@ public class ListBatchViewController
 				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent event) {
-						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
-							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
+						if (((TableCell<?,?>)event.getSource()).getIndex() < conceptTable.getItems().size()) {
+							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell<?,?>)event.getSource()).getIndex());
 							conceptView.setConcept(con.getNid());
 							conceptDisplayTab.setContent(conceptView.getView());
 						}
@@ -353,6 +356,48 @@ public class ListBatchViewController
 				
 				rowMenu.getItems().addAll(viewItem, removeItem, commitItem, cancelItem);
 
+				row.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						if (event.getButton() == MouseButton.SECONDARY) {
+							TableRow<SimpleDisplayConcept> r = (TableRow<SimpleDisplayConcept>)event.getSource();
+							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+								@Override
+								public String[] getStrings() {
+									List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+									String descs[] = new String[selected.size()];
+									for (int i = 0; i < selected.size(); ++i) {
+										descs[i] = selected.get(i).getDescription();
+									}
+									
+									//System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
+
+									return descs;
+								}
+							};
+							
+							CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+								@Override
+								public Set<Integer> getNIds() {
+									List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+									Set<Integer> nids = new HashSet<>();
+									for (SimpleDisplayConcept concept : selected) {
+										nids.add(concept.getNid());
+									}
+
+									//System.out.println(selected.size() + " item(s) selected: " + nids);
+									
+									return nids;
+								}
+							};
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+							menuBuilder.setMenuItemsToExclude(CommonMenus.CommonMenuItem.LIST_VIEW);
+							CommonMenus.addCommonMenus(r.getContextMenu(), menuBuilder, dp, nidProvider);
+						}
+					}
+
+				});
+				
 				// only display context menu for non-null items:
 				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
 				return row;
