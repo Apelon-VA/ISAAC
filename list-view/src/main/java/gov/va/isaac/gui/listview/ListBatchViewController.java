@@ -361,38 +361,40 @@ public class ListBatchViewController
 					public void handle(MouseEvent event) {
 						if (event.getButton() == MouseButton.SECONDARY) {
 							TableRow<SimpleDisplayConcept> r = (TableRow<SimpleDisplayConcept>)event.getSource();
-							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
-								@Override
-								public String[] getStrings() {
-									List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
-									String descs[] = new String[selected.size()];
-									for (int i = 0; i < selected.size(); ++i) {
-										descs[i] = selected.get(i).getDescription();
-									}
-									
-									//System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
+							if (r.getIndex() < r.getTableView().getItems().size()) {
+								CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+									@Override
+									public String[] getStrings() {
+										List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+										String descs[] = new String[selected.size()];
+										for (int i = 0; i < selected.size(); ++i) {
+											descs[i] = selected.get(i).getDescription();
+										}
 
-									return descs;
-								}
-							};
-							
-							CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
-								@Override
-								public Set<Integer> getNIds() {
-									List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
-									Set<Integer> nids = new HashSet<>();
-									for (SimpleDisplayConcept concept : selected) {
-										nids.add(concept.getNid());
-									}
+										//System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
 
-									//System.out.println(selected.size() + " item(s) selected: " + nids);
-									
-									return nids;
-								}
-							};
-							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
-							menuBuilder.setMenuItemsToExclude(CommonMenus.CommonMenuItem.LIST_VIEW);
-							CommonMenus.addCommonMenus(r.getContextMenu(), menuBuilder, dp, nidProvider);
+										return descs;
+									}
+								};
+
+								CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+									@Override
+									public Set<Integer> getNIds() {
+										List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+										Set<Integer> nids = new HashSet<>();
+										for (SimpleDisplayConcept concept : selected) {
+											nids.add(concept.getNid());
+										}
+
+										//System.out.println(selected.size() + " item(s) selected: " + nids);
+
+										return nids;
+									}
+								};
+								CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+								menuBuilder.setMenuItemsToExclude(CommonMenus.CommonMenuItem.LIST_VIEW);
+								CommonMenus.addCommonMenus(r.getContextMenu(), menuBuilder, dp, nidProvider);
+							}
 						}
 					}
 
