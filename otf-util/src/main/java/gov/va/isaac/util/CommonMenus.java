@@ -19,21 +19,19 @@
 package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -41,7 +39,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -63,6 +60,7 @@ public class CommonMenus
 		// These text values must be distinct
 		// including across non-CommonMenu items that may exist on any passed ContextMenu
 		CONCEPT_VIEW("View Concept"),
+		CONCEPT_VIEW_LEGACY("View Concept 2"),
 		TAXONOMY_VIEW("Find in Taxonomy View"),
 		
 		SEND_TO("Send To"),
@@ -321,7 +319,7 @@ public class CommonMenus
 				{
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" + id + "\"");
 
-					EnhancedConceptView cv = AppContext.getService(EnhancedConceptView.class);
+					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
 					cv.setConcept(id);
 
 					cv.showView(AppContext.getMainApplicationWindow().getPrimaryStage().getScene().getWindow());
@@ -341,6 +339,40 @@ public class CommonMenus
 			}
 		}
 		menuItems.add(enhancedConceptViewMenuItem);
+		
+		// Menu item to show concept details. (legacy)
+		// TODO - bad dan, ugly copy-paste stuff.
+		MenuItem legacyConceptViewMenuItem = new MenuItem(CommonMenuItem.CONCEPT_VIEW_LEGACY.getText());
+		legacyConceptViewMenuItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+		legacyConceptViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event)
+			{
+				Integer id = nids[0];
+				if (id != null)
+				{
+					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" + id + "\"");
+
+					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "LegacyStyle");
+					cv.setConcept(id);
+
+					cv.showView(AppContext.getMainApplicationWindow().getPrimaryStage().getScene().getWindow());
+				}
+				else
+				{
+					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
+				}
+			}
+		});
+		if (builder.getInvisibleWhenfalse() != null)
+		{
+			legacyConceptViewMenuItem.visibleProperty().bind(builder.getInvisibleWhenfalse());
+		} else {
+			if (builder.isCommonMenuItemExcluded(CommonMenuItem.CONCEPT_VIEW) || nids == null || nids.length != 1) {
+				legacyConceptViewMenuItem.setVisible(false);
+			}
+		}
+		menuItems.add(legacyConceptViewMenuItem);
 
 		// Menu item to find concept in tree.
 		MenuItem findInTaxonomyViewMenuItem = new MenuItem(CommonMenuItem.TAXONOMY_VIEW.getText());
