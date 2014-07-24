@@ -302,7 +302,7 @@ public class ListBatchViewController
 						cv.showView(rootPane.getScene().getWindow());
 					}
 				});
-				MenuItem removeItem = new MenuItem("Delete");
+				MenuItem removeItem = new MenuItem("Remove from List");
 				removeItem.setGraphic(Images.DELETE.createImageView());
 				removeItem.setOnAction(new EventHandler<ActionEvent>()
 				{
