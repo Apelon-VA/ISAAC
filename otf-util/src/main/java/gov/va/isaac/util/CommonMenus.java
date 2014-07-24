@@ -40,11 +40,13 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.concurrent.Task;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 
 /**
@@ -354,14 +356,15 @@ public class CommonMenus
 	{
 		List<MenuItem> menuItems = new ArrayList<>();
 		
-		CommonMenuBuilder builder = null;
+		CommonMenuBuilder tmpBuilder = null;
 		if (passedBuilder == null) {
-			builder = new CommonMenuBuilder();
+			tmpBuilder = new CommonMenuBuilder();
 		} else if (! (passedBuilder instanceof CommonMenuBuilder)) {
-			builder = new CommonMenuBuilder(passedBuilder);
+			tmpBuilder = new CommonMenuBuilder(passedBuilder);
 		} else {
-			builder = (CommonMenuBuilder)passedBuilder;
+			tmpBuilder = (CommonMenuBuilder)passedBuilder;
 		}
+		final CommonMenuBuilder builder = tmpBuilder;
 		
 		Integer[] nids = nidProvider.getNIds().toArray(new Integer[nidProvider.getNIds().size()]);
 
@@ -417,22 +420,50 @@ public class CommonMenus
 		menuItems.add(findInTaxonomyViewMenuItem);
 
 		// get Send-To menu items
-		List<MenuItem> sendToMenuItems = getSendToMenuItems(builder, dataProvider, nids);
 		Menu sendToMenu = new Menu(CommonMenuItem.SEND_TO.getText());
-		sendToMenu.getItems().addAll(sendToMenuItems);
-		if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || getNumVisibleMenuItems(sendToMenuItems) == 0) {
-			sendToMenu.setVisible(false);
-		}
+		sendToMenu.setVisible(false);
+		Task<List<MenuItem>> getSendToMenuItemsTask = new Task<List<MenuItem>>() {
+			@Override
+			protected List<MenuItem> call() throws Exception {
+				List<MenuItem> items = getSendToMenuItems(builder, dataProvider, nids);
+				
+				sendToMenu.getItems().addAll(items);
+
+				if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || getNumVisibleMenuItems(items) == 0) {
+					sendToMenu.setVisible(false);
+				} else {
+					sendToMenu.setVisible(true);
+				}
+
+				return items;
+			}
+		};
+		Utility.execute(getSendToMenuItemsTask);
+
 		menuItems.add(sendToMenu);
-		
+
 		// Get copy menu items
 		// If no copyable data avail, then menu invisible
-		List<MenuItem> copyMenuItems = getCopyMenuItems(builder, dataProvider, nids);
 		Menu copyMenu = new Menu(CommonMenuItem.COPY.getText());
-		copyMenu.getItems().addAll(copyMenuItems);
-		if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || getNumVisibleMenuItems(copyMenuItems) == 0) {
-			copyMenu.setVisible(false);
-		}
+		copyMenu.setVisible(false);
+		Task<List<MenuItem>> getCopyMenuItemsTask = new Task<List<MenuItem>>() {
+			@Override
+			protected List<MenuItem> call() throws Exception {
+				List<MenuItem> items = getCopyMenuItems(builder, dataProvider, nids);
+				
+				copyMenu.getItems().addAll(items);
+
+				if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || getNumVisibleMenuItems(items) == 0) {
+					copyMenu.setVisible(false);
+				} else {
+					copyMenu.setVisible(true);
+				}
+
+				return items;
+			}
+		};
+		Utility.execute(getCopyMenuItemsTask);
+		
 		menuItems.add(copyMenu);
 
 		return menuItems;
