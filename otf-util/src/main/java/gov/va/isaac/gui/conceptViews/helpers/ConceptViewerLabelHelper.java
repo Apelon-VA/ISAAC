@@ -187,7 +187,7 @@ public class ConceptViewerLabelHelper {
 		ContextMenu rtClickMenu = label.getContextMenu();
 		
 		if (isWindow) {
-			MenuItem viewItem = new MenuItem("Chancge Concept");
+			MenuItem viewItem = new MenuItem("Change Concept");
 			viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
 			viewItem.setOnAction(new EventHandler<ActionEvent>()
 			{
