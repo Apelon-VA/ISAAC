@@ -485,7 +485,7 @@ public class CommonMenus
 				{
 					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
 					view.setConcept(id);
-					view.showView(null);
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 				}
 				else
 				{

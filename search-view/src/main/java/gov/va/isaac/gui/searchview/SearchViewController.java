@@ -32,7 +32,6 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -142,19 +141,8 @@ public class SearchViewController implements TaskCompleteCallback {
                                     } else if (mouseEvent.getButton().equals(MouseButton.SECONDARY)) {
                                     	ContextMenu cm = new ContextMenu();
 
-                                    	final ListCell source = (ListCell)mouseEvent.getSource();
+                                    	final ListCell<CompositeSearchResult> source = (ListCell<CompositeSearchResult>)mouseEvent.getSource();
                                     	
-                                    	System.out.println("MouseEvent source is " + source.getClass().getName() + " " + source.toString());
-                						
-//                                    	CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
-//                							@Override
-//                							public Set<Integer> getNIds() {
-//                								
-//                								Set<Integer> nids = new HashSet<>();
-//                								nids.add(item.getConceptNid());
-//                								return nids;
-//                							}
-//                						};
                                     	CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
             								@Override
             								public String[] getStrings() {
