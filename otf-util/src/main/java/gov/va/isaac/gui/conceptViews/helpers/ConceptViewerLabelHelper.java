@@ -27,9 +27,7 @@ import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.WBUtility;
 //import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
-
-import java.util.Stack;
-
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -57,13 +55,15 @@ public class ConceptViewerLabelHelper {
 	
 	private AnchorPane pane;
 	private boolean isWindow = false;
-	private Stack<Integer> previousConceptStack;
+	private ObservableList<Integer> previousConceptStack;
 	
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 
-//	private ConceptViewMode currentMode;
-
 	private PopupConceptViewI conceptView = null;
+
+	public ConceptViewerLabelHelper(PopupConceptViewI conceptView) {
+		this.conceptView = conceptView;
+	}
 
 	// Create/Initialize without refNid
 	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
@@ -187,18 +187,19 @@ public class ConceptViewerLabelHelper {
 		ContextMenu rtClickMenu = label.getContextMenu();
 		
 		if (isWindow) {
-			MenuItem viewItem = new MenuItem("View Concept");
+			MenuItem viewItem = new MenuItem("Change Concept");
 			viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
 			viewItem.setOnAction(new EventHandler<ActionEvent>()
 			{
 				@Override
 				public void handle(ActionEvent event)
 				{
-					previousConceptStack.push(currentConceptNid);
+					previousConceptStack.add(currentConceptNid);
 					if (conceptView == null) {
-						conceptView = AppContext.getService(EnhancedConceptView.class);
+						AppContext.getService(EnhancedConceptView.class).setConcept(refNid);
+					} else {
+						conceptView.setConcept(refNid);
 					}
-					conceptView.setConcept(refNid);
 				}
 			});
 			
@@ -226,12 +227,10 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				if (conceptView == null) {
-					conceptView = AppContext.getService(EnhancedConceptView.class);
-				}
-				
-				conceptView.setConcept(refNid);
-				conceptView.showView(pane.getScene().getWindow());
+				EnhancedConceptView cv = AppContext.getService(EnhancedConceptView.class);
+			
+				cv.setConcept(refNid);
+				cv.showView(pane.getScene().getWindow());
 			}
 		});
 		
@@ -251,15 +250,12 @@ public class ConceptViewerLabelHelper {
 		this.isWindow = isWindow;
 	}
 
-	public Stack<Integer> getPreviousConceptStack() {
+	public ObservableList<Integer> getPreviousConceptStack() {
 		return previousConceptStack;
 	}
 
-	public void setPrevConStack(Stack<Integer> stack) {
-		previousConceptStack = stack;
+	public void setPrevConStack(ObservableList<Integer> conceptHistoryStack) {
+		previousConceptStack = conceptHistoryStack;
 	}
 
-//	public void setCurrentView(ConceptViewMode view) {
-//		currentMode = view;		
-//	}
 }

@@ -431,11 +431,11 @@ public class CommonMenus
 	}
 
 	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer...nids) {
-		// The following code is for the Copy submenu
+		// The following code is for the "Send To" submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
 
-		// Menu item to show concept details.
+		// Menu item to send Concept to ListView
 		MenuItem listViewMenuItem = new MenuItem(CommonMenuItem.LIST_VIEW.getText());
 		listViewMenuItem.setGraphic(Images.LIST_VIEW.createImageView());
 		listViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {

@@ -6,8 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="parentPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.DetailConceptViewController">
-<children><BorderPane style="-fx-background-color: #F5F5F5;">
+<AnchorPane fx:id="enhancedConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.EnhancedConceptViewController">
+<children><BorderPane minHeight="400.0" minWidth="600.0" style="-fx-background-color: #F5F5F5;" AnchorPane.leftAnchor="0.0">
 <top>
 <VBox alignment="TOP_CENTER">
 <children>
@@ -64,12 +64,12 @@
 </VBox>
 </children>
 <BorderPane.margin>
-<Insets bottom="50.0" left="5.0" right="5.0" top="5.0" />
+<Insets bottom="25.0" left="5.0" right="5.0" top="5.0" />
 </BorderPane.margin>
 </VBox>
 </top>
-<center><VBox BorderPane.alignment="CENTER">
-<children><VBox alignment="TOP_CENTER" fillWidth="false" spacing="20.0">
+<center><VBox fx:id="enhancedConceptView" alignment="TOP_CENTER" fillWidth="false" spacing="15.0" BorderPane.alignment="TOP_CENTER">
+<children><VBox alignment="TOP_CENTER" fillWidth="false">
 <children><GridPane alignment="CENTER" hgap="3.0" styleClass="zone">
   <columnConstraints>
 <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
@@ -108,97 +108,24 @@
 </GridPane>
 </children>
 <VBox.margin>
-<Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
-</VBox.margin></VBox><VBox spacing="20.0">
-<children><GridPane gridLinesVisible="true" hgap="3.0" styleClass="zone" VBox.vgrow="NEVER">
-  <columnConstraints>
-<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
-    <ColumnConstraints hgrow="SOMETIMES" maxWidth="404.0" minWidth="10.0" prefWidth="250.0" />
-    <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" prefWidth="94.0" />
-<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="75.0" />
-<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="75.0" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints fillHeight="false" />
-  </rowConstraints>
-<children><VBox fx:id="descAnnotVBox" alignment="TOP_CENTER" spacing="31.0" /><VBox fx:id="descLabelVBox" spacing="9.0" GridPane.columnIndex="1">
-<children><Label fx:id="prefLabel" textFill="BLUE" BorderPane.alignment="CENTER">
-<BorderPane.margin>
-<Insets left="5.0" />
-</BorderPane.margin>
-<font>
-<Font size="18.0" />
-</font></Label>
-</children>
-<GridPane.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="descTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="2">
-<children><Label fx:id="prefTypeLabel" text="Preferred" textFill="#113357" BorderPane.alignment="CENTER">
-<BorderPane.margin>
-<Insets right="5.0" />
-</BorderPane.margin>
-<font>
-<Font size="18.0" />
-</font></Label>
-</children>
-<GridPane.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="descCaseVbox" GridPane.columnIndex="3">
-<children><Label fx:id="prefCaseLabel" />
-</children></VBox><VBox fx:id="descLangVbox" GridPane.columnIndex="4">
-<children><Label fx:id="prefLangLabel" />
-</children></VBox>
-</children>
-</GridPane><GridPane gridLinesVisible="true" hgap="3.0" styleClass="zone" VBox.vgrow="NEVER">
-  <columnConstraints>
-<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" />
-<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" />
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints fillHeight="false" />
-  </rowConstraints>
-<children><VBox fx:id="relAnnotVBox" alignment="TOP_CENTER" spacing="31.0" /><VBox fx:id="relLabelVBox" spacing="9.0" GridPane.columnIndex="1">
-<GridPane.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="relTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="2">
-<GridPane.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></VBox><VBox fx:id="relCharVBox" GridPane.columnIndex="3" /><VBox fx:id="relRefVBox" GridPane.columnIndex="4" />
-</children>
-</GridPane><GridPane gridLinesVisible="true" hgap="3.0" styleClass="zone">
-<children>
-<VBox fx:id="destAnnotVBox" alignment="TOP_CENTER" spacing="31.0" />
-<VBox fx:id="destLabelVBox" spacing="9.0" GridPane.columnIndex="1">
-<GridPane.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin>
-</VBox>
-<VBox fx:id="destTypeVBox" alignment="TOP_RIGHT" spacing="5.0" GridPane.columnIndex="2">
-<GridPane.margin>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin>
-</VBox>
-<VBox fx:id="destCharVBox" GridPane.columnIndex="3" />
-<VBox fx:id="destRefVBox" GridPane.columnIndex="4" />
-</children>
-<columnConstraints>
-<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
-<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" />
-<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" />
-</columnConstraints>
-<rowConstraints>
-<RowConstraints fillHeight="false" />
-</rowConstraints>
-</GridPane>
-</children>
-<VBox.margin>
-<Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+<Insets left="5.0" right="5.0" />
 </VBox.margin></VBox>
+<VBox fx:id="termVBox" alignment="TOP_CENTER" fillWidth="false" styleClass="zone">
+<VBox.margin>
+<Insets left="5.0" right="5.0" />
+</VBox.margin></VBox>
+<ScrollPane maxHeight="150.0" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent">
+<content>
+<VBox fx:id="relVBox" alignment="TOP_CENTER" fillWidth="false" styleClass="zone">
+<VBox.margin>
+<Insets left="5.0" right="5.0" />
+</VBox.margin></VBox>
+</content>
+</ScrollPane>
+<ScrollPane fx:id="destScrollPane" maxHeight="150.0" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent">
+<content><VBox fx:id="destVBox" alignment="TOP_CENTER" fillWidth="false" styleClass="zone" />
+</content>
+</ScrollPane>
 </children>
 <BorderPane.margin>
 <Insets left="25.0" right="25.0" />
@@ -232,7 +159,7 @@
 </GridPane>
 </children>
 <BorderPane.margin>
-<Insets bottom="15.0" top="100.0" />
+<Insets bottom="15.0" top="50.0" />
 </BorderPane.margin></VBox>
 </bottom></BorderPane>
 </children>

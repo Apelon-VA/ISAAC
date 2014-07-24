@@ -1,6 +1,11 @@
 @CHARSET "ISO-8859-1";
 
 
+.scroll-transparent {
+	-fx-background-color: transparent;
+	-fx-control-inner-background: transparent;
+}
+
 .button-green {
     -fx-background-color:
         linear-gradient(#88dda6, #70d794),
