@@ -71,6 +71,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -127,7 +128,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
-    //private TaskHandle taskHandle = null;
 
 	private Window windowForTableViewExportDialog;
 
@@ -359,24 +359,39 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					if (event.getButton() == MouseButton.SECONDARY) {
 						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
 						if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
-							ContextMenu cm = new ContextMenu();
-							CompositeSearchResult result = searchResultsTable.getItems().get(c.getIndex());
-
 							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
 								@Override
 								public String[] getStrings() {
-									return new String[] { c.getItem().toString() };
+									List<String> items = new ArrayList<>();
+									for (Integer index : c.getTableView().getSelectionModel().getSelectedIndices()) {
+										items.add(c.getTableColumn().getCellData(index).toString());
+									}
+
+									String[] itemArray = items.toArray(new String[items.size()]);
+
+									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
+									//System.out.println("Selected strings: " + Arrays.toString(itemArray));
+									
+									return itemArray;
 								}
 							};
 							CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
 								@Override
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
-									nids.add(result.getConceptNid());
+									
+									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
+										nids.add(r.getConceptNid());
+									}
+									
+									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
+									//System.out.println("Selected nids: " + Arrays.toString(nids.toArray()));
+
 									return nids;
 								}
 							};
-							
+
+							ContextMenu cm = new ContextMenu();
 							CommonMenus.addCommonMenus(cm, dp, nidProvider);
 
 							c.setContextMenu(cm);
@@ -411,6 +426,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private void initializeSearchResultsTable() {
 		assert searchResultsTable != null : "fx:id=\"searchResultsTable\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
+		// Enable selection of multiple rows.  Context menu handlers are coded to send collections.
+		searchResultsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		
 		// Clear underlying data structure
 		searchResultsTable.getItems().clear();
 		
