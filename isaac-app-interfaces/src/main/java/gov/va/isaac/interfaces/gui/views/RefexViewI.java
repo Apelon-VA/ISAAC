@@ -26,9 +26,10 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * RefsetViewI
  * 
- * An interface that allows the creation of a RefsetView implementation, which 
+ * An interface that allows the creation of a RefexView implementation, which 
  * will be a JavaFX component that extends {@link Region} that can be embedded
- * into other views 
+ * into other views, the purpose of which is to display Refex information for 
+ * a component.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
