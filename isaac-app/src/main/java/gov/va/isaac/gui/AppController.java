@@ -30,17 +30,21 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
@@ -59,6 +63,7 @@ public class AppController {
     private BorderPane root_;
     private SplitPane mainSplitPane;
     private MenuBar menuBar;
+    private VBox loadWait;
 
     @Inject
     private IterableProvider<IsaacViewI> moduleViews_;
@@ -79,6 +84,20 @@ public class AppController {
         mainSplitPane.getStyleClass().add("hashedBackground");
         
         root_.setCenter(mainSplitPane);
+        
+        loadWait = new VBox();
+        loadWait.setFillWidth(true);
+        Label l = new Label("Initializing Database...");
+        l.setPadding(new Insets(50, 50, 10, 50));
+        l.setAlignment(Pos.CENTER);
+        l.setMaxWidth(Double.MAX_VALUE);
+        loadWait.getChildren().add(l);
+        ProgressBar pb = new ProgressBar(-1);
+        pb.setMaxWidth(Double.MAX_VALUE);
+        pb.setPadding(new Insets(10, 150, 50, 150));
+        loadWait.getChildren().add(pb);
+        mainSplitPane.getItems().add(loadWait);
+        
         
         menuBar = new MenuBar();
         for (ApplicationMenus menu : ApplicationMenus.values())
@@ -190,6 +209,9 @@ public class AppController {
     public void finishInit() {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
+        
+        mainSplitPane.getItems().remove(loadWait);
+        loadWait = null;
 
         // Enable the menus.
         for (Menu menu : menuBar.getMenus())
