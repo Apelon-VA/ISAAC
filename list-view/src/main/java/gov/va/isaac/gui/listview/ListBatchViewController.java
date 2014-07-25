@@ -120,6 +120,27 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class ListBatchViewController
 {
+	private enum LocalMenuItem {
+		REMOVE_FROM_LIST("Remove from List", Images.DELETE),
+		COMMIT_CONCEPT_CHANGE("Commit Concept Change", Images.COMMIT),
+		CANCEL_CONCEPT_CHANGE("Cancel Concept Change", Images.CANCEL);
+		
+		final String text;
+		final Images image;
+
+		private LocalMenuItem(String text, Images image) {
+			this.text = text;
+			this.image = image;
+		}
+
+		public String getText() {
+			return text;
+		}
+		public Images getImage() {
+			return image;
+		}
+	}
+	
 	@FXML private Button loadListButton;
 	@FXML private VBox operationsList;
 	@FXML private Button clearOperationsButton;
@@ -155,6 +176,16 @@ public class ListBatchViewController
 		return loader.getController();
 	}
 
+	private static MenuItem findMenuItem(List<MenuItem> itemsToSearch, LocalMenuItem itemToFind) {
+		for (MenuItem itemToSearch : itemsToSearch) {
+			if (itemToSearch.getText().equals(itemToFind.getText())) {
+				return itemToSearch;
+			}
+		}
+		
+		return null;
+	}
+	
 	@FXML
 	public void initialize()
 	{
@@ -211,11 +242,11 @@ public class ListBatchViewController
 								setTextFill(Color.BLACK);
 								if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
 									setBackground(uncommittedBackground );
-									currentRow.getContextMenu().getItems().get(2).setDisable(false);
-									currentRow.getContextMenu().getItems().get(3).setDisable(false);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.COMMIT_CONCEPT_CHANGE).setDisable(false);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.CANCEL_CONCEPT_CHANGE).setDisable(false);
 								} else {
-									currentRow.getContextMenu().getItems().get(2).setDisable(true);
-									currentRow.getContextMenu().getItems().get(3).setDisable(true);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.COMMIT_CONCEPT_CHANGE).setDisable(true);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.CANCEL_CONCEPT_CHANGE).setDisable(true);
 									setBackground(defaultBackground );
 								}
 							}
@@ -290,20 +321,20 @@ public class ListBatchViewController
 			{
 				final TableRow<SimpleDisplayConcept> row = new TableRow<SimpleDisplayConcept>();
 				final ContextMenu rowMenu = new ContextMenu();
-				MenuItem viewItem = new MenuItem("View Concept");
-				viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
-				viewItem.setOnAction(new EventHandler<ActionEvent>()
-				{
-					@Override
-					public void handle(ActionEvent event)
-					{
-						PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
-						cv.setConcept(row.getItem().getNid());
-						cv.showView(rootPane.getScene().getWindow());
-					}
-				});
-				MenuItem removeItem = new MenuItem("Remove from List");
-				removeItem.setGraphic(Images.DELETE.createImageView());
+//				MenuItem viewItem = new MenuItem("View Concept");
+//				viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+//				viewItem.setOnAction(new EventHandler<ActionEvent>()
+//				{
+//					@Override
+//					public void handle(ActionEvent event)
+//					{
+//						PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+//						cv.setConcept(row.getItem().getNid());
+//						cv.showView(rootPane.getScene().getWindow());
+//					}
+//				});
+				MenuItem removeItem = new MenuItem(LocalMenuItem.REMOVE_FROM_LIST.getText());
+				removeItem.setGraphic(LocalMenuItem.REMOVE_FROM_LIST.getImage().createImageView());
 				removeItem.setOnAction(new EventHandler<ActionEvent>()
 				{
 					@Override
@@ -327,8 +358,8 @@ public class ListBatchViewController
 						}
 					}
 				});
-				MenuItem commitItem = new MenuItem("Commit Concept Change");
-				commitItem.setGraphic(Images.COMMIT.createImageView());
+				MenuItem commitItem = new MenuItem(LocalMenuItem.COMMIT_CONCEPT_CHANGE.getText());
+				commitItem.setGraphic(LocalMenuItem.COMMIT_CONCEPT_CHANGE.getImage().createImageView());
 				commitItem.setOnAction(new EventHandler<ActionEvent>()
 				{
 					@Override
@@ -339,8 +370,8 @@ public class ListBatchViewController
 					}
 				});
 
-				MenuItem cancelItem = new MenuItem("Cancel Concept Change");
-				cancelItem.setGraphic(Images.CANCEL.createImageView());
+				MenuItem cancelItem = new MenuItem(LocalMenuItem.CANCEL_CONCEPT_CHANGE.getText());
+				cancelItem.setGraphic(LocalMenuItem.CANCEL_CONCEPT_CHANGE.getImage().createImageView());
 				cancelItem.setOnAction(new EventHandler<ActionEvent>()
 				{
 					@Override
@@ -354,7 +385,7 @@ public class ListBatchViewController
 //				commitItem.visibleProperty().bind(isUncommittedConcept_);
 //				cancelItem.visibleProperty().bind(isUncommittedConcept_);
 				
-				rowMenu.getItems().addAll(viewItem, removeItem, commitItem, cancelItem);
+				rowMenu.getItems().addAll(/* viewItem, */ removeItem, commitItem, cancelItem);
 
 				row.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
