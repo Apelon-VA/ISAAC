@@ -55,6 +55,9 @@ import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
  */
 public class RefsetViewController {
 
+	//TODO this class is really an info-model viewer - not a generic refset view.  We should move this code... somewhere... maybe into 
+	//the infomodel package itself, which would fix some dependency issues.  And then get rid of the refset-view module - which is confusing.
+	//Stick with just calling everything 'refexes' which I believe, is the current preferred terminology. 
 	//@FXML private Slider hSlider;
 	@FXML private TableView<RefsetInstance> refsetRows;
 	@FXML private AnchorPane refsetAnchor;
