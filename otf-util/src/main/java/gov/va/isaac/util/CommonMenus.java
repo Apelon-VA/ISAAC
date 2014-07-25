@@ -366,11 +366,11 @@ public class CommonMenus
 		}
 		final CommonMenuBuilder builder = tmpBuilder;
 		
-		Integer[] nids = nidProvider.getNIds().toArray(new Integer[nidProvider.getNIds().size()]);
+		Integer[] nids = nidProvider != null ? nidProvider.getNIds().toArray(new Integer[nidProvider.getNIds().size()]) : null;
 
 		// Menu item to show concept details.
 		MenuItem enhancedConceptViewMenuItem = createNewMenuItem(
-				CommonMenuItem.CONCEPT_VIEW, 
+				CommonMenuItem.CONCEPT_VIEW,
 				builder, 
 				nids != null && nids.length == 1 && nids[0] != null, // isHandlable
 				() -> { // onHandlable
@@ -482,7 +482,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer...nids) {
+	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer[] nids) {
 		// The following code is for the "Send To" submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -530,7 +530,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer...nids) {
+	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer[] nids) {
 		// The following code is for the Copy submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();

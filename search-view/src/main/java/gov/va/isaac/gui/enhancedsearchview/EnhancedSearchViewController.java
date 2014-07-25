@@ -205,23 +205,25 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 	
-	private void setTotalResultsSelectedLabel() {
+	private void refreshTotalResultsSelectedLabel() {
 		int numSelected = searchResultsTable.getSelectionModel().getSelectedIndices().size();
-		if (searchResultsTable.getItems().size() > 0) {
-			switch (numSelected) {
-			case 1:
-				totalResultsSelectedLabel.setText(numSelected + " result selected");
-				break;
-
-			case 0:
-			default:
-				totalResultsSelectedLabel.setText(numSelected + " results selected");
-				break;
-			}
-			
-			totalResultsSelectedLabel.setVisible(true);
-		} else {
+		if (searchResultsTable.getItems().size() == 0) {
 			totalResultsSelectedLabel.setVisible(false);
+		}
+
+		switch (numSelected) {
+		case 1:
+			totalResultsSelectedLabel.setText(numSelected + " result selected");
+			break;
+
+		case 0:
+		default:
+			totalResultsSelectedLabel.setText(numSelected + " results selected");
+			break;
+		}
+
+		if (searchResultsTable.getItems().size() > 0) {
+			totalResultsSelectedLabel.setVisible(true);
 		}
 	}
 	
@@ -295,6 +297,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		} else {
 			totalResultsDisplayedLabel.setText(searchResultsTable.getItems().size() + " entries displayed");
 		}
+		
+		refreshTotalResultsSelectedLabel();
 	}
 	
 	@Override
@@ -378,7 +382,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			newCell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
-					setTotalResultsSelectedLabel();
+					refreshTotalResultsSelectedLabel();
 					
 					if (event.getButton() == MouseButton.SECONDARY) {
 						TableCell<CompositeSearchResult, T> c = (TableCell<CompositeSearchResult, T>) event.getSource();

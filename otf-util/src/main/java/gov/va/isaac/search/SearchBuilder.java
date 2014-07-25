@@ -64,7 +64,7 @@ public class SearchBuilder {
 		
 		search.setQuery(query);
 		search.setSizeLimit(Integer.MAX_VALUE);
-		search.setPrefixSearch(true);
+		search.setPrefixSearch(false);
 		search.setComparator(new CompositeSearchResultComparator());
 		
 		return search;
