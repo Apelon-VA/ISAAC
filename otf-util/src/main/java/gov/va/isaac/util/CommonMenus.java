@@ -389,7 +389,6 @@ public class CommonMenus
 		menuItems.add(enhancedConceptViewMenuItem);
 
 		// Menu item to show concept details. (legacy)
-		// TODO - bad dan, ugly copy-paste stuff.
 		MenuItem legacyConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW_LEGACY,
 				builder,
@@ -423,19 +422,26 @@ public class CommonMenus
 		Menu sendToMenu = new Menu(CommonMenuItem.SEND_TO.getText());
 		sendToMenu.setVisible(false);
 		Task<List<MenuItem>> getSendToMenuItemsTask = new Task<List<MenuItem>>() {
+			private List<MenuItem> items = null;
+			
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				List<MenuItem> items = getSendToMenuItems(builder, dataProvider, nids);
-				
-				sendToMenu.getItems().addAll(items);
+				items = getSendToMenuItems(builder, dataProvider, nids);
 
-				if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || getNumVisibleMenuItems(items) == 0) {
+				return items;
+			}
+
+			@Override
+			protected void succeeded() {
+				super.succeeded();
+
+				if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || items == null || getNumVisibleMenuItems(items) == 0) {
 					sendToMenu.setVisible(false);
 				} else {
 					sendToMenu.setVisible(true);
 				}
 
-				return items;
+				sendToMenu.getItems().addAll(items);
 			}
 		};
 		Utility.execute(getSendToMenuItemsTask);
@@ -447,19 +453,26 @@ public class CommonMenus
 		Menu copyMenu = new Menu(CommonMenuItem.COPY.getText());
 		copyMenu.setVisible(false);
 		Task<List<MenuItem>> getCopyMenuItemsTask = new Task<List<MenuItem>>() {
+			private List<MenuItem> items = null;
+
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				List<MenuItem> items = getCopyMenuItems(builder, dataProvider, nids);
+				items = getCopyMenuItems(builder, dataProvider, nids);
 				
-				copyMenu.getItems().addAll(items);
+				return items;
+			}
 
-				if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || getNumVisibleMenuItems(items) == 0) {
+			@Override
+			protected void succeeded() {
+				super.succeeded();
+
+				if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || items == null || getNumVisibleMenuItems(items) == 0) {
 					copyMenu.setVisible(false);
 				} else {
 					copyMenu.setVisible(true);
 				}
 
-				return items;
+				copyMenu.getItems().addAll(items);
 			}
 		};
 		Utility.execute(getCopyMenuItemsTask);

@@ -125,6 +125,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button exportSearchResultsToListBatchViewButton;
 	@FXML private Button exportSearchResultsToWorkflowButton;
     @FXML private ProgressIndicator searchProgress;
+    @FXML private Label totalResultsSelectedLabel;
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
@@ -149,6 +150,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert totalResultsSelectedLabel != null : "fx:id=\"totalResultsSelectedLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! pane.getStylesheets().contains(styleSheet)) {
@@ -201,6 +203,26 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				searchTextValid.set(false);
 			}
 		});
+	}
+	
+	private void setTotalResultsSelectedLabel() {
+		int numSelected = searchResultsTable.getSelectionModel().getSelectedIndices().size();
+		if (searchResultsTable.getItems().size() > 0) {
+			switch (numSelected) {
+			case 1:
+				totalResultsSelectedLabel.setText(numSelected + " result selected");
+				break;
+
+			case 0:
+			default:
+				totalResultsSelectedLabel.setText(numSelected + " results selected");
+				break;
+			}
+			
+			totalResultsSelectedLabel.setVisible(true);
+		} else {
+			totalResultsSelectedLabel.setVisible(false);
+		}
 	}
 	
 	// TODO: This doesn't make sense here.  Should be exported to listView, then Workflow
@@ -356,6 +378,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			newCell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
+					setTotalResultsSelectedLabel();
+					
 					if (event.getButton() == MouseButton.SECONDARY) {
 						TableCell<CompositeSearchResult, T> c = (TableCell<CompositeSearchResult, T>) event.getSource();
 						if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {

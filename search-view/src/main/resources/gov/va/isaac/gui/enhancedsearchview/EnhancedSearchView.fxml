@@ -9,32 +9,34 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<BorderPane fx:id="pane" prefWidth="700.0" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
+
+<BorderPane fx:id="pane" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
   <stylesheets>
     <URL value="@EnhancedSearchView.css" />
   </stylesheets>
    <center>
-      <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+      <StackPane>
          <children>
-            <TableView fx:id="searchResultsTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER" />
             <ProgressIndicator fx:id="searchProgress" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" />
+            <TableView fx:id="searchResultsTable" BorderPane.alignment="CENTER" />
          </children>
       </StackPane>
    </center>
    <top>
-      <FlowPane maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+      <FlowPane BorderPane.alignment="CENTER">
          <children>
             <ComboBox fx:id="aggregationTypeComboBox" promptText="Search Type">
                <FlowPane.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </FlowPane.margin>
             </ComboBox>
-            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308">
+            <HBox alignment="CENTER_LEFT">
                <children>
                   <Label text="Search Param" textAlignment="CENTER" wrapText="true" HBox.hgrow="NEVER">
                      <HBox.margin>
                         <Insets left="5.0" />
-                     </HBox.margin></Label>
+                     </HBox.margin>
+                  </Label>
               <TextField fx:id="searchText" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
                 <HBox.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -43,7 +45,8 @@
               <Button fx:id="searchButton" mnemonicParsing="false" text="Search" textAlignment="CENTER" HBox.hgrow="NEVER">
                      <HBox.margin>
                         <Insets bottom="5.0" left="2.0" right="5.0" top="5.0" />
-                     </HBox.margin></Button>
+                     </HBox.margin>
+                  </Button>
                </children>
             </HBox>
             <HBox alignment="CENTER_LEFT">
@@ -51,7 +54,8 @@
                   <Label text="Export" HBox.hgrow="NEVER">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="2.0" top="5.0" />
-                     </HBox.margin></Label>
+                     </HBox.margin>
+                  </Label>
                   <Button fx:id="exportSearchResultsAsTabDelimitedValuesButton" mnemonicParsing="false" text="File" HBox.hgrow="NEVER">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="2.0" top="5.0" />
@@ -65,21 +69,40 @@
                   <Button fx:id="exportSearchResultsToWorkflowButton" mnemonicParsing="false" text="Workflow" HBox.hgrow="NEVER">
                      <HBox.margin>
                         <Insets bottom="5.0" left="2.0" right="5.0" top="5.0" />
-                     </HBox.margin></Button>
+                     </HBox.margin>
+                  </Button>
                </children>
             </HBox>
          </children>
       </FlowPane>
    </top>
    <bottom>
-      <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+      <GridPane BorderPane.alignment="CENTER">
+        <columnConstraints>
+          <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" percentWidth="50.0" />
+          <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" percentWidth="50.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
          <children>
-            <Label fx:id="totalResultsDisplayedLabel" text="Total" HBox.hgrow="NEVER">
-               <HBox.margin>
+            <Label fx:id="totalResultsDisplayedLabel" GridPane.halignment="LEFT">
+               <padding>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </HBox.margin>
+               </padding>
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </GridPane.margin>
+            </Label>
+            <Label fx:id="totalResultsSelectedLabel" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </GridPane.margin>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
             </Label>
          </children>
-      </HBox>
+      </GridPane>
    </bottom>
 </BorderPane>
