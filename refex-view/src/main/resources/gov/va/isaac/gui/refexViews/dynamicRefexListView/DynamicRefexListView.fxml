@@ -6,17 +6,28 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="rootPane" fx:id="rootPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.dynamicRefexListView.DynamicRefexListViewController">
+<AnchorPane id="rootPane" fx:id="rootPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="gov.va.isaac.gui.refexViews.dynamicRefexListView.DynamicRefexListViewController">
 	<children>
-		<SplitPane dividerPositions="0.4" focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+		<SplitPane dividerPositions="0.4" focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+			minHeight="-Infinity" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+			AnchorPane.topAnchor="0.0">
 			<items>
 				<BorderPane prefHeight="200.0" prefWidth="200.0">
 					<center>
-						<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefViewportHeight="339.0" prefViewportWidth="395.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
-							<content>
-								<ListView fx:id="refexList" />
-							</content>
-						</ScrollPane>
+						<StackPane maxWidth="1.7976931348623157E308">
+							<children>
+								<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+									prefViewportHeight="339.0" prefViewportWidth="395.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+									AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+									<content>
+										<ListView fx:id="refexList" />
+									</content>
+								</ScrollPane>
+								<ProgressIndicator fx:id="readingRefexProgress" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="100.0"
+									prefWidth="100.0" visible="false" />
+							</children>
+						</StackPane>
 					</center>
 					<top>
 						<VBox>
@@ -47,9 +58,10 @@
 														<Label text="Refex Style" />
 														<ChoiceBox fx:id="refexStyleFilter" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
 														<TextField fx:id="descriptionMatchesFilter" promptText=" - Show All -" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-														<Label text="Description Matches" GridPane.rowIndex="1" />
+														<Label text="Description" GridPane.rowIndex="1" />
 														<Label text="Concept" GridPane.rowIndex="2" />
-														<Region fx:id="conceptNodeFilterPlaceholder" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+														<VBox fx:id="conceptNodeFilterPlaceholder" alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+															GridPane.columnIndex="1" GridPane.rowIndex="2" />
 													</children>
 												</GridPane>
 											</content>
@@ -108,9 +120,9 @@
 										<Label text="Name" GridPane.rowIndex="1" />
 										<Label text="Description" GridPane.rowIndex="2" />
 										<Label text="Refex Style" GridPane.rowIndex="3" />
-										<Label fx:id="selectedRefexNameLabel" text="refex name" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-										<Label fx:id="selectedRefexDescriptionLabel" text="refex description" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-										<Label fx:id="refexStyleLabel" text="refex style" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+										<Label fx:id="selectedRefexNameLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+										<Label fx:id="selectedRefexDescriptionLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+										<Label fx:id="refexStyleLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 										<Label text="Extension Fields" GridPane.rowIndex="4" StackPane.alignment="CENTER_LEFT">
 											<StackPane.margin>
 												<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -122,11 +134,18 @@
 										<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 									</VBox.margin>
 								</GridPane>
-								<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefViewportHeight="400.0" prefViewportWidth="395.0" VBox.vgrow="ALWAYS">
-									<content>
-										<ListView fx:id="extensionFields" VBox.vgrow="ALWAYS" />
-									</content>
-								</ScrollPane>
+								<StackPane maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+									<children>
+										<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+											prefViewportHeight="400.0" prefViewportWidth="395.0" VBox.vgrow="ALWAYS">
+											<content>
+												<ListView fx:id="extensionFields" VBox.vgrow="ALWAYS" />
+											</content>
+										</ScrollPane>
+										<ProgressIndicator fx:id="selectedRefexProgressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="100.0"
+											prefWidth="100.0" visible="false" />
+									</children>
+								</StackPane>
 							</children>
 						</VBox>
 					</center>
