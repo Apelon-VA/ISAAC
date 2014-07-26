@@ -31,7 +31,6 @@ import gov.va.isaac.util.WBUtility;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -52,7 +51,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -122,7 +120,7 @@ public class ConceptNode implements ConceptLookupCallback
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
 		c_ = initialConcept;
-		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : WBUtility.getDescription(conceptVersion);} : descriptionReader);
 		dropDownOptions_ = dropDownOptions == null ? AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts() : dropDownOptions;
 		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
 		{
@@ -333,7 +331,7 @@ public class ConceptNode implements ConceptLookupCallback
 		}
 	}
 
-	public Node getNode()
+	public HBox getNode()
 	{
 		return hbox_;
 	}
