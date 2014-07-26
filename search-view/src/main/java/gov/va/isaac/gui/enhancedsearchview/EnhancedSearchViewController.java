@@ -126,6 +126,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button exportSearchResultsToWorkflowButton;
     @FXML private ProgressIndicator searchProgress;
     @FXML private Label totalResultsSelectedLabel;
+    @FXML private Button resetTableDefaultsButton;
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
@@ -151,6 +152,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert totalResultsSelectedLabel != null : "fx:id=\"totalResultsSelectedLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert resetTableDefaultsButton != null : "fx:id=\"resetTableDefaultsButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! pane.getStylesheets().contains(styleSheet)) {
@@ -170,6 +172,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
+		resetTableDefaultsButton.setOnAction((e) -> initializeSearchResultsTable());
 
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
@@ -457,6 +460,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// Enable selection of multiple rows.  Context menu handlers are coded to send collections.
 		searchResultsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
+		// Backup existing data in order to restore after reinitializing
+		List<CompositeSearchResult> searchResultsTableBackup = new ArrayList<>(searchResultsTable.getItems());
+		
 		// Clear underlying data structure
 		searchResultsTable.getItems().clear();
 		
@@ -651,6 +657,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
                 return null;
             }
         });
+		
+		Collections.sort(searchResultsTableBackup, new CompositeSearchResultComparator());
+		searchResultsTable.getItems().addAll(searchResultsTableBackup);
 		
 		refreshTotalResultsDisplayedLabel();
 	}

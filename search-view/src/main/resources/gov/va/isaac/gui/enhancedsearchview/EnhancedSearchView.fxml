@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-
 <BorderPane fx:id="pane" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
   <stylesheets>
     <URL value="@EnhancedSearchView.css" />
@@ -49,7 +48,42 @@
                   </Button>
                </children>
             </HBox>
-            <HBox alignment="CENTER_LEFT">
+         </children>
+      </FlowPane>
+   </top>
+   <bottom>
+      <GridPane BorderPane.alignment="CENTER">
+        <columnConstraints>
+          <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" percentWidth="50.0" />
+          <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" percentWidth="50.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints vgrow="SOMETIMES" />
+            <RowConstraints vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label fx:id="totalResultsDisplayedLabel" GridPane.halignment="LEFT">
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </GridPane.margin>
+            </Label>
+            <Button fx:id="resetTableDefaultsButton" mnemonicParsing="false" text="Reset Defaults" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </GridPane.margin>
+            </Button>
+            <Label fx:id="totalResultsSelectedLabel" wrapText="true" GridPane.columnIndex="1">
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </GridPane.margin>
+            </Label>
+            <HBox alignment="CENTER_LEFT" GridPane.rowIndex="1">
                <children>
                   <Label text="Export" HBox.hgrow="NEVER">
                      <HBox.margin>
@@ -73,35 +107,6 @@
                   </Button>
                </children>
             </HBox>
-         </children>
-      </FlowPane>
-   </top>
-   <bottom>
-      <GridPane BorderPane.alignment="CENTER">
-        <columnConstraints>
-          <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" percentWidth="50.0" />
-          <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" percentWidth="50.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Label fx:id="totalResultsDisplayedLabel" GridPane.halignment="LEFT">
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-               <GridPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </GridPane.margin>
-            </Label>
-            <Label fx:id="totalResultsSelectedLabel" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
-               <GridPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </GridPane.margin>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding>
-            </Label>
          </children>
       </GridPane>
    </bottom>
