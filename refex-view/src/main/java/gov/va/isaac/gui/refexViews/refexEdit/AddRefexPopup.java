@@ -508,6 +508,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			if (callingView_ != null)
 			{
+				ExtendedAppContext.getDataStore().waitTillWritesFinished();
 				callingView_.refresh();
 			}
 			close();
@@ -539,7 +540,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				value = (Boolean) ci.getDefaultColumnValue();
 			}
-			return new RefexBoolean(value, ci.getColumnName());
+			return (value == null ? null : new RefexBoolean(value, ci.getColumnName()));
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
@@ -551,6 +552,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		{
 			TextField tf = (TextField) data;
 			String text = tf.getText();
+			if (text.length() == 0 && ci.getDefaultColumnValue() == null)
+			{
+				return null;
+			}
 			if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType())
 			{
 				return new RefexDouble(text.length() > 0 ? Double.parseDouble(text) : (Double)ci.getDefaultColumnValue(), ci.getColumnName());
@@ -583,6 +588,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		else if (RefexDynamicDataType.NID == ci.getColumnDataType())
 		{
 			ConceptNode cn = (ConceptNode)data;
+			if (cn.getConcept() == null && ci.getDefaultColumnValue() == null)
+			{
+				return null;
+			}
 			return new RefexNid(cn.getConcept().getNid(), ci.getColumnName());
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
