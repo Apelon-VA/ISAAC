@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView.InputType;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.MenuItemI;
@@ -66,13 +65,19 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.runlevel.RunLevelException;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicBooleanBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
@@ -178,7 +183,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						assemblageInfo_ = null;
 						assemblageIsValid_.set(false);
 					}
-					buildDataFields(assemblageIsValid_.get());
+					buildDataFields(assemblageIsValid_.get(), null);
 				}
 			}
 		});
@@ -291,33 +296,32 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	{
 		return new ArrayList<>();
 	}
+	
+	public void finishInit(RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex, DynamicRefexView viewToRefresh)
+	{
+		finishInit(new InputType(refex), viewToRefresh);
+	}
 
 	public void finishInit(InputType setFromType, DynamicRefexView viewToRefresh)
 	{
 		callingView_ = viewToRefresh;
 		inputType_ = setFromType;
 		
-
-		if (inputType_.getComponentNid() != null)
-		{
-			gp_.add(unselectableComponentLabel_, 1, 0);
-			unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getComponentNid()));
-			gp_.add(selectableConcept_.getNode(), 1, 1);
-			refexDropDownOptions.clear();
-			refexDropDownOptions.addAll(buildAssemblageConceptList());
-		}
-		else
+		if (inputType_.getRefex() != null)
 		{
 			gp_.add(unselectableComponentLabel_, 1, 1);
-			unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getAssemblyNid()));
-			gp_.add(selectableConcept_.getNode(), 1, 0);
+			unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getRefex().getAssemblageNid()));
+			
+			//don't actually put this in the view
+			selectableConcept_.set(WBUtility.getConceptVersion(inputType_.getRefex().getReferencedComponentNid()));
+			
+			gp_.add(new Label(WBUtility.getDescription(inputType_.getRefex().getReferencedComponentNid())), 1, 0);
 			refexDropDownOptions.clear();
-			refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
 			try
 			{
-				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(inputType_.getAssemblyNid());
+				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(inputType_.getRefex().getAssemblageNid());
 				assemblageIsValid_.set(true);
-				buildDataFields(true);
+				buildDataFields(true, inputType_.getRefex().getData());
 			}
 			catch (Exception e)
 			{
@@ -325,9 +329,39 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				AppContext.getCommonDialogs().showErrorDialog("Unexpected Error reading Assembly concept", e);
 			}
 		}
+		else
+		{
+			if (inputType_.getComponentNid() != null)
+			{
+				gp_.add(unselectableComponentLabel_, 1, 0);
+				unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getComponentNid()));
+				gp_.add(selectableConcept_.getNode(), 1, 1);
+				refexDropDownOptions.clear();
+				refexDropDownOptions.addAll(buildAssemblageConceptList());
+			}
+			else
+			{
+				gp_.add(unselectableComponentLabel_, 1, 1);
+				unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getAssemblyNid()));
+				gp_.add(selectableConcept_.getNode(), 1, 0);
+				refexDropDownOptions.clear();
+				refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
+				try
+				{
+					assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(inputType_.getAssemblyNid());
+					assemblageIsValid_.set(true);
+					buildDataFields(true, null);
+				}
+				catch (Exception e)
+				{
+					logger_.error("Unexpected", e);
+					AppContext.getCommonDialogs().showErrorDialog("Unexpected Error reading Assembly concept", e);
+				}
+			}
+		}
 	}
 	
-	private void buildDataFields(boolean assemblageValid)
+	private void buildDataFields(boolean assemblageValid, RefexDynamicDataBI[] currentValues)
 	{
 		if (assemblageValid)
 		{
@@ -349,7 +383,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				l.getStyleClass().add("boldLabel");
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
 				gp.add(l, 0, row);
-				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue());
+				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), currentValues[row]);
 				gp.add(n, 1, row);
 				gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
 			}
@@ -381,7 +415,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 	}
 
-	private Node buildNodeForType(RefexDynamicDataType dt, Object defaultValue)
+	private Node buildNodeForType(RefexDynamicDataType dt, Object defaultValue, RefexDynamicDataBI currentValue)
 	{
 		if (RefexDynamicDataType.BOOLEAN == dt)
 		{
@@ -389,7 +423,20 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			cb.getItems().add("No Value");
 			cb.getItems().add("True");
 			cb.getItems().add("False");
-			cb.getSelectionModel().select(0);
+			if (currentValue == null)
+			{
+				cb.getSelectionModel().select(0);
+			}
+			else
+			{
+				if (((RefexDynamicBooleanBI)currentValue).getDataBoolean())
+				{
+					cb.getSelectionModel().select(1);
+				}
+				{
+					cb.getSelectionModel().select(2);
+				}
+			}
 			currentDataFields_.add(cb);
 			return cb;
 		}
@@ -490,6 +537,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					}
 				}
 			});
+			
+			if (currentValue != null)
+			{
+				tf.setText(currentValue.getDataObject().toString());
+			}
 
 			return n;
 		}
@@ -499,6 +551,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			currentDataFields_.add(cn);
 			currentDataFieldWarnings_.add(cn.getInvalidReason());
 			allValid_.addBinding(cn.getInvalidReason());
+			
+			if (currentValue != null)
+			{
+				cn.set(WBUtility.getConceptVersion(((RefexDynamicNidBI)currentValue).getDataNid()));
+			}
 
 			return cn.getNode();
 		}
@@ -530,18 +587,35 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			
 			int componentNid;
 			int assemblageNid;
-			if (inputType_.getComponentNid() == null)
+			if (inputType_.getRefex() == null)
 			{
-				componentNid = selectableConcept_.getConcept().getNid();
-				assemblageNid = inputType_.getAssemblyNid();
+				if (inputType_.getComponentNid() == null)
+				{
+					componentNid = selectableConcept_.getConcept().getNid();
+					assemblageNid = inputType_.getAssemblyNid();
+				}
+				else
+				{
+					componentNid = inputType_.getComponentNid();
+					assemblageNid =  selectableConcept_.getConcept().getNid();
+				}
 			}
 			else
 			{
-				componentNid = inputType_.getComponentNid();
-				assemblageNid =  selectableConcept_.getConcept().getNid();
+				componentNid = inputType_.getRefex().getReferencedComponentNid();
+				assemblageNid = inputType_.getRefex().getAssemblageNid();
 			}
 			
-			RefexDynamicCAB cab = new RefexDynamicCAB(componentNid, assemblageNid);
+			RefexDynamicCAB cab;
+			if (inputType_.getRefex() == null)
+			{
+				cab = new RefexDynamicCAB(componentNid, assemblageNid);
+			}
+			else
+			{
+				//TODO this isn't working right for some reason.
+				cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+			}
 			cab.setData(data);
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
 			builder.construct(cab);
