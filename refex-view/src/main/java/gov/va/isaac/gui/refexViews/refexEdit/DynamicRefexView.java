@@ -856,8 +856,7 @@ public class DynamicRefexView implements RefexViewI
 			throws IOException, ContradictionException, InterruptedException
 	{
 		ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = new ArrayList<>();
-		//TODO something is foobar with generics here, no idea what.
-		Collection<Object> refexMembers;
+		Collection<? extends RefexDynamicChronicleBI<?>> refexMembers;
 		boolean annotationStyle;
 		boolean noIndex = true;
 		
@@ -865,26 +864,29 @@ public class DynamicRefexView implements RefexViewI
 		annotationStyle = assemblageConceptFull.isAnnotationStyleRefex();
 		if (!annotationStyle)
 		{
-			refexMembers = (Collection<Object>) assemblageConceptFull.getRefsetDynamicMembers();
+			refexMembers = assemblageConceptFull.getRefsetDynamicMembers();
 		}
 		else
 		{
 			//TODO see if there is an index, use it here.
 			refexMembers = new HashSet<>();
-			if (newComponentHint != null)
-			{
-				ConceptVersionBI c = WBUtility.getConceptVersion(newComponentHint);
-				if (c != null)
-				{
-					for (RefexDynamicChronicleBI<? extends RefexDynamicChronicleBI<?>> r : c.getRefexDynamicAnnotations())
-					{
-						if (r.getAssemblageNid() == assemblageNid)
-						{
-							refexMembers.add((Object)r);
-						}
-					}
-				}
-			}
+			
+			//add in the newComponentHint
+			//TODO put this back after I figure out what is wrong with generics.
+//			if (newComponentHint != null)
+//			{
+//				ConceptVersionBI c = WBUtility.getConceptVersion(newComponentHint);
+//				if (c != null)
+//				{
+//					for (RefexDynamicChronicleBI<? extends RefexDynamicChronicleBI<?>> r : c.getRefexDynamicAnnotations())
+//					{
+//						if (r.getAssemblageNid() == assemblageNid)
+//						{
+//							refexMembers.add(r);
+//						}
+//					}
+//				}
+//			}
 		}
 		
 		dr_ = null;
@@ -915,9 +917,9 @@ public class DynamicRefexView implements RefexViewI
 			}
 		}
 
-		for (Object refexChronicle: refexMembers)
+		for (RefexDynamicChronicleBI<?> refexChronicle: refexMembers)
 		{
-			for (RefexDynamicVersionBI<?> refexVersion : ((RefexDynamicChronicleBI<?>)refexChronicle).getVersions())
+			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
 			{
 				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
 				ti.setValue(refexVersion);
