@@ -28,6 +28,7 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +37,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.FloatBinding;
@@ -59,19 +64,27 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+
 import javax.inject.Named;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.model.cc.P;
+import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.tk.Toolkit;
 
 
@@ -87,6 +100,51 @@ import com.sun.javafx.tk.Toolkit;
 @PerLookup
 public class DynamicRefexView implements RefexViewI
 {
+	public class AnnotationProcessor implements ProcessUnfetchedConceptDataBI {
+
+		private int assemblageConceptNid;
+		private Set<RefexDynamicChronicleBI> refsetMembers = new ConcurrentSkipListSet <>();
+
+		AnnotationProcessor(int assemblageConceptNid) {
+			this.assemblageConceptNid = assemblageConceptNid;
+		}
+		@Override
+		public boolean continueWork() {
+		    return true;
+		}
+
+		@Override
+		public boolean allowCancel() {
+	        return false;
+		}
+
+		@Override
+		public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher) throws Exception {
+	         ConceptChronicle c   = (ConceptChronicle)fetcher.fetch();
+			Collection<? extends RefexDynamicChronicleBI<?>> annotations = c.getRefexDynamicAnnotations();
+			for (RefexDynamicChronicleBI<?> annot : annotations) {
+				if (annot.getAssemblageNid() == assemblageConceptNid) {
+					refsetMembers.add(annot);
+				}
+			}
+		}
+
+		@Override
+		public NativeIdSetBI getNidSet() throws IOException {
+			return null;
+		}
+
+		@Override
+		public String getTitle() {
+	        return "Find concepts with refset annotation as specified";
+		}
+		public Set<RefexDynamicChronicleBI> getRefexMembers() {
+			return refsetMembers;
+		}
+
+	}
+
+
 	private VBox rootNode_;
 	private TreeTableView<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ttv_;
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
@@ -856,7 +914,7 @@ public class DynamicRefexView implements RefexViewI
 			throws IOException, ContradictionException, InterruptedException
 	{
 		ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = new ArrayList<>();
-		Collection<? extends RefexDynamicChronicleBI<?>> refexMembers;
+		Collection<RefexDynamicChronicleBI<?>> refexMembers;
 		boolean annotationStyle;
 		boolean noIndex = true;
 		
@@ -864,7 +922,7 @@ public class DynamicRefexView implements RefexViewI
 		annotationStyle = assemblageConceptFull.isAnnotationStyleRefex();
 		if (!annotationStyle)
 		{
-			refexMembers = assemblageConceptFull.getRefsetDynamicMembers();
+			refexMembers = (Collection<RefexDynamicChronicleBI<?>>) assemblageConceptFull.getRefsetDynamicMembers();
 		}
 		else
 		{
@@ -912,8 +970,16 @@ public class DynamicRefexView implements RefexViewI
 			
 			if (dr_ == DialogResponse.YES)
 			{
-				// TODO implement long scan
-				Thread.sleep(5000);
+				AnnotationProcessor processor = new AnnotationProcessor(assemblageConceptFull.getConceptNid());
+	            try {
+					P.s.iterateConceptDataInParallel(processor);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+	            
+	            for (RefexDynamicChronicleBI annot : processor.getRefexMembers()) {
+	            	refexMembers.add(annot);
+	            }
 			}
 		}
 
