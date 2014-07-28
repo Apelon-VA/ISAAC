@@ -383,7 +383,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				l.getStyleClass().add("boldLabel");
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
 				gp.add(l, 0, row);
-				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), currentValues[row]);
+				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), (currentValues == null ? null : currentValues[row]));
 				gp.add(n, 1, row);
 				gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
 			}
