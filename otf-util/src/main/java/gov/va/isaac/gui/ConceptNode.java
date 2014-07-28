@@ -219,6 +219,7 @@ public class ConceptNode implements ConceptLookupCallback
 		{
 			isValid.set(true);
 			isEmpty.set(false);
+			invalidToolTipText.set("");
 		}
 
 		cb_.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>()
@@ -431,6 +432,7 @@ public class ConceptNode implements ConceptLookupCallback
 					AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(c_));
 					isValid.set(true);
 					isEmpty.set(false);
+					invalidToolTipText.set("");
 				}
 				else
 				{
