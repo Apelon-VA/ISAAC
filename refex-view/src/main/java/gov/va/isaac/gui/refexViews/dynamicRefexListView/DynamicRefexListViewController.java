@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -159,6 +160,11 @@ public class DynamicRefexListViewController
 			showRefexDetails(refexList.getSelectionModel().getSelectedItem());
 		});
 		
+		viewUsage.setDisable(true);
+		viewUsage.setOnAction((event) -> {
+			DynamicReferencedItemsView driv = new DynamicReferencedItemsView(refexList.getSelectionModel().getSelectedItem());
+			driv.showView(null);
+		});
 		extensionFields.setCellFactory(new Callback<ListView<RefexDynamicColumnInfo>, ListCell<RefexDynamicColumnInfo>>()
 		{
 			@Override
@@ -327,7 +333,12 @@ public class DynamicRefexListViewController
 		
 		if (sdn == null)
 		{
+			viewUsage.setDisable(true);
 			return;
+		}
+		else
+		{
+			viewUsage.setDisable(false);
 		}
 		selectedRefexProgressIndicator.setVisible(true);
 		selectedRefexNameLabel.setText(sdn.getDescription());

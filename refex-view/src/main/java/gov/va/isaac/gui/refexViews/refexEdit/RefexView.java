@@ -23,7 +23,6 @@ import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
@@ -43,7 +42,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class RefexView implements RefexViewI
 {
-	private UUID conceptUUID_;
+	private int conceptNid_;
 
 	private RefexView() throws IOException
 	{
@@ -71,13 +70,24 @@ public class RefexView implements RefexViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
 	 */
 	@Override
-	public void setComponent(UUID conceptUUID, ReadOnlyBooleanProperty showStampColumns)
+	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns)
 	{
-		this.conceptUUID_ = conceptUUID;
+		this.conceptNid_ = componentNid;
+		
 	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setAssemblage(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
+	 */
+	@Override
+	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns)
+	{
+		throw new RuntimeException("Not implemented");
+	}
+	
 
 //	private ObservableValue<String> convertValue(RefexChronicleBI<? extends RefexAnalogBI<?>> value, int dataColumn)
 //	{

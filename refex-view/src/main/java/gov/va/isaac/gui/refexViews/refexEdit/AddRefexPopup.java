@@ -22,10 +22,12 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView.InputType;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
@@ -99,10 +101,10 @@ import com.sun.javafx.collections.ObservableListWrapper;
 public class AddRefexPopup extends Stage implements PopupViewI
 {
 	private DynamicRefexView callingView_;
-	private int referencedComponentNid_ = 0;
-	private Label referencedComponentValue;
+	private InputType inputType_;
+	private Label unselectableComponentLabel_;;
 	private ScrollPane sp_;
-	ConceptNode assemblageConcept_;
+	private ConceptNode selectableConcept_;
 	private RefexDynamicUsageDescription assemblageInfo_;
 	private SimpleBooleanProperty assemblageIsValid_ = new SimpleBooleanProperty(false);
 	private SimpleStringProperty reasonSaveDisabled_ = new SimpleStringProperty();
@@ -112,6 +114,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private ArrayList<StringProperty> currentDataFieldWarnings_ = new ArrayList<>();
 	private ArrayList<Object> currentDataFields_ = new ArrayList<>();
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
+	private GridPane gp_;
 
 	private AddRefexPopup()
 	{
@@ -128,64 +131,68 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		topItems.getChildren().add(title);
 		VBox.setMargin(title, new Insets(10, 10, 10, 10));
 
-		GridPane gp = new GridPane();
-		gp.setHgap(10.0);
-		gp.setVgap(10.0);
-		VBox.setMargin(gp, new Insets(5, 5, 5, 5));
-		topItems.getChildren().add(gp);
+		gp_ = new GridPane();
+		gp_.setHgap(10.0);
+		gp_.setVgap(10.0);
+		VBox.setMargin(gp_, new Insets(5, 5, 5, 5));
+		topItems.getChildren().add(gp_);
 
 		Label referencedComponent = new Label("Referenced Component");
 		referencedComponent.getStyleClass().add("boldLabel");
-		gp.add(referencedComponent, 0, 0);
+		gp_.add(referencedComponent, 0, 0);
 
-		referencedComponentValue = new Label();
-		gp.add(referencedComponentValue, 1, 0);
+		unselectableComponentLabel_ = new Label();
+		//delay adding till we know which row
 
 		Label assemblageConceptLabel = new Label("Assemblage Concept");
 		assemblageConceptLabel.getStyleClass().add("boldLabel");
-		gp.add(assemblageConceptLabel, 0, 1);
+		gp_.add(assemblageConceptLabel, 0, 1);
 
-		assemblageConcept_ = new ConceptNode(null, true, refexDropDownOptions, null);
+		selectableConcept_ = new ConceptNode(null, true, refexDropDownOptions, null);
 
-		assemblageConcept_.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
+		selectableConcept_.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
 		{
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
 			{
-				if (assemblageConcept_.isValid().get())
+				if (inputType_.getComponentNid() != null)
 				{
-					//Its a valid concept, but is it a valid assemblage concept?
-					try
+					if (selectableConcept_.isValid().get())
 					{
-						assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(assemblageConcept_.getConceptNoWait().getNid());
-						assemblageIsValid_.set(true);
+						//Its a valid concept, but is it a valid assemblage concept?
+						try
+						{
+							assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(selectableConcept_.getConceptNoWait().getNid());
+							assemblageIsValid_.set(true);
+						}
+						catch (Exception e)
+						{
+							selectableConcept_.isValid().set(false);
+							selectableConcept_.getInvalidReason().set("The selected concept is not properly constructed for use as an Assemblage concept");
+							logger_.info("Concept not a valid concept for a refex assemblage", e);
+							assemblageIsValid_.set(false);
+						}
 					}
-					catch (Exception e)
+					else
 					{
-						assemblageConcept_.isValid().set(false);
-						assemblageConcept_.getInvalidReason().set("The selected concept is not properly constructed for use as an Assemblage concept");
-						logger_.info("Concept not a valid concept for a refex assemblage", e);
+						assemblageInfo_ = null;
 						assemblageIsValid_.set(false);
 					}
-				}
-				else
-				{
-					assemblageInfo_ = null;
-					assemblageIsValid_.set(false);
+					buildDataFields(assemblageIsValid_.get());
 				}
 			}
 		});
 
-		gp.add(assemblageConcept_.getNode(), 1, 1);
+		//delay adding concept till we know where
 
 		ColumnConstraints cc = new ColumnConstraints();
 		cc.setHgrow(Priority.NEVER);
 		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(referencedComponent));
-		gp.getColumnConstraints().add(cc);
+		gp_.getColumnConstraints().add(cc);
 
 		cc = new ColumnConstraints();
 		cc.setHgrow(Priority.ALWAYS);
-		gp.getColumnConstraints().add(cc);
+		gp_.getColumnConstraints().add(cc);
 
 		Label l = new Label("Data Fields");
 		l.getStyleClass().add("boldLabel");
@@ -203,13 +210,13 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		allValid_ = new UpdateableBooleanBinding()
 		{
 			{
-				addBinding(assemblageIsValid_);
+				addBinding(assemblageIsValid_, selectableConcept_.isValid());
 			}
 
 			@Override
 			protected boolean computeValue()
 			{
-				if (assemblageIsValid_.get())
+				if (assemblageIsValid_.get() && selectableConcept_.isValid().get())
 				{
 					boolean allDataValid = true;
 					for (StringProperty ssp : currentDataFieldWarnings_)
@@ -285,68 +292,93 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		return new ArrayList<>();
 	}
 
-	public void finishInit(int referencedComponentNid, DynamicRefexView viewToRefresh)
+	public void finishInit(InputType setFromType, DynamicRefexView viewToRefresh)
 	{
 		callingView_ = viewToRefresh;
-		referencedComponentNid_ = referencedComponentNid;
-		refexDropDownOptions.clear();
-		refexDropDownOptions.addAll(buildAssemblageConceptList());
+		inputType_ = setFromType;
+		
 
-		referencedComponentValue.setText(WBUtility.getDescription(referencedComponentNid_));
-
-		assemblageConcept_.getConceptProperty().addListener((observable, oldV, newV) -> 
+		if (inputType_.getComponentNid() != null)
 		{
-			if (assemblageConcept_.isValid().get())
+			gp_.add(unselectableComponentLabel_, 1, 0);
+			unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getComponentNid()));
+			gp_.add(selectableConcept_.getNode(), 1, 1);
+			refexDropDownOptions.clear();
+			refexDropDownOptions.addAll(buildAssemblageConceptList());
+		}
+		else
+		{
+			gp_.add(unselectableComponentLabel_, 1, 1);
+			unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getAssemblyNid()));
+			gp_.add(selectableConcept_.getNode(), 1, 0);
+			refexDropDownOptions.clear();
+			refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
+			try
 			{
-				for (StringProperty ssp : currentDataFieldWarnings_)
-				{
-					allValid_.removeBinding(ssp);
-				}
-				currentDataFieldWarnings_.clear();
-				currentDataFields_.clear();
+				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(inputType_.getAssemblyNid());
+				assemblageIsValid_.set(true);
+				buildDataFields(true);
+			}
+			catch (Exception e)
+			{
+				logger_.error("Unexpected", e);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected Error reading Assembly concept", e);
+			}
+		}
+	}
+	
+	private void buildDataFields(boolean assemblageValid)
+	{
+		if (assemblageValid)
+		{
+			for (StringProperty ssp : currentDataFieldWarnings_)
+			{
+				allValid_.removeBinding(ssp);
+			}
+			currentDataFieldWarnings_.clear();
+			currentDataFields_.clear();
 
-				GridPane gp = new GridPane();
-				gp.setHgap(10.0);
-				gp.setVgap(10.0);
-				gp.setStyle("-fx-padding: 5;");
-				int row = 0;
-				for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
-				{
-					Label l = new Label(ci.getColumnName());
-					l.getStyleClass().add("boldLabel");
-					Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
-					gp.add(l, 0, row);
-					Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue());
-					gp.add(n, 1, row);
-					gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
-				}
+			GridPane gp = new GridPane();
+			gp.setHgap(10.0);
+			gp.setVgap(10.0);
+			gp.setStyle("-fx-padding: 5;");
+			int row = 0;
+			for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
+			{
+				Label l = new Label(ci.getColumnName());
+				l.getStyleClass().add("boldLabel");
+				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
+				gp.add(l, 0, row);
+				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue());
+				gp.add(n, 1, row);
+				gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
+			}
 
-				ColumnConstraints cc = new ColumnConstraints();
-				cc.setHgrow(Priority.NEVER);
-				gp.getColumnConstraints().add(cc);
+			ColumnConstraints cc = new ColumnConstraints();
+			cc.setHgrow(Priority.NEVER);
+			gp.getColumnConstraints().add(cc);
 
-				cc = new ColumnConstraints();
-				cc.setHgrow(Priority.ALWAYS);
-				gp.getColumnConstraints().add(cc);
-				
-				cc = new ColumnConstraints();
-				cc.setHgrow(Priority.NEVER);
-				gp.getColumnConstraints().add(cc);
+			cc = new ColumnConstraints();
+			cc.setHgrow(Priority.ALWAYS);
+			gp.getColumnConstraints().add(cc);
+			
+			cc = new ColumnConstraints();
+			cc.setHgrow(Priority.NEVER);
+			gp.getColumnConstraints().add(cc);
 
-				if (row == 0)
-				{
-					sp_.setContent(new Label("This assemblage does not allow data fields"));
-				}
-				else
-				{
-					sp_.setContent(gp);
-				}
+			if (row == 0)
+			{
+				sp_.setContent(new Label("This assemblage does not allow data fields"));
 			}
 			else
 			{
-				sp_.setContent(null);
+				sp_.setContent(gp);
 			}
-		});
+		}
+		else
+		{
+			sp_.setContent(null);
+		}
 	}
 
 	private Node buildNodeForType(RefexDynamicDataType dt, Object defaultValue)
@@ -496,19 +528,33 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				data[i] = getDataForType(currentDataFields_.get(i++), ci);
 			}
 			
-			RefexDynamicCAB cab = new RefexDynamicCAB(referencedComponentNid_, assemblageConcept_.getConcept().getNid());
+			int componentNid;
+			int assemblageNid;
+			if (inputType_.getComponentNid() == null)
+			{
+				componentNid = selectableConcept_.getConcept().getNid();
+				assemblageNid = inputType_.getAssemblyNid();
+			}
+			else
+			{
+				componentNid = inputType_.getComponentNid();
+				assemblageNid =  selectableConcept_.getConcept().getNid();
+			}
+			
+			RefexDynamicCAB cab = new RefexDynamicCAB(componentNid, assemblageNid);
 			cab.setData(data);
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
 			builder.construct(cab);
 			
-			ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(referencedComponentNid_));
-			if (!assemblageConcept_.getConcept().isAnnotationStyleRefex())
+			ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(componentNid));
+			if (!WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex())
 			{
-				ExtendedAppContext.getDataStore().addUncommitted(assemblageConcept_.getConcept());
+				ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(assemblageNid));
 			}
 			if (callingView_ != null)
 			{
 				ExtendedAppContext.getDataStore().waitTillWritesFinished();
+				callingView_.setNewComponentHint(componentNid);
 				callingView_.refresh();
 			}
 			close();
@@ -613,7 +659,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	@Override
 	public void showView(Window parent)
 	{
-		if (referencedComponentNid_ == 0)
+		if (inputType_ == null)
 		{
 			throw new RunLevelException("referenced component nid must be set first");
 		}

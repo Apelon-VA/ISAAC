@@ -29,10 +29,8 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.WBUtility;
-
 import java.util.ArrayList;
 import java.util.UUID;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -59,8 +57,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesVersionDdo;
@@ -150,7 +147,8 @@ public class SnomedConceptViewController {
         stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
         //TODO make the other view tables aware of the show/hide stamp call
         
-        AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(concept));
+        ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
+        AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
 
         // Update action handlers.
         showInTreeButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -274,7 +272,7 @@ public class SnomedConceptViewController {
                 cellValueFactory, cellFactory);
         
         RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
-        v.setComponent(concept.getPrimordialUuid(), stampToggle.selectedProperty());
+        v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty());
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());

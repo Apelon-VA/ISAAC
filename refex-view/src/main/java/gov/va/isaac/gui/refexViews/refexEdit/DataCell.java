@@ -24,7 +24,8 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.scene.control.ContextMenu;
@@ -48,13 +49,15 @@ import org.slf4j.LoggerFactory;
  */
 public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
 {
-	private Collection<RefexDynamicColumnInfo> columnInfo_;
+	private Hashtable<UUID, List<RefexDynamicColumnInfo>> columnInfo_;
+	private int listItem_;
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
-	public DataCell(Collection<RefexDynamicColumnInfo> columnInfo)
+	public DataCell(Hashtable<UUID, List<RefexDynamicColumnInfo>> columnInfo, int listItem)
 	{
 		super();
 		columnInfo_ = columnInfo;
+		listItem_ = listItem;
 	}
 
 	/**
@@ -72,13 +75,14 @@ public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends Refe
 		}
 		else if (item != null)
 		{
-			for (RefexDynamicColumnInfo colInfo : columnInfo_)
+			try
 			{
-				try
+				for (UUID uuid : columnInfo_.keySet())
 				{
-					if (item.getAssemblageNid() == UUIDToNid(colInfo.getAssemblageConcept()))
+					if (UUIDToNid(uuid) == item.getAssemblageNid())
 					{
-						RefexDynamicDataBI data = item.getData()[colInfo.getColumnOrder()];
+						List<RefexDynamicColumnInfo> colInfo =  columnInfo_.get(uuid);
+						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? item.getData()[colInfo.get(listItem_).getColumnOrder()] : null);
 						if (data != null)
 						{
 							if (data instanceof RefexDynamicByteArrayBI)
@@ -101,21 +105,21 @@ public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends Refe
 								setGraphic(null);
 							}
 						}
+						else
+						{
+							//Not applicable, for the current row.
+							setText("");
+							setGraphic(null);
+						}
 						return;
 					}
-					else
-					{
-						//Not applicable, for the current row.
-						setText(null);
-						setGraphic(null);
-					}
 				}
-				catch (Exception e)
-				{
-					logger_.error("Unexpected error rendering data cell", e);
-					setText("-ERROR-");
-					setGraphic(null);
-				}
+			}
+			catch (Exception e)
+			{
+				logger_.error("Unexpected error rendering data cell", e);
+				setText("-ERROR-");
+				setGraphic(null);
 			}
 			//Not applicable, for the current row.
 			setText("");
