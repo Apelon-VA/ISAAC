@@ -20,9 +20,11 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.Utility;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -79,6 +81,27 @@ public class YesNoDialog
 	{
 		yndc_.init(question);
 		yesNoStage_.setTitle(title);
+		//Hack for linux, to try to make sure it gets on top
+		Task<Void> t = new Task<Void>()
+		{
+			@Override
+			protected Void call() throws Exception
+			{
+				Thread.sleep(100);
+				return null;
+			}
+
+			/**
+			 * @see javafx.concurrent.Task#succeeded()
+			 */
+			@Override
+			protected void succeeded()
+			{
+				yesNoStage_.toFront();
+			}
+		};
+		Utility.execute(t);
+		
 		yesNoStage_.showAndWait();
 		return yndc_.getAnswer();
 	}
