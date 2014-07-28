@@ -148,7 +148,7 @@ public class DynamicRefexView implements RefexViewI
 	private VBox rootNode_;
 	private TreeTableView<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ttv_;
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
-	private Button removeButton_, addButton_, commitButton_, cancelButton_;
+	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
 	private ToggleButton stampButton_;
 	private BooleanBinding removeButtonEnabled_;
 	private UpdateableBooleanBinding showStampColumns_;
@@ -163,51 +163,6 @@ public class DynamicRefexView implements RefexViewI
 	private Integer newComponentHint = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
 	private DialogResponse dr_ = null;
 	
-	public class InputType
-	{
-		private Integer componentNid_;
-		private Integer assemblyNid_;
-		
-		private ComponentChronicleBI<?> componentCache_;
-		
-		protected InputType(int nid, boolean isAssembly)
-		{
-			if (isAssembly)
-			{
-				assemblyNid_ = nid;
-				componentNid_ = null;
-			}
-			else
-			{
-				assemblyNid_ = null;
-				componentNid_ = nid;
-			}
-		}
-		
-		public Integer getComponentNid()
-		{
-			return componentNid_;
-		}
-		
-		public ComponentChronicleBI<?> getComponentBI() throws IOException
-		{
-			if (componentNid_ == null)
-			{
-				return null;
-			}
-			if (componentCache_ == null)
-			{
-				componentCache_ = ExtendedAppContext.getDataStore().getComponent(componentNid_);
-			}
-			return componentCache_;
-		}
-		
-		public Integer getAssemblyNid()
-		{
-			return assemblyNid_;
-		}
-	}
-
 	private DynamicRefexView() throws IOException
 	{
 		//TODO delay this init
@@ -275,6 +230,16 @@ public class DynamicRefexView implements RefexViewI
 		
 		addButton_.setDisable(true);
 		t.getItems().add(addButton_);
+		
+		editButton_ = new Button(null, Images.EDIT.createImageView());
+		editButton_.setTooltip(new Tooltip("Edit a Refex"));
+		editButton_.setOnAction((action) ->
+		{
+			AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
+			arp.finishInit(ttv_.getSelectionModel().getSelectedItem().getValue(), this);
+			arp.showView(rootNode_.getScene().getWindow());
+		});
+		t.getItems().add(editButton_);
 		
 		//fill to right
 		Region r = new Region();
@@ -927,16 +892,16 @@ public class DynamicRefexView implements RefexViewI
 		else
 		{
 			//TODO see if there is an index, use it here.
-			refexMembers = new HashSet<>();
+			refexMembers = new ArrayList<RefexDynamicChronicleBI<?>>();
 			
 			//add in the newComponentHint
 			//TODO put this back after I figure out what is wrong with generics.
 //			if (newComponentHint != null)
 //			{
-//				ConceptVersionBI c = WBUtility.getConceptVersion(newComponentHint);
+//				ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
 //				if (c != null)
 //				{
-//					for (RefexDynamicChronicleBI<? extends RefexDynamicChronicleBI<?>> r : c.getRefexDynamicAnnotations())
+//					for (RefexDynamicChronicleBI<?> r : c.getRefexDynamicAnnotations())
 //					{
 //						if (r.getAssemblageNid() == assemblageNid)
 //						{

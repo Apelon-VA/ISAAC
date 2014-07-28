@@ -66,7 +66,8 @@ public enum Images {
     STAMP(setupImage("/icons/fugue/16x16/icons-shadowless/stamp-medium.png")),
     INBOX(setupImage("/icons/fugue/16x16/icons-shadowless/inbox.png")),
     COMMIT(setupImage("/icons/fugue/16x16/icons-shadowless/commit-change.png")),
-    CANCEL(setupImage("/icons/fugue/16x16/icons-shadowless/cancel-change.png"));
+    CANCEL(setupImage("/icons/fugue/16x16/icons-shadowless/cancel-change.png")),
+    EDIT(setupImage("icons/silk/16x16/pencil.png"));
 
     private final Image image;
 
