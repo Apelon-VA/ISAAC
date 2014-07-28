@@ -20,6 +20,7 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.Format;
@@ -29,6 +30,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -52,9 +54,8 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
-import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
-import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -752,28 +753,4 @@ public class WBUtility {
 			LOG.error("addUncommitted failure", e);
 		}
 	}
-
-	
-	public static void createNewRole(int conNid, int typeNid, int targetNid) throws IOException, InvalidCAB, ContradictionException {
-		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, 0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
-		
-		WBUtility.getBuilder().construct(newRel);
-	}
-
-	public static void createNewParent(int conNid, int targetNid) throws ValidationException, IOException, InvalidCAB, ContradictionException {
-		RelationshipCAB newRel = new RelationshipCAB(conNid, SnomedRelType.IS_A.getNid(), targetNid, 0, RelationshipType.STATED_HIERARCHY, IdDirective.GENERATE_HASH);
-		
-		WBUtility.getBuilder().construct(newRel);		
-	}
-
-	public static void addUncommittedNoChecks(ConceptChronicleBI con) {
-		try {
-			dataStore.addUncommittedNoChecks(con);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("addUncommitted failure", e);
-		}
-	}
-
-	
 }
