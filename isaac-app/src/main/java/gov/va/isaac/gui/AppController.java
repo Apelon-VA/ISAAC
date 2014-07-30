@@ -20,6 +20,7 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.gui.util.ToolTipDefaultsFixer;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
@@ -77,6 +78,8 @@ public class AppController {
 
         AppContext.getServiceLocator().inject(this);
 
+        ToolTipDefaultsFixer.setTooltipTimers(100, 20000, 200);
+        
         root_ = new BorderPane();
         mainSplitPane = new SplitPane();
         mainSplitPane.setDividerPositions(0.60);

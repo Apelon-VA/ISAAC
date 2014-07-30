@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -50,7 +51,9 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
@@ -68,12 +71,16 @@ import javafx.scene.text.Text;
 import javax.inject.Named;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
@@ -100,6 +107,7 @@ import com.sun.javafx.tk.Toolkit;
 @PerLookup
 public class DynamicRefexView implements RefexViewI
 {
+	private VBox rootNode_ = null;
 	public class AnnotationProcessor implements ProcessUnfetchedConceptDataBI {
 
 		private int assemblageConceptNid;
@@ -150,7 +158,7 @@ public class DynamicRefexView implements RefexViewI
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
 	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
 	private ToggleButton stampButton_;
-	private BooleanBinding removeButtonEnabled_;
+	private UpdateableBooleanBinding rowSelected_;
 	private UpdateableBooleanBinding showStampColumns_;
 	private TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
@@ -162,185 +170,234 @@ public class DynamicRefexView implements RefexViewI
 	private InputType setFromType_ = null;
 	private Integer newComponentHint = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
 	private DialogResponse dr_ = null;
+	private final Object dialogThreadBlock_ = new Object();
 	
-	private DynamicRefexView() throws IOException
+	private DynamicRefexView() 
 	{
-		//TODO delay this init
-		// created by HK2
-		ttv_ = new TreeTableView<>();
-		ttv_.setTableMenuButtonVisible(true);
-
-		treeRoot_ = new TreeItem<>();
-		treeRoot_.setExpanded(true);
-		ttv_.setShowRoot(false);
-		ttv_.setRoot(treeRoot_);
-		ttv_.setPlaceholder(new ProgressBar());
-		
-		rootNode_ = new VBox();
-		rootNode_.setFillWidth(true);
-		rootNode_.getChildren().add(ttv_);
-		VBox.setVgrow(ttv_, Priority.ALWAYS);
-		
-		ToolBar t = new ToolBar();
-		
-		removeButtonEnabled_ = new BooleanBinding()
+		//Created by HK2 - no op - delay till getView called
+	}
+	
+	private void initialInit()
+	{
+		if (rootNode_ == null)
 		{
+			ttv_ = new TreeTableView<>();
+			ttv_.setTableMenuButtonVisible(true);
+	
+			treeRoot_ = new TreeItem<>();
+			treeRoot_.setExpanded(true);
+			ttv_.setShowRoot(false);
+			ttv_.setRoot(treeRoot_);
+			ttv_.setPlaceholder(new ProgressBar());
+			
+			rootNode_ = new VBox();
+			rootNode_.setFillWidth(true);
+			rootNode_.getChildren().add(ttv_);
+			VBox.setVgrow(ttv_, Priority.ALWAYS);
+			
+			ToolBar t = new ToolBar();
+			
+			rowSelected_ = new UpdateableBooleanBinding()
 			{
-				bind(ttv_.getSelectionModel().getSelectedCells());
-			}
-			@Override
-			protected boolean computeValue()
-			{
-				return ttv_.getSelectionModel().getSelectedCells().size() > 0;
-			}
-		};
-		
-		removeButton_ = new Button(null, Images.MINUS.createImageView());
-		removeButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
-		removeButton_.disableProperty().bind(removeButtonEnabled_.not());
-		removeButton_.setOnAction((action) ->
-		{
-			try
-			{
-				YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
-				DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
-				if (DialogResponse.YES == dr)
 				{
-					//TODO implement refex retire
-					System.out.println("Do retire!");
+					addBinding(ttv_.getSelectionModel().getSelectedCells());
 				}
-			}
-			catch (Exception e)
-			{
-				logger_.error("Unexpected error retiring refex", e);
-				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the refex", e.getMessage(), rootNode_.getScene().getWindow());
-			}
-		});
-		
-		t.getItems().add(removeButton_);
-		
-		addButton_ = new Button(null, Images.PLUS.createImageView());
-		addButton_.setTooltip(new Tooltip("Add a new Refex Extension"));
-		addButton_.setOnAction((action) ->
-		{
-			AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
-			arp.finishInit(setFromType_, this);
-			arp.showView(rootNode_.getScene().getWindow());
-		});
-		
-		addButton_.setDisable(true);
-		t.getItems().add(addButton_);
-		
-		editButton_ = new Button(null, Images.EDIT.createImageView());
-		editButton_.setTooltip(new Tooltip("Edit a Refex"));
-		editButton_.setOnAction((action) ->
-		{
-			AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
-			arp.finishInit(ttv_.getSelectionModel().getSelectedItem().getValue(), this);
-			arp.showView(rootNode_.getScene().getWindow());
-		});
-		t.getItems().add(editButton_);
-		
-		//fill to right
-		Region r = new Region();
-		HBox.setHgrow(r, Priority.ALWAYS);
-		t.getItems().add(r);
-		
-		stampButton_ = new ToggleButton("");
-		stampButton_.setGraphic(Images.STAMP.createImageView());
-		stampButton_.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
-		stampButton_.setVisible(false);
-		t.getItems().add(stampButton_);
-		
-		showStampColumns_ = new UpdateableBooleanBinding()
-		{
-			{
-				setComputeOnInvalidate(true);
-			}
-			@Override
-			protected boolean computeValue()
-			{
-				boolean visible = false;
-				if (listeningTo.size() > 0)
+				@Override
+				protected boolean computeValue()
 				{
-					visible = ((ReadOnlyBooleanProperty)listeningTo.iterator().next()).get();
+					return ttv_.getSelectionModel().getSelectedCells().size() > 0;
 				}
-				if (stampColumn_ != null)
+			};
+			
+			removeButton_ = new Button(null, Images.MINUS.createImageView());
+			removeButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
+			removeButton_.disableProperty().bind(rowSelected_.not());
+			removeButton_.setOnAction((action) ->
+			{
+				try
 				{
-					stampColumn_.setVisible(visible);
-					for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nested : stampColumn_.getColumns())
+					YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
+					DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
+					if (DialogResponse.YES == dr)
 					{
-						nested.setVisible(visible);
+						ObservableList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> selected = ttv_.getSelectionModel().getSelectedItems();
+						if (selected != null && selected.size() > 0)
+						{
+							for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> refexTreeItem : selected)
+							{
+								RefexDynamicVersionBI<?> refex = refexTreeItem.getValue();
+								RefexDynamicCAB rcab =  refex.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+								rcab.setStatus(Status.INACTIVE);
+								WBUtility.getBuilder().construct(rcab);
+								
+								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getAssemblageNid());
+								ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
+								if (!assemblage.isAnnotationStyleRefex())
+								{
+									ExtendedAppContext.getDataStore().addUncommitted(assemblage);
+								}
+							}
+							ExtendedAppContext.getDataStore().waitTillWritesFinished();
+							refresh();
+						}
 					}
 				}
-				return visible;
-			}
-		};
-		
-		cancelButton_ = new Button("Cancel");
-		cancelButton_.disableProperty().bind(hasUncommitted_.not());
-		t.getItems().add(cancelButton_);
-		cancelButton_.setOnAction((action) ->
-		{
-			try
+				catch (Exception e)
+				{
+					logger_.error("Unexpected error retiring refex", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the refex", e.getMessage(), rootNode_.getScene().getWindow());
+				}
+			});
+			
+			t.getItems().add(removeButton_);
+			
+			addButton_ = new Button(null, Images.PLUS.createImageView());
+			addButton_.setTooltip(new Tooltip("Add a new Refex Extension"));
+			addButton_.setOnAction((action) ->
 			{
-				//TODO [OTF API] I can't cancel individual items?  Seriously?
-				ExtendedAppContext.getDataStore().cancel();
-			}
-			catch (Exception e)
+				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
+				arp.finishInit(setFromType_, this);
+				arp.showView(rootNode_.getScene().getWindow());
+			});
+			
+			addButton_.setDisable(true);
+			t.getItems().add(addButton_);
+			
+			editButton_ = new Button(null, Images.EDIT.createImageView());
+			editButton_.setTooltip(new Tooltip("Edit a Refex"));
+			editButton_.disableProperty().bind(rowSelected_.not());
+			editButton_.setOnAction((action) ->
 			{
-				logger_.error("Error cancelling", e);
-				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected during cancel", e.getMessage(), 
-						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
-			}
-			refresh();
-		});
-		
-		commitButton_ = new Button("Commit");
-		commitButton_.disableProperty().bind(hasUncommitted_.not());
-		t.getItems().add(commitButton_);
-		
-		commitButton_.setOnAction((action) ->
-		{
-			try
+				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
+				arp.finishInit(ttv_.getSelectionModel().getSelectedItem().getValue(), this);
+				arp.showView(rootNode_.getScene().getWindow());
+			});
+			t.getItems().add(editButton_);
+			
+			//fill to right
+			Region r = new Region();
+			HBox.setHgrow(r, Priority.ALWAYS);
+			t.getItems().add(r);
+			
+			stampButton_ = new ToggleButton("");
+			stampButton_.setGraphic(Images.STAMP.createImageView());
+			stampButton_.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+			stampButton_.setVisible(false);
+			t.getItems().add(stampButton_);
+			
+			showStampColumns_ = new UpdateableBooleanBinding()
 			{
-				//TODO [OTF-API] BUG! So - when you currently commit a change to a member-list style refset - and everything appears to work correctly 
-				//in this session - if you stop and start the OTF backend - the member refset will vanish.  Something nasty going on here.
-				//Definitely an OTF bug, possible in the dynamic refex code, possibly not.  Unsure at this point.
-				
-//				HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
-//				for (Integer i : componentNids)
-//				{
-//					//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
-//					ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
-//					if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
-//					{
-//						ExtendedAppContext.getDataStore().commit(cc);
-//					}
-//				}
-//				
-//				HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
-//				for (Integer i : assemblageNids)
-//				{
-//					ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
-//					if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
-//					{
-//						ExtendedAppContext.getDataStore().commit(cc);
-//					}
-//				}
-				ExtendedAppContext.getDataStore().commit();
-				ExtendedAppContext.getDataStore().waitTillWritesFinished();
-			}
-			catch (Exception e)
+				{
+					setComputeOnInvalidate(true);
+				}
+				@Override
+				protected boolean computeValue()
+				{
+					boolean visible = false;
+					if (listeningTo.size() > 0)
+					{
+						visible = ((ReadOnlyBooleanProperty)listeningTo.iterator().next()).get();
+					}
+					if (stampColumn_ != null)
+					{
+						stampColumn_.setVisible(visible);
+						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nested : stampColumn_.getColumns())
+						{
+							nested.setVisible(visible);
+						}
+					}
+					return visible;
+				}
+			};
+			
+			cancelButton_ = new Button("Cancel");
+			cancelButton_.disableProperty().bind(hasUncommitted_.not());
+			t.getItems().add(cancelButton_);
+			cancelButton_.setOnAction((action) ->
 			{
-				logger_.error("Error committing", e);
-				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected during commit", e.getMessage(), 
-						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
-			}
-			refresh();
-		});
-		
-		rootNode_.getChildren().add(t);
+				try
+				{
+					ExtendedAppContext.getDataStore().cancel();
+					
+					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
+					for (Integer i : componentNids)
+					{
+						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().cancel(cc);
+						}
+					}
+					
+					HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
+					for (Integer i : assemblageNids)
+					{
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().cancel(cc);
+						}
+					}
+					ExtendedAppContext.getDataStore().waitTillWritesFinished();
+				}
+				catch (Exception e)
+				{
+					logger_.error("Error cancelling", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected during cancel", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+				refresh();
+			});
+			
+			commitButton_ = new Button("Commit");
+			commitButton_.disableProperty().bind(hasUncommitted_.not());
+			t.getItems().add(commitButton_);
+			
+			commitButton_.setOnAction((action) ->
+			{
+				try
+				{
+					//TODO [OTF-API] BUG! So - when you currently commit a change to a member-list style refset - and everything appears to work correctly 
+					//in this session - if you stop and start the OTF backend - the member refset will vanish.  Something nasty going on here.
+					//Definitely an OTF bug, possible in the dynamic refex code, possibly not.  Unsure at this point.
+					
+					//TODO [OTF-API] BUG! Edits and deletes of annotation style refexes currently doesn't work at all.  No idea why.
+					//Works fine for member-style refexes (until they vanish on DB restart)
+					
+					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
+					for (Integer i : componentNids)
+					{
+						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().commit(cc);
+						}
+					}
+					
+					HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
+					for (Integer i : assemblageNids)
+					{
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().commit(cc);
+						}
+					}
+					ExtendedAppContext.getDataStore().waitTillWritesFinished();
+				}
+				catch (Exception e)
+				{
+					logger_.error("Error committing", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected during commit", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+				refresh();
+			});
+			
+			rootNode_.getChildren().add(t);
+		}
 	}
 
 	/**
@@ -349,6 +406,7 @@ public class DynamicRefexView implements RefexViewI
 	@Override
 	public Region getView()
 	{
+		initialInit();
 		return rootNode_;
 	}
 
@@ -368,6 +426,7 @@ public class DynamicRefexView implements RefexViewI
 	@Override
 	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns)
 	{
+		initialInit();
 		setFromType_ = new InputType(componentNid, false);
 		handleStamp(showStampColumns);
 		newComponentHint = null;
@@ -380,6 +439,7 @@ public class DynamicRefexView implements RefexViewI
 	@Override
 	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns)
 	{
+		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
 		handleStamp(showStampColumns);
 		newComponentHint = null;
@@ -409,14 +469,30 @@ public class DynamicRefexView implements RefexViewI
 	
 	protected void refresh()
 	{
-		treeRoot_.getChildren().clear();
-		ttv_.getColumns().clear();
+		//This is stilly - throwing out the entire table...
+		//But JavaFX seems to be broken, and the code that should work - simply removing
+		//all children from the rootNode - doesn't work.
+		//So build a completely new table upon every refresh, for now.
+		rootNode_.getChildren().remove(ttv_);
+		ttv_ = new TreeTableView<>();
+		ttv_.setTableMenuButtonVisible(true);
+		VBox.setVgrow(ttv_, Priority.ALWAYS);
+		rootNode_.getChildren().add(0, ttv_);
+		
+		treeRoot_ = new TreeItem<>();
+		treeRoot_.setExpanded(true);
+		ttv_.setShowRoot(false);
+		ttv_.setRoot(treeRoot_);
+
 		ttv_.setPlaceholder(new ProgressBar());
 		
-		init();
+		rowSelected_.clearBindings();
+		rowSelected_.addBinding(ttv_.getSelectionModel().getSelectedCells());
+		
+		loadData();
 	}
 
-	private void init()
+	private void loadData()
 	{
 		Utility.execute(() -> {
 			try
@@ -516,6 +592,8 @@ public class DynamicRefexView implements RefexViewI
 					}
 				}
 				
+				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
+				
 				//Create columns for every different type of data column we see in use
 				for (Hashtable<UUID, List<RefexDynamicColumnInfo>> col : uniqueColumns.values())
 				{
@@ -530,10 +608,11 @@ public class DynamicRefexView implements RefexViewI
 					
 					for (int i = 0; i < max; i++)
 					{
-						//TODO figure out how to put a tooltip on the header
 						TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> nestedCol = 
 								new TreeTableColumn<>();
-						nestedCol.setText(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
+						Label l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
+						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
+						nestedCol.setGraphic(l);
 						nestedCol.setSortable(true);
 						nestedCol.setResizable(true);
 						
@@ -623,6 +702,15 @@ public class DynamicRefexView implements RefexViewI
 					{
 						ttv_.getColumns().add(tc);
 					}
+					
+					for (Entry<Label, String> tooltips : tooltipsToInstall.entrySet())
+					{
+						Tooltip t = new Tooltip(tooltips.getValue());
+						t.setMaxWidth(400);
+						t.setWrapText(true);
+						tooltips.getKey().setTooltip(t);
+					}
+					
 					//Horrible hack to set a reasonable default size on the columns.
 					//Min width to the width of the header column.
 					Font f = new Font("System Bold", 13.0);
@@ -631,7 +719,8 @@ public class DynamicRefexView implements RefexViewI
 						float nestedTotal = 0;
 						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nCol : col.getColumns())
 						{
-							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(nCol.getText(), f) + 10);
+							String text = (nCol.getGraphic() != null && nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() : nCol.getText());
+							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
 						}
 						
 						if (col.getColumns().size() > 0)
@@ -689,7 +778,6 @@ public class DynamicRefexView implements RefexViewI
 					}
 					checkForUncommittedRefexes(rowData);
 					ttv_.setPlaceholder(placeholderText);
-					//TODO why the refresh problems???
 				});
 			}
 			catch (Exception e)
@@ -875,6 +963,7 @@ public class DynamicRefexView implements RefexViewI
 	}
 	
 
+	@SuppressWarnings("unchecked")
 	private ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> getDataRows(int assemblageNid) 
 			throws IOException, ContradictionException, InterruptedException
 	{
@@ -887,29 +976,30 @@ public class DynamicRefexView implements RefexViewI
 		annotationStyle = assemblageConceptFull.isAnnotationStyleRefex();
 		if (!annotationStyle)
 		{
-			refexMembers = (Collection<RefexDynamicChronicleBI<?>>) assemblageConceptFull.getRefsetDynamicMembers();
+			refexMembers = (Collection<RefexDynamicChronicleBI<?>>)assemblageConceptFull.getRefsetDynamicMembers();
 		}
 		else
 		{
 			//TODO see if there is an index, use it here.
-			refexMembers = new ArrayList<RefexDynamicChronicleBI<?>>();
+			refexMembers = new ArrayList<>();
 			
 			//add in the newComponentHint
-			//TODO put this back after I figure out what is wrong with generics.
-//			if (newComponentHint != null)
-//			{
-//				ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
-//				if (c != null)
-//				{
-//					for (RefexDynamicChronicleBI<?> r : c.getRefexDynamicAnnotations())
-//					{
-//						if (r.getAssemblageNid() == assemblageNid)
-//						{
-//							refexMembers.add(r);
-//						}
-//					}
-//				}
-//			}
+			if (newComponentHint != null)
+			{
+				ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
+				if (c != null)
+				{
+					Collection<RefexDynamicChronicleBI<?>> dynamicAnnotations = (Collection<RefexDynamicChronicleBI<?>>)c.getRefexDynamicAnnotations();
+					
+					for (RefexDynamicChronicleBI<?> r : dynamicAnnotations)
+					{
+						if (r.getAssemblageNid() == assemblageNid)
+						{
+							refexMembers.add(r);
+						}
+					}
+				}
+			}
 		}
 		
 		dr_ = null;
@@ -918,19 +1008,37 @@ public class DynamicRefexView implements RefexViewI
 		{
 			Platform.runLater(() ->
 			{
-				YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
-				dr_ = dialog.showYesNoDialog("Scan for Annotation Refex entries?", "This is an annotation style Refex."
-						+ "  Without a supporting index, displaying the refex entries will take a long time.  Scan for entries?");
-				if (dr_ == DialogResponse.NO)
+				synchronized (dialogThreadBlock_)
 				{
-					placeholderText.setText("No index is available to fetch the entries");
+					YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
+					dr_ = dialog.showYesNoDialog("Scan for Annotation Refex entries?", "This is an annotation style Refex."
+							+ "  Without a supporting index, displaying the refex entries will take a long time.  Scan for entries?");
+					if (dr_ == DialogResponse.NO)
+					{
+						placeholderText.setText("No index is available to fetch the entries");
+					}
+					dialogThreadBlock_.notifyAll();
 				}
 			});
-			
-			//TODO [HACK] fix this ugly ugly hack.
+
 			while (dr_ == null)
 			{
-				Thread.sleep(250);
+				//wait until they click yes, no, or close the dialog
+				//sync block will block us until they answer
+				synchronized (dialogThreadBlock_)
+				{
+					if (dr_ != null)
+					{
+						break;
+					}
+				}
+				if (dr_ == null)
+				{
+					//Means that our thread got here before the other thread started and acquired the
+					//sync lock.  sleep, try to acquire the lock again - at which point, we will block 
+					//until the dialog is closed.
+					Thread.sleep(50);
+				}
 			}
 			
 			if (dr_ == DialogResponse.YES)
