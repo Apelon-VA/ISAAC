@@ -46,6 +46,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -63,10 +64,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javax.inject.Named;
 import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
@@ -94,7 +99,7 @@ public class DynamicRefexView implements RefexViewI
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
 	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
 	private ToggleButton stampButton_;
-	private BooleanBinding removeButtonEnabled_;
+	private UpdateableBooleanBinding rowSelected_;
 	private UpdateableBooleanBinding showStampColumns_;
 	private TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
@@ -133,10 +138,10 @@ public class DynamicRefexView implements RefexViewI
 			
 			ToolBar t = new ToolBar();
 			
-			removeButtonEnabled_ = new BooleanBinding()
+			rowSelected_ = new UpdateableBooleanBinding()
 			{
 				{
-					bind(ttv_.getSelectionModel().getSelectedCells());
+					addBinding(ttv_.getSelectionModel().getSelectedCells());
 				}
 				@Override
 				protected boolean computeValue()
@@ -147,7 +152,7 @@ public class DynamicRefexView implements RefexViewI
 			
 			removeButton_ = new Button(null, Images.MINUS.createImageView());
 			removeButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
-			removeButton_.disableProperty().bind(removeButtonEnabled_.not());
+			removeButton_.disableProperty().bind(rowSelected_.not());
 			removeButton_.setOnAction((action) ->
 			{
 				try
@@ -156,8 +161,26 @@ public class DynamicRefexView implements RefexViewI
 					DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
 					if (DialogResponse.YES == dr)
 					{
-						//TODO implement refex retire
-						System.out.println("Do retire!");
+						ObservableList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> selected = ttv_.getSelectionModel().getSelectedItems();
+						if (selected != null && selected.size() > 0)
+						{
+							for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> refexTreeItem : selected)
+							{
+								RefexDynamicVersionBI<?> refex = refexTreeItem.getValue();
+								RefexDynamicCAB rcab =  refex.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+								rcab.setStatus(Status.INACTIVE);
+								WBUtility.getBuilder().construct(rcab);
+								
+								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getAssemblageNid());
+								ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
+								if (!assemblage.isAnnotationStyleRefex())
+								{
+									ExtendedAppContext.getDataStore().addUncommitted(assemblage);
+								}
+							}
+							ExtendedAppContext.getDataStore().waitTillWritesFinished();
+							refresh();
+						}
 					}
 				}
 				catch (Exception e)
@@ -183,6 +206,7 @@ public class DynamicRefexView implements RefexViewI
 			
 			editButton_ = new Button(null, Images.EDIT.createImageView());
 			editButton_.setTooltip(new Tooltip("Edit a Refex"));
+			editButton_.disableProperty().bind(rowSelected_.not());
 			editButton_.setOnAction((action) ->
 			{
 				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
@@ -234,8 +258,29 @@ public class DynamicRefexView implements RefexViewI
 			{
 				try
 				{
-					//TODO [OTF API] I can't cancel individual items?  Seriously?
 					ExtendedAppContext.getDataStore().cancel();
+					
+					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
+					for (Integer i : componentNids)
+					{
+						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().cancel(cc);
+						}
+					}
+					
+					HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
+					for (Integer i : assemblageNids)
+					{
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().cancel(cc);
+						}
+					}
+					ExtendedAppContext.getDataStore().waitTillWritesFinished();
 				}
 				catch (Exception e)
 				{
@@ -257,6 +302,9 @@ public class DynamicRefexView implements RefexViewI
 					//TODO [OTF-API] BUG! So - when you currently commit a change to a member-list style refset - and everything appears to work correctly 
 					//in this session - if you stop and start the OTF backend - the member refset will vanish.  Something nasty going on here.
 					//Definitely an OTF bug, possible in the dynamic refex code, possibly not.  Unsure at this point.
+					
+					//TODO [OTF-API] BUG! Edits and deletes of annotation style refexes currently doesn't work at all.  No idea why.
+					//Works fine for member-style refexes (until they vanish on DB restart)
 					
 					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
 					for (Integer i : componentNids)
@@ -378,6 +426,9 @@ public class DynamicRefexView implements RefexViewI
 		ttv_.setRoot(treeRoot_);
 
 		ttv_.setPlaceholder(new ProgressBar());
+		
+		rowSelected_.clearBindings();
+		rowSelected_.addBinding(ttv_.getSelectionModel().getSelectedCells());
 		
 		loadData();
 	}

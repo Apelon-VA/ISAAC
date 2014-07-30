@@ -19,17 +19,18 @@
 package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefexDefinitionViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Singleton;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.LoggerFactory;
 
@@ -99,9 +100,7 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 			@Override
 			public Image getImage()
 			{
-				//TODO
-				return null;
-				//return Images.LIST_VIEW.getImage();
+				return Images.ATTACH.getImage();
 			}
 		};
 		return menuItem;
