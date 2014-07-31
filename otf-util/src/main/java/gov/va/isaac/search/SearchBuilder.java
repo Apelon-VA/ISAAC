@@ -30,7 +30,7 @@ import java.util.Comparator;
 
 public class SearchBuilder {
 	String query;
-	Integer sizeLimit;
+	Integer sizeLimit = Integer.MAX_VALUE;
 	Integer taskId;
 	boolean prefixSearch;
 	
@@ -42,7 +42,6 @@ public class SearchBuilder {
 		SearchBuilder search = new SearchBuilder();
 		
 		search.setQuery(query);
-		search.setSizeLimit(Integer.MAX_VALUE);
 		search.setPrefixSearch(false);
 		search.setComparator(new CompositeSearchResultComparator());
 		
@@ -63,7 +62,6 @@ public class SearchBuilder {
 		SearchBuilder search = new SearchBuilder();
 		
 		search.setQuery(query);
-		search.setSizeLimit(Integer.MAX_VALUE);
 		search.setPrefixSearch(false);
 		search.setComparator(new CompositeSearchResultComparator());
 		

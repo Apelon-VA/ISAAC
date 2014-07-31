@@ -60,6 +60,7 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -75,6 +76,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.Callback;
@@ -115,6 +117,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 	}
 
+	@FXML private HBox maxResultsHBox;
+	@FXML private Label maxResultsCustomTextFieldLabel;
+	private CustomTextField maxResultsCustomTextField;
+	
 	@FXML private Button searchButton;
 	@FXML private TextField searchText;
 	@FXML private Label totalResultsDisplayedLabel;
@@ -126,7 +132,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button exportSearchResultsToWorkflowButton;
     @FXML private ProgressIndicator searchProgress;
     @FXML private Label totalResultsSelectedLabel;
-    @FXML private Button resetTableDefaultsButton;
+    @FXML private Button resetDefaultsButton;
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
@@ -152,7 +158,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert totalResultsSelectedLabel != null : "fx:id=\"totalResultsSelectedLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert resetTableDefaultsButton != null : "fx:id=\"resetTableDefaultsButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert resetDefaultsButton != null : "fx:id=\"resetDefaultsButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert maxResultsHBox != null : "fx:id=\"maxResultsHBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert maxResultsCustomTextFieldLabel != null : "fx:id=\"maxResultsCustomTextFieldLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! pane.getStylesheets().contains(styleSheet)) {
@@ -162,9 +170,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		initializeWorkflowServices();
 				 
         final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
-        searchProgress.visibleProperty().bind(searchRunning);
         searchButton.disableProperty().bind(searchTextValid.not());
+        searchProgress.visibleProperty().bind(searchRunning);
 
+        maxResultsCustomTextFieldLabel.setText("Max Results");
+        maxResultsCustomTextField = new CustomTextField();
+        maxResultsCustomTextField.setNumericOnly(true);
+        maxResultsCustomTextField.setMaxWidth(50);
+        ObservableList<Node> hBoxChildren = maxResultsHBox.getChildren();
+        hBoxChildren.add(maxResultsCustomTextField);
+        
 		// Search results table
 		initializeSearchResultsTable();
 		initializeAggregationTypeComboBox();
@@ -172,7 +187,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
-		resetTableDefaultsButton.setOnAction((e) -> initializeSearchResultsTable());
+		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
@@ -206,6 +221,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				searchTextValid.set(false);
 			}
 		});
+	}
+	
+	private void resetDefaults() {
+		maxResultsCustomTextField.setText("");
+		initializeSearchResultsTable();
 	}
 	
 	private void refreshTotalResultsSelectedLabel() {
@@ -284,7 +304,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		
 		List<Integer> nids = new ArrayList<>();
 		for (CompositeSearchResult result : searchResultsTable.getItems()) {
-			nids.add(result.getConceptNid());
+			if (! nids.contains(result.getConceptNid())) {
+				nids.add(result.getConceptNid());
+			}
 		}
 		
 		lv.addConcepts(nids);
@@ -389,7 +411,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					
 					if (event.getButton() == MouseButton.SECONDARY) {
 						TableCell<CompositeSearchResult, T> c = (TableCell<CompositeSearchResult, T>) event.getSource();
-						if (c != null && c.getIndex() < searchResultsTable.getItems().size()) {
+						
+						if (c != null && c.getIndex() < c.getTableView().getItems().size()) {
 							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
 								@Override
 								public String[] getStrings() {
@@ -684,7 +707,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					super.updateItem(a, bln);
 
 					if(a != null){
-						setText(a.toString() + " search");
+						setText("Display " + a.toString());
 					}else{
 						setText(null);
 					}
@@ -700,13 +723,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				if (bln) {
 					setText("");
 				} else {
-					setText(t.toString() + " search");
+					setText("Display " + t.toString());
 				}
 			}
 		});
 		aggregationTypeComboBox.setOnAction((event) -> {
 			LOG.trace("aggregationTypeComboBox event (selected: " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + ")");
 
+			searchResultsTable.getItems().clear();
 			initializeSearchResultsTable();
 		});
 
@@ -732,6 +756,12 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
         	SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(searchText.getText());
         	builder.setCallback(this);
         	builder.setTaskId(Tasks.SEARCH.ordinal());
+        	if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+        		Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+        		if (maxResults != null && maxResults > 0) {
+        			builder.setSizeLimit(maxResults);
+        		}
+        	}
             ssh = SearchHandler.doConceptSearch(builder);
             break;
         }
@@ -739,19 +769,23 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
         {
         	SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(searchText.getText());
         	builder.setCallback(this);
-        	builder.setComparator(new CompositeSearchResultComparator());
         	builder.setTaskId(Tasks.SEARCH.ordinal());
-            ssh = SearchHandler.doDescriptionSearch(builder);
-            break;
+        	if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+        		Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+        		if (maxResults != null && maxResults > 0) {
+        			builder.setSizeLimit(maxResults);
+        		}
+        	}
+        	ssh = SearchHandler.doDescriptionSearch(builder);
+        	break;
         }
-            
-            default:
-    			String title = "Unsupported Aggregation Type";
-    			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
-    			LOG.error(title);
-    			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()));
+        default:
+        	String title = "Unsupported Aggregation Type";
+        	String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
+        	LOG.error(title);
+        	AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()));
 
-    			break;
+        	break;
         }
     }
 
