@@ -613,7 +613,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			else
 			{
-				//TODO this isn't working right for some reason.
 				cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 			}
 			cab.setData(data);

@@ -20,6 +20,7 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.Format;
@@ -29,10 +30,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
+import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
@@ -50,11 +54,13 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
@@ -696,6 +702,18 @@ public class WBUtility {
 
 	    return format.format(date);		
 	}
+
+	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
+		DescriptionCAB newDesc = new DescriptionCAB(conNid, typeNid, lang, term, isInitial, IdDirective.GENERATE_HASH); 
+
+		WBUtility.getBuilder().construct(newDesc);
+	}
+
+	public static void createNewRelationship(int conNid, int typeNid, int targetNid, int group, RelationshipType type) throws IOException, InvalidCAB, ContradictionException {
+		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, group, type, IdDirective.GENERATE_HASH);
+		
+		WBUtility.getBuilder().construct(newRel);
+	}
 	
 	//TODO this will be removed, when the DB Builder starts building a single 
 	// root node, and constructing the hierarcy from there....
@@ -715,4 +733,24 @@ public class WBUtility {
 		return roots.toArray(new UUID[roots.size()]);
 	}
 	
+	public static void createNewRole(int conNid, int typeNid, int targetNid) throws IOException, InvalidCAB, ContradictionException {
+		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, 0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
+		
+		WBUtility.getBuilder().construct(newRel);
+	}
+
+	public static void createNewParent(int conNid, int targetNid) throws ValidationException, IOException, InvalidCAB, ContradictionException {
+		RelationshipCAB newRel = new RelationshipCAB(conNid, SnomedRelType.IS_A.getNid(), targetNid, 0, RelationshipType.STATED_HIERARCHY, IdDirective.GENERATE_HASH);
+		
+		WBUtility.getBuilder().construct(newRel);		
+	}
+
+	public static void addUncommittedNoChecks(ConceptChronicleBI con) {
+		try {
+			dataStore.addUncommittedNoChecks(con);
+		} catch (IOException e) {
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
+		}
+	}
 }
