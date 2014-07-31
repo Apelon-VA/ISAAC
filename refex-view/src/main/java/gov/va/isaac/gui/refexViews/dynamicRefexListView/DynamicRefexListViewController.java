@@ -92,6 +92,7 @@ public class DynamicRefexListViewController
 	private volatile boolean disableRead = true;
 	private volatile PendingRead readStatusTracker = PendingRead.IDLE;
 	private Object readStatusLock = new Object();
+	private int currentlyRenderedRefexNid = 0;
 
 	private ArrayList<SimpleDisplayConcept> allRefexDefinitions;
 
@@ -139,6 +140,7 @@ public class DynamicRefexListViewController
 		//TODO enhance ConceptNode to allow me to pass in my own concept validator
 		conceptNode = new ConceptNode(null, false);
 		conceptNode.getConceptProperty().addListener((change) -> {
+			conceptNode.getConceptProperty().get();  //Need to do a get after each invalidation, otherwise, we won't get the next invalidation
 			rebuildList(false);
 		});
 
@@ -210,6 +212,8 @@ public class DynamicRefexListViewController
 
 		statusLabel.setText("Reading Refexes");
 		readingRefexProgress.setVisible(true);
+		SimpleDisplayConcept selectedBefore = refexList.getSelectionModel().getSelectedItem();
+		refexList.getSelectionModel().clearSelection();
 		refexList.getItems().clear();
 
 		Task<Void> t = new Task<Void>()
@@ -274,6 +278,11 @@ public class DynamicRefexListViewController
 			{
 				log.debug("Refex Definition refresh complete");
 				refexList.getItems().addAll(filteredList);
+				if (selectedBefore != null && refexList.getItems().contains(selectedBefore))
+				{
+					refexList.getSelectionModel().select(selectedBefore);
+				}
+				showRefexDetails(refexList.getSelectionModel().getSelectedItem());
 				statusLabel.setText("Showing " + filteredList.size() + " of " + allRefexDefinitions.size() + " Refexes");
 				readingRefexProgress.setVisible(false);
 				synchronized (readStatusLock)
@@ -298,12 +307,13 @@ public class DynamicRefexListViewController
 
 	private boolean passesFilters(SimpleDisplayConcept sdc) throws IOException
 	{
-		if (conceptNode.getConcept() != null)
+		if (!conceptNode.isValid().get())
 		{
-			if (conceptNode.getConcept().getConceptNid() != sdc.getNid())
-			{
-				return false;
-			}
+			return false;
+		}
+		else if (conceptNode.getConcept() != null && conceptNode.getConcept().getConceptNid() != sdc.getNid())
+		{
+			return false;
 		}
 		else if (descriptionMatchesFilter.getText().length() > 0)
 		{
@@ -326,6 +336,14 @@ public class DynamicRefexListViewController
 
 	private void showRefexDetails(SimpleDisplayConcept sdn)
 	{
+		if (sdn != null && sdn.getNid() == currentlyRenderedRefexNid)
+		{
+			return;
+		}
+		else
+		{
+			currentlyRenderedRefexNid = (sdn == null ? 0 : sdn.getNid());
+		}
 		selectedRefexNameLabel.setText("");
 		selectedRefexDescriptionLabel.setText("");
 		refexStyleLabel.setText("");
