@@ -31,6 +31,8 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -504,7 +506,6 @@ public class DynamicRefexView implements RefexViewI
 				{
 					if (setFromType_.getComponentBI().isUncommitted())
 					{
-
 						hasUncommitted_.set(true);
 					}
 					else
@@ -551,8 +552,19 @@ public class DynamicRefexView implements RefexViewI
 				
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
 				
+				ArrayList<Hashtable<UUID, List<RefexDynamicColumnInfo>>> sortedUniqueColumns = new ArrayList<>();
+				sortedUniqueColumns.addAll(uniqueColumns.values());
+				Collections.sort(sortedUniqueColumns, new Comparator<Hashtable<UUID, List<RefexDynamicColumnInfo>>>()
+					{
+						@Override
+						public int compare(Hashtable<UUID, List<RefexDynamicColumnInfo>> o1, Hashtable<UUID, List<RefexDynamicColumnInfo>> o2)
+						{
+							return Integer.compare(o1.values().iterator().next().get(0).getColumnOrder(),o2.values().iterator().next().get(0).getColumnOrder()); 
+						}
+					});
+				
 				//Create columns for every different type of data column we see in use
-				for (Hashtable<UUID, List<RefexDynamicColumnInfo>> col : uniqueColumns.values())
+				for (Hashtable<UUID, List<RefexDynamicColumnInfo>> col : sortedUniqueColumns)
 				{
 					int max = 0;
 					for (List<RefexDynamicColumnInfo> item : col.values())
