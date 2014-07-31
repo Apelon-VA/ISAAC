@@ -28,7 +28,6 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,13 +37,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import javafx.application.Platform;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -52,6 +46,8 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -67,33 +63,24 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-
 import javax.inject.Named;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
-import org.ihtsdo.otf.tcc.model.cc.P;
-import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.sun.javafx.tk.Toolkit;
-
 
 /**
  * 
@@ -108,52 +95,6 @@ import com.sun.javafx.tk.Toolkit;
 public class DynamicRefexView implements RefexViewI
 {
 	private VBox rootNode_ = null;
-	public class AnnotationProcessor implements ProcessUnfetchedConceptDataBI {
-
-		private int assemblageConceptNid;
-		private Set<RefexDynamicChronicleBI> refsetMembers = new ConcurrentSkipListSet <>();
-
-		AnnotationProcessor(int assemblageConceptNid) {
-			this.assemblageConceptNid = assemblageConceptNid;
-		}
-		@Override
-		public boolean continueWork() {
-		    return true;
-		}
-
-		@Override
-		public boolean allowCancel() {
-	        return false;
-		}
-
-		@Override
-		public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher) throws Exception {
-	         ConceptChronicle c   = (ConceptChronicle)fetcher.fetch();
-			Collection<? extends RefexDynamicChronicleBI<?>> annotations = c.getRefexDynamicAnnotations();
-			for (RefexDynamicChronicleBI<?> annot : annotations) {
-				if (annot.getAssemblageNid() == assemblageConceptNid) {
-					refsetMembers.add(annot);
-				}
-			}
-		}
-
-		@Override
-		public NativeIdSetBI getNidSet() throws IOException {
-			return null;
-		}
-
-		@Override
-		public String getTitle() {
-	        return "Find concepts with refset annotation as specified";
-		}
-		public Set<RefexDynamicChronicleBI> getRefexMembers() {
-			return refsetMembers;
-		}
-
-	}
-
-
-	private VBox rootNode_;
 	private TreeTableView<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ttv_;
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
 	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
@@ -164,6 +105,9 @@ public class DynamicRefexView implements RefexViewI
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
 	
 	private Text placeholderText = new Text("No Dynamic Refexes were found associated with the component");
+	private Button backgroundSearchCancelButton_;
+	private ProgressBar progressBar_;
+	private RefexAnnotationSearcher processor_;
 	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
@@ -188,7 +132,10 @@ public class DynamicRefexView implements RefexViewI
 			treeRoot_.setExpanded(true);
 			ttv_.setShowRoot(false);
 			ttv_.setRoot(treeRoot_);
-			ttv_.setPlaceholder(new ProgressBar());
+			progressBar_ = new ProgressBar(-1);
+			progressBar_.setPrefWidth(200);
+			progressBar_.setPadding(new Insets(15, 15, 15, 15));
+			ttv_.setPlaceholder(progressBar_);
 			
 			rootNode_ = new VBox();
 			rootNode_.setFillWidth(true);
@@ -396,6 +343,16 @@ public class DynamicRefexView implements RefexViewI
 				refresh();
 			});
 			
+			backgroundSearchCancelButton_ = new Button("Cancel Scan");
+			backgroundSearchCancelButton_.setOnAction((action) ->
+			{
+				RefexAnnotationSearcher processor = processor_;
+				if (processor != null)
+				{
+					processor.requestStop();
+				}
+			});
+			
 			rootNode_.getChildren().add(t);
 		}
 	}
@@ -484,8 +441,8 @@ public class DynamicRefexView implements RefexViewI
 		ttv_.setShowRoot(false);
 		ttv_.setRoot(treeRoot_);
 
-		ttv_.setPlaceholder(new ProgressBar());
-		
+		ttv_.setPlaceholder(progressBar_);
+		progressBar_.setProgress(-1);
 		rowSelected_.clearBindings();
 		rowSelected_.addBinding(ttv_.getSelectionModel().getSelectedCells());
 		
@@ -1017,6 +974,15 @@ public class DynamicRefexView implements RefexViewI
 					{
 						placeholderText.setText("No index is available to fetch the entries");
 					}
+					else if (dr_ == DialogResponse.YES)
+					{
+						VBox temp = new VBox();
+						temp.setAlignment(Pos.CENTER);
+						temp.getChildren().add(progressBar_);
+						progressBar_.setProgress(-1);
+						temp.getChildren().add(backgroundSearchCancelButton_);
+						ttv_.setPlaceholder(temp);
+					}
 					dialogThreadBlock_.notifyAll();
 				}
 			});
@@ -1043,16 +1009,28 @@ public class DynamicRefexView implements RefexViewI
 			
 			if (dr_ == DialogResponse.YES)
 			{
-				AnnotationProcessor processor = new AnnotationProcessor(assemblageConceptFull.getConceptNid());
-	            try {
-					P.s.iterateConceptDataInParallel(processor);
-				} catch (Exception e) {
-					e.printStackTrace();
+				processor_ = new RefexAnnotationSearcher((refex) -> 
+				{
+					if (refex.getAssemblageNid() == assemblageConceptFull.getConceptNid())
+					{
+						return true;
+					}
+					return false;
+				}, progressBar_);
+
+				try
+				{
+					ExtendedAppContext.getDataStore().iterateConceptDataInParallel(processor_);
 				}
-	            
-	            for (RefexDynamicChronicleBI annot : processor.getRefexMembers()) {
-	            	refexMembers.add(annot);
-	            }
+				catch (Exception e)
+				{
+					logger_.error("Unexpected error during background processing", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error scanning the database", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+				
+				refexMembers.clear();  //remove the one from the hint, so we dont' get a dupe
+				refexMembers.addAll(processor_.getResults());
 			}
 		}
 
@@ -1063,6 +1041,8 @@ public class DynamicRefexView implements RefexViewI
 				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
 				ti.setValue(refexVersion);
 				//recurse
+				//TODO - note - the full scanner does a recursive search - and it may return a refex that isn't attached to a concept, 
+				//but rather, to something else, including another refex.  Need to figure out how we handle/display those.
 				getDataRows(refexVersion, ti);
 				rowData.add(ti);
 			}
