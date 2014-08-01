@@ -83,35 +83,18 @@ public class EnhancedConceptBuilder {
 		this.isPrimLabel = isPrimLabel;
 	}
 	
+	public void setLabelHelper(ConceptViewerLabelHelper labelHelper) {
+			this.labelHelper = labelHelper;
+	}
+	
+
 	public void setConceptValues(UUID currentCon, ConceptViewMode mode) {
 		setMode(mode);
 		con = WBUtility.getConceptVersion(currentCon);
 		
 		executeConceptBuilder();
 		executeTermBuilder();
-
-		try {
-			rr.createGridPane();
-			executeRelBuilder(con.getRelationshipsOutgoingActive());
-			relVBox.getChildren().add(rr.getGridPane());
-
-			if (mode != ConceptViewMode.SIMPLE_VIEW) {
-				rr.resetCounter();
-				executeRelBuilder(con.getRelationshipsIncomingActive());
-				GridPane gp = ((DetailRelRow)rr).getDestinationGridPane();
-
-				if (!gp.getChildren().isEmpty()) {
-					destVBox.getChildren().add(gp);
-					destVBox.setVisible(true);
-					destScrollPane.setVisible(true);
-				}
-			} else {
-				destVBox.setVisible(false);
-				destScrollPane.setVisible(false);
-			}
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
-		}
+		executeRelBuilder(mode);
 	}
 	
 
@@ -143,64 +126,11 @@ public class EnhancedConceptBuilder {
 
 	}
 
-	private void createConceptContextMenu() {
-		final ContextMenu rtClickMenu = new ContextMenu();
-
-		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Instance");
-		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-
-				view.setConcept(con.getNid());
-				view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-		});
-
-		MenuItem listViewItem = new MenuItem("Send to List View");
-		listViewItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
-				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
-				List<Integer> nidList = new ArrayList<>();
-				nidList.add(con.getNid());
-				lv.addConcepts(nidList);		
-			}
-		});
-
-		Menu copyIdMenu = labelHelper.addIdMenus(con);
-		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
-
-		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, copyIdMenu, modifyComponentMenu);
-
-		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
-		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
-            public void handle(ContextMenuEvent e) {  
-                rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
-            }  
-        }); 
-}
-
-	private void executeRelBuilder(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
-		// Capture for sorting (storing is-a in different collection
-		Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-		Set<RelationshipVersionBI> isaRels = new HashSet<>();
-		sortRels(sortedRels, isaRels, rels);
-
-		// Display IS-As
-		addRels(isaRels);
-
-		for (Integer relType: sortedRels.keySet()) {
-			// Display non-IS-As
-			addRels(sortedRels.get(relType));
-		}
-	}
-
+	
+	
+	
+	
+	// Description Methods (one)
 	private void executeTermBuilder() {
 		// Descriptions
 		try {
@@ -245,6 +175,53 @@ public class EnhancedConceptBuilder {
 		}		
 	}
 
+	
+	
+	
+	
+	// Relationship Methods
+	private void executeRelBuilder(ConceptViewMode mode) {
+
+		try {
+			rr.createGridPane();
+			executeRelBuilderWithSpecifiedRels(con.getRelationshipsOutgoingActive());
+			relVBox.getChildren().add(rr.getGridPane());
+
+			if (mode != ConceptViewMode.SIMPLE_VIEW) {
+				rr.resetCounter();
+				executeRelBuilderWithSpecifiedRels(con.getRelationshipsIncomingActive());
+				GridPane gp = ((DetailRelRow)rr).getDestinationGridPane();
+
+				if (!gp.getChildren().isEmpty()) {
+					destVBox.getChildren().add(gp);
+					destVBox.setVisible(true);
+					destScrollPane.setVisible(true);
+				}
+			} else {
+				destVBox.setVisible(false);
+				destScrollPane.setVisible(false);
+			}
+		} catch (IOException | ContradictionException e) {
+			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
+		}		
+	}
+
+	
+	private void executeRelBuilderWithSpecifiedRels(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
+		// Capture for sorting (storing is-a in different collection
+		Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
+		Set<RelationshipVersionBI> isaRels = new HashSet<>();
+		sortRels(sortedRels, isaRels, rels);
+
+		// Display IS-As
+		addRels(isaRels);
+
+		for (Integer relType: sortedRels.keySet()) {
+			// Display non-IS-As
+			addRels(sortedRels.get(relType));
+		}
+	}
+
 	private void setMode(ConceptViewMode mode) {
 		if (mode == ConceptViewMode.SIMPLE_VIEW) {
 			tr = new SimpleTermRow(labelHelper);
@@ -278,8 +255,51 @@ public class EnhancedConceptBuilder {
 		}
 	}
 
-	public void setLabelHelper(ConceptViewerLabelHelper labelHelper) {
-			this.labelHelper = labelHelper;
-	}
+	
+	
+	
+	
+	// Concept Conctext Menu Method
+	private void createConceptContextMenu() {
+		final ContextMenu rtClickMenu = new ContextMenu();
 
+		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Instance");
+		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+
+				view.setConcept(con.getNid());
+				view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+		});
+
+		MenuItem listViewItem = new MenuItem("Send to List View");
+		listViewItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
+				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+				List<Integer> nidList = new ArrayList<>();
+				nidList.add(con.getNid());
+				lv.addConcepts(nidList);		
+			}
+		});
+
+		Menu copyIdMenu = labelHelper.addIdMenus(con);
+		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
+
+		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, copyIdMenu, modifyComponentMenu);
+
+		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
+		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
+            public void handle(ContextMenuEvent e) {  
+                rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
+            }  
+        }); 
+	}
 }
