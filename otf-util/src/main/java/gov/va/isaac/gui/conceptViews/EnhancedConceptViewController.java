@@ -1,10 +1,8 @@
 package gov.va.isaac.gui.conceptViews;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -52,8 +50,6 @@ public class EnhancedConceptViewController {
 
 	// Buttons
 	@FXML protected Button closeButton;
-	@FXML protected Button taxonomyButton;
-	@FXML protected Button modifyButton;
 	@FXML protected Button previousButton;
 	
 	protected ConceptViewerLabelHelper labelHelper;
@@ -110,20 +106,6 @@ public class EnhancedConceptViewController {
 			@Override
 			public void handle(ActionEvent e) {
 				((Stage)getRootNode().getScene().getWindow()).close();
-			}
-		});
-		
-		taxonomyButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent arg0) {
-				if (conceptUuid != null)
-				{
-					AppContext.getService(TaxonomyViewI.class).locateConcept(conceptUuid, null);
-				}
-				else
-				{
-					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");
-				}
 			}
 		});
 		
@@ -191,11 +173,9 @@ public class EnhancedConceptViewController {
 		setModeType(mode);
 
 		// TODO (Until handled, make disabled)
-		modifyButton.setDisable(true);
 		historicalRadio.setDisable(true);
 
 		Tooltip notYetImplTooltip = new Tooltip("Not Yet Implemented");
-		modifyButton.setTooltip(notYetImplTooltip);
 		historicalRadio.setTooltip(notYetImplTooltip);
 	}
 
@@ -203,8 +183,6 @@ public class EnhancedConceptViewController {
 		commonInit(view);
 		closeButton.setVisible(false);
 		previousButton.setVisible(false);
-		modifyButton.setVisible(false);
-		taxonomyButton.setVisible(false);
 	}
 
 	public void setModeType(ConceptViewMode mode) {

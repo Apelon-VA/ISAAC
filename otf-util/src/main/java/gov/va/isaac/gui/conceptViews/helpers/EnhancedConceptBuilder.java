@@ -8,6 +8,7 @@ import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
@@ -290,10 +291,20 @@ public class EnhancedConceptBuilder {
 			}
 		});
 
+		MenuItem taxonomyViewItem = new MenuItem("Show in Taxonomy");
+		taxonomyViewItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				AppContext.getService(TaxonomyViewI.class).locateConcept(con.getNid(), null);			
+			}
+		});
+
 		Menu copyIdMenu = labelHelper.addIdMenus(con);
 		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
 
-		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, copyIdMenu, modifyComponentMenu);
+		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu);
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
