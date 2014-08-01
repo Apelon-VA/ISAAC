@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.RelRow;
@@ -7,24 +8,27 @@ import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.gui.util.CustomClipboard;
-import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ContextMenuEvent;
@@ -80,55 +84,39 @@ public class EnhancedConceptBuilder {
 		this.isPrimLabel = isPrimLabel;
 	}
 	
+	public void setLabelHelper(ConceptViewerLabelHelper labelHelper) {
+			this.labelHelper = labelHelper;
+	}
+	
+
 	public void setConceptValues(UUID currentCon, ConceptViewMode mode) {
 		setMode(mode);
 		con = WBUtility.getConceptVersion(currentCon);
 		
 		executeConceptBuilder();
 		executeTermBuilder();
-
-		try {
-			rr.createGridPane();
-			executeRelBuilder(con.getRelationshipsOutgoingActive());
-			relVBox.getChildren().add(rr.getGridPane());
-
-			if (mode != ConceptViewMode.SIMPLE_VIEW) {
-				rr.resetCounter();
-				executeRelBuilder(con.getRelationshipsIncomingActive());
-				GridPane gp = ((DetailRelRow)rr).getDestinationGridPane();
-
-				if (!gp.getChildren().isEmpty()) {
-					destVBox.getChildren().add(gp);
-					destVBox.setVisible(true);
-					destScrollPane.setVisible(true);
-				}
-			} else {
-				destVBox.setVisible(false);
-				destScrollPane.setVisible(false);
-			}
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
-		}
+		executeRelBuilder(mode);
 	}
 	
 
 	private void executeConceptBuilder() {
 		try {
-			// FSN
-			labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
-			Rectangle fsnRec = AnnotationRectangle.create(con.getFullySpecifiedDescription());
-			fsnAnnotVBox.getChildren().add(fsnRec);
-			
 			ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
+
+			// FSN
+			DescriptionVersionBI fsn = con.getFullySpecifiedDescription();
+			Rectangle fsnRec = AnnotationRectangle.create(fsn);
+			fsnAnnotVBox.getChildren().add(fsnRec);
+			labelHelper.initializeLabel(fsnLabel, fsn, ComponentType.DESCRIPTION, fsn.getText(), 0);
+			
 		
 			// SCT Id
-			labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), false);
-			labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
+			labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), 0);
 			Rectangle conRec = AnnotationRectangle.create(con);
 			conAnnotVBox.getChildren().add(conRec);
 
 			// Defined Status
-			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr), true);
+			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr));
 
 			// Concept ContextMenu
 			createConceptContextMenu();
@@ -139,56 +127,11 @@ public class EnhancedConceptBuilder {
 
 	}
 
-	private void createConceptContextMenu() {
-		final ContextMenu rtClickMenu = new ContextMenu();
-
-		MenuItem copyTextItem = new MenuItem("Copy Text");
-		copyTextItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				CustomClipboard.set("Testing this");
-			}
-		});
-				
-		MenuItem copyContentItem = new MenuItem("Copy Content");
-		copyContentItem.setGraphic(Images.COPY.createImageView());
-		copyContentItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				CustomClipboard.set("Testing this two");
-			}
-		});
-
-		rtClickMenu.getItems().add(copyTextItem);
-		rtClickMenu.getItems().add(copyContentItem);
-
-		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
-		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
-            public void handle(ContextMenuEvent e) {  
-                rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
-            }  
-        }); 
-	}
-
-	private void executeRelBuilder(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
-		// Capture for sorting (storing is-a in different collection
-		Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-		Set<RelationshipVersionBI> isaRels = new HashSet<>();
-		sortRels(sortedRels, isaRels, rels);
-
-		// Display IS-As
-		addRels(isaRels);
-
-		for (Integer relType: sortedRels.keySet()) {
-			// Display non-IS-As
-			addRels(sortedRels.get(relType));
-		}
-	}
-
+	
+	
+	
+	
+	// Description Methods (one)
 	private void executeTermBuilder() {
 		// Descriptions
 		try {
@@ -233,6 +176,53 @@ public class EnhancedConceptBuilder {
 		}		
 	}
 
+	
+	
+	
+	
+	// Relationship Methods
+	private void executeRelBuilder(ConceptViewMode mode) {
+
+		try {
+			rr.createGridPane();
+			executeRelBuilderWithSpecifiedRels(con.getRelationshipsOutgoingActive());
+			relVBox.getChildren().add(rr.getGridPane());
+
+			if (mode != ConceptViewMode.SIMPLE_VIEW) {
+				rr.resetCounter();
+				executeRelBuilderWithSpecifiedRels(con.getRelationshipsIncomingActive());
+				GridPane gp = ((DetailRelRow)rr).getDestinationGridPane();
+
+				if (!gp.getChildren().isEmpty()) {
+					destVBox.getChildren().add(gp);
+					destVBox.setVisible(true);
+					destScrollPane.setVisible(true);
+				}
+			} else {
+				destVBox.setVisible(false);
+				destScrollPane.setVisible(false);
+			}
+		} catch (IOException | ContradictionException e) {
+			LOG.error("Cannot access relationships for concept: " + con.getPrimordialUuid());
+		}		
+	}
+
+	
+	private void executeRelBuilderWithSpecifiedRels(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
+		// Capture for sorting (storing is-a in different collection
+		Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
+		Set<RelationshipVersionBI> isaRels = new HashSet<>();
+		sortRels(sortedRels, isaRels, rels);
+
+		// Display IS-As
+		addRels(isaRels);
+
+		for (Integer relType: sortedRels.keySet()) {
+			// Display non-IS-As
+			addRels(sortedRels.get(relType));
+		}
+	}
+
 	private void setMode(ConceptViewMode mode) {
 		if (mode == ConceptViewMode.SIMPLE_VIEW) {
 			tr = new SimpleTermRow(labelHelper);
@@ -266,8 +256,61 @@ public class EnhancedConceptBuilder {
 		}
 	}
 
-	public void setLabelHelper(ConceptViewerLabelHelper labelHelper) {
-			this.labelHelper = labelHelper;
-	}
+	
+	
+	
+	
+	// Concept Conctext Menu Method
+	private void createConceptContextMenu() {
+		final ContextMenu rtClickMenu = new ContextMenu();
 
+		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Instance");
+		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+
+				view.setConcept(con.getNid());
+				view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+		});
+
+		MenuItem listViewItem = new MenuItem("Send to List View");
+		listViewItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
+				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+				List<Integer> nidList = new ArrayList<>();
+				nidList.add(con.getNid());
+				lv.addConcepts(nidList);		
+			}
+		});
+
+		MenuItem taxonomyViewItem = new MenuItem("Show in Taxonomy");
+		taxonomyViewItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				AppContext.getService(TaxonomyViewI.class).locateConcept(con.getNid(), null);			
+			}
+		});
+
+		Menu copyIdMenu = labelHelper.addIdMenus(con);
+		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
+
+		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu);
+
+		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
+		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
+            public void handle(ContextMenuEvent e) {  
+                rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
+            }  
+        }); 
+	}
 }

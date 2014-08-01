@@ -6,11 +6,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="enhancedConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="gov.va.isaac.gui.conceptViews.EnhancedConceptViewController">
+<AnchorPane fx:id="enhancedConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.EnhancedConceptViewController">
 	<children>
-		<BorderPane minHeight="400.0" minWidth="600.0" style="-fx-background-color: #F5F5F5;" AnchorPane.bottomAnchor="0.0"
-			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+		<BorderPane minHeight="400.0" minWidth="600.0" style="-fx-background-color: #F5F5F5;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 			<top>
 				<VBox alignment="TOP_CENTER" maxWidth="1.7976931348623157E308">
 					<children>
@@ -31,10 +29,8 @@
 												<ToggleGroup fx:id="viewGroup" />
 											</toggleGroup>
 										</RadioButton>
-										<RadioButton fx:id="detailedRadio" mnemonicParsing="false" text="Detailed" toggleGroup="$viewGroup"
-											GridPane.columnIndex="1" GridPane.halignment="CENTER" />
-										<RadioButton fx:id="historicalRadio" mnemonicParsing="false" text="Historical" toggleGroup="$viewGroup"
-											GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+										<RadioButton fx:id="detailedRadio" mnemonicParsing="false" text="Detailed" toggleGroup="$viewGroup" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+										<RadioButton fx:id="historicalRadio" mnemonicParsing="false" text="Historical" toggleGroup="$viewGroup" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
 									</children>
 									<VBox.margin>
 										<Insets left="5.0" right="5.0" top="5.0" />
@@ -51,8 +47,7 @@
 							<children>
 								<GridPane alignment="CENTER" hgap="3.0" VBox.vgrow="SOMETIMES">
 									<columnConstraints>
-										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity"
-											prefWidth="10.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
 										<ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" />
 										<ColumnConstraints />
 										<ColumnConstraints />
@@ -63,8 +58,7 @@
 									</rowConstraints>
 									<children>
 										<VBox fx:id="fsnAnnotVBox" alignment="CENTER" GridPane.vgrow="NEVER" />
-										<Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" textAlignment="CENTER" BorderPane.alignment="CENTER"
-											GridPane.columnIndex="1" GridPane.columnSpan="4">
+										<Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.columnSpan="4">
 											<font>
 												<Font name="System Bold" size="24.0" />
 											</font>
@@ -92,8 +86,7 @@
 							<children>
 								<GridPane alignment="CENTER" hgap="3.0" styleClass="zone">
 									<columnConstraints>
-										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity"
-											prefWidth="10.0" />
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
 										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="192.0" minWidth="10.0" prefWidth="147.0" />
 										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="151.0" minWidth="10.0" prefWidth="145.0" />
 									</columnConstraints>
@@ -102,8 +95,7 @@
 									</rowConstraints>
 									<children>
 										<VBox fx:id="conAnnotVBox" alignment="CENTER" />
-										<Label fx:id="releaseIdLabel" styleClass="label-orig" text="Unreleased" textFill="#113357" BorderPane.alignment="CENTER"
-											GridPane.columnIndex="1" GridPane.halignment="LEFT">
+										<Label fx:id="releaseIdLabel" styleClass="label-orig" text="Unreleased" textFill="#113357" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="LEFT">
 											<BorderPane.margin>
 												<Insets left="10.0" />
 											</BorderPane.margin>
@@ -143,8 +135,7 @@
 								<Insets left="5.0" right="5.0" />
 							</VBox.margin>
 						</VBox>
-						<ScrollPane fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent"
-							VBox.vgrow="SOMETIMES">
+						<ScrollPane fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent" VBox.vgrow="SOMETIMES">
 							<content>
 								<VBox fx:id="relVBox" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" styleClass="zone">
 									<VBox.margin>
@@ -153,8 +144,7 @@
 								</VBox>
 							</content>
 						</ScrollPane>
-						<ScrollPane fx:id="destScrollPane" fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent"
-							VBox.vgrow="SOMETIMES">
+						<ScrollPane fx:id="destScrollPane" fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent" VBox.vgrow="SOMETIMES">
 							<content>
 								<VBox fx:id="destVBox" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" styleClass="zone" />
 							</content>
@@ -179,25 +169,12 @@
 								<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
 							</rowConstraints>
 							<children>
-								<Button fx:id="modifyButton" mnemonicParsing="false" styleClass="button-green" text="Modify Concept" GridPane.halignment="CENTER">
+								<Button fx:id="closeButton" mnemonicParsing="false" styleClass="button-green" text="Close View" GridPane.columnIndex="2" GridPane.halignment="CENTER">
 									<font>
 										<Font name="System Bold" size="12.0" />
 									</font>
 								</Button>
-								<Button fx:id="closeButton" mnemonicParsing="false" styleClass="button-green" text="Close View" GridPane.columnIndex="2"
-									GridPane.halignment="CENTER">
-									<font>
-										<Font name="System Bold" size="12.0" />
-									</font>
-								</Button>
-								<Button fx:id="taxonomyButton" mnemonicParsing="false" styleClass="button-green" text="Show in Taxonomy"
-									GridPane.columnIndex="3" GridPane.halignment="CENTER">
-									<font>
-										<Font name="System Bold" size="12.0" />
-									</font>
-								</Button>
-								<Button fx:id="previousButton" mnemonicParsing="false" styleClass="button-green" text="Previous Concept"
-									GridPane.columnIndex="1" GridPane.halignment="CENTER">
+								<Button fx:id="previousButton" mnemonicParsing="false" styleClass="button-green" text="Previous Concept" GridPane.columnIndex="1" GridPane.halignment="CENTER">
 									<font>
 										<Font name="System Bold" size="12.0" />
 									</font>

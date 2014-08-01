@@ -38,7 +38,7 @@ public class ConceptViewerHelper {
 		return snomedAssemblageNid;
 	}
 
-	public static String getSctId(ConceptAttributeVersionBI attr)  {
+	public static String getSctId(ComponentVersionBI attr)  {
 		String sctidString = "Unreleased";
 		// Official approach found int AlternativeIdResource.class
 		

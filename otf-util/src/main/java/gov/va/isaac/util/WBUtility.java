@@ -733,6 +733,12 @@ public class WBUtility {
 		return roots.toArray(new UUID[roots.size()]);
 	}
 	
+	public static void createNewDescription(int conNid, String term) throws IOException, InvalidCAB, ContradictionException {
+		DescriptionCAB newDesc = new DescriptionCAB(conNid, SnomedMetadataRf2.SYNONYM_RF2.getNid(), LanguageCode.EN_US, term, false, IdDirective.GENERATE_HASH); 
+
+		WBUtility.getBuilder().construct(newDesc);
+	}
+
 	public static void createNewRole(int conNid, int typeNid, int targetNid) throws IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, 0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
 		
