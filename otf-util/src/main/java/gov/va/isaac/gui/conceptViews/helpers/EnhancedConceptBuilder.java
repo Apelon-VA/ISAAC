@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.RelRow;
@@ -7,24 +8,26 @@ import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.gui.util.CustomClipboard;
-import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ContextMenuEvent;
@@ -114,21 +117,22 @@ public class EnhancedConceptBuilder {
 
 	private void executeConceptBuilder() {
 		try {
-			// FSN
-			labelHelper.initializeLabel(fsnLabel, con.getFullySpecifiedDescription(), ComponentType.DESCRIPTION, con.getFullySpecifiedDescription().getText(), false);
-			Rectangle fsnRec = AnnotationRectangle.create(con.getFullySpecifiedDescription());
-			fsnAnnotVBox.getChildren().add(fsnRec);
-			
 			ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
+
+			// FSN
+			DescriptionVersionBI fsn = con.getFullySpecifiedDescription();
+			Rectangle fsnRec = AnnotationRectangle.create(fsn);
+			fsnAnnotVBox.getChildren().add(fsnRec);
+			labelHelper.initializeLabel(fsnLabel, fsn, ComponentType.DESCRIPTION, fsn.getText(), 0);
+			
 		
 			// SCT Id
-			labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), false);
-			labelHelper.createIdsContextMenu(releaseIdLabel, con.getNid());
+			labelHelper.initializeLabel(releaseIdLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getSctId(attr), 0);
 			Rectangle conRec = AnnotationRectangle.create(con);
 			conAnnotVBox.getChildren().add(conRec);
 
 			// Defined Status
-			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr), true);
+			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr));
 
 			// Concept ContextMenu
 			createConceptContextMenu();
@@ -142,29 +146,37 @@ public class EnhancedConceptBuilder {
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem copyTextItem = new MenuItem("Copy Text");
-		copyTextItem.setOnAction(new EventHandler<ActionEvent>()
+		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Instance");
+		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				CustomClipboard.set("Testing this");
-			}
-		});
-				
-		MenuItem copyContentItem = new MenuItem("Copy Content");
-		copyContentItem.setGraphic(Images.COPY.createImageView());
-		copyContentItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				CustomClipboard.set("Testing this two");
+				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+
+				view.setConcept(con.getNid());
+				view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 			}
 		});
 
-		rtClickMenu.getItems().add(copyTextItem);
-		rtClickMenu.getItems().add(copyContentItem);
+		MenuItem listViewItem = new MenuItem("Send to List View");
+		listViewItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
+				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+				List<Integer> nidList = new ArrayList<>();
+				nidList.add(con.getNid());
+				lv.addConcepts(nidList);		
+			}
+		});
+
+		Menu copyIdMenu = labelHelper.addIdMenus(con);
+		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
+
+		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, copyIdMenu, modifyComponentMenu);
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
@@ -172,7 +184,7 @@ public class EnhancedConceptBuilder {
                 rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
             }  
         }); 
-	}
+}
 
 	private void executeRelBuilder(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
 		// Capture for sorting (storing is-a in different collection
