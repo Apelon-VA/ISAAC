@@ -22,11 +22,14 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
+import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -35,13 +38,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -93,6 +100,7 @@ public class DynamicRefexListViewController
 	private volatile PendingRead readStatusTracker = PendingRead.IDLE;
 	private Object readStatusLock = new Object();
 	private int currentlyRenderedRefexNid = 0;
+	private ContextMenu refexDefinitionsContextMenu_;
 
 	private ArrayList<SimpleDisplayConcept> allRefexDefinitions;
 
@@ -127,7 +135,7 @@ public class DynamicRefexListViewController
 
 		refexStyleFilter.getItems().add("All");
 		refexStyleFilter.getItems().add("Annotations");
-		refexStyleFilter.getItems().add("Member List");
+		refexStyleFilter.getItems().add("Member Refset");
 		refexStyleFilter.getSelectionModel().select(0);
 		refexStyleFilter.valueProperty().addListener((change) -> {
 			rebuildList(false);
@@ -160,6 +168,43 @@ public class DynamicRefexListViewController
 		refexList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		refexList.getSelectionModel().selectedItemProperty().addListener((change) -> {
 			showRefexDetails(refexList.getSelectionModel().getSelectedItem());
+		});
+		
+		refexDefinitionsContextMenu_ = new ContextMenu();
+		refexDefinitionsContextMenu_.setAutoHide(true);
+		
+		MenuItem mi = new MenuItem("View Usage");
+		mi.setOnAction((action) ->
+		{
+			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
+			if (sdc != null)
+			{
+				DynamicReferencedItemsView driv = new DynamicReferencedItemsView(sdc);
+				driv.showView(null);
+			}
+		});
+		mi.setGraphic(Images.SEARCH.createImageView());
+		refexDefinitionsContextMenu_.getItems().add(mi);
+		
+		CommonMenus.addCommonMenus(refexDefinitionsContextMenu_, () ->
+		{
+			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
+			return Arrays.asList(sdc == null ? new Integer[] {} : new Integer[] {sdc.getNid()});
+		});
+		
+		refexList.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> 
+		{
+			if (mouseEvent.getButton().equals(MouseButton.SECONDARY) && refexList.getSelectionModel().getSelectedItem() != null)
+			{
+				refexDefinitionsContextMenu_.show(refexList, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+			}
+			if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
+			{
+				if (refexDefinitionsContextMenu_.isShowing())
+				{
+					refexDefinitionsContextMenu_.hide();
+				}
+			}
 		});
 		
 		viewUsage.setDisable(true);
@@ -374,7 +419,7 @@ public class DynamicRefexListViewController
 				{
 					selectedRefexNameLabel.setText(rdud.getRefexName());
 					selectedRefexDescriptionLabel.setText(rdud.getRefexUsageDescription());
-					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Member List");
+					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Member Refset");
 				});
 				
 				//now fill in the data column details...
