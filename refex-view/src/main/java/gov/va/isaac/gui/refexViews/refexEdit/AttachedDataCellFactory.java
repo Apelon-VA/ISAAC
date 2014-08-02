@@ -28,18 +28,18 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.util.Callback;
 
 /**
- * {@link DataCellFactory}
+ * {@link AttachedDataCellFactory}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class DataCellFactory implements Callback
+public class AttachedDataCellFactory implements Callback
 	<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>, 
 			TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>,RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>>
 {
 	private Hashtable<UUID, List<RefexDynamicColumnInfo>> colInfo_;
 	private int listPosition_;
 	
-	public DataCellFactory(Hashtable<UUID, List<RefexDynamicColumnInfo>> colInfo, int listPosition)
+	public AttachedDataCellFactory(Hashtable<UUID, List<RefexDynamicColumnInfo>> colInfo, int listPosition)
 	{
 		colInfo_ = colInfo;
 		listPosition_ = listPosition;
@@ -49,9 +49,9 @@ public class DataCellFactory implements Callback
 	 * @see javafx.util.Callback#call(java.lang.Object)
 	 */
 	@Override
-	public TreeTableCell call(TreeTableColumn param)
+	public TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>,RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
+				call(TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> param)
 	{
-		return new DataCell(colInfo_, listPosition_);
+		return new AttachedDataCell(colInfo_, listPosition_);
 	}
-
 }
