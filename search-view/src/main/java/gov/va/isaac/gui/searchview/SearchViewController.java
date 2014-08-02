@@ -138,54 +138,51 @@ public class SearchViewController implements TaskCompleteCallback {
                                             AppContext.getCommonDialogs().showConceptDialog(
                                                     wbConcept.getUUIDs().get(0));
                                         }
-                                    } else if (mouseEvent.getButton().equals(MouseButton.SECONDARY)) {
-                                    	ContextMenu cm = new ContextMenu();
-
-                                    	final ListCell<CompositeSearchResult> source = (ListCell<CompositeSearchResult>)mouseEvent.getSource();
-                                    	
-                                    	CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
-            								@Override
-            								public String[] getStrings() {
-            									List<String> items = new ArrayList<>();
-            									for (CompositeSearchResult currentItem : (ObservableList<CompositeSearchResult>)source.getListView().getSelectionModel().getSelectedItems()) {
-            										//items.add(source.getTableColumn().getCellData(index).toString());
-            			                            final ConceptVersionBI currentWbConcept = currentItem.getConcept();
-            			                            final String currentPreferredText = (currentWbConcept != null ? WBUtility.getDescription(currentWbConcept) : "error - see log");
-
-            										items.add(currentPreferredText);
-            									}
-
-            									String[] itemArray = items.toArray(new String[items.size()]);
-
-            									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-            									//System.out.println("Selected strings: " + Arrays.toString(itemArray));
-            									
-            									return itemArray;
-            								}
-            							};
-                						CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
-            								@Override
-            								public Set<Integer> getNIds() {
-            									Set<Integer> nids = new HashSet<>();
-            									
-            									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)source.getListView().getSelectionModel().getSelectedItems()) {
-            										nids.add(r.getConceptNid());
-            									}
-            									
-            									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-            									//System.out.println("Selected nids: " + Arrays.toString(nids.toArray()));
-
-            									return nids;
-            								}
-            							};
-            							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
-
-                                        CommonMenus.addCommonMenus(cm, menuBuilder, dp, nidProvider);
-
-                                        setContextMenu(cm);
-                            		}
+                                    }
                                 }
                             });
+                            
+                            ContextMenu cm = new ContextMenu();
+                            CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+                                @Override
+                                public String[] getStrings() {
+                                    List<String> items = new ArrayList<>();
+                                    for (CompositeSearchResult currentItem : searchResults.getSelectionModel().getSelectedItems()) {
+                                        //items.add(source.getTableColumn().getCellData(index).toString());
+                                        final ConceptVersionBI currentWbConcept = currentItem.getConcept();
+                                        final String currentPreferredText = (currentWbConcept != null ? WBUtility.getDescription(currentWbConcept) : "error - see log");
+
+                                        items.add(currentPreferredText);
+                                    }
+
+                                    String[] itemArray = items.toArray(new String[items.size()]);
+
+                                    // TODO: determine why we are getting here multiple (2 or 3) times for each selection
+                                    //System.out.println("Selected strings: " + Arrays.toString(itemArray));
+                                    
+                                    return itemArray;
+                                }
+                            };
+                            CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+                                @Override
+                                public Set<Integer> getNIds() {
+                                    Set<Integer> nids = new HashSet<>();
+                                    
+                                    for (CompositeSearchResult r : searchResults.getSelectionModel().getSelectedItems()) {
+                                        nids.add(r.getConceptNid());
+                                    }
+                                    
+                                    // TODO: determine why we are getting here multiple (2 or 3) times for each selection
+                                    //System.out.println("Selected nids: " + Arrays.toString(nids.toArray()));
+
+                                    return nids;
+                                }
+                            };
+                            CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+
+                            CommonMenus.addCommonMenus(cm, menuBuilder, dp, nidProvider);
+
+                            setContextMenu(cm);
                         }
                         else
                         {

@@ -18,21 +18,21 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
@@ -43,17 +43,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link DataCell}
+ * {@link AttachedDataCell}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
+public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
 {
 	private Hashtable<UUID, List<RefexDynamicColumnInfo>> columnInfo_;
 	private int listItem_;
-	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
+	private static Logger logger_ = LoggerFactory.getLogger(AttachedDataCell.class);
 
-	public DataCell(Hashtable<UUID, List<RefexDynamicColumnInfo>> columnInfo, int listItem)
+	public AttachedDataCell(Hashtable<UUID, List<RefexDynamicColumnInfo>> columnInfo, int listItem)
 	{
 		super();
 		columnInfo_ = columnInfo;
@@ -136,30 +136,43 @@ public class DataCell extends TreeTableCell<RefexDynamicVersionBI<? extends Refe
 		{
 			String value;
 			
-			MenuItem mi = new MenuItem("View Concept", Images.CONCEPT_VIEW.createImageView());
-			
 			if (data instanceof RefexDynamicNidBI)
 			{
 				value = WBUtility.getDescription(((RefexDynamicNidBI)data).getDataNid());
-				mi.setOnAction((event) ->
-				{
-					AppContext.getCommonDialogs().showConceptDialog(((RefexDynamicNidBI)data).getDataNid());
-				});
-				cm.getItems().add(mi);
 			}
 			else if (data instanceof RefexDynamicUUIDBI)
 			{
 				value = WBUtility.getDescription(((RefexDynamicUUIDBI)data).getDataUUID());
-				mi.setOnAction((event) ->
-				{
-					AppContext.getCommonDialogs().showConceptDialog(((RefexDynamicUUIDBI)data).getDataUUID());
-				});
-				cm.getItems().add(mi);
 			}
 			else
 			{
 				value = null;
 			}
+			
+				
+			CommonMenus.addCommonMenus(cm, () -> 
+			{
+				Integer nid = null;
+				
+				if (data instanceof RefexDynamicNidBI)
+				{
+					nid = ((RefexDynamicNidBI)data).getDataNid();
+				}
+				else if (data instanceof RefexDynamicUUIDBI)
+				{
+					ConceptVersionBI c = WBUtility.getConceptVersion(((RefexDynamicUUIDBI)data).getDataUUID());
+					if (c != null)
+					{
+						nid = c.getNid();
+					}
+				}
+				ArrayList<Integer> nids = new ArrayList<>();
+				if (nid != null)
+				{
+					nids.add(nid);
+				}
+				return nids;
+			});
 
 			Platform.runLater(() ->
 			{

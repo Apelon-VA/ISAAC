@@ -25,29 +25,30 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-
+import java.util.function.BooleanSupplier;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.binding.IntegerExpression;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.concurrent.Task;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 
 /**
  * {@link CommonMenus}
@@ -99,14 +100,38 @@ public class CommonMenus
 	private static final Logger LOG = LoggerFactory.getLogger(CommonMenus.class);
 
 	public interface DataProvider {
-		//default public String getString() { return null; }
+		SimpleIntegerProperty stringCount = new SimpleIntegerProperty(0);
+		SimpleIntegerProperty numberCount = new SimpleIntegerProperty(0);
+		SimpleIntegerProperty objectCount = new SimpleIntegerProperty(0);
 		default public String[] getStrings() { return null; }
 
-		//default public Number getNumber() { return null; }
 		default public Number[] getNumbers() { return null; }
 
-		//default public ObjectContainer getObjectContainer() { return null; }
 		default public ObjectContainer[] getObjectContainers() { return null; }
+		
+		default public IntegerExpression getObservableStringCount()
+		{
+			return stringCount;
+		}
+		default public IntegerExpression getObservableObjectCount()
+		{
+			return objectCount;
+		}
+		default public IntegerExpression getObservableNumberCount()
+		{
+			return numberCount;
+		}
+		default public void invalidateAll()
+		{
+			String[] s = getStrings();
+			stringCount.set(s == null ? 0 : s.length);
+			
+			Object[] o = getObjectContainers();
+			objectCount.set(o == null ? 0 : o.length);
+			
+			Number[] n = getNumbers();
+			numberCount.set(n == null ? 0 : n.length);
+		}
 	}
 
 	public static class ObjectContainer {
@@ -138,19 +163,25 @@ public class CommonMenus
 		}
 	}
 
+	@FunctionalInterface
 	public interface NIdProvider {
-		public default Set<Integer> getNIds() { return new HashSet<>(); }
+		SimpleIntegerProperty nidCount = new SimpleIntegerProperty(0);
+		public Collection<Integer> getNIds();
+		
+		default public IntegerExpression getObservableNidCount()
+		{
+			return nidCount;
+		}
+		default public void invalidateAll()
+		{
+			Collection<Integer> nids = getNIds();
+			nidCount.set(nids == null ? 0 : nids.size());
+		}
 	}
 
-	private static int getNumVisibleMenuItems(List<MenuItem> items) {
-		int count = 0;
-		for (MenuItem item : items) {
-			if (item.isVisible()) {
-				++count;
-			}
-		}
-
-		return count;
+	public static CommonMenuBuilderI getDefaultMenuBuilder()
+	{
+		return new CommonMenuBuilder();
 	}
 	
 	public static class CommonMenuBuilder implements CommonMenuBuilderI {
@@ -249,8 +280,8 @@ public class CommonMenus
 	public static void addCommonMenus(
 			ContextMenu existingMenu, 
 			CommonMenuBuilderI passedBuilder, 
-			final DataProvider dataProvider, 
-			final NIdProvider nids)
+			DataProvider dataProvider, 
+			NIdProvider nids)
 	{
 		CommonMenuBuilder builder = null;
 		if (passedBuilder == null) {
@@ -260,8 +291,18 @@ public class CommonMenus
 		} else {
 			builder = (CommonMenuBuilder)passedBuilder;
 		}
+		DataProvider dataProviderLocal = (dataProvider == null ? new DataProvider() {} : dataProvider);
 		
-		List<MenuItem> menuItems = getCommonMenus(builder, dataProvider, nids);
+		//Check the nid provider just before each display of the menu - and see if we have a nid or not.
+		//If we don't have a nid, set the observable flag to false, so all of the menus that care, go invisible.
+		//else, set to true, to menus that care about nids will be visible.
+		existingMenu.setOnShowing((windowEvent) ->
+		{
+			nids.invalidateAll();
+			dataProviderLocal.invalidateAll();
+		});
+		
+		List<MenuItem> menuItems = getCommonMenus(builder, dataProviderLocal, nids);
 
 		if (menuItems.size() > 0) {
 			for (MenuItem newItem : menuItems) {
@@ -302,37 +343,34 @@ public class CommonMenus
 		}
 	}
 
-	private static void makeInvisibleIfNecessary(MenuItem item, BooleanProperty visibilityProperty, boolean shouldBeInvisible) {
-		if (visibilityProperty != null)
-		{
-			item.visibleProperty().bind(visibilityProperty);
-		} else {
-			if (shouldBeInvisible) {
-				item.setVisible(false);
-			}
-		}
-	}
-	
 	private static MenuItem createNewMenuItem(
 			CommonMenuItem itemType, 
 			CommonMenuBuilder builder, 
-			boolean isHandlable, 
+			BooleanSupplier canHandle, 
+			BooleanExpression makeVisible,
 			Runnable onHandlable) {
-		return createNewMenuItem(itemType, builder, isHandlable, onHandlable, null);
+		return createNewMenuItem(itemType, builder, canHandle, makeVisible, onHandlable, null);
 	}
+
 	private static MenuItem createNewMenuItem(
 			CommonMenuItem itemType, 
 			CommonMenuBuilder builder, 
-			boolean isHandlable, 
+			BooleanSupplier canHandle, 
+			BooleanExpression makeVisible,
 			Runnable onHandlable,
 			Runnable onNotHandleable) {
+		
+		if (builder.isCommonMenuItemExcluded(itemType))
+		{
+			return null;
+		}
 		MenuItem menuItem = new MenuItem(itemType.getText());
 		menuItem.setGraphic(itemType.getImage().createImageView());
 		menuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				if (isHandlable)
+				if (canHandle.getAsBoolean())
 				{
 					onHandlable.run();
 				} else {
@@ -344,11 +382,8 @@ public class CommonMenus
 				}
 			}
 		});
-		makeInvisibleIfNecessary(
-				menuItem, 
-				builder.getInvisibleWhenfalse(), 
-				! isHandlable || builder.isCommonMenuItemExcluded(itemType));
 		
+		menuItem.visibleProperty().bind(builder.getInvisibleWhenfalse() == null ? makeVisible : builder.getInvisibleWhenfalse().not().and(makeVisible));
 		return menuItem;
 	}
 	
@@ -365,58 +400,67 @@ public class CommonMenus
 			tmpBuilder = (CommonMenuBuilder)passedBuilder;
 		}
 		final CommonMenuBuilder builder = tmpBuilder;
-		
-		Integer[] nids = nidProvider != null ? nidProvider.getNIds().toArray(new Integer[nidProvider.getNIds().size()]) : null;
 
 		// Menu item to show concept details.
 		MenuItem enhancedConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW,
 				builder, 
-				nids != null && nids.length == 1 && nids[0] != null, // isHandlable
+				() -> {return nidProvider.getObservableNidCount().get() == 1;}, // canHandle
+				nidProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
-					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" + nids[0] + "\"");
+					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" 
+							+ nidProvider.getNIds().iterator().next() + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
-
-					//EnhancedConceptView cv = AppContext.getService(EnhancedConceptView.class);
-					cv.setConcept(nids[0]);
-
-					cv.showView(AppContext.getMainApplicationWindow().getPrimaryStage().getScene().getWindow());
+					cv.setConcept(nidProvider.getNIds().iterator().next());
+					cv.showView(null);
 				},
 				() -> { // onNotHandlable
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
 				});
-		menuItems.add(enhancedConceptViewMenuItem);
+		if (enhancedConceptViewMenuItem != null)
+		{
+			menuItems.add(enhancedConceptViewMenuItem);
+		}
 
 		// Menu item to show concept details. (legacy)
 		MenuItem legacyConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW_LEGACY,
 				builder,
-				nids != null && nids.length == 1 && nids[0] != null, // isHandlable
+				() -> {return nidProvider.getObservableNidCount().get() == 1;}, // canHandle
+				nidProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> {
-					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" + nids[0] + "\"");
+					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" 
+							+ nidProvider.getNIds().iterator().next() + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "LegacyStyle");
-					cv.setConcept(nids[0]);
+					cv.setConcept(nidProvider.getNIds().iterator().next());
 
-					cv.showView(AppContext.getMainApplicationWindow().getPrimaryStage().getScene().getWindow());
+					cv.showView(null);
 				},
 				() -> {
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't display an invalid concept");
 				}
 				);
-		menuItems.add(legacyConceptViewMenuItem);
+		if (legacyConceptViewMenuItem != null)
+		{
+			menuItems.add(legacyConceptViewMenuItem);
+		}
 
 		// Menu item to find concept in tree.
 		MenuItem findInTaxonomyViewMenuItem = createNewMenuItem(
 				CommonMenuItem.TAXONOMY_VIEW,
 				builder,
-				nids != null && nids.length == 1 && nids[0] != null, // isHandlable
+				() -> {return nidProvider.getObservableNidCount().get() == 1;}, // canHandle
+				nidProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				// onHandlable
-				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(nids[0], null); },
+				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(nidProvider.getNIds().iterator().next(), null); },
 				// onNotHandlable
 				() -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");});
-		menuItems.add(findInTaxonomyViewMenuItem);
+		if (findInTaxonomyViewMenuItem != null)
+		{
+			menuItems.add(findInTaxonomyViewMenuItem);
+		}
 
 		// get Send-To menu items
 		Menu sendToMenu = new Menu(CommonMenuItem.SEND_TO.getText());
@@ -426,7 +470,7 @@ public class CommonMenus
 			
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getSendToMenuItems(builder, dataProvider, nids);
+				items = getSendToMenuItems(builder, dataProvider, nidProvider);
 
 				return items;
 			}
@@ -435,10 +479,19 @@ public class CommonMenus
 			protected void succeeded() {
 				super.succeeded();
 
-				if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || items == null || getNumVisibleMenuItems(items) == 0) {
+				if (builder.isCommonMenuItemExcluded(CommonMenuItem.SEND_TO) || items == null || items.size() == 0) {
 					sendToMenu.setVisible(false);
 				} else {
-					sendToMenu.setVisible(true);
+					
+					//Start at false
+					BooleanBinding bb = new SimpleBooleanProperty(true).not();
+					
+					//bind to all visible properties
+					for (MenuItem mi : items)
+					{
+						bb = bb.or(mi.visibleProperty());
+					}
+					sendToMenu.visibleProperty().bind(bb);
 				}
 
 				sendToMenu.getItems().addAll(items);
@@ -457,7 +510,7 @@ public class CommonMenus
 
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getCopyMenuItems(builder, dataProvider, nids);
+				items = getCopyMenuItems(builder, dataProvider, nidProvider);
 				
 				return items;
 			}
@@ -466,10 +519,18 @@ public class CommonMenus
 			protected void succeeded() {
 				super.succeeded();
 
-				if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || items == null || getNumVisibleMenuItems(items) == 0) {
+				if (builder.isCommonMenuItemExcluded(CommonMenuItem.COPY) || items == null || items.size() == 0) {
 					copyMenu.setVisible(false);
 				} else {
-					copyMenu.setVisible(true);
+					//Start at false
+					BooleanBinding bb = new SimpleBooleanProperty(true).not();
+					
+					//bind to all visible properties
+					for (MenuItem mi : items)
+					{
+						bb = bb.or(mi.visibleProperty());
+					}
+					copyMenu.visibleProperty().bind(bb);
 				}
 
 				copyMenu.getItems().addAll(items);
@@ -482,7 +543,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer[] nids) {
+	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, NIdProvider nids) {
 		// The following code is for the "Send To" submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -491,46 +552,53 @@ public class CommonMenus
 		MenuItem listViewMenuItem = createNewMenuItem(
 				CommonMenuItem.LIST_VIEW,
 				builder,
-				nids != null && nids.length > 0, // isHandlable
+				() -> {return nids.getObservableNidCount().get() > 0;}, // canHandle
+				nids.getObservableNidCount().greaterThan(0),				//make visible
 				() -> { // onHandlable
-					LOG.debug("Using \"" + CommonMenuItem.LIST_VIEW.getText() + "\" menu item to list concept(s) with id(s) \"" + Arrays.toString(nids) + "\"");
+					ArrayList<Integer> nidList = new ArrayList<>();
+					nidList.addAll(nids.getNIds());
+					LOG.debug("Using \"" + CommonMenuItem.LIST_VIEW.getText() + "\" menu item to list concept(s) with id(s) \"" 
+							+ Arrays.toString(nidList.toArray()) + "\"");
 
 					ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
 
 					AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
 
-					List<Integer> nidList = new ArrayList<>();
-					for (int nid : nids) {
-						nidList.add(nid);
-					}
 					lv.addConcepts(nidList);		
 				},
 				() -> {	 // onNotHandlable
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or no concept selected", "Can only list valid concept(s)");
 				}
 				);
-		menuItems.add(listViewMenuItem);
+		if (listViewMenuItem != null)
+		{
+			menuItems.add(listViewMenuItem);
+		}
 
 		// Menu item to generate New Workflow Instance.
 		MenuItem newWorkflowInstanceItem = createNewMenuItem(
 				CommonMenuItem.WORKFLOW_VIEW,
 				builder,
-				nids != null && nids.length == 1 && nids[0] != null, // isHandlable
+				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
+				nids.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
 					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-					view.setConcept(nids[0]);
+					view.setConcept(nids.getNIds().iterator().next());
 					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 				},
 				() -> { // onNotHandlable
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
 				}
 				);
-		menuItems.add(newWorkflowInstanceItem);
+		if (newWorkflowInstanceItem != null)
+		{
+			menuItems.add(newWorkflowInstanceItem);
+		}
 
 		return menuItems;
 	}
 
-	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, final Integer[] nids) {
+	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, NIdProvider nids) {
 		// The following code is for the Copy submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -542,37 +610,50 @@ public class CommonMenus
 		MenuItem copyTextItem = createNewMenuItem(
 				CommonMenuItem.COPY_TEXT,
 				builder,
-				dataProvider != null && dataProvider.getStrings() != null && dataProvider.getStrings().length == 1 && dataProvider.getStrings()[0] != null, // isHandlable
+				() -> {	return dataProvider.getObservableStringCount().isEqualTo(1).get();},  // canHandle 
+				dataProvider.getObservableStringCount().isEqualTo(1),	//make visible  
 				() -> { // onHandlable
 					LOG.debug("Using \"" + CommonMenuItem.COPY_TEXT.getText() + "\" menu item to copy text \"" + dataProvider.getStrings()[0] + "\"");
 					CustomClipboard.set(dataProvider.getStrings()[0]);
 				}
 				);
-		menuItems.add(copyTextItem);
+		if (copyTextItem != null)
+		{
+			menuItems.add(copyTextItem);
+		}
 
 		MenuItem copyContentItem = createNewMenuItem(
 				CommonMenuItem.COPY_CONTENT,
 				builder,
-				dataProvider != null && dataProvider.getObjectContainers() != null && dataProvider.getObjectContainers().length == 1 && dataProvider.getObjectContainers()[0] != null, // isHandlable
+				() -> {return dataProvider.getObservableObjectCount().isEqualTo(1).get();},// canHandle
+				dataProvider.getObservableObjectCount().isEqualTo(1), 	//make visible  
 				() -> { // onHandlable
 					LOG.debug("Using \"" + CommonMenuItem.COPY_CONTENT.getText() + "\" menu item to copy " + dataProvider.getObjectContainers()[0].getObject().getClass() + " object \"" + dataProvider.getObjectContainers()[0].getString() + "\"");
 					CustomClipboard.set(dataProvider.getObjectContainers()[0].getObject(), dataProvider.getObjectContainers()[0].getString());
 				}
 				);
-		menuItems.add(copyContentItem);
+		if (copyContentItem != null)
+		{
+			menuItems.add(copyContentItem);
+		}
 		
 		final boolean copyTextOrContentItemVisible = copyTextItem.isVisible() || copyContentItem.isVisible();
 		
 		// The following are ID-related and will be under a separator
-		UUID[] uuids = new UUID[nids.length];
-		String[] sctIds = new String[nids.length];
+		//TODO these UUID and SCTID lists are evaled at build time, not display time - tis a tricky one - as - we want to do this in a background
+		//thread... we probably need to move this conversion into the dataProvider - and provide an observable over top of it... but the invalidate 
+		//would need to cause it to recompute in a background thread, rather than foreground, like the other validators currently do...
+		//Then, each of the following calls should be changed to pull data from the new observables, rather than this out-of-date cache / nid list
+		
+		ArrayList<UUID> uuids = new ArrayList<>();
+		ArrayList<String> sctIds = new ArrayList<>();
 
-		for (int i = 0; i < nids.length; ++i) {
+		for (Integer i : nids.getNIds()) {
 			ConceptVersionBI concept = null;
-			concept = WBUtility.getConceptVersion(nids[i]);
+			concept = WBUtility.getConceptVersion(i);
 			if (concept != null) {
-				uuids[i] = concept != null ? concept.getPrimordialUuid() : null;
-				sctIds[i] = concept != null ? ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(concept)).trim() : null;
+				uuids.add(concept != null ? concept.getPrimordialUuid() : null);
+				sctIds.add(concept != null ? ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(concept)).trim() : null);
 			}
 		}
 
@@ -580,40 +661,53 @@ public class CommonMenus
 		MenuItem copySctIdMenuItem = createNewMenuItem(
 				CommonMenuItem.COPY_SCTID,
 				builder,
-				sctIds != null && sctIds.length == 1 && sctIds[0] != null, // isHandlable
-				() -> { CustomClipboard.set(sctIds[0]); } // onHandlable
+				() -> {return sctIds != null && sctIds.size() == 1 && sctIds.get(0) != null;}, // canHandle
+				nids.getObservableNidCount().isEqualTo(1),
+				() -> { CustomClipboard.set(sctIds.get(0)); } // onHandlable
 				);
 		// Add menu separator IFF there were non-ID items AND this is the first ID item
-		if (copyTextOrContentItemVisible && copySctIdMenuItem.isVisible() && ! menuItems.contains(separator)) {
-			menuItems.add(separator);
+		
+		if (copySctIdMenuItem != null)
+		{
+			if (copyTextOrContentItemVisible && copySctIdMenuItem.isVisible() && ! menuItems.contains(separator)) {
+				menuItems.add(separator);
+			}
+			menuItems.add(copySctIdMenuItem);
 		}
-		menuItems.add(copySctIdMenuItem);
 
 		// Menu item to copy UUID
 		MenuItem copyUuidMenuItem = createNewMenuItem(
 				CommonMenuItem.COPY_UUID,
 				builder,
-				uuids != null && uuids.length == 1 && uuids[0] != null, // isHandlable
-				() -> { CustomClipboard.set(uuids[0].toString()); } // onHandlable
+				() -> {return uuids != null && uuids.size() == 1 && uuids.get(0) != null;}, // canHandle
+				nids.getObservableNidCount().isEqualTo(1),
+				() -> { CustomClipboard.set(uuids.get(0).toString()); } // onHandlable
 				);
-		// Add menu separator IFF there were non-ID items AND this is the first ID item
-		if (copyTextOrContentItemVisible && copyUuidMenuItem.isVisible() && ! menuItems.contains(separator)) {
-			menuItems.add(separator);
+		if (copyUuidMenuItem != null)
+		{
+			// Add menu separator IFF there were non-ID items AND this is the first ID item
+			if (copyTextOrContentItemVisible && copyUuidMenuItem.isVisible() && ! menuItems.contains(separator)) {
+				menuItems.add(separator);
+			}
+			menuItems.add(copyUuidMenuItem);
 		}
-		menuItems.add(copyUuidMenuItem);
 		
 		// Menu item to copy NID
 		MenuItem copyNidMenuItem = createNewMenuItem(
 				CommonMenuItem.COPY_NID,
 				builder,
-				nids != null && nids.length == 1 && nids[0] != null, // isHandlable
-				() -> { CustomClipboard.set(nids[0], new Integer(nids[0]).toString()); } // onHandlable
+				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
+				nids.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> { CustomClipboard.set(nids.getNIds().iterator().next(), new Integer(nids.getNIds().iterator().next()).toString()); } // onHandlable
 				);
-		// Add menu separator IFF there were non-ID items AND this is the first ID item
-		if (copyTextOrContentItemVisible && copyNidMenuItem.isVisible() && ! menuItems.contains(separator)) {
-			menuItems.add(separator);
+		if (copyNidMenuItem != null)
+		{
+			// Add menu separator IFF there were non-ID items AND this is the first ID item
+			if (copyTextOrContentItemVisible && copyNidMenuItem.isVisible() && ! menuItems.contains(separator)) {
+				menuItems.add(separator);
+			}
+			menuItems.add(copyNidMenuItem);
 		}
-		menuItems.add(copyNidMenuItem);
 
 		return menuItems;
 	}

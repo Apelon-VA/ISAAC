@@ -121,6 +121,9 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 	private GridPane gp_;
 
+	//TODO implement manditory columns
+	//TODO use the word Sememe
+	
 	private AddRefexPopup()
 	{
 		super();

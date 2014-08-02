@@ -174,11 +174,18 @@ public class DynamicRefexView implements RefexViewI
 						{
 							for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> refexTreeItem : selected)
 							{
+								//TODO - have a bug here - should only be able to remove if it is currently active.
+								//but how to know if it is currently active?  We have both...
 								RefexDynamicVersionBI<?> refex = refexTreeItem.getValue();
+								if (!refex.isActive())
+								{
+									continue;
+								}
 								RefexDynamicCAB rcab =  refex.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
 								rcab.setStatus(Status.INACTIVE);
 								WBUtility.getBuilder().construct(rcab);
 								
+								//TODO this isn't right for a nested refex
 								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getAssemblageNid());
 								ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
 								if (!assemblage.isAnnotationStyleRefex())
@@ -212,6 +219,7 @@ public class DynamicRefexView implements RefexViewI
 			addButton_.setDisable(true);
 			t.getItems().add(addButton_);
 			
+			//TODO similar bug on to the retire but here - should only be able to edit the current one.  but which one is current?
 			editButton_ = new Button(null, Images.EDIT.createImageView());
 			editButton_.setTooltip(new Tooltip("Edit a Refex"));
 			editButton_.disableProperty().bind(rowSelected_.not());
@@ -456,43 +464,52 @@ public class DynamicRefexView implements RefexViewI
 		Utility.execute(() -> {
 			try
 			{
-				final ArrayList<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String>> treeColumns = new ArrayList<>();
+				final ArrayList<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?>> treeColumns = new ArrayList<>();
 				
-				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> ttCol;
 				
 				//Create columns for basic info
 				if (setFromType_.getComponentNid() == null)
 				{
 					//If the component is null, the assemblage is always the same - don't show.
-					ttCol = new TreeTableColumn<>();
+					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>  ttCol = new TreeTableColumn<>();
 					ttCol.setText("Component");
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
+					ttCol.setCellFactory((colInfo) -> 
+					{
+						return new ConceptDataCell();
+						
+					});
 					ttCol.setCellValueFactory((callback) ->
 					{
-						return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getReferencedComponentNid()));
+						return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getReferencedComponentNid());
 					});
 					treeColumns.add(ttCol);
 				}
 				else
 				{
 					//if the assemblage is null, the component is always the same - don't show.
-					ttCol = new TreeTableColumn<>();
+					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>  ttCol = new TreeTableColumn<>();
 					ttCol.setText("Assemblage");
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
+					ttCol.setCellFactory((colInfo) -> 
+					{
+						return new ConceptDataCell();
+						
+					});
 					ttCol.setCellValueFactory((callback) ->
 					{
-						return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getAssemblageNid()));
+						return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getAssemblageNid());
 					});
 					treeColumns.add(ttCol);
 				}
 				
-				ttCol = new TreeTableColumn<>();
-				ttCol.setText("Attached Data");
-				ttCol.setSortable(true);
-				ttCol.setResizable(true);
-				treeColumns.add(ttCol);
+				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> ttStringCol = new TreeTableColumn<>();
+				ttStringCol.setText("Attached Data");
+				ttStringCol.setSortable(true);
+				ttStringCol.setResizable(true);
+				treeColumns.add(ttStringCol);
 				
 				/**
 				 * The key of the first hashtable is the column description concept, while the key of the second hashtable is the assemblage concept
@@ -585,24 +602,24 @@ public class DynamicRefexView implements RefexViewI
 						nestedCol.setSortable(true);
 						nestedCol.setResizable(true);
 						
-						nestedCol.setCellFactory(new DataCellFactory(col, i));
+						nestedCol.setCellFactory(new AttachedDataCellFactory(col, i));
 						
 						nestedCol.setCellValueFactory((callback) ->
 						{
 							return new ReadOnlyObjectWrapper<>(callback.getValue().getValue());
 						}); 
 						
-						ttCol.getColumns().add(nestedCol);
+						ttStringCol.getColumns().add(nestedCol);
 					}
 				}
 				
 				//Create the STAMP columns
-				ttCol = new TreeTableColumn<>();
-				ttCol.setText("STAMP");
-				ttCol.setSortable(true);
-				ttCol.setResizable(true);
-				stampColumn_ = ttCol;
-				treeColumns.add(ttCol);
+				ttStringCol = new TreeTableColumn<>();
+				ttStringCol.setText("STAMP");
+				ttStringCol.setSortable(true);
+				ttStringCol.setResizable(true);
+				stampColumn_ = ttStringCol;
+				treeColumns.add(ttStringCol);
 				
 				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText("Status");
@@ -612,7 +629,7 @@ public class DynamicRefexView implements RefexViewI
 				{
 					return new ReadOnlyStringWrapper(callback.getValue().getValue().getStatus().toString());
 				});
-				ttCol.getColumns().add(nestedCol);
+				ttStringCol.getColumns().add(nestedCol);
 				
 
 				nestedCol = new TreeTableColumn<>();
@@ -631,43 +648,59 @@ public class DynamicRefexView implements RefexViewI
 						return new ReadOnlyStringWrapper(new Date(l).toString());
 					}
 				});
-				ttCol.getColumns().add(nestedCol);
+				ttStringCol.getColumns().add(nestedCol);
 				
-				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Author");
-				nestedCol.setSortable(true);
-				nestedCol.setResizable(true);
-				nestedCol.setCellValueFactory((callback) ->
+				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer> nestedIntCol = new TreeTableColumn<>();
+				nestedIntCol.setText("Author");
+				nestedIntCol.setSortable(true);
+				nestedIntCol.setResizable(true);
+				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getAuthorNid()));
+					return new ConceptDataCell();
+					
 				});
-				ttCol.getColumns().add(nestedCol);
+				nestedIntCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getAuthorNid());
+				});
+
+				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Module");
-				nestedCol.setSortable(true);
-				nestedCol.setResizable(true);
-				nestedCol.setVisible(false);
-				nestedCol.setCellValueFactory((callback) ->
+				nestedIntCol = new TreeTableColumn<>();
+				nestedIntCol.setText("Module");
+				nestedIntCol.setSortable(true);
+				nestedIntCol.setResizable(true);
+				nestedIntCol.setVisible(false);
+				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getModuleNid()));
+					return new ConceptDataCell();
+					
 				});
-				ttCol.getColumns().add(nestedCol);
+				nestedIntCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getModuleNid());
+				});
+				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Path");
-				nestedCol.setSortable(true);
-				nestedCol.setResizable(true);
-				nestedCol.setVisible(false);
-				nestedCol.setCellValueFactory((callback) ->
+				nestedIntCol = new TreeTableColumn<>();
+				nestedIntCol.setText("Path");
+				nestedIntCol.setSortable(true);
+				nestedIntCol.setResizable(true);
+				nestedIntCol.setVisible(false);
+				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getPathNid()));
+					return new ConceptDataCell();
+					
 				});
-				ttCol.getColumns().add(nestedCol);
+				nestedIntCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getPathNid());
+				});
+				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
 				{
-					for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> tc : treeColumns)
+					for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> tc : treeColumns)
 					{
 						ttv_.getColumns().add(tc);
 					}
