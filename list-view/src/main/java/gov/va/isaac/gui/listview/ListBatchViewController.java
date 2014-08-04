@@ -377,7 +377,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.cancel(row.getItem().getNid());
+						WBUtility.forget(row.getItem().getNid());
 						updateTableItem(row.getItem(), false);
 					}
 				});
