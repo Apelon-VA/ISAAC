@@ -7,32 +7,24 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="rootPane" fx:id="rootPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8"
-	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.listview.ListBatchViewController">
+<AnchorPane id="rootPane" fx:id="rootPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.listview.ListBatchViewController">
 	<children>
-		<SplitPane dividerPositions="0.8" layoutY="14.0" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0"
-			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+		<SplitPane dividerPositions="0.8" layoutY="14.0" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 			<items>
-				<SplitPane dividerPositions="0.5" focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-					minHeight="-Infinity" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-					AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+				<SplitPane dividerPositions="0.5" focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
 					<items>
 						<BorderPane prefHeight="200.0" prefWidth="200.0">
 							<center>
-								<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-									prefViewportHeight="339.0" prefViewportWidth="395.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-									AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+								<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefViewportHeight="339.0" prefViewportWidth="395.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
 									<content>
 										<TableView fx:id="conceptTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
 									</content>
 								</ScrollPane>
 							</center>
 							<top>
-								<ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.leftAnchor="0.0"
-									AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+								<ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
 									<items>
-										<Button id="clearListButton" fx:id="clearListButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-											style="-fx-padding: 2px;">
+										<Button id="clearListButton" fx:id="clearListButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" style="-fx-padding: 2px;">
 											<tooltip>
 												<Tooltip text="Clear the Concept List" />
 											</tooltip>
@@ -44,8 +36,7 @@
 												</ImageView>
 											</graphic>
 										</Button>
-										<Button id="saveListButton" fx:id="saveListButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-											style="-fx-padding: 2px;">
+										<Button id="saveListButton" fx:id="saveListButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" style="-fx-padding: 2px;">
 											<tooltip>
 												<Tooltip text="Export the Concept List" />
 											</tooltip>
@@ -57,8 +48,7 @@
 												</ImageView>
 											</graphic>
 										</Button>
-										<Button id="loadListButton" fx:id="loadListButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-											style="-fx-padding: 2px;">
+										<Button id="loadListButton" fx:id="loadListButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" style="-fx-padding: 2px;">
 											<tooltip>
 												<Tooltip text="Import a Concept List" />
 											</tooltip>
@@ -71,8 +61,7 @@
 											</graphic>
 										</Button>
 										<Region prefHeight="1.0" prefWidth="1.0" HBox.hgrow="ALWAYS" />
-										<Button id="addUncommittedListButton" fx:id="addUncommittedListButton" mnemonicParsing="false"
-											style="-fx-padding: 2px;">
+										<Button id="addUncommittedListButton" fx:id="addUncommittedListButton" mnemonicParsing="false" style="-fx-padding: 2px;">
 											<tooltip>
 												<Tooltip text="Add Concepts with Uncommitted Components to the List" />
 											</tooltip>
@@ -88,8 +77,7 @@
 								</ToolBar>
 							</top>
 							<bottom>
-								<HBox id="conceptTableFooter" fx:id="conceptTableFooter" fillHeight="false" prefWidth="200.0"
-									BorderPane.alignment="CENTER">
+								<HBox id="conceptTableFooter" fx:id="conceptTableFooter" fillHeight="false" prefWidth="200.0" BorderPane.alignment="CENTER">
 									<children>
 										<Label />
 									</children>
@@ -100,8 +88,7 @@
 							<bottom>
 								<ToolBar fx:id="executeOperationsToolbar" prefWidth="200.0" BorderPane.alignment="CENTER">
 									<items>
-										<Button id="clearOperationsButton" fx:id="clearOperationsButton" mnemonicParsing="false" prefHeight="25.0"
-											prefWidth="25.0">
+										<Button id="clearOperationsButton" fx:id="clearOperationsButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
 											<tooltip>
 												<Tooltip text="Clear all operations from the batch" />
 											</tooltip>
@@ -113,8 +100,7 @@
 												</ImageView>
 											</graphic>
 										</Button>
-										<Button id="addOperationButton" fx:id="addOperationButton" mnemonicParsing="false" prefHeight="25.0"
-											prefWidth="25.0">
+										<Button id="addOperationButton" fx:id="addOperationButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0">
 											<tooltip>
 												<Tooltip text="Add another operation to the batch" />
 											</tooltip>
@@ -136,8 +122,7 @@
 							<center>
 								<ScrollPane fitToHeight="true" fitToWidth="true" prefViewportWidth="395.0">
 									<content>
-										<VBox id="operationsList" fx:id="operationsList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-											spacing="3.0" BorderPane.alignment="CENTER">
+										<VBox id="operationsList" fx:id="operationsList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="3.0" BorderPane.alignment="CENTER">
 											<padding>
 												<Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
 											</padding>
@@ -160,9 +145,9 @@
 				</SplitPane>
 				<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
 					<tabs>
-						<Tab id="conceptDisplayTab" fx:id="conceptDisplayTab" text="Concept Display">
+						<Tab id="conceptDisplayTab" fx:id="conceptDisplayTab" closable="false" text="Concept Display">
 							<content>
-								<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+								<AnchorPane />
 							</content>
 						</Tab>
 					</tabs>

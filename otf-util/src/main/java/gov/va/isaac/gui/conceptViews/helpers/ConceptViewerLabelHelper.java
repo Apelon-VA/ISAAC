@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
+import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
@@ -190,11 +191,17 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
+				ModelingPopup popup = null;
 				if (type == ComponentType.CONCEPT) {
-					ConceptModelingPopup popup = AppContext.getService(ConceptModelingPopup.class);
-					popup.finishInit(comp, type, conceptView);
-					popup.showView(pane.getScene().getWindow());
+					popup = AppContext.getService(ConceptModelingPopup.class);
+				} else if (type == ComponentType.DESCRIPTION) {
+//					popup = AppContext.getService(DescriptionModelingPopup.class);
+				} else if (type == ComponentType.RELATIONSHIP) {
+//					popup = AppContext.getService(RelationshipModelingPopup.class);
 				}
+
+				popup.finishInit(comp, type, conceptView);
+				popup.showView(pane.getScene().getWindow());
 			}
 		});
 
@@ -206,6 +213,10 @@ public class ConceptViewerLabelHelper {
 			{
 				if (type == ComponentType.CONCEPT) {
 					// TODO: Retire Concept Wizard
+				} else if (type == ComponentType.DESCRIPTION) {
+//					popup = AppContext.getService(DescriptionModelingPopup.class);
+				} else if (type == ComponentType.RELATIONSHIP) {
+//					popup = AppContext.getService(RelationshipModelingPopup.class);
 				}
 			}
 		});
@@ -220,6 +231,14 @@ public class ConceptViewerLabelHelper {
 					if (type == ComponentType.CONCEPT) {
 						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
 //						ExtendedAppContext.getDataStore().forget((ConceptAttributeVersionBI)comp);
+						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
+					} else if (type == ComponentType.DESCRIPTION) {
+						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
+//						ExtendedAppContext.getDataStore().forget((DescriptionVersionBI)comp);
+						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
+					} else if (type == ComponentType.RELATIONSHIP) {
+						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
+//						ExtendedAppContext.getDataStore().forget((RelationshipVersionBI)comp);
 						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
 					}
 				} catch (Exception e) {
