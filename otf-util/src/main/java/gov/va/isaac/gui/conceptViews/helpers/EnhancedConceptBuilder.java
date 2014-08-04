@@ -12,7 +12,6 @@ import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -89,9 +87,9 @@ public class EnhancedConceptBuilder {
 	}
 	
 
-	public void setConceptValues(UUID currentCon, ConceptViewMode mode) {
+	public void setConceptValues(ConceptVersionBI concept, ConceptViewMode mode) {
 		setMode(mode);
-		con = WBUtility.getConceptVersion(currentCon);
+		con = concept;
 		
 		executeConceptBuilder();
 		executeTermBuilder();

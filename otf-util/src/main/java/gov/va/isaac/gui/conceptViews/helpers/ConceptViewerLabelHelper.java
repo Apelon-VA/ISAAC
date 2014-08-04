@@ -21,6 +21,7 @@ package gov.va.isaac.gui.conceptViews.helpers;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
@@ -180,7 +181,8 @@ public class ConceptViewerLabelHelper {
 		Menu modifyComponentMenu = new Menu("Modify Component");
 		MenuItem editComponentMenu = new MenuItem("Edit");
 		MenuItem retireComponentMenu = new MenuItem("Retire");
-		modifyComponentMenu.getItems().addAll(editComponentMenu, retireComponentMenu);
+		MenuItem undoComponentMenu = new MenuItem("Undo");
+		modifyComponentMenu.getItems().addAll(editComponentMenu, retireComponentMenu, undoComponentMenu);
 
 		editComponentMenu.setGraphic(Images.EDIT.createImageView());
 		editComponentMenu.setOnAction(new EventHandler<ActionEvent>()
@@ -188,7 +190,11 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				// To Be Implemented
+				if (type == ComponentType.CONCEPT) {
+					ConceptModelingPopup popup = AppContext.getService(ConceptModelingPopup.class);
+					popup.finishInit(comp, type, conceptView);
+					popup.showView(pane.getScene().getWindow());
+				}
 			}
 		});
 
@@ -198,9 +204,34 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				// To Be Implemented
+				if (type == ComponentType.CONCEPT) {
+					// TODO: Retire Concept Wizard
+				}
 			}
 		});
+
+		undoComponentMenu.setGraphic(Images.CANCEL.createImageView());
+		undoComponentMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				try {
+					if (type == ComponentType.CONCEPT) {
+						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
+//						ExtendedAppContext.getDataStore().forget((ConceptAttributeVersionBI)comp);
+						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
+					}
+				} catch (Exception e) {
+					LOG.error("Unable to cancel comp: " + comp.getNid(), e);
+				}
+			}
+		});
+		
+		if (!comp.isUncommitted()) {
+			undoComponentMenu.setDisable(true);
+		}
+
 
 		return modifyComponentMenu;
 	}
