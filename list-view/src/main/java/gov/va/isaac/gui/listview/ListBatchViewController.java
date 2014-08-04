@@ -1001,7 +1001,7 @@ public class ListBatchViewController
 				uncommittedCount++;
 			}
 		} else {
-			WBUtility.cancel(con);
+			WBUtility.forget(con);
 			newCon.setUncommitted(false);
 
 			if (!isUncommitted && oldCon.isUncommitted()) {

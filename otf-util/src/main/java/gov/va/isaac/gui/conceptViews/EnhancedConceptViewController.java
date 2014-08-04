@@ -135,7 +135,7 @@ public class EnhancedConceptViewController {
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				WBUtility.cancel(concept);
+				WBUtility.forget(concept);
 				clearContents();
 				commitButton.setDisable(true);
 				cancelButton.setDisable(true);

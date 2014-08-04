@@ -665,15 +665,17 @@ public class WBUtility {
 		dataStore.cancel();
 	}
 
-	public static void cancel(int nid) {
+	public static void forget(int nid) {
 		ConceptVersionBI con = getConceptVersion(nid);
-		cancel(con);
+		forget(con);
 	}
 
-	public static void cancel(ConceptVersionBI con) {
-//		dataStore.cancel(con);
-// 		TODO: Update once OTF version fixed
-		dataStore.cancel();
+	public static void forget(ConceptVersionBI con) {
+		try {
+			dataStore.forget(con.getChronicle());
+		} catch (IOException e) {
+			LOG.error("Unable to forget change to con: " + con.getPrimordialUuid(), e);
+		}
 	}
 
 	public static String getConPrefTerm(int nid) {
