@@ -6,6 +6,7 @@ import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
+import gov.va.isaac.util.WBUtility;
 
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,11 +53,13 @@ public class EnhancedConceptViewController {
 	// Buttons
 	@FXML protected Button closeButton;
 	@FXML protected Button previousButton;
+	@FXML protected Button commitButton;
+	@FXML protected Button cancelButton;
 	
 	protected ConceptViewerLabelHelper labelHelper;
 	protected ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 	
-	protected UUID conceptUuid;
+	protected ConceptVersionBI concept;
 	private UpdateableBooleanBinding prevButtonQueueFilled;
 	
 	public PopupConceptViewI conceptView;
@@ -80,9 +84,10 @@ public class EnhancedConceptViewController {
 			initialized = true;
 			initializeWindow(conceptHistoryStack, mode);
 		}
+		concept = WBUtility.getConceptVersion(currentCon);
 		clearContents();
-		conceptUuid = currentCon;
-		creator.setConceptValues(currentCon, mode);
+		updateCommitButton();
+		creator.setConceptValues(concept, mode);
 	}
 	
 	void setConcept(UUID currentCon, ConceptViewMode mode) {
@@ -91,9 +96,9 @@ public class EnhancedConceptViewController {
 			intializePane(mode);
 		}
 		
-		conceptUuid = currentCon;
+		concept = WBUtility.getConceptVersion(currentCon);
 		clearContents();
-		creator.setConceptValues(currentCon, mode);
+		creator.setConceptValues(concept, mode);
 	}
 
 	void initializeWindow(ObservableList<Integer> conceptHistoryStack, ConceptViewMode view) {
@@ -115,6 +120,26 @@ public class EnhancedConceptViewController {
 				int lastItemIdx = labelHelper.getPreviousConceptStack().size() - 1;
 				int prevConNid = labelHelper.getPreviousConceptStack().remove(lastItemIdx);
 				conceptView.setConcept(prevConNid);
+			}
+		});
+		
+		commitButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				WBUtility.commit(concept);
+				commitButton.setDisable(true);
+				cancelButton.setDisable(true);
+			}
+		});
+		
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				WBUtility.cancel(concept);
+				clearContents();
+				commitButton.setDisable(true);
+				cancelButton.setDisable(true);
+				creator.setConceptValues(concept, currentMode);
 			}
 		});
 		
@@ -160,7 +185,7 @@ public class EnhancedConceptViewController {
 	public void setViewMode(ConceptViewMode mode) {
 		currentMode = mode;
 		clearContents();
-		creator.setConceptValues(conceptUuid, mode);
+		creator.setConceptValues(concept, mode);
 	}
 
 	private void commonInit(ConceptViewMode mode) {
@@ -183,6 +208,12 @@ public class EnhancedConceptViewController {
 		commonInit(view);
 		closeButton.setVisible(false);
 		previousButton.setVisible(false);
+	}
+
+	private void updateCommitButton() {
+		boolean isUncommitted = WBUtility.isUncommittened(concept);
+		commitButton.setDisable(!isUncommitted);
+		cancelButton.setDisable(!isUncommitted);
 	}
 
 	public void setModeType(ConceptViewMode mode) {

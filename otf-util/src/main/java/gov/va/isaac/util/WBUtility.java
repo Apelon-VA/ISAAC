@@ -530,6 +530,10 @@ public class WBUtility {
 		return null;
 	}
 
+	public static boolean isUncommittened(ConceptVersionBI con) {
+		return dataStore.getUncommittedConcepts().contains(con.getChronicle());
+	}
+	
 	public static void commit(ConceptVersionBI con) {
 		try {
 			dataStore.commit(con);

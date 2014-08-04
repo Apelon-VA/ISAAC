@@ -21,6 +21,7 @@ package gov.va.isaac.gui.conceptViews.helpers;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
@@ -188,7 +189,11 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				// To Be Implemented
+				if (type == ComponentType.CONCEPT) {
+					ConceptModelingPopup popup = AppContext.getService(ConceptModelingPopup.class);
+					popup.finishInit(comp, type, conceptView);
+					popup.showView(pane.getScene().getWindow());
+				}
 			}
 		});
 
@@ -198,7 +203,9 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				// To Be Implemented
+				if (type == ComponentType.CONCEPT) {
+					// TODO: Retire Concept Wizard
+				}
 			}
 		});
 
