@@ -45,6 +45,7 @@ public abstract class MetadataCreatorBase extends CommonBase {
 
     protected static final String REFSET_CONCEPT = "7e38cd2d-6f1a-3a81-be0b-21e6090573c2";
     protected static final String REFSET_ATTRIBUTE_CONCEPT = "7e52203e-8a35-3121-b2e7-b783b34d97f2";
+    protected static final String TERMINOLOGY_AUXILIARY_CONCEPT = "f4d2fabc-7e96-3b3a-a348-ae867ba74029";
 
     /**
      * Concrete subclasses should implement to create metadata if it does not

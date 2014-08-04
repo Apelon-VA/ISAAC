@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,12 +51,13 @@ public class EnhancedConceptViewRunner extends Application
 	{
 		primaryStage.setTitle("New Concept Panel");
 
-		EnhancedConceptView conView = AppContext.getService(EnhancedConceptView.class);
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+//		EnhancedConceptView conView = AppContext.getService(EnhancedConceptView.class);
 
 		primaryStage.setScene(new Scene(new Label("hello world"), 200, 100));
 		primaryStage.show();
-		conView.setConcept(UUID.fromString("49064bb7-cda5-3cb3-b8f7-085139486fa8"));
-		conView.showView(primaryStage);
+		cv.setConcept(UUID.fromString("49064bb7-cda5-3cb3-b8f7-085139486fa8"));
+		cv.showView(primaryStage);
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
