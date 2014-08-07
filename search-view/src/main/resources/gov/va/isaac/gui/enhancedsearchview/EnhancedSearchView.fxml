@@ -39,6 +39,28 @@
                </children>
             </HBox>
         <Button fx:id="searchButton" mnemonicParsing="false" text="Search" textAlignment="CENTER" />
+            <HBox alignment="CENTER">
+               <children>
+                  <Label text="Searches">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <ComboBox fx:id="savedSearchesComboBox" prefWidth="150.0">
+                     <FlowPane.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </FlowPane.margin>
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </ComboBox>
+               </children>
+            </HBox>
+            <Button fx:id="saveSearchButton" mnemonicParsing="false" text="Save Search">
+               <FlowPane.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </FlowPane.margin>
+            </Button>
          </children>
       </FlowPane>
    </top>

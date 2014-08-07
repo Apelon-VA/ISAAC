@@ -19,9 +19,13 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter;
+import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.LuceneFilter;
+import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.RegExpFilter;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -33,21 +37,29 @@ import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.TaskCompleteCallback;
+import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Writer;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -55,8 +67,11 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -67,24 +82,37 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.Callback;
 
+import javax.naming.InvalidNameException;
+
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicIntegerBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +129,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		SEARCH,
 		WORKFLOW_EXPORT
 	}
-
+	
 	enum AggregationType {
 		CONCEPT("Concept"),
 		DESCRIPTION("Description");
@@ -121,7 +149,15 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Label maxResultsCustomTextFieldLabel;
 	private CustomTextField maxResultsCustomTextField;
 	
+//	@FXML private Button addLuceneFilterButton;
+//	@FXML private Button addRegExpFilterButton;
+//	@FXML private ListView<SearchViewModel.Filter> searchFiltersListView;
+	
+	@FXML private Button saveSearchButton;
+	@FXML private ComboBox<SimpleDisplayConcept> savedSearchesComboBox;
 	@FXML private Button searchButton;
+	
+    // TODO: temporarily used along with currentViewCoordinate ViewCoordinate as model for single Lucene Search
 	@FXML private TextField searchText;
 	@FXML private Label totalResultsDisplayedLabel;
 	@FXML private Pane pane;
@@ -136,6 +172,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
     
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
+    
+    // TODO: temporarily used along with searchText TextField as model for single Lucene Search
+    private ViewCoordinate currentSearchViewCoordinate = WBUtility.getViewCoordinate();
 
 	private Window windowForTableViewExportDialog;
 
@@ -161,6 +200,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert resetDefaultsButton != null : "fx:id=\"resetDefaultsButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert maxResultsHBox != null : "fx:id=\"maxResultsHBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert maxResultsCustomTextFieldLabel != null : "fx:id=\"maxResultsCustomTextFieldLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert saveSearchButton != null : "fx:id=\"saveSearchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+//		assert searchFiltersListView != null : "fx:id=\"searchFiltersListView\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+//		assert addLuceneFilterButton != null : "fx:id=\"addLuceneFilterButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+//		assert addRegExpFilterButton != null : "fx:id=\"addRegExpFilterButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert savedSearchesComboBox != null : "fx:id=\"savedSearchesComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! pane.getStylesheets().contains(styleSheet)) {
@@ -168,7 +212,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 
 		initializeWorkflowServices();
-				 
+	
         final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
         searchButton.disableProperty().bind(searchTextValid.not());
         searchProgress.visibleProperty().bind(searchRunning);
@@ -183,12 +227,17 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// Search results table
 		initializeSearchResultsTable();
 		initializeAggregationTypeComboBox();
-
+		initializeSavedSearchComboBox();
+		
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
-
+		
+		saveSearchButton.setOnAction((action) -> {
+			saveSearch(); 
+			});
+		
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
                  ssh.cancel();
@@ -202,7 +251,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			} else {
 				searchButton.setText("Search");
 			}
-
 		});
 
 		// This code only for searchText
@@ -221,6 +269,289 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				searchTextValid.set(false);
 			}
 		});
+	}
+	
+	private static void displayDynamicRefex(RefexDynamicVersionBI<?> refex) {
+		displayDynamicRefex(refex, 0);
+	}
+	private static void displayDynamicRefex(RefexDynamicVersionBI<?> refex, int depth) {
+		String indent = "";
+		
+		for (int i = 0; i < depth; ++i) {
+			indent += "\t";
+		}
+		
+		RefexDynamicUsageDescription dud = null;
+		try {
+			dud = refex.getRefexDynamicUsageDescription();
+		} catch (IOException | ContradictionException e) {
+			LOG.error("Failed executing getRefexDynamicUsageDescription().  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+			e.printStackTrace();
+			
+			return;
+		}
+		RefexDynamicColumnInfo[] colInfo = dud.getColumnInfo();
+		RefexDynamicDataBI[] data = refex.getData();
+		// TODO: change to use LOG
+		System.out.println(indent + "dynamic refex nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
+		System.out.println(indent + "dynamic refex name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
+		for (int colIndex = 0; colIndex < colInfo.length; ++colIndex) {
+			RefexDynamicColumnInfo currentCol = colInfo[colIndex];
+			String name = currentCol.getColumnName();
+			RefexDynamicDataType type = currentCol.getColumnDataType();
+			UUID colUuid = currentCol.getColumnDescriptionConcept();
+			RefexDynamicDataBI colData = data[colIndex];
+
+			// TODO: change to use LOG
+			System.out.println(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + colData.getDataObject());
+			System.out.println();
+		}
+		
+		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;
+		try {
+			embeddedRefexes = refex.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+
+			for (RefexDynamicVersionBI<?> embeddedRefex : embeddedRefexes) {
+				displayDynamicRefex(embeddedRefex, depth + 1);
+			}
+		} catch (IOException e) {
+			LOG.error("Failed executing getRefexesDynamicActive(WBUtility.getViewCoordinate()).  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+			e.printStackTrace();
+		}
+	}
+	
+	private void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Map<Integer, Collection<Filter>> filterOrderMap, Filter newFilter) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException {
+		// Now read SEARCH_FILTER_ATTRIBUTES refex column
+		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+			displayDynamicRefex(embeddedRefex);
+			
+			RefexDynamicUsageDescription embeddedRefexDUD = null;
+			try {
+				embeddedRefexDUD = embeddedRefex.getRefexDynamicUsageDescription();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed performing getRefexDynamicUsageDescription() on embedded refex: caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+				
+				return;
+			}
+			
+			if (embeddedRefexDUD.getRefexName().equals(Search.SEARCH_FILTER_ATTRIBUTES.getDescription() /*"Search Filter Attributes"*/)) {
+				RefexDynamicIntegerBI filterOrderCol = (RefexDynamicIntegerBI)embeddedRefex.getData(Search.SEARCH_FILTER_ATTRIBUTES_FILTER_ORDER_COLUMN.getDescription());
+				if (filterOrderMap.get(filterOrderCol.getDataInteger()) == null) {
+					filterOrderMap.put(filterOrderCol.getDataInteger(), new ArrayList<>());
+				}
+				filterOrderMap.get(filterOrderCol.getDataInteger()).add(newFilter);
+			} else {
+				LOG.warn("Encountered unexpected embedded refex \"" + embeddedRefexDUD.getRefexName() + "\". Ignoring...");
+			}
+		}
+	}
+	
+	private void loadSavedSearch(SimpleDisplayConcept displayConcept) {
+		LOG.info("loadSavedSearch(\"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ")");
+
+		SearchViewModel model = null;
+
+		try {
+			ConceptVersionBI matchingConcept = WBUtility.getConceptVersion(displayConcept.getNid());
+
+			if (matchingConcept != null) {
+				// TODO: change to use LOG
+				System.out.println("loadSavedSearch(): savedSearchesComboBox has concept: " + matchingConcept);
+
+				Map<Integer, Collection<Filter>> filterOrderMap = new TreeMap<>();
+				
+				model = new SearchViewModel();
+				
+				// TODO: change to use LOG
+				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
+				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" all dynamic refexes: " +  matchingConcept.getRefexesDynamic().size());
+				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" active dynamic refexes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
+				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+
+				for (RefexDynamicVersionBI<?> refex : matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+					displayDynamicRefex(refex);
+					
+					RefexDynamicUsageDescription dud = null;
+					try {
+						dud = refex.getRefexDynamicUsageDescription();
+					} catch (IOException | ContradictionException e) {
+						LOG.error("Failed performing getRefexDynamicUsageDescription(): caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+						
+						return;
+					}
+
+					if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
+						// handle "Search Global Attributes"
+						
+						// TODO: change to use LOG
+						System.out.println("Loading data into model from Search Global Attributes refex");
+						
+						RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_VIEW_COORDINATE_COLUMN.getDescription());
+						
+						// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()
+						ByteArrayInputStream input = new ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
+						
+						ObjectInputStream oos = new ObjectInputStream(input);
+						ViewCoordinate vc = new ViewCoordinate();
+						vc.readExternal(oos);
+						model.setViewCoordinate(vc);
+
+						// TODO: change to use LOG
+						System.out.println("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getViewCoordinate());
+						
+					} else if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() /*"Search Lucene Filter"*/)) {
+						// handle "Search Lucene Filter"
+
+						// TODO: change to use LOG
+						System.out.println("Loading data into model from Search Lucene Filter refex");
+						
+						LuceneFilter newFilter = new LuceneFilter();
+						
+						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_LUCENE_FILTER_PARAMETER_COLUMN.getDescription());
+
+						newFilter.setSearchParameter(searchParamCol.getDataString());
+
+						// TODO: change to use LOG
+						System.out.println("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+
+						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
+					} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() /*"Search RegExp Filter"*/)) {
+						// handle "Search RegExp Filter"
+
+						// TODO: change to use LOG
+						System.out.println("Loading data into model from Search RegExp Filter refex");
+						
+						RegExpFilter newFilter = new RegExpFilter();
+						
+						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_REGEXP_FILTER_PARAMETER_COLUMN.getDescription());
+
+						newFilter.setSearchParameter(searchParamCol.getDataString());
+
+						// TODO: change to use LOG
+						System.out.println("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+
+						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
+					} else {
+						// handle or ignore
+						LOG.warn("Concept \"" + displayConcept + "\" contains unexpected refex \"" + dud.getRefexName() + "\".  Ignoring...");
+					}
+				}
+
+				for (int order : filterOrderMap.keySet()) {
+					model.getFilters().addAll(filterOrderMap.get(order));
+				}
+
+				// TODO: change to use LOG
+				System.out.println("loadSavedSearch() loaded model: " + model);
+				
+				if (model.getViewCoordinate() == null) {
+					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  View Coordinate is null.");
+					
+					return;
+				} else if (model.getFilters().size() < 1) {
+					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  No filters found (must be at least 1).");
+					
+					return;
+				} else if (model.getFilters().size() > 1) {
+					// TODO: remove this check when supporting multiple filters
+					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  Too many filters (must be exactly 1).");
+					
+					return;
+				} else if (! (model.getFilters().get(0) instanceof LuceneFilter)) {
+					// TODO: remove this check when supporting non-Lucene filters
+					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  Filters of type " + model.getFilters().get(0).getClass().getName() + " not supported. Currently, only Lucene filters supported.");
+					
+					return;
+				} else {
+					// TODO: This is a hack for when we support exactly one Lucene Filter.  Change when multiple/various filters supported.
+					searchText.setText(((LuceneFilter)model.getFilters().get(0)).getSearchParameter());
+					this.currentSearchViewCoordinate = model.getViewCoordinate();
+
+					// TODO: change to use LOG
+					System.out.println("loadSavedSearch() loaded model: " + model);
+					
+					return;
+				}
+			} else {
+				LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ")");
+				return;
+			}
+		} catch (Exception e) {
+			LOG.error("Failed loading saved search. Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
+			e.printStackTrace();
+			return;
+		}
+	}
+	
+	private void saveSearch() {
+		// TODO: change to use LOG
+		System.out.println("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
+
+		Object valueAsObject = savedSearchesComboBox.valueProperty().getValue();
+
+		if (valueAsObject != null) {
+			SimpleDisplayConcept existingSavedSearch = null;
+			String specifiedDescription = null;
+			
+			if (valueAsObject instanceof SimpleDisplayConcept) {
+				existingSavedSearch = (SimpleDisplayConcept)valueAsObject;
+				specifiedDescription = existingSavedSearch.getDescription();
+			} else if (valueAsObject instanceof String) {
+				specifiedDescription = (String)valueAsObject;
+				for (SimpleDisplayConcept saveSearchInComboBoxList : savedSearchesComboBox.getItems()) {
+					if (valueAsObject.equals(saveSearchInComboBoxList.getDescription())) {
+						existingSavedSearch = saveSearchInComboBoxList;
+						break;
+					}
+				}
+			} else {
+				String title = "Failed saving search";
+				String msg = "Unsupported valueProperty value type in savedSearchesComboBox: " + valueAsObject.getClass().getName();
+				String details = "Must either select or specify search name in order to save search and valueProperty must be either of type String or SimpleDisplayConcept";
+				LOG.error(title + ". " + msg + details);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details);
+				
+				return;
+			}
+			
+			String nameToSave = null;
+			if (existingSavedSearch != null) {
+				nameToSave = existingSavedSearch.getDescription();
+
+				// TODO: change to use LOG
+				System.out.println("saveSearch(): modifying existing saved search: " + existingSavedSearch + " (nid=" + existingSavedSearch.getNid() + ")");
+				
+				// TODO: remove this when modification/replacement is implemented
+				String title = "Failed saving search";
+				String msg = "Cannot modify existing saved search \"" + nameToSave + "\"";
+				String details = "Modification or replacement of existing saves is not currently supported";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details);
+				
+				return;
+			} else {
+				nameToSave = specifiedDescription + " search by " + System.getProperty("user.name") + " at " + LocalDateTime.now().toString();
+
+				// TODO: change to use LOG
+				System.out.println("saveSearch(): creating new saved search: nickname=" + specifiedDescription + ", fullname=\"" + nameToSave + "\"");	
+			}
+
+			SearchViewModel model = new SearchViewModel();
+
+			LuceneFilter filter = new LuceneFilter();
+			filter.setSearchParameter(searchText.getText());
+			model.getFilters().add(filter);
+
+			model.setViewCoordinate(currentSearchViewCoordinate = WBUtility.getViewCoordinate());
+
+			SearchConceptBuilder.doSave(nameToSave, nameToSave, model);
+
+			refreshSavedSearchComboBox();
+		} else {
+			String title = "Failed saving search";
+			String msg = "No search name or concept specified or selected";
+			String details = "Must either select or specify search name in order to save search";
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details);
+		}
 	}
 	
 	private void resetDefaults() {
@@ -693,6 +1024,115 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 		
 		assert conceptWorkflowService != null;
+	}
+	
+	private void initializeSavedSearchComboBox() {
+		assert savedSearchesComboBox != null : "fx:id=\"savedSearchesComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+
+		// Force single selection
+		savedSearchesComboBox.getSelectionModel().selectFirst();
+		savedSearchesComboBox.setCellFactory((p) -> {
+			final ListCell<SimpleDisplayConcept> cell = new ListCell<SimpleDisplayConcept>() {
+				@Override
+				protected void updateItem(SimpleDisplayConcept c, boolean emptyRow) {
+					super.updateItem(c, emptyRow);
+
+					if(c == null) {
+						setText(null);
+					}else {
+						setText(c.getDescription());
+					}
+				}
+			};
+
+			return cell;
+		});
+		savedSearchesComboBox.setButtonCell(new ListCell<SimpleDisplayConcept>() {
+			@Override
+			protected void updateItem(SimpleDisplayConcept c, boolean emptyRow) {
+				super.updateItem(c, emptyRow); 
+				if (emptyRow) {
+					setText("");
+				} else {
+					setText(c.getDescription());
+				}
+			}
+		});
+		savedSearchesComboBox.valueProperty().addListener(new ChangeListener<Object>() {
+			@Override public void changed(ObservableValue<? extends Object> ov, Object t, Object t1) {
+
+				// TODO: change to use LOG
+				System.out.println("savedSearchesComboBox ObservableValue: " + ov);
+				
+				if (t instanceof SimpleDisplayConcept) {
+					SimpleDisplayConcept tSimpleDisplayConcept = (SimpleDisplayConcept)t;
+
+					// TODO: change to use LOG
+					System.out.println("savedSearchesComboBox old value: " + tSimpleDisplayConcept != null ? (tSimpleDisplayConcept.getDescription() + " (nid=" + tSimpleDisplayConcept.getNid() + ")") : null);
+				} else {
+					// TODO: change to use LOG
+					System.out.println("savedSearchesComboBox old value: " + t);
+				}
+				if (t1 instanceof SimpleDisplayConcept) {
+					SimpleDisplayConcept t1SimpleDisplayConcept = (SimpleDisplayConcept)t1;
+
+					// TODO: change to use LOG
+					System.out.println("savedSearchesComboBox new value: " + t1SimpleDisplayConcept != null ? (t1SimpleDisplayConcept.getDescription() + " (nid=" + t1SimpleDisplayConcept.getNid() + ")") : null);
+				
+					loadSavedSearch(t1SimpleDisplayConcept);
+				} else {
+					// TODO: change to use LOG
+					System.out.println("savedSearchesComboBox new value: " + t1);
+				}
+			}    
+		});
+//		savedSearchesComboBox.setOnAction((event) -> {
+//			
+//			Object selectedItem = savedSearchesComboBox.getSelectionModel().getSelectedItem();
+//			
+//			if (selectedItem instanceof String) {
+//				System.out.println("savedSearchesComboBox event selected String \"" + selectedItem + "\"");
+//				
+//				SimpleDisplayConcept buttonCellContent = savedSearchesComboBox.getButtonCell().getItem();
+//				System.out.println("savedSearchesComboBox event button cell has \"" + buttonCellContent + "\" (nid=" + (buttonCellContent != null ? ((SimpleDisplayConcept)buttonCellContent).getNid() : null) + ")");
+//
+//			} else if (selectedItem instanceof SimpleDisplayConcept) {
+//				System.out.println("savedSearchesComboBox event selected SimpleDisplayConcept \"" + selectedItem + "\" (nid=" + (selectedItem != null ? ((SimpleDisplayConcept)selectedItem).getNid() : null) + ")");
+//
+//				loadSavedSearch();
+//			}
+//		});
+		
+		savedSearchesComboBox.setEditable(true);
+
+		refreshSavedSearchComboBox();
+	}
+	
+	private void refreshSavedSearchComboBox() {
+		Task<List<SimpleDisplayConcept>> loadSavedSearches = new Task<List<SimpleDisplayConcept>>() {
+			private ObservableList<SimpleDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
+
+			@Override
+			protected List<SimpleDisplayConcept> call() throws Exception {
+				List<ConceptVersionBI> savedSearches = WBUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
+				
+				for (ConceptVersionBI concept : savedSearches) {
+					searches.add(new SimpleDisplayConcept(concept));
+				}
+				
+				return searches;
+			}
+
+			@Override
+			protected void succeeded() {
+				super.succeeded();
+
+				savedSearchesComboBox.setItems(searches);
+			}
+		};
+
+		savedSearchesComboBox.getItems().clear();
+		Utility.execute(loadSavedSearches);
 	}
 	
 	private void initializeAggregationTypeComboBox() {
