@@ -149,10 +149,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Label maxResultsCustomTextFieldLabel;
 	private CustomTextField maxResultsCustomTextField;
 	
-//	@FXML private Button addLuceneFilterButton;
-//	@FXML private Button addRegExpFilterButton;
-//	@FXML private ListView<SearchViewModel.Filter> searchFiltersListView;
-	
 	@FXML private Button saveSearchButton;
 	@FXML private ComboBox<SimpleDisplayConcept> savedSearchesComboBox;
 	@FXML private Button searchButton;
@@ -292,9 +288,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 		RefexDynamicColumnInfo[] colInfo = dud.getColumnInfo();
 		RefexDynamicDataBI[] data = refex.getData();
-		// TODO: change to use LOG
-		System.out.println(indent + "dynamic refex nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
-		System.out.println(indent + "dynamic refex name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
+		LOG.debug(indent + "dynamic refex nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
+		LOG.debug(indent + "dynamic refex name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
 		for (int colIndex = 0; colIndex < colInfo.length; ++colIndex) {
 			RefexDynamicColumnInfo currentCol = colInfo[colIndex];
 			String name = currentCol.getColumnName();
@@ -303,8 +298,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			RefexDynamicDataBI colData = data[colIndex];
 
 			// TODO: change to use LOG
-			System.out.println(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + colData.getDataObject());
-			System.out.println();
+			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + colData.getDataObject());
 		}
 		
 		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;
@@ -321,6 +315,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	}
 	
 	private void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Map<Integer, Collection<Filter>> filterOrderMap, Filter newFilter) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException {
+		LOG.debug("Loading data into model from embedded Search Filter Attributes refex");
+
 		// Now read SEARCH_FILTER_ATTRIBUTES refex column
 		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
 			displayDynamicRefex(embeddedRefex);
@@ -340,6 +336,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					filterOrderMap.put(filterOrderCol.getDataInteger(), new ArrayList<>());
 				}
 				filterOrderMap.get(filterOrderCol.getDataInteger()).add(newFilter);
+				
+				LOG.debug("Read Integer filter order from " + embeddedRefexDUD.getRefexName() + " refex: \"" + filterOrderCol.getDataInteger() + "\"");
 			} else {
 				LOG.warn("Encountered unexpected embedded refex \"" + embeddedRefexDUD.getRefexName() + "\". Ignoring...");
 			}
@@ -355,18 +353,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			ConceptVersionBI matchingConcept = WBUtility.getConceptVersion(displayConcept.getNid());
 
 			if (matchingConcept != null) {
-				// TODO: change to use LOG
-				System.out.println("loadSavedSearch(): savedSearchesComboBox has concept: " + matchingConcept);
+				LOG.debug("loadSavedSearch(): savedSearchesComboBox has concept: " + matchingConcept);
 
 				Map<Integer, Collection<Filter>> filterOrderMap = new TreeMap<>();
 				
 				model = new SearchViewModel();
 				
-				// TODO: change to use LOG
-				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
-				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" all dynamic refexes: " +  matchingConcept.getRefexesDynamic().size());
-				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" active dynamic refexes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
-				System.out.println("loadSavedSearch() concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
+				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic refexes: " +  matchingConcept.getRefexesDynamic().size());
+				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
+				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
 
 				for (RefexDynamicVersionBI<?> refex : matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
 					displayDynamicRefex(refex);
@@ -383,8 +379,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
 						// handle "Search Global Attributes"
 						
-						// TODO: change to use LOG
-						System.out.println("Loading data into model from Search Global Attributes refex");
+						LOG.debug("Loading data into model from Search Global Attributes refex");
 						
 						RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_VIEW_COORDINATE_COLUMN.getDescription());
 						
@@ -396,14 +391,12 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						vc.readExternal(oos);
 						model.setViewCoordinate(vc);
 
-						// TODO: change to use LOG
-						System.out.println("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getViewCoordinate());
+						LOG.debug("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getViewCoordinate());
 						
 					} else if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() /*"Search Lucene Filter"*/)) {
 						// handle "Search Lucene Filter"
 
-						// TODO: change to use LOG
-						System.out.println("Loading data into model from Search Lucene Filter refex");
+						LOG.debug("Loading data into model from Search Lucene Filter refex");
 						
 						LuceneFilter newFilter = new LuceneFilter();
 						
@@ -411,15 +404,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 						newFilter.setSearchParameter(searchParamCol.getDataString());
 
-						// TODO: change to use LOG
-						System.out.println("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
 
 						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
 					} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() /*"Search RegExp Filter"*/)) {
 						// handle "Search RegExp Filter"
 
-						// TODO: change to use LOG
-						System.out.println("Loading data into model from Search RegExp Filter refex");
+						LOG.debug("Loading data into model from Search RegExp Filter refex");
 						
 						RegExpFilter newFilter = new RegExpFilter();
 						
@@ -427,8 +418,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 						newFilter.setSearchParameter(searchParamCol.getDataString());
 
-						// TODO: change to use LOG
-						System.out.println("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
 
 						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
 					} else {
@@ -441,8 +431,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					model.getFilters().addAll(filterOrderMap.get(order));
 				}
 
-				// TODO: change to use LOG
-				System.out.println("loadSavedSearch() loaded model: " + model);
+				LOG.debug("loadSavedSearch() loaded search view model for \"" + matchingConcept + "\": " + model);
 				
 				if (model.getViewCoordinate() == null) {
 					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  View Coordinate is null.");
@@ -463,12 +452,12 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					
 					return;
 				} else {
-					// TODO: This is a hack for when we support exactly one Lucene Filter.  Change when multiple/various filters supported.
+					// TODO: This is a hack for while we support exactly one Lucene Filter.  Change when multiple/various filters supported.
 					searchText.setText(((LuceneFilter)model.getFilters().get(0)).getSearchParameter());
 					this.currentSearchViewCoordinate = model.getViewCoordinate();
 
 					// TODO: change to use LOG
-					System.out.println("loadSavedSearch() loaded model: " + model);
+					LOG.debug("loadSavedSearch() loaded model: " + model);
 					
 					return;
 				}
@@ -484,8 +473,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	}
 	
 	private void saveSearch() {
-		// TODO: change to use LOG
-		System.out.println("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
+		LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
 
 		Object valueAsObject = savedSearchesComboBox.valueProperty().getValue();
 
@@ -499,7 +487,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			} else if (valueAsObject instanceof String) {
 				specifiedDescription = (String)valueAsObject;
 				for (SimpleDisplayConcept saveSearchInComboBoxList : savedSearchesComboBox.getItems()) {
-					if (valueAsObject.equals(saveSearchInComboBoxList.getDescription())) {
+					if (saveSearchInComboBoxList != null && valueAsObject.equals(saveSearchInComboBoxList.getDescription())) {
 						existingSavedSearch = saveSearchInComboBoxList;
 						break;
 					}
@@ -518,8 +506,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			if (existingSavedSearch != null) {
 				nameToSave = existingSavedSearch.getDescription();
 
-				// TODO: change to use LOG
-				System.out.println("saveSearch(): modifying existing saved search: " + existingSavedSearch + " (nid=" + existingSavedSearch.getNid() + ")");
+				LOG.debug("saveSearch(): modifying existing saved search: " + existingSavedSearch + " (nid=" + existingSavedSearch.getNid() + ")");
 				
 				// TODO: remove this when modification/replacement is implemented
 				String title = "Failed saving search";
@@ -531,17 +518,17 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			} else {
 				nameToSave = specifiedDescription + " search by " + System.getProperty("user.name") + " at " + LocalDateTime.now().toString();
 
-				// TODO: change to use LOG
-				System.out.println("saveSearch(): creating new saved search: nickname=" + specifiedDescription + ", fullname=\"" + nameToSave + "\"");	
+				LOG.debug("saveSearch(): creating new saved search: nickname=" + specifiedDescription + ", fullname=\"" + nameToSave + "\"");	
 			}
 
 			SearchViewModel model = new SearchViewModel();
 
+			// TODO: this code should change when multiple and various filters are supported
 			LuceneFilter filter = new LuceneFilter();
 			filter.setSearchParameter(searchText.getText());
 			model.getFilters().add(filter);
 
-			model.setViewCoordinate(currentSearchViewCoordinate = WBUtility.getViewCoordinate());
+			model.setViewCoordinate(currentSearchViewCoordinate);
 
 			SearchConceptBuilder.doSave(nameToSave, nameToSave, model);
 
@@ -1061,28 +1048,23 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		savedSearchesComboBox.valueProperty().addListener(new ChangeListener<Object>() {
 			@Override public void changed(ObservableValue<? extends Object> ov, Object t, Object t1) {
 
-				// TODO: change to use LOG
-				System.out.println("savedSearchesComboBox ObservableValue: " + ov);
+				LOG.trace("savedSearchesComboBox ObservableValue: " + ov);
 				
 				if (t instanceof SimpleDisplayConcept) {
 					SimpleDisplayConcept tSimpleDisplayConcept = (SimpleDisplayConcept)t;
 
-					// TODO: change to use LOG
-					System.out.println("savedSearchesComboBox old value: " + tSimpleDisplayConcept != null ? (tSimpleDisplayConcept.getDescription() + " (nid=" + tSimpleDisplayConcept.getNid() + ")") : null);
+					LOG.trace("savedSearchesComboBox old value: " + tSimpleDisplayConcept != null ? (tSimpleDisplayConcept.getDescription() + " (nid=" + tSimpleDisplayConcept.getNid() + ")") : null);
 				} else {
-					// TODO: change to use LOG
-					System.out.println("savedSearchesComboBox old value: " + t);
+					LOG.trace("savedSearchesComboBox old value: " + t);
 				}
 				if (t1 instanceof SimpleDisplayConcept) {
 					SimpleDisplayConcept t1SimpleDisplayConcept = (SimpleDisplayConcept)t1;
 
-					// TODO: change to use LOG
-					System.out.println("savedSearchesComboBox new value: " + t1SimpleDisplayConcept != null ? (t1SimpleDisplayConcept.getDescription() + " (nid=" + t1SimpleDisplayConcept.getNid() + ")") : null);
+					LOG.debug("savedSearchesComboBox new value: " + t1SimpleDisplayConcept != null ? (t1SimpleDisplayConcept.getDescription() + " (nid=" + t1SimpleDisplayConcept.getNid() + ")") : null);
 				
 					loadSavedSearch(t1SimpleDisplayConcept);
 				} else {
-					// TODO: change to use LOG
-					System.out.println("savedSearchesComboBox new value: " + t1);
+					LOG.trace("savedSearchesComboBox new value: " + t1);
 				}
 			}    
 		});

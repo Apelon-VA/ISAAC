@@ -88,8 +88,8 @@ public class SearchViewModel {
 		}
 	}
 
-	final List<Filter> filters = new ArrayList<>();
-	ViewCoordinate viewCoordinate;
+	private final List<Filter> filters = new ArrayList<>();
+	private ViewCoordinate viewCoordinate;
 	
 	public boolean isValid() {
 		return getValidFilters().size() > 0 && getInvalidFilters().size() == 0;
@@ -132,6 +132,6 @@ public class SearchViewModel {
 	@Override
 	public String toString() {
 		return "SearchViewModel [viewCoordinate="
-				+ viewCoordinate + ", filters=" + Arrays.toString(filters.toArray(new Filter[filters.size()])) + "]";
+				+ (viewCoordinate != null ? viewCoordinate.getViewPosition() : null) + ", filters=" + Arrays.toString(filters.toArray(new Filter[filters.size()])) + "]";
 	}
 }

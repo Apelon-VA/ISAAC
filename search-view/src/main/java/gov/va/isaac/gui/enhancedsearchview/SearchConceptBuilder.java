@@ -64,6 +64,7 @@ public class SearchConceptBuilder {
 			String saveConceptPT,
 			SearchViewModel model)
 	{
+		logger_.debug("doSave(): saving model for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
 		//
 		// Construct new containing Search Concept
 		//
