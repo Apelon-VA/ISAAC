@@ -85,6 +85,7 @@ public class EnhancedConceptViewController {
 			initializeWindow(conceptHistoryStack, mode);
 		}
 		concept = WBUtility.getConceptVersion(currentCon);
+		labelHelper.setConcept(concept.getNid());
 		clearContents();
 		updateCommitButton();
 		creator.setConceptValues(concept, mode);
@@ -97,6 +98,7 @@ public class EnhancedConceptViewController {
 		}
 		
 		concept = WBUtility.getConceptVersion(currentCon);
+		labelHelper.setConcept(concept.getNid());
 		clearContents();
 		creator.setConceptValues(concept, mode);
 	}
@@ -127,8 +129,10 @@ public class EnhancedConceptViewController {
 			@Override
 			public void handle(ActionEvent arg0) {
 				WBUtility.commit(concept);
+				clearContents();
 				commitButton.setDisable(true);
 				cancelButton.setDisable(true);
+				creator.setConceptValues(concept, currentMode);
 			}
 		});
 		

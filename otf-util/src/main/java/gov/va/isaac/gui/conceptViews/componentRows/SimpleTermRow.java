@@ -6,9 +6,7 @@ import gov.va.isaac.util.WBUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 
@@ -25,6 +23,11 @@ public class SimpleTermRow extends TermRow  {
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
 		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
 		
+		if (desc.isUncommitted()) {
+			descLabel.setUnderline(true);
+			descTypeLabel.setUnderline(true);
+		}
+
 		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)

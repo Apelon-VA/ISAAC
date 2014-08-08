@@ -115,6 +115,9 @@ public class EnhancedConceptBuilder {
 
 			// Defined Status
 			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr));
+			if (attr.isUncommitted()) {
+				isPrimLabel.setUnderline(true);
+			}
 
 			// Concept ContextMenu
 			createConceptContextMenu();

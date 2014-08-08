@@ -30,23 +30,33 @@ public class DetailRelRow extends RelRow {
 			relLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
 		}
 		Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
+		Label relGroupLabel = labelHelper.createLabel(rel, String.valueOf(rel.getGroup()), ComponentType.RELATIONSHIP, 0);
 		Label relCharLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getCharacteristicNid()), ComponentType.RELATIONSHIP, rel.getCharacteristicNid());
 		Label relRefLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getRefinabilityNid()), ComponentType.RELATIONSHIP, rel.getRefinabilityNid());
 		
+		if (rel.isUncommitted()) {
+			relLabel.setUnderline(true);
+			relTypeLabel.setUnderline(true);
+			relCharLabel.setUnderline(true);
+			relRefLabel.setUnderline(true);
+		}
+
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
 		currentPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		currentPane.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
 		currentPane.setConstraints(relTypeLabel,  3,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-		currentPane.setConstraints(relCharLabel,  4,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-		currentPane.setConstraints(relRefLabel,  5,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		currentPane.setConstraints(relGroupLabel,  4,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		currentPane.setConstraints(relCharLabel,  5,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		currentPane.setConstraints(relRefLabel,  6,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
 		
 		currentPane.setMargin(relLabel, new Insets(0, 20, 0, 20));
 		currentPane.setMargin(relTypeLabel, new Insets(0, 20, 0, 20));
+		currentPane.setMargin(relGroupLabel, new Insets(0, 20, 0, 20));
 		currentPane.setMargin(relCharLabel, new Insets(0, 20, 0, 20));
 		currentPane.setMargin(relRefLabel, new Insets(0, 0, 0, 20));
 
-		currentPane.addRow(counter++, rec, relLabel, relTypeLabel, relCharLabel, relRefLabel);
+		currentPane.addRow(counter++, rec, relLabel, relTypeLabel, relGroupLabel, relCharLabel, relRefLabel);
 	}
 
 	@Override

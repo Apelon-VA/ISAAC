@@ -24,11 +24,19 @@ public class DetailTermRow extends TermRow {
 	@Override
 	public void addTermRow(DescriptionVersionBI desc) {
 		Rectangle rec = createAnnotRectangle(desc);
+		
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
 		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
 		Label descCaseLabel = labelHelper.createLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, 0);
 		Label descLangLabel = labelHelper.createLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, 0);
-
+		
+		if (desc.isUncommitted()) {
+			descLabel.setUnderline(true);
+			descTypeLabel.setUnderline(true);
+			descCaseLabel.setUnderline(true);
+			descLangLabel.setUnderline(true);
+		}
+		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
 		gp.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
