@@ -19,9 +19,12 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.util.WBUtility;
+
 import java.util.function.Function;
+
 import org.apache.commons.lang.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 
 /**
@@ -77,6 +80,11 @@ public class SimpleDisplayConcept
 	public SimpleDisplayConcept(ConceptChronicleDdo c)
 	{
 		this((c == null ? null : WBUtility.getConceptVersion(c.getPrimordialUuid())), null);
+	}
+	
+	public SimpleDisplayConcept(ConceptSpec c)
+	{
+		this((c == null ? null : WBUtility.getConceptVersion(c.getUuids()[0])), null);
 	}
 	
 	public SimpleDisplayConcept(String description)
