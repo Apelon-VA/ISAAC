@@ -22,6 +22,8 @@ import java.util.UUID;
 import javafx.scene.layout.Region;
 import org.jvnet.hk2.annotations.Contract;
 
+//TODO get rid of this confusing contract... need to not go back and forth between Refset and Refex.
+//This is actually used as an info-model viewer, which is kind of a different animal.
 /**
  * RefsetViewI
  * 

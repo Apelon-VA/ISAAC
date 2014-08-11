@@ -18,8 +18,11 @@
  */
 package gov.va.isaac.workflow;
 
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+
 import java.net.URL;
 import java.util.Map;
+
 import org.kie.api.task.TaskService;
 
 /**
@@ -33,7 +36,7 @@ public interface LocalWorkflowRuntimeEngineBI {
     //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
     public void synchronizeWithRemote();
     
-    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequest instanceRequest);
+    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest);
     
     //TODO these APIs need to throw errors, not silently eat them
     public ProcessInstanceServiceBI getProcessInstanceService();

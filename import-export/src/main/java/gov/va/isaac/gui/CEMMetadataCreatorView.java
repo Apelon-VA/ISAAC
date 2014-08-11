@@ -22,17 +22,20 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
-import gov.va.isaac.models.cem.importer.CEMMetadataCreator;
-import gov.va.isaac.models.fhim.importer.FHIMMetadataCreator;
+import gov.va.isaac.models.va.importer.VAMetadataCreator;
 import gov.va.isaac.util.Utility;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.stage.Window;
+
 import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +114,13 @@ public class CEMMetadataCreatorView implements PopupViewI
 			@Override
 			protected Boolean call() throws Exception
 			{
-				boolean cemCreated = new CEMMetadataCreator().createMetadata();
-				boolean fhimCreated = new FHIMMetadataCreator().createMetadata();
+//				boolean cemCreated = new CEMMetadataCreator().createMetadata();
+//				boolean fhimCreated = new FHIMMetadataCreator().createMetadata();
+				boolean vaCreated = new VAMetadataCreator().createMetadata();
 
 				// If any one of them was created, return true.
-				return cemCreated || fhimCreated;
+//				return cemCreated || fhimCreated;
+				return vaCreated;
 			}
 
 			@Override

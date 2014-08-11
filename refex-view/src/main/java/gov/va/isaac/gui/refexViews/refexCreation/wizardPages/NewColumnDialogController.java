@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.util.WBUtility;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.BooleanBinding;
@@ -91,7 +90,7 @@ public class NewColumnDialogController implements Initializable
 			private void createNewColumnConcept() {
 				try {
 					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColName.getText().trim(), 
-						newColDesc.getText().trim(), WBUtility.getEC(), WBUtility.getViewCoordinate());
+						newColDesc.getText().trim());
 				} catch (InvalidCAB e) {
 					AppContext.getCommonDialogs().showInformationDialog("Concept Creation Error", e.getMessage(), rootPane.getScene().getWindow());
 					newColumnConcept = null;

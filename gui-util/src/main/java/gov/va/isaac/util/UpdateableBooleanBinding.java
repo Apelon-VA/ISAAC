@@ -39,7 +39,7 @@ import com.sun.javafx.binding.BindingHelperObserver;
 public abstract class UpdateableBooleanBinding extends ValidBooleanBinding
 {
 	private BindingHelperObserver observer;
-	private HashSet<Observable> listeningTo = new HashSet<>();
+	protected HashSet<Observable> listeningTo = new HashSet<>();
 
 	public final void addBinding(Observable... dependencies)
 	{

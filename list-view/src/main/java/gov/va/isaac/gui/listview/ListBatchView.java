@@ -160,4 +160,12 @@ public class ListBatchView implements ListBatchViewI
 	public void addConcepts(List<Integer> nids) {
 		lbvc_.addConcepts(nids);
 	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.ListBatchViewI#addConcept(int)
+	 */
+	@Override
+	public void addConcept(int nid) {
+		lbvc_.addConcept(nid);
+	}
 }

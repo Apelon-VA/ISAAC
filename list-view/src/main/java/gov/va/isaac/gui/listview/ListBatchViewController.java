@@ -22,17 +22,20 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.CommonMenuBuilderI;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -47,7 +50,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -82,6 +84,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -97,7 +100,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -106,7 +108,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -117,6 +118,27 @@ import au.com.bytecode.opencsv.CSVWriter;
  */
 public class ListBatchViewController
 {
+	private enum LocalMenuItem {
+		REMOVE_FROM_LIST("Remove from List", Images.DELETE),
+		COMMIT_CONCEPT_CHANGE("Commit Concept Change", Images.COMMIT),
+		CANCEL_CONCEPT_CHANGE("Cancel Concept Change", Images.CANCEL);
+		
+		final String text;
+		final Images image;
+
+		private LocalMenuItem(String text, Images image) {
+			this.text = text;
+			this.image = image;
+		}
+
+		public String getText() {
+			return text;
+		}
+		public Images getImage() {
+			return image;
+		}
+	}
+	
 	@FXML private Button loadListButton;
 	@FXML private VBox operationsList;
 	@FXML private Button clearOperationsButton;
@@ -141,6 +163,8 @@ public class ListBatchViewController
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 	private int uncommittedCount = 0;
 
+	private PopupConceptViewI conceptView;
+
 	protected static ListBatchViewController init() throws IOException
 	{
 		// Load from FXML.
@@ -150,9 +174,21 @@ public class ListBatchViewController
 		return loader.getController();
 	}
 
+	private static MenuItem findMenuItem(List<MenuItem> itemsToSearch, LocalMenuItem itemToFind) {
+		for (MenuItem itemToSearch : itemsToSearch) {
+			if (itemToSearch.getText().equals(itemToFind.getText())) {
+				return itemToSearch;
+			}
+		}
+		
+		return null;
+	}
+	
 	@FXML
 	public void initialize()
 	{
+		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		
 		operationsList.getChildren().add(new OperationNode(this));
 
 		final ConceptNode cn = new ConceptNode(null, false);
@@ -197,18 +233,18 @@ public class ListBatchViewController
 					protected void updateItem(String item, boolean empty) {
 						super.updateItem(item, empty);
 	
-						TableRow currentRow = getTableRow();
+						TableRow<?> currentRow = getTableRow();
 						if (!empty) {
 							if (currentRow != null && currentRow.getItem() != null) {
 								setText(item);
 								setTextFill(Color.BLACK);
 								if (((SimpleDisplayConcept)currentRow.getItem()).isUncommitted()) {
 									setBackground(uncommittedBackground );
-									currentRow.getContextMenu().getItems().get(2).setDisable(false);
-									currentRow.getContextMenu().getItems().get(3).setDisable(false);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.COMMIT_CONCEPT_CHANGE).setDisable(false);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.CANCEL_CONCEPT_CHANGE).setDisable(false);
 								} else {
-									currentRow.getContextMenu().getItems().get(2).setDisable(true);
-									currentRow.getContextMenu().getItems().get(3).setDisable(true);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.COMMIT_CONCEPT_CHANGE).setDisable(true);
+									findMenuItem(currentRow.getContextMenu().getItems(), LocalMenuItem.CANCEL_CONCEPT_CHANGE).setDisable(true);
 									setBackground(defaultBackground );
 								}
 							}
@@ -230,13 +266,10 @@ public class ListBatchViewController
 				cell.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent event) {
-						if (((TableCell)event.getSource()).getIndex() < conceptTable.getItems().size()) {
-							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell)event.getSource()).getIndex());
-							//TODO this is the code that should be here, but EnhancedConceptView is broken at the moment, and doesn't follow the API  
-//							ConceptViewI cv = AppContext.getService(ConceptViewI.class, "ModernStyle");
-//							cv.setConcept(con.getNid());
-//							conceptDisplayTab.setContent(cv.getView());
-							conceptDisplayTab.setContent(AppContext.getService(EnhancedConceptView.class).getConceptViewerPanel(con.getNid()));
+						if (((TableCell<?,?>)event.getSource()).getIndex() < conceptTable.getItems().size()) {
+							SimpleDisplayConcept con = (SimpleDisplayConcept)conceptTable.getItems().get(((TableCell<?,?>)event.getSource()).getIndex());
+							conceptView.setConcept(con.getNid());
+							conceptDisplayTab.setContent(conceptView.getView());
 						}
 					}
 				});
@@ -286,19 +319,20 @@ public class ListBatchViewController
 			{
 				final TableRow<SimpleDisplayConcept> row = new TableRow<SimpleDisplayConcept>();
 				final ContextMenu rowMenu = new ContextMenu();
-				MenuItem viewItem = new MenuItem("View Concept");
-				viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
-				viewItem.setOnAction(new EventHandler<ActionEvent>()
-				{
-					@Override
-					public void handle(ActionEvent event)
-					{
-						//TODO fix this API to use the named API, fix the mess on popup vs view
-						AppContext.getService(EnhancedConceptView.class).setConcept(row.getItem().getNid());
-					}
-				});
-				MenuItem removeItem = new MenuItem("Delete");
-				removeItem.setGraphic(Images.DELETE.createImageView());
+//				MenuItem viewItem = new MenuItem("View Concept");
+//				viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+//				viewItem.setOnAction(new EventHandler<ActionEvent>()
+//				{
+//					@Override
+//					public void handle(ActionEvent event)
+//					{
+//						PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+//						cv.setConcept(row.getItem().getNid());
+//						cv.showView(rootPane.getScene().getWindow());
+//					}
+//				});
+				MenuItem removeItem = new MenuItem(LocalMenuItem.REMOVE_FROM_LIST.getText());
+				removeItem.setGraphic(LocalMenuItem.REMOVE_FROM_LIST.getImage().createImageView());
 				removeItem.setOnAction(new EventHandler<ActionEvent>()
 				{
 					@Override
@@ -322,8 +356,8 @@ public class ListBatchViewController
 						}
 					}
 				});
-				MenuItem commitItem = new MenuItem("Commit Concept Change");
-				commitItem.setGraphic(Images.COMMIT.createImageView());
+				MenuItem commitItem = new MenuItem(LocalMenuItem.COMMIT_CONCEPT_CHANGE.getText());
+				commitItem.setGraphic(LocalMenuItem.COMMIT_CONCEPT_CHANGE.getImage().createImageView());
 				commitItem.setOnAction(new EventHandler<ActionEvent>()
 				{
 					@Override
@@ -334,14 +368,14 @@ public class ListBatchViewController
 					}
 				});
 
-				MenuItem cancelItem = new MenuItem("Cancel Concept Change");
-				cancelItem.setGraphic(Images.CANCEL.createImageView());
+				MenuItem cancelItem = new MenuItem(LocalMenuItem.CANCEL_CONCEPT_CHANGE.getText());
+				cancelItem.setGraphic(LocalMenuItem.CANCEL_CONCEPT_CHANGE.getImage().createImageView());
 				cancelItem.setOnAction(new EventHandler<ActionEvent>()
 				{
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.cancel(row.getItem().getNid());
+						WBUtility.forget(row.getItem().getNid());
 						updateTableItem(row.getItem(), false);
 					}
 				});
@@ -349,8 +383,52 @@ public class ListBatchViewController
 //				commitItem.visibleProperty().bind(isUncommittedConcept_);
 //				cancelItem.visibleProperty().bind(isUncommittedConcept_);
 				
-				rowMenu.getItems().addAll(viewItem, removeItem, commitItem, cancelItem);
+				rowMenu.getItems().addAll(/* viewItem, */ removeItem, commitItem, cancelItem);
 
+				row.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						if (event.getButton() == MouseButton.SECONDARY) {
+							TableRow<SimpleDisplayConcept> r = (TableRow<SimpleDisplayConcept>)event.getSource();
+							if (r.getIndex() < r.getTableView().getItems().size()) {
+								CommonMenusDataProvider dp = new CommonMenusDataProvider() {
+									@Override
+									public String[] getStrings() {
+										List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+										String descs[] = new String[selected.size()];
+										for (int i = 0; i < selected.size(); ++i) {
+											descs[i] = selected.get(i).getDescription();
+										}
+
+										//System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
+
+										return descs;
+									}
+								};
+
+								CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
+									@Override
+									public Set<Integer> getNIds() {
+										List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
+										Set<Integer> nids = new HashSet<>();
+										for (SimpleDisplayConcept concept : selected) {
+											nids.add(concept.getNid());
+										}
+
+										//System.out.println(selected.size() + " item(s) selected: " + nids);
+
+										return nids;
+									}
+								};
+								CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+								menuBuilder.setMenuItemsToExclude(CommonMenus.CommonMenuItem.LIST_VIEW);
+								CommonMenus.addCommonMenus(r.getContextMenu(), menuBuilder, dp, nidProvider);
+							}
+						}
+					}
+
+				});
+				
 				// only display context menu for non-null items:
 				row.contextMenuProperty().bind(Bindings.when(Bindings.isNotNull(row.itemProperty())).then(rowMenu).otherwise((ContextMenu) null));
 				return row;
@@ -921,7 +999,7 @@ public class ListBatchViewController
 				uncommittedCount++;
 			}
 		} else {
-			WBUtility.cancel(con);
+			WBUtility.forget(con);
 			newCon.setUncommitted(false);
 
 			if (!isUncommitted && oldCon.isUncommitted()) {
@@ -963,6 +1041,14 @@ public class ListBatchViewController
 		}
 	}
 	
+	protected void addConcept(int id) {
+		List<Integer> idList = new ArrayList<>();
+		
+		idList.add(id);
+		
+		addConcepts(idList);
+	}
+
 	protected void addConcepts(List<Integer> nids) {
 		List<SimpleDisplayConcept> displayConcepts = new ArrayList<>();
 		

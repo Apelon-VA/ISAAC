@@ -19,19 +19,23 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dialog.ConceptView;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenuBuilderI;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenus.CommonMenuItem;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -46,7 +50,6 @@ import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipVersionDdo;
-import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -233,22 +236,30 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
     private ContextMenu buildContextMenu() {
         ContextMenu cm = new ContextMenu();
 
-        // Add a "View Concept" menu item.
-        MenuItem mi = new MenuItem("View Concept");
-        mi.setOnAction(new EventHandler<ActionEvent>() {
-
+        // Add a Menus item.
+        
+        CommonMenuBuilderI builder = CommonMenus.getDefaultMenuBuilder();
+        builder.setMenuItemsToExclude(CommonMenuItem.TAXONOMY_VIEW);
+        
+        CommonMenus.addCommonMenus(cm, builder, new CommonMenusNIdProvider()
+        {
+            
             @Override
-            public void handle(ActionEvent event) {
+            public Collection<Integer> getNIds()
+            {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
-                ConceptView cv = Hk2Looker.get().getService(ConceptView.class);
-                cv.setConcept(concept);
-                cv.showView(null);
+                try
+                {
+                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(concept.getPrimordialUuid())});
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Unexpected", e);
+                    return Arrays.asList(new Integer[] {});
+                }
             }
-        });
-        mi.setGraphic(Images.CONCEPT_VIEW.createImageView());
-
-        cm.getItems().add(mi);
-
+        }); 
+        
         return cm;
     }
 

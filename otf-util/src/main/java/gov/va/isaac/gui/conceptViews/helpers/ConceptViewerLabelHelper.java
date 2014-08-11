@@ -21,15 +21,16 @@ package gov.va.isaac.gui.conceptViews.helpers;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
+import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
+import gov.va.isaac.gui.conceptViews.modeling.DescriptionModelingPopup;
+import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
+import gov.va.isaac.gui.conceptViews.modeling.RelationshipModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
-import gov.va.isaac.interfaces.gui.views.EnhancedConceptViewI.ViewType;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.WBUtility;
 //import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
-
-
-import java.util.Stack;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -40,10 +41,18 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
+
+import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
-import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
+import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,46 +62,57 @@ import org.slf4j.LoggerFactory;
 */
 public class ConceptViewerLabelHelper {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerLabelHelper.class);
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private int conceptNid = 0;;
 	
 	private AnchorPane pane;
 	private boolean isWindow = false;
-	private Stack<Integer> previousConceptStack;
+	private ObservableList<Integer> previousConceptStack;
 	
 	private ConceptViewerTooltipHelper tooltipHelper = new ConceptViewerTooltipHelper();
 
-	private ViewType currentView;
+	private PopupConceptViewI conceptView = null;
 
-	// Create/Initialize without refNid
-	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, boolean isConcept) {
+	public ConceptViewerLabelHelper(PopupConceptViewI conceptView) {
+		this.conceptView = conceptView;
+	}
+
+	// Create Labels
+	public Label createLabel(ComponentVersionBI comp, String txt, ComponentType type, int refConNid) {
+		Label label = new Label();
+		label.setFont(new Font(18));
+
+		initializeLabel(label, comp, type, txt, refConNid);
+		
+		return label;
+	}
+
+	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, int refConNid) {
 		label.setText(txt);
 		
-		if (isConcept) {
+		if (refConNid != 0) {
 			label.setTextFill(Color.BLUE);
 		} else {
 			label.setTextFill(Color.BLACK);
 		}
 		
+		createContextMenu(label, txt, comp, refConNid, type);
+
+		// Tooltip Handling
 		tooltipHelper.setDefaultTooltip(label, comp, type);
 		label.addEventHandler(MouseEvent.MOUSE_ENTERED, tooltipHelper.getCompTooltipEnterHandler(comp, type));
 		label.addEventHandler(MouseEvent.MOUSE_EXITED, tooltipHelper.getCompTooltipExitHandler(comp, type));
-
-		createConceptContextMenu(label, txt);
 	}
 
-	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, boolean isConcept) {
-		Label label = new Label();
-		label.setFont(new Font(18));
-
-		initializeLabel(label, comp, type, txt, isConcept);
-		
-		return label;
-	}
-
-	private void createConceptContextMenu(Label label, String txt) {
+	
+	
+	// Create Context Menus
+	private void createContextMenu(Label label, String txt, ComponentVersionBI comp, int refConNid, ComponentType type) {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem copyTextItem = new MenuItem("Copy Text");
+		Menu copytoClipboardItem = new Menu("Copy to Clipboard");
+		MenuItem copyTextItem = new MenuItem("Text");
+		copyTextItem.setGraphic(Images.COPY.createImageView());
 		copyTextItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -102,7 +122,7 @@ public class ConceptViewerLabelHelper {
 			}
 		});
 				
-		MenuItem copyContentItem = new MenuItem("Copy Content");
+		MenuItem copyContentItem = new MenuItem("Full Component Content");
 		copyContentItem.setGraphic(Images.COPY.createImageView());
 		copyContentItem.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -112,31 +132,204 @@ public class ConceptViewerLabelHelper {
 				CustomClipboard.set(label.getTooltip().getText());
 			}
 		});
+		
+		copytoClipboardItem.getItems().addAll(copyTextItem, copyContentItem);
+		rtClickMenu.getItems().add(copytoClipboardItem);
 
-		rtClickMenu.getItems().add(copyTextItem);
-		rtClickMenu.getItems().add(copyContentItem);
+		
+		// Enable copying of component's various Ids
+		if (comp != null) {
+			if (type != ComponentType.CONCEPT && 
+			   (!(type == ComponentType.RELATIONSHIP && conceptNid != ((RelationshipVersionBI)comp).getOriginNid()))) { 
+				Menu modifyComponentMenu = addModifyMenus(comp, type);
+				rtClickMenu.getItems().add(modifyComponentMenu);
+			}
 
+			Menu copyIdMenu = addIdMenus(comp);
+			copytoClipboardItem.getItems().add(copyIdMenu);
+		}
+
+		// Enable changing concept to Reference Concept
+		if (refConNid != 0) {
+			assert(comp != null);
+			
+			if (isWindow) {
+				MenuItem viewItem = new MenuItem("Open Concept");
+				viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+				viewItem.setOnAction(new EventHandler<ActionEvent>()
+				{
+					@Override
+					public void handle(ActionEvent event)
+					{
+						previousConceptStack.add(comp.getConceptNid());
+						if (conceptView == null) {
+							AppContext.getService(EnhancedConceptView.class).setConcept(refConNid);
+						} else {
+							conceptView.setConcept(refConNid);
+						}
+					}
+				});
+				
+				rtClickMenu.getItems().add(0, viewItem);
+			}
+	
+			MenuItem viewNewItem = new MenuItem("Open Concept in New Panel");
+			viewNewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
+			viewNewItem.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					EnhancedConceptView cv = AppContext.getService(EnhancedConceptView.class);
+				
+					cv.setConcept(refConNid);
+					cv.showView(pane.getScene().getWindow());
+				}
+			});
+			
+			rtClickMenu.getItems().add(1, viewNewItem);
+		}
+
+		rtClickMenu.getItems().add(addCreateNewComponent());
+		
 		label.setContextMenu(rtClickMenu);
 	}
 
+	Menu addModifyMenus(ComponentVersionBI comp, ComponentType type) {
+		Menu modifyComponentMenu = new Menu("Modify " + type);
+		MenuItem editComponentMenu = new MenuItem("Edit");
+		MenuItem retireComponentMenu = new MenuItem("Retire");
+		MenuItem undoComponentMenu = new MenuItem("Undo");
+		modifyComponentMenu.getItems().addAll(editComponentMenu, retireComponentMenu, undoComponentMenu);
 
-	// Create/Initialize with refNid
-	public void initializeLabel(Label label, ComponentVersionBI comp, ComponentType type, String txt, int refNid, boolean isConcept) {
-		initializeLabel(label, comp, type, txt, isConcept);
-		createConceptContextMenu(label, refNid, comp.getConceptNid());
+		editComponentMenu.setGraphic(Images.EDIT.createImageView());
+		editComponentMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				ModelingPopup popup = null;
+				if (type == ComponentType.CONCEPT) {
+					popup = AppContext.getService(ConceptModelingPopup.class);
+				} else if (type == ComponentType.DESCRIPTION) {
+					popup = AppContext.getService(DescriptionModelingPopup.class);
+				} else if (type == ComponentType.RELATIONSHIP) {
+					popup = AppContext.getService(RelationshipModelingPopup.class);
+					if (conceptNid != ((RelationshipVersionBI)comp).getOriginNid()) { 
+						((RelationshipModelingPopup)popup).setDestination(true);
+					}
+				}
+
+				popup.finishInit(comp, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
+
+		retireComponentMenu.setGraphic(Images.DELETE.createImageView());
+		retireComponentMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				try {
+					if (type == ComponentType.CONCEPT) {
+						// TODO: Retire Concept Wizard
+					} else if (type == ComponentType.DESCRIPTION) {
+						DescriptionVersionBI desc = (DescriptionVersionBI)comp;
+						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+						dcab.setStatus(Status.INACTIVE);
+						
+						DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
+						
+						WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+	
+					} else if (type == ComponentType.RELATIONSHIP) {
+						RelationshipVersionBI rel = (RelationshipVersionBI)comp;
+
+						RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+
+						rcab.setStatus(Status.INACTIVE);
+						
+						RelationshipChronicleBI rcbi = WBUtility.getBuilder().constructIfNotCurrent(rcab);
+						
+						WBUtility.addUncommitted(rcbi.getEnclosingConcept());
+					}
+					
+					conceptView.setConcept(comp.getConceptNid());
+				} catch (Exception e) {
+					LOG.error("Failure in retiring comp: " + comp.getPrimordialUuid());
+				}
+			}
+		});
+
+		undoComponentMenu.setGraphic(Images.CANCEL.createImageView());
+		undoComponentMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				try {
+					if (type == ComponentType.CONCEPT) {
+						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
+//						ExtendedAppContext.getDataStore().forget((ConceptAttributeVersionBI)comp);
+					} else if (type == ComponentType.DESCRIPTION) {
+						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
+//						ExtendedAppContext.getDataStore().forget((DescriptionVersionBI)comp);
+					} else if (type == ComponentType.RELATIONSHIP) {
+						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
+//						ExtendedAppContext.getDataStore().forget((RelationshipVersionBI)comp);
+					}
+					// TODO: Until above TODOs are handled, leave Undo on entire concept
+					WBUtility.forget(comp.getConceptNid());
+					conceptView.setConcept(comp.getConceptNid());
+				} catch (Exception e) {
+					LOG.error("Unable to cancel comp: " + comp.getNid(), e);
+				}
+			}
+		});
+		
+		if (!comp.isUncommitted()) {
+			undoComponentMenu.setDisable(true);
+		}
+
+
+		return modifyComponentMenu;
 	}
 
-	public Label createComponentLabel(ComponentVersionBI comp, String txt, ComponentType type, int refNid, boolean isConcept) {
-		Label label = createComponentLabel(comp, txt, type, isConcept);
+	Menu addCreateNewComponent() {
+		Menu createComponentMenu = new Menu("Create New Component");
+		MenuItem newDescriptionMenu = new MenuItem("Create New Description");
+		MenuItem newRelationshipMenu = new MenuItem("Create New Relationship");
+		createComponentMenu.getItems().addAll(newDescriptionMenu, newRelationshipMenu);
 
-		createConceptContextMenu(label, refNid, comp.getConceptNid());
+		newDescriptionMenu.setGraphic(Images.EDIT.createImageView());
+		newDescriptionMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				DescriptionModelingPopup popup = AppContext.getService(DescriptionModelingPopup.class);
+				popup.finishInit(conceptNid, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
 
-		return label;
+		newRelationshipMenu.setGraphic(Images.EDIT.createImageView());
+		newRelationshipMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				RelationshipModelingPopup popup = AppContext.getService(RelationshipModelingPopup.class);
+				popup.finishInit(conceptNid, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
+
+		return createComponentMenu;
 	}
 	
-	public void createIdsContextMenu(Label label, int refNid) {
-		ContextMenu rtClickMenu = label.getContextMenu();
-
+	Menu addIdMenus(ComponentVersionBI comp) {
 		Menu copyIdMenu = new Menu("Copy Ids");
 		MenuItem sctIdItem = new MenuItem("SctId");
 		MenuItem uuidItem = new MenuItem("UUID");
@@ -149,9 +342,7 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ConceptVersionBI con = WBUtility.getConceptVersion(refNid);
-				ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
-				CustomClipboard.set(ConceptViewerHelper.getSctId(attr));
+				CustomClipboard.set(ConceptViewerHelper.getSctId(comp));
 			}
 		});
 
@@ -161,8 +352,7 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ConceptVersionBI con = WBUtility.getConceptVersion(refNid);
-				CustomClipboard.set(con.getPrimordialUuid().toString());
+				CustomClipboard.set(comp.getPrimordialUuid().toString());
 			}
 		});
 
@@ -172,65 +362,12 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ConceptVersionBI con = WBUtility.getConceptVersion(refNid);
-				CustomClipboard.set(Integer.toString(con.getNid()));
+				CustomClipboard.set(Integer.toString(comp.getNid()));
 			}
 		});
 		
-		rtClickMenu.getItems().addAll(copyIdMenu);
-		label.setContextMenu(rtClickMenu);
+		return copyIdMenu;		
 	}
-	
-	private void createConceptContextMenu(Label label, int refNid, int currentConceptNid) {
-		ContextMenu rtClickMenu = label.getContextMenu();
-		
-		if (isWindow) {
-			MenuItem viewItem = new MenuItem("View Concept");
-			viewItem.setGraphic(Images.CONCEPT_VIEW.createImageView());
-			viewItem.setOnAction(new EventHandler<ActionEvent>()
-			{
-				@Override
-				public void handle(ActionEvent event)
-				{
-					previousConceptStack.push(currentConceptNid);
-					AppContext.getService(EnhancedConceptView.class).changeConcept(((Stage)pane.getScene().getWindow()), refNid, currentView);
-				}
-			});
-			
-			rtClickMenu.getItems().add(0, viewItem);
-		}
-
-		MenuItem newWorkflowInstanceItem = new MenuItem("New Workflow Instance");
-		newWorkflowInstanceItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-
-				view.setConcept(currentConceptNid);
-				view.showView(null);
-			}
-		});
-		rtClickMenu.getItems().add(newWorkflowInstanceItem);
-		
-		MenuItem viewNewItem = new MenuItem("View Concept New Panel");
-		viewNewItem.setGraphic(Images.COPY.createImageView());
-		viewNewItem.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent event)
-			{
-				AppContext.getService(EnhancedConceptView.class).setConcept(refNid);
-			}
-		});
-		
-		rtClickMenu.getItems().add(1, viewNewItem);
-		
-		label.setContextMenu(rtClickMenu);
-		createIdsContextMenu(label, refNid);
-	}
-
 
 	// Setters&Getters
 	public void setPane(AnchorPane simpleConceptPane) {
@@ -241,15 +378,16 @@ public class ConceptViewerLabelHelper {
 		this.isWindow = isWindow;
 	}
 
-	public Stack<Integer> getPreviousConceptStack() {
+	public ObservableList<Integer> getPreviousConceptStack() {
 		return previousConceptStack;
 	}
 
-	public void setPrevConStack(Stack<Integer> stack) {
-		previousConceptStack = stack;
+	public void setPrevConStack(ObservableList<Integer> conceptHistoryStack) {
+		previousConceptStack = conceptHistoryStack;
 	}
 
-	public void setCurrentView(ViewType view) {
-		currentView = view;		
+	public void setConcept(int nid) {
+		conceptNid = nid;		
 	}
+
 }

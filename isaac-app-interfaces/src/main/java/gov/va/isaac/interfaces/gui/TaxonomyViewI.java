@@ -40,5 +40,5 @@ public interface TaxonomyViewI
 	 * and a busyIndicator is provided, it will be set to false, when the location process completes.
 	 */
 	public void locateConcept(UUID uuid, final BooleanProperty busyIndicator);
-
+	public void locateConcept(int nid, final BooleanProperty busyIndicator);
 }

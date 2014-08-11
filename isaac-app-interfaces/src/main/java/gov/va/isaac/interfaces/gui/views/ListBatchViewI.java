@@ -36,4 +36,5 @@ import java.util.List;
 public interface ListBatchViewI extends DockedViewI {
 
 	public abstract void addConcepts(List<Integer> nids);
+	public abstract void addConcept(int nid);
 }
