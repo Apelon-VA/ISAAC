@@ -157,9 +157,9 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) {
         KieSession session = getRemoteEngine().getKieSession();
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("componentId", instanceRequest.getComponentId());
-        params.put("componentName", instanceRequest.getComponentName());
-        params.put("createdBy", instanceRequest.getUserId());
+        params.put("component_id", instanceRequest.getComponentId());
+        params.put("component_name", instanceRequest.getComponentName());
+        params.put("created_by", instanceRequest.getUserId());
         if (instanceRequest.getParams() != null) {
             params.putAll(instanceRequest.getParams());
         }
