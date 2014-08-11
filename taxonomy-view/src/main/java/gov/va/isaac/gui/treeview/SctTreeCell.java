@@ -25,14 +25,14 @@ import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.util.CommonMenus.CommonMenuItem;
-import gov.va.isaac.util.CommonMenus.MergeMode;
+import gov.va.isaac.util.CommonMenusNIdProvider;
+import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -241,19 +241,24 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         CommonMenuBuilderI builder = CommonMenus.getDefaultMenuBuilder();
         builder.setMenuItemsToExclude(CommonMenuItem.TAXONOMY_VIEW);
         
-        CommonMenus.addCommonMenus(cm, builder, () ->
+        CommonMenus.addCommonMenus(cm, builder, new CommonMenusNIdProvider()
         {
-            ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
-            try
+            
+            @Override
+            public Collection<Integer> getNIds()
             {
-                return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(concept.getPrimordialUuid())});
+                ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
+                try
+                {
+                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(concept.getPrimordialUuid())});
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Unexpected", e);
+                    return Arrays.asList(new Integer[] {});
+                }
             }
-            catch (Exception e)
-            {
-                LOG.error("Unexpected", e);
-                return Arrays.asList(new Integer[] {});
-            }
-        });
+        }); 
         
         return cm;
     }

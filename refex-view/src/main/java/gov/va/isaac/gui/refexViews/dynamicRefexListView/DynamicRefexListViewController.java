@@ -24,12 +24,14 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -186,10 +188,14 @@ public class DynamicRefexListViewController
 		mi.setGraphic(Images.SEARCH.createImageView());
 		refexDefinitionsContextMenu_.getItems().add(mi);
 		
-		CommonMenus.addCommonMenus(refexDefinitionsContextMenu_, () ->
+		CommonMenus.addCommonMenus(refexDefinitionsContextMenu_, new CommonMenusNIdProvider()
 		{
-			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
-			return Arrays.asList(sdc == null ? new Integer[] {} : new Integer[] {sdc.getNid()});
+			@Override
+			public Collection<Integer> getNIds()
+			{
+				SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
+				return Arrays.asList(sdc == null ? new Integer[] {} : new Integer[] {sdc.getNid()});
+			}
 		});
 		
 		refexList.addEventHandler(MouseEvent.MOUSE_CLICKED, (mouseEvent) -> 

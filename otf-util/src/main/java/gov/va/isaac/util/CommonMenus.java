@@ -28,16 +28,13 @@ import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
-import javafx.beans.binding.IntegerExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -99,41 +96,6 @@ public class CommonMenus
 
 	private static final Logger LOG = LoggerFactory.getLogger(CommonMenus.class);
 
-	public interface DataProvider {
-		SimpleIntegerProperty stringCount = new SimpleIntegerProperty(0);
-		SimpleIntegerProperty numberCount = new SimpleIntegerProperty(0);
-		SimpleIntegerProperty objectCount = new SimpleIntegerProperty(0);
-		default public String[] getStrings() { return null; }
-
-		default public Number[] getNumbers() { return null; }
-
-		default public ObjectContainer[] getObjectContainers() { return null; }
-		
-		default public IntegerExpression getObservableStringCount()
-		{
-			return stringCount;
-		}
-		default public IntegerExpression getObservableObjectCount()
-		{
-			return objectCount;
-		}
-		default public IntegerExpression getObservableNumberCount()
-		{
-			return numberCount;
-		}
-		default public void invalidateAll()
-		{
-			String[] s = getStrings();
-			stringCount.set(s == null ? 0 : s.length);
-			
-			Object[] o = getObjectContainers();
-			objectCount.set(o == null ? 0 : o.length);
-			
-			Number[] n = getNumbers();
-			numberCount.set(n == null ? 0 : n.length);
-		}
-	}
-
 	public static class ObjectContainer {
 		final Object object;
 		final String string;
@@ -160,22 +122,6 @@ public class CommonMenus
 		 */
 		public String getString() {
 			return string;
-		}
-	}
-
-	@FunctionalInterface
-	public interface NIdProvider {
-		SimpleIntegerProperty nidCount = new SimpleIntegerProperty(0);
-		public Collection<Integer> getNIds();
-		
-		default public IntegerExpression getObservableNidCount()
-		{
-			return nidCount;
-		}
-		default public void invalidateAll()
-		{
-			Collection<Integer> nids = getNIds();
-			nidCount.set(nids == null ? 0 : nids.size());
 		}
 	}
 
@@ -260,28 +206,28 @@ public class CommonMenus
 		}
 	}
 	
-	public static void addCommonMenus(ContextMenu existingMenu, final DataProvider data) {
+	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusDataProvider data) {
 		addCommonMenus(existingMenu, null, data, null);
 	}
-	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final DataProvider data) {
+	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final CommonMenusDataProvider data) {
 		addCommonMenus(existingMenu, builder, data, null);
 	}
 
-	public static void addCommonMenus(ContextMenu existingMenu, final NIdProvider nids) {
+	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusNIdProvider nids) {
 		addCommonMenus(existingMenu, null, null, nids);
 	}
-	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final NIdProvider nids) {
+	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final CommonMenusNIdProvider nids) {
 		addCommonMenus(existingMenu, builder, null, nids);
 	}
 
-	public static void addCommonMenus(ContextMenu existingMenu, final DataProvider dataProvider, final NIdProvider nids) {
+	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusDataProvider dataProvider, final CommonMenusNIdProvider nids) {
 		addCommonMenus(existingMenu, null, dataProvider, nids);
 	}
 	public static void addCommonMenus(
 			ContextMenu existingMenu, 
 			CommonMenuBuilderI passedBuilder, 
-			DataProvider dataProvider, 
-			NIdProvider nids)
+			CommonMenusDataProvider dataProvider, 
+			CommonMenusNIdProvider nids)
 	{
 		CommonMenuBuilder builder = null;
 		if (passedBuilder == null) {
@@ -291,7 +237,7 @@ public class CommonMenus
 		} else {
 			builder = (CommonMenuBuilder)passedBuilder;
 		}
-		DataProvider dataProviderLocal = (dataProvider == null ? new DataProvider() {} : dataProvider);
+		CommonMenusDataProvider dataProviderLocal = (dataProvider == null ? new CommonMenusDataProvider() {} : dataProvider);
 		
 		//Check the nid provider just before each display of the menu - and see if we have a nid or not.
 		//If we don't have a nid, set the observable flag to false, so all of the menus that care, go invisible.
@@ -387,7 +333,7 @@ public class CommonMenus
 		return menuItem;
 	}
 	
-	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final DataProvider dataProvider, final NIdProvider nidProvider)
+	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final CommonMenusDataProvider dataProvider, final CommonMenusNIdProvider CommonMenusNIdProvider)
 	{
 		List<MenuItem> menuItems = new ArrayList<>();
 		
@@ -405,14 +351,14 @@ public class CommonMenus
 		MenuItem enhancedConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW,
 				builder, 
-				() -> {return nidProvider.getObservableNidCount().get() == 1;}, // canHandle
-				nidProvider.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
+				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" 
-							+ nidProvider.getNIds().iterator().next() + "\"");
+							+ CommonMenusNIdProvider.getNIds().iterator().next() + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
-					cv.setConcept(nidProvider.getNIds().iterator().next());
+					cv.setConcept(CommonMenusNIdProvider.getNIds().iterator().next());
 					cv.showView(null);
 				},
 				() -> { // onNotHandlable
@@ -427,14 +373,14 @@ public class CommonMenus
 		MenuItem legacyConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW_LEGACY,
 				builder,
-				() -> {return nidProvider.getObservableNidCount().get() == 1;}, // canHandle
-				nidProvider.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
+				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> {
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" 
-							+ nidProvider.getNIds().iterator().next() + "\"");
+							+ CommonMenusNIdProvider.getNIds().iterator().next() + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "LegacyStyle");
-					cv.setConcept(nidProvider.getNIds().iterator().next());
+					cv.setConcept(CommonMenusNIdProvider.getNIds().iterator().next());
 
 					cv.showView(null);
 				},
@@ -451,10 +397,10 @@ public class CommonMenus
 		MenuItem findInTaxonomyViewMenuItem = createNewMenuItem(
 				CommonMenuItem.TAXONOMY_VIEW,
 				builder,
-				() -> {return nidProvider.getObservableNidCount().get() == 1;}, // canHandle
-				nidProvider.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
+				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				// onHandlable
-				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(nidProvider.getNIds().iterator().next(), null); },
+				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(CommonMenusNIdProvider.getNIds().iterator().next(), null); },
 				// onNotHandlable
 				() -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");});
 		if (findInTaxonomyViewMenuItem != null)
@@ -470,7 +416,7 @@ public class CommonMenus
 			
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getSendToMenuItems(builder, dataProvider, nidProvider);
+				items = getSendToMenuItems(builder, dataProvider, CommonMenusNIdProvider);
 
 				return items;
 			}
@@ -510,7 +456,7 @@ public class CommonMenus
 
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getCopyMenuItems(builder, dataProvider, nidProvider);
+				items = getCopyMenuItems(builder, dataProvider, CommonMenusNIdProvider);
 				
 				return items;
 			}
@@ -543,7 +489,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, NIdProvider nids) {
+	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, CommonMenusDataProvider dataProvider, CommonMenusNIdProvider nids) {
 		// The following code is for the "Send To" submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -598,7 +544,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, DataProvider dataProvider, NIdProvider nids) {
+	private static List<MenuItem> getCopyMenuItems(CommonMenuBuilder builder, CommonMenusDataProvider dataProvider, CommonMenusNIdProvider nids) {
 		// The following code is for the Copy submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();

@@ -18,12 +18,13 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.util.Arrays;
+import java.util.Collection;
 import javafx.concurrent.Task;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ProgressBar;
@@ -89,9 +90,14 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 					}
 					else
 					{
-						CommonMenus.addCommonMenus(cm, () -> 
+						CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
 						{
-							return Arrays.asList(new Integer[] {nid});
+							
+							@Override
+							public Collection<Integer> getNIds()
+							{
+								return Arrays.asList(new Integer[] {nid});
+							}
 						});
 						text = WBUtility.getDescription(c);
 					}

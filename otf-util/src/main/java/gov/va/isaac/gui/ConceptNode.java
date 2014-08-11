@@ -19,21 +19,20 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
@@ -61,7 +60,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.util.StringConverter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -189,7 +187,7 @@ public class ConceptNode implements ConceptLookupCallback
 		});
 		cm.getItems().add(copyText);
 
-		CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+		CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 			@Override
 			public Set<Integer> getNIds() {
 				Set<Integer> nids = new HashSet<>();

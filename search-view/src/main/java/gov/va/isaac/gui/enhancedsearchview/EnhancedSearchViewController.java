@@ -34,10 +34,11 @@ import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -55,7 +56,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 //import org.controlsfx.Dialogs;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -73,6 +73,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -89,17 +91,14 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.Callback;
-
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -686,7 +685,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						TableCell<CompositeSearchResult, T> c = (TableCell<CompositeSearchResult, T>) event.getSource();
 						
 						if (c != null && c.getIndex() < c.getTableView().getItems().size()) {
-							CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+							CommonMenusDataProvider dp = new CommonMenusDataProvider() {
 								@Override
 								public String[] getStrings() {
 									List<String> items = new ArrayList<>();
@@ -702,7 +701,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 									return itemArray;
 								}
 							};
-							CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+							CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 								@Override
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
