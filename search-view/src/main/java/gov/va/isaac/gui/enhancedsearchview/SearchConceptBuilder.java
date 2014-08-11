@@ -31,14 +31,18 @@ import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.RegExpFilter;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.SingleStringParameterFilter;
 import gov.va.isaac.util.WBUtility;
 
+import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -57,14 +61,35 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class SearchConceptBuilder {
+	public static class SearchSaveException extends Exception {
+		private static final long serialVersionUID = 1L;
+
+		public SearchSaveException(String message, Throwable cause,
+				boolean enableSuppression, boolean writableStackTrace) {
+			super(message, cause, enableSuppression, writableStackTrace);
+		}
+
+		public SearchSaveException(String message, Throwable cause) {
+			super(message, cause);
+		}
+
+		public SearchSaveException(String message) {
+			super(message);
+		}
+
+		public SearchSaveException(Throwable cause) {
+			super(cause);
+		}
+	}
+	
 	private static final Logger logger_ = LoggerFactory.getLogger(SearchConceptBuilder.class);
 
-	public static void doSave(
+	public static ConceptChronicleBI buildSearchConcept(
 			String saveConceptFSN,
 			String saveConceptPT,
-			SearchViewModel model)
+			SearchViewModel model) throws SearchSaveException
 	{
-		logger_.debug("doSave(): saving model for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
+		logger_.debug("buildSearchConcept(): saving model for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
 		//
 		// Construct new containing Search Concept
 		//
@@ -83,11 +108,7 @@ public class SearchConceptBuilder {
 		//		Add Search {Lucene|RegExp} Filter refex to containing Search Concept
 		//
 
-		// 
-		try
-		{
-			logger_.debug("doSave(\"" + saveConceptFSN + "\", \"" + saveConceptPT + "\"");
-			
+		try {
 			ConceptChronicleBI searchConcept = WBUtility.createNewConcept(WBUtility.getConceptVersion(Search.SEARCH_PERSISTABLE.getUuids()[0]), saveConceptFSN, saveConceptPT);
 			ConceptAttributeAB conceptAttributeBlueprintAmender = new ConceptAttributeAB(searchConcept.getConceptNid(), searchConcept.getVersion(WBUtility.getViewCoordinate()).getConceptAttributesActive().isDefined(), RefexDirective.INCLUDE); //bp.getConceptAttributeAB();
 
@@ -126,10 +147,6 @@ public class SearchConceptBuilder {
 
 				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
 				builder.construct(globalAttributesCAB);
-				//
-				//			ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(bp.getComponentUuid()));
-				//
-				//			ExtendedAppContext.getDataStore().commit(WBUtility.getConceptVersion(bp.getComponentUuid()));
 			}
 
 			// Handle Filters
@@ -147,7 +164,7 @@ public class SearchConceptBuilder {
 					} else if (singleStringParameterFilter instanceof RegExpFilter) {
 						filterConceptSpec = Search.SEARCH_REGEXP_FILTER;
 					} else {
-						throw new RuntimeException("Unsupported SingleStringParameterFilter type " + singleStringParameterFilter.getClass().getName());
+						throw new SearchSaveException("Unsupported SingleStringParameterFilter type " + singleStringParameterFilter.getClass().getName());
 					}
 
 					filterRDUD = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(filterConceptSpec.getNid());
@@ -175,13 +192,6 @@ public class SearchConceptBuilder {
 					filterRefexCAB.setData(filterRefexData);
 
 					conceptAttributeBlueprintAmender.addAnnotationBlueprint(filterRefexCAB);
-					
-//					builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
-//					builder.construct(filterRefexCAB);
-//
-//					ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(bp.getComponentUuid()));
-//
-//					ExtendedAppContext.getDataStore().commit(WBUtility.getConceptVersion(bp.getComponentUuid()));
 
 					// Handle Search Filter Attributes for Filter
 					RefexDynamicUsageDescription nestedFilterAttributesRDUD = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(Search.SEARCH_FILTER_ATTRIBUTES.getNid());
@@ -214,17 +224,31 @@ public class SearchConceptBuilder {
 					builder.construct(filterRefexCAB);
 							
 				} else {
-					throw new RuntimeException("Unsupported Filter type " + currentFilter.getClass().getName());
+					throw new SearchSaveException("Unsupported Filter type " + currentFilter.getClass().getName());
 				}
 			}
 			
-			ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(searchConcept.getPrimordialUuid()));
-
-			ExtendedAppContext.getDataStore().commit(WBUtility.getConceptVersion(searchConcept.getPrimordialUuid()));
+			return searchConcept;
+		} catch (IOException | InvalidCAB | ContradictionException | PropertyVetoException e) {
+			throw new SearchSaveException(e.getLocalizedMessage(), e);
 		}
-		catch (Exception e)
-		{
-			logger_.error("Error saving refex", e);
+	}
+	
+	public static void buildAndSaveSearchConcept(
+			String saveConceptFSN,
+			String saveConceptPT,
+			SearchViewModel model) throws SearchSaveException
+	{
+		logger_.debug("buildAndSaveSearchConcept(): saving concept for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
+
+		try {
+			ConceptChronicleBI searchConcept = buildSearchConcept(saveConceptFSN, saveConceptPT, model);
+			
+			ExtendedAppContext.getDataStore().addUncommitted(searchConcept);
+			ExtendedAppContext.getDataStore().commit(searchConcept);
+
+		} catch (IOException e) {
+			throw new SearchSaveException(e.getLocalizedMessage(), e);
 		}
 	}
 }

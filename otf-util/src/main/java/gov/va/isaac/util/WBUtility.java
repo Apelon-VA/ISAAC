@@ -209,7 +209,28 @@ public class WBUtility {
 		return (fsn != null ? fsn : (preferred != null ? preferred
 				: (bestFound != null ? bestFound : concept.toUserString())));
 	}
+	public static String getFullySpecifiedName(ConceptChronicleBI concept) {
+		try {
+			if (concept.getDescriptions() != null) {
+				for (DescriptionChronicleBI desc : concept.getDescriptions()) {
+					int versionCount = desc.getVersions().size();
+					DescriptionVersionBI<?> descVer = desc.getVersions()
+							.toArray(new DescriptionVersionBI[versionCount])[versionCount - 1];
 
+					if (descVer.getTypeNid() == getFSNTypeNid()) {
+						if (descVer.getStatus() == Status.ACTIVE) {
+								return descVer.getText();
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			// noop
+		}
+		
+		return null;
+	}
+	
 	private static int getFSNTypeNid() {
 		if (fsnTypeNid == null) {
 			try {
@@ -640,12 +661,21 @@ public class WBUtility {
 
         ConceptChronicleBI newCon = getBuilder().construct(newConCB);
 
+        return newCon;
+    }
+    
+    public static ConceptChronicleBI createAndCommitNewConcept(ConceptChronicleBI parent, String fsn,
+            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+
+        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+
         addUncommitted(newCon);
         commit();
 
         return newCon;
     }
-
+    
     public static ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm) throws ValidationException, IOException, InvalidCAB, ContradictionException {
         LanguageCode lc = LanguageCode.EN_US;
         UUID isA = Snomed.IS_A.getUuids()[0];

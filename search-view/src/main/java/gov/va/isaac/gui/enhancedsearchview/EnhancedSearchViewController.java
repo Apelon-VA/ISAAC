@@ -19,10 +19,10 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.gui.enhancedsearchview.SearchConceptBuilder.SearchSaveException;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.LuceneFilter;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.RegExpFilter;
@@ -42,15 +42,18 @@ import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintStream;
 import java.io.Writer;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,8 +62,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 
+
+
+
+//import org.controlsfx.Dialogs;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -72,6 +78,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -92,7 +99,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Callback;
 
@@ -106,9 +116,6 @@ import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicIntegerBI;
@@ -150,7 +157,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private CustomTextField maxResultsCustomTextField;
 	
 	@FXML private Button saveSearchButton;
-	@FXML private ComboBox<SimpleDisplayConcept> savedSearchesComboBox;
+	@FXML private ComboBox<SearchDisplayConcept> savedSearchesComboBox;
 	@FXML private Button searchButton;
 	
     // TODO: temporarily used along with currentViewCoordinate ViewCoordinate as model for single Lucene Search
@@ -165,7 +172,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
     @FXML private ProgressIndicator searchProgress;
     @FXML private Label totalResultsSelectedLabel;
     @FXML private Button resetDefaultsButton;
-    
+
+
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
     private SearchHandle ssh = null;
     
@@ -231,9 +239,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 		
 		saveSearchButton.setOnAction((action) -> {
-			saveSearch(); 
-			});
-		
+			// TODO: Create BooleanProperty and bind to saveSearchButton to disable
+			Object buttonCellObject = savedSearchesComboBox.valueProperty().getValue();
+			if (buttonCellObject != null && (buttonCellObject instanceof String)) {
+				saveSearch(); 
+			}
+		});
+
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
                  ssh.cancel();
@@ -266,60 +278,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 		});
 	}
-	
-	private static void displayDynamicRefex(RefexDynamicVersionBI<?> refex) {
-		displayDynamicRefex(refex, 0);
-	}
-	private static void displayDynamicRefex(RefexDynamicVersionBI<?> refex, int depth) {
-		String indent = "";
-		
-		for (int i = 0; i < depth; ++i) {
-			indent += "\t";
-		}
-		
-		RefexDynamicUsageDescription dud = null;
-		try {
-			dud = refex.getRefexDynamicUsageDescription();
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Failed executing getRefexDynamicUsageDescription().  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-			e.printStackTrace();
-			
-			return;
-		}
-		RefexDynamicColumnInfo[] colInfo = dud.getColumnInfo();
-		RefexDynamicDataBI[] data = refex.getData();
-		LOG.debug(indent + "dynamic refex nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
-		LOG.debug(indent + "dynamic refex name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
-		for (int colIndex = 0; colIndex < colInfo.length; ++colIndex) {
-			RefexDynamicColumnInfo currentCol = colInfo[colIndex];
-			String name = currentCol.getColumnName();
-			RefexDynamicDataType type = currentCol.getColumnDataType();
-			UUID colUuid = currentCol.getColumnDescriptionConcept();
-			RefexDynamicDataBI colData = data[colIndex];
 
-			// TODO: change to use LOG
-			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + colData.getDataObject());
-		}
-		
-		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;
-		try {
-			embeddedRefexes = refex.getRefexesDynamicActive(WBUtility.getViewCoordinate());
-
-			for (RefexDynamicVersionBI<?> embeddedRefex : embeddedRefexes) {
-				displayDynamicRefex(embeddedRefex, depth + 1);
-			}
-		} catch (IOException e) {
-			LOG.error("Failed executing getRefexesDynamicActive(WBUtility.getViewCoordinate()).  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-			e.printStackTrace();
-		}
-	}
-	
 	private void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Map<Integer, Collection<Filter>> filterOrderMap, Filter newFilter) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException {
 		LOG.debug("Loading data into model from embedded Search Filter Attributes refex");
 
 		// Now read SEARCH_FILTER_ATTRIBUTES refex column
 		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
-			displayDynamicRefex(embeddedRefex);
+			DynamicRefexHelper.displayDynamicRefex(embeddedRefex);
 			
 			RefexDynamicUsageDescription embeddedRefexDUD = null;
 			try {
@@ -344,8 +309,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 	}
 	
-	private void loadSavedSearch(SimpleDisplayConcept displayConcept) {
-		LOG.info("loadSavedSearch(\"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ")");
+	private void loadSavedSearch(SearchDisplayConcept displayConcept) {
+		LOG.info("loadSavedSearch(" + displayConcept + ")");
 
 		SearchViewModel model = null;
 
@@ -365,7 +330,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
 
 				for (RefexDynamicVersionBI<?> refex : matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
-					displayDynamicRefex(refex);
+					DynamicRefexHelper.displayDynamicRefex(refex);
 					
 					RefexDynamicUsageDescription dud = null;
 					try {
@@ -434,21 +399,26 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				LOG.debug("loadSavedSearch() loaded search view model for \"" + matchingConcept + "\": " + model);
 				
 				if (model.getViewCoordinate() == null) {
-					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  View Coordinate is null.");
+					LOG.error("Failed loading saved search " + displayConcept + ".  View Coordinate is null.");
+					
+					String title = "Failed loading saved search";
+					String msg = "Cannot load existing saved search \"" + displayConcept + "\"";
+					String details = "View coordinate is null: " + model;
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 					
 					return;
 				} else if (model.getFilters().size() < 1) {
-					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  No filters found (must be at least 1).");
+					LOG.error("Failed loading saved search " + displayConcept + ".  No filters found (must be at least 1).");
 					
 					return;
 				} else if (model.getFilters().size() > 1) {
 					// TODO: remove this check when supporting multiple filters
-					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  Too many filters (must be exactly 1).");
+					LOG.error("Failed loading saved search " + displayConcept + ".  Too many filters (must be exactly 1).");
 					
 					return;
 				} else if (! (model.getFilters().get(0) instanceof LuceneFilter)) {
 					// TODO: remove this check when supporting non-Lucene filters
-					LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ").  Filters of type " + model.getFilters().get(0).getClass().getName() + " not supported. Currently, only Lucene filters supported.");
+					LOG.error("Failed loading saved search " + displayConcept + ".  Filters of type " + model.getFilters().get(0).getClass().getName() + " not supported. Currently, only Lucene filters supported.");
 					
 					return;
 				} else {
@@ -462,7 +432,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					return;
 				}
 			} else {
-				LOG.error("Failed loading saved search \"" + displayConcept.getDescription() + "\" (nid=" + displayConcept.getNid() + ")");
+				LOG.error("Failed loading saved search " + displayConcept);
 				return;
 			}
 		} catch (Exception e) {
@@ -471,23 +441,41 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			return;
 		}
 	}
+
+//	private void displaySaveSearchPopup() {
+//		// New stage to popup blocking dialog
+//		Stage saveSearchPopupStage = new Stage();
+//		saveSearchPopupStage.initModality(Modality.WINDOW_MODAL);
+//		saveSearchPopupStage.initOwner(getRoot().getScene().getWindow());
+//		
+//		HBox descriptionEntryDialogVbox = new HBox();
+//		descriptionEntryDialogVbox.getChildren().add(new Label("Description for search \"" + nameToSave + "\""));
+//		descriptionEntryDialogVbox.getChildren().add(saveSearchDescriptionTextField);
+//		Button saveButton = new Button("Save");
+//		saveButton.setOnAction((action) -> {
+//			saveSearch();
+//		});
+//		descriptionEntryDialogVbox.getChildren().add(saveButton);
+//		saveSearchPopupStage.setScene(new Scene(new Label("banana")));
+//		saveSearchPopupStage.show();
+//	}
 	
 	private void saveSearch() {
 		LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
 
 		Object valueAsObject = savedSearchesComboBox.valueProperty().getValue();
-
+		
 		if (valueAsObject != null) {
-			SimpleDisplayConcept existingSavedSearch = null;
+			SearchDisplayConcept existingSavedSearch = null;
 			String specifiedDescription = null;
 			
-			if (valueAsObject instanceof SimpleDisplayConcept) {
-				existingSavedSearch = (SimpleDisplayConcept)valueAsObject;
-				specifiedDescription = existingSavedSearch.getDescription();
-			} else if (valueAsObject instanceof String) {
+			if (valueAsObject instanceof SearchDisplayConcept) {
+				existingSavedSearch = (SearchDisplayConcept)valueAsObject;
+				specifiedDescription = existingSavedSearch.getFullySpecifiedName();
+			} else if (valueAsObject instanceof String && ((String)valueAsObject).length() > 0) {
 				specifiedDescription = (String)valueAsObject;
-				for (SimpleDisplayConcept saveSearchInComboBoxList : savedSearchesComboBox.getItems()) {
-					if (saveSearchInComboBoxList != null && valueAsObject.equals(saveSearchInComboBoxList.getDescription())) {
+				for (SearchDisplayConcept saveSearchInComboBoxList : savedSearchesComboBox.getItems()) {
+					if (saveSearchInComboBoxList != null && valueAsObject.equals(saveSearchInComboBoxList.getFullySpecifiedName())) {
 						existingSavedSearch = saveSearchInComboBoxList;
 						break;
 					}
@@ -497,14 +485,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				String msg = "Unsupported valueProperty value type in savedSearchesComboBox: " + valueAsObject.getClass().getName();
 				String details = "Must either select or specify search name in order to save search and valueProperty must be either of type String or SimpleDisplayConcept";
 				LOG.error(title + ". " + msg + details);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 				
 				return;
 			}
 			
-			String nameToSave = null;
 			if (existingSavedSearch != null) {
-				nameToSave = existingSavedSearch.getDescription();
+				final String nameToSave = existingSavedSearch.getFullySpecifiedName();
 
 				LOG.debug("saveSearch(): modifying existing saved search: " + existingSavedSearch + " (nid=" + existingSavedSearch.getNid() + ")");
 				
@@ -512,32 +499,99 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				String title = "Failed saving search";
 				String msg = "Cannot modify existing saved search \"" + nameToSave + "\"";
 				String details = "Modification or replacement of existing saves is not currently supported";
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 				
 				return;
 			} else {
-				nameToSave = specifiedDescription + " search by " + System.getProperty("user.name") + " at " + LocalDateTime.now().toString();
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss");
+				LocalDateTime dateTime = LocalDateTime.now();
+				String formattedDateTime = dateTime.format(formatter);
+				final String nameToSave = specifiedDescription + " by " + System.getProperty("user.name") + " on " + formattedDateTime;
+				final String specifiedDescriptionToSave = specifiedDescription;
 
-				LOG.debug("saveSearch(): creating new saved search: nickname=" + specifiedDescription + ", fullname=\"" + nameToSave + "\"");	
+			    // Save Search popup
+				Popup saveSearchPopup = new Popup();
+				final TextField saveSearchPopupFullySpecifiedNameTextField = new TextField();
+				final TextField saveSearchPopupPreferredTermDescriptionTextField = new TextField();
+				Button saveSearchPopupSaveButton = new Button("Save");
+				Button saveSearchPopupCancelButton = new Button("Cancel");
+				
+				saveSearchPopupFullySpecifiedNameTextField.setText(nameToSave);
+				saveSearchPopupFullySpecifiedNameTextField.setDisable(true);
+				
+				saveSearchPopupCancelButton.setOnAction(new EventHandler<ActionEvent>() {
+					@Override public void handle(ActionEvent event) {
+						saveSearchPopupFullySpecifiedNameTextField.clear();
+						saveSearchPopupPreferredTermDescriptionTextField.clear();
+						saveSearchPopup.hide();
+					}
+				});
+
+				saveSearchPopupSaveButton.setOnAction(new EventHandler<ActionEvent>() {
+					@Override public void handle(ActionEvent event) {						
+						if (saveSearchPopupPreferredTermDescriptionTextField.getText().length() > 0) {
+							saveSearch(nameToSave, saveSearchPopupPreferredTermDescriptionTextField.getText());
+						} else {
+							saveSearch(nameToSave, specifiedDescriptionToSave);
+						}
+						saveSearchPopupFullySpecifiedNameTextField.clear();
+						saveSearchPopupPreferredTermDescriptionTextField.clear();
+						saveSearchPopup.hide();
+					}
+				});
+				VBox vbox = new VBox();
+				vbox.getChildren().addAll(new Label("Search Name"), saveSearchPopupFullySpecifiedNameTextField);
+				HBox descriptionHBox = new HBox();
+				descriptionHBox.getChildren().addAll(new Label("Search Description"), saveSearchPopupPreferredTermDescriptionTextField);
+				vbox.getChildren().add(descriptionHBox);
+				HBox controlsHBox = new HBox();
+				controlsHBox.getChildren().addAll(saveSearchPopupSaveButton, saveSearchPopupCancelButton);
+				vbox.getChildren().add(controlsHBox);
+				
+				Pane popupPane = new Pane();
+				popupPane.getChildren().add(vbox);
+				
+				//saveSearchPopup.setX(300); 
+				//saveSearchPopup.setY(200);
+				saveSearchPopup.setOpacity(1.0);
+				saveSearchPopup.getScene().setFill(Color.BEIGE);
+				saveSearchPopup.getContent().add(popupPane);
+				
+				saveSearchPopup.show(AppContext.getMainApplicationWindow().getPrimaryStage());
 			}
 
-			SearchViewModel model = new SearchViewModel();
-
-			// TODO: this code should change when multiple and various filters are supported
-			LuceneFilter filter = new LuceneFilter();
-			filter.setSearchParameter(searchText.getText());
-			model.getFilters().add(filter);
-
-			model.setViewCoordinate(currentSearchViewCoordinate);
-
-			SearchConceptBuilder.doSave(nameToSave, nameToSave, model);
-
-			refreshSavedSearchComboBox();
 		} else {
 			String title = "Failed saving search";
 			String msg = "No search name or concept specified or selected";
 			String details = "Must either select or specify search name in order to save search";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, details);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+		}
+	}
+	
+	private void saveSearch(String fsn, String pt) {
+		SearchViewModel model = new SearchViewModel();
+
+		// TODO: this code should change when multiple and various filters are supported
+		LuceneFilter filter = new LuceneFilter();
+		filter.setSearchParameter(searchText.getText());
+		model.getFilters().add(filter);
+
+		model.setViewCoordinate(currentSearchViewCoordinate);
+
+		try {
+			SearchConceptBuilder.buildAndSaveSearchConcept(fsn, pt, model);
+
+			refreshSavedSearchComboBox();
+		} catch (SearchSaveException e) {
+			String title = "Failed saving search";
+			String msg = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"";
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			e.printStackTrace(ps);
+			String details = baos.toString();
+			
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 		}
 	}
 	
@@ -606,7 +660,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			String title = "Failed creating new concept workflow";
 			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion (nid=" + conceptVersion.getConceptNid() + ", uuid=" + conceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName();
 			LOG.error(title, e1);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
 			e1.printStackTrace();
 		}
 		
@@ -662,7 +716,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						LOG.error(title, ex);
 						AppContext.getCommonDialogs().showErrorDialog(title,
 								"There was an unexpected error running the search",
-								ex.toString());
+								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
 						searchResultsTable.getItems().clear();
 						refreshTotalResultsDisplayedLabel();
 					} finally {
@@ -880,7 +934,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								String title = "Failed getting FSN";
 								String msg = "Failed getting fully specified description";
 								LOG.error(title);
-								AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+								AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
 								e.printStackTrace();
 							}
 
@@ -911,7 +965,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				String title = "Failed getting preferred description";
 				String msg = "Failed getting preferred description";
 				LOG.error(title);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
 				e.printStackTrace();
 				return null;
 			}
@@ -927,7 +981,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				String title = "Failed getting FSN";
 				String msg = "Failed getting fully specified description";
 				LOG.error(title);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage());
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
 				e.printStackTrace();
 				return null;
 			}
@@ -1019,87 +1073,78 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// Force single selection
 		savedSearchesComboBox.getSelectionModel().selectFirst();
 		savedSearchesComboBox.setCellFactory((p) -> {
-			final ListCell<SimpleDisplayConcept> cell = new ListCell<SimpleDisplayConcept>() {
+			final ListCell<SearchDisplayConcept> cell = new ListCell<SearchDisplayConcept>() {
 				@Override
-				protected void updateItem(SimpleDisplayConcept c, boolean emptyRow) {
+				protected void updateItem(SearchDisplayConcept c, boolean emptyRow) {
 					super.updateItem(c, emptyRow);
 
 					if(c == null) {
 						setText(null);
 					}else {
-						setText(c.getDescription());
+						setText(c.getFullySpecifiedName());
+						Tooltip tooltip = new Tooltip(c.getPreferredTerm());
+						Tooltip.install(this, tooltip);
 					}
 				}
 			};
 
 			return cell;
 		});
-		savedSearchesComboBox.setButtonCell(new ListCell<SimpleDisplayConcept>() {
+		savedSearchesComboBox.setButtonCell(new ListCell<SearchDisplayConcept>() {
 			@Override
-			protected void updateItem(SimpleDisplayConcept c, boolean emptyRow) {
+			protected void updateItem(SearchDisplayConcept c, boolean emptyRow) {
 				super.updateItem(c, emptyRow); 
 				if (emptyRow) {
 					setText("");
 				} else {
-					setText(c.getDescription());
+					setText(c.getFullySpecifiedName());
+					Tooltip tooltip = new Tooltip(c.getPreferredTerm());
+					Tooltip.install(this, tooltip);
 				}
 			}
 		});
+
 		savedSearchesComboBox.valueProperty().addListener(new ChangeListener<Object>() {
 			@Override public void changed(ObservableValue<? extends Object> ov, Object t, Object t1) {
 
 				LOG.trace("savedSearchesComboBox ObservableValue: " + ov);
 				
-				if (t instanceof SimpleDisplayConcept) {
-					SimpleDisplayConcept tSimpleDisplayConcept = (SimpleDisplayConcept)t;
+				if (t instanceof SearchDisplayConcept) {
+					SearchDisplayConcept tSearchDisplayConcept = (SearchDisplayConcept)t;
 
-					LOG.trace("savedSearchesComboBox old value: " + tSimpleDisplayConcept != null ? (tSimpleDisplayConcept.getDescription() + " (nid=" + tSimpleDisplayConcept.getNid() + ")") : null);
+					LOG.trace("savedSearchesComboBox old value: " + tSearchDisplayConcept != null ? (tSearchDisplayConcept.getFullySpecifiedName() + " (nid=" + tSearchDisplayConcept.getNid() + ")") : null);
 				} else {
 					LOG.trace("savedSearchesComboBox old value: " + t);
 				}
-				if (t1 instanceof SimpleDisplayConcept) {
-					SimpleDisplayConcept t1SimpleDisplayConcept = (SimpleDisplayConcept)t1;
+				if (t1 instanceof SearchDisplayConcept) {
+					SearchDisplayConcept t1SearchDisplayConcept = (SearchDisplayConcept)t1;
 
-					LOG.debug("savedSearchesComboBox new value: " + t1SimpleDisplayConcept != null ? (t1SimpleDisplayConcept.getDescription() + " (nid=" + t1SimpleDisplayConcept.getNid() + ")") : null);
+					LOG.debug("savedSearchesComboBox new value: " + t1SearchDisplayConcept);
 				
-					loadSavedSearch(t1SimpleDisplayConcept);
+					loadSavedSearch(t1SearchDisplayConcept);
 				} else {
 					LOG.trace("savedSearchesComboBox new value: " + t1);
 				}
 			}    
 		});
-//		savedSearchesComboBox.setOnAction((event) -> {
-//			
-//			Object selectedItem = savedSearchesComboBox.getSelectionModel().getSelectedItem();
-//			
-//			if (selectedItem instanceof String) {
-//				System.out.println("savedSearchesComboBox event selected String \"" + selectedItem + "\"");
-//				
-//				SimpleDisplayConcept buttonCellContent = savedSearchesComboBox.getButtonCell().getItem();
-//				System.out.println("savedSearchesComboBox event button cell has \"" + buttonCellContent + "\" (nid=" + (buttonCellContent != null ? ((SimpleDisplayConcept)buttonCellContent).getNid() : null) + ")");
-//
-//			} else if (selectedItem instanceof SimpleDisplayConcept) {
-//				System.out.println("savedSearchesComboBox event selected SimpleDisplayConcept \"" + selectedItem + "\" (nid=" + (selectedItem != null ? ((SimpleDisplayConcept)selectedItem).getNid() : null) + ")");
-//
-//				loadSavedSearch();
-//			}
-//		});
-		
+
 		savedSearchesComboBox.setEditable(true);
 
 		refreshSavedSearchComboBox();
 	}
 	
 	private void refreshSavedSearchComboBox() {
-		Task<List<SimpleDisplayConcept>> loadSavedSearches = new Task<List<SimpleDisplayConcept>>() {
-			private ObservableList<SimpleDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
+		Task<List<SearchDisplayConcept>> loadSavedSearches = new Task<List<SearchDisplayConcept>>() {
+			private ObservableList<SearchDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
 
 			@Override
-			protected List<SimpleDisplayConcept> call() throws Exception {
+			protected List<SearchDisplayConcept> call() throws Exception {
 				List<ConceptVersionBI> savedSearches = WBUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
 				
 				for (ConceptVersionBI concept : savedSearches) {
-					searches.add(new SimpleDisplayConcept(concept));
+					String fsn = WBUtility.getFullySpecifiedName(concept);
+					String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
+					searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
 				}
 				
 				return searches;
@@ -1205,7 +1250,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
         	String title = "Unsupported Aggregation Type";
         	String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
         	LOG.error(title);
-        	AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()));
+        	AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
 
         	break;
         }
