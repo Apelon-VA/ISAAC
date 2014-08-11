@@ -25,23 +25,35 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 import javafx.application.Platform;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.FloatBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
@@ -55,17 +67,22 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javax.inject.Named;
 import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sun.javafx.tk.Toolkit;
-
 
 /**
  * 
@@ -79,98 +96,275 @@ import com.sun.javafx.tk.Toolkit;
 @PerLookup
 public class DynamicRefexView implements RefexViewI
 {
-	private VBox rootNode_;
-	private UUID componentUUID_;
-	private int componentNid_;
+	private VBox rootNode_ = null;
 	private TreeTableView<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ttv_;
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
-	private Button removeButton_, addButton_, commitButton_, cancelButton_;
-	private BooleanBinding removeButtonEnabled_;
-	private ReadOnlyBooleanProperty showStampColumns_;
-	TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
+	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
+	private ToggleButton stampButton_;
+	private UpdateableBooleanBinding rowSelected_;
+	private UpdateableBooleanBinding showStampColumns_;
+	private TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
+	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
+	
+	private Text placeholderText = new Text("No Dynamic Refexes were found associated with the component");
+	private Button backgroundSearchCancelButton_;
+	private ProgressBar progressBar_;
+	private RefexAnnotationSearcher processor_;
+	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
-	private DynamicRefexView() throws IOException
+	private InputType setFromType_ = null;
+	private Integer newComponentHint = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
+	private DialogResponse dr_ = null;
+	private final Object dialogThreadBlock_ = new Object();
+	
+	private DynamicRefexView() 
 	{
-		// created by HK2
-		ttv_ = new TreeTableView<>();
-		ttv_.setTableMenuButtonVisible(true);
-
-		treeRoot_ = new TreeItem<>();
-		treeRoot_.setExpanded(true);
-		ttv_.setShowRoot(false);
-		ttv_.setRoot(treeRoot_);
-		
-		rootNode_ = new VBox();
-		rootNode_.setFillWidth(true);
-		rootNode_.getChildren().add(ttv_);
-		VBox.setVgrow(ttv_, Priority.ALWAYS);
-		
-		ToolBar t = new ToolBar();
-		
-		removeButtonEnabled_ = new BooleanBinding()
+		//Created by HK2 - no op - delay till getView called
+	}
+	
+	private void initialInit()
+	{
+		if (rootNode_ == null)
 		{
+			ttv_ = new TreeTableView<>();
+			ttv_.setTableMenuButtonVisible(true);
+	
+			treeRoot_ = new TreeItem<>();
+			treeRoot_.setExpanded(true);
+			ttv_.setShowRoot(false);
+			ttv_.setRoot(treeRoot_);
+			progressBar_ = new ProgressBar(-1);
+			progressBar_.setPrefWidth(200);
+			progressBar_.setPadding(new Insets(15, 15, 15, 15));
+			ttv_.setPlaceholder(progressBar_);
+			
+			rootNode_ = new VBox();
+			rootNode_.setFillWidth(true);
+			rootNode_.getChildren().add(ttv_);
+			VBox.setVgrow(ttv_, Priority.ALWAYS);
+			
+			ToolBar t = new ToolBar();
+			
+			rowSelected_ = new UpdateableBooleanBinding()
 			{
-				bind(ttv_.getSelectionModel().getSelectedCells());
-			}
-			@Override
-			protected boolean computeValue()
-			{
-				return ttv_.getSelectionModel().getSelectedCells().size() > 0;
-			}
-		};
-		
-		removeButton_ = new Button(null, Images.MINUS.createImageView());
-		removeButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
-		removeButton_.disableProperty().bind(removeButtonEnabled_.not());
-		removeButton_.setOnAction((action) ->
-		{
-			try
-			{
-				YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
-				DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
-				if (DialogResponse.YES == dr)
 				{
-					//TODO implement refex retire
-					System.out.println("Do retire!");
+					addBinding(ttv_.getSelectionModel().getSelectedCells());
 				}
-			}
-			catch (Exception e)
+				@Override
+				protected boolean computeValue()
+				{
+					return ttv_.getSelectionModel().getSelectedCells().size() > 0;
+				}
+			};
+			
+			removeButton_ = new Button(null, Images.MINUS.createImageView());
+			removeButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
+			removeButton_.disableProperty().bind(rowSelected_.not());
+			removeButton_.setOnAction((action) ->
 			{
-				logger_.error("Unexpected error retiring refex", e);
-				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the refex", e.getMessage(), rootNode_.getScene().getWindow());
-			}
-		});
-		
-		t.getItems().add(removeButton_);
-		
-		addButton_ = new Button(null, Images.PLUS.createImageView());
-		addButton_.setTooltip(new Tooltip("Add a new Refex Extension"));
-		addButton_.setOnAction((action) ->
-		{
-			AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
-			arp.finishInit(componentNid_, this);
-			arp.showView(rootNode_.getScene().getWindow());
-		});
-		
-		addButton_.setDisable(true);
-		t.getItems().add(addButton_);
-		
-		//fill to right
-		Region r = new Region();
-		HBox.setHgrow(r, Priority.ALWAYS);
-		t.getItems().add(r);
-		
-		//TODO implement tossUncommitted
-		cancelButton_ = new Button("Cancel");
-		cancelButton_.setDisable(true);
-		t.getItems().add(cancelButton_);
-		
-		commitButton_ = new Button("Commit");
-		commitButton_.setDisable(true);
-		t.getItems().add(commitButton_);
-		
-		rootNode_.getChildren().add(t);
+				try
+				{
+					YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
+					DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
+					if (DialogResponse.YES == dr)
+					{
+						ObservableList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> selected = ttv_.getSelectionModel().getSelectedItems();
+						if (selected != null && selected.size() > 0)
+						{
+							for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> refexTreeItem : selected)
+							{
+								//TODO - have a bug here - should only be able to remove if it is currently active.
+								//but how to know if it is currently active?  We have both...
+								RefexDynamicVersionBI<?> refex = refexTreeItem.getValue();
+								if (!refex.isActive())
+								{
+									continue;
+								}
+								RefexDynamicCAB rcab =  refex.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+								rcab.setStatus(Status.INACTIVE);
+								WBUtility.getBuilder().construct(rcab);
+								
+								//TODO this isn't right for a nested refex
+								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getAssemblageNid());
+								ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
+								if (!assemblage.isAnnotationStyleRefex())
+								{
+									ExtendedAppContext.getDataStore().addUncommitted(assemblage);
+								}
+							}
+							ExtendedAppContext.getDataStore().waitTillWritesFinished();
+							refresh();
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					logger_.error("Unexpected error retiring refex", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the refex", e.getMessage(), rootNode_.getScene().getWindow());
+				}
+			});
+			
+			t.getItems().add(removeButton_);
+			
+			addButton_ = new Button(null, Images.PLUS.createImageView());
+			addButton_.setTooltip(new Tooltip("Add a new Refex Extension"));
+			addButton_.setOnAction((action) ->
+			{
+				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
+				arp.finishInit(setFromType_, this);
+				arp.showView(rootNode_.getScene().getWindow());
+			});
+			
+			addButton_.setDisable(true);
+			t.getItems().add(addButton_);
+			
+			//TODO similar bug on to the retire but here - should only be able to edit the current one.  but which one is current?
+			editButton_ = new Button(null, Images.EDIT.createImageView());
+			editButton_.setTooltip(new Tooltip("Edit a Refex"));
+			editButton_.disableProperty().bind(rowSelected_.not());
+			editButton_.setOnAction((action) ->
+			{
+				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
+				arp.finishInit(ttv_.getSelectionModel().getSelectedItem().getValue(), this);
+				arp.showView(rootNode_.getScene().getWindow());
+			});
+			t.getItems().add(editButton_);
+			
+			//fill to right
+			Region r = new Region();
+			HBox.setHgrow(r, Priority.ALWAYS);
+			t.getItems().add(r);
+			
+			stampButton_ = new ToggleButton("");
+			stampButton_.setGraphic(Images.STAMP.createImageView());
+			stampButton_.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+			stampButton_.setVisible(false);
+			t.getItems().add(stampButton_);
+			
+			showStampColumns_ = new UpdateableBooleanBinding()
+			{
+				{
+					setComputeOnInvalidate(true);
+				}
+				@Override
+				protected boolean computeValue()
+				{
+					boolean visible = false;
+					if (listeningTo.size() > 0)
+					{
+						visible = ((ReadOnlyBooleanProperty)listeningTo.iterator().next()).get();
+					}
+					if (stampColumn_ != null)
+					{
+						stampColumn_.setVisible(visible);
+						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nested : stampColumn_.getColumns())
+						{
+							nested.setVisible(visible);
+						}
+					}
+					return visible;
+				}
+			};
+			
+			cancelButton_ = new Button("Cancel");
+			cancelButton_.disableProperty().bind(hasUncommitted_.not());
+			t.getItems().add(cancelButton_);
+			cancelButton_.setOnAction((action) ->
+			{
+				try
+				{
+					ExtendedAppContext.getDataStore().cancel();
+					
+					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
+					for (Integer i : componentNids)
+					{
+						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().cancel(cc);
+						}
+					}
+					
+					HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
+					for (Integer i : assemblageNids)
+					{
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().cancel(cc);
+						}
+					}
+					ExtendedAppContext.getDataStore().waitTillWritesFinished();
+				}
+				catch (Exception e)
+				{
+					logger_.error("Error cancelling", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected during cancel", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+				refresh();
+			});
+			
+			commitButton_ = new Button("Commit");
+			commitButton_.disableProperty().bind(hasUncommitted_.not());
+			t.getItems().add(commitButton_);
+			
+			commitButton_.setOnAction((action) ->
+			{
+				try
+				{
+					//TODO [OTF-API] BUG! So - when you currently commit a change to a member-list style refset - and everything appears to work correctly 
+					//in this session - if you stop and start the OTF backend - the member refset will vanish.  Something nasty going on here.
+					//Definitely an OTF bug, possible in the dynamic refex code, possibly not.  Unsure at this point.
+					
+					//TODO [OTF-API] BUG! Edits and deletes of annotation style refexes currently doesn't work at all.  No idea why.
+					//Works fine for member-style refexes (until they vanish on DB restart)
+					
+					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
+					for (Integer i : componentNids)
+					{
+						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().commit(cc);
+						}
+					}
+					
+					HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
+					for (Integer i : assemblageNids)
+					{
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
+						{
+							ExtendedAppContext.getDataStore().commit(cc);
+						}
+					}
+					ExtendedAppContext.getDataStore().waitTillWritesFinished();
+				}
+				catch (Exception e)
+				{
+					logger_.error("Error committing", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected during commit", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+				refresh();
+			});
+			
+			backgroundSearchCancelButton_ = new Button("Cancel Scan");
+			backgroundSearchCancelButton_.setOnAction((action) ->
+			{
+				RefexAnnotationSearcher processor = processor_;
+				if (processor != null)
+				{
+					processor.requestStop();
+				}
+			});
+			
+			rootNode_.getChildren().add(t);
+		}
 	}
 
 	/**
@@ -179,6 +373,7 @@ public class DynamicRefexView implements RefexViewI
 	@Override
 	public Region getView()
 	{
+		initialInit();
 		return rootNode_;
 	}
 
@@ -191,91 +386,240 @@ public class DynamicRefexView implements RefexViewI
 		// We don't currently have any custom menus with this view
 		return new ArrayList<MenuItemI>();
 	}
-
+	
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
 	 */
 	@Override
-	public void setComponent(UUID componentUUID, ReadOnlyBooleanProperty showStampColumns)
+	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns)
 	{
-		componentUUID_ = componentUUID;
-		treeRoot_.getChildren().clear();
-		ttv_.getColumns().clear();
-		ttv_.setPlaceholder(new ProgressBar());
-		if (showStampColumns != showStampColumns_)
+		initialInit();
+		setFromType_ = new InputType(componentNid, false);
+		handleStamp(showStampColumns);
+		newComponentHint = null;
+		refresh();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setAssemblage(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
+	 */
+	@Override
+	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns)
+	{
+		initialInit();
+		setFromType_ = new InputType(assemblageConceptNid, true);
+		handleStamp(showStampColumns);
+		newComponentHint = null;
+		refresh();
+	}
+	
+	private void handleStamp(ReadOnlyBooleanProperty showStampColumns)
+	{
+		showStampColumns_.clearBindings();
+		if (showStampColumns == null)
 		{
-			showStampColumns_ = showStampColumns;
-			showStampColumns_.addListener((listener, oldV, newV) ->
-			{
-				setStampColVisibility();
-			});
+			//Use our own button
+			stampButton_.setVisible(true);
+			showStampColumns_.addBinding(stampButton_.selectedProperty());
 		}
-		init();
+		else
+		{
+			stampButton_.setVisible(false);
+			showStampColumns_.addBinding(showStampColumns);
+		}
+	}
+	
+	protected void setNewComponentHint(int componentNid)
+	{
+		newComponentHint = componentNid;
 	}
 	
 	protected void refresh()
 	{
-		setComponent(componentUUID_, showStampColumns_);
+		//This is stilly - throwing out the entire table...
+		//But JavaFX seems to be broken, and the code that should work - simply removing
+		//all children from the rootNode - doesn't work.
+		//So build a completely new table upon every refresh, for now.
+		rootNode_.getChildren().remove(ttv_);
+		ttv_ = new TreeTableView<>();
+		ttv_.setTableMenuButtonVisible(true);
+		VBox.setVgrow(ttv_, Priority.ALWAYS);
+		rootNode_.getChildren().add(0, ttv_);
+		
+		treeRoot_ = new TreeItem<>();
+		treeRoot_.setExpanded(true);
+		ttv_.setShowRoot(false);
+		ttv_.setRoot(treeRoot_);
+
+		ttv_.setPlaceholder(progressBar_);
+		progressBar_.setProgress(-1);
+		rowSelected_.clearBindings();
+		rowSelected_.addBinding(ttv_.getSelectionModel().getSelectedCells());
+		
+		loadData();
 	}
 
-	private void init()
+	private void loadData()
 	{
 		Utility.execute(() -> {
 			try
 			{
-				ComponentChronicleBI<?> component = ExtendedAppContext.getDataStore().getComponent(componentUUID_);
-				componentNid_ = component.getNid();
-				final ArrayList<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String>> treeColumns = new ArrayList<>();
+				final ArrayList<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?>> treeColumns = new ArrayList<>();
+				
 				
 				//Create columns for basic info
-				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> ttCol = new TreeTableColumn<>();
-				ttCol.setText("Assemblage");
-				ttCol.setSortable(true);
-				ttCol.setResizable(true);
-				ttCol.setCellValueFactory((callback) ->
+				if (setFromType_.getComponentNid() == null)
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getAssemblageNid()));
-				});
+					//If the component is null, the assemblage is always the same - don't show.
+					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>  ttCol = new TreeTableColumn<>();
+					ttCol.setText("Component");
+					ttCol.setSortable(true);
+					ttCol.setResizable(true);
+					ttCol.setCellFactory((colInfo) -> 
+					{
+						return new ConceptDataCell();
+						
+					});
+					ttCol.setCellValueFactory((callback) ->
+					{
+						return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getReferencedComponentNid());
+					});
+					treeColumns.add(ttCol);
+				}
+				else
+				{
+					//if the assemblage is null, the component is always the same - don't show.
+					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>  ttCol = new TreeTableColumn<>();
+					ttCol.setText("Assemblage");
+					ttCol.setSortable(true);
+					ttCol.setResizable(true);
+					ttCol.setCellFactory((colInfo) -> 
+					{
+						return new ConceptDataCell();
+						
+					});
+					ttCol.setCellValueFactory((callback) ->
+					{
+						return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getAssemblageNid());
+					});
+					treeColumns.add(ttCol);
+				}
 				
-				treeColumns.add(ttCol);
+				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> ttStringCol = new TreeTableColumn<>();
+				ttStringCol.setText("Attached Data");
+				ttStringCol.setSortable(true);
+				ttStringCol.setResizable(true);
+				treeColumns.add(ttStringCol);
 				
+				/**
+				 * The key of the first hashtable is the column description concept, while the key of the second hashtable is the assemblage concept
+				 * Since the same column could be used in multiple assemblages - need to keep those separate, even though the rest of the column details 
+				 * will be the same.  The List in the third level is for cases where a single assemblage concept re-uses the same column description 
+				 * details multiple times.
+				*/
+				Hashtable<UUID, Hashtable<UUID, List<RefexDynamicColumnInfo>>> uniqueColumns;
 				
-				ttCol = new TreeTableColumn<>();
-				ttCol.setText("Attached Data");
-				ttCol.setSortable(true);
-				ttCol.setResizable(true);
-				treeColumns.add(ttCol);
+				if (setFromType_.getComponentNid() != null)
+				{
+					if (setFromType_.getComponentBI().isUncommitted())
+					{
+						hasUncommitted_.set(true);
+					}
+					else
+					{
+						hasUncommitted_.set(false);
+					}
+					uniqueColumns = getUniqueColumns(setFromType_.getComponentBI());
+				}
+				else
+				{
+					if (ExtendedAppContext.getDataStore().getConcept(setFromType_.getAssemblyNid()).isUncommitted())
+					{
+						hasUncommitted_.set(true);
+					}
+					else
+					{
+						hasUncommitted_.set(false);
+					}
+					
+					//This case is easy - as there is only one assemblage.  The 3 level mapping stuff is way overkill for this case... but don't
+					//want to rework it at this point... might come back and cleanup this mess later.
+					uniqueColumns = new Hashtable<>();
+					
+					RefexDynamicUsageDescription rdud = RefexDynamicUsageDescription.read(setFromType_.getAssemblyNid());
+					for (RefexDynamicColumnInfo col : rdud.getColumnInfo())
+					{
+						Hashtable<UUID, List<RefexDynamicColumnInfo>> nested = uniqueColumns.get(col.getColumnDescriptionConcept());
+						if (nested == null)
+						{
+							nested = new Hashtable<>();
+							uniqueColumns.put(col.getColumnDescriptionConcept(), nested);
+						}
+						
+						UUID assemblyUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(rdud.getRefexUsageDescriptorNid());
+						List<RefexDynamicColumnInfo> doubleNested = nested.get(assemblyUUID);
+						if (doubleNested == null)
+						{
+							doubleNested = new ArrayList<>();
+							nested.put(assemblyUUID, doubleNested);
+						}
+						doubleNested.add(col);
+					}
+				}
+				
+				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
+				
+				ArrayList<Hashtable<UUID, List<RefexDynamicColumnInfo>>> sortedUniqueColumns = new ArrayList<>();
+				sortedUniqueColumns.addAll(uniqueColumns.values());
+				Collections.sort(sortedUniqueColumns, new Comparator<Hashtable<UUID, List<RefexDynamicColumnInfo>>>()
+					{
+						@Override
+						public int compare(Hashtable<UUID, List<RefexDynamicColumnInfo>> o1, Hashtable<UUID, List<RefexDynamicColumnInfo>> o2)
+						{
+							return Integer.compare(o1.values().iterator().next().get(0).getColumnOrder(),o2.values().iterator().next().get(0).getColumnOrder()); 
+						}
+					});
 				
 				//Create columns for every different type of data column we see in use
-				for (Hashtable<UUID, RefexDynamicColumnInfo> col : getUniqueColumns(component).values())
+				for (Hashtable<UUID, List<RefexDynamicColumnInfo>> col : sortedUniqueColumns)
 				{
-					//TODO figure out how to put a tooltip on the header
-					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> nestedCol = 
-							new TreeTableColumn<>();
-					nestedCol.setText(col.values().iterator().next().getColumnName());
-					nestedCol.setSortable(true);
-					nestedCol.setResizable(true);
-					
-					nestedCol.setCellFactory((callback) -> 
+					int max = 0;
+					for (List<RefexDynamicColumnInfo> item : col.values())
 					{
-						return new DataCell(col.values());
-					});
+						if (item.size() > max)
+						{
+							max = item.size();
+						}
+					}
 					
-					nestedCol.setCellValueFactory((callback) ->
+					for (int i = 0; i < max; i++)
 					{
-						return new ReadOnlyObjectWrapper<>(callback.getValue().getValue());
-					}); 
-					
-					ttCol.getColumns().add(nestedCol);
+						TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> nestedCol = 
+								new TreeTableColumn<>();
+						Label l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
+						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
+						nestedCol.setGraphic(l);
+						nestedCol.setSortable(true);
+						nestedCol.setResizable(true);
+						
+						nestedCol.setCellFactory(new AttachedDataCellFactory(col, i));
+						
+						nestedCol.setCellValueFactory((callback) ->
+						{
+							return new ReadOnlyObjectWrapper<>(callback.getValue().getValue());
+						}); 
+						
+						ttStringCol.getColumns().add(nestedCol);
+					}
 				}
 				
 				//Create the STAMP columns
-				ttCol = new TreeTableColumn<>();
-				ttCol.setText("STAMP");
-				ttCol.setSortable(true);
-				ttCol.setResizable(true);
-				stampColumn_ = ttCol;
-				treeColumns.add(ttCol);
+				ttStringCol = new TreeTableColumn<>();
+				ttStringCol.setText("STAMP");
+				ttStringCol.setSortable(true);
+				ttStringCol.setResizable(true);
+				stampColumn_ = ttStringCol;
+				treeColumns.add(ttStringCol);
 				
 				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText("Status");
@@ -285,7 +629,7 @@ public class DynamicRefexView implements RefexViewI
 				{
 					return new ReadOnlyStringWrapper(callback.getValue().getValue().getStatus().toString());
 				});
-				ttCol.getColumns().add(nestedCol);
+				ttStringCol.getColumns().add(nestedCol);
 				
 
 				nestedCol = new TreeTableColumn<>();
@@ -304,46 +648,71 @@ public class DynamicRefexView implements RefexViewI
 						return new ReadOnlyStringWrapper(new Date(l).toString());
 					}
 				});
-				ttCol.getColumns().add(nestedCol);
+				ttStringCol.getColumns().add(nestedCol);
 				
-				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Author");
-				nestedCol.setSortable(true);
-				nestedCol.setResizable(true);
-				nestedCol.setCellValueFactory((callback) ->
+				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer> nestedIntCol = new TreeTableColumn<>();
+				nestedIntCol.setText("Author");
+				nestedIntCol.setSortable(true);
+				nestedIntCol.setResizable(true);
+				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getAuthorNid()));
+					return new ConceptDataCell();
+					
 				});
-				ttCol.getColumns().add(nestedCol);
+				nestedIntCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getAuthorNid());
+				});
+
+				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Module");
-				nestedCol.setSortable(true);
-				nestedCol.setResizable(true);
-				nestedCol.setVisible(false);
-				nestedCol.setCellValueFactory((callback) ->
+				nestedIntCol = new TreeTableColumn<>();
+				nestedIntCol.setText("Module");
+				nestedIntCol.setSortable(true);
+				nestedIntCol.setResizable(true);
+				nestedIntCol.setVisible(false);
+				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getModuleNid()));
+					return new ConceptDataCell();
+					
 				});
-				ttCol.getColumns().add(nestedCol);
+				nestedIntCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getModuleNid());
+				});
+				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Path");
-				nestedCol.setSortable(true);
-				nestedCol.setResizable(true);
-				nestedCol.setVisible(false);
-				nestedCol.setCellValueFactory((callback) ->
+				nestedIntCol = new TreeTableColumn<>();
+				nestedIntCol.setText("Path");
+				nestedIntCol.setSortable(true);
+				nestedIntCol.setResizable(true);
+				nestedIntCol.setVisible(false);
+				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ReadOnlyStringWrapper(WBUtility.getDescription(callback.getValue().getValue().getPathNid()));
+					return new ConceptDataCell();
+					
 				});
-				ttCol.getColumns().add(nestedCol);
+				nestedIntCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getPathNid());
+				});
+				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
 				{
-					for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> tc : treeColumns)
+					for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> tc : treeColumns)
 					{
 						ttv_.getColumns().add(tc);
 					}
+					
+					for (Entry<Label, String> tooltips : tooltipsToInstall.entrySet())
+					{
+						Tooltip t = new Tooltip(tooltips.getValue());
+						t.setMaxWidth(400);
+						t.setWrapText(true);
+						tooltips.getKey().setTooltip(t);
+					}
+					
 					//Horrible hack to set a reasonable default size on the columns.
 					//Min width to the width of the header column.
 					Font f = new Font("System Bold", 13.0);
@@ -352,7 +721,8 @@ public class DynamicRefexView implements RefexViewI
 						float nestedTotal = 0;
 						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nCol : col.getColumns())
 						{
-							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(nCol.getText(), f) + 10);
+							String text = (nCol.getGraphic() != null && nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() : nCol.getText());
+							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
 						}
 						
 						if (col.getColumns().size() > 0)
@@ -387,12 +757,20 @@ public class DynamicRefexView implements RefexViewI
 							col.setMinWidth(nestedTotal > 0 ? nestedTotal : Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10);
 						}
 					}
-					setStampColVisibility();
+					showStampColumns_.invalidate();
 				});
 
-				
+				ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData;
 				//Now add the data
-				final ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = getDataRows(component, null);
+				if (setFromType_.getComponentNid() != null)
+				{
+					rowData = getDataRows(setFromType_.getComponentBI(), null);
+				}
+				else
+				{
+					rowData = getDataRows(setFromType_.getAssemblyNid());
+				}
+
 				Platform.runLater(() ->
 				{
 					addButton_.setDisable(false);
@@ -400,8 +778,8 @@ public class DynamicRefexView implements RefexViewI
 					{
 						treeRoot_.getChildren().add(rd);
 					}
-					ttv_.setPlaceholder(new Text("No content in table"));
-					//JavaFX bug hacking...
+					checkForUncommittedRefexes(rowData);
+					ttv_.setPlaceholder(placeholderText);
 				});
 			}
 			catch (Exception e)
@@ -455,12 +833,12 @@ public class DynamicRefexView implements RefexViewI
 	/**
 	 * The key of the first hashtable is the column description concept, while the key of the second hashtable is the assemblage concept
 	 * Since the same column could be used in multiple assemblages - need to keep those separate, even though the rest of the column details 
-	 * will be the same.
+	 * will be the same.  The List in the third level is for cases where a single assemblage concept re-uses the same column description 
+	 * details multiple times.
 	 */
-	private Hashtable<UUID, Hashtable<UUID, RefexDynamicColumnInfo>> getUniqueColumns(ComponentChronicleBI<?> component) throws IOException, ContradictionException
+	private Hashtable<UUID, Hashtable<UUID, List<RefexDynamicColumnInfo>>> getUniqueColumns(ComponentChronicleBI<?> component) throws IOException, ContradictionException
 	{
-		//ComponentChronicleBI<?> component = ExtendedAppContext.getDataStore().getComponent(componentUUID);
-		Hashtable<UUID, Hashtable<UUID, RefexDynamicColumnInfo>> columns = new Hashtable<>();
+		Hashtable<UUID, Hashtable<UUID, List<RefexDynamicColumnInfo>>> columns = new Hashtable<>();
 
 		if (component instanceof ConceptChronicleBI)
 		{
@@ -474,22 +852,33 @@ public class DynamicRefexView implements RefexViewI
 
 		for (RefexDynamicChronicleBI<?> refex : component.getRefexesDynamic())
 		{
+			boolean assemblageWasNull = false;
 			for (RefexDynamicColumnInfo column : refex.getRefexDynamicUsageDescription().getColumnInfo())
 			{
-				Hashtable<UUID, RefexDynamicColumnInfo> inner = columns.get(column.getColumnDescriptionConcept());
+				Hashtable<UUID, List<RefexDynamicColumnInfo>> inner = columns.get(column.getColumnDescriptionConcept());
 				if (inner == null)
 				{
 					inner = new Hashtable<>();
 					columns.put(column.getColumnDescriptionConcept(), inner);
 				}
-				inner.put(column.getAssemblageConcept(), column);
+				List<RefexDynamicColumnInfo> innerValues = inner.get(column.getAssemblageConcept());
+				if (innerValues == null)
+				{
+					assemblageWasNull = true;
+					innerValues = new ArrayList<>();
+					inner.put(column.getAssemblageConcept(), innerValues);
+				}
+				if (assemblageWasNull)  //We only want to populate this on the first pass - the columns on an assemblage will never change from one pass to another.
+				{
+					innerValues.add(column);
+				}
 			}
 			
 			for (RefexDynamicChronicleBI<?> refexNested: refex.getRefexesDynamic())
 			{
 				//recurse
-				Hashtable<UUID, Hashtable<UUID, RefexDynamicColumnInfo>> nested = getUniqueColumns(refexNested);
-				for (Entry<UUID, Hashtable<UUID, RefexDynamicColumnInfo>> nestedItem : nested.entrySet())
+				Hashtable<UUID, Hashtable<UUID, List<RefexDynamicColumnInfo>>> nested = getUniqueColumns(refexNested);
+				for (Entry<UUID, Hashtable<UUID, List<RefexDynamicColumnInfo>>> nestedItem : nested.entrySet())
 				{
 					if (columns.get(nestedItem.getKey()) == null)
 					{
@@ -497,7 +886,18 @@ public class DynamicRefexView implements RefexViewI
 					}
 					else
 					{
-						columns.get(nestedItem.getKey()).putAll(nestedItem.getValue());
+						Hashtable<UUID, List<RefexDynamicColumnInfo>> mergeInto = columns.get(nestedItem.getKey());
+						for (Entry<UUID, List<RefexDynamicColumnInfo>> toMergeItem : nestedItem.getValue().entrySet())
+						{
+							if (mergeInto.get(toMergeItem.getKey()) == null)
+							{
+								mergeInto.put(toMergeItem.getKey(), toMergeItem.getValue());
+							}
+							else
+							{
+								//don't care - we already have this assemblage concept - the column values will be the same as what we already have.
+							}
+						}
 					}
 				}
 			}
@@ -505,13 +905,197 @@ public class DynamicRefexView implements RefexViewI
 		return columns;
 	}
 	
-	private void setStampColVisibility()
+	private void checkForUncommittedRefexes(List<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> items)
 	{
-		boolean visible = showStampColumns_.get();
-		stampColumn_.setVisible(visible);
-		for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nested : stampColumn_.getColumns())
+		if (hasUncommitted_.get())
 		{
-			nested.setVisible(visible);
+			return;
 		}
+		if (items == null)
+		{
+			return;
+		}
+		for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> item : items)
+		{
+			if (item.getValue() != null && item.getValue().isUncommitted())
+			{
+				hasUncommitted_.set(true);
+				return;
+			}
+			checkForUncommittedRefexes(item.getChildren());
+		}
+	}
+	
+	private HashSet<Integer> getAllAssemblageNids(List<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> items)
+	{
+		HashSet<Integer> results = new HashSet<Integer>();
+		if (items == null)
+		{
+			return results;
+		}
+		for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> item : items)
+		{
+			if (item.getValue() != null)
+			{
+				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue();
+				results.add(refex.getAssemblageNid());
+			}
+			results.addAll(getAllAssemblageNids(item.getChildren()));
+		}
+		return results;
+	}
+	
+	private HashSet<Integer> getAllComponentNids(List<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> items)
+	{
+		HashSet<Integer> results = new HashSet<Integer>();
+		if (items == null)
+		{
+			return results;
+		}
+		for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> item : items)
+		{
+			if (item.getValue() != null)
+			{
+				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue();
+				results.add(refex.getReferencedComponentNid());
+			}
+			results.addAll(getAllComponentNids(item.getChildren()));
+		}
+		return results;
+	}
+	
+
+	@SuppressWarnings("unchecked")
+	private ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> getDataRows(int assemblageNid) 
+			throws IOException, ContradictionException, InterruptedException
+	{
+		ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = new ArrayList<>();
+		Collection<RefexDynamicChronicleBI<?>> refexMembers;
+		boolean annotationStyle;
+		boolean noIndex = true;
+		
+		ConceptVersionBI assemblageConceptFull = WBUtility.getConceptVersion(assemblageNid);
+		annotationStyle = assemblageConceptFull.isAnnotationStyleRefex();
+		if (!annotationStyle)
+		{
+			refexMembers = (Collection<RefexDynamicChronicleBI<?>>)assemblageConceptFull.getRefsetDynamicMembers();
+		}
+		else
+		{
+			//TODO see if there is an index, use it here.
+			refexMembers = new ArrayList<>();
+			
+			//add in the newComponentHint
+			if (newComponentHint != null)
+			{
+				ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
+				if (c != null)
+				{
+					Collection<RefexDynamicChronicleBI<?>> dynamicAnnotations = (Collection<RefexDynamicChronicleBI<?>>)c.getRefexDynamicAnnotations();
+					
+					for (RefexDynamicChronicleBI<?> r : dynamicAnnotations)
+					{
+						if (r.getAssemblageNid() == assemblageNid)
+						{
+							refexMembers.add(r);
+						}
+					}
+				}
+			}
+		}
+		
+		dr_ = null;
+		
+		if (annotationStyle && noIndex)
+		{
+			Platform.runLater(() ->
+			{
+				synchronized (dialogThreadBlock_)
+				{
+					YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
+					dr_ = dialog.showYesNoDialog("Scan for Annotation Refex entries?", "This is an annotation style Refex."
+							+ "  Without a supporting index, displaying the refex entries will take a long time.  Scan for entries?");
+					if (dr_ == DialogResponse.NO)
+					{
+						placeholderText.setText("No index is available to fetch the entries");
+					}
+					else if (dr_ == DialogResponse.YES)
+					{
+						VBox temp = new VBox();
+						temp.setAlignment(Pos.CENTER);
+						temp.getChildren().add(progressBar_);
+						progressBar_.setProgress(-1);
+						temp.getChildren().add(backgroundSearchCancelButton_);
+						ttv_.setPlaceholder(temp);
+					}
+					dialogThreadBlock_.notifyAll();
+				}
+			});
+
+			while (dr_ == null)
+			{
+				//wait until they click yes, no, or close the dialog
+				//sync block will block us until they answer
+				synchronized (dialogThreadBlock_)
+				{
+					if (dr_ != null)
+					{
+						break;
+					}
+				}
+				if (dr_ == null)
+				{
+					//Means that our thread got here before the other thread started and acquired the
+					//sync lock.  sleep, try to acquire the lock again - at which point, we will block 
+					//until the dialog is closed.
+					Thread.sleep(50);
+				}
+			}
+			
+			if (dr_ == DialogResponse.YES)
+			{
+				processor_ = new RefexAnnotationSearcher((refex) -> 
+				{
+					if (refex.getAssemblageNid() == assemblageConceptFull.getConceptNid())
+					{
+						return true;
+					}
+					return false;
+				}, progressBar_);
+
+				try
+				{
+					ExtendedAppContext.getDataStore().iterateConceptDataInParallel(processor_);
+				}
+				catch (Exception e)
+				{
+					logger_.error("Unexpected error during background processing", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error scanning the database", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+				
+				refexMembers.clear();  //remove the one from the hint, so we dont' get a dupe
+				refexMembers.addAll(processor_.getResults());
+			}
+		}
+
+		for (RefexDynamicChronicleBI<?> refexChronicle: refexMembers)
+		{
+			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
+			{
+				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
+				ti.setValue(refexVersion);
+				//recurse
+				//TODO - note - the full scanner does a recursive search - and it may return a refex that isn't attached to a concept, 
+				//but rather, to something else, including another refex.  Need to figure out how we handle/display those.
+				getDataRows(refexVersion, ti);
+				rowData.add(ti);
+			}
+		}
+		if (rowData.size() == 0)
+		{
+			placeholderText.setText("No Dynamic Refexes were found using this Assemblage");
+		}
+		return rowData;
 	}
 }

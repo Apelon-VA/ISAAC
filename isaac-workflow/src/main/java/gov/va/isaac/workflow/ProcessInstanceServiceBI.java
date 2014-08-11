@@ -18,7 +18,8 @@
  */
 package gov.va.isaac.workflow;
 
-import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+
 import java.util.List;
 
 /**
@@ -27,23 +28,23 @@ import java.util.List;
  */
 public interface ProcessInstanceServiceBI {
 
-    ProcessInstanceCreationRequest createRequest(String processName, String componentId, String componentName, String author);
+    ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author);
 
-    List<ProcessInstanceCreationRequest> getOpenOwnedRequests(String owner);
+    List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner);
 
-    List<ProcessInstanceCreationRequest> getOpenOwnedRequestsByComponentId(String owner, String componentId);
+    List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, String componentId);
 
-    List<ProcessInstanceCreationRequest> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequest.RequestStatus status);
+    List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status);
 
-    ProcessInstanceCreationRequest getRequest(int id);
+    ProcessInstanceCreationRequestI getRequest(int id);
 
-    ProcessInstanceCreationRequest getRequestByWfId(Long wfId);
+    ProcessInstanceCreationRequestI getRequestByWfId(Long wfId);
 
-    List<ProcessInstanceCreationRequest> getRequests();
+    List<ProcessInstanceCreationRequestI> getRequests();
 
-    List<ProcessInstanceCreationRequest> getRequestsByComponentId(String componentId);
+    List<ProcessInstanceCreationRequestI> getRequestsByComponentId(String componentId);
 
-    void updateRequestStatus(int id, ProcessInstanceCreationRequest.RequestStatus status, String syncMessage, Long wfId);
+    void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId);
     
     void createSchema();
     

@@ -40,7 +40,7 @@
 						<ToggleGroup fx:id="refexType" />
 					</toggleGroup>
 				</RadioButton>
-				<RadioButton fx:id="refexTypeRefset" mnemonicParsing="false" text="Refset" toggleGroup="$refexType" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+				<RadioButton fx:id="refexTypeRefset" mnemonicParsing="false" text="Member List" toggleGroup="$refexType" GridPane.columnIndex="2" GridPane.rowIndex="3" />
 				<HBox fx:id="parentConceptHBox" fillHeight="false" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" />
 			</children>
 		</GridPane>

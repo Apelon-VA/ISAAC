@@ -18,7 +18,6 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.UUID;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.layout.Region;
 import org.jvnet.hk2.annotations.Contract;
@@ -26,9 +25,10 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * RefsetViewI
  * 
- * An interface that allows the creation of a RefsetView implementation, which 
+ * An interface that allows the creation of a RefexView implementation, which 
  * will be a JavaFX component that extends {@link Region} that can be embedded
- * into other views 
+ * into other views, the purpose of which is to display Refex information for 
+ * a component.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
@@ -38,6 +38,16 @@ public interface RefexViewI extends ViewI
 	/**
 	 * Tell this view to display the refexes for a particular component (typically, a concept, but could also 
 	 * be any valid thing that supportes refexes)
+	 * 
+	 * With this call - multiple assemblages will be shown - for a single component (concept)
 	 */
-	public void setComponent(UUID componentUUID, ReadOnlyBooleanProperty showStampColumns);
+	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns);
+	
+	/**
+	 * Tell this view to display the refexes for a particular assemblage concept.
+	 * 
+	 * With this call - only a single assemblage will be shown - but multiple components may be shown (typically concepts, 
+	 * but could also be any valid thing that supports refexes, such as descriptions)
+	 */
+	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns);
 }

@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +36,12 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
- * SimpleConceptViewWizardRunner
+ * EnhancedConceptViewRunner
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a>
  */
-public class SimpleConceptViewWizardRunner extends Application
+public class EnhancedConceptViewRunner extends Application
 {
 	/**
 	 * @see javafx.application.Application#start(javafx.stage.Stage)
@@ -50,11 +51,13 @@ public class SimpleConceptViewWizardRunner extends Application
 	{
 		primaryStage.setTitle("New Concept Panel");
 
-		EnhancedConceptView conView = AppContext.getService(EnhancedConceptView.class);
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+//		EnhancedConceptView conView = AppContext.getService(EnhancedConceptView.class);
 
 		primaryStage.setScene(new Scene(new Label("hello world"), 200, 100));
 		primaryStage.show();
-		conView.setConcept(UUID.fromString("dcf9db9f-7d84-367f-85e1-7b51c4d962f6"));
+		cv.setConcept(UUID.fromString("49064bb7-cda5-3cb3-b8f7-085139486fa8"));
+		cv.showView(primaryStage);
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException

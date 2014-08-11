@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.workflow.demo;
 
-import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
 /**
@@ -32,7 +32,7 @@ public class ProcessInstanceCreationTester {
         papi.dropSchema();
         papi.createSchema();
         papi.createRequest("processName", "componentId1", "componentName1", "author");
-        for (ProcessInstanceCreationRequest loopR : papi.getRequests()) {
+        for (ProcessInstanceCreationRequestI loopR : papi.getRequests()) {
             System.out.println("id: " + loopR.getId() + " - pname: "  + loopR.getProcessName() + " - cid: " + loopR.getComponentId() + " - cname: " + loopR.getComponentName() + " - rtime: "  + loopR.getRequestTime() + " - status: "  + loopR.getStatus() + " - userId: "  + loopR.getUserId());
         }
         

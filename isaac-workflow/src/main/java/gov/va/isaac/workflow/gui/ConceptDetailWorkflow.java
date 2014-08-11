@@ -23,8 +23,8 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 //import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.util.WBUtility;
 
@@ -37,7 +37,6 @@ import java.util.UUID;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -95,54 +94,54 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		// We don't currently have any custom menus with this view
 		ArrayList<MenuItemI> menus = new ArrayList<>();
 		
-		MenuItemI mi = new MenuItemI()
-		{
-			@Override
-			public void handleMenuSelection(Window parent)
-			{
-				showView(parent);
-			}
-			
-			@Override
-			public int getSortOrder()
-			{
-				return 25;
-			}
-			
-			@Override
-			public String getParentMenuId()
-			{
-				return ApplicationMenus.ACTIONS.getMenuId();
-			}
-			
-			@Override
-			public String getMenuName()
-			{
-				return "View Concept Detail Workflow";
-			}
-			
-			@Override
-			public String getMenuId()
-			{
-				return "viewConceptDetailWorkflowMenu";
-			}
-			
-			@Override
-			public boolean enableMnemonicParsing()
-			{
-				return false;
-			}
-
-			/**
-			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
-			 */
-			@Override
-			public Image getImage()
-			{
-				return Images.INBOX.getImage();
-			}
-		};
-		menus.add(mi);
+//		MenuItemI mi = new MenuItemI()
+//		{
+//			@Override
+//			public void handleMenuSelection(Window parent)
+//			{
+//				showView(parent);
+//			}
+//			
+//			@Override
+//			public int getSortOrder()
+//			{
+//				return 25;
+//			}
+//			
+//			@Override
+//			public String getParentMenuId()
+//			{
+//				return ApplicationMenus.ACTIONS.getMenuId();
+//			}
+//			
+//			@Override
+//			public String getMenuName()
+//			{
+//				return "View Concept Detail Workflow";
+//			}
+//			
+//			@Override
+//			public String getMenuId()
+//			{
+//				return "viewConceptDetailWorkflowMenu";
+//			}
+//			
+//			@Override
+//			public boolean enableMnemonicParsing()
+//			{
+//				return false;
+//			}
+//
+//			/**
+//			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+//			 */
+//			@Override
+//			public Image getImage()
+//			{
+//				return Images.INBOX.getImage();
+//			}
+//		};
+//		menus.add(mi);
 		return menus;
 	}
 
@@ -195,5 +194,29 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 
 	public Region getView() {
 		return controller_.getRootNode();
+	}
+
+	@Override
+	public UUID getConceptUuid() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getConceptNid() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setViewMode(ConceptViewMode mode) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public ConceptViewMode getViewMode() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

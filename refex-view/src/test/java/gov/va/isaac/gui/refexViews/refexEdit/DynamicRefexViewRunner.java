@@ -38,7 +38,6 @@ import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
  */
 public class DynamicRefexViewRunner extends Application
 {
-	UUID dynamicRefexDefinition = RefexDynamic.REFEX_DYNAMIC_DEFINITION.getUuids()[0];
 
 	/**
 	 * @see javafx.application.Application#start(javafx.stage.Stage)
@@ -49,7 +48,7 @@ public class DynamicRefexViewRunner extends Application
 		primaryStage.setTitle("Refex View");
 
 		DynamicRefexView refexView = AppContext.getService(DynamicRefexView.class);
-		refexView.setComponent(dynamicRefexDefinition, null);
+		refexView.setComponent(RefexDynamic.REFEX_DYNAMIC_DEFINITION.getNid(), null);
 
 		primaryStage.setScene(new Scene(refexView.getView(), 800, 600));
 

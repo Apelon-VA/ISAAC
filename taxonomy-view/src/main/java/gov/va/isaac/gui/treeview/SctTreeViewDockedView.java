@@ -24,15 +24,19 @@ import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
+
 import javax.inject.Singleton;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
+
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -88,7 +92,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					sctTreeView_.init(new UUID[] {Taxonomies.SNOMED.getUuids()[0], Taxonomies.REFSET_AUX.getUuids()[0], Taxonomies.WB_AUX.getUuids()[0]});
+					sctTreeView_.init(WBUtility.getTreeRoots());
 					hasBeenInited_ = true;
 				}
 			}
@@ -152,5 +156,13 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 		//TODO add a visible progress indicator while this happens
 		showConcept(uuid, busyIndicator);
 		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(this);
+	}
+
+	/* 
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#locateConcept(int, javafx.beans.property.BooleanProperty)
+	 */
+	@Override
+	public void locateConcept(int nid, BooleanProperty busyIndicator) {
+		locateConcept(WBUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);
 	}
 }

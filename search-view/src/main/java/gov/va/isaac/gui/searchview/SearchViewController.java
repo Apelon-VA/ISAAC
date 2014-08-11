@@ -19,17 +19,23 @@
 package gov.va.isaac.gui.searchview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -46,6 +52,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -92,6 +99,7 @@ public class SearchViewController implements TaskCompleteCallback {
     public void initialize() {
         borderPane.getStylesheets().add(SearchViewController.class.getResource("/isaac-shared-styles.css").toString());
     
+        searchResults.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         searchResults.setCellFactory(new Callback<ListView<CompositeSearchResult>, ListCell<CompositeSearchResult>>() {
             @Override
             public ListCell<CompositeSearchResult> call(ListView<CompositeSearchResult> arg0) {
@@ -103,7 +111,7 @@ public class SearchViewController implements TaskCompleteCallback {
                             VBox box = new VBox();
                             box.setFillWidth(true);
                             final ConceptVersionBI wbConcept = item.getConcept();
-                            String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "error - see log");
+                            final String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "error - see log");
                             Label concept = new Label(preferredText);
                             concept.getStyleClass().add("boldLabel");
                             box.getChildren().add(concept);
@@ -118,37 +126,7 @@ public class SearchViewController implements TaskCompleteCallback {
                             }
                             setGraphic(box);
 
-                            ContextMenu cm = new ContextMenu();
-
-                            CommonMenus.addCommonMenus(cm, null, new SingleConceptIdProvider()
-                            {
-                                @Override
-                                public String getConceptId()
-                                {
-                                    return item.getConceptNid() + "";
-                                }
-
-                                /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getUUID()
-                                 */
-                                @Override
-                                public UUID getUUID()
-                                {
-                                    return item.getConcept().getPrimordialUuid();
-                                }
-
-                                /**
-                                 * @see gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider#getNid()
-                                 */
-                                @Override
-                                public Integer getNid()
-                                {
-                                    return item.getConceptNid();
-                                }
-                            });
-
-                            setContextMenu(cm);
-
+                            
                             // Also show concept details on double-click.
                             setOnMouseClicked(new EventHandler<MouseEvent>() {
                                 @Override
@@ -161,6 +139,48 @@ public class SearchViewController implements TaskCompleteCallback {
                                     }
                                 }
                             });
+                            
+                            ContextMenu cm = new ContextMenu();
+                            CommonMenusDataProvider dp = new CommonMenusDataProvider() {
+                                @Override
+                                public String[] getStrings() {
+                                    List<String> items = new ArrayList<>();
+                                    for (CompositeSearchResult currentItem : searchResults.getSelectionModel().getSelectedItems()) {
+                                        //items.add(source.getTableColumn().getCellData(index).toString());
+                                        final ConceptVersionBI currentWbConcept = currentItem.getConcept();
+                                        final String currentPreferredText = (currentWbConcept != null ? WBUtility.getDescription(currentWbConcept) : "error - see log");
+
+                                        items.add(currentPreferredText);
+                                    }
+
+                                    String[] itemArray = items.toArray(new String[items.size()]);
+
+                                    // TODO: determine why we are getting here multiple (2 or 3) times for each selection
+                                    //System.out.println("Selected strings: " + Arrays.toString(itemArray));
+                                    
+                                    return itemArray;
+                                }
+                            };
+                            CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
+                                @Override
+                                public Set<Integer> getNIds() {
+                                    Set<Integer> nids = new HashSet<>();
+                                    
+                                    for (CompositeSearchResult r : searchResults.getSelectionModel().getSelectedItems()) {
+                                        nids.add(r.getConceptNid());
+                                    }
+                                    
+                                    // TODO: determine why we are getting here multiple (2 or 3) times for each selection
+                                    //System.out.println("Selected nids: " + Arrays.toString(nids.toArray()));
+
+                                    return nids;
+                                }
+                            };
+                            CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+
+                            CommonMenus.addCommonMenus(cm, menuBuilder, dp, nidProvider);
+
+                            setContextMenu(cm);
                         }
                         else
                         {

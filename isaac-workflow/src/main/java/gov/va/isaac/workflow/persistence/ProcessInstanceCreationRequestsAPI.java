@@ -18,8 +18,10 @@
  */
 package gov.va.isaac.workflow.persistence;
 
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -28,6 +30,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +49,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public ProcessInstanceCreationRequest createRequest(String processName, String componentId, String componentName, String author) {
+    public ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author) {
         try {
             // PINST_REQUESTS (id int PRIMARY KEY, component_id varchar(40), component_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), wf_id Integer)");
             PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message, request_time, sync_time, wf_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
@@ -62,7 +65,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             psInsert.setInt(9, 0);
             psInsert.executeUpdate();
             
-            ProcessInstanceCreationRequest result = new ProcessInstanceCreationRequest();
+            ProcessInstanceCreationRequestI result = new ProcessInstanceCreationRequest();
             result.setComponentId(componentId);
             result.setComponentName(componentName);
             ResultSet generatedKeys = psInsert.getGeneratedKeys();
@@ -73,7 +76,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             }
             result.setRequestTime(Long.MIN_VALUE);
             result.setProcessName(processName);
-            result.setStatus(ProcessInstanceCreationRequest.RequestStatus.REQUESTED);
+            result.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
             result.setUserId(author);
             psInsert.closeOnCompletion();
             conn.commit();
@@ -90,7 +93,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public void updateRequestStatus(int id, ProcessInstanceCreationRequest.RequestStatus status, String syncMessage, Long wfId) {
+    public void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId) {
         try {
             PreparedStatement psUpdateRequest = conn.prepareStatement("update PINST_REQUESTS set sync_message = ?, status = ?, wf_id = ? where id = ?");
             psUpdateRequest.setString(1, syncMessage);
@@ -106,8 +109,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public List<ProcessInstanceCreationRequest> getOpenOwnedRequests(String owner) {
-        List<ProcessInstanceCreationRequest> requests = new ArrayList<>();
+    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner) {
+        List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = 'REQUESTED'");
@@ -121,8 +124,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public List<ProcessInstanceCreationRequest> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequest.RequestStatus status) {
-        List<ProcessInstanceCreationRequest> requests = new ArrayList<>();
+    public List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status) {
+        List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = '" + status.name() + "'");
@@ -136,8 +139,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
     
     @Override
-    public List<ProcessInstanceCreationRequest> getOpenOwnedRequestsByComponentId(String owner, String componentId) {
-        List<ProcessInstanceCreationRequest> requests = new ArrayList<>();
+    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, String componentId) {
+        List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and component_id = '" + componentId + "' and status = 'REQUESTED'");
@@ -151,8 +154,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public List<ProcessInstanceCreationRequest> getRequestsByComponentId(String componentId) {
-        List<ProcessInstanceCreationRequest> requests = new ArrayList<>();
+    public List<ProcessInstanceCreationRequestI> getRequestsByComponentId(String componentId) {
+        List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where component_id = '" + componentId + "'");
@@ -166,9 +169,9 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public ProcessInstanceCreationRequest getRequestByWfId(Long wfId) {
+    public ProcessInstanceCreationRequestI getRequestByWfId(Long wfId) {
         try {
-            ProcessInstanceCreationRequest request = null;
+            ProcessInstanceCreationRequestI request = null;
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where wf_id = " + wfId);
             if (!rs.next()) {
@@ -187,8 +190,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public List<ProcessInstanceCreationRequest> getRequests() {
-        List<ProcessInstanceCreationRequest> requests = new ArrayList<>();
+    public List<ProcessInstanceCreationRequestI> getRequests() {
+        List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS");
@@ -202,9 +205,9 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public ProcessInstanceCreationRequest getRequest(int id) {
+    public ProcessInstanceCreationRequestI getRequest(int id) {
         try {
-            ProcessInstanceCreationRequest request = null;
+            ProcessInstanceCreationRequestI request = null;
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where id = " + id);
             if (!rs.next()) {
@@ -222,8 +225,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         return null;
     }
 
-    private ProcessInstanceCreationRequest readRequest(ResultSet rs) throws SQLException {
-        ProcessInstanceCreationRequest request = new ProcessInstanceCreationRequest();
+    private ProcessInstanceCreationRequestI readRequest(ResultSet rs) throws SQLException {
+        ProcessInstanceCreationRequestI request = new ProcessInstanceCreationRequest();
         request.setId(rs.getInt(1));
         request.setWfId(Long.parseLong(rs.getString(2)));
         request.setComponentId(rs.getString(3));
@@ -233,13 +236,13 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         String status = rs.getString(7);
         switch (status) {
             case "CREATED":
-                request.setStatus(ProcessInstanceCreationRequest.RequestStatus.CREATED);
+                request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.CREATED);
                 break;
             case "REQUESTED":
-                request.setStatus(ProcessInstanceCreationRequest.RequestStatus.REQUESTED);
+                request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
                 break;
             case "REJECTED":
-                request.setStatus(ProcessInstanceCreationRequest.RequestStatus.REJECTED);
+                request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REJECTED);
                 break;
         }
         request.setSyncMessage(rs.getString(8));

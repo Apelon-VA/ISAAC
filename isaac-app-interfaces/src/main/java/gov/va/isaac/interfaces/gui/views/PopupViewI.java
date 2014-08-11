@@ -34,6 +34,7 @@ public interface PopupViewI extends IsaacViewI
 {
 	/**
 	 * Display this popup view to the user in front of the specified parent window.
+	 * Or pass null if you want the popup window to be unowned, having its own task bar entry.
 	 * The PopupViewI implementation is responsible for showing itself when this method 
 	 * is called.
 	 */

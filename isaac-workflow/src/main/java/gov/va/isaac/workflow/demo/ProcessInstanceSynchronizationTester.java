@@ -18,10 +18,11 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
+
 import java.util.List;
 
 /**
@@ -32,41 +33,41 @@ public class ProcessInstanceSynchronizationTester {
 
     public static void main(String[] args) throws Exception {
         LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-        ProcessInstanceCreationRequestsAPI procApi = (ProcessInstanceCreationRequestsAPI) wfEngine.getProcessInstanceService();
+        //ProcessInstanceCreationRequestsAPI procApi = (ProcessInstanceCreationRequestsAPI) wfEngine.getProcessInstanceService();
         //procApi.dropSchema();
         //procApi.createSchema();
         
-        ProcessInstanceCreationRequest newInstance = wfEngine.getProcessInstanceService().createRequest("terminology-authoring.test1", "56968009", "Wood asthma (disorder)", "test-user");
+        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest("terminology-authoring.test1", "56968009", "Wood asthma (disorder)", "test-user");
         System.out.println("New instance: " + newInstance.getId());
         
-        List<ProcessInstanceCreationRequest> pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequest.RequestStatus.REQUESTED);
+        List<ProcessInstanceCreationRequestI> pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
 
         System.out.println("Pending count: " + pending.size());
-        for (ProcessInstanceCreationRequest loopP : pending) {
+        for (ProcessInstanceCreationRequestI loopP : pending) {
             System.out.println("Pending instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
         }
         
-        List<ProcessInstanceCreationRequest> completed = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequest.RequestStatus.CREATED);
+        List<ProcessInstanceCreationRequestI> completed = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.CREATED);
         System.out.println("Complete count: " + completed.size());
-        for (ProcessInstanceCreationRequest loopP : completed) {
+        for (ProcessInstanceCreationRequestI loopP : completed) {
             System.out.println("Complete instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
         }
 
         System.out.print("Synchronizing: ");
-        for (ProcessInstanceCreationRequest loopP : pending) {
+        for (ProcessInstanceCreationRequestI loopP : pending) {
             System.out.print(".");
             wfEngine.requestProcessInstanceCreationToServer(loopP);
         }
         System.out.println(" done!");
-        pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequest.RequestStatus.REQUESTED);
+        pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
         System.out.println("Pending count: " + pending.size());
-        for (ProcessInstanceCreationRequest loopP : pending) {
+        for (ProcessInstanceCreationRequestI loopP : pending) {
             System.out.println("Pending instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
         }
         
-        completed = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequest.RequestStatus.CREATED);
+        completed = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.CREATED);
         System.out.println("Complete count: " + completed.size());
-        for (ProcessInstanceCreationRequest loopP : completed) {
+        for (ProcessInstanceCreationRequestI loopP : completed) {
             System.out.println("Complete instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
         }
 
