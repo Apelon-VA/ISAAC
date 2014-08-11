@@ -22,10 +22,8 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
-import gov.va.isaac.gui.enhancedsearchview.SearchConceptBuilder.SearchSaveException;
-import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter;
+import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.LuceneFilter;
-import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.RegExpFilter;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -41,12 +39,10 @@ import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.math.RoundingMode;
@@ -55,16 +51,10 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-
-
-
 
 //import org.controlsfx.Dialogs;
 import javafx.application.Platform;
@@ -99,27 +89,23 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
+import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.Callback;
-
-import javax.naming.InvalidNameException;
 
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicIntegerBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -278,166 +264,65 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 		});
 	}
-
-	private void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Map<Integer, Collection<Filter>> filterOrderMap, Filter newFilter) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException {
-		LOG.debug("Loading data into model from embedded Search Filter Attributes refex");
-
-		// Now read SEARCH_FILTER_ATTRIBUTES refex column
-		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
-			DynamicRefexHelper.displayDynamicRefex(embeddedRefex);
-			
-			RefexDynamicUsageDescription embeddedRefexDUD = null;
-			try {
-				embeddedRefexDUD = embeddedRefex.getRefexDynamicUsageDescription();
-			} catch (IOException | ContradictionException e) {
-				LOG.error("Failed performing getRefexDynamicUsageDescription() on embedded refex: caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-				
-				return;
-			}
-			
-			if (embeddedRefexDUD.getRefexName().equals(Search.SEARCH_FILTER_ATTRIBUTES.getDescription() /*"Search Filter Attributes"*/)) {
-				RefexDynamicIntegerBI filterOrderCol = (RefexDynamicIntegerBI)embeddedRefex.getData(Search.SEARCH_FILTER_ATTRIBUTES_FILTER_ORDER_COLUMN.getDescription());
-				if (filterOrderMap.get(filterOrderCol.getDataInteger()) == null) {
-					filterOrderMap.put(filterOrderCol.getDataInteger(), new ArrayList<>());
-				}
-				filterOrderMap.get(filterOrderCol.getDataInteger()).add(newFilter);
-				
-				LOG.debug("Read Integer filter order from " + embeddedRefexDUD.getRefexName() + " refex: \"" + filterOrderCol.getDataInteger() + "\"");
-			} else {
-				LOG.warn("Encountered unexpected embedded refex \"" + embeddedRefexDUD.getRefexName() + "\". Ignoring...");
-			}
-		}
-	}
 	
 	private void loadSavedSearch(SearchDisplayConcept displayConcept) {
 		LOG.info("loadSavedSearch(" + displayConcept + ")");
 
 		SearchViewModel model = null;
-
 		try {
-			ConceptVersionBI matchingConcept = WBUtility.getConceptVersion(displayConcept.getNid());
-
-			if (matchingConcept != null) {
-				LOG.debug("loadSavedSearch(): savedSearchesComboBox has concept: " + matchingConcept);
-
-				Map<Integer, Collection<Filter>> filterOrderMap = new TreeMap<>();
-				
-				model = new SearchViewModel();
-				
-				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
-				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic refexes: " +  matchingConcept.getRefexesDynamic().size());
-				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
-				LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
-
-				for (RefexDynamicVersionBI<?> refex : matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
-					DynamicRefexHelper.displayDynamicRefex(refex);
-					
-					RefexDynamicUsageDescription dud = null;
-					try {
-						dud = refex.getRefexDynamicUsageDescription();
-					} catch (IOException | ContradictionException e) {
-						LOG.error("Failed performing getRefexDynamicUsageDescription(): caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-						
-						return;
-					}
-
-					if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
-						// handle "Search Global Attributes"
-						
-						LOG.debug("Loading data into model from Search Global Attributes refex");
-						
-						RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_VIEW_COORDINATE_COLUMN.getDescription());
-						
-						// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()
-						ByteArrayInputStream input = new ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
-						
-						ObjectInputStream oos = new ObjectInputStream(input);
-						ViewCoordinate vc = new ViewCoordinate();
-						vc.readExternal(oos);
-						model.setViewCoordinate(vc);
-
-						LOG.debug("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getViewCoordinate());
-						
-					} else if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() /*"Search Lucene Filter"*/)) {
-						// handle "Search Lucene Filter"
-
-						LOG.debug("Loading data into model from Search Lucene Filter refex");
-						
-						LuceneFilter newFilter = new LuceneFilter();
-						
-						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_LUCENE_FILTER_PARAMETER_COLUMN.getDescription());
-
-						newFilter.setSearchParameter(searchParamCol.getDataString());
-
-						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
-
-						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
-					} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() /*"Search RegExp Filter"*/)) {
-						// handle "Search RegExp Filter"
-
-						LOG.debug("Loading data into model from Search RegExp Filter refex");
-						
-						RegExpFilter newFilter = new RegExpFilter();
-						
-						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_REGEXP_FILTER_PARAMETER_COLUMN.getDescription());
-
-						newFilter.setSearchParameter(searchParamCol.getDataString());
-
-						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
-
-						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
-					} else {
-						// handle or ignore
-						LOG.warn("Concept \"" + displayConcept + "\" contains unexpected refex \"" + dud.getRefexName() + "\".  Ignoring...");
-					}
-				}
-
-				for (int order : filterOrderMap.keySet()) {
-					model.getFilters().addAll(filterOrderMap.get(order));
-				}
-
-				LOG.debug("loadSavedSearch() loaded search view model for \"" + matchingConcept + "\": " + model);
-				
-				if (model.getViewCoordinate() == null) {
-					LOG.error("Failed loading saved search " + displayConcept + ".  View Coordinate is null.");
-					
-					String title = "Failed loading saved search";
-					String msg = "Cannot load existing saved search \"" + displayConcept + "\"";
-					String details = "View coordinate is null: " + model;
-					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-					
-					return;
-				} else if (model.getFilters().size() < 1) {
-					LOG.error("Failed loading saved search " + displayConcept + ".  No filters found (must be at least 1).");
-					
-					return;
-				} else if (model.getFilters().size() > 1) {
-					// TODO: remove this check when supporting multiple filters
-					LOG.error("Failed loading saved search " + displayConcept + ".  Too many filters (must be exactly 1).");
-					
-					return;
-				} else if (! (model.getFilters().get(0) instanceof LuceneFilter)) {
-					// TODO: remove this check when supporting non-Lucene filters
-					LOG.error("Failed loading saved search " + displayConcept + ".  Filters of type " + model.getFilters().get(0).getClass().getName() + " not supported. Currently, only Lucene filters supported.");
-					
-					return;
-				} else {
-					// TODO: This is a hack for while we support exactly one Lucene Filter.  Change when multiple/various filters supported.
-					searchText.setText(((LuceneFilter)model.getFilters().get(0)).getSearchParameter());
-					this.currentSearchViewCoordinate = model.getViewCoordinate();
-
-					// TODO: change to use LOG
-					LOG.debug("loadSavedSearch() loaded model: " + model);
-					
-					return;
-				}
-			} else {
-				LOG.error("Failed loading saved search " + displayConcept);
-				return;
-			}
-		} catch (Exception e) {
+			model = SearchConceptHelper.loadSavedSearch(displayConcept);
+		} catch (SearchConceptException e) {
 			LOG.error("Failed loading saved search. Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 			e.printStackTrace();
+			
+			String title = "Failed loading saved search";
+			String msg = "Cannot load existing saved search \"" + displayConcept + "\"";
+			String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"." + "\n" + "model:" + model;
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+			return;
+		}
+
+		if (model != null) {		
+			if (model.getViewCoordinate() == null) {
+				LOG.error("Failed loading saved search " + displayConcept + ".  View Coordinate is null.");
+
+				String title = "Failed loading saved search";
+				String msg = "Cannot load existing saved search \"" + displayConcept + "\"";
+				String details = "View coordinate is null: " + model;
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				return;
+			} else if (model.getFilters().size() < 1) {
+				LOG.error("Failed loading saved search " + displayConcept + ".  No filters found (must be at least 1).");
+
+				return;
+			} else if (model.getFilters().size() > 1) {
+				// TODO: remove this check when supporting multiple filters
+				LOG.error("Failed loading saved search " + displayConcept + ".  Too many filters (must be exactly 1).");
+
+				return;
+			} else if (! (model.getFilters().get(0) instanceof LuceneFilter)) {
+				// TODO: remove this check when supporting non-Lucene filters
+				LOG.error("Failed loading saved search " + displayConcept + ".  Filters of type " + model.getFilters().get(0).getClass().getName() + " not supported. Currently, only Lucene filters supported.");
+
+				return;
+			} else {
+				// TODO: This is a hack for while we support exactly one Lucene Filter.  Change when multiple/various filters supported.
+				searchText.setText(((LuceneFilter)model.getFilters().get(0)).getSearchParameter());
+				this.currentSearchViewCoordinate = model.getViewCoordinate();
+				
+				this.maxResultsCustomTextField.setText(Integer.toString(model.getMaxResults()));
+				
+				// TODO: set drools expression somewhere
+				
+				// TODO: change to use LOG
+				LOG.debug("loadSavedSearch() loaded model: " + model);
+
+				return;
+			}
+		} else {
+			LOG.error("Failed loading saved search " + displayConcept);
 			return;
 		}
 	}
@@ -460,6 +345,15 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 //		saveSearchPopupStage.show();
 //	}
 	
+	public void showSaveSearchDialogView(Stage primaryStage) throws IOException {
+        Parent root = FXMLLoader.load(EnhancedSearchViewController.class.getResource("SaveSearchDialogView.fxml"));
+        primaryStage.initModality(Modality.APPLICATION_MODAL); // 1 Add one
+        Scene scene = new Scene(root);        
+        primaryStage.setScene(scene);
+        primaryStage.initOwner(primaryStage.getScene().getWindow());// 2 Add two
+        primaryStage.show();
+    }
+
 	private void saveSearch() {
 		LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
 
@@ -576,13 +470,20 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		filter.setSearchParameter(searchText.getText());
 		model.getFilters().add(filter);
 
+		// Set view coordinate in model
 		model.setViewCoordinate(currentSearchViewCoordinate);
+		
+		// set maxResults in model
+		int maxResults = (this.maxResultsCustomTextField.getText() != null && this.maxResultsCustomTextField.getText().length() > 0) ? Integer.valueOf(this.maxResultsCustomTextField.getText()) : 0;
+		model.setMaxResults(maxResults);
 
+		// TODO: will set droolsExpr in model
+		
 		try {
-			SearchConceptBuilder.buildAndSaveSearchConcept(fsn, pt, model);
+			SearchConceptHelper.buildAndSaveSearchConcept(fsn, pt, model);
 
 			refreshSavedSearchComboBox();
-		} catch (SearchSaveException e) {
+		} catch (SearchConceptException e) {
 			String title = "Failed saving search";
 			String msg = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"";
 

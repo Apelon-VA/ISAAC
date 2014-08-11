@@ -90,6 +90,8 @@ public class SearchViewModel {
 
 	private final List<Filter> filters = new ArrayList<>();
 	private ViewCoordinate viewCoordinate;
+	private int maxResults;
+	private String droolsExpr;
 	
 	public boolean isValid() {
 		return getValidFilters().size() > 0 && getInvalidFilters().size() == 0;
@@ -98,6 +100,7 @@ public class SearchViewModel {
 	public List<Filter> getFilters() {
 		return filters;
 	}
+	
 	public ViewCoordinate getViewCoordinate() {
 		return viewCoordinate;
 	}
@@ -105,6 +108,20 @@ public class SearchViewModel {
 		this.viewCoordinate = viewCoordinate;
 	}
 	
+	public int getMaxResults() {
+		return maxResults;
+	}
+	public void setMaxResults(int maxResults) {
+		this.maxResults = maxResults;
+	}
+
+	public String getDroolsExpr() {
+		return droolsExpr;
+	}
+	public void setDroolsExpr(String droolsExpr) {
+		this.droolsExpr = droolsExpr;
+	}
+
 	public Collection<Filter> getValidFilters() {
 		List<Filter> validFilters = new ArrayList<>();
 		
