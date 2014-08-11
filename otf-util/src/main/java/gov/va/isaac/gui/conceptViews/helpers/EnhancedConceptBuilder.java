@@ -304,8 +304,9 @@ public class EnhancedConceptBuilder {
 
 		Menu copyIdMenu = labelHelper.addIdMenus(con);
 		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
+		Menu createComponentMenu = labelHelper.addCreateNewComponent();
 
-		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu);
+		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu, createComponentMenu);
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  

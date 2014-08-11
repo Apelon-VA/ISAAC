@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 */
 public class ConceptViewerLabelHelper {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerLabelHelper.class);
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private int conceptNid = 0;;
 	
 	private AnchorPane pane;
@@ -190,6 +190,8 @@ public class ConceptViewerLabelHelper {
 			rtClickMenu.getItems().add(1, viewNewItem);
 		}
 
+		rtClickMenu.getItems().add(addCreateNewComponent());
+		
 		label.setContextMenu(rtClickMenu);
 	}
 
@@ -218,7 +220,7 @@ public class ConceptViewerLabelHelper {
 					}
 				}
 
-				popup.finishInit(comp, type, conceptView);
+				popup.finishInit(comp, conceptView);
 				popup.showView(pane.getScene().getWindow());
 			}
 		});
@@ -294,6 +296,39 @@ public class ConceptViewerLabelHelper {
 		return modifyComponentMenu;
 	}
 
+	Menu addCreateNewComponent() {
+		Menu createComponentMenu = new Menu("Create New Component");
+		MenuItem newDescriptionMenu = new MenuItem("Create New Description");
+		MenuItem newRelationshipMenu = new MenuItem("Create New Relationship");
+		createComponentMenu.getItems().addAll(newDescriptionMenu, newRelationshipMenu);
+
+		newDescriptionMenu.setGraphic(Images.EDIT.createImageView());
+		newDescriptionMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				DescriptionModelingPopup popup = AppContext.getService(DescriptionModelingPopup.class);
+				popup.finishInit(conceptNid, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
+
+		newRelationshipMenu.setGraphic(Images.EDIT.createImageView());
+		newRelationshipMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				RelationshipModelingPopup popup = AppContext.getService(RelationshipModelingPopup.class);
+				popup.finishInit(conceptNid, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
+
+		return createComponentMenu;
+	}
+	
 	Menu addIdMenus(ComponentVersionBI comp) {
 		Menu copyIdMenu = new Menu("Copy Ids");
 		MenuItem sctIdItem = new MenuItem("SctId");

@@ -160,4 +160,10 @@ public class FxUtils {
         Font f = new Font("System Bold", 13.0);
         return Toolkit.getToolkit().getFontLoader().computeStringWidth(l.getText(), f);
     }
+    
+    public static double calculateNecessaryWidthOfLabel(Label l)
+    {
+        Font f = new Font("System", 13.0);
+        return Toolkit.getToolkit().getFontLoader().computeStringWidth(l.getText(), f);
+    }
 }
