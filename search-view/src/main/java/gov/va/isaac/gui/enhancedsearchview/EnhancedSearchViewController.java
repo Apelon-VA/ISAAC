@@ -23,6 +23,7 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
+import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.LuceneFilter;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
@@ -39,6 +40,7 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,6 +58,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 //import org.controlsfx.Dialogs;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -84,6 +87,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
@@ -91,6 +95,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -99,6 +104,7 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
+
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -157,6 +163,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
     @FXML private ProgressIndicator searchProgress;
     @FXML private Label totalResultsSelectedLabel;
     @FXML private Button resetDefaultsButton;
+    
+    private ListView<Filter> filterListView;
 
 
     private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
@@ -264,6 +272,41 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 	
+//	private Node createFilterNode(Filter filter) {
+//		GridPane row = new GridPane();
+//		//HBox addRemoveButtonsHBox
+//		
+//		return null;
+//	}
+//	
+//	private void initializeFilterListView() {
+//		filterListView = new ListView<>();
+//		
+//		Callback<ListView<Filter>, ListCell<Filter>> cellFactory = new Callback<ListView<Filter>, ListCell<Filter>>() {
+//
+//			@Override
+//			public ListCell<Filter> call(ListView<Filter> param) {
+//				ListCell<Filter> newCell = new ListCell<Filter>() {
+//					@Override
+//					protected void updateItem(Filter item, boolean empty) {
+//						super.updateItem(item, empty);
+//						
+//						if (empty) {
+//							this.setGraphic(null);
+//							this.setUserData(null);
+//						} else {
+//							this.setGraphic(createFilterNode(item));
+//							this.setUserData(item);
+//						}
+//					}
+//				};
+//
+//				return newCell;
+//			}	
+//		};
+//		filterListView.setCellFactory(cellFactory);
+//	}
+	
 	private void loadSavedSearch(SearchDisplayConcept displayConcept) {
 		LOG.info("loadSavedSearch(" + displayConcept + ")");
 
@@ -344,14 +387,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 //		saveSearchPopupStage.show();
 //	}
 	
-	public void showSaveSearchDialogView(Stage primaryStage) throws IOException {
-        Parent root = FXMLLoader.load(EnhancedSearchViewController.class.getResource("SaveSearchDialogView.fxml"));
-        primaryStage.initModality(Modality.APPLICATION_MODAL); // 1 Add one
-        Scene scene = new Scene(root);        
-        primaryStage.setScene(scene);
-        primaryStage.initOwner(primaryStage.getScene().getWindow());// 2 Add two
-        primaryStage.show();
-    }
+//	public void showSaveSearchDialogView(Stage primaryStage) throws IOException {
+//        Parent root = FXMLLoader.load(EnhancedSearchViewController.class.getResource("SaveSearchDialogView.fxml"));
+//        primaryStage.initModality(Modality.APPLICATION_MODAL); // 1 Add one
+//        Scene scene = new Scene(root);        
+//        primaryStage.setScene(scene);
+//        primaryStage.initOwner(primaryStage.getScene().getWindow());// 2 Add two
+//        primaryStage.show();
+//    }
 
 	private void saveSearch() {
 		LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
@@ -447,7 +490,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				//saveSearchPopup.setX(300); 
 				//saveSearchPopup.setY(200);
 				saveSearchPopup.setOpacity(1.0);
-				saveSearchPopup.getScene().setFill(Color.BEIGE);
+				saveSearchPopup.getScene().setFill(Color.WHITE);
 				saveSearchPopup.getContent().add(popupPane);
 				
 				saveSearchPopup.show(AppContext.getMainApplicationWindow().getPrimaryStage());

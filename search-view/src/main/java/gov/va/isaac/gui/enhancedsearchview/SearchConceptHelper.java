@@ -24,7 +24,6 @@
  */
 package gov.va.isaac.gui.enhancedsearchview;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.LuceneFilter;
@@ -146,8 +145,10 @@ public class SearchConceptHelper {
 				searchGlobalAttributesData[0] = viewCoordinateColumnData;
 				RefexDynamicData maxResultsColumnData = new RefexInteger(model.getMaxResults(), RefexDynamicUsageDescription.read(Search.SEARCH_GLOBAL_ATTRIBUTES.getNid()).getColumnInfo()[1].getColumnName());
 				searchGlobalAttributesData[1] = maxResultsColumnData;
-				RefexDynamicData droolsExprColumnData = new RefexString(model.getDroolsExpr(), RefexDynamicUsageDescription.read(Search.SEARCH_GLOBAL_ATTRIBUTES.getNid()).getColumnInfo()[2].getColumnName());
-				searchGlobalAttributesData[2] = droolsExprColumnData;
+				if (model.getDroolsExpr() != null) {
+					RefexDynamicData droolsExprColumnData = new RefexString(model.getDroolsExpr(), RefexDynamicUsageDescription.read(Search.SEARCH_GLOBAL_ATTRIBUTES.getNid()).getColumnInfo()[2].getColumnName());
+					searchGlobalAttributesData[2] = droolsExprColumnData;
+				}
 
 				RefexDynamicCAB globalAttributesCAB;
 				// cab.addAnnotationBlueprint(annotationBlueprint); for nesting
@@ -194,8 +195,10 @@ public class SearchConceptHelper {
 					RefexDynamicData[] filterRefexData = new RefexDynamicData[filterRDUD.getColumnInfo().length];
 
 					// Construct and populate RefexDynamicData for search parameter
-					RefexDynamicData searchParameterData = new RefexString(singleStringParameterFilter.getSearchParameter(), RefexDynamicUsageDescription.read(filterConceptSpec.getNid()).getColumnInfo()[0].getColumnName());
-					filterRefexData[0] = searchParameterData;
+					if (singleStringParameterFilter.getSearchParameter() != null) {
+						RefexDynamicData searchParameterData = new RefexString(singleStringParameterFilter.getSearchParameter(), RefexDynamicUsageDescription.read(filterConceptSpec.getNid()).getColumnInfo()[0].getColumnName());
+						filterRefexData[0] = searchParameterData;
+					}
 
 					RefexDynamicCAB filterRefexCAB;
 					// cab.addAnnotationBlueprint(annotationBlueprint); for nesting
@@ -364,7 +367,7 @@ public class SearchConceptHelper {
 						
 						// Loading drools expression
 						RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_DROOLS_EXPR_COLUMN.getDescription());
-						model.setDroolsExpr(droolsExpr.getDataString());
+						model.setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
 						LOG.debug("Read drools expression from " + dud.getRefexName() + " refex: " + model.getDroolsExpr());
 
 					} else if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() /*"Search Lucene Filter"*/)) {
@@ -375,9 +378,7 @@ public class SearchConceptHelper {
 						LuceneFilter newFilter = new LuceneFilter();
 						
 						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_LUCENE_FILTER_PARAMETER_COLUMN.getDescription());
-
-						newFilter.setSearchParameter(searchParamCol.getDataString());
-
+						newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
 						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
 
 						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);
@@ -389,9 +390,7 @@ public class SearchConceptHelper {
 						RegExpFilter newFilter = new RegExpFilter();
 						
 						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_REGEXP_FILTER_PARAMETER_COLUMN.getDescription());
-
-						newFilter.setSearchParameter(searchParamCol.getDataString());
-
+						newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
 						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
 
 						loadEmbeddedSearchFilterAttributes(refex, filterOrderMap, newFilter);

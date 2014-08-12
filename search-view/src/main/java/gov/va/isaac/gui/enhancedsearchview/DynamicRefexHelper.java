@@ -83,7 +83,7 @@ public class DynamicRefexHelper {
 			UUID colUuid = currentCol.getColumnDescriptionConcept();
 			RefexDynamicDataBI colData = data[colIndex];
 
-			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + colData.getDataObject());
+			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + (colData != null ? colData.getDataObject() : null));
 		}
 		
 		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;
