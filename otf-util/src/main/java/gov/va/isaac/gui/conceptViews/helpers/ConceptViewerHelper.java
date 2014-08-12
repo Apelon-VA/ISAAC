@@ -23,6 +23,19 @@ public class ConceptViewerHelper {
 
 	public enum ComponentType {
 		CONCEPT, DESCRIPTION, RELATIONSHIP;
+		
+		@Override
+		public String toString() {
+			if (this.equals(CONCEPT)) {
+				return "Concept";				
+			} else if (this.equals(DESCRIPTION)) {
+				return "Description";
+			} else if (this.equals(RELATIONSHIP)) {
+				return "Relationship";
+			}
+			
+			return "";
+	    }
 	}
 	
 	private ConceptViewerHelper()
@@ -38,7 +51,7 @@ public class ConceptViewerHelper {
 		return snomedAssemblageNid;
 	}
 
-	public static String getSctId(ConceptAttributeVersionBI attr)  {
+	public static String getSctId(ComponentVersionBI attr)  {
 		String sctidString = "Unreleased";
 		// Official approach found int AlternativeIdResource.class
 		
@@ -112,5 +125,5 @@ public class ConceptViewerHelper {
 		
 		return retSet;
 	}
-
+	
 }

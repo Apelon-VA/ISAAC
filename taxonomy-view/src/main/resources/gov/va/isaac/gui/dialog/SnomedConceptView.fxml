@@ -69,7 +69,7 @@
                     </VBox>
                     <VBox fx:id="annotationsRegion" alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
                       <children>
-                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Annotations" />
+                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Refex Extensions" />
                       </children>
                     </VBox>
                   </children>

@@ -268,7 +268,7 @@ public class SummaryController implements PanelControllers {
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
 					actualRefexName.getText(), actualRefexDescription.getText(), processController.getWizard().getColumnInfo(), 
 					processController.getWizard().getParentConcept().getPrimordialUuid(), 
-					processController.getWizard().isAnnotated(), WBUtility.getEC(), WBUtility.getViewCoordinate());
+					processController.getWizard().isAnnotated());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
 			AppContext.getCommonDialogs().showErrorDialog("Error Creating Refex", "Unexpected error creating the Refex", e.getMessage(), summaryPane.getScene().getWindow());

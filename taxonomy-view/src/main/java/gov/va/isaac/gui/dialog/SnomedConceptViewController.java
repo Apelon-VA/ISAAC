@@ -20,8 +20,8 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.treeview.SctTreeViewIsaacView;
 import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.CustomClipboard;
@@ -57,7 +57,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesVersionDdo;
@@ -97,14 +97,18 @@ public class SnomedConceptViewController {
 
     private SctTreeViewIsaacView sctTree;
     
+    private UUID conceptUuid;
+    private int conceptNid = 0;
+    
     public Region getRootNode()
     {
         return anchorPane;
     }
 
     public void setConcept(ConceptChronicleDdo concept) {
+    	conceptUuid = concept.getPrimordialUuid();
 
-        // Update text of labels.
+    	// Update text of labels.
         ConceptAttributesChronicleDdo attributeChronicle = concept.getConceptAttributes();
         final ConceptAttributesVersionDdo conceptAttributes = attributeChronicle.getVersions().get(attributeChronicle.getVersions().size() - 1);
         conceptDefinedLabel.setText(conceptAttributes.isDefined() + "");
@@ -119,7 +123,7 @@ public class SnomedConceptViewController {
 
         fsnLabel.getContextMenu().getItems().add(copyFull);
         
-        AppContext.getService(DragRegistry.class).setupDragOnly(fsnLabel, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(fsnLabel, new SingleConceptIdProvider()
         {
             @Override
             public String getConceptId()
@@ -128,7 +132,7 @@ public class SnomedConceptViewController {
             }
         });
         uuidLabel.setText(concept.getPrimordialUuid().toString());
-        AppContext.getService(DragRegistry.class).setupDragOnly(uuidLabel, new ConceptIdProvider()
+        AppContext.getService(DragRegistry.class).setupDragOnly(uuidLabel, new SingleConceptIdProvider()
         {
             @Override
             public String getConceptId()
@@ -143,7 +147,8 @@ public class SnomedConceptViewController {
         stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
         //TODO make the other view tables aware of the show/hide stamp call
         
-        AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(concept));
+        ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
+        AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
 
         // Update action handlers.
         showInTreeButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -267,7 +272,7 @@ public class SnomedConceptViewController {
                 cellValueFactory, cellFactory);
         
         RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
-        v.setComponent(concept.getPrimordialUuid(), stampToggle.selectedProperty());
+        v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty());
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());
@@ -277,7 +282,7 @@ public class SnomedConceptViewController {
         // Load the inner tree view.
         try {
             sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
-            sctTree.init(new UUID[] {Taxonomies.SNOMED.getUuids()[0], Taxonomies.REFSET_AUX.getUuids()[0], Taxonomies.WB_AUX.getUuids()[0]});
+            sctTree.init(WBUtility.getTreeRoots());
             Region r = sctTree.getView();
             splitRight.getChildren().add(r);
             VBox.setVgrow(r, Priority.ALWAYS);
@@ -293,7 +298,19 @@ public class SnomedConceptViewController {
         return fsnLabel.getText();
     }
 
-    private void setupTable(String[] columns, TableView<StringWithRefList> tableView,
+    public UUID getConceptUuid() {
+		return conceptUuid;
+	}
+
+	public int getConceptNid() {
+		if (conceptNid == 0) {
+			conceptNid = WBUtility.getConceptVersion(conceptUuid).getNid();
+		}
+		
+		return conceptNid;
+	}
+
+	private void setupTable(String[] columns, TableView<StringWithRefList> tableView,
             Callback<TableColumn.CellDataFeatures<StringWithRefList, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory,
             Callback<TableColumn<StringWithRefList, StringWithRef>, TableCell<StringWithRefList, StringWithRef>> cellFactory) {
 

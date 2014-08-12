@@ -19,15 +19,18 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.WBUtility;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import javafx.application.Platform;
@@ -47,7 +50,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -116,7 +118,7 @@ public class ConceptNode implements ConceptLookupCallback
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
 		c_ = initialConcept;
-		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : WBUtility.getDescription(conceptVersion);} : descriptionReader);
 		dropDownOptions_ = dropDownOptions == null ? AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts() : dropDownOptions;
 		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
 		{
@@ -184,44 +186,21 @@ public class ConceptNode implements ConceptLookupCallback
 			}
 		});
 		cm.getItems().add(copyText);
-		
-		CommonMenus.addCommonMenus(cm, isValid, new ConceptIdProvider()
-		{
-			@Override
-			public String getConceptId()
-			{
-				if (c_ != null)
-				{
-					return c_.getPrimordialUuid().toString();
-				}
-				return null;
-			}
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
-			 */
-			@Override
-			public UUID getConceptUUID()
-			{
-				if (c_ != null)
-				{
-					return c_.getPrimordialUuid();
-				}
-				return null;
-			}
 
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
-			 */
+		CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 			@Override
-			public int getNid()
-			{
-				if (c_ != null)
-				{
-					return c_.getNid();
+			public Set<Integer> getNIds() {
+				Set<Integer> nids = new HashSet<>();
+				if (c_ != null) {
+					nids.add(c_.getNid());
 				}
-				return 0;
+				return nids;
 			}
-		});
+		};
+		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+		menuBuilder.setInvisibleWhenfalse(isValid);
+		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
+		
 		cb_.getEditor().setContextMenu(cm);
 
 		updateGUI();
@@ -238,6 +217,7 @@ public class ConceptNode implements ConceptLookupCallback
 		{
 			isValid.set(true);
 			isEmpty.set(false);
+			invalidToolTipText.set("");
 		}
 
 		cb_.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>()
@@ -275,7 +255,7 @@ public class ConceptNode implements ConceptLookupCallback
 			}
 		});
 
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(cb_, new ConceptIdProvider()
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(cb_, new SingleConceptIdProvider()
 		{
 			@Override
 			public String getConceptId()
@@ -350,7 +330,7 @@ public class ConceptNode implements ConceptLookupCallback
 		}
 	}
 
-	public Node getNode()
+	public HBox getNode()
 	{
 		return hbox_;
 	}
@@ -450,6 +430,7 @@ public class ConceptNode implements ConceptLookupCallback
 					AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(c_));
 					isValid.set(true);
 					isEmpty.set(false);
+					invalidToolTipText.set("");
 				}
 				else
 				{

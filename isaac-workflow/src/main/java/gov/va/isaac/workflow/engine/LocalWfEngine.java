@@ -18,18 +18,20 @@
  */
 package gov.va.isaac.workflow.engine;
 
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 import gov.va.isaac.workflow.sync.TasksFetcher;
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
@@ -131,8 +133,8 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
 
             // Upload pending requests
             int countInstances = 0;
-            List<ProcessInstanceCreationRequest> pendingRequests = procApi.getOpenOwnedRequests(userId);
-            for (ProcessInstanceCreationRequest loopP : pendingRequests) {
+            List<ProcessInstanceCreationRequestI> pendingRequests = procApi.getOpenOwnedRequests(userId);
+            for (ProcessInstanceCreationRequestI loopP : pendingRequests) {
                 requestProcessInstanceCreationToServer(loopP);
                 countInstances++;
             }
@@ -152,18 +154,18 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     }
 
     @Override
-    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequest instanceRequest) {
+    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) {
         KieSession session = getRemoteEngine().getKieSession();
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("componentId", instanceRequest.getComponentId());
-        params.put("componentName", instanceRequest.getComponentName());
-        params.put("createdBy", instanceRequest.getUserId());
+        params.put("component_id", instanceRequest.getComponentId());
+        params.put("component_name", instanceRequest.getComponentName());
+        params.put("created_by", instanceRequest.getUserId());
         if (instanceRequest.getParams() != null) {
             params.putAll(instanceRequest.getParams());
         }
         ProcessInstance newInstance = session.startProcess(instanceRequest.getProcessName(), params);
         processRequestsApi.updateRequestStatus(instanceRequest.getId(),
-                ProcessInstanceCreationRequest.RequestStatus.CREATED,
+                ProcessInstanceCreationRequestI.RequestStatus.CREATED,
                 "Instance created on KIE Server: " + getUrl().toString(), newInstance.getId());
     }
 

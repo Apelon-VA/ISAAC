@@ -134,7 +134,7 @@ public class SearchHandler
 						{
 							// Look for description matches.
 							ComponentProperty field = ComponentProperty.DESCRIPTION_TEXT;
-							int limit = 1000;
+							int limit = resultLimit;
 							List<SearchResult> searchResults = descriptionIndexer.query(localQuery, prefixSearch, field, limit, Long.MIN_VALUE);
 							final int resultCount = searchResults.size();
 							LOG.debug(resultCount + " results");
@@ -312,7 +312,7 @@ public class SearchHandler
 						{
 							// Look for description matches.
 							ComponentProperty field = ComponentProperty.DESCRIPTION_TEXT;
-							int limit = 1000;
+							int limit = resultLimit;
 							List<SearchResult> searchResults = descriptionIndexer.query(localQuery, prefixSearch, field, limit, Long.MIN_VALUE);
 							final int resultCount = searchResults.size();
 							LOG.debug(resultCount + " results");

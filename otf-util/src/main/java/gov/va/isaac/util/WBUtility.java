@@ -33,8 +33,10 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
+import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
@@ -43,6 +45,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
+import org.ihtsdo.otf.tcc.api.coordinate.Position;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -51,11 +54,15 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
@@ -81,6 +88,8 @@ import org.slf4j.LoggerFactory;
  * @author jefron
  */
 public class WBUtility {
+	
+	public static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
 
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
@@ -114,16 +123,22 @@ public class WBUtility {
 	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-				int authorNid   = TermAux.USER.getLenient().getConceptNid();
+				int authorNid = TermAux.USER.getLenient().getConceptNid();
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
-				
+
+				//If the ISAAC_DEV_PATH concept exists, use it.
+				if (dataStore.getConcept(ISAAC_DEV_PATH.getUuids()[0]).getUUIDs().size() > 0)
+				{
+					LOG.info("Using path " + ISAAC_DEV_PATH.getDescription() + " as the Edit Coordinate");
+					// Override edit path nid with "ISAAC development path"
+					editPathNid = ISAAC_DEV_PATH.getLenient().getConceptNid();
+				}
 				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
 			} catch (IOException e) {
 				LOG.error("error configuring edit coordinate", e);
 			}
 		}
-
 		return editCoord;
 	}
 
@@ -194,7 +209,28 @@ public class WBUtility {
 		return (fsn != null ? fsn : (preferred != null ? preferred
 				: (bestFound != null ? bestFound : concept.toUserString())));
 	}
+	public static String getFullySpecifiedName(ConceptChronicleBI concept) {
+		try {
+			if (concept.getDescriptions() != null) {
+				for (DescriptionChronicleBI desc : concept.getDescriptions()) {
+					int versionCount = desc.getVersions().size();
+					DescriptionVersionBI<?> descVer = desc.getVersions()
+							.toArray(new DescriptionVersionBI[versionCount])[versionCount - 1];
 
+					if (descVer.getTypeNid() == getFSNTypeNid()) {
+						if (descVer.getStatus() == Status.ACTIVE) {
+								return descVer.getText();
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			// noop
+		}
+		
+		return null;
+	}
+	
 	private static int getFSNTypeNid() {
 		if (fsnTypeNid == null) {
 			try {
@@ -468,6 +504,14 @@ public class WBUtility {
 			try
 			{
 				vc = StandardViewCoordinates.getSnomedStatedLatest();
+				//If the ISAAC_DEV_PATH concept exists, use it.
+				if (dataStore.getConcept(ISAAC_DEV_PATH.getUuids()[0]).getUUIDs().size() > 0)
+				{
+					LOG.info("Using path " + ISAAC_DEV_PATH.getDescription() + " as the View Coordinate");
+					// Start with standard view coordinate and override the path setting to use the ISAAC development path
+					Position position = dataStore.newPosition(dataStore.getPath(ISAAC_DEV_PATH.getLenient().getConceptNid()), Long.MAX_VALUE);
+					vc.setViewPosition(position);
+				}
 			} catch (IOException e) {
 				LOG.error("Unexpected error fetching view coordinates!", e);
 			}
@@ -507,6 +551,10 @@ public class WBUtility {
 		return null;
 	}
 
+	public static boolean isUncommittened(ConceptVersionBI con) {
+		return dataStore.getUncommittedConcepts().contains(con.getChronicle());
+	}
+	
 	public static void commit(ConceptVersionBI con) {
 		try {
 			dataStore.commit(con);
@@ -613,12 +661,21 @@ public class WBUtility {
 
         ConceptChronicleBI newCon = getBuilder().construct(newConCB);
 
+        return newCon;
+    }
+    
+    public static ConceptChronicleBI createAndCommitNewConcept(ConceptChronicleBI parent, String fsn,
+            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+
+        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+
         addUncommitted(newCon);
         commit();
 
         return newCon;
     }
-
+    
     public static ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm) throws ValidationException, IOException, InvalidCAB, ContradictionException {
         LanguageCode lc = LanguageCode.EN_US;
         UUID isA = Snomed.IS_A.getUuids()[0];
@@ -638,15 +695,17 @@ public class WBUtility {
 		dataStore.cancel();
 	}
 
-	public static void cancel(int nid) {
+	public static void forget(int nid) {
 		ConceptVersionBI con = getConceptVersion(nid);
-		cancel(con);
+		forget(con);
 	}
 
-	public static void cancel(ConceptVersionBI con) {
-//		dataStore.cancel(con);
-// 		TODO: Update once OTF version fixed
-		dataStore.cancel();
+	public static void forget(ConceptVersionBI con) {
+		try {
+			dataStore.forget(con.getChronicle());
+		} catch (IOException e) {
+			LOG.error("Unable to forget change to con: " + con.getPrimordialUuid(), e);
+		}
 	}
 
 	public static String getConPrefTerm(int nid) {
@@ -679,5 +738,61 @@ public class WBUtility {
 
 	    return format.format(date);		
 	}
+
+	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
+		DescriptionCAB newDesc = new DescriptionCAB(conNid, typeNid, lang, term, isInitial, IdDirective.GENERATE_HASH); 
+
+		WBUtility.getBuilder().construct(newDesc);
+	}
+
+	public static void createNewRelationship(int conNid, int typeNid, int targetNid, int group, RelationshipType type) throws IOException, InvalidCAB, ContradictionException {
+		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, group, type, IdDirective.GENERATE_HASH);
+		
+		WBUtility.getBuilder().construct(newRel);
+	}
 	
+	//TODO this will be removed, when the DB Builder starts building a single 
+	// root node, and constructing the hierarcy from there....
+	public static UUID[] getTreeRoots()
+	{
+		ArrayList<UUID> roots = new ArrayList<>();
+		roots.add(Taxonomies.SNOMED.getUuids()[0]);
+		roots.add(Taxonomies.REFSET_AUX.getUuids()[0]);
+		roots.add(Taxonomies.WB_AUX.getUuids()[0]);
+		
+		UUID uuid = UUID.fromString("3958d043-9e8c-508e-bf6d-fd9c83a856da");  //loinc root
+		if (getConceptVersion(uuid) != null)
+		{
+			roots.add(uuid);
+		}
+		//RxNorm doesn't have a root...
+		return roots.toArray(new UUID[roots.size()]);
+	}
+	
+	public static void createNewDescription(int conNid, String term) throws IOException, InvalidCAB, ContradictionException {
+		DescriptionCAB newDesc = new DescriptionCAB(conNid, SnomedMetadataRf2.SYNONYM_RF2.getNid(), LanguageCode.EN_US, term, false, IdDirective.GENERATE_HASH); 
+
+		WBUtility.getBuilder().construct(newDesc);
+	}
+
+	public static void createNewRole(int conNid, int typeNid, int targetNid) throws IOException, InvalidCAB, ContradictionException {
+		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, 0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
+		
+		WBUtility.getBuilder().construct(newRel);
+	}
+
+	public static void createNewParent(int conNid, int targetNid) throws ValidationException, IOException, InvalidCAB, ContradictionException {
+		RelationshipCAB newRel = new RelationshipCAB(conNid, SnomedRelType.IS_A.getNid(), targetNid, 0, RelationshipType.STATED_HIERARCHY, IdDirective.GENERATE_HASH);
+		
+		WBUtility.getBuilder().construct(newRel);		
+	}
+
+	public static void addUncommittedNoChecks(ConceptChronicleBI con) {
+		try {
+			dataStore.addUncommittedNoChecks(con);
+		} catch (IOException e) {
+			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
+			LOG.error("addUncommitted failure", e);
+		}
+	}
 }

@@ -19,9 +19,12 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.util.WBUtility;
+
 import java.util.function.Function;
+
 import org.apache.commons.lang.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 
 /**
@@ -62,20 +65,26 @@ public class SimpleDisplayConcept
 	
 	public SimpleDisplayConcept(ConceptVersionBI c, Function<ConceptVersionBI, String> descriptionReader)
 	{
-		Function<ConceptVersionBI, String> dr = (descriptionReader == null ? (conceptVersion) -> {return WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		Function<ConceptVersionBI, String> dr = (descriptionReader == null ? (conceptVersion) -> 
+			{return (conceptVersion == null ? "" : WBUtility.getDescription(conceptVersion));} : descriptionReader);
 		description_ = dr.apply(c);
-		nid_ = c.getNid();
+		nid_ = c == null ? 0 : c.getNid();
 		ignoreChange_ = false;
 	}
 	
 	public SimpleDisplayConcept(ConceptChronicleDdo c, Function<ConceptVersionBI, String> descriptionReader)
 	{
-		this(WBUtility.getConceptVersion(c.getPrimordialUuid()), descriptionReader);
+		this((c == null ? null : WBUtility.getConceptVersion(c.getPrimordialUuid())), descriptionReader);
 	}
 	
 	public SimpleDisplayConcept(ConceptChronicleDdo c)
 	{
-		this(WBUtility.getConceptVersion(c.getPrimordialUuid()), null);
+		this((c == null ? null : WBUtility.getConceptVersion(c.getPrimordialUuid())), null);
+	}
+	
+	public SimpleDisplayConcept(ConceptSpec c)
+	{
+		this((c == null ? null : WBUtility.getConceptVersion(c.getUuids()[0])), null);
 	}
 	
 	public SimpleDisplayConcept(String description)

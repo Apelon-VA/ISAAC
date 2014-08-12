@@ -50,8 +50,8 @@ public enum Images {
     LEGO_EXPORT(setupImage("/icons/silk/16x16/brick_go.png")),
     LEGO_LIST_VIEW(setupImage("/icons/silk/16x16/bricks.png")),
     SEARCH(setupImage("/icons/fugue/16x16/icons-shadowless/application-search-result.png")),
-    CONCEPT_VIEW(setupImage("/icons/misc/16x16/gear.png")),
-    COPY(setupImage("/icons/misc/16x16/document-copy.png")),
+    CONCEPT_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/gear.png")),
+    COPY(setupImage("/icons/fugue/16x16/icons-shadowless/document-copy.png")),
     DELETE(setupImage("/icons/silk/16x16/delete.png")),
     EXCLAMATION(setupImage("/icons/fugue/16x16/icons-shadowless/exclamation-red.png")),
     INFORMATION(setupImage("/icons/fugue/16x16/icons-shadowless/information.png")),
@@ -65,8 +65,10 @@ public enum Images {
     LIST_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/edit-list.png")),
     STAMP(setupImage("/icons/fugue/16x16/icons-shadowless/stamp-medium.png")),
     INBOX(setupImage("/icons/fugue/16x16/icons-shadowless/inbox.png")),
-    COMMIT(setupImage("/icons/fugue/16x16/icons-shadowless/commit-change.png")),
-    CANCEL(setupImage("/icons/fugue/16x16/icons-shadowless/cancel-change.png"));
+    COMMIT(setupImage("/icons/silk/16x16/database_save.png")),
+    CANCEL(setupImage("/icons/misc/16x16/cancel-change.png")),
+    EDIT(setupImage("icons/silk/16x16/pencil.png")),
+    ATTACH(setupImage("icons/silk/16x16/attach.png"));
 
     private final Image image;
 

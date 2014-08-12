@@ -116,7 +116,8 @@ public class DBBuilder extends AbstractMojo {
         File metaData = File.createTempFile("WBMetaData-", ".jbin");
         GenerateMetadataEConcepts gmc =
             new GenerateMetadataEConcepts(metaData, new String[] {
-              "org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic"
+              "org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic",
+              "org.ihtsdo.otf.tcc.api.metadata.binding.Search"
             }, new ConceptSpec[0], false);
         gmc.execute();
         store.loadEconFiles(new File[] {

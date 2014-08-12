@@ -19,17 +19,18 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.ConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.WBUtility;
-import java.util.UUID;
+import gov.va.isaac.util.CommonMenusNIdProvider;
+import java.util.HashSet;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 
 /**
  * {@link ComboBoxSetupTool}
@@ -58,42 +59,24 @@ public class ComboBoxSetupTool
 				isComboBoxPopulated.set(comboBox.getItems().size() > 0);
 			}
 		});
-
-		CommonMenus.addCommonMenus(cm, isComboBoxPopulated, new ConceptIdProvider()
-		{
+		
+		CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 			@Override
-			public String getConceptId()
-			{
-				return comboBox.getValue().getNid() + "";
-			}
-
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getConceptUUID()
-			 */
-			@Override
-			public UUID getConceptUUID()
-			{
-				ConceptVersionBI c = WBUtility.getConceptVersion(getNid());
-				if (c == null)
-				{
-					return null;
+			public Set<Integer> getNIds() {
+				Set<Integer> nids = new HashSet<>();
+				if (comboBox.getValue() != null) {
+					nids.add(comboBox.getValue().getNid());
 				}
-				return c.getPrimordialUuid();
+				return nids;
 			}
-
-			/**
-			 * @see gov.va.isaac.gui.dragAndDrop.ConceptIdProvider#getNid()
-			 */
-			@Override
-			public int getNid()
-			{
-				return comboBox.getValue().getNid();
-			}
-		});
+		};
+		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+		menuBuilder.setInvisibleWhenfalse(isComboBoxPopulated);
+		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 
 		comboBox.setContextMenu(cm);
 
-		AppContext.getService(DragRegistry.class).setupDragAndDrop(comboBox, new ConceptIdProvider()
+		AppContext.getService(DragRegistry.class).setupDragAndDrop(comboBox, new SingleConceptIdProvider()
 		{
 			@Override
 			public String getConceptId()

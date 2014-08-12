@@ -34,8 +34,8 @@ import javafx.scene.input.TransferMode;
 public class DragDetectedEventHandler implements EventHandler<MouseEvent>
 {
 	private Node node_;
-	private ConceptIdProvider idProvider_;
-	public DragDetectedEventHandler(Node n, ConceptIdProvider idProvider)
+	private SingleConceptIdProvider idProvider_;
+	public DragDetectedEventHandler(Node n, SingleConceptIdProvider idProvider)
 	{
 		node_ = n;
 		idProvider_ = idProvider;

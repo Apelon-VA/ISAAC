@@ -164,6 +164,8 @@ public class WizardController {
 		
 		ConceptCB newConCB = new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentCons);
 										
+		newConCB.setDefined(!isPrimitive);
+		
 		ConceptChronicleBI newCon = WBUtility.getBuilder().construct(newConCB);
 //		WBUtility.addUncommitted(newCon);
 

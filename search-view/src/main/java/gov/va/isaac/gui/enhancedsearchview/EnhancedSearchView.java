@@ -129,6 +129,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
 	 */
 	public String getViewTitle()
 	{
-		return "Enhanced Snomed Search";
+		return "Enhanced Search";
 	}
 }
