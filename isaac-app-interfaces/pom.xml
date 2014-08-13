@@ -26,7 +26,8 @@
 	</dependencies>
 
 	<profiles>
-		<!-- TODO maybe bind this in?  For now, maestrodev runs it seperately -->
+		<!-- TODO fix the classifier on this if/when maven ever gets around to releasing 2.9.2 of this plugin... which finally 
+		has the ability to set the classifier -->
 		<profile>
 			<id>docbook</id>
 			<activation>
@@ -37,6 +38,15 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<phase>package</phase>
+								<id>docbook</id>
+							</execution>
+						</executions>
 						<configuration>
 							<doclet>org.dbdoclet.doclet.docbook.DocBookDoclet</doclet>
 							<docletArtifact>
