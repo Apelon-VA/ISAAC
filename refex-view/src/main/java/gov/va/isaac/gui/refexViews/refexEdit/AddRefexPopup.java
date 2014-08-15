@@ -662,11 +662,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				value = (Boolean) ci.getDefaultColumnValue();
 			}
-			return (value == null ? null : new RefexBoolean(value, ci.getColumnName()));
+			return (value == null ? null : new RefexBoolean(value));
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
-			return new RefexByteArray((byte[])data, ci.getColumnName());
+			return new RefexByteArray((byte[])data);
 		}
 		else if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType() || RefexDynamicDataType.FLOAT == ci.getColumnDataType()
 				|| RefexDynamicDataType.INTEGER == ci.getColumnDataType() || RefexDynamicDataType.LONG == ci.getColumnDataType()
@@ -680,27 +680,27 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType())
 			{
-				return new RefexDouble(text.length() > 0 ? Double.parseDouble(text) : (Double)ci.getDefaultColumnValue(), ci.getColumnName());
+				return new RefexDouble(text.length() > 0 ? Double.parseDouble(text) : (Double)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.FLOAT == ci.getColumnDataType())
 			{
-				return new RefexFloat(text.length() > 0 ? Float.parseFloat(text) : (Float)ci.getDefaultColumnValue(), ci.getColumnName());
+				return new RefexFloat(text.length() > 0 ? Float.parseFloat(text) : (Float)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.INTEGER == ci.getColumnDataType())
 			{
-				return new RefexInteger(text.length() > 0 ? Integer.parseInt(text) : (Integer)ci.getDefaultColumnValue(), ci.getColumnName());
+				return new RefexInteger(text.length() > 0 ? Integer.parseInt(text) : (Integer)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.LONG == ci.getColumnDataType())
 			{
-				return new RefexLong(text.length() > 0 ? Long.parseLong(text) : (Long)ci.getDefaultColumnValue(), ci.getColumnName());
+				return new RefexLong(text.length() > 0 ? Long.parseLong(text) : (Long)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.STRING == ci.getColumnDataType())
 			{
-				return new RefexString(text.length() > 0 ? text : (String)ci.getDefaultColumnValue(), ci.getColumnName());
+				return new RefexString(text.length() > 0 ? text : (String)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.UUID == ci.getColumnDataType())
 			{
-				return new RefexUUID(text.length() > 0 ? UUID.fromString(text) : (UUID)ci.getDefaultColumnValue(), ci.getColumnName());
+				return new RefexUUID(text.length() > 0 ? UUID.fromString(text) : (UUID)ci.getDefaultColumnValue());
 			}
 			else
 			{
@@ -714,12 +714,12 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				return null;
 			}
-			return new RefexNid(cn.getConcept().getNid(), ci.getColumnName());
+			return new RefexNid(cn.getConcept().getNid());
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
 		{
 			//TODO implement polymorphic support
-			return new RefexString("", ci.getColumnName());
+			return new RefexString("");
 		}
 		else
 		{
