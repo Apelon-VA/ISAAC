@@ -19,13 +19,8 @@
 package gov.va.isaac.gui.listview;
 
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
-
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -50,7 +45,8 @@ import javafx.scene.layout.BorderPane;
 
 public class ListBatchOperationsRunnerController
 {
-	private static ObservableList<SimpleDisplayConcept> changeList;
+	@SuppressWarnings("unused")
+	private ObservableList<SimpleDisplayConcept> changeList;
 	@FXML private Button okButton;
 	@FXML private Label titleLabel;
 	@FXML private ProgressBar progressBar;
@@ -73,7 +69,7 @@ public class ListBatchOperationsRunnerController
 		loader.load();
 		ListBatchOperationsRunnerController lborc = loader.getController();
 		lborc.cancelRequested_ = cancelRequested;
-		changeList = items;
+		lborc.changeList = items;
 		
 		return lborc;
 	}

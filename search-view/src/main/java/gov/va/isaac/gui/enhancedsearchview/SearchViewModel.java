@@ -42,6 +42,7 @@ public class SearchViewModel {
 	public static class LuceneFilter implements SingleStringParameterFilter {
 		String searchParameter;
 		
+		@Override
 		public String getSearchParameter() {
 			return searchParameter;
 		}
@@ -66,6 +67,7 @@ public class SearchViewModel {
 	public static class RegExpFilter implements SingleStringParameterFilter {
 		String searchParameter;
 		
+		@Override
 		public String getSearchParameter() {
 			return searchParameter;
 		}

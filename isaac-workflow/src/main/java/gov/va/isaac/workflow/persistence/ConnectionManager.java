@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ConnectionManager {
 
-    private static final String framework = "embedded";
+    //private static final String framework = "embedded";
     private static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String protocol = "jdbc:derby:";
     

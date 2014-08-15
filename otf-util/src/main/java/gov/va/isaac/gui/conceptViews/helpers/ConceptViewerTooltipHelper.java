@@ -54,7 +54,7 @@ public class ConceptViewerTooltipHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerTooltipHelper.class);
 	private static boolean controlKeyPressed = false;
 
-	EventHandler getCompTooltipEnterHandler(ComponentVersionBI comp, ComponentType type) {
+	EventHandler<Event> getCompTooltipEnterHandler(ComponentVersionBI comp, ComponentType type) {
 		return new EventHandler<Event> () {
 			@Override
 			public void handle(Event event) {
@@ -63,10 +63,10 @@ public class ConceptViewerTooltipHelper {
 					StringBuffer tpText = new StringBuffer("There are no refsets for this component");
 	
 					try {
-						Collection<? extends RefexVersionBI> annots = comp.getAnnotationsActive(WBUtility.getViewCoordinate());
+						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(WBUtility.getViewCoordinate());
 						
 						boolean initialIteration = true;
-						for (RefexVersionBI annot : annots) {
+						for (RefexVersionBI<?> annot : annots) {
 							if (annot.getAssemblageNid() != ConceptViewerHelper.getSnomedAssemblageNid()) {
 								try {
 									if (initialIteration) {
@@ -93,7 +93,7 @@ public class ConceptViewerTooltipHelper {
 				}
 			}
 
-			private String createRefsetTooltip(RefexVersionBI annot) throws IOException, ContradictionException {
+			private String createRefsetTooltip(RefexVersionBI<?> annot) throws IOException, ContradictionException {
 				String refset = WBUtility.getConPrefTerm(annot.getAssemblageNid());
 				StringBuffer strBuf = new StringBuffer();
 
@@ -113,14 +113,14 @@ public class ConceptViewerTooltipHelper {
 					strBuf.append(" with extension content:\n");
 
 					if (annot.getRefexType() == RefexType.CID) {
-						int nidExt = ((RefexNidVersionBI)annot).getNid1();
+						int nidExt = ((RefexNidVersionBI<?>)annot).getNid1();
 						String compExt = WBUtility.getConceptVersion(nidExt).getPreferredDescription().getText();
 						strBuf.append("Component #1: " + compExt);
 					} else if (annot.getRefexType() == RefexType.STR) {
-						String strExt = ((RefexStringVersionBI)annot).getString1();
+						String strExt = ((RefexStringVersionBI<?>)annot).getString1();
 						strBuf.append("String #1: " + strExt);
 					} else if (annot.getRefexType() == RefexType.LONG) {
-						String longExt = Long.toString(((RefexLongVersionBI)annot).getLong1());
+						String longExt = Long.toString(((RefexLongVersionBI<?>)annot).getLong1());
 						strBuf.append("String #1: " + longExt);
 					}
 				}
@@ -131,7 +131,7 @@ public class ConceptViewerTooltipHelper {
 		};
 	}
 
-	EventHandler getCompTooltipExitHandler(ComponentVersionBI comp, ComponentType type) {
+	EventHandler<Event> getCompTooltipExitHandler(ComponentVersionBI comp, ComponentType type) {
 		return new EventHandler<Event>() {
 
 			@Override
@@ -142,7 +142,7 @@ public class ConceptViewerTooltipHelper {
 		};
 	}
 
-	private String createDescTooltipText(DescriptionVersionBI desc) {
+	private String createDescTooltipText(DescriptionVersionBI<?> desc) {
 		String lang = desc.getLang();
 		String text = desc.getText();
 		String type = WBUtility.getConPrefTerm(desc.getTypeNid());
@@ -151,11 +151,11 @@ public class ConceptViewerTooltipHelper {
 		return "Term: " + text + "\nType: " + type + "  Case Significant: " + caseSig + "  Language: " + lang + getStampTooltip(desc);
 	}
 
-	private String createConTooltipText(ConceptAttributeVersionBI attr) {
+	private String createConTooltipText(ConceptAttributeVersionBI<?> attr) {
 		return "SctId: " + ConceptViewerHelper.getSctId(attr)+ " " + ConceptViewerHelper.getPrimDef(attr) + getStampTooltip(attr);
 	}
 	
-	private String createRelTooltipText(RelationshipVersionBI rel) {
+	private String createRelTooltipText(RelationshipVersionBI<?> rel) {
 
 		
 		String refinCharType = "";
@@ -180,11 +180,11 @@ public class ConceptViewerTooltipHelper {
 		
 		String txt;
 		if (type == ComponentType.CONCEPT) {
-			txt = createConTooltipText((ConceptAttributeVersionBI)comp);
+			txt = createConTooltipText((ConceptAttributeVersionBI<?>)comp);
 		} else if (type == ComponentType.DESCRIPTION) {
-			txt = createDescTooltipText((DescriptionVersionBI)comp);
+			txt = createDescTooltipText((DescriptionVersionBI<?>)comp);
 		} else {
-			txt = createRelTooltipText((RelationshipVersionBI)comp);
+			txt = createRelTooltipText((RelationshipVersionBI<?>)comp);
 		}
 
 		tp.setText(txt);
@@ -194,7 +194,7 @@ public class ConceptViewerTooltipHelper {
 
 
 	// Control Handling Functionality
-	public EventHandler getCtrlKeyReleasedEventHandler(){
+	public EventHandler<KeyEvent> getCtrlKeyReleasedEventHandler(){
 		return new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
@@ -206,7 +206,7 @@ public class ConceptViewerTooltipHelper {
 		};
 	}
 
-	public EventHandler getCtrlKeyPressEventHandler(){
+	public EventHandler<KeyEvent> getCtrlKeyPressEventHandler(){
 		return new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {

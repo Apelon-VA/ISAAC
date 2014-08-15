@@ -389,6 +389,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(MouseEvent event) {
 						if (event.getButton() == MouseButton.SECONDARY) {
+							@SuppressWarnings("unchecked")
 							TableRow<SimpleDisplayConcept> r = (TableRow<SimpleDisplayConcept>)event.getSource();
 							if (r.getIndex() < r.getTableView().getItems().size()) {
 								CommonMenusDataProvider dp = new CommonMenusDataProvider() {

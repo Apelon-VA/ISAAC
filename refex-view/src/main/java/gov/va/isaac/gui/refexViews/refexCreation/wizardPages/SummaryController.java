@@ -21,7 +21,6 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
-import gov.va.isaac.util.WBUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
