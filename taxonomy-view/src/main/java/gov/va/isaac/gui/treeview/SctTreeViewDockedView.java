@@ -92,7 +92,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					sctTreeView_.init(WBUtility.getTreeRoots());
+					sctTreeView_.init(WBUtility.ISAAC_ROOT.getUuids()[0]);
 					hasBeenInited_ = true;
 				}
 			}
