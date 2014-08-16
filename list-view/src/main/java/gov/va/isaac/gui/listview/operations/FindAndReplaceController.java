@@ -33,7 +33,6 @@ import java.util.regex.PatternSyntaxException;
 
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -49,8 +48,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.CaseSensitive;
-import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.slf4j.LoggerFactory;
 
 /**

@@ -82,11 +82,12 @@ public class DefinitionController implements PanelControllers {
 	private Map<Node, ConceptNode> nodeToConMap = new HashMap<>();
 	private UpdateableBooleanBinding parentsBinding;
 
-	private static final Logger logger = LoggerFactory.getLogger(DefinitionController.class);
+	private final Logger logger = LoggerFactory.getLogger(DefinitionController.class);
 
 	@Override
 	public void initialize() {
 		
+		logger.debug("Creating a DefinitionController");
 		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {

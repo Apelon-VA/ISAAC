@@ -60,7 +60,7 @@ public class DescriptionModelingPopup extends ModelingPopup
 	private ChoiceBox<String> languageCodeCb;
 	private ChoiceBox<String> typeCb;
 	private TextField termTf;
-	private DescriptionVersionBI desc;
+	private DescriptionVersionBI<?> desc;
 	private SimpleBooleanProperty langCodeNewSelected;
 	private SimpleBooleanProperty textNewSelected;
 	private SimpleBooleanProperty typeNewSelected;
@@ -69,7 +69,7 @@ public class DescriptionModelingPopup extends ModelingPopup
 	@Override
 	protected void finishInit()
 	{
-		desc = (DescriptionVersionBI)origComp;
+		desc = (DescriptionVersionBI<?>)origComp;
 		termTf.setText(desc.getText());
 
 		try {
@@ -143,15 +143,15 @@ public class DescriptionModelingPopup extends ModelingPopup
 		isCapCb.getItems().add("False");
 		isCapCb.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal) {
 				if (desc != null) {
 					 if ((desc.isInitialCaseSignificant() && newVal.equals("False")) ||
-					     (!desc.isInitialCaseSignificant() && newVal.equals("True"))) {
+						(!desc.isInitialCaseSignificant() && newVal.equals("True"))) {
 						 modificationMade.set(true);
-					 } else {
+					} else {
 						modificationMade.set(false);
 						reasonSaveDisabled_.set("Cannot save unless original content changed");
-					 }
+					}
 				} else if (!newVal.equals(SELECT_VALUE)) {
 					isCapNewSelected.set(true);
 				} else {
@@ -174,7 +174,7 @@ public class DescriptionModelingPopup extends ModelingPopup
 	private void createLangCode() {
 		createTitleLabel("Language Code");
 		
-		Set<String> noDialectCodes = new HashSet();
+		Set<String> noDialectCodes = new HashSet<>();
 		for (LanguageCode val : LanguageCode.values()) {
 			noDialectCodes.add(val.getFormatedLanguageNoDialectCode());
 		}
@@ -185,7 +185,7 @@ public class DescriptionModelingPopup extends ModelingPopup
 		languageCodeCb.getItems().addAll(noDialectCodes);
 		languageCodeCb.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal) {
 				if (desc != null) {
 					if (!desc.getLang().equals(newVal.toString())) { 
 						modificationMade.set(true);
@@ -254,7 +254,7 @@ public class DescriptionModelingPopup extends ModelingPopup
 		typeCb.getItems().add("Definition");
 		typeCb.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal) {
 				if (desc != null) {
 					if (desc.getTypeNid() != getSelectedType()) {
 						modificationMade.set(true);

@@ -21,5 +21,5 @@ public abstract class RelRow extends Row {
 		super(labelHelper);
 	}
 
-	abstract public void addRelRow(RelationshipVersionBI rel);
+	abstract public void addRelRow(RelationshipVersionBI<?> rel);
 }

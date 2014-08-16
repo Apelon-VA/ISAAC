@@ -7,7 +7,6 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
@@ -21,7 +20,7 @@ public class DetailRelRow extends RelRow {
 	}
 
 	@Override
-	public void addRelRow(RelationshipVersionBI rel) {
+	public void addRelRow(RelationshipVersionBI<?> rel) {
 		Rectangle rec = createAnnotRectangle(rel);
 		Label relLabel;
 		if (isDetailed) {
@@ -43,18 +42,18 @@ public class DetailRelRow extends RelRow {
 
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
-		currentPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		currentPane.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-		currentPane.setConstraints(relTypeLabel,  3,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-		currentPane.setConstraints(relGroupLabel,  4,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-		currentPane.setConstraints(relCharLabel,  5,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-		currentPane.setConstraints(relRefLabel,  6,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		GridPane.setConstraints(relTypeLabel,  3,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		GridPane.setConstraints(relGroupLabel,  4,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		GridPane.setConstraints(relCharLabel,  5,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		GridPane.setConstraints(relRefLabel,  6,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
 		
-		currentPane.setMargin(relLabel, new Insets(0, 20, 0, 20));
-		currentPane.setMargin(relTypeLabel, new Insets(0, 20, 0, 20));
-		currentPane.setMargin(relGroupLabel, new Insets(0, 20, 0, 20));
-		currentPane.setMargin(relCharLabel, new Insets(0, 20, 0, 20));
-		currentPane.setMargin(relRefLabel, new Insets(0, 0, 0, 20));
+		GridPane.setMargin(relLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(relTypeLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(relGroupLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(relCharLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(relRefLabel, new Insets(0, 0, 0, 20));
 
 		currentPane.addRow(counter++, rec, relLabel, relTypeLabel, relGroupLabel, relCharLabel, relRefLabel);
 	}

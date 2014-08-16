@@ -23,7 +23,6 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
-import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter;
 import gov.va.isaac.gui.enhancedsearchview.SearchViewModel.LuceneFilter;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
@@ -40,7 +39,6 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -76,8 +74,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -87,7 +83,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
@@ -95,16 +90,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Popup;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Callback;
-
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -138,6 +129,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			this.display = display;
 		}
 		
+		@Override
 		public String toString() {
 			return display;
 		}
@@ -151,7 +143,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private ComboBox<SearchDisplayConcept> savedSearchesComboBox;
 	@FXML private Button searchButton;
 	
-    // TODO: temporarily used along with currentViewCoordinate ViewCoordinate as model for single Lucene Search
+	// TODO: temporarily used along with currentViewCoordinate ViewCoordinate as model for single Lucene Search
 	@FXML private TextField searchText;
 	@FXML private Label totalResultsDisplayedLabel;
 	@FXML private Pane pane;
@@ -160,18 +152,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
 	@FXML private Button exportSearchResultsToListBatchViewButton;
 	@FXML private Button exportSearchResultsToWorkflowButton;
-    @FXML private ProgressIndicator searchProgress;
-    @FXML private Label totalResultsSelectedLabel;
-    @FXML private Button resetDefaultsButton;
-    
-    private ListView<Filter> filterListView;
+	@FXML private ProgressIndicator searchProgress;
+	@FXML private Label totalResultsSelectedLabel;
+	@FXML private Button resetDefaultsButton;
 
 
-    private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
-    private SearchHandle ssh = null;
-    
-    // TODO: temporarily used along with searchText TextField as model for single Lucene Search
-    private ViewCoordinate currentSearchViewCoordinate = WBUtility.getViewCoordinate();
+	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
+	private SearchHandle ssh = null;
+
+	// TODO: temporarily used along with searchText TextField as model for single Lucene Search
+	private ViewCoordinate currentSearchViewCoordinate = WBUtility.getViewCoordinate();
 
 	private Window windowForTableViewExportDialog;
 
@@ -210,17 +200,17 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		initializeWorkflowServices();
 	
-        final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
-        searchButton.disableProperty().bind(searchTextValid.not());
-        searchProgress.visibleProperty().bind(searchRunning);
+		final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
+		searchButton.disableProperty().bind(searchTextValid.not());
+		searchProgress.visibleProperty().bind(searchRunning);
 
-        maxResultsCustomTextFieldLabel.setText("Max Results");
-        maxResultsCustomTextField = new CustomTextField();
-        maxResultsCustomTextField.setNumericOnly(true);
-        maxResultsCustomTextField.setMaxWidth(50);
-        ObservableList<Node> hBoxChildren = maxResultsHBox.getChildren();
-        hBoxChildren.add(maxResultsCustomTextField);
-        
+		maxResultsCustomTextFieldLabel.setText("Max Results");
+		maxResultsCustomTextField = new CustomTextField();
+		maxResultsCustomTextField.setNumericOnly(true);
+		maxResultsCustomTextField.setMaxWidth(50);
+		ObservableList<Node> hBoxChildren = maxResultsHBox.getChildren();
+		hBoxChildren.add(maxResultsCustomTextField);
+		
 		// Search results table
 		initializeSearchResultsTable();
 		initializeAggregationTypeComboBox();
@@ -241,10 +231,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		searchButton.setOnAction((action) -> {
 			 if (searchRunning.get() && ssh != null) {
-                 ssh.cancel();
-             } else {
-                 search();
-             }
+				 ssh.cancel();
+			 } else {
+				 search();
+			 }
 		});
 		searchRunning.addListener((observable, oldValue, newValue) -> {
 			if (searchRunning.get()) {
@@ -388,13 +378,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 //	}
 	
 //	public void showSaveSearchDialogView(Stage primaryStage) throws IOException {
-//        Parent root = FXMLLoader.load(EnhancedSearchViewController.class.getResource("SaveSearchDialogView.fxml"));
-//        primaryStage.initModality(Modality.APPLICATION_MODAL); // 1 Add one
-//        Scene scene = new Scene(root);        
-//        primaryStage.setScene(scene);
-//        primaryStage.initOwner(primaryStage.getScene().getWindow());// 2 Add two
-//        primaryStage.show();
-//    }
+//		Parent root = FXMLLoader.load(EnhancedSearchViewController.class.getResource("SaveSearchDialogView.fxml"));
+//		primaryStage.initModality(Modality.APPLICATION_MODAL); // 1 Add one
+//		Scene scene = new Scene(root);		
+//		primaryStage.setScene(scene);
+//		primaryStage.initOwner(primaryStage.getScene().getWindow());// 2 Add two
+//		primaryStage.show();
+//	}
 
 	private void saveSearch() {
 		LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
@@ -445,7 +435,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				final String nameToSave = specifiedDescription + " by " + System.getProperty("user.name") + " on " + formattedDateTime;
 				final String specifiedDescriptionToSave = specifiedDescription;
 
-			    // Save Search popup
+				// Save Search popup
 				Popup saveSearchPopup = new Popup();
 				final TextField saveSearchPopupFullySpecifiedNameTextField = new TextField();
 				final TextField saveSearchPopupPreferredTermDescriptionTextField = new TextField();
@@ -668,7 +658,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				}
 			});
 		}
-    }
+	}
 
 	// MyTableCellCallback adds hooks for double-click and/or other mouse actions to String cells
 	private class MyTableCellCallback<T> implements Callback<TableColumn<CompositeSearchResult, T>, TableCell<CompositeSearchResult, T>> {
@@ -725,6 +715,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					refreshTotalResultsSelectedLabel();
 					
 					if (event.getButton() == MouseButton.SECONDARY) {
+						@SuppressWarnings("unchecked")
 						TableCell<CompositeSearchResult, T> c = (TableCell<CompositeSearchResult, T>) event.getSource();
 						
 						if (c != null && c.getIndex() < c.getTableView().getItems().size()) {
@@ -815,6 +806,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		scoreCol.setCellValueFactory((param) -> new SimpleDoubleProperty(param.getValue().getBestScore()));
 		scoreCol.setCellFactory(new MyTableCellCallback<Number>());
 		scoreCol.setCellFactory(new MyTableCellCallback<Number>() {
+			@Override
 			public TableCell<CompositeSearchResult, Number> createNewCell() {
 
 				final DecimalFormat fmt = new DecimalFormat("#.####");
@@ -983,18 +975,18 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		searchResultsTable.getColumns().add(nidCol);
 
 		AppContext.getService(DragRegistry.class).setupDragOnly(searchResultsTable, new SingleConceptIdProvider() {
-            @Override
-            public String getConceptId()
-            {
-                CompositeSearchResult dragItem = searchResultsTable.getSelectionModel().getSelectedItem();
-                if (dragItem != null)
-                {
-                	LOG.debug("Dragging concept id " + dragItem.getConceptNid());
-                    return dragItem.getConceptNid() + "";
-                }
-                return null;
-            }
-        });
+			@Override
+			public String getConceptId()
+			{
+				CompositeSearchResult dragItem = searchResultsTable.getSelectionModel().getSelectedItem();
+				if (dragItem != null)
+				{
+					LOG.debug("Dragging concept id " + dragItem.getConceptNid());
+					return dragItem.getConceptNid() + "";
+				}
+				return null;
+			}
+		});
 		
 		Collections.sort(searchResultsTableBackup, new CompositeSearchResultComparator());
 		searchResultsTable.getItems().addAll(searchResultsTableBackup);
@@ -1068,7 +1060,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				} else {
 					LOG.trace("savedSearchesComboBox new value: " + t1);
 				}
-			}    
+			}	
 		});
 
 		savedSearchesComboBox.setEditable(true);
@@ -1144,60 +1136,60 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			initializeSearchResultsTable();
 		});
 
-        aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
-        aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
+		aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
+		aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
 	}
 	
 	private synchronized void search() {
-        // Sanity check if search already running.
-        if (searchRunning.get()) {
-            return;
-        }
+		// Sanity check if search already running.
+		if (searchRunning.get()) {
+			return;
+		}
 
-        searchRunning.set(true);
-        searchResultsTable.getItems().clear();
+		searchRunning.set(true);
+		searchResultsTable.getItems().clear();
 
 		refreshTotalResultsDisplayedLabel();
 		
-        // "we get called back when the results are ready."
-        switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
-        case  CONCEPT:
-        {
-        	SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(searchText.getText());
-        	builder.setCallback(this);
-        	builder.setTaskId(Tasks.SEARCH.ordinal());
-        	if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-        		Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-        		if (maxResults != null && maxResults > 0) {
-        			builder.setSizeLimit(maxResults);
-        		}
-        	}
-            ssh = SearchHandler.doConceptSearch(builder);
-            break;
-        }
-        case DESCRIPTION:
-        {
-        	SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(searchText.getText());
-        	builder.setCallback(this);
-        	builder.setTaskId(Tasks.SEARCH.ordinal());
-        	if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-        		Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-        		if (maxResults != null && maxResults > 0) {
-        			builder.setSizeLimit(maxResults);
-        		}
-        	}
-        	ssh = SearchHandler.doDescriptionSearch(builder);
-        	break;
-        }
-        default:
-        	String title = "Unsupported Aggregation Type";
-        	String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
-        	LOG.error(title);
-        	AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
+		// "we get called back when the results are ready."
+		switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
+		case  CONCEPT:
+		{
+			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(searchText.getText());
+			builder.setCallback(this);
+			builder.setTaskId(Tasks.SEARCH.ordinal());
+			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+				if (maxResults != null && maxResults > 0) {
+					builder.setSizeLimit(maxResults);
+				}
+			}
+			ssh = SearchHandler.doConceptSearch(builder);
+			break;
+		}
+		case DESCRIPTION:
+		{
+			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(searchText.getText());
+			builder.setCallback(this);
+			builder.setTaskId(Tasks.SEARCH.ordinal());
+			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+				if (maxResults != null && maxResults > 0) {
+					builder.setSizeLimit(maxResults);
+				}
+			}
+			ssh = SearchHandler.doDescriptionSearch(builder);
+			break;
+		}
+		default:
+			String title = "Unsupported Aggregation Type";
+			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
+			LOG.error(title);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
 
-        	break;
-        }
-    }
+			break;
+		}
+	}
 
 	public Pane getRoot() {
 		return pane;
@@ -1207,7 +1199,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		String extract(TableColumn<CompositeSearchResult, ?> col);
 	}
 	private static String getTableViewRow(TableView<CompositeSearchResult> table, String delimiter, String lineTerminator, ColumnValueExtractor extractor) {
-    	ObservableList<TableColumn<CompositeSearchResult, ?>> columns = table.getColumns();
+		ObservableList<TableColumn<CompositeSearchResult, ?>> columns = table.getColumns();
 		StringBuilder row = new StringBuilder();
 
 		for (int colIndex = 0; colIndex < columns.size(); ++colIndex) {
@@ -1216,7 +1208,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				// Ensure that newline is written even if column is not
 				if (colIndex == (columns.size() - 1) && lineTerminator != null) {
 					// Append newline to row
-     				row.append(lineTerminator);
+	 				row.append(lineTerminator);
 				}
 
 				continue;
@@ -1252,55 +1244,55 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		final String delimiter = "\t";
 		final String newLine = "\n";
 		
-        //Set extension filter
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
-        fileChooser.getExtensionFilters().add(extFilter);
-        
-        //Show save file dialog
-        File file = fileChooser.showSaveDialog(windowForTableViewExportDialog);
+		//Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+		fileChooser.getExtensionFilters().add(extFilter);
+		
+		//Show save file dialog
+		File file = fileChooser.showSaveDialog(windowForTableViewExportDialog);
 
 		//String tempDir = System.getenv("TEMP");
 		//File file = new File(tempDir + File.separator + "EnhanceSearchViewControllerTableViewData.csv");
 
-        if (file == null) {
-        	LOG.warn("FileChooser returned null export file.  Cancel possibly requested.");
-        } else { // if (file != null)
-        	LOG.debug("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
+		if (file == null) {
+			LOG.warn("FileChooser returned null export file.  Cancel possibly requested.");
+		} else { // if (file != null)
+			LOG.debug("Writing TableView data to file \"" + file.getAbsolutePath() + "\"...");
 
-        	Writer writer = null;
-        	try {
-        		writer = new BufferedWriter(new FileWriter(file));
-        		String headerRow = getTableViewRow(searchResultsTable, delimiter, newLine, (col) -> col.getText());
+			Writer writer = null;
+			try {
+				writer = new BufferedWriter(new FileWriter(file));
+				String headerRow = getTableViewRow(searchResultsTable, delimiter, newLine, (col) -> col.getText());
 
-        		LOG.trace(headerRow);
-        		writer.write(headerRow);
+				LOG.trace(headerRow);
+				writer.write(headerRow);
 
-        		for (int rowIndex = 0; rowIndex < searchResultsTable.getItems().size(); ++rowIndex) {
-        			final int finalRowIndex = rowIndex;
-        			String dataRow = getTableViewRow(searchResultsTable, delimiter, newLine, (col) -> col.getCellObservableValue(finalRowIndex).getValue().toString());
-        			LOG.trace(dataRow);
-        			writer.write(dataRow);
-        		}
+				for (int rowIndex = 0; rowIndex < searchResultsTable.getItems().size(); ++rowIndex) {
+					final int finalRowIndex = rowIndex;
+					String dataRow = getTableViewRow(searchResultsTable, delimiter, newLine, (col) -> col.getCellObservableValue(finalRowIndex).getValue().toString());
+					LOG.trace(dataRow);
+					writer.write(dataRow);
+				}
 
-        		LOG.debug("Wrote " + searchResultsTable.getItems().size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
-        	} catch (IOException e) {
-        		LOG.error("FAILED writing TableView data to file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-        		e.printStackTrace();
-        	}
-        	finally {
-        		try {
-        			writer.flush();
-        		} catch (IOException e) {
-        			LOG.error("FAILED flushing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-        			e.printStackTrace();
-        		}
-        		try {
-        			writer.close();
-        		} catch (IOException e) {
-        			LOG.error("FAILED closing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-        			e.printStackTrace();
-        		}
-        	}
-        }
+				LOG.debug("Wrote " + searchResultsTable.getItems().size() + " rows of TableView data to file \"" + file.getAbsolutePath() + "\".");
+			} catch (IOException e) {
+				LOG.error("FAILED writing TableView data to file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+				e.printStackTrace();
+			}
+			finally {
+				try {
+					writer.flush();
+				} catch (IOException e) {
+					LOG.error("FAILED flushing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+					e.printStackTrace();
+				}
+				try {
+					writer.close();
+				} catch (IOException e) {
+					LOG.error("FAILED closing TableView data file \"" + file.getAbsolutePath() + "\". Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

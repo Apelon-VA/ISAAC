@@ -141,12 +141,12 @@ public class SearchConceptHelper {
 				oos.flush();
 
 				// Construct and populate RefexDynamicData for View Coordinate
-				RefexDynamicData viewCoordinateColumnData = new RefexByteArray(output.toByteArray(), RefexDynamicUsageDescription.read(Search.SEARCH_GLOBAL_ATTRIBUTES.getNid()).getColumnInfo()[0].getColumnName());
+				RefexDynamicData viewCoordinateColumnData = new RefexByteArray(output.toByteArray());
 				searchGlobalAttributesData[0] = viewCoordinateColumnData;
-				RefexDynamicData maxResultsColumnData = new RefexInteger(model.getMaxResults(), RefexDynamicUsageDescription.read(Search.SEARCH_GLOBAL_ATTRIBUTES.getNid()).getColumnInfo()[1].getColumnName());
+				RefexDynamicData maxResultsColumnData = new RefexInteger(model.getMaxResults());
 				searchGlobalAttributesData[1] = maxResultsColumnData;
 				if (model.getDroolsExpr() != null) {
-					RefexDynamicData droolsExprColumnData = new RefexString(model.getDroolsExpr(), RefexDynamicUsageDescription.read(Search.SEARCH_GLOBAL_ATTRIBUTES.getNid()).getColumnInfo()[2].getColumnName());
+					RefexDynamicData droolsExprColumnData = new RefexString(model.getDroolsExpr());
 					searchGlobalAttributesData[2] = droolsExprColumnData;
 				}
 
@@ -196,7 +196,7 @@ public class SearchConceptHelper {
 
 					// Construct and populate RefexDynamicData for search parameter
 					if (singleStringParameterFilter.getSearchParameter() != null) {
-						RefexDynamicData searchParameterData = new RefexString(singleStringParameterFilter.getSearchParameter(), RefexDynamicUsageDescription.read(filterConceptSpec.getNid()).getColumnInfo()[0].getColumnName());
+						RefexDynamicData searchParameterData = new RefexString(singleStringParameterFilter.getSearchParameter());
 						filterRefexData[0] = searchParameterData;
 					}
 
@@ -224,7 +224,7 @@ public class SearchConceptHelper {
 					RefexDynamicData[] nestedFilterAttributesRefexData = new RefexDynamicData[nestedFilterAttributesRDUD.getColumnInfo().length];
 
 					// Construct and populate RefexDynamicData for search parameter
-					RefexDynamicData filterOrderData = new RefexInteger(filterIndex, RefexDynamicUsageDescription.read(Search.SEARCH_FILTER_ATTRIBUTES.getNid()).getColumnInfo()[0].getColumnName());
+					RefexDynamicData filterOrderData = new RefexInteger(filterIndex);
 					nestedFilterAttributesRefexData[0] = filterOrderData;
 
 					RefexDynamicCAB nestedFilterAttributesCAB;

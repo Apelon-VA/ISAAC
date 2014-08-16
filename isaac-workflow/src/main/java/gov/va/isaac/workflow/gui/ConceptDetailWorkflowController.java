@@ -76,6 +76,7 @@ public class ConceptDetailWorkflowController
 			selectionText = desc;
 		}
 		
+		@Override
 		public String toString() {
 			return selectionText;
 		}
