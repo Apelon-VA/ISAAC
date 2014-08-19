@@ -61,14 +61,14 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDouble;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexFloat;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexLong;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexNid;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicBoolean;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicDouble;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicFloat;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sun.javafx.collections.ObservableListWrapper;
@@ -369,29 +369,29 @@ public class ColumnController implements PanelControllers {
 					} 
 				else {
 					//TODO this should come from a boolean picker, not a text field.
-					defaultValueObject = new RefexBoolean(Boolean.valueOf(defVal));
+					defaultValueObject = new RefexDynamicBoolean(Boolean.valueOf(defVal));
 				}
 			} else if (dataType == RefexDynamicDataType.DOUBLE) {
 				try {
-					defaultValueObject = new RefexDouble(Double.valueOf(defVal));
+					defaultValueObject = new RefexDynamicDouble(Double.valueOf(defVal));
 				} catch (Exception e) {
 					return "Default Value is not a valid DOUBLE as specified by Column Type";
 				}
 			} else if (dataType == RefexDynamicDataType.FLOAT) {
 				try {
-					defaultValueObject = new RefexFloat(Float.valueOf(defVal));
+					defaultValueObject = new RefexDynamicFloat(Float.valueOf(defVal));
 				} catch (Exception e) {
 					return "Default Value is not a valid FLOAT as specified by Column Type";
 				}
 			} else if (dataType == RefexDynamicDataType.INTEGER) {
 				try {
-					defaultValueObject = new RefexInteger(Integer.valueOf(defVal));
+					defaultValueObject = new RefexDynamicInteger(Integer.valueOf(defVal));
 				} catch (Exception e) {
 					return "Default Value is not a valid INTEGER as specified by Column Type";
 				}
 			} else if (dataType == RefexDynamicDataType.LONG) {
 				try {
-					defaultValueObject = new RefexLong(Long.valueOf(defVal));
+					defaultValueObject = new RefexDynamicLong(Long.valueOf(defVal));
 				} catch (Exception e) {
 					return "Default Value is not a valid LONG as specified by Column Type";
 				}
@@ -411,12 +411,12 @@ public class ColumnController implements PanelControllers {
 					if (comp == null) {
 						return "Default Value is not a valid NID.  The value does not refer to a component in the database";
 					} else {
-						defaultValueObject = new RefexNid(nid);
+						defaultValueObject = new RefexDynamicNid(nid);
 					}
 				}
 			} else if (dataType == RefexDynamicDataType.STRING) {
 				try {
-					defaultValueObject = new RefexString(defVal);
+					defaultValueObject = new RefexDynamicString(defVal);
 				} catch (Exception e) {
 					return "Default Value is not a valid STRING as specified by Column Type";
 				}
@@ -427,7 +427,7 @@ public class ColumnController implements PanelControllers {
 				}
 				else
 				{
-					defaultValueObject = new RefexUUID(UUID.fromString(defVal));
+					defaultValueObject = new RefexDynamicUUID(UUID.fromString(defVal));
 				}
 			} else if (dataType == RefexDynamicDataType.BYTEARRAY) {
 				// TODO  rebuild this data field - text field isn't appropriate for all..  this needs to come from a file chooser.

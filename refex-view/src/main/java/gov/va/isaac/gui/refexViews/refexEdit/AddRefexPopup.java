@@ -86,15 +86,15 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexByteArray;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDouble;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexFloat;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexLong;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexNid;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicBoolean;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicDouble;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicFloat;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -668,11 +668,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				value =  ((RefexDynamicBooleanBI) ci.getDefaultColumnValue()).getDataBoolean();
 			}
-			return (value == null ? null : new RefexBoolean(value));
+			return (value == null ? null : new RefexDynamicBoolean(value));
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
-			return new RefexByteArray((byte[])data);
+			return new RefexDynamicByteArray((byte[])data);
 		}
 		else if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType() || RefexDynamicDataType.FLOAT == ci.getColumnDataType()
 				|| RefexDynamicDataType.INTEGER == ci.getColumnDataType() || RefexDynamicDataType.LONG == ci.getColumnDataType()
@@ -686,27 +686,27 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType())
 			{
-				return (text.length() > 0 ? new RefexDouble(Double.parseDouble(text)) : (RefexDynamicDoubleBI)ci.getDefaultColumnValue());
+				return (text.length() > 0 ? new RefexDynamicDouble(Double.parseDouble(text)) : (RefexDynamicDoubleBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.FLOAT == ci.getColumnDataType())
 			{
-				return (text.length() > 0 ? new RefexFloat(Float.parseFloat(text)) : (RefexDynamicFloatBI)ci.getDefaultColumnValue());
+				return (text.length() > 0 ? new RefexDynamicFloat(Float.parseFloat(text)) : (RefexDynamicFloatBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.INTEGER == ci.getColumnDataType())
 			{
-				return (text.length() > 0 ? new RefexInteger(Integer.parseInt(text)) : (RefexDynamicIntegerBI)ci.getDefaultColumnValue());
+				return (text.length() > 0 ? new RefexDynamicInteger(Integer.parseInt(text)) : (RefexDynamicIntegerBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.LONG == ci.getColumnDataType())
 			{
-				return (text.length() > 0 ? new RefexLong(Long.parseLong(text)) : (RefexDynamicLongBI)ci.getDefaultColumnValue());
+				return (text.length() > 0 ? new RefexDynamicLong(Long.parseLong(text)) : (RefexDynamicLongBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.STRING == ci.getColumnDataType())
 			{
-				return (text.length() > 0 ? new RefexString(text) : (RefexDynamicStringBI)ci.getDefaultColumnValue());
+				return (text.length() > 0 ? new RefexDynamicString(text) : (RefexDynamicStringBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.UUID == ci.getColumnDataType())
 			{
-				return (text.length() > 0 ? new RefexUUID(UUID.fromString(text)) : (RefexDynamicUUIDBI)ci.getDefaultColumnValue());
+				return (text.length() > 0 ? new RefexDynamicUUID(UUID.fromString(text)) : (RefexDynamicUUIDBI)ci.getDefaultColumnValue());
 			}
 			else
 			{
@@ -720,12 +720,12 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				return null;
 			}
-			return new RefexNid(cn.getConcept().getNid());
+			return new RefexDynamicNid(cn.getConcept().getNid());
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
 		{
 			//TODO implement polymorphic support
-			return new RefexString("");
+			return new RefexDynamicString("");
 		}
 		else
 		{

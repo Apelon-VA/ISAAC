@@ -63,9 +63,9 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexByteArray;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,12 +141,12 @@ public class SearchConceptHelper {
 				oos.flush();
 
 				// Construct and populate RefexDynamicData for View Coordinate
-				RefexDynamicData viewCoordinateColumnData = new RefexByteArray(output.toByteArray());
+				RefexDynamicData viewCoordinateColumnData = new RefexDynamicByteArray(output.toByteArray());
 				searchGlobalAttributesData[0] = viewCoordinateColumnData;
-				RefexDynamicData maxResultsColumnData = new RefexInteger(model.getMaxResults());
+				RefexDynamicData maxResultsColumnData = new RefexDynamicInteger(model.getMaxResults());
 				searchGlobalAttributesData[1] = maxResultsColumnData;
 				if (model.getDroolsExpr() != null) {
-					RefexDynamicData droolsExprColumnData = new RefexString(model.getDroolsExpr());
+					RefexDynamicData droolsExprColumnData = new RefexDynamicString(model.getDroolsExpr());
 					searchGlobalAttributesData[2] = droolsExprColumnData;
 				}
 
@@ -196,7 +196,7 @@ public class SearchConceptHelper {
 
 					// Construct and populate RefexDynamicData for search parameter
 					if (singleStringParameterFilter.getSearchParameter() != null) {
-						RefexDynamicData searchParameterData = new RefexString(singleStringParameterFilter.getSearchParameter());
+						RefexDynamicData searchParameterData = new RefexDynamicString(singleStringParameterFilter.getSearchParameter());
 						filterRefexData[0] = searchParameterData;
 					}
 
@@ -224,7 +224,7 @@ public class SearchConceptHelper {
 					RefexDynamicData[] nestedFilterAttributesRefexData = new RefexDynamicData[nestedFilterAttributesRDUD.getColumnInfo().length];
 
 					// Construct and populate RefexDynamicData for search parameter
-					RefexDynamicData filterOrderData = new RefexInteger(filterIndex);
+					RefexDynamicData filterOrderData = new RefexDynamicInteger(filterIndex);
 					nestedFilterAttributesRefexData[0] = filterOrderData;
 
 					RefexDynamicCAB nestedFilterAttributesCAB;
