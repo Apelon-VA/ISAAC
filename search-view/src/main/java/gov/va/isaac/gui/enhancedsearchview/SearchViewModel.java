@@ -24,82 +24,101 @@
  */
 package gov.va.isaac.gui.enhancedsearchview;
 
+import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
+import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
+import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 
 public class SearchViewModel {
-	public static interface Filter {
-		public boolean isValid();
-	}
-	public static interface SingleStringParameterFilter extends Filter {
-		public String getSearchParameter();
-	}
-	public static class LuceneFilter implements SingleStringParameterFilter {
-		String searchParameter;
+	private BooleanProperty isValid = new SimpleBooleanProperty();
+	private StringProperty name = new SimpleStringProperty();
+	private StringProperty description = new SimpleStringProperty();
+
+	private SearchTypeFilter searchTypeFilter;
+	private final ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> filters = FXCollections.observableArrayList();
+	private ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
+	private IntegerProperty maxResults = new SimpleIntegerProperty(0);
+	private StringProperty droolsExpr = new SimpleStringProperty();
+	
+	public SearchViewModel() {
 		
-		@Override
-		public String getSearchParameter() {
-			return searchParameter;
-		}
-
-		public void setSearchParameter(String searchParameter) {
-			this.searchParameter = searchParameter;
-		}
-
-		/* (non-Javadoc)
-		 * @see gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter#isValid()
-		 */
-		@Override
-		public boolean isValid() {
-			return searchParameter != null && searchParameter.length() > 1;
-		}
-
-		@Override
-		public String toString() {
-			return "LuceneFilter [searchParameter=" + searchParameter + "]";
-		}
 	}
-	public static class RegExpFilter implements SingleStringParameterFilter {
-		String searchParameter;
-		
-		@Override
-		public String getSearchParameter() {
-			return searchParameter;
+	
+	public void copy(SearchViewModel other) {
+		name.set(other.getName());
+		description.set(other.getDescription());
+		if (other.getSearchType() == null || searchTypeFilter == null || searchTypeFilter.getClass() != other.getSearchType().getClass()) {
+			searchTypeFilter = other.getSearchType();
+		} else {
+			searchTypeFilter.copy(other.getSearchType());
 		}
-
-		public void setSearchParameter(String searchParameter) {
-			this.searchParameter = searchParameter;
-		}
-
-		/* (non-Javadoc)
-		 * @see gov.va.isaac.gui.enhancedsearchview.SearchViewModel.Filter#isValid()
-		 */
-		@Override
-		public boolean isValid() {
-			return searchParameter != null && searchParameter.length() > 1;
-		}
-
-		@Override
-		public String toString() {
-			return "RegExpFilter [searchParameter=" + searchParameter + "]";
-		}
+		viewCoordinate = other.viewCoordinate;
+		maxResults.set(other.getMaxResults());
+		droolsExpr.set(other.getDroolsExpr());
 	}
-
-	private final List<Filter> filters = new ArrayList<>();
-	private ViewCoordinate viewCoordinate;
-	private int maxResults;
-	private String droolsExpr;
 	
 	public boolean isValid() {
-		return getValidFilters().size() > 0 && getInvalidFilters().size() == 0;
+		if (getInvalidFilters().size() > 0) {
+			return false;
+		}
+
+		if (viewCoordinate == null) {
+			return false;
+		}
+		
+		if (searchTypeFilter == null || ! searchTypeFilter.isValid()) {
+			return false;
+		}
+		
+		return true;
 	}
 	
-	public List<Filter> getFilters() {
+	public SearchTypeFilter getSearchType() {
+		return searchTypeFilter;
+	}
+	public void setSearchType(SearchTypeFilter searchTypeFilter) {
+		this.searchTypeFilter = searchTypeFilter;
+	}
+
+
+	public StringProperty getNameProperty() {
+		return name;
+	}
+	public String getName() {
+		return name.getValue();
+	}
+	public void setName(String name) {
+		this.name.set(name);
+	}
+
+	public StringProperty getDescriptionProperty() {
+		return description;
+	}
+	public String getDescription() {
+		return description.getValue();
+	}
+	public void setDescription(String description) {
+		this.description.set(description);
+	}
+
+	public ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> getFilters() {
 		return filters;
 	}
 	
@@ -109,19 +128,25 @@ public class SearchViewModel {
 	public void setViewCoordinate(ViewCoordinate viewCoordinate) {
 		this.viewCoordinate = viewCoordinate;
 	}
-	
-	public int getMaxResults() {
+
+	public IntegerProperty getMaxResultsProperty() {
 		return maxResults;
 	}
+	public int getMaxResults() {
+		return maxResults.get();
+	}
 	public void setMaxResults(int maxResults) {
-		this.maxResults = maxResults;
+		this.maxResults.set(maxResults);
 	}
 
-	public String getDroolsExpr() {
+	public StringProperty getDroolsExprProperty() {
 		return droolsExpr;
 	}
+	public String getDroolsExpr() {
+		return droolsExpr.get();
+	}
 	public void setDroolsExpr(String droolsExpr) {
-		this.droolsExpr = droolsExpr;
+		this.droolsExpr.set(droolsExpr);
 	}
 
 	public Collection<Filter> getValidFilters() {
@@ -150,7 +175,10 @@ public class SearchViewModel {
 
 	@Override
 	public String toString() {
-		return "SearchViewModel [viewCoordinate="
-				+ (viewCoordinate != null ? viewCoordinate.getViewPosition() : null) + ", filters=" + Arrays.toString(filters.toArray(new Filter[filters.size()])) + "]";
+		return "SearchViewModel [isValid=" + isValid + ", name=" + name
+				+ ", description=" + description + ", searchTypeFilter="
+				+ searchTypeFilter + ", maxResults=" + maxResults
+				+ ", droolsExpr=" + droolsExpr + ", filters=" + Arrays.toString(filters.toArray())
+				+ ", viewCoordinate=" + (viewCoordinate != null ? viewCoordinate.getViewPosition() : null) + "]";
 	}
 }
