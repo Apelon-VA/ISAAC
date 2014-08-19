@@ -282,7 +282,7 @@ public class SnomedConceptViewController {
         // Load the inner tree view.
         try {
             sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
-            sctTree.init(WBUtility.getTreeRoots());
+            sctTree.init(WBUtility.ISAAC_ROOT.getUuids()[0]);
             Region r = sctTree.getView();
             splitRight.getChildren().add(r);
             VBox.setVgrow(r, Priority.ALWAYS);
