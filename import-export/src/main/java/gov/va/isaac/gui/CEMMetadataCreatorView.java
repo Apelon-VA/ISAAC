@@ -73,7 +73,7 @@ public class CEMMetadataCreatorView implements PopupViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
+				return ApplicationMenus.ACTIONS.getMenuId();
 			}
 			
 			@Override
