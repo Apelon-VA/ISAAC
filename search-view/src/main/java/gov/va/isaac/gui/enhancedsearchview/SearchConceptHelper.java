@@ -375,7 +375,7 @@ public class SearchConceptHelper {
 			}
 
 			if (embeddedRefexDUD.getRefexName().equals(Search.SEARCH_FILTER_ATTRIBUTES.getDescription() /*"Search Filter Attributes"*/)) {
-				RefexDynamicIntegerBI filterOrderCol = (RefexDynamicIntegerBI)embeddedRefex.getData(Search.SEARCH_FILTER_ATTRIBUTES_FILTER_ORDER_COLUMN.getDescription());
+				RefexDynamicIntegerBI filterOrderCol = (RefexDynamicIntegerBI)embeddedRefex.getData(Search.ORDER_COLUMN.getDescription());
 
 				if (newFilter instanceof SearchTypeFilter) {
 					if (filterOrderCol != null && filterOrderCol.getDataInteger() > 0) {
@@ -394,7 +394,7 @@ public class SearchConceptHelper {
 
 				LOG.debug("Read Integer filter order from " + embeddedRefexDUD.getRefexName() + " refex: \"" + (filterOrderCol != null ? filterOrderCol.getDataInteger() : filterOrderCol) + "\"");
 
-				RefexDynamicBooleanBI filterInvertCol = (RefexDynamicBooleanBI)embeddedRefex.getData(Search.SEARCH_FILTER_ATTRIBUTES_INVERT_COLUMN.getDescription());
+				RefexDynamicBooleanBI filterInvertCol = (RefexDynamicBooleanBI)embeddedRefex.getData(Search.FILTER_INVERT_COLUMN.getDescription());
 				if (filterInvertCol != null) {
 					if (newFilter instanceof Invertable) {
 						((Invertable) newFilter).setInvert(filterInvertCol.getDataBoolean());
@@ -458,7 +458,7 @@ public class SearchConceptHelper {
 						LOG.debug("Loading data into model from Search Global Attributes refex");
 
 						// Loading view coordinate
-						RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_VIEW_COORDINATE_COLUMN.getDescription());
+						RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
 
 						// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()
 						ByteArrayInputStream input = new ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
@@ -470,12 +470,12 @@ public class SearchConceptHelper {
 						LOG.debug("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getViewCoordinate());
 
 						// Loading maxResults
-						RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_MAX_RESULTS_COLUMN.getDescription());
+						RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
 						model.setMaxResults(maxResults.getDataInteger());
 						LOG.debug("Read max results from " + dud.getRefexName() + " refex: " + model.getMaxResults());
 
 						// Loading drools expression
-						RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.SEARCH_GLOBAL_ATTRIBUTES_DROOLS_EXPR_COLUMN.getDescription());
+						RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
 						model.setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
 						LOG.debug("Read drools expression from " + dud.getRefexName() + " refex: " + model.getDroolsExpr());
 
@@ -486,7 +486,7 @@ public class SearchConceptHelper {
 
 						LuceneFilter newFilter = new LuceneFilter();
 
-						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_LUCENE_FILTER_PARAMETER_COLUMN.getDescription());
+						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 						newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
 						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
 
@@ -504,7 +504,7 @@ public class SearchConceptHelper {
 
 						RegExpFilter newFilter = new RegExpFilter();
 
-						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.SEARCH_REGEXP_FILTER_PARAMETER_COLUMN.getDescription());
+						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 						newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
 						LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
 
@@ -522,7 +522,7 @@ public class SearchConceptHelper {
 
 						IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
 
-						RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.SEARCH_ISDESCENDANTOF_FILTER_ASCENDANT_COLUMN.getDescription());
+						RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ASCENDANT_COLUMN.getDescription());
 						if (ascendantUuidCol != null) {
 							UUID uuid = ascendantUuidCol.getDataUUID();
 							int nid = WBUtility.getConceptVersion(uuid).getNid();
