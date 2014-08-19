@@ -170,6 +170,7 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		controller_.setConcept(concept);
 	}
 	
+	@Override
 	public void setConcept(UUID conceptUUID) {
 		try {
 			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
@@ -181,6 +182,7 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		}
 	}
 
+	@Override
 	public void setConcept(int conceptNid) {
 		try {
 			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
@@ -192,6 +194,7 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		}
 	}
 
+	@Override
 	public Region getView() {
 		return controller_.getRootNode();
 	}

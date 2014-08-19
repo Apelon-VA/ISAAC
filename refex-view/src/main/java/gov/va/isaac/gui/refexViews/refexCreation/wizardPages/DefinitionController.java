@@ -244,7 +244,7 @@ public class DefinitionController implements PanelControllers {
 			if (!parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()))) 
 			{
 				YesNoDialog yn = new YesNoDialog(refsetCreationPane.getScene().getWindow());
-				DialogResponse r = yn.showYesNoDialog("Continue?", "The parent concept you selected is not a descendent of the concept 'Dynamic Refsets'.\n"
+				DialogResponse r = yn.showYesNoDialog("Continue?", "The parent concept you selected is not a descendent of the concept 'Dynamic Refexes'.\n"
 						+ "Click Yes to continue using this concept, or No to go back and make changes.");
 				if (DialogResponse.YES == r)
 				{

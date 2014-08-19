@@ -1,7 +1,6 @@
 package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.gui.SimpleDisplayConcept;
-
 import java.util.Set;
 
 
@@ -9,6 +8,7 @@ public class OperationResult {
 
 	private String operationMsg;
 	private Set<SimpleDisplayConcept> modifiedConcepts;
+	@SuppressWarnings("unused")
 	private String title;
 
 	public OperationResult(String title, boolean cancelRequested_) {

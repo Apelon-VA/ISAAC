@@ -77,18 +77,24 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicBooleanBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicDoubleBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicFloatBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicIntegerBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicLongBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexByteArray;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDouble;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexFloat;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexLong;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexNid;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicBoolean;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicDouble;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicFloat;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -418,7 +424,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 	}
 
-	private Node buildNodeForType(RefexDynamicDataType dt, Object defaultValue, RefexDynamicDataBI currentValue)
+	private Node buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue)
 	{
 		if (RefexDynamicDataType.BOOLEAN == dt)
 		{
@@ -458,7 +464,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 			if (defaultValue != null)
 			{
-				tf.setPromptText(defaultValue.toString());
+				tf.setPromptText(defaultValue.getDataObject().toString());
 			}
 			SimpleStringProperty valueInvalidReason = new SimpleStringProperty("");
 			currentDataFieldWarnings_.add(valueInvalidReason);
@@ -581,7 +587,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	{
 		try
 		{
-			RefexDynamicData[] data = new RefexDynamicData[assemblageInfo_.getColumnInfo().length];
+			RefexDynamicDataBI[] data = new RefexDynamicData[assemblageInfo_.getColumnInfo().length];
 			int i = 0;
 			for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
 			{
@@ -618,7 +624,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 			}
-			cab.setData(data);
+			cab.setData(data, WBUtility.getViewCoordinate());
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
 			builder.construct(cab);
 			
@@ -642,7 +648,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 	}
 
-	private RefexDynamicData getDataForType(Object data, RefexDynamicColumnInfo ci) throws PropertyVetoException
+	private RefexDynamicDataBI getDataForType(Object data, RefexDynamicColumnInfo ci) throws PropertyVetoException
 	{
 		if (RefexDynamicDataType.BOOLEAN == ci.getColumnDataType())
 		{
@@ -658,15 +664,15 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				value = false;
 			}
-			else
+			else if (ci.getDefaultColumnValue() != null)
 			{
-				value = (Boolean) ci.getDefaultColumnValue();
+				value =  ((RefexDynamicBooleanBI) ci.getDefaultColumnValue()).getDataBoolean();
 			}
-			return (value == null ? null : new RefexBoolean(value, ci.getColumnName()));
+			return (value == null ? null : new RefexDynamicBoolean(value));
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
-			return new RefexByteArray((byte[])data, ci.getColumnName());
+			return new RefexDynamicByteArray((byte[])data);
 		}
 		else if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType() || RefexDynamicDataType.FLOAT == ci.getColumnDataType()
 				|| RefexDynamicDataType.INTEGER == ci.getColumnDataType() || RefexDynamicDataType.LONG == ci.getColumnDataType()
@@ -680,27 +686,27 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType())
 			{
-				return new RefexDouble(text.length() > 0 ? Double.parseDouble(text) : (Double)ci.getDefaultColumnValue(), ci.getColumnName());
+				return (text.length() > 0 ? new RefexDynamicDouble(Double.parseDouble(text)) : (RefexDynamicDoubleBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.FLOAT == ci.getColumnDataType())
 			{
-				return new RefexFloat(text.length() > 0 ? Float.parseFloat(text) : (Float)ci.getDefaultColumnValue(), ci.getColumnName());
+				return (text.length() > 0 ? new RefexDynamicFloat(Float.parseFloat(text)) : (RefexDynamicFloatBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.INTEGER == ci.getColumnDataType())
 			{
-				return new RefexInteger(text.length() > 0 ? Integer.parseInt(text) : (Integer)ci.getDefaultColumnValue(), ci.getColumnName());
+				return (text.length() > 0 ? new RefexDynamicInteger(Integer.parseInt(text)) : (RefexDynamicIntegerBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.LONG == ci.getColumnDataType())
 			{
-				return new RefexLong(text.length() > 0 ? Long.parseLong(text) : (Long)ci.getDefaultColumnValue(), ci.getColumnName());
+				return (text.length() > 0 ? new RefexDynamicLong(Long.parseLong(text)) : (RefexDynamicLongBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.STRING == ci.getColumnDataType())
 			{
-				return new RefexString(text.length() > 0 ? text : (String)ci.getDefaultColumnValue(), ci.getColumnName());
+				return (text.length() > 0 ? new RefexDynamicString(text) : (RefexDynamicStringBI)ci.getDefaultColumnValue());
 			}
 			else if (RefexDynamicDataType.UUID == ci.getColumnDataType())
 			{
-				return new RefexUUID(text.length() > 0 ? UUID.fromString(text) : (UUID)ci.getDefaultColumnValue(), ci.getColumnName());
+				return (text.length() > 0 ? new RefexDynamicUUID(UUID.fromString(text)) : (RefexDynamicUUIDBI)ci.getDefaultColumnValue());
 			}
 			else
 			{
@@ -714,12 +720,12 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				return null;
 			}
-			return new RefexNid(cn.getConcept().getNid(), ci.getColumnName());
+			return new RefexDynamicNid(cn.getConcept().getNid());
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
 		{
 			//TODO implement polymorphic support
-			return new RefexString("", ci.getColumnName());
+			return new RefexDynamicString("");
 		}
 		else
 		{

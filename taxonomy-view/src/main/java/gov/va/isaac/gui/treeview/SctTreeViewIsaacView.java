@@ -44,9 +44,9 @@ public class SctTreeViewIsaacView  implements ViewI
 		sctTreeView_ = new SctTreeView();
 	}
 	
-	public void init(UUID[] rootConcepts) 
+	public void init(UUID rootConcept) 
 	{
-		sctTreeView_.init(rootConcepts);
+		sctTreeView_.init(rootConcept);
 	}
 	
 	public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) 

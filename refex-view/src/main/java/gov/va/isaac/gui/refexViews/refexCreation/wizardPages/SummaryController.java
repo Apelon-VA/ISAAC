@@ -21,11 +21,8 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
-import gov.va.isaac.util.WBUtility;
-
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -41,16 +38,16 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,9 +99,9 @@ public class SummaryController implements PanelControllers {
 		for (int i = 0; i < processController.getWizard().getExtendedFieldsCount(); i++) {
 			ConceptVersionBI col = processController.getWizard().getColumnName(i);
 			String colType = processController.getWizard().getColumnType(i);
-			Object colDefaultValue = processController.getWizard().getColumnDefaultValue(i);
+			RefexDynamicDataBI colDefaultValue = processController.getWizard().getColumnDefaultValue(i);
 			String colIsMandatory = processController.getWizard().getColumnIsMandatory(i);
-			boolean hasDefaultValue = colDefaultValue != null && colDefaultValue.toString().length() > 0;
+			boolean hasDefaultValue = colDefaultValue != null && colDefaultValue.getDataObject().toString().length() > 0;
 
 			if (row > 0)
 			{
@@ -119,7 +116,8 @@ public class SummaryController implements PanelControllers {
 			columnGridPane.add(header, 0, row++, 3, 1);
 			GridPane.setHalignment(header, HPos.CENTER);
 
-			RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, col.getPrimordialUuid(), null, null);
+			//TODO this is silly - switch to the API that just reads a column....
+			RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, col.getPrimordialUuid(), null, null, false, null, null);
 			
 			//row 1
 //			Label nameLabel = createLabel("Name: " + rdc.getColumnName(), true);
@@ -154,7 +152,7 @@ public class SummaryController implements PanelControllers {
 
 			if (hasDefaultValue)
 			{
-				l = createLabel(colDefaultValue.toString(), false);
+				l = createLabel(colDefaultValue.getDataObject().toString(), false);
 				GridPane.setValignment(l, VPos.TOP);
 				columnGridPane.add(l, 2, row++);
 			} else {

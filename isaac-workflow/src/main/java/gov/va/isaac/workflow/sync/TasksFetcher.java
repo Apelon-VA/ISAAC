@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Status;
-import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

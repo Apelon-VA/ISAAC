@@ -31,7 +31,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-import org.glassfish.hk2.runlevel.RunLevelException;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -99,10 +99,10 @@ public class EnhancedConceptBuilder {
 
 	private void executeConceptBuilder() {
 		try {
-			ConceptAttributeVersionBI attr = ConceptViewerHelper.getConceptAttributes(con);
+			ConceptAttributeVersionBI<?> attr = ConceptViewerHelper.getConceptAttributes(con);
 
 			// FSN
-			DescriptionVersionBI fsn = con.getFullySpecifiedDescription();
+			DescriptionVersionBI<?> fsn = con.getFullySpecifiedDescription();
 			Rectangle fsnRec = AnnotationRectangle.create(fsn);
 			fsnAnnotVBox.getChildren().add(fsnRec);
 			labelHelper.initializeLabel(fsnLabel, fsn, ComponentType.DESCRIPTION, fsn.getText(), 0);
@@ -137,16 +137,16 @@ public class EnhancedConceptBuilder {
 		// Descriptions
 		try {
 			// Sort Descriptions filtering out FSN and special storage for PT
-			Map<Integer, Set<DescriptionVersionBI>> sortedDescs = new HashMap<>();
-			DescriptionVersionBI ptDesc = null;
+			Map<Integer, Set<DescriptionVersionBI<?>>> sortedDescs = new HashMap<>();
+			DescriptionVersionBI<?> ptDesc = null;
 			
-			for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
+			for (DescriptionVersionBI<?> desc : con.getDescriptionsActive()) {
 				if (desc.getNid() != con.getFullySpecifiedDescription().getNid()) {
 					if (desc.getNid() == con.getPreferredDescription().getNid()) {
 						ptDesc = desc;
 					} else {
 						if (!sortedDescs.containsKey(desc.getTypeNid())) {
-							Set<DescriptionVersionBI> descs = new HashSet<>();
+							Set<DescriptionVersionBI<?>> descs = new HashSet<>();
 							sortedDescs.put(desc.getTypeNid(), descs);
 						}
 	
@@ -163,7 +163,7 @@ public class EnhancedConceptBuilder {
 
 			// Add other terms to GridPane
 			for (Integer descType: sortedDescs.keySet()) {
-				for (DescriptionVersionBI desc: sortedDescs.get(descType)) {
+				for (DescriptionVersionBI<?> desc: sortedDescs.get(descType)) {
 					if (desc.getNid() != con.getPreferredDescription().getNid()) {
 						tr.addTermRow(desc);
 					}
@@ -209,10 +209,10 @@ public class EnhancedConceptBuilder {
 	}
 
 	
-	private void executeRelBuilderWithSpecifiedRels(Collection<? extends RelationshipVersionBI> rels) throws ValidationException, IOException {
+	private void executeRelBuilderWithSpecifiedRels(Collection<? extends RelationshipVersionBI<?>> rels) throws ValidationException, IOException {
 		// Capture for sorting (storing is-a in different collection
-		Map<Integer, Set<RelationshipVersionBI>> sortedRels = new HashMap<>();
-		Set<RelationshipVersionBI> isaRels = new HashSet<>();
+		Map<Integer, Set<RelationshipVersionBI<?>>> sortedRels = new HashMap<>();
+		Set<RelationshipVersionBI<?>> isaRels = new HashSet<>();
 		sortRels(sortedRels, isaRels, rels);
 
 		// Display IS-As
@@ -235,20 +235,20 @@ public class EnhancedConceptBuilder {
 		
 	}
 
-	private void addRels(Set<RelationshipVersionBI> rels) {
-		for (RelationshipVersionBI rel: rels) {
+	private void addRels(Set<RelationshipVersionBI<?>> rels) {
+		for (RelationshipVersionBI<?> rel: rels) {
 			rr.addRelRow(rel);
 		}
 	}
 
-	private void sortRels(Map<Integer, Set<RelationshipVersionBI>> sortedRels, Set<RelationshipVersionBI> isaRels,
-			Collection<? extends RelationshipVersionBI> relsToSort) throws ValidationException, IOException {
-		for (RelationshipVersionBI rel : relsToSort) {
+	private void sortRels(Map<Integer, Set<RelationshipVersionBI<?>>> sortedRels, Set<RelationshipVersionBI<?>> isaRels,
+			Collection<? extends RelationshipVersionBI<?>> relsToSort) throws ValidationException, IOException {
+		for (RelationshipVersionBI<?> rel : relsToSort) {
 			if (rel.getTypeNid() == Snomed.IS_A.getNid()) {
 				isaRels.add(rel);
 			} else {
 				if (!sortedRels.containsKey(rel.getTypeNid())) {
-					Set<RelationshipVersionBI> rels = new HashSet<>();
+					Set<RelationshipVersionBI<?>> rels = new HashSet<>();
 					sortedRels.put(rel.getTypeNid(), rels);
 				}
 
@@ -310,9 +310,10 @@ public class EnhancedConceptBuilder {
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
-            public void handle(ContextMenuEvent e) {  
-                rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
-            }  
-        }); 
+			@Override
+			public void handle(ContextMenuEvent e) {  
+				rtClickMenu.show(bp.getBottom(), e.getScreenX(), e.getScreenY());  
+			}
+		}); 
 	}
 }

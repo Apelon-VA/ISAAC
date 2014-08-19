@@ -23,6 +23,7 @@ import java.util.List;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class WizardController {
 	
 	private List<ConceptVersionBI> columnNids = new ArrayList<ConceptVersionBI>();
 	private List<RefexDynamicDataType> columnTypes = new ArrayList<RefexDynamicDataType>();
-	private List<Object> columnDefaultValues = new ArrayList<>();
+	private List<RefexDynamicDataBI> columnDefaultValues = new ArrayList<>();
 	private List<Boolean> columnIsMandatory = new ArrayList<Boolean>();
 
 	private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
@@ -65,7 +66,7 @@ public class WizardController {
 		this.isAnnotated = isAnnotated;
 	}
 
-	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, Object defaultValueObject, boolean isMandatory) {
+	public void setColumnVals(int currentCol, ConceptVersionBI colCon, RefexDynamicDataType type, RefexDynamicDataBI defaultValueObject, boolean isMandatory) {
 		if (previouslyFilledOut(currentCol)) {
 			columnNids.set(currentCol, colCon);
 			columnTypes.set(currentCol, type);
@@ -119,7 +120,7 @@ public class WizardController {
 		return columnTypes.get(column).getDisplayName();
 	}
 
-	public Object getColumnDefaultValue(int column) {
+	public RefexDynamicDataBI getColumnDefaultValue(int column) {
 		return columnDefaultValues.get(column);
 	}
 
@@ -140,7 +141,8 @@ public class WizardController {
 		RefexDynamicColumnInfo[] result = new RefexDynamicColumnInfo[columnTypes.size()];
 		for (int i = 0; i < result.length; i++)
 		{
-			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypes.get(i), columnDefaultValues.get(i));
+			//TODO add GUI for selecting validator details
+			result[i] = new RefexDynamicColumnInfo(i, columnNids.get(i).getPrimordialUuid(), columnTypes.get(i), columnDefaultValues.get(i), columnIsMandatory.get(i), null ,null);
 		}
 		return result;
 	}

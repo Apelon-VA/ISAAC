@@ -25,6 +25,7 @@ import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -58,7 +59,16 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicBoolean;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicDouble;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicFloat;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sun.javafx.collections.ObservableListWrapper;
@@ -89,7 +99,7 @@ public class ColumnController implements PanelControllers {
 	static ViewCoordinate vc = null;
 	private static int currentCol = 0;
 	ScreensController processController;
-	private Object defaultValueObject = null;
+	private RefexDynamicDataBI defaultValueObject = null;
 	private ConceptNode columnNameSelection;
 	private BooleanBinding allValid_;
 	private StringBinding typeValueInvalidReason_;
@@ -99,7 +109,8 @@ public class ColumnController implements PanelControllers {
 	private Function<ConceptVersionBI, String> colNameReader_ = (conceptVersion) -> 
 	{
 		//other fields don't matter, just using this to read back the description.
-		RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, conceptVersion.getPrimordialUuid(), null, null);
+		//TODO this is silly, fix this API
+		RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, conceptVersion.getPrimordialUuid(), null, null, false, null, null);
 		return rdc.getColumnName();
 	};
 	
@@ -215,7 +226,8 @@ public class ColumnController implements PanelControllers {
 				if (newValue != null)
 				{
 					//other fields don't matter, just using this to read back the description.
-					RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, newValue.getPrimordialUuid(), null, null);
+					//TODO this is silly, fix this API
+					RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, newValue.getPrimordialUuid(), null, null, false, null, null);
 					columnDescription.setText(rdc.getColumnDescription());
 				}
 				else
@@ -349,79 +361,86 @@ public class ColumnController implements PanelControllers {
 			return "";
 		}
 
-		if (dataType == RefexDynamicDataType.BOOLEAN) {
-			if (!defVal.equalsIgnoreCase("true") && !defVal.equalsIgnoreCase("false")) {
-					return "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
-				} 
-			else {
-				//TODO this should come from a boolean picker, not a text field.
-				defaultValueObject = new Boolean(defVal);
-			}
-		} else if (dataType == RefexDynamicDataType.DOUBLE) {
-			try {
-				defaultValueObject = Double.valueOf(defVal);
-			} catch (Exception e) {
-				return "Default Value is not a valid DOUBLE as specified by Column Type";
-			}
-		} else if (dataType == RefexDynamicDataType.FLOAT) {
-			try {
-				defaultValueObject = Float.valueOf(defVal);
-			} catch (Exception e) {
-				return "Default Value is not a valid FLOAT as specified by Column Type";
-			}
-		} else if (dataType == RefexDynamicDataType.INTEGER) {
-			try {
-				defaultValueObject = Integer.valueOf(defVal);
-			} catch (Exception e) {
-				return "Default Value is not a valid INTEGER as specified by Column Type";
-			}
-		} else if (dataType == RefexDynamicDataType.LONG) {
-			try {
-				defaultValueObject = Long.valueOf(defVal);
-			} catch (Exception e) {
-				return "Default Value is not a valid LONG as specified by Column Type";
-			}
-		} else if (dataType == RefexDynamicDataType.NID) {
-			//TODO this needs to come from a conceptNode field.
-			int nid = Integer.MAX_VALUE;
-			try {
-				nid = Integer.valueOf(defVal);
-			} catch (Exception e) {
-				return "Default Value is not a valid NID as specified by Column Type.  It must be an INTEGER";
-			}
-
-			if (nid >= 0) {
-				return "Default Value is not a valid NID.  It must be less than zero";
-			} else {
-				ConceptVersionBI comp = WBUtility.getConceptVersion(nid);
-				if (comp == null) {
-					return "Default Value is not a valid NID.  The value does not refer to a component in the database";
-				} else {
-					defaultValueObject = nid;
+		try
+		{
+			if (dataType == RefexDynamicDataType.BOOLEAN) {
+				if (!defVal.equalsIgnoreCase("true") && !defVal.equalsIgnoreCase("false")) {
+						return "Default Value is not a valid BOOLAN as specified by Column Type.  It must be True or False (case insensitive)";
+					} 
+				else {
+					//TODO this should come from a boolean picker, not a text field.
+					defaultValueObject = new RefexDynamicBoolean(Boolean.valueOf(defVal));
 				}
+			} else if (dataType == RefexDynamicDataType.DOUBLE) {
+				try {
+					defaultValueObject = new RefexDynamicDouble(Double.valueOf(defVal));
+				} catch (Exception e) {
+					return "Default Value is not a valid DOUBLE as specified by Column Type";
+				}
+			} else if (dataType == RefexDynamicDataType.FLOAT) {
+				try {
+					defaultValueObject = new RefexDynamicFloat(Float.valueOf(defVal));
+				} catch (Exception e) {
+					return "Default Value is not a valid FLOAT as specified by Column Type";
+				}
+			} else if (dataType == RefexDynamicDataType.INTEGER) {
+				try {
+					defaultValueObject = new RefexDynamicInteger(Integer.valueOf(defVal));
+				} catch (Exception e) {
+					return "Default Value is not a valid INTEGER as specified by Column Type";
+				}
+			} else if (dataType == RefexDynamicDataType.LONG) {
+				try {
+					defaultValueObject = new RefexDynamicLong(Long.valueOf(defVal));
+				} catch (Exception e) {
+					return "Default Value is not a valid LONG as specified by Column Type";
+				}
+			} else if (dataType == RefexDynamicDataType.NID) {
+				//TODO this needs to come from a conceptNode field.
+				int nid = Integer.MAX_VALUE;
+				try {
+					nid = Integer.valueOf(defVal);
+				} catch (Exception e) {
+					return "Default Value is not a valid NID as specified by Column Type.  It must be an INTEGER";
+				}
+	
+				if (nid >= 0) {
+					return "Default Value is not a valid NID.  It must be less than zero";
+				} else {
+					ConceptVersionBI comp = WBUtility.getConceptVersion(nid);
+					if (comp == null) {
+						return "Default Value is not a valid NID.  The value does not refer to a component in the database";
+					} else {
+						defaultValueObject = new RefexDynamicNid(nid);
+					}
+				}
+			} else if (dataType == RefexDynamicDataType.STRING) {
+				try {
+					defaultValueObject = new RefexDynamicString(defVal);
+				} catch (Exception e) {
+					return "Default Value is not a valid STRING as specified by Column Type";
+				}
+			} else if (dataType == RefexDynamicDataType.UUID) {
+				if (!Utility.isUUID(defVal))
+				{
+					return "Default Value is not a valid UUID as specified by Column Type.";
+				}
+				else
+				{
+					defaultValueObject = new RefexDynamicUUID(UUID.fromString(defVal));
+				}
+			} else if (dataType == RefexDynamicDataType.BYTEARRAY) {
+				// TODO  rebuild this data field - text field isn't appropriate for all..  this needs to come from a file chooser.
+			} else if (dataType == RefexDynamicDataType.POLYMORPHIC) {
+				// not applicable
+				defaultValueObject = null;
+			} else if (dataType == RefexDynamicDataType.UNKNOWN) {
+				logger.error("Invalid case");
 			}
-		} else if (dataType == RefexDynamicDataType.STRING) {
-			try {
-				defaultValueObject = String.valueOf(defVal);
-			} catch (Exception e) {
-				return "Default Value is not a valid STRING as specified by Column Type";
-			}
-		} else if (dataType == RefexDynamicDataType.UUID) {
-			if (!Utility.isUUID(defVal))
-			{
-				return "Default Value is not a valid UUID as specified by Column Type.";
-			}
-			else
-			{
-				defaultValueObject = UUID.fromString(defVal);
-			}
-		} else if (dataType == RefexDynamicDataType.BYTEARRAY) {
-			// TODO  rebuild this data field - text field isn't appropriate for all..  this needs to come from a file chooser.
-		} else if (dataType == RefexDynamicDataType.POLYMORPHIC) {
-			// not applicable
-			defaultValueObject = null;
-		} else if (dataType == RefexDynamicDataType.UNKNOWN) {
-			logger.error("Invalid case");
+		}
+		catch (PropertyVetoException e)
+		{
+			return "Unexpected error";
 		}
 		return "";
 	}
