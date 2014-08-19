@@ -520,7 +520,7 @@ public class DynamicRefexListViewController
 				gp.add(new Label(item.getColumnDataType().getDisplayName()), 1, 3);
 				
 				gp.add(new Label("Default Value"), 0, 4);
-				gp.add(new Label(item.getDefaultColumnValue() == null ? "" : item.getDefaultColumnValue().toString()), 1, 4);
+				gp.add(new Label(item.getDefaultColumnValue() == null ? "" : item.getDefaultColumnValue().getDataObject().toString()), 1, 4);
 				
 				setGraphic(gp);
 				

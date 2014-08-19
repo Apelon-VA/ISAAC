@@ -163,7 +163,7 @@ public class SearchConceptHelper {
 				// This only for editing existing concept
 				//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 				//}
-				globalAttributesCAB.setData(searchGlobalAttributesData);
+				globalAttributesCAB.setData(searchGlobalAttributesData, WBUtility.getViewCoordinate());
 
 				conceptAttributeBlueprintAmender.addAnnotationBlueprint(globalAttributesCAB);
 
@@ -213,7 +213,7 @@ public class SearchConceptHelper {
 					// This only for editing existing concept
 					//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 					//}
-					filterRefexCAB.setData(filterRefexData);
+					filterRefexCAB.setData(filterRefexData, WBUtility.getViewCoordinate());
 
 					conceptAttributeBlueprintAmender.addAnnotationBlueprint(filterRefexCAB);
 
@@ -240,7 +240,7 @@ public class SearchConceptHelper {
 					// This only for editing existing concept
 					//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 					//}
-					nestedFilterAttributesCAB.setData(nestedFilterAttributesRefexData);
+					nestedFilterAttributesCAB.setData(nestedFilterAttributesRefexData, WBUtility.getViewCoordinate());
 
 					filterRefexCAB.addAnnotationBlueprint(nestedFilterAttributesCAB);
 					
