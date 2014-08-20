@@ -18,12 +18,11 @@
  */
 package gov.va.isaac.gui.infoModelView;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.refsetview.RefsetView;
 import gov.va.isaac.gui.util.DragResizer;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
-import gov.va.isaac.interfaces.gui.views.RefsetViewI;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -264,7 +263,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	
 	private Region getRefsetView(ConceptSpec refset)
 	{
-		RefsetViewI rv = AppContext.getService(RefsetViewI.class);
+		RefsetView rv = new RefsetView();
 		
 		rv.setViewActiveOnly(activeOnly.isSelected());
 		rv.setRefsetAndComponent(refset.getUuids()[0], conceptUUID);

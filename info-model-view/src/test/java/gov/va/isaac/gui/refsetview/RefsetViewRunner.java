@@ -50,7 +50,7 @@ public class RefsetViewRunner extends Application
 	{
 		primaryStage.setTitle("Refset View");
 
-		RefsetView refsetView = AppContext.getService(RefsetView.class);
+		RefsetView refsetView = new RefsetView();
 		refsetView.setRefsetAndComponent(gov.va.isaac.models.cem.importer.CEMMetadataBinding.CEM_DATA_REFSET.getUuids()[0], diastolicBP);
 
 		primaryStage.setScene(new Scene(refsetView.getView(), 400, 300));
@@ -65,8 +65,8 @@ public class RefsetViewRunner extends Application
 		Field f = Hk2Looker.class.getDeclaredField("looker");
 		f.setAccessible(true);
 		f.set(null, AppContext.getServiceLocator());
-		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
-		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../isaac-app/berkeley-db").getCanonicalPath());
+		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../../ISAAC-PA-VA-Fork/app/berkeley-db").getCanonicalPath());
+		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../../ISAAC-PA-VA-Fork/app/berkeley-db").getCanonicalPath());
 		launch(args);
 	}
 
