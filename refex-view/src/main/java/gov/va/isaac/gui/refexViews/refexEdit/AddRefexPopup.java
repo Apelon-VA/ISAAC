@@ -31,9 +31,14 @@ import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -59,6 +64,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -451,9 +457,55 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == dt)
 		{
-			currentDataFields_.add(new byte[] {});
-			//TODO add in a file chooser button
-			return new Label("Byte Array not yet supported in the GUI");
+			HBox hbox = new HBox();
+			hbox.setMaxWidth(Double.MAX_VALUE);
+			Label choosenFile = new Label("- no data attached -");
+			choosenFile.setAlignment(Pos.CENTER_LEFT);
+			choosenFile.setMaxWidth(Double.MAX_VALUE);
+			choosenFile.setMaxHeight(Double.MAX_VALUE);
+			Tooltip tt = new Tooltip("Select a file to attach to the refex");
+			Tooltip.install(choosenFile, tt);
+			Button fileChooser = new Button("Choose File...");
+			final ByteArrayDataHolder dataHolder = new ByteArrayDataHolder();
+			fileChooser.setOnAction((event) -> 
+			{
+				FileChooser fc = new FileChooser();
+				fc.setTitle("Select a file to attach to the refex");
+				File selectedFile = fc.showOpenDialog(getScene().getWindow());
+				if (selectedFile != null && selectedFile.isFile())
+				{
+					
+					try
+					{
+						dataHolder.data = Files.readAllBytes(selectedFile.toPath());
+						Platform.runLater(() -> 
+						{
+							choosenFile.setText(selectedFile.getName());
+							tt.setText(selectedFile.getAbsolutePath());
+						});
+					}
+					catch (Exception e)
+					{
+						AppContext.getCommonDialogs().showErrorDialog("Error reading the selected file", e);
+					}
+				}
+				else
+				{
+					Platform.runLater(() -> 
+					{
+						choosenFile.setText("- no data attached -");
+						tt.setText("Select a file to attach that file to the refex");
+					});
+				}
+			});
+			
+			currentDataFields_.add(dataHolder);
+			
+			hbox.getChildren().add(choosenFile);
+			hbox.getChildren().add(fileChooser);
+			HBox.setHgrow(choosenFile, Priority.ALWAYS);
+			HBox.setHgrow(fileChooser, Priority.NEVER);
+			return hbox;
 
 		}
 		else if (RefexDynamicDataType.DOUBLE == dt || RefexDynamicDataType.FLOAT == dt || RefexDynamicDataType.INTEGER == dt || RefexDynamicDataType.LONG == dt
@@ -672,7 +724,16 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
-			return new RefexDynamicByteArray((byte[])data);
+			if (data == null)
+			{
+				return null;
+			}
+			ByteArrayDataHolder holder = (ByteArrayDataHolder) data;
+			if (holder == null || holder.data == null)
+			{
+				return null;
+			}
+			return new RefexDynamicByteArray(holder.data);
 		}
 		else if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType() || RefexDynamicDataType.FLOAT == ci.getColumnDataType()
 				|| RefexDynamicDataType.INTEGER == ci.getColumnDataType() || RefexDynamicDataType.LONG == ci.getColumnDataType()
@@ -776,5 +837,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 
 		return assemblageConcepts;
+	}
+	
+	private class ByteArrayDataHolder
+	{
+		byte[] data;
 	}
 }
