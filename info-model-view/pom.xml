@@ -36,13 +36,6 @@
 			<artifactId>import-export</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		
-		<!-- ISAAC Refset View. -->
-		<dependency>
-			<groupId>gov.va.isaac.modules</groupId>
-			<artifactId>refset-view</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
 
 	</dependencies>
 
