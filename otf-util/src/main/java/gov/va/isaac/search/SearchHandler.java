@@ -59,7 +59,7 @@ public class SearchHandler
 	 */
 	public static SearchHandle conceptPrefixSearch(String query, int sizeLimit, TaskCompleteCallback callback, Integer taskId)
 	{
-		return doConceptSearch(query, sizeLimit, true, callback, taskId, new CompositeSearchResultComparator());
+		return doConceptSearch(query, sizeLimit, true, callback, taskId, (SearchResultsFilter)null, new CompositeSearchResultComparator());
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class SearchHandler
 	 */
 	public static SearchHandle conceptSearch(String query, TaskCompleteCallback callback)
 	{
-		return doConceptSearch(query, Integer.MAX_VALUE, false, callback, null, new CompositeSearchResultComparator());
+		return doConceptSearch(query, Integer.MAX_VALUE, false, callback, (Integer)null, (SearchResultsFilter)null, new CompositeSearchResultComparator());
 	}
 
 	public static SearchHandle doConceptSearch(SearchBuilder builder) {
@@ -76,7 +76,8 @@ public class SearchHandler
 				builder.getSizeLimit(), 
 				builder.isPrefixSearch(), 
 				builder.getCallback(), 
-				builder.getTaskId(), 
+				builder.getTaskId(),
+				builder.getFilter(),
 				builder.getComparator());
 	}
 	private static SearchHandle doConceptSearch(
@@ -85,6 +86,7 @@ public class SearchHandler
 			final boolean prefixSearch, 
 			final TaskCompleteCallback callback, 
 			final Integer taskId, 
+			final SearchResultsFilter filters,
 			Comparator<CompositeSearchResult> comparator)
 	{
 		final SearchHandle searchHandle = new SearchHandle();
@@ -217,7 +219,7 @@ public class SearchHandler
 					}
 
 					// "Now, process the results."
-					processResults(searchHandle, resultLimit, tempUserResults.values(), comparator);
+					processResults(searchHandle, resultLimit, tempUserResults.values(), filters, comparator);
 				}
 				catch (Exception ex)
 				{
@@ -237,14 +239,14 @@ public class SearchHandler
 	 */
 	public static SearchHandle descriptionPrefixSearch(String query, int sizeLimit, TaskCompleteCallback callback, Integer taskId)
 	{
-		return doDescriptionSearch(query, sizeLimit, true, callback, taskId, new CompositeSearchResultComparator());
+		return doDescriptionSearch(query, sizeLimit, true, callback, taskId, (SearchResultsFilter)null, new CompositeSearchResultComparator());
 	}
 
 	/**
 	 * Logs an error and returns no results if a local database is not available. Otherwise, returns results sorted by score.
 	 */
 	public static SearchHandle descriptionSearch(String query, TaskCompleteCallback callback) {
-		return doDescriptionSearch(query, Integer.MAX_VALUE, false, callback, null, new CompositeSearchResultComparator());
+		return doDescriptionSearch(query, Integer.MAX_VALUE, false, callback, (Integer)null, (SearchResultsFilter)null, new CompositeSearchResultComparator());
 	}
 
 	public static SearchHandle doDescriptionSearch(SearchBuilder builder) {
@@ -254,6 +256,7 @@ public class SearchHandler
 				builder.isPrefixSearch(), 
 				builder.getCallback(), 
 				builder.getTaskId(), 
+				builder.getFilter(),
 				builder.getComparator());
 	}
 
@@ -262,7 +265,8 @@ public class SearchHandler
 			final int resultLimit, 
 			final boolean prefixSearch, 
 			final TaskCompleteCallback callback, 
-			final Integer taskId, 
+			final Integer taskId,
+			final SearchResultsFilter filters,
 			Comparator<CompositeSearchResult> comparator)
 	{
 		final SearchHandle searchHandle = new SearchHandle();
@@ -393,7 +397,7 @@ public class SearchHandler
 						}
 					}
 
-					processResults(searchHandle, resultLimit, tempUserResults, comparator);
+					processResults(searchHandle, resultLimit, tempUserResults, filters, comparator);
 				}
 				catch (Exception ex)
 				{
@@ -408,10 +412,20 @@ public class SearchHandler
 		return searchHandle;
 	}
 
-	private static void processResults(SearchHandle searchHandle, int resultLimit, Collection<CompositeSearchResult> tempResults, Comparator<CompositeSearchResult> comparator) {
+	private static void processResults(SearchHandle searchHandle, int resultLimit, Collection<CompositeSearchResult> tempResults, final SearchResultsFilter filter, Comparator<CompositeSearchResult> comparator) throws SearchResultsFilterException {
 		// "Now, sort the results."
 		ArrayList<CompositeSearchResult> userResults = new ArrayList<>(tempResults.size());
-		userResults.addAll(tempResults);
+		
+		if (filter != null) {
+			LOG.debug("Applying SearchResultsFilter " + filter + " to " + tempResults.size() + " search results");
+			Collection<CompositeSearchResult> filteredResults = filter.filter(tempResults);
+
+			LOG.debug(filteredResults.size() + " results remained after filtering a total of " + tempResults.size() + " search results");
+			userResults.addAll(filteredResults);
+		} else {
+			userResults.addAll(tempResults);
+		}
+		
 		if (comparator != null) {
 			Collections.sort(userResults, comparator);
 		}

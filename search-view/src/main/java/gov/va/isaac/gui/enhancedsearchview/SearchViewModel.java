@@ -178,7 +178,7 @@ public class SearchViewModel {
 		return "SearchViewModel [isValid=" + isValid + ", name=" + name
 				+ ", description=" + description + ", searchTypeFilter="
 				+ searchTypeFilter + ", maxResults=" + maxResults
-				+ ", droolsExpr=" + droolsExpr + ", filters=" + Arrays.toString(filters.toArray())
+				+ ", droolsExpr=" + droolsExpr + ", filter=" + Arrays.toString(filters.toArray())
 				+ ", viewCoordinate=" + (viewCoordinate != null ? viewCoordinate.getViewPosition() : null) + "]";
 	}
 }
