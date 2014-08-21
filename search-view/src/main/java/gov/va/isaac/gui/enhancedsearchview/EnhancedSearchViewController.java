@@ -29,6 +29,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterFactory;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -38,6 +39,8 @@ import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
 import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
+import gov.va.isaac.search.SearchResultsFilter;
+import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
@@ -331,6 +334,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// TODO: add binding to disable deletion of first filter in list containing other filter
 		Button removeFilterButton = new Button("Remove");
+		removeFilterButton.setMinWidth(55);
 		removeFilterButton.setPadding(new Insets(5.0));
 		removeFilterButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -361,6 +365,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 			Label searchParamLabel = new Label("Ascendant");
 			searchParamLabel.setPadding(new Insets(5.0));
+			searchParamLabel.setMinWidth(70);
 
 			CheckBox excludeMatchesCheckBox = new CheckBox("Exclude Matches");
 			excludeMatchesCheckBox.setPadding(new Insets(5.0));
@@ -1400,6 +1405,28 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
 
+		SearchResultsFilter searchResultsFilter = null;
+		if (model.getFilters() != null) {
+			List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
+			for (NonSearchTypeFilter nonSearchTypeFilter : model.getFilters()) {
+				// TODO: This must be changed when support for other NonSearchTypeFilter types added
+				searchResultsFilters.add(SearchResultsFilterFactory.createSearchResultsFilter((IsDescendantOfFilter)nonSearchTypeFilter));
+			}
+			searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
+			
+//			try {
+//				searchResultsFilter = SearchResultsFilterFactory.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
+//			} catch (SearchResultsFilterException e) {
+//				String title = "Failed creating SearchResultsFilter";
+//				String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
+//				String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
+//				LOG.error(details);
+//				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+//			
+//				return;
+//			}
+		}
+
 		// "we get called back when the results are ready."
 		switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
 		case  CONCEPT:
@@ -1407,11 +1434,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
 			builder.setCallback(this);
 			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (model.getFilters() != null) {
-				SearchResultsIntersectionFilter searchResultsFilter = new SearchResultsIntersectionFilter();
-				for (NonSearchTypeFilter nonSearchTypeFilter : model.getFilters()) {
-					searchResultsFilter.getFilters().add(SearchResultsFilterFactory.createSearchResultsFilter((IsDescendantOfFilter)nonSearchTypeFilter));
-				}
+			if (searchResultsFilter != null) {
 				builder.setFilter(searchResultsFilter);
 			}
 			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
@@ -1428,11 +1451,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
 			builder.setCallback(this);
 			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (model.getFilters() != null) {
-				SearchResultsIntersectionFilter searchResultsFilter = new SearchResultsIntersectionFilter();
-				for (NonSearchTypeFilter nonSearchTypeFilter : model.getFilters()) {
-					searchResultsFilter.getFilters().add(SearchResultsFilterFactory.createSearchResultsFilter((IsDescendantOfFilter)nonSearchTypeFilter));
-				}
+			if (searchResultsFilter != null) {
 				builder.setFilter(searchResultsFilter);
 			}
 			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
