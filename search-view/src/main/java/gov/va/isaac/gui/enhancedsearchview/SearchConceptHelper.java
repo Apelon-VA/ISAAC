@@ -28,9 +28,9 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
 import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
-import gov.va.isaac.gui.enhancedsearchview.filters.LuceneFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
-import gov.va.isaac.gui.enhancedsearchview.filters.RegExpFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.util.WBUtility;
 
@@ -48,7 +48,6 @@ import java.util.UUID;
 
 import javax.naming.InvalidNameException;
 
-import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
@@ -85,6 +84,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
+@SuppressWarnings("unused")
 public class SearchConceptHelper {
 	public static class SearchConceptException extends Exception {
 		private static final long serialVersionUID = 1L;
@@ -191,11 +191,14 @@ public class SearchConceptHelper {
 			// Add search type filter as index 0
 			addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, model.getSearchType(), 0);
 
-			// Add additional filters as higher indices
+			// Add additional filter as higher indices
 			for (int filterIndex = 0; filterIndex < model.getFilters().size(); ++filterIndex) {
 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, model.getFilters().get(filterIndex), filterIndex + 1);
 			}
-
+			
+			LOG.debug("Displaying newly created save concept refexes");
+			DynamicRefexHelper.displayDynamicRefexes(searchConcept);
+			
 			return searchConcept;
 		} catch (IOException | InvalidCAB | ContradictionException | PropertyVetoException e) {
 			throw new SearchConceptException(e.getLocalizedMessage(), e);
@@ -216,9 +219,9 @@ public class SearchConceptHelper {
 		}
 
 		ConceptSpec filterConceptSpec = null;
-		if (currentFilter instanceof LuceneFilter) {
+		if (currentFilter instanceof LuceneSearchTypeFilter) {
 			filterConceptSpec = Search.SEARCH_LUCENE_FILTER;
-		} else if (currentFilter instanceof RegExpFilter) {
+		} else if (currentFilter instanceof RegExpSearchTypeFilter) {
 			filterConceptSpec = Search.SEARCH_REGEXP_FILTER;
 		} else if (currentFilter instanceof IsDescendantOfFilter) {
 			filterConceptSpec = Search.SEARCH_ISDESCENDANTOF_FILTER;
@@ -231,18 +234,18 @@ public class SearchConceptHelper {
 		// First create Filter, which has its own attributes plus common Filter attributes
 		RefexDynamicData[] filterRefexData = new RefexDynamicData[filterRDUD.getColumnInfo().length];
 
-		if (currentFilter instanceof LuceneFilter) {
+		if (currentFilter instanceof LuceneSearchTypeFilter) {
 			// Construct and populate RefexDynamicData for search parameter
-			LuceneFilter filter = (LuceneFilter)currentFilter;
+			LuceneSearchTypeFilter filter = (LuceneSearchTypeFilter)currentFilter;
 
 			if (filter.getSearchParameter() != null) {
 
 				RefexDynamicData searchParameterData = new RefexDynamicString(filter.getSearchParameter());
 				filterRefexData[0] = searchParameterData;
 			}
-		} else if (currentFilter instanceof RegExpFilter) {
+		} else if (currentFilter instanceof RegExpSearchTypeFilter) {
 			// Construct and populate RefexDynamicData for search parameter
-			RegExpFilter filter = (RegExpFilter)currentFilter;
+			RegExpSearchTypeFilter filter = (RegExpSearchTypeFilter)currentFilter;
 
 			if (filter.getSearchParameter() != null) {
 
@@ -435,12 +438,19 @@ public class SearchConceptHelper {
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic refexes: " +  matchingConcept.getRefexesDynamic().size());
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+			
+					LOG.debug("Displaying newly loaded save concept refexes");
+					DynamicRefexHelper.displayDynamicRefexes(matchingConcept);
+
 				} catch (IOException e) {
 					LOG.warn("Failed displaying attached refexes. Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 					e.printStackTrace();
 				}
 
-				for (RefexDynamicVersionBI<?> refex : matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+				int i = 0;
+				Collection<? extends RefexDynamicVersionBI<?>> refexes = matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+				for (RefexDynamicVersionBI<?> refex : refexes) {
+					LOG.debug("Displaying refex #" + (++i) + " of " + refexes.size());
 					DynamicRefexHelper.displayDynamicRefex(refex);
 
 					RefexDynamicUsageDescription dud = null;
@@ -484,7 +494,7 @@ public class SearchConceptHelper {
 
 						LOG.debug("Loading data into model from Search Lucene Filter refex");
 
-						LuceneFilter newFilter = new LuceneFilter();
+						LuceneSearchTypeFilter newFilter = new LuceneSearchTypeFilter();
 
 						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 						newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
@@ -502,7 +512,7 @@ public class SearchConceptHelper {
 
 						LOG.debug("Loading data into model from Search RegExp Filter refex");
 
-						RegExpFilter newFilter = new RegExpFilter();
+						RegExpSearchTypeFilter newFilter = new RegExpSearchTypeFilter();
 
 						RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 						newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
@@ -542,7 +552,7 @@ public class SearchConceptHelper {
 					throw new SearchConceptException("Model does not contain a SearchTypeFilter");
 				}
 				
-				// At this point the filterOrderMap should NOT contain any SearchTypeFilter filters
+				// At this point the filterOrderMap should NOT contain any SearchTypeFilter filter
 				for (int order : filterOrderMap.keySet()) {
 					for (NonSearchTypeFilter f : filterOrderMap.get(order)) {
 						model.getFilters().add(f);

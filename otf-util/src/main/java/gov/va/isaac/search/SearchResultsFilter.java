@@ -18,17 +18,20 @@
  */
 
 /**
- * TextFilter
+ * IndividualSearchResultFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.enhancedsearchview.filters;
+package gov.va.isaac.search;
+
+import java.util.Collection;
 
 /**
- * TextFilter
+ * IndividualSearchResultFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public interface TextFilter extends NonSearchTypeFilter {
+public interface SearchResultsFilter {
+	Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException;
 }

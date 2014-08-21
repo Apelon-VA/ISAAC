@@ -18,7 +18,7 @@
  */
 
 /**
- * RegExpFilter
+ * RegExpSearchTypeFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -31,11 +31,11 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-public class RegExpFilter implements SearchTypeFilter<RegExpFilter> {
+public class RegExpSearchTypeFilter implements SearchTypeFilter<RegExpSearchTypeFilter> {
 	private StringProperty searchParameter = new SimpleStringProperty();
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 
-	public RegExpFilter() {
+	public RegExpSearchTypeFilter() {
 		searchParameter.addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(
@@ -64,7 +64,7 @@ public class RegExpFilter implements SearchTypeFilter<RegExpFilter> {
 
 	@Override
 	public String toString() {
-		return "RegExpFilter [searchParameter=" + searchParameter.get()
+		return "RegExpSearchTypeFilter [searchParameter=" + searchParameter.get()
 				+ ", isValid=" + isValid.get() + "]";
 	}
 	/* (non-Javadoc)
@@ -79,7 +79,7 @@ public class RegExpFilter implements SearchTypeFilter<RegExpFilter> {
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#copy(gov.va.isaac.gui.enhancedsearchview.filters.Filter)
 	 */
 	@Override
-	public void copy(RegExpFilter toCopy) {
+	public void copy(RegExpSearchTypeFilter toCopy) {
 		searchParameter.set(toCopy.getSearchParameter());
 	}
 }
