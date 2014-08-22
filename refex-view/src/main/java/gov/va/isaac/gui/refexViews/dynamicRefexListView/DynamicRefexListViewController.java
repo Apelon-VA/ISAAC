@@ -309,7 +309,7 @@ public class DynamicRefexListViewController
 				//find all dynamic refexes in the system.
 				boolean conceptFromOutsideTheList = true;
 				SimpleDisplayConcept enteredConcept = null;
-				if (conceptNode.getConcept() != null)
+				if (conceptNode.getConcept() != null && conceptNode.isValid().get())
 				{
 					enteredConcept = new SimpleDisplayConcept(conceptNode.getConcept());
 				}
@@ -548,8 +548,11 @@ public class DynamicRefexListViewController
 				gp.add(new Label("Data Type"), 0, 3);
 				gp.add(new Label(item.getColumnDataType().getDisplayName()), 1, 3);
 				
-				gp.add(new Label("Default Value"), 0, 4);
-				gp.add(new Label(item.getDefaultColumnValue() == null ? "" : item.getDefaultColumnValue().getDataObject().toString()), 1, 4);
+				gp.add(new Label("Column Required"), 0, 4);
+				gp.add(new Label(item.isColumnRequired() + ""), 1, 4);
+				
+				gp.add(new Label("Default Value"), 0, 5);
+				gp.add(new Label(item.getDefaultColumnValue() == null ? "" : item.getDefaultColumnValue().getDataObject().toString()), 1, 5);
 				
 				setGraphic(gp);
 				
