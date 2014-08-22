@@ -25,7 +25,6 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -35,7 +34,6 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -305,15 +303,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		setScene(scene);
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<>();
-	}
-	
 	public void finishInit(RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex, DynamicRefexView viewToRefresh)
 	{
 		finishInit(new InputType(refex), viewToRefresh);

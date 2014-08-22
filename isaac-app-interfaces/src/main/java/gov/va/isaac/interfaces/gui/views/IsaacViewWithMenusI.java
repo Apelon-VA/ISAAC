@@ -18,31 +18,24 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.function.Supplier;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import java.util.List;
 import org.jvnet.hk2.annotations.Contract;
-import javafx.stage.Window;
-
 
 /**
- * {@link XMLViewI}
- *
- * Extends the IsaacViewI to provide a View which will pop up a new window on top of the parent 
- * window when the showView method is called.
+ * IsaacViewI
  * 
- * Implementations are intended to simply display the specified XML in a window.
+ * An extension of {@link IsaacViewI} which adds menus that will be shown in the top level window of the application.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface XMLViewI extends IsaacViewI
+public abstract interface IsaacViewWithMenusI extends IsaacViewI
 {
 	/**
-	 * Display this popup view to the user in front of the specified parent window.
-	 * The PopupViewI implementation is responsible for showing itself when this method 
-	 * is called. 
-	 * 
-	 * The content is passed in via the Supplier interface, so that if gathering the XML is expensive, 
-	 * good implementations can background thread this job.
+	 * Provides the specs of all of the menus required by this view which will be shown in the top level of the application  
+	 * May return an empty list, will not return null.
 	 */
-	public Window showView(Window parent, String title, Supplier<String> xmlContent, int width, int height);
+	public List<MenuItemI> getMenuBarMenus();
+	
 }

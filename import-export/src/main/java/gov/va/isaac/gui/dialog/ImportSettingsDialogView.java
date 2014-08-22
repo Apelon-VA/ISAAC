@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @Singleton
-public class ImportSettingsDialogView implements PopupViewI
+public class ImportSettingsDialogView implements PopupViewI, IsaacViewWithMenusI
 {
 	private static final Logger LOG = LoggerFactory.getLogger(ImportSettingsDialogView.class);
 	/**

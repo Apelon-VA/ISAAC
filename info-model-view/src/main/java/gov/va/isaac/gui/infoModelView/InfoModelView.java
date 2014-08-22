@@ -20,16 +20,13 @@ package gov.va.isaac.gui.infoModelView;
 
 import gov.va.isaac.gui.refsetview.RefsetView;
 import gov.va.isaac.gui.util.DragResizer;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.UUID;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -286,16 +283,6 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		DragResizer.makeResizable(r);
 		refsetsOnDisplay.put(refset.getDescription(), r);
 		refsetArea.getChildren().add(r);
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		// We don't currently have any custom menus with this view
-		return new ArrayList<MenuItemI>();
 	}
 
 	/**

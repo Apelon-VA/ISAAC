@@ -22,18 +22,13 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -45,9 +40,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
 import javax.inject.Named;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
@@ -120,11 +113,6 @@ public class EnhancedConceptView implements PopupConceptViewI {
 			s.setHeight(s.getHeight() + 30);  //coming up slightly to small on linux for some reason
 			s.toFront();
 		});
-	}
-
-	@Override
-	public List<MenuItemI> getMenuBarMenus() {
-		return new ArrayList<>();
 	}
 
 	@Override
