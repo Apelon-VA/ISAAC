@@ -101,6 +101,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -369,6 +371,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 			CheckBox excludeMatchesCheckBox = new CheckBox("Exclude Matches");
 			excludeMatchesCheckBox.setPadding(new Insets(5.0));
+			excludeMatchesCheckBox.setMinWidth(150);
 			excludeMatchesCheckBox.setSelected(((IsDescendantOfFilter) filter).getInvert());
 			excludeMatchesCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
 				@Override
@@ -409,6 +412,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 
 		searchFilterGridPane.addRow(index, row);
+		RowConstraints rowConstraints = new RowConstraints();
+		rowConstraints.setVgrow(Priority.NEVER);
+		searchFilterGridPane.getRowConstraints().add(index, rowConstraints);
 	}
 
 	private boolean validateSearchViewModel(SearchViewModel model) {
