@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -53,6 +54,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -71,6 +73,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.runlevel.RunLevelException;
@@ -396,14 +399,50 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				SimpleStringProperty valueIsRequired = (ci.isColumnRequired() ? new SimpleStringProperty("") : null);
 				SimpleStringProperty defaultValueTooltip = (ci.getDefaultColumnValue() == null ? null : new SimpleStringProperty());
+				ComboBox<RefexDynamicDataType> polymorphicType = null;
 				
 				Label l = new Label(ci.getColumnName());
 				l.getStyleClass().add("boldLabel");
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
 				int col = 0;
 				gp.add(l, col++, row);
+				
+				if (ci.getColumnDataType() == RefexDynamicDataType.POLYMORPHIC)
+				{
+					polymorphicType = new ComboBox<>();
+					polymorphicType.setEditable(false);
+					polymorphicType.setConverter(new StringConverter<RefexDynamicDataType>()
+					{
+						
+						@Override
+						public String toString(RefexDynamicDataType object)
+						{
+							return object.getDisplayName();
+						}
+						
+						@Override
+						public RefexDynamicDataType fromString(String string)
+						{
+							throw new RuntimeException("unecessary");
+						}
+					});
+					for (RefexDynamicDataType type : RefexDynamicDataType.values())
+					{
+						if (type == RefexDynamicDataType.POLYMORPHIC || type == RefexDynamicDataType.UNKNOWN)
+						{
+							continue;
+						}
+						else
+						{
+							polymorphicType.getItems().add(type);
+						}
+					}
+					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType()));
+				}
+				
 				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), (currentValues == null ? null : currentValues[row]), 
-						valueIsRequired, defaultValueTooltip);
+						valueIsRequired, defaultValueTooltip, (polymorphicType == null ? null : polymorphicType.getSelectionModel().selectedItemProperty()),
+						currentDataFieldWarnings_, currentDataFields_, true);
 				gp.add(n, col++, row);
 				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null)
 				{
@@ -442,7 +481,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 					gp.add(stackPane, col++, row);
 				}
-				gp.add(new Label(ci.getColumnDataType().getDisplayName()), col++, row++);
+				gp.add((polymorphicType == null ? new Label(ci.getColumnDataType().getDisplayName()) : polymorphicType), col++, row++);
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
@@ -472,6 +511,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				sp_.setContent(gp);
 			}
+			allValid_.invalidate();
 		}
 		else
 		{
@@ -484,7 +524,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	 * an appropriate message if the field is empty.
 	 */
 	private Node buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, SimpleStringProperty valueIsRequired,
-			SimpleStringProperty defaultValueTooltip)
+			SimpleStringProperty defaultValueTooltip, ReadOnlyObjectProperty<RefexDynamicDataType> polymorphicSelection, 
+			ArrayList<ReadOnlyStringProperty> currentDataFieldWarningsProxy, ArrayList<Object> currentDataFieldsProxy, boolean isFirstLevel)
 	{
 		Node returnValue = null;
 		if (RefexDynamicDataType.BOOLEAN == dt)
@@ -539,9 +580,9 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			if (defaultValue != null)
 			{
-				defaultValueTooltip.set("If you choose 'No Value', the default value of " + defaultValue.getDataObject().toString() + " will be used");
+				defaultValueTooltip.set("The default value for this field is '" + defaultValue.getDataObject().toString() + "'");
 			}
-			currentDataFields_.add(cb);
+			currentDataFieldsProxy.add(cb);
 			returnValue = cb;
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == dt)
@@ -632,7 +673,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				}
 			});
 			
-			currentDataFields_.add(dataHolder);
+			currentDataFieldsProxy.add(dataHolder);
 			
 			hbox.getChildren().add(choosenFile);
 			hbox.getChildren().add(fileChooser);
@@ -648,14 +689,14 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				|| RefexDynamicDataType.STRING == dt || RefexDynamicDataType.UUID == dt)
 		{
 			TextField tf = new TextField();
-			currentDataFields_.add(tf);
+			currentDataFieldsProxy.add(tf);
 
 			if (defaultValue != null)
 			{
 				tf.setPromptText(defaultValue.getDataObject().toString());
 			}
 			SimpleStringProperty valueInvalidReason = new SimpleStringProperty("");
-			currentDataFieldWarnings_.add(valueInvalidReason);
+			currentDataFieldWarningsProxy.add(valueInvalidReason);
 			allValid_.addBinding(valueInvalidReason);
 			Node n = ErrorMarkerUtils.setupErrorMarker(tf, valueInvalidReason);
 
@@ -767,7 +808,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				tf.setText(currentValue.getDataObject().toString());
 			}
-			if (valueIsRequired != null && defaultValue == null)
+			if (currentValue == null && valueIsRequired != null && defaultValue == null)
 			{
 				valueIsRequired.set("You must specify a value for this field");
 			}
@@ -780,8 +821,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		else if (RefexDynamicDataType.NID == dt)
 		{
 			ConceptNode cn = new ConceptNode(null, false);
-			currentDataFields_.add(cn);
-			currentDataFieldWarnings_.add(cn.isValid().getReasonWhyInvalid());
+			currentDataFieldsProxy.add(cn);
+			currentDataFieldWarningsProxy.add(cn.isValid().getReasonWhyInvalid());
 			allValid_.addBinding(cn.isValid().getReasonWhyInvalid());
 			
 			if (currentValue != null)
@@ -817,22 +858,54 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == dt)
 		{
-			//TODO will need to make a data type selector, and a data field... can recurse for part of it, 
-			//but need to make sure that the error markers and such don't get confused.
+			//a slick little bit of recursion... but a bit tricky to keep the validators aligned properly...
 			HBox hBox = new HBox();
-			currentDataFields_.add(null);
-			hBox.getChildren().add(new Label("Polymorphic is not yet supported in the GUI"));
-			if (valueIsRequired != null)
+			hBox.setMaxWidth(Double.MAX_VALUE);
+			NestedPolymorphicData nestedData = new NestedPolymorphicData();
+			
+			ArrayList<ReadOnlyStringProperty> currentDataFieldWarningsNested = new ArrayList<>();
+			ArrayList<Object> currentDataFieldsNested = new ArrayList<>();
+			hBox.getChildren().add(buildNodeForType(polymorphicSelection.get(), null, currentValue, valueIsRequired, defaultValueTooltip, null,
+					currentDataFieldWarningsNested, currentDataFieldsNested, false));
+			HBox.setHgrow(hBox.getChildren().get(0), Priority.ALWAYS);
+			
+			nestedData.userData = currentDataFieldsNested.get(0);
+			nestedData.dataType = polymorphicSelection.get();
+			currentDataFieldsProxy.add(nestedData);
+			if (currentDataFieldWarningsNested.size() == 1)
 			{
-				valueIsRequired.set("You must supply a value for this field");
+				currentDataFieldWarnings_.add(currentDataFieldWarningsNested.get(0));
+				allValid_.invalidate(); //the new binding will already be made to allValid_ during the recursion - but it may have computed without ths full list...
 			}
+			
+			polymorphicSelection.addListener((change) ->
+			{
+				hBox.getChildren().remove(0);
+				if (currentDataFieldWarningsNested.size() == 1)
+				{
+					currentDataFieldsProxy.remove(currentDataFieldWarningsNested.get(0));
+					allValid_.removeBinding(currentDataFieldWarningsNested.get(0));
+				}
+				currentDataFieldWarningsNested.clear();
+				currentDataFieldsNested.clear();
+				hBox.getChildren().add(buildNodeForType(polymorphicSelection.get(), null, currentValue, valueIsRequired, defaultValueTooltip, null, 
+						currentDataFieldWarningsNested, currentDataFieldsNested, false));
+				HBox.setHgrow(hBox.getChildren().get(0), Priority.ALWAYS);
+				nestedData.userData = currentDataFieldsNested.get(0);
+				nestedData.dataType = polymorphicSelection.get();
+				if (currentDataFieldWarningsNested.size() == 1)
+				{
+					currentDataFieldsProxy.add(currentDataFieldWarningsNested.get(0));
+					allValid_.invalidate(); //the new binding will already be made to allValid_ during the recursion - but it may have computed without ths full list...
+				}
+			});
 			returnValue = hBox;
 		}
 		else
 		{
 			throw new RuntimeException("Unexpected datatype " + dt);
 		}
-		if (valueIsRequired != null)
+		if (isFirstLevel && valueIsRequired != null)
 		{
 			currentDataFieldWarnings_.add(valueIsRequired);
 			allValid_.addBinding(valueIsRequired);
@@ -929,14 +1002,14 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
 		{
-			if (data == null)
+			if (data == null && ci.getDefaultColumnValue() == null)
 			{
 				return null;
 			}
 			ByteArrayDataHolder holder = (ByteArrayDataHolder) data;
 			if (holder == null || holder.data == null)
 			{
-				return null;
+				return (RefexDynamicByteArray)ci.getDefaultColumnValue();
 			}
 			return new RefexDynamicByteArray(holder.data);
 		}
@@ -982,16 +1055,20 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		else if (RefexDynamicDataType.NID == ci.getColumnDataType())
 		{
 			ConceptNode cn = (ConceptNode)data;
-			if (cn.getConcept() == null && ci.getDefaultColumnValue() == null)
+			if (cn.getConcept() == null)
 			{
-				return null;
+				return (RefexDynamicNid)ci.getDefaultColumnValue();
 			}
 			return new RefexDynamicNid(cn.getConcept().getNid());
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
 		{
-			//TODO implement polymorphic support
-			return new RefexDynamicString("");
+			NestedPolymorphicData nestedData = (NestedPolymorphicData)data;
+			//HACK - only need the data type field... but this is the type we want.
+			//override datatype, and default (default value isn't allowed for polymorphic)
+			RefexDynamicColumnInfo nestedCI = new RefexDynamicColumnInfo(ci.getColumnOrder(), ci.getColumnDescriptionConcept(), nestedData.dataType, null, 
+					ci.isColumnRequired(), ci.getValidator(), ci.getValidatorData());
+			return getDataForType(nestedData.userData, nestedCI);
 		}
 		else
 		{
@@ -1047,5 +1124,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private class ByteArrayDataHolder
 	{
 		byte[] data;
+	}
+	
+	private class NestedPolymorphicData
+	{
+		RefexDynamicDataType dataType;
+		Object userData;
 	}
 }
