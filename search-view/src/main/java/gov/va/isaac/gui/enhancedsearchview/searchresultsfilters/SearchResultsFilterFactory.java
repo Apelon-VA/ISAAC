@@ -24,14 +24,11 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 
-import java.util.Collection;
-
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
-import gov.va.isaac.search.SearchResultsIntersectionFilter;
-
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
