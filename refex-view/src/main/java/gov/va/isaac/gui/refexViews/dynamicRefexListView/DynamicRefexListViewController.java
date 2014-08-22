@@ -147,10 +147,21 @@ public class DynamicRefexListViewController
 			rebuildList(false);
 		});
 
-		//TODO enhance ConceptNode to allow me to pass in my own concept validator
 		conceptNode = new ConceptNode(null, false);
-		conceptNode.getConceptProperty().addListener((change) -> {
-			conceptNode.getConceptProperty().get();  //Need to do a get after each invalidation, otherwise, we won't get the next invalidation
+		conceptNode.getConceptProperty().addListener((invalidation) -> {
+			ConceptVersionBI cv = conceptNode.getConceptProperty().get();  //Need to do a get after each invalidation, otherwise, we won't get the next invalidation
+			if (cv != null)
+			{
+				//see if it is a valid Dynamic Refex Assemblage
+				try
+				{
+					RefexDynamicUsageDescription.read(cv.getNid());
+				}
+				catch (Exception e)
+				{
+					conceptNode.isValid().setInvalid("The specified concept is not constructed as a Dynamic Refex Assemblage concept");
+				}
+			}
 			rebuildList(false);
 		});
 
@@ -293,14 +304,32 @@ public class DynamicRefexListViewController
 						allRefexDefinitions.add(new SimpleDisplayConcept(col));
 					}
 				}
+				
+				//This code for adding the concept from the concept filter panel can be removed, if we fix the above code to actually
+				//find all dynamic refexes in the system.
+				boolean conceptFromOutsideTheList = true;
+				SimpleDisplayConcept enteredConcept = null;
+				if (conceptNode.getConcept() != null)
+				{
+					enteredConcept = new SimpleDisplayConcept(conceptNode.getConcept());
+				}
 
 				filteredList = new ArrayList<>();
 				for (SimpleDisplayConcept sdc : allRefexDefinitions)
 				{
+					if (enteredConcept != null && sdc.getNid() == enteredConcept.getNid())
+					{
+						conceptFromOutsideTheList = false;
+					}
 					if (passesFilters(sdc))
 					{
 						filteredList.add(sdc);
 					}
+				}
+				
+				if (enteredConcept != null && conceptFromOutsideTheList)
+				{
+					filteredList.add(enteredConcept);
 				}
 				return null;
 			}
