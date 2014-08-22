@@ -24,6 +24,7 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
@@ -33,15 +34,14 @@ import gov.va.isaac.util.WBUtility;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -57,18 +57,21 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.runlevel.RunLevelException;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -124,16 +127,14 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private ConceptNode selectableConcept_;
 	private RefexDynamicUsageDescription assemblageInfo_;
 	private SimpleBooleanProperty assemblageIsValid_ = new SimpleBooleanProperty(false);
-	private SimpleStringProperty reasonSaveDisabled_ = new SimpleStringProperty();
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 	private UpdateableBooleanBinding allValid_;
 
-	private ArrayList<StringProperty> currentDataFieldWarnings_ = new ArrayList<>();
+	private ArrayList<ReadOnlyStringProperty> currentDataFieldWarnings_ = new ArrayList<>();
 	private ArrayList<Object> currentDataFields_ = new ArrayList<>();
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 	private GridPane gp_;
 
-	//TODO implement manditory columns
 	//TODO use the word Sememe
 	
 	private AddRefexPopup()
@@ -187,8 +188,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						}
 						catch (Exception e)
 						{
-							selectableConcept_.isValid().set(false);
-							selectableConcept_.getInvalidReason().set("The selected concept is not properly constructed for use as an Assemblage concept");
+							selectableConcept_.isValid().setInvalid("The selected concept is not properly constructed for use as an Assemblage concept");
 							logger_.info("Concept not a valid concept for a refex assemblage", e);
 							assemblageIsValid_.set(false);
 						}
@@ -204,7 +204,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		});
 
 		//delay adding concept till we know where
-
 		ColumnConstraints cc = new ColumnConstraints();
 		cc.setHgrow(Priority.NEVER);
 		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(referencedComponent));
@@ -239,7 +238,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				if (assemblageIsValid_.get() && selectableConcept_.isValid().get())
 				{
 					boolean allDataValid = true;
-					for (StringProperty ssp : currentDataFieldWarnings_)
+					for (ReadOnlyStringProperty ssp : currentDataFieldWarnings_)
 					{
 						if (ssp.get().length() > 0)
 						{
@@ -249,11 +248,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					}
 					if (allDataValid)
 					{
-						reasonSaveDisabled_.set("");
+						clearInvalidReason();
 						return true;
 					}
 				}
-				reasonSaveDisabled_.set("All errors must be corrected before save is allowed");
+				setInvalidReason("All errors must be corrected before save is allowed");
 				return false;
 			}
 		};
@@ -275,7 +274,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		saveButton.setOnAction((action) -> {
 			doSave();
 		});
-		Node wrappedSave = ErrorMarkerUtils.setupDisabledInfoMarker(saveButton, reasonSaveDisabled_);
+		Node wrappedSave = ErrorMarkerUtils.setupDisabledInfoMarker(saveButton, allValid_.getReasonWhyInvalid());
 		GridPane.setMargin(wrappedSave, new Insets(5, 0, 5, 20));
 		bottomRow.add(wrappedSave, 2, 0);
 
@@ -380,7 +379,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	{
 		if (assemblageValid)
 		{
-			for (StringProperty ssp : currentDataFieldWarnings_)
+			for (ReadOnlyStringProperty ssp : currentDataFieldWarnings_)
 			{
 				allValid_.removeBinding(ssp);
 			}
@@ -392,15 +391,58 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			gp.setVgap(10.0);
 			gp.setStyle("-fx-padding: 5;");
 			int row = 0;
+			boolean extraInfoColumnIsRequired = false;
 			for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
 			{
+				SimpleStringProperty valueIsRequired = (ci.isColumnRequired() ? new SimpleStringProperty("") : null);
+				SimpleStringProperty defaultValueTooltip = (ci.getDefaultColumnValue() == null ? null : new SimpleStringProperty());
+				
 				Label l = new Label(ci.getColumnName());
 				l.getStyleClass().add("boldLabel");
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
-				gp.add(l, 0, row);
-				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), (currentValues == null ? null : currentValues[row]));
-				gp.add(n, 1, row);
-				gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
+				int col = 0;
+				gp.add(l, col++, row);
+				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), (currentValues == null ? null : currentValues[row]), 
+						valueIsRequired, defaultValueTooltip);
+				gp.add(n, col++, row);
+				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null)
+				{
+					extraInfoColumnIsRequired = true;
+					
+					StackPane stackPane = new StackPane();
+					stackPane.setMaxWidth(Double.MAX_VALUE);
+					
+					if (ci.getDefaultColumnValue() != null)
+					{
+						ImageView information = Images.INFORMATION.createImageView();
+						Tooltip tooltip = new Tooltip();
+						tooltip.textProperty().bind(defaultValueTooltip);
+						Tooltip.install(information, tooltip);
+						tooltip.setAutoHide(true);
+						information.setOnMouseClicked(event -> tooltip.show(information, event.getScreenX(), event.getScreenY()));
+						stackPane.getChildren().add(information);
+					}
+					
+					if (ci.isColumnRequired())
+					{
+						ImageView exclamation = Images.EXCLAMATION.createImageView();
+
+						final BooleanProperty showExclamation = new SimpleBooleanProperty(StringUtils.isNotBlank(valueIsRequired.get()));
+						valueIsRequired.addListener((ChangeListener<String>) (observable, oldValue, newValue) -> showExclamation.set(StringUtils.isNotBlank(newValue)));
+
+						exclamation.visibleProperty().bind(showExclamation);
+						Tooltip tooltip = new Tooltip();
+						tooltip.textProperty().bind(valueIsRequired);
+						Tooltip.install(exclamation, tooltip);
+						tooltip.setAutoHide(true);
+						
+						exclamation.setOnMouseClicked(event -> tooltip.show(exclamation, event.getScreenX(), event.getScreenY()));
+						stackPane.getChildren().add(exclamation);
+					}
+
+					gp.add(stackPane, col++, row);
+				}
+				gp.add(new Label(ci.getColumnDataType().getDisplayName()), col++, row++);
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
@@ -410,6 +452,13 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			cc = new ColumnConstraints();
 			cc.setHgrow(Priority.ALWAYS);
 			gp.getColumnConstraints().add(cc);
+
+			if (extraInfoColumnIsRequired)
+			{
+				cc = new ColumnConstraints();
+				cc.setHgrow(Priority.NEVER);
+				gp.getColumnConstraints().add(cc);
+			}
 			
 			cc = new ColumnConstraints();
 			cc.setHgrow(Priority.NEVER);
@@ -430,17 +479,53 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 	}
 
-	private Node buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue)
+	/**
+	 * when valueIsRequired is null, it is understood to be optional.  If it is not null, need to tie it in to the listeners on the field - setting
+	 * an appropriate message if the field is empty.
+	 */
+	private Node buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, SimpleStringProperty valueIsRequired,
+			SimpleStringProperty defaultValueTooltip)
 	{
+		Node returnValue = null;
 		if (RefexDynamicDataType.BOOLEAN == dt)
 		{
 			ChoiceBox<String> cb = new ChoiceBox<>();
 			cb.getItems().add("No Value");
 			cb.getItems().add("True");
 			cb.getItems().add("False");
+			
+			if (valueIsRequired != null)
+			{
+				cb.getSelectionModel().selectedIndexProperty().addListener((change) ->
+				{
+					if (cb.getSelectionModel().getSelectedIndex() == 0)
+					{
+						valueIsRequired.set("You must select True or False");
+					}
+					else
+					{
+						valueIsRequired.set("");
+					}
+				});
+			}
+			
 			if (currentValue == null)
 			{
-				cb.getSelectionModel().select(0);
+				if (defaultValue != null)
+				{
+					if (((RefexDynamicBooleanBI)defaultValue).getDataBoolean())
+					{
+						cb.getSelectionModel().select(1);
+					}
+					else
+					{
+						cb.getSelectionModel().select(2);
+					}
+				}
+				else
+				{
+					cb.getSelectionModel().select(0);
+				}
 			}
 			else
 			{
@@ -452,14 +537,22 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					cb.getSelectionModel().select(2);
 				}
 			}
+			if (defaultValue != null)
+			{
+				defaultValueTooltip.set("If you choose 'No Value', the default value of " + defaultValue.getDataObject().toString() + " will be used");
+			}
 			currentDataFields_.add(cb);
-			return cb;
+			returnValue = cb;
 		}
 		else if (RefexDynamicDataType.BYTEARRAY == dt)
 		{
 			HBox hbox = new HBox();
 			hbox.setMaxWidth(Double.MAX_VALUE);
 			Label choosenFile = new Label("- no data attached -");
+			if (valueIsRequired != null)
+			{
+				valueIsRequired.set("You must select a file to attach");
+			}
 			choosenFile.setAlignment(Pos.CENTER_LEFT);
 			choosenFile.setMaxWidth(Double.MAX_VALUE);
 			choosenFile.setMaxHeight(Double.MAX_VALUE);
@@ -467,6 +560,26 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			Tooltip.install(choosenFile, tt);
 			Button fileChooser = new Button("Choose File...");
 			final ByteArrayDataHolder dataHolder = new ByteArrayDataHolder();
+			
+			if (currentValue != null)
+			{
+				dataHolder.data = ((RefexDynamicByteArray)currentValue).getData();
+				choosenFile.setText("Currently has " + dataHolder.data.length + " bytes attached");
+				if (valueIsRequired != null)
+				{
+					valueIsRequired.set("");
+				}
+			}
+			else if (defaultValue != null)
+			{
+				dataHolder.data = ((RefexDynamicByteArray)defaultValue).getData();
+				choosenFile.setText("Will attach the default value of " + dataHolder.data.length + " bytes");
+				if (valueIsRequired != null)
+				{
+					valueIsRequired.set("");
+				}
+			}
+			
 			fileChooser.setOnAction((event) -> 
 			{
 				FileChooser fc = new FileChooser();
@@ -482,6 +595,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						{
 							choosenFile.setText(selectedFile.getName());
 							tt.setText(selectedFile.getAbsolutePath());
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("");
+							}
 						});
 					}
 					catch (Exception e)
@@ -493,8 +610,24 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				{
 					Platform.runLater(() -> 
 					{
-						choosenFile.setText("- no data attached -");
-						tt.setText("Select a file to attach that file to the refex");
+						if (defaultValue != null)
+						{
+							dataHolder.data = ((RefexDynamicByteArray)defaultValue).getData();
+							choosenFile.setText("Will attach the default value of " + dataHolder.data.length + " bytes");
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("");
+							}
+						}
+						else
+						{
+							choosenFile.setText("- no data attached -");
+							tt.setText("Select a file to attach that file to the refex");
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("You must select a file to attach");
+							}
+						}
 					});
 				}
 			});
@@ -505,8 +638,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			hbox.getChildren().add(fileChooser);
 			HBox.setHgrow(choosenFile, Priority.ALWAYS);
 			HBox.setHgrow(fileChooser, Priority.NEVER);
-			return hbox;
-
+			returnValue = hbox;
+			if (defaultValue != null)
+			{
+				defaultValueTooltip.set("If no file is selected, the default value of " + ((RefexDynamicByteArray)defaultValue).getData().length +  " bytes will be used");
+			}
 		}
 		else if (RefexDynamicDataType.DOUBLE == dt || RefexDynamicDataType.FLOAT == dt || RefexDynamicDataType.INTEGER == dt || RefexDynamicDataType.LONG == dt
 				|| RefexDynamicDataType.STRING == dt || RefexDynamicDataType.UUID == dt)
@@ -531,11 +667,19 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					if (newValue.length() == 0)
 					{
 						valueInvalidReason.setValue("");
+						if (valueIsRequired != null && defaultValue == null)
+						{
+							valueIsRequired.set("You must specify a value for this field");
+						}
 					}
 					else if (RefexDynamicDataType.DOUBLE == dt)
 					{
 						try
 						{
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("");
+							}
 							Double.parseDouble(tf.getText());
 							valueInvalidReason.set("");
 						}
@@ -549,6 +693,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					{
 						try
 						{
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("");
+							}
 							Float.parseFloat(tf.getText());
 							valueInvalidReason.set("");
 						}
@@ -561,6 +709,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					{
 						try
 						{
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("");
+							}
 							Integer.parseInt(tf.getText());
 							valueInvalidReason.set("");
 						}
@@ -573,6 +725,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					{
 						try
 						{
+							if (valueIsRequired != null)
+							{
+								valueIsRequired.set("");
+							}
 							Long.parseLong(tf.getText());
 							valueInvalidReason.set("");
 						}
@@ -583,10 +739,18 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					}
 					else if (RefexDynamicDataType.STRING == dt)
 					{
+						if (valueIsRequired != null)
+						{
+							valueIsRequired.set("");
+						}
 						valueInvalidReason.set("");
 					}
 					else if (RefexDynamicDataType.UUID == dt)
 					{
+						if (valueIsRequired != null)
+						{
+							valueIsRequired.set("");
+						}
 						if (Utility.isUUID(tf.getText()))
 						{
 							valueInvalidReason.set("");
@@ -603,22 +767,53 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				tf.setText(currentValue.getDataObject().toString());
 			}
-
-			return n;
+			if (valueIsRequired != null && defaultValue == null)
+			{
+				valueIsRequired.set("You must specify a value for this field");
+			}
+			returnValue = n;
+			if (defaultValue != null)
+			{
+				defaultValueTooltip.set("If no value is specified the default value of '" +defaultValue.getDataObject().toString()+  "' will be used");
+			}
 		}
 		else if (RefexDynamicDataType.NID == dt)
 		{
 			ConceptNode cn = new ConceptNode(null, false);
 			currentDataFields_.add(cn);
-			currentDataFieldWarnings_.add(cn.getInvalidReason());
-			allValid_.addBinding(cn.getInvalidReason());
+			currentDataFieldWarnings_.add(cn.isValid().getReasonWhyInvalid());
+			allValid_.addBinding(cn.isValid().getReasonWhyInvalid());
 			
 			if (currentValue != null)
 			{
+				//TODO this doesn't work, if the nid isn't a concept nid.  We need a NidNode, rather than a ConceptNode
 				cn.set(WBUtility.getConceptVersion(((RefexDynamicNidBI)currentValue).getDataNid()));
 			}
+			
+			if (valueIsRequired != null && defaultValue == null)
+			{
+				if (currentValue == null)
+				{
+					valueIsRequired.set("You must specify a value for this field");
+				}
+				cn.getConceptProperty().addListener((change) ->
+				{
+					if (cn.getConceptProperty().getValue() == null)
+					{
+						valueIsRequired.set("You must specify a value for this field");
+					}
+					else
+					{
+						valueIsRequired.set("");
+					}
+				});
+			}
 
-			return cn.getNode();
+			returnValue = cn.getNode();
+			if (defaultValue != null)
+			{
+				defaultValueTooltip.set("If no value is specified the default value of '" +defaultValue.getDataObject().toString()+  "' will be used");
+			}
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == dt)
 		{
@@ -627,12 +822,22 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			HBox hBox = new HBox();
 			currentDataFields_.add(null);
 			hBox.getChildren().add(new Label("Polymorphic is not yet supported in the GUI"));
-			return hBox;
+			if (valueIsRequired != null)
+			{
+				valueIsRequired.set("You must supply a value for this field");
+			}
+			returnValue = hBox;
 		}
 		else
 		{
 			throw new RuntimeException("Unexpected datatype " + dt);
 		}
+		if (valueIsRequired != null)
+		{
+			currentDataFieldWarnings_.add(valueIsRequired);
+			allValid_.addBinding(valueIsRequired);
+		}
+		return returnValue;
 	}
 
 	private void doSave()

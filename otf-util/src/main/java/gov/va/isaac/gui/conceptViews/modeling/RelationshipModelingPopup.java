@@ -287,7 +287,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					
 				if (modificationMade.get() || typeNewSelected.get()) {
 					if (!typeCon.isValid().getValue()) {
-						reasonSaveDisabled_.set(typeCon.getInvalidReason().getValue());
+						reasonSaveDisabled_.set(typeCon.isValid().getReasonWhyInvalid().getValue());
 					} else if (!passesQA()) {
 						reasonSaveDisabled_.set("Failed QA");
 					}
@@ -320,7 +320,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					
 				if (modificationMade.get() || otherConceptNewSelected.get()) {
 					if (!otherEndCon.isValid().getValue()) {
-						reasonSaveDisabled_.set(otherEndCon.getInvalidReason().getValue());
+						reasonSaveDisabled_.set(otherEndCon.isValid().getReasonWhyInvalid().getValue());
 					} else if (!passesQA()) {
 						reasonSaveDisabled_.set("Failed QA");
 					}

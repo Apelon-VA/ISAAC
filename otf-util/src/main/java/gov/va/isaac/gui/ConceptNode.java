@@ -28,6 +28,7 @@ import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
+import gov.va.isaac.util.SimpleValidBooleanProperty;
 import gov.va.isaac.util.WBUtility;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,10 +37,6 @@ import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -86,9 +83,7 @@ public class ConceptNode implements ConceptLookupCallback
 	private ConceptVersionBI c_;
 	private ObjectBinding<ConceptVersionBI> conceptBinding_;
 	private SimpleDisplayConcept codeSetComboBoxConcept_ = null;
-	private BooleanProperty isValid = new SimpleBooleanProperty(true);
-	private BooleanProperty isEmpty = new SimpleBooleanProperty(true);
-	private StringProperty invalidToolTipText = new SimpleStringProperty("The specified concept was not found in the database.");
+	private SimpleValidBooleanProperty isValid = new SimpleValidBooleanProperty(true, null);
 	private boolean flagAsInvalidWhenBlank_ = true;
 	private volatile long lookupUpdateTime_ = 0;
 	private AtomicInteger lookupsCurrentlyInProgress_ = new AtomicInteger();
@@ -145,6 +140,7 @@ public class ConceptNode implements ConceptLookupCallback
 				return new SimpleDisplayConcept(string, 0);
 			}
 		});
+		cb_.setValue(new SimpleDisplayConcept("", 0));
 		cb_.setEditable(true);
 		cb_.setMaxWidth(Double.MAX_VALUE);
 		cb_.setPrefWidth(ComboBox.USE_COMPUTED_SIZE);
@@ -198,7 +194,7 @@ public class ConceptNode implements ConceptLookupCallback
 			}
 		};
 		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
-		menuBuilder.setInvisibleWhenfalse(isValid);
+		menuBuilder.setInvisibleWhenFalse(isValid);
 		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 		
 		cb_.getEditor().setContextMenu(cm);
@@ -207,17 +203,16 @@ public class ConceptNode implements ConceptLookupCallback
 		
 		new LookAheadConceptPopup(cb_);
 
-		if (cb_.getValue().getNid() == 0 && flagAsInvalidWhenBlank_)
+		if (cb_.getValue().getNid() == 0)
 		{
-			isValid.set(false);
-			isEmpty.set(true);
-			invalidToolTipText.set("Concept Required");
+			if (flagAsInvalidWhenBlank_)
+			{
+				isValid.setInvalid("Concept Required");
+			}
 		}
 		else
 		{
-			isValid.set(true);
-			isEmpty.set(false);
-			invalidToolTipText.set("");
+			isValid.setValid();
 		}
 
 		cb_.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>()
@@ -274,7 +269,7 @@ public class ConceptNode implements ConceptLookupCallback
 		lookupFailImage_ = Images.EXCLAMATION.createImageView();
 		lookupFailImage_.visibleProperty().bind(isValid.not().and(isLookupInProgress_.not()));
 		Tooltip t = new Tooltip();
-		t.textProperty().bind(invalidToolTipText);
+		t.textProperty().bind(isValid.getReasonWhyInvalid());
 		Tooltip.install(lookupFailImage_, t);
 
 		StackPane sp = new StackPane();
@@ -379,24 +374,21 @@ public class ConceptNode implements ConceptLookupCallback
 	
 	public void set(SimpleDisplayConcept newValue)
 	{
-		cb_.setValue(newValue);
+		if (newValue == null)
+		{
+			cb_.setValue(new SimpleDisplayConcept("", 0));
+		}
+		else
+		{
+			cb_.setValue(newValue);
+		}
 	}
 	
-	public BooleanProperty isValid()
+	public SimpleValidBooleanProperty isValid()
 	{
 		return isValid;
 	}
 	
-	public BooleanProperty isEmpty()
-	{
-		return isEmpty;
-	}
-	
-	public StringProperty getInvalidReason()
-	{
-		return invalidToolTipText;
-	}
-
 	@Override
 	public void lookupComplete(final ConceptVersionBI concept, final long submitTime, Integer callId)
 	{
@@ -428,9 +420,7 @@ public class ConceptNode implements ConceptLookupCallback
 				{
 					c_ = concept;
 					AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(c_));
-					isValid.set(true);
-					isEmpty.set(false);
-					invalidToolTipText.set("");
+					isValid.setValid();
 				}
 				else
 				{
@@ -438,19 +428,15 @@ public class ConceptNode implements ConceptLookupCallback
 					c_ = null;
 					if (StringUtils.isNotBlank(cb_.getValue().getDescription()))
 					{
-						isValid.set(false);
-						invalidToolTipText.set("The specified concept was not found in the database");
-						isEmpty.set(false);
+						isValid.setInvalid("The specified concept was not found in the database");
 					}
 					else if (flagAsInvalidWhenBlank_)
 					{
-						isValid.set(false);
-						invalidToolTipText.set("Concept required");
-						isEmpty.set(true);
+						isValid.setInvalid("Concept required");
 					}
 					else
 					{
-						isValid.set(true);
+						isValid.setValid();
 					}
 				}
 				updateGUI();
