@@ -567,10 +567,9 @@ public class RefexDataTypeFXNodeBuilder
 		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
 		{
 			NestedPolymorphicData nestedData = (NestedPolymorphicData)data;
-			//HACK - only need the data type field... but this is the type we want.
-			//override datatype, and default (default value isn't allowed for polymorphic)
-			RefexDynamicColumnInfo nestedCI = new RefexDynamicColumnInfo(ci.getColumnOrder(), ci.getColumnDescriptionConcept(), nestedData.dataType, null, 
-					ci.isColumnRequired(), ci.getValidator(), ci.getValidatorData());
+			// only need the data type field... (default value isn't allowed for polymorphic)
+			RefexDynamicColumnInfo nestedCI = new RefexDynamicColumnInfo();
+			nestedCI.setColumnDataType(nestedData.dataType);
 			return getDataForType(nestedData.nestedNode.dataField, nestedCI);
 		}
 		else
