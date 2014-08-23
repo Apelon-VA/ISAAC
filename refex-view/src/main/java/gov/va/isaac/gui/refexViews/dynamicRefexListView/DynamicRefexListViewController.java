@@ -61,8 +61,10 @@ import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -530,29 +532,61 @@ public class DynamicRefexListViewController
 				constraint2.setHgrow(Priority.ALWAYS);
 				gp.getColumnConstraints().add(constraint2);
 				
-				gp.add(new Label("Column Name"), 0, 0);
+				int row = 0;
+				
+				gp.add(new Label("Column Name"), 0, row);
 				Label name = new Label(item.getColumnName());
 				name.setWrapText(true);
 				name.maxWidthProperty().bind(this.widthProperty().subtract(210));
-				gp.add(name, 1, 0);
+				gp.add(name, 1, row++);
 				
-				gp.add(new Label("Column Description"), 0, 1);
+				gp.add(new Label("Column Description"), 0, row);
 				Label description = new Label(item.getColumnDescription());
 				description.setWrapText(true);
 				description.maxWidthProperty().bind(this.widthProperty().subtract(210));
-				gp.add(description, 1, 1);
+				gp.add(description, 1, row++);
 
-				gp.add(new Label("Column Order"), 0, 2);
-				gp.add(new Label(item.getColumnOrder() + 1 + ""), 1, 2);
+				gp.add(new Label("Column Order"), 0, row);
+				gp.add(new Label(item.getColumnOrder() + 1 + ""), 1, row++);
 				
-				gp.add(new Label("Data Type"), 0, 3);
-				gp.add(new Label(item.getColumnDataType().getDisplayName()), 1, 3);
+				gp.add(new Label("Data Type"), 0, row);
+				gp.add(new Label(item.getColumnDataType().getDisplayName()), 1, row++);
 				
-				gp.add(new Label("Column Required"), 0, 4);
-				gp.add(new Label(item.isColumnRequired() + ""), 1, 4);
+				gp.add(new Label("Column Required"), 0, row);
+				gp.add(new Label(item.isColumnRequired() + ""), 1, row++);
 				
-				gp.add(new Label("Default Value"), 0, 5);
-				gp.add(new Label(item.getDefaultColumnValue() == null ? "" : item.getDefaultColumnValue().getDataObject().toString()), 1, 5);
+				gp.add(new Label("Default Value"), 0, row);
+				String temp = "";
+				if (item.getDefaultColumnValue() != null)
+				{
+					if (item.getColumnDataType() == RefexDynamicDataType.BYTEARRAY)
+					{
+						temp = "Byte array of size " + ((RefexDynamicByteArray)item.getDefaultColumnValue()).getDataByteArray().length;
+					}
+					else
+					{
+						temp = item.getDefaultColumnValue().getDataObject().toString();
+					}
+				}
+				gp.add(new Label(temp), 1, row++);
+				
+				gp.add(new Label("Validator"), 0, row);
+				gp.add(new Label(item.getValidator() == null ? "" : item.getValidator().getDisplayName()), 1, row++);
+				
+				if (item.getValidator() != null)
+				{
+					gp.add(new Label("Validator Data"), 0, row);
+					String valdiatorData = "";
+					if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.BYTEARRAY)
+					{
+						valdiatorData = "Byte array of size " + ((RefexDynamicByteArray)item.getValidatorData()).getDataByteArray().length;
+					}
+					else
+					{
+						valdiatorData = item.getValidatorData().getDataObject().toString();
+					}
+					gp.add(new Label(valdiatorData), 1, row++);
+				}
 				
 				setGraphic(gp);
 				
