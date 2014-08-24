@@ -19,12 +19,15 @@
 package gov.va.isaac.gui.refexViews.refexCreation;
 
 import gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController;
-import java.util.HashMap;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.beans.property.DoubleProperty;
+import gov.va.isaac.gui.refexViews.refexCreation.wizardPages.DefinitionController;
+import gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController;
+import java.io.IOException;
+import java.util.function.Consumer;
+import javafx.animation.FadeTransition;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
@@ -37,105 +40,192 @@ import org.slf4j.LoggerFactory;
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class ScreensController extends StackPane {
-	static private HashMap<String, Parent> screens = new HashMap<>();
-
-	public static final String DEFINITION_SCREEN = "definition";
-	public static final String DEFINITION_SCREEN_FXML = "wizardPages/definition.fxml";
-	public static final String COLUMN_SCREEN = "column";
-	public static final String COLUMN_SCREEN_FXML = "wizardPages/column.fxml";
-	public static final String SUMMARY_SCREEN = "summary";
-	public static final String SUMMARY_SCREEN_FXML = "wizardPages/summary.fxml";
-	
+public class ScreensController extends StackPane 
+{
 	private static final Logger logger = LoggerFactory.getLogger(ScreensController.class);
 
-	public final WizardController wizard = new WizardController();
+	private final String DEFINITION_SCREEN_FXML = "wizardPages/definition.fxml";
+	private final String COLUMN_SCREEN_FXML = "wizardPages/column.fxml";
+	private final String SUMMARY_SCREEN_FXML = "wizardPages/summary.fxml";
 	
-	protected ScreensController()
+	private DefinitionController definitionController_;
+	private ColumnController columnController_;
+	private SummaryController summaryController_;
+	
+	private PanelControllers currentlyShowingScreen = null;
+	private int currentlyShowingColumnNumber = 0;
+	
+	private SimpleBooleanProperty canGoNext = new SimpleBooleanProperty(true);
+	private SimpleBooleanProperty canGoBack = new SimpleBooleanProperty(false);
+	
+	protected ScreensController() throws IOException
 	{
-		loadScreen(DEFINITION_SCREEN, DEFINITION_SCREEN_FXML);
-		setScreen(DEFINITION_SCREEN);
+		definitionController_ = (DefinitionController)loadScreen(DEFINITION_SCREEN_FXML);
+		summaryController_ = (SummaryController)loadScreen(SUMMARY_SCREEN_FXML);
+		columnController_ = (ColumnController)loadScreen(COLUMN_SCREEN_FXML);
+		showNextScreen();
 	}
 
-	public void addScreen(String name, Parent screen) {
-			screens.put(name, screen);
+	
+	private PanelControllers loadScreen(String resource) throws IOException {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
+		Parent loadScreen = (Parent) loader.load();
+		loadScreen.setOpacity(0);
+		loadScreen.setVisible(false);
+		getChildren().add(loadScreen);
+		PanelControllers processController = ((PanelControllers) loader.getController());
+		processController.finishInit(this, loadScreen);
+		return processController;
 	}
 	
-	public void loadSummaryScreen() {
-		loadScreen(SUMMARY_SCREEN, SUMMARY_SCREEN_FXML);
+	public ReadOnlyBooleanProperty getCanGoBack()
+	{
+		return ReadOnlyBooleanProperty.readOnlyBooleanProperty(canGoBack);
 	}
-
-	public void loadColumnScreen(int colNum) {
-		loadColumnScreen(COLUMN_SCREEN, COLUMN_SCREEN_FXML, colNum);
+	
+	public ReadOnlyBooleanProperty getCanGoNext()
+	{
+		return ReadOnlyBooleanProperty.readOnlyBooleanProperty(canGoNext);
 	}
-
-	public boolean loadScreen(String name, String resource) {
-		return loadColumnScreen(name, resource, -1);
-	} 
-
-	public boolean loadColumnScreen(String name, String resource, int colNum) {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
-			Parent loadScreen = (Parent) loader.load();
-			PanelControllers processController = ((PanelControllers) loader.getController());
-			
-			if (colNum >= 0)
+	
+	public void showFirstScreen()
+	{
+		transitionToScreen(definitionController_);
+		canGoNext.set(true);
+		canGoBack.set(false);
+	}
+	
+	public void showNextScreen()
+	{
+		if (currentlyShowingScreen == null)
+		{
+			transitionToScreen(definitionController_);
+		}
+		else if (currentlyShowingScreen == definitionController_)
+		{
+			canGoBack.set(true);
+			if (getWizardData().getColumnInfo().size() > 0)
 			{
-				((ColumnController)processController).setColumnNumber(colNum);
+				currentlyShowingColumnNumber = 0;
+				transitionToScreen(columnController_, (Void) -> columnController_.setColumnNumber(currentlyShowingColumnNumber));
 			}
-			processController.finishInit(this);
-			addScreen(name, loadScreen);
-			
-			return true;
-		}catch(Exception e) {
-			logger.error("Unable to load new screen: " + name, e);
-			return false;
+			else
+			{
+				canGoNext.set(false);
+				summaryController_.updateValues(getWizardData());
+				transitionToScreen(summaryController_);
+			}
 		}
-	} 
-
-	public boolean setScreen(final String name) {
-		if(screens.get(name) != null) { //screen loaded
-			final DoubleProperty opacity = opacityProperty();
-
-			//Is there is more than one screen
-			if(!getChildren().isEmpty()){
-				Timeline fade = new Timeline(
-						new KeyFrame(Duration.ZERO, new KeyValue(opacity,1.0)),
-						new KeyFrame(new Duration(1000), (e) -> {
-							//remove displayed screen
-							getChildren().remove(0);
-							//add new screen
-							getChildren().add(0, screens.get(name));
-							Timeline fadeIn = new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(opacity, 0.0)), 
-									new KeyFrame(new Duration(800), new KeyValue(opacity, 1.0)));
-							fadeIn.play();
-						}, new KeyValue(opacity, 0.0))); 
-				fade.play();
-			} else {
-				//no one else been displayed, then just show
-				setOpacity(0.0);
-				getChildren().add(screens.get(name));
-				Timeline fadeIn = new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(opacity, 0.0)), 
-						new KeyFrame(new Duration(2500), new KeyValue(opacity, 1.0)));
-				fadeIn.play();
+		else if (currentlyShowingScreen == columnController_)
+		{
+			if (getWizardData().getColumnInfo().size() > (currentlyShowingColumnNumber + 1))
+			{
+				currentlyShowingColumnNumber++;
+				transitionToScreen(columnController_, (Void) -> columnController_.setColumnNumber(currentlyShowingColumnNumber));
 			}
-			return true;
-		} else {
-			logger.warn("screen hasn't been loaded!");
-			return false;
-		} 
-	}
-
-	public boolean unloadScreen(String name) {
-		if(screens.remove(name) == null) {
-			logger.warn("Screen didn't exist");
-			return false;
-		} else {
-			return true;
+			else
+			{
+				canGoNext.set(false);
+				summaryController_.updateValues(getWizardData());
+				transitionToScreen(summaryController_);
+			}
+		}
+		else
+		{
+			logger.error("Design failure!");
 		}
 	}
 	
-	public WizardController getWizard() {
-		return wizard;
+	public void showPreviousScreen()
+	{
+		if (currentlyShowingScreen == summaryController_)
+		{
+			canGoNext.set(true);
+			if (getWizardData().getColumnInfo().size() > 0)
+			{
+				transitionToScreen(columnController_, (Void) -> columnController_.setColumnNumber(currentlyShowingColumnNumber));
+			}
+			else
+			{
+				canGoBack.set(false);
+				transitionToScreen(definitionController_);
+			}
+		}
+		else if (currentlyShowingScreen == columnController_)
+		{
+			if (currentlyShowingColumnNumber > 0)
+			{
+				currentlyShowingColumnNumber--;
+				transitionToScreen(columnController_, (Void) -> columnController_.setColumnNumber(currentlyShowingColumnNumber));
+			}
+			else
+			{
+				canGoBack.set(false);
+				transitionToScreen(definitionController_);
+			}
+		}
+		else
+		{
+			logger.error("Design failure!");
+		}
+	}
+	
+	public void transitionToScreen(PanelControllers newScreen) {
+		transitionToScreen(newScreen, null);
+	}
+
+	public void transitionToScreen(PanelControllers newScreen, Consumer<Void> callBeforeSetVisible) {
+		FadeTransition fadeIn = new FadeTransition();
+		fadeIn.setAutoReverse(false);
+		fadeIn.setCycleCount(1);
+		fadeIn.setDuration(new Duration(250));
+		fadeIn.setFromValue(0.0);
+		fadeIn.setToValue(1.0);
+		fadeIn.setNode(newScreen.getParent());
+		
+		FadeTransition fadeOut = null;
+		
+		if (currentlyShowingScreen != null)
+		{
+			Node oldNode = currentlyShowingScreen.getParent();
+			fadeOut = new FadeTransition();
+			fadeOut.setAutoReverse(false);
+			fadeOut.setCycleCount(1);
+			fadeOut.setDuration(new Duration(250));
+			fadeOut.setFromValue(1.0);
+			fadeOut.setToValue(0.0);
+			fadeOut.setNode(oldNode);
+			fadeOut.setOnFinished((event) ->
+			{
+				oldNode.setVisible(false);
+				if (callBeforeSetVisible != null)
+				{
+					callBeforeSetVisible.accept(null);
+				}
+				fadeIn.getNode().setVisible(true);
+				currentlyShowingScreen = newScreen;
+				fadeIn.play();
+			});
+		}
+		if (fadeOut == null)
+		{
+			if (callBeforeSetVisible != null)
+			{
+				callBeforeSetVisible.accept(null);
+			}
+			fadeIn.getNode().setVisible(true);
+			currentlyShowingScreen = newScreen;
+			fadeIn.play();
+		}
+		else 
+		{
+			fadeOut.play();
+			//fadeOut does the necessary work for fadeIn, when complete.
+		}
+	}
+	
+	public RefexData getWizardData() 
+	{
+		return definitionController_.getWizardData();
 	}
 }

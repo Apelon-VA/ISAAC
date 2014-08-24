@@ -6,8 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="columnDefinitionPane" prefHeight="382.0" prefWidth="580.0" xmlns="http://javafx.com/javafx/8"
-	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
+<BorderPane fx:id="columnDefinitionPane" prefHeight="382.0" prefWidth="580.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
 	<top>
 		<Label fx:id="columnTitle" text="Column Definition #" BorderPane.alignment="CENTER">
 			<font>
@@ -21,68 +21,48 @@
 	<center>
 		<GridPane fx:id="gridPane" hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
 			<columnConstraints>
-				<ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="175.0" minWidth="175.0"
-					prefWidth="175.0" />
+				<ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="175.0" minWidth="175.0" prefWidth="175.0" />
 				<ColumnConstraints hgrow="ALWAYS" />
 				<ColumnConstraints fillWidth="false" hgrow="NEVER" />
 			</columnConstraints>
 			<rowConstraints>
+				<RowConstraints minHeight="25.0" vgrow="NEVER" />
 				<RowConstraints vgrow="NEVER" />
-				<RowConstraints vgrow="NEVER" />
-				<RowConstraints vgrow="NEVER" />
-				<RowConstraints vgrow="NEVER" />
-				<RowConstraints vgrow="NEVER" />
+				<RowConstraints minHeight="25.0" vgrow="NEVER" />
+				<RowConstraints minHeight="25.0" vgrow="NEVER" />
+				<RowConstraints minHeight="25.0" vgrow="NEVER" />
 			</rowConstraints>
 			<children>
 				<Label text="Column Name" />
 				<Label text="Column Description" GridPane.rowIndex="1" />
 				<Label text="Type" GridPane.rowIndex="2" />
 				<Label text="Default Value" GridPane.rowIndex="3" />
-				<Button fx:id="newColNameButton" alignment="CENTER_RIGHT" minWidth="-Infinity" mnemonicParsing="false"
-					text="Create Column" GridPane.columnIndex="2" GridPane.halignment="RIGHT" />
-				<TextArea fx:id="columnDescription" minHeight="75.0" prefHeight="75.0" wrapText="true"
-					GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-				<ChoiceBox fx:id="typeOption" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1"
-					GridPane.columnSpan="2" GridPane.rowIndex="2" />
-				<TextField fx:id="defaultValue" prefHeight="25.0" prefWidth="338.0" GridPane.columnIndex="1"
-					GridPane.columnSpan="2" GridPane.rowIndex="3" />
+				<Button fx:id="newColNameButton" alignment="CENTER_RIGHT" minWidth="-Infinity" mnemonicParsing="false" text="Create Column"
+					GridPane.columnIndex="2" GridPane.halignment="RIGHT" />
+				<TextArea fx:id="columnDescription" minHeight="75.0" prefHeight="75.0" wrapText="true" GridPane.columnIndex="1"
+					GridPane.columnSpan="2" GridPane.rowIndex="1" />
+				<ChoiceBox fx:id="typeOption" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="2"
+					GridPane.rowIndex="2" />
 				<CheckBox fx:id="isMandatory" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 				<HBox fx:id="columnNameHolder" GridPane.columnIndex="1" />
 				<Label text="Is Column Mandatory" GridPane.rowIndex="4" />
+				<HBox fx:id="defaultValueHolder" fillHeight="false" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
 			</children>
 		</GridPane>
 	</center>
 	<bottom>
-		<GridPane alignment="CENTER" BorderPane.alignment="CENTER">
-			<columnConstraints>
-				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0" prefWidth="100.0" />
-				<ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
-				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="30.0" prefWidth="100.0" />
-			</columnConstraints>
-			<rowConstraints>
-				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-			</rowConstraints>
+		<HBox alignment="CENTER" fillHeight="false" spacing="30.0" BorderPane.alignment="CENTER">
 			<children>
-				<Button fx:id="nextButton" mnemonicParsing="false" text="Next" GridPane.columnIndex="2">
-					<GridPane.margin>
-						<Insets bottom="5.0" left="15.0" right="5.0" top="5.0" />
-					</GridPane.margin>
-				</Button>
-				<Button fx:id="backButton" mnemonicParsing="false" text="Back" GridPane.columnIndex="1" GridPane.halignment="CENTER">
-					<GridPane.margin>
-						<Insets left="15.0" right="15.0" />
-					</GridPane.margin>
-				</Button>
-				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" GridPane.halignment="RIGHT">
-					<GridPane.margin>
-						<Insets bottom="5.0" left="5.0" right="15.0" top="5.0" />
-					</GridPane.margin>
-				</Button>
+				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+				<Button fx:id="startOverButton" mnemonicParsing="false" text="Start Over" />
+				<Button fx:id="backButton" mnemonicParsing="false" text="Back" />
+				<Button fx:id="nextButton" mnemonicParsing="false" text="Next" />
 			</children>
-			<padding>
-				<Insets bottom="5.0" top="5.0" />
-			</padding>
-		</GridPane>
+			<BorderPane.margin>
+				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+			</BorderPane.margin>
+		</HBox>
+
 	</bottom>
 	<padding>
 		<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

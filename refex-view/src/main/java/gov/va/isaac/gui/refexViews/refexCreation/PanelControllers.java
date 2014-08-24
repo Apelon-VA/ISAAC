@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
+import javafx.scene.Parent;
+
 /**
  * 
  * {@link PanelControllers}
@@ -26,7 +28,7 @@ package gov.va.isaac.gui.refexViews.refexCreation;
  */
 public interface PanelControllers {
 	//This method will allow the injection of the Parent ScreenPane
-	void finishInit(ScreensController screenPage); 
-	void initialize();
-	void processValues(); 
+	void finishInit(ScreensController screenController, Parent parent); 
+	Parent getParent();
+	void initialize();  // for FXML
 }

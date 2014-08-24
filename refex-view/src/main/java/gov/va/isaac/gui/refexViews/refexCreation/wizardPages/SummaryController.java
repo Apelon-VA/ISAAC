@@ -20,17 +20,18 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
+import gov.va.isaac.gui.refexViews.refexCreation.RefexData;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
+import gov.va.isaac.util.WBUtility;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -43,11 +44,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,10 +68,10 @@ public class SummaryController implements PanelControllers {
 	@FXML private Button commitButton;
 	@FXML private Button backButton;
 
-	static ViewCoordinate vc = null;
-	static ScreensController processController;
+	ScreensController processController_;
+	Parent sceneParent_;
 
-	private static final Logger logger = LoggerFactory.getLogger(SummaryController.class);
+	private final Logger logger = LoggerFactory.getLogger(SummaryController.class);
 
 	@Override
 	public void initialize() {
@@ -88,21 +86,27 @@ public class SummaryController implements PanelControllers {
 		assert actualParentConcept != null : "fx:id=\"actualParentConcept\" was not injected: check your FXML file 'summary.fxml'.";
 		assert columnGridPane != null : "fx:id=\"mainPane\" was not injected: check your FXML file 'summary.fxml'.";
 
+		cancelButton.setOnAction(e -> ((Stage)summaryPane.getScene().getWindow()).close());
+	
+		commitButton.setOnAction(e -> 
+		{
+			storeValues();
+			((Stage)summaryPane.getScene().getWindow()).close();
+		});
+
+		startOverButton.setOnAction(e -> processController_.showFirstScreen());
+		backButton.setOnAction(e -> processController_.showPreviousScreen());
 	}
 
-	private void setupColumnContent() {
+	private void setupColumnContent(RefexData refexData ) {
 		VBox columns = new VBox(15);
 		columns.setAlignment(Pos.TOP_CENTER);
-		
 		columnGridPane.getChildren().clear();
+		
+		
 		int row = 0;
-		for (int i = 0; i < processController.getWizard().getExtendedFieldsCount(); i++) {
-			ConceptVersionBI col = processController.getWizard().getColumnName(i);
-			String colType = processController.getWizard().getColumnType(i);
-			RefexDynamicDataBI colDefaultValue = processController.getWizard().getColumnDefaultValue(i);
-			String colIsMandatory = processController.getWizard().getColumnIsMandatory(i);
-			boolean hasDefaultValue = colDefaultValue != null && colDefaultValue.getDataObject().toString().length() > 0;
-
+		for (int i = 0; i < refexData.getExtendedFieldsCount(); i++) {
+			RefexDynamicColumnInfo rdci = refexData.getColumnInfo().get(i);
 			if (row > 0)
 			{
 				Separator sep = new Separator(Orientation.HORIZONTAL);
@@ -115,14 +119,9 @@ public class SummaryController implements PanelControllers {
 			Label header = createColumnHeader(i);
 			columnGridPane.add(header, 0, row++, 3, 1);
 			GridPane.setHalignment(header, HPos.CENTER);
-
-			//TODO this is silly - switch to the API that just reads a column....
-			RefexDynamicColumnInfo rdc = new RefexDynamicColumnInfo(-1, col.getPrimordialUuid(), null, null, false, null, null);
 			
 			//row 1
-//			Label nameLabel = createLabel("Name: " + rdc.getColumnName(), true);
-//			nameLabel.setFont(new Font(16));
-			HBox nameBox = createColumnName(rdc.getColumnName());
+			HBox nameBox = createColumnName(rdci.getColumnName());
 			columnGridPane.add(nameBox, 0, row++, 3, 1);
 			GridPane.setHalignment(nameBox, HPos.CENTER);
 			
@@ -130,36 +129,36 @@ public class SummaryController implements PanelControllers {
 			Label descriptionLabel = createLabel("Description", true);
 			columnGridPane.add(descriptionLabel, 0, row);
 			GridPane.setHalignment(descriptionLabel, HPos.CENTER);
-			
 			columnGridPane.add(createLabel("Type", true), 1, row);
-			columnGridPane.add(createLabel(colType, false), 2, row++);
+			columnGridPane.add(createLabel(rdci.getColumnDataType().getDisplayName(), false), 2, row++);
 
 			//row 3
-			TextArea description = new TextArea(rdc.getColumnDescription());
+			TextArea description = new TextArea(rdci.getColumnDescription());
 			description.setEditable(false);
 			description.setWrapText(true);
 			description.setMaxHeight(90);
 			columnGridPane.add(description, 0, row++, 1, 3);
-			
 			GridPane.setValignment(description, VPos.TOP);
 			columnGridPane.add(createLabel("Mandatory", true), 1, row);
-			columnGridPane.add(createLabel(colIsMandatory, false), 2, row++);
+			columnGridPane.add(createLabel(rdci.isColumnRequired() + "", false), 2, row++);
 			
 			//row 4
 			Label l = createLabel("Default Value", true);
 			columnGridPane.add(l, 1, row);
 			GridPane.setValignment(l, VPos.TOP);
 
-			if (hasDefaultValue)
+			if (rdci.getDefaultColumnValue() != null)
 			{
-				l = createLabel(colDefaultValue.getDataObject().toString(), false);
+				l = createLabel(rdci.getDefaultColumnValue().getDataObject().toString(), false);
 				GridPane.setValignment(l, VPos.TOP);
 				columnGridPane.add(l, 2, row++);
-			} else {
+			} else 
+			{
 				l = createLabel("<None>", false);
 				GridPane.setValignment(l, VPos.TOP);
 				columnGridPane.add(l, 2, row++);
 			}
+			//TODO validators
 		}
 		if (row == 0)
 		{
@@ -203,73 +202,53 @@ public class SummaryController implements PanelControllers {
 		return nameBox;
 	}
 
-	private void setupRefexContent() {
-		actualRefexName.setText(processController.getWizard().getRefexName());
-		actualRefexDescription.setText(processController.getWizard().getRefexDescription());
-		actualParentConcept.setText(processController.getWizard().getParentConceptFsn());
+	private void setupRefexContent(RefexData refexData) {
+		actualRefexName.setText(refexData.getRefexName());
+		actualRefexDescription.setText(refexData.getRefexDescription());
+		actualParentConcept.setText(WBUtility.getDescription(refexData.getParentConcept()));
 		
-		if (processController.getWizard().isAnnotated()) {
+		if (refexData.isAnnotatedStyle()) {
 			actualRefexType.setText("Annotated");
 		} else {
 			actualRefexType.setText("Refset");
 		}
 	}
 
-	@Override
-	public void finishInit(ScreensController screenParent){
-		processController = screenParent;
-
-		setupRefexContent();
-		setupColumnContent();
-
-		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				((Stage)summaryPane.getScene().getWindow()).close();
-			}
-		});
-	
-		commitButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				processValues();
-				((Stage)summaryPane.getScene().getWindow()).close();
-			}
-		});
-
-		startOverButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				processController.unloadScreen(ScreensController.SUMMARY_SCREEN);
-				processController.setScreen(ScreensController.DEFINITION_SCREEN);
-			}
-		});
-		
-		backButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				processController.unloadScreen(ScreensController.SUMMARY_SCREEN);
-				int fieldCount = processController.getWizard().getExtendedFieldsCount();
-				if (fieldCount > 0) {
-					processController.loadColumnScreen(fieldCount - 1);
-					processController.setScreen(ScreensController.COLUMN_SCREEN);
-				} else {
-					processController.setScreen(ScreensController.DEFINITION_SCREEN);
-				}
-			}
-		});
-	}
-		
-	@Override
-	public void processValues() {
+	public void storeValues() {
 		try {
-			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(actualRefexName.getText(),
-					actualRefexName.getText(), actualRefexDescription.getText(), processController.getWizard().getColumnInfo(), 
-					processController.getWizard().getParentConcept().getPrimordialUuid(), 
-					processController.getWizard().isAnnotated());
+			RefexData refexData = processController_.getWizardData();
+			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(refexData.getRefexName(),
+					refexData.getRefexName(), refexData.getRefexDescription(), refexData.getColumnInfo().toArray(new RefexDynamicColumnInfo[0]), 
+					refexData.getParentConcept().getPrimordialUuid(), 
+					refexData.isAnnotatedStyle());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
 			AppContext.getCommonDialogs().showErrorDialog("Error Creating Refex", "Unexpected error creating the Refex", e.getMessage(), summaryPane.getScene().getWindow());
 		}
+	}
+	
+	public void updateValues(RefexData refexData)
+	{
+		setupRefexContent(refexData);
+		setupColumnContent(refexData);
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllers#finishInit(gov.va.isaac.gui.refexViews.refexCreation.ScreensController, javafx.scene.Parent)
+	 */
+	@Override
+	public void finishInit(ScreensController screenController, Parent parent)
+	{
+		processController_ = screenController;
+		sceneParent_ = parent;
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllers#getParent()
+	 */
+	@Override
+	public Parent getParent()
+	{
+		return sceneParent_;
 	}
 }

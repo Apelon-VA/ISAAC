@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
@@ -32,6 +33,8 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -45,6 +48,7 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class RefexCreationWizard implements RefexCreationViewI, IsaacViewWithMenusI
 {
+	private final Logger logger = LoggerFactory.getLogger(RefexCreationWizard.class);
 	private RefexCreationWizard() throws IOException
 	{
 		//created by HK2
@@ -105,11 +109,19 @@ public class RefexCreationWizard implements RefexCreationViewI, IsaacViewWithMen
 	@Override
 	public void showView(Window parent)
 	{
-		Stage stage = new Stage(StageStyle.DECORATED);
-		stage.initModality(Modality.NONE);
-		stage.setScene(new Scene(new ScreensController(), 600, 400));
-		stage.setTitle("Define Refex Assemblage");
-		stage.getScene().getStylesheets().add(RefexCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
-		stage.show();
+		try
+		{
+			Stage stage = new Stage(StageStyle.DECORATED);
+			stage.initModality(Modality.NONE);
+			stage.setScene(new Scene(new ScreensController(), 600, 400));
+			stage.setTitle("Define Refex Assemblage");
+			stage.getScene().getStylesheets().add(RefexCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
+			stage.show();
+		}
+		catch (IOException e)
+		{
+			logger.error("Unexpected error initializing screens", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error - see logs", e);
+		}
 	}
 }

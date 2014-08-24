@@ -20,8 +20,10 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
+import gov.va.isaac.gui.refexViews.refexCreation.RefexData;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.interfaces.utility.DialogResponse;
@@ -31,9 +33,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringBinding;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
@@ -45,7 +46,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.slf4j.Logger;
@@ -72,12 +72,16 @@ public class DefinitionController implements PanelControllers {
 	@FXML private Button cancelCreation;
 	@FXML private HBox parentConceptHBox;
 	@FXML private GridPane gridPane;
-
-	ScreensController processController;
+	
+	Parent scene_;
+	ScreensController processController_;
+	
 	private ConceptNode parentConcept = null;
 	
 	private StringBinding refexDescriptionInvalidReason, refexNameInvalidReason, extensionCountInvalidReason;
 	private BooleanBinding allValid;
+	
+	private RefexData wizardData;
 	
 	private static final Logger logger = LoggerFactory.getLogger(DefinitionController.class);
 
@@ -97,37 +101,25 @@ public class DefinitionController implements PanelControllers {
 		
 		extensionCount.setText("0");
 		
-		try {
-			ConceptVersionBI refsetIdentity = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
-			parentConcept = new ConceptNode(refsetIdentity, true);
-		} catch (IOException e1) {
-			parentConcept = new ConceptNode(null, true);
-		}
+		parentConcept = new ConceptNode(null, true);
+		//this will cause it to look it up in a background thread...
+		parentConcept.set(new SimpleDisplayConcept(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getUuids()[0].toString()));
+		
 		parentConceptHBox.getChildren().add(parentConcept.getNode());
 		HBox.setHgrow(parentConcept.getNode(), Priority.ALWAYS);
 
-
-		cancelCreation.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent e) {
-					((Stage)refsetCreationPane.getScene().getWindow()).close();
-				}});
+		cancelCreation.setOnAction(e -> 
+		{
+			((Stage)refsetCreationPane.getScene().getWindow()).close();
+		});
 		
-		continueCreation.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent e) {
-					if (checkParentHierarchy()) {
-						processValues();
-						if (Integer.valueOf(extensionCount.getText().trim()) == 0) {
-							processController.loadSummaryScreen();
-							processController.setScreen(ScreensController.SUMMARY_SCREEN);
-						} else {
-							processController.loadColumnScreen(0);
-							processController.setScreen(ScreensController.COLUMN_SCREEN);
-						}
-					}
-				}
-			});
+		continueCreation.setOnAction(e -> {
+			if (checkParentHierarchy()) 
+			{
+				processValues();
+				processController_.showNextScreen();
+			}
+		});
 		
 		refexNameInvalidReason = new StringBinding()
 		{
@@ -233,11 +225,6 @@ public class DefinitionController implements PanelControllers {
 		ErrorMarkerUtils.setupErrorMarker(extensionCount, sp, extensionCountInvalidReason);
 	}
 
-	@Override
-	public void finishInit(ScreensController screenParent){
-		processController = screenParent;
-	}
-
 	public boolean checkParentHierarchy() {
 		try 
 		{
@@ -261,12 +248,44 @@ public class DefinitionController implements PanelControllers {
 		}
 	}
 
-	@Override
-	public void processValues() {
+	private void processValues() {
 		int count = Integer.valueOf(extensionCount.getText().trim());
 	
-		processController.getWizard().setNewRefsetConceptVals(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(),
-												count, refexAnnotationType.isSelected()); 
+		if (wizardData == null)
+		{
+			wizardData = new RefexData(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(), count, refexAnnotationType.isSelected());
+		}
+		else
+		{
+			wizardData.adjustColumnCount(count);
+			wizardData.setRefexName(refexName.getText().trim());
+			wizardData.setRefexDescription(refexDescription.getText().trim());
+			wizardData.setParentConcept(parentConcept.getConcept());
+			wizardData.setIsAnnotatedStyle(refexAnnotationType.isSelected());
+		}
+	}
+	
+	public RefexData getWizardData() {
+		return wizardData;
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllers#finishInit(gov.va.isaac.gui.refexViews.refexCreation.ScreensController, javafx.scene.Parent)
+	 */
+	@Override
+	public void finishInit(ScreensController screenController, Parent parent)
+	{
+		processController_ = screenController;
+		scene_ = parent;
+	}
+
+	/**
+	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllers#getParent()
+	 */
+	@Override
+	public Parent getParent()
+	{
+		return scene_;
 	}
 }
 
