@@ -28,8 +28,10 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +54,7 @@ public class ScreensController extends StackPane
 	private ColumnController columnController_;
 	private SummaryController summaryController_;
 	
-	private PanelControllers currentlyShowingScreen = null;
+	private PanelControllersI currentlyShowingScreen = null;
 	private int currentlyShowingColumnNumber = 0;
 	
 	private SimpleBooleanProperty canGoNext = new SimpleBooleanProperty(true);
@@ -63,17 +65,16 @@ public class ScreensController extends StackPane
 		definitionController_ = (DefinitionController)loadScreen(DEFINITION_SCREEN_FXML);
 		summaryController_ = (SummaryController)loadScreen(SUMMARY_SCREEN_FXML);
 		columnController_ = (ColumnController)loadScreen(COLUMN_SCREEN_FXML);
-		showNextScreen();
 	}
 
 	
-	private PanelControllers loadScreen(String resource) throws IOException {
+	private PanelControllersI loadScreen(String resource) throws IOException {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource(resource));
-		Parent loadScreen = (Parent) loader.load();
+		Region loadScreen = (Region) loader.load();
 		loadScreen.setOpacity(0);
 		loadScreen.setVisible(false);
 		getChildren().add(loadScreen);
-		PanelControllers processController = ((PanelControllers) loader.getController());
+		PanelControllersI processController = ((PanelControllersI) loader.getController());
 		processController.finishInit(this, loadScreen);
 		return processController;
 	}
@@ -170,15 +171,15 @@ public class ScreensController extends StackPane
 		}
 	}
 	
-	public void transitionToScreen(PanelControllers newScreen) {
+	public void transitionToScreen(PanelControllersI newScreen) {
 		transitionToScreen(newScreen, null);
 	}
 
-	public void transitionToScreen(PanelControllers newScreen, Consumer<Void> callBeforeSetVisible) {
+	public void transitionToScreen(PanelControllersI newScreen, Consumer<Void> callBeforeSetVisible) {
 		FadeTransition fadeIn = new FadeTransition();
 		fadeIn.setAutoReverse(false);
 		fadeIn.setCycleCount(1);
-		fadeIn.setDuration(new Duration(250));
+		fadeIn.setDuration(new Duration(350));
 		fadeIn.setFromValue(0.0);
 		fadeIn.setToValue(1.0);
 		fadeIn.setNode(newScreen.getParent());
@@ -191,7 +192,7 @@ public class ScreensController extends StackPane
 			fadeOut = new FadeTransition();
 			fadeOut.setAutoReverse(false);
 			fadeOut.setCycleCount(1);
-			fadeOut.setDuration(new Duration(250));
+			fadeOut.setDuration(new Duration(350));
 			fadeOut.setFromValue(1.0);
 			fadeOut.setToValue(0.0);
 			fadeOut.setNode(oldNode);
@@ -204,6 +205,7 @@ public class ScreensController extends StackPane
 				}
 				fadeIn.getNode().setVisible(true);
 				currentlyShowingScreen = newScreen;
+				resize(currentlyShowingScreen);
 				fadeIn.play();
 			});
 		}
@@ -215,6 +217,7 @@ public class ScreensController extends StackPane
 			}
 			fadeIn.getNode().setVisible(true);
 			currentlyShowingScreen = newScreen;
+			resize(currentlyShowingScreen);
 			fadeIn.play();
 		}
 		else 
@@ -227,5 +230,22 @@ public class ScreensController extends StackPane
 	public RefexData getWizardData() 
 	{
 		return definitionController_.getWizardData();
+	}
+	
+	private void resize(PanelControllersI panel)
+	{
+		Window w = getScene().getWindow();
+		if (w.getWidth() != panel.getParent().getPrefWidth() || w.getHeight() != panel.getParent().getPrefHeight())
+		{
+			//side borders are 4 pixels
+			double desiredWidth = panel.getParent().getPrefWidth() + 4 > Screen.getPrimary().getVisualBounds().getWidth() ? Screen.getPrimary().getVisualBounds().getWidth() :
+				panel.getParent().getPrefWidth() + 4;
+			//top border is 25, bottom is 2 pixels
+			double desiredHeight =  panel.getParent().getPrefHeight() + 27 > Screen.getPrimary().getVisualBounds().getHeight() ? Screen.getPrimary().getVisualBounds().getHeight() :
+				 panel.getParent().getPrefHeight() + 27;
+			
+			w.setWidth(desiredWidth);
+			w.setHeight(desiredHeight);
+		}
 	}
 }

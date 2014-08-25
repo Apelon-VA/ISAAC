@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.YesNoDialog;
-import gov.va.isaac.gui.refexViews.refexCreation.PanelControllers;
+import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.RefexData;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -34,7 +34,6 @@ import java.util.ResourceBundle;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
@@ -44,6 +43,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class DefinitionController implements PanelControllers {
+public class DefinitionController implements PanelControllersI {
 	@FXML private ResourceBundle resources;
 	@FXML private URL location;
 	@FXML private BorderPane refsetCreationPane;
@@ -73,7 +73,7 @@ public class DefinitionController implements PanelControllers {
 	@FXML private HBox parentConceptHBox;
 	@FXML private GridPane gridPane;
 	
-	Parent scene_;
+	Region scene_;
 	ScreensController processController_;
 	
 	private ConceptNode parentConcept = null;
@@ -270,20 +270,20 @@ public class DefinitionController implements PanelControllers {
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllers#finishInit(gov.va.isaac.gui.refexViews.refexCreation.ScreensController, javafx.scene.Parent)
+	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI#finishInit(gov.va.isaac.gui.refexViews.refexCreation.ScreensController, javafx.scene.Parent)
 	 */
 	@Override
-	public void finishInit(ScreensController screenController, Parent parent)
+	public void finishInit(ScreensController screenController, Region parent)
 	{
 		processController_ = screenController;
 		scene_ = parent;
 	}
 
 	/**
-	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllers#getParent()
+	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI#getParent()
 	 */
 	@Override
-	public Parent getParent()
+	public Region getParent()
 	{
 		return scene_;
 	}

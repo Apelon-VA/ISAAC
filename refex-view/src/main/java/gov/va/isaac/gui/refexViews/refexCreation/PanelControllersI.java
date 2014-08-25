@@ -18,17 +18,17 @@
  */
 package gov.va.isaac.gui.refexViews.refexCreation;
 
-import javafx.scene.Parent;
+import javafx.scene.layout.Region;
 
 /**
  * 
- * {@link PanelControllers}
+ * {@link PanelControllersI}
  *
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
-public interface PanelControllers {
+public interface PanelControllersI {
 	//This method will allow the injection of the Parent ScreenPane
-	void finishInit(ScreensController screenController, Parent parent); 
-	Parent getParent();
+	void finishInit(ScreensController screenController, Region parent); 
+	Region getParent();
 	void initialize();  // for FXML
 }

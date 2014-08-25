@@ -113,10 +113,12 @@ public class RefexCreationWizard implements RefexCreationViewI, IsaacViewWithMen
 		{
 			Stage stage = new Stage(StageStyle.DECORATED);
 			stage.initModality(Modality.NONE);
-			stage.setScene(new Scene(new ScreensController(), 600, 400));
+			ScreensController sc = new ScreensController();
+			stage.setScene(new Scene(sc, 600, 400));
 			stage.setTitle("Define Refex Assemblage");
 			stage.getScene().getStylesheets().add(RefexCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
 			stage.show();
+			sc.showFirstScreen();
 		}
 		catch (IOException e)
 		{
