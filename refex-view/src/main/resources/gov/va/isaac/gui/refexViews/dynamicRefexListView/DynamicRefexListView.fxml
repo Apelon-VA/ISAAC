@@ -117,16 +117,41 @@
 										<RowConstraints fillHeight="false" vgrow="NEVER" />
 									</rowConstraints>
 									<children>
-										<Label text="Name" GridPane.rowIndex="1" />
-										<Label text="Description" GridPane.rowIndex="2" />
-										<Label text="Refex Style" GridPane.rowIndex="3" />
+										<Label text="Name" GridPane.rowIndex="1">
+											<font>
+												<Font name="System Bold" size="13.0" />
+											</font>
+											<padding>
+												<Insets right="15.0" />
+											</padding>
+										</Label>
+										<Label text="Description" GridPane.rowIndex="2">
+											<font>
+												<Font name="System Bold" size="13.0" />
+											</font>
+											<padding>
+												<Insets right="15.0" />
+											</padding>
+										</Label>
+										<Label text="Refex Style" GridPane.rowIndex="3">
+											<font>
+												<Font name="System Bold" size="13.0" />
+											</font>
+											<padding>
+												<Insets right="15.0" />
+											</padding>
+										</Label>
 										<Label fx:id="selectedRefexNameLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 										<Label fx:id="selectedRefexDescriptionLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 										<Label fx:id="refexStyleLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-										<Label text="Extension Fields" GridPane.rowIndex="4" StackPane.alignment="CENTER_LEFT">
+										<Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Extension Fields" textAlignment="CENTER"
+											GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" StackPane.alignment="CENTER_LEFT">
 											<StackPane.margin>
 												<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 											</StackPane.margin>
+											<font>
+												<Font name="System Bold" size="13.0" />
+											</font>
 										</Label>
 										<Separator maxWidth="1.7976931348623157E308" prefWidth="5000.0" GridPane.columnSpan="2" />
 									</children>
