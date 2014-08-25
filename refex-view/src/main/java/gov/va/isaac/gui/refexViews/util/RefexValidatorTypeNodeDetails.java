@@ -60,4 +60,19 @@ public class RefexValidatorTypeNodeDetails
 	{
 		return validatorData;
 	}
+	
+	public void update(RefexValidatorTypeNodeDetails newValues)
+	{
+		nodeForDisplay = newValues == null ? null : newValues.nodeForDisplay;
+		boundToAllValid.clear();
+		if (newValues != null)
+		{
+			boundToAllValid.addAll(newValues.boundToAllValid);
+		}
+		validatorData.unbind();
+		if (newValues != null)
+		{
+			validatorData.bind(newValues.validatorData);
+		}
+	}
 }

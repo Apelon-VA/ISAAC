@@ -29,6 +29,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.UUID;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -46,6 +47,7 @@ import javafx.stage.FileChooser;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicBooleanBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicDoubleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicFloatBI;
@@ -83,12 +85,15 @@ public class RefexDataTypeFXNodeBuilder
 	 * choice.  Null allowed, if the datatype is not polymorphic.
 	 * @param allValid - Bindings will be added to this UpdateableBooleanBinding depending on the node construction.  The objects that were bound will be returned in the 
 	 * result object.
+	 * @param validatorType - if not null, data entered into the field will be validated against the validator.
+	 * @param validatorData - if not null (and validatorType is not null) data entered into the field will be validated against the validator.
+	 * 
 	 */
 	public static RefexDataTypeNodeDetails buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, 
 			SimpleStringProperty valueIsRequired, SimpleStringProperty defaultValueTooltip, ReadOnlyObjectProperty<RefexDynamicDataType> polymorphicSelection, 
-			UpdateableBooleanBinding allValid)
+			UpdateableBooleanBinding allValid, ObjectProperty<RefexDynamicValidatorType> validatorType, ObjectProperty<RefexDynamicDataBI> validatorData)
 	{
-		return buildNodeForType(dt, defaultValue, currentValue, valueIsRequired, defaultValueTooltip, polymorphicSelection, allValid, true);
+		return buildNodeForType(dt, defaultValue, currentValue, valueIsRequired, defaultValueTooltip, polymorphicSelection, allValid, validatorType, validatorData, true);
 	}
 	
 	/**
@@ -96,10 +101,15 @@ public class RefexDataTypeFXNodeBuilder
 	 * an appropriate message if the field is empty.
 	 */
 	private static RefexDataTypeNodeDetails buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, 
-			SimpleStringProperty valueIsRequired, SimpleStringProperty defaultValueTooltip, ReadOnlyObjectProperty<RefexDynamicDataType> polymorphicSelection, 
-			UpdateableBooleanBinding allValid, boolean isFirstLevel)
+			SimpleStringProperty valueIsRequired, SimpleStringProperty defaultValueAndValidatorTooltip, ReadOnlyObjectProperty<RefexDynamicDataType> polymorphicSelection, 
+			UpdateableBooleanBinding allValid, ObjectProperty<RefexDynamicValidatorType> validatorType, ObjectProperty<RefexDynamicDataBI> validatorData,
+			boolean isFirstLevel)
 	{
-		//TODO support validators....
+		if (validatorType != null && validatorData == null)
+		{
+			throw new RuntimeException("If a validator type is supplied, you need a validator data reference");
+		}
+		
 		RefexDataTypeNodeDetails returnValue = new RefexDataTypeNodeDetails();;
 		if (RefexDynamicDataType.BOOLEAN == dt)
 		{
@@ -151,9 +161,13 @@ public class RefexDataTypeFXNodeBuilder
 					cb.getSelectionModel().select(2);
 				}
 			}
-			if (defaultValue != null && defaultValueTooltip != null)
+			if (defaultValue != null && defaultValueAndValidatorTooltip != null)
 			{
-				defaultValueTooltip.set("The default value for this field is '" + defaultValue.getDataObject().toString() + "'");
+				defaultValueAndValidatorTooltip.set("The default value for this field is '" + defaultValue.getDataObject().toString() + "'");
+			}
+			if (validatorType != null && validatorType.get() != null)
+			{
+				throw new RuntimeException("It doesn't makse sense to assign a validator to a boolean");
 			}
 			returnValue.dataField = cb;
 			returnValue.nodeForDisplay = cb;
@@ -253,9 +267,13 @@ public class RefexDataTypeFXNodeBuilder
 			HBox.setHgrow(choosenFile, Priority.ALWAYS);
 			HBox.setHgrow(fileChooser, Priority.NEVER);
 			returnValue.nodeForDisplay = hbox;
-			if (defaultValue != null && defaultValueTooltip != null)
+			if (defaultValue != null && defaultValueAndValidatorTooltip != null)
 			{
-				defaultValueTooltip.set("If no file is selected, the default value of " + ((RefexDynamicByteArray)defaultValue).getData().length +  " bytes will be used");
+				defaultValueAndValidatorTooltip.set("If no file is selected, the default value of " + ((RefexDynamicByteArray)defaultValue).getData().length +  " bytes will be used");
+			}
+			if (validatorType != null && validatorType.get() != null)
+			{
+				throw new RuntimeException("There are currently no supported cases for a validator on a byte array");
 			}
 		}
 		else if (RefexDynamicDataType.DOUBLE == dt || RefexDynamicDataType.FLOAT == dt || RefexDynamicDataType.INTEGER == dt || RefexDynamicDataType.LONG == dt
@@ -294,8 +312,15 @@ public class RefexDataTypeFXNodeBuilder
 							{
 								valueIsRequired.set("");
 							}
-							Double.parseDouble(tf.getText());
-							valueInvalidReason.set("");
+							RefexDynamicDouble data = new RefexDynamicDouble(Double.parseDouble(tf.getText()));
+							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
+							{
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+							}
+							else
+							{
+								valueInvalidReason.set("");
+							}
 						}
 						catch (Exception e)
 						{
@@ -311,8 +336,15 @@ public class RefexDataTypeFXNodeBuilder
 							{
 								valueIsRequired.set("");
 							}
-							Float.parseFloat(tf.getText());
-							valueInvalidReason.set("");
+							RefexDynamicFloat data = new RefexDynamicFloat(Float.parseFloat(tf.getText()));
+							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
+							{
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+							}
+							else
+							{
+								valueInvalidReason.set("");
+							}
 						}
 						catch (Exception e)
 						{
@@ -327,8 +359,15 @@ public class RefexDataTypeFXNodeBuilder
 							{
 								valueIsRequired.set("");
 							}
-							Integer.parseInt(tf.getText());
-							valueInvalidReason.set("");
+							RefexDynamicInteger data = new RefexDynamicInteger(Integer.parseInt(tf.getText()));
+							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
+							{
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+							}
+							else
+							{
+								valueInvalidReason.set("");
+							}
 						}
 						catch (Exception e)
 						{
@@ -343,8 +382,15 @@ public class RefexDataTypeFXNodeBuilder
 							{
 								valueIsRequired.set("");
 							}
-							Long.parseLong(tf.getText());
-							valueInvalidReason.set("");
+							RefexDynamicLong data = new RefexDynamicLong(Long.parseLong(tf.getText()));
+							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
+							{
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+							}
+							else
+							{
+								valueInvalidReason.set("");
+							}
 						}
 						catch (Exception e)
 						{
@@ -357,7 +403,22 @@ public class RefexDataTypeFXNodeBuilder
 						{
 							valueIsRequired.set("");
 						}
-						valueInvalidReason.set("");
+						if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
+						{
+							try
+							{
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(new RefexDynamicString(tf.getText()), validatorData.get(), 
+										WBUtility.getViewCoordinate()));
+							}
+							catch (PropertyVetoException e)
+							{
+								valueInvalidReason.set(e.getMessage());
+							}
+						}
+						else
+						{
+							valueInvalidReason.set("");
+						}
 					}
 					else if (RefexDynamicDataType.UUID == dt)
 					{
@@ -367,7 +428,22 @@ public class RefexDataTypeFXNodeBuilder
 						}
 						if (Utility.isUUID(tf.getText()))
 						{
-							valueInvalidReason.set("");
+							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
+							{
+								try
+								{
+									valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(new RefexDynamicUUID(UUID.fromString(tf.getText())), 
+										validatorData.get(), WBUtility.getViewCoordinate()));
+								}
+								catch (PropertyVetoException e)
+								{
+									valueInvalidReason.set(e.getMessage());
+								}
+							}
+							else
+							{
+								valueInvalidReason.set("");
+							}
 						}
 						else
 						{
@@ -376,6 +452,23 @@ public class RefexDataTypeFXNodeBuilder
 					}
 				}
 			});
+			
+			if (validatorType != null)
+			{
+				validatorType.addListener((change) -> 
+				{
+					//hack way to re-run the validator logic above...
+					tf.setText(tf.getText() + " ");
+					tf.setText(tf.getText().substring(0, tf.getText().length() - 1));
+				});
+				
+				validatorData.addListener((change) ->
+				{
+					//hack way to re-run the validator logic above...
+					tf.setText(tf.getText() + " ");
+					tf.setText(tf.getText().substring(0, tf.getText().length() - 1));
+				});
+			}
 			
 			if (currentValue != null)
 			{
@@ -386,10 +479,7 @@ public class RefexDataTypeFXNodeBuilder
 				valueIsRequired.set("You must specify a value for this field");
 			}
 			returnValue.nodeForDisplay = n;
-			if (defaultValue != null && defaultValueTooltip != null)
-			{
-				defaultValueTooltip.set("If no value is specified the default value of '" +defaultValue.getDataObject().toString()+  "' will be used");
-			}
+			setupInfoTooltip(defaultValue, defaultValueAndValidatorTooltip, validatorType, validatorData);
 		}
 		else if (RefexDynamicDataType.NID == dt)
 		{
@@ -410,24 +500,54 @@ public class RefexDataTypeFXNodeBuilder
 				{
 					valueIsRequired.set("You must specify a value for this field");
 				}
-				cn.getConceptProperty().addListener((change) ->
+			}
+			
+			cn.getConceptProperty().addListener((change) ->
+			{
+				if (cn.getConceptProperty().getValue() == null && valueIsRequired != null && defaultValue == null)
 				{
-					if (cn.getConceptProperty().getValue() == null)
+					valueIsRequired.set("You must specify a value for this field");
+				}
+				else
+				{
+					if (validatorType != null && validatorType.get() != null && cn.isValid().get() && cn.getConceptProperty().get() != null &&
+							validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 					{
-						valueIsRequired.set("You must specify a value for this field");
+						try
+						{
+							String isInvalid = validatorType.get().passesValidatorStringReturn(new RefexDynamicNid(cn.getConceptProperty().get().getNid()), 
+									validatorData.get(), WBUtility.getViewCoordinate());
+							if (isInvalid.length() > 0)
+							{
+								cn.isValid().setInvalid(isInvalid);
+							}
+						}
+						catch (PropertyVetoException e)
+						{
+							cn.isValid().setInvalid(e.getMessage());
+						}
 					}
-					else
-					{
-						valueIsRequired.set("");
-					}
+				}
+			});
+			
+			
+			if (validatorType != null)
+			{
+				validatorType.addListener((change) -> 
+				{
+					//hack way to re-run the validator logic above...
+					cn.revalidate();
+				});
+				
+				validatorData.addListener((change) ->
+				{
+					//hack way to re-run the validator logic above...
+					cn.revalidate();
 				});
 			}
 
 			returnValue.nodeForDisplay = cn.getNode();
-			if (defaultValue != null && defaultValueTooltip != null)
-			{
-				defaultValueTooltip.set("If no value is specified the default value of '" +defaultValue.getDataObject().toString()+  "' will be used");
-			}
+			setupInfoTooltip(defaultValue, defaultValueAndValidatorTooltip, validatorType, validatorData);
 		}
 		else if (RefexDynamicDataType.POLYMORPHIC == dt)
 		{
@@ -436,7 +556,8 @@ public class RefexDataTypeFXNodeBuilder
 			hBox.setMaxWidth(Double.MAX_VALUE);
 			NestedPolymorphicData nestedData = new NestedPolymorphicData();
 			
-			nestedData.nestedNode = buildNodeForType(polymorphicSelection.get(), null, currentValue, valueIsRequired, defaultValueTooltip, null, allValid, false);
+			nestedData.nestedNode = buildNodeForType(polymorphicSelection.get(), null, currentValue, valueIsRequired, defaultValueAndValidatorTooltip, null, allValid, 
+					validatorType, validatorData, false);
 			
 			hBox.getChildren().add(nestedData.nestedNode.nodeForDisplay);
 			HBox.setHgrow(hBox.getChildren().get(0), Priority.ALWAYS);
@@ -457,7 +578,8 @@ public class RefexDataTypeFXNodeBuilder
 					returnValue.boundToAllValid.remove(nestedData.nestedNode.boundToAllValid.get(0));
 					allValid.removeBinding(nestedData.nestedNode.boundToAllValid.get(0));
 				}
-				nestedData.nestedNode = buildNodeForType(polymorphicSelection.get(), null, currentValue, valueIsRequired, defaultValueTooltip, null, allValid, false);
+				nestedData.nestedNode = buildNodeForType(polymorphicSelection.get(), null, currentValue, valueIsRequired, defaultValueAndValidatorTooltip, null, allValid, 
+						validatorType, validatorData, false);
 				hBox.getChildren().add(nestedData.nestedNode.nodeForDisplay);
 				HBox.setHgrow(hBox.getChildren().get(0), Priority.ALWAYS);
 				nestedData.dataType = polymorphicSelection.get();
@@ -483,6 +605,8 @@ public class RefexDataTypeFXNodeBuilder
 	
 	public static RefexDynamicDataBI getDataForType(Object data, RefexDynamicColumnInfo ci) throws PropertyVetoException
 	{
+		//TODO the way this is currently set up - if there is a default value, and the value is not required - it is impossible to leave the row blank.
+		//not sure if that is a necessary use case, or not.
 		if (RefexDynamicDataType.BOOLEAN == ci.getColumnDataType())
 		{
 			@SuppressWarnings("unchecked")
@@ -575,6 +699,61 @@ public class RefexDataTypeFXNodeBuilder
 		else
 		{
 			throw new RuntimeException("Unexpected datatype " + ci.getColumnDataType());
+		}
+	}
+	
+	private static void setupInfoTooltip(RefexDynamicDataBI defaultValue, SimpleStringProperty defaultValueAndValidatorTooltip, 
+			ObjectProperty<RefexDynamicValidatorType> validatorType, ObjectProperty<RefexDynamicDataBI> validatorData)
+	{
+		if ((defaultValue != null || (validatorType != null && validatorType.get() != null)) && defaultValueAndValidatorTooltip != null)
+		{
+			String tip = "";
+			if (defaultValue != null)
+			{
+				
+				String temp = null;
+				if (defaultValue.getRefexDataType() == RefexDynamicDataType.NID)
+				{
+					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid) defaultValue).getDataNid());
+				}
+				else if (defaultValue.getRefexDataType() == RefexDynamicDataType.UUID)
+				{
+					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID) defaultValue).getDataUUID());
+				}
+				if (temp == null)
+				{
+					temp = defaultValue.getDataObject().toString();
+				}
+				
+				tip = "If no value is specified the default value of '" + temp + "' will be used";
+			}
+			if (validatorType != null && validatorType.get() != null)
+			{
+				if (tip.length() > 0)
+				{
+					tip = tip + "\n";
+				}
+				tip += "The validator type for this field is '" + validatorType.get().getDisplayName() + "'";
+				if (validatorData != null && validatorData.get() != null)
+				{
+					String temp = null;
+					if (validatorData.get().getRefexDataType() == RefexDynamicDataType.NID)
+					{
+						temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid) validatorData.get()).getDataNid());
+					}
+					else if (validatorData.get().getRefexDataType() == RefexDynamicDataType.UUID)
+					{
+						temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID) validatorData.get()).getDataUUID());
+					}
+					if (temp == null)
+					{
+						validatorData.get().getDataObject().toString();
+					}
+					
+					tip += "\nThe validation data for this field is '" + temp + "'";
+				}
+			}
+			defaultValueAndValidatorTooltip.set(tip);
 		}
 	}
 }

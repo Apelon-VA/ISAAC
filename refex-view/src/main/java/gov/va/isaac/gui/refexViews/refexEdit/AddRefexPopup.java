@@ -22,8 +22,8 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
+import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -365,7 +366,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
 			{
 				SimpleStringProperty valueIsRequired = (ci.isColumnRequired() ? new SimpleStringProperty("") : null);
-				SimpleStringProperty defaultValueTooltip = (ci.getDefaultColumnValue() == null ? null : new SimpleStringProperty());
+				SimpleStringProperty defaultValueTooltip = ((ci.getDefaultColumnValue() == null && ci.getValidator() == null) ? null : new SimpleStringProperty());
 				ComboBox<RefexDynamicDataType> polymorphicType = null;
 				
 				Label l = new Label(ci.getColumnName());
@@ -409,7 +410,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				
 				RefexDataTypeNodeDetails nd = RefexDataTypeFXNodeBuilder.buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), 
 						(currentValues == null ? null : currentValues[row]),valueIsRequired, defaultValueTooltip, 
-						(polymorphicType == null ? null : polymorphicType.getSelectionModel().selectedItemProperty()), allValid_);
+						(polymorphicType == null ? null : polymorphicType.getSelectionModel().selectedItemProperty()), allValid_,
+						new SimpleObjectProperty<>(ci.getValidator()), new SimpleObjectProperty<>(ci.getValidatorData()));
 				
 				currentDataFieldWarnings_.addAll(nd.getBoundToAllValid());
 				if (ci.getColumnDataType() == RefexDynamicDataType.POLYMORPHIC)
@@ -420,14 +422,14 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				currentDataFields_.add(nd);
 				
 				gp.add(nd.getNodeForDisplay(), col++, row);
-				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null)
+				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null || ci.getValidator() != null)
 				{
 					extraInfoColumnIsRequired = true;
 					
 					StackPane stackPane = new StackPane();
 					stackPane.setMaxWidth(Double.MAX_VALUE);
 					
-					if (ci.getDefaultColumnValue() != null)
+					if (ci.getDefaultColumnValue() != null || ci.getValidator() != null)
 					{
 						ImageView information = Images.INFORMATION.createImageView();
 						Tooltip tooltip = new Tooltip();

@@ -92,7 +92,7 @@ public class ColumnController implements PanelControllersI {
 	@FXML private ChoiceBox<RefexDynamicValidatorType> validatorType;
 	@FXML private HBox validatorDataHolder;
 	
-	private RefexValidatorTypeNodeDetails validatorTypeNode;
+	private RefexValidatorTypeNodeDetails validatorTypeNode = new RefexValidatorTypeNodeDetails();
 
 	private ScreensController processController_;
 	private Region sceneParent_;
@@ -175,14 +175,11 @@ public class ColumnController implements PanelControllersI {
 							}
 						}
 					}
-					if (validatorTypeNode != null)
+					for (ReadOnlyStringProperty sp : validatorTypeNode.getBoundToAllValid())
 					{
-						for (ReadOnlyStringProperty sp : validatorTypeNode.getBoundToAllValid())
+						if (sp.get().length() > 0)
 						{
-							if (sp.get().length() > 0)
-							{
-								return false;
-							}
+							return false;
 						}
 					}
 					return true;
@@ -317,7 +314,8 @@ public class ColumnController implements PanelControllersI {
 				else
 				{
 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, null, 
-							processController_.getWizardData().getColumnInfo().get(columnNumber_).getDefaultColumnValue(), null, null, null, allValid_);
+							processController_.getWizardData().getColumnInfo().get(columnNumber_).getDefaultColumnValue(), null, null, null, allValid_,
+							validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
 					defaultValueHolder.getChildren().add(currentDefaultNodeDetails_.getNodeForDisplay());
 					HBox.setHgrow(currentDefaultNodeDetails_.getNodeForDisplay(), Priority.ALWAYS);
 				}
@@ -351,21 +349,21 @@ public class ColumnController implements PanelControllersI {
 		{
 			validatorDataHolder.getChildren().clear();
 			
-			if (validatorTypeNode != null)
+			for (ReadOnlyStringProperty binding : validatorTypeNode.getBoundToAllValid())
 			{
-				for (ReadOnlyStringProperty binding : validatorTypeNode.getBoundToAllValid())
-				{
-					allValid_.removeBinding(binding);
-				}
+				allValid_.removeBinding(binding);
 			}
-			validatorTypeNode = null;
 			
 			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
 			{
-				validatorTypeNode = RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_);
+				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
+						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_));
 				validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
 				HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
+			}
+			else
+			{
+				validatorTypeNode.update(null);
 			}
 			allValid_.invalidate();
 		});
@@ -373,9 +371,6 @@ public class ColumnController implements PanelControllersI {
 		StackPane sp = new StackPane();
 		ErrorMarkerUtils.swapGridPaneComponents(typeOption, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
-		//TODO tie validator run into default field
-		//TODO fix interval validator - not handling [4,] - nor checking for left < right
-		//TODO make sure blueprint is running validator on default value
 	}
 	
 	private void initializeTypeConcepts() {
@@ -464,7 +459,7 @@ public class ColumnController implements PanelControllersI {
 			else 
 			{
 				currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(typeOption.getSelectionModel().getSelectedItem(), null, rdci.getDefaultColumnValue(), 
-					null, null, null, allValid_);
+					null, null, null, allValid_, validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
 				defaultValueHolder.getChildren().add(currentDefaultNodeDetails_.getNodeForDisplay());
 				HBox.setHgrow(currentDefaultNodeDetails_.getNodeForDisplay(), Priority.ALWAYS);
 			}
@@ -481,8 +476,8 @@ public class ColumnController implements PanelControllersI {
 		validatorDataHolder.getChildren().clear();
 		if (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
 		{
-			validatorTypeNode = RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_);
+			validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
+					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_));
 			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
 			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
 		}

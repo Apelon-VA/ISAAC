@@ -34,6 +34,7 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicDoubl
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicFloat;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 
 /**
@@ -70,7 +71,7 @@ public class RefexValidatorTypeFXNodeBuilder
 					{
 						try
 						{
-							returnValue.validatorData.set(parseNumber(tf.getText()));
+							returnValue.validatorData.set(parseNumber(tf.getText().trim()));
 							valueInvalidReason.set("");
 						}
 						catch (Exception e)
@@ -140,6 +141,26 @@ public class RefexValidatorTypeFXNodeBuilder
 			}
 
 			returnValue.nodeForDisplay = cn.getNode();
+			
+			cn.getConceptProperty().addListener((change) ->
+			{
+				if (cn.getConceptProperty().get() == null)
+				{
+					returnValue.validatorData.set(null);
+				}
+				else
+				{
+					try
+					{
+						returnValue.validatorData.set(new RefexDynamicNid(cn.getConceptProperty().getValue().getNid()));
+					}
+					catch (Exception e)
+					{
+						returnValue.validatorData.set(null);
+						cn.isValid().setInvalid("Unexpected error parsing concept");
+					}
+				}
+			});
 		}
 		else if (RefexDynamicValidatorType.DROOLS == dt)
 		{
