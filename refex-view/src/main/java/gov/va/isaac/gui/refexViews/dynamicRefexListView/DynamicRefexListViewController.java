@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
+import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
@@ -37,7 +38,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
@@ -52,19 +52,14 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,7 +231,7 @@ public class DynamicRefexListViewController
 			@Override
 			public ListCell<RefexDynamicColumnInfo> call(ListView<RefexDynamicColumnInfo> param)
 			{
-				return new ExtensionDataCell();
+				return new DynamicRefexDataColumnListCell();
 			}
 		});
 
@@ -478,6 +473,7 @@ public class DynamicRefexListViewController
 			protected void succeeded()
 			{
 				extensionFields.getItems().addAll(tempColumnInfo);
+				extensionFields.scrollTo(0);
 				finished();
 			}
 
@@ -501,107 +497,6 @@ public class DynamicRefexListViewController
 		Utility.execute(t);
 	}
 	
-	private class ExtensionDataCell extends ListCell<RefexDynamicColumnInfo>
-	{
-		/**
-		 * @see javafx.scene.control.Cell#updateItem(java.lang.Object, boolean)
-		 */
-		@Override
-		protected void updateItem(RefexDynamicColumnInfo item, boolean empty)
-		{
-			super.updateItem(item, empty);
-			if (item != null)
-			{
-				setText("");
-
-				GridPane gp = new GridPane();
-				gp.setHgap(5.0);
-				gp.setVgap(5.0);
-				gp.setPadding(new Insets(5, 5, 5, 5));
-				gp.setMinWidth(250);
-				
-				ColumnConstraints constraint1 = new ColumnConstraints();
-				constraint1.setFillWidth(false);
-				constraint1.setHgrow(Priority.NEVER);
-				constraint1.setMinWidth(160);
-				constraint1.setMaxWidth(160);
-				gp.getColumnConstraints().add(constraint1);
-				
-				ColumnConstraints constraint2 = new ColumnConstraints();
-				constraint2.setFillWidth(true);
-				constraint2.setHgrow(Priority.ALWAYS);
-				gp.getColumnConstraints().add(constraint2);
-				
-				int row = 0;
-				
-				gp.add(new Label("Column Name"), 0, row);
-				Label name = new Label(item.getColumnName());
-				name.setWrapText(true);
-				name.maxWidthProperty().bind(this.widthProperty().subtract(210));
-				gp.add(name, 1, row++);
-				
-				gp.add(new Label("Column Description"), 0, row);
-				Label description = new Label(item.getColumnDescription());
-				description.setWrapText(true);
-				description.maxWidthProperty().bind(this.widthProperty().subtract(210));
-				gp.add(description, 1, row++);
-
-				gp.add(new Label("Column Order"), 0, row);
-				gp.add(new Label(item.getColumnOrder() + 1 + ""), 1, row++);
-				
-				gp.add(new Label("Data Type"), 0, row);
-				gp.add(new Label(item.getColumnDataType().getDisplayName()), 1, row++);
-				
-				gp.add(new Label("Column Required"), 0, row);
-				gp.add(new Label(item.isColumnRequired() + ""), 1, row++);
-				
-				gp.add(new Label("Default Value"), 0, row);
-				String temp = "";
-				if (item.getDefaultColumnValue() != null)
-				{
-					if (item.getColumnDataType() == RefexDynamicDataType.BYTEARRAY)
-					{
-						temp = "Byte array of size " + ((RefexDynamicByteArray)item.getDefaultColumnValue()).getDataByteArray().length;
-					}
-					else
-					{
-						temp = item.getDefaultColumnValue().getDataObject().toString();
-					}
-				}
-				gp.add(new Label(temp), 1, row++);
-				
-				gp.add(new Label("Validator"), 0, row);
-				gp.add(new Label(item.getValidator() == null ? "" : item.getValidator().getDisplayName()), 1, row++);
-				
-				if (item.getValidator() != null)
-				{
-					gp.add(new Label("Validator Data"), 0, row);
-					String valdiatorData = "";
-					if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.BYTEARRAY)
-					{
-						valdiatorData = "Byte array of size " + ((RefexDynamicByteArray)item.getValidatorData()).getDataByteArray().length;
-					}
-					else
-					{
-						valdiatorData = item.getValidatorData().getDataObject().toString();
-					}
-					gp.add(new Label(valdiatorData), 1, row++);
-				}
-				
-				setGraphic(gp);
-				
-				this.setStyle("-fx-border-width:  0 0 2 0; -fx-border-color: grey; ");
-				
-			}
-			else
-			{
-				setText("");
-				setGraphic(null);
-				this.setStyle("");
-			}
-		}
-	}
-
 	public Region getRoot()
 	{
 		return rootPane;
