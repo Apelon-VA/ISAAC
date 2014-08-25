@@ -120,6 +120,7 @@ public class DefinitionController implements PanelControllersI {
 				processController_.showNextScreen();
 			}
 		});
+		//TODO add validator for concept already exists on FSN of refex!
 		
 		refexNameInvalidReason = new StringBinding()
 		{
