@@ -142,6 +142,15 @@ public class WBUtility {
 		}
 		return editCoord;
 	}
+	
+	/**
+	 * Returns null if no concept exists with this nid
+	 */
+	public static String getDescriptionIfConceptExists(UUID uuid)
+	{
+		ConceptVersionBI result = getConceptVersion(uuid);
+		return (result == null ? null : getDescription(result));
+	}
 
 	public static String getDescription(UUID uuid) {
 		try {
@@ -151,6 +160,15 @@ public class WBUtility {
 			LOG.warn("Unexpected error looking up description", ex);
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns null if no concept exists with this nid
+	 */
+	public static String getDescriptionIfConceptExists(int nid)
+	{
+		ConceptVersionBI result = getConceptVersion(nid);
+		return (result == null ? null : getDescription(result));
 	}
 	
 	public static String getDescription(int nid) {
