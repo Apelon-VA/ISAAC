@@ -29,7 +29,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
-import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterFactory;
+import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -40,6 +40,7 @@ import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.search.SearchResultsFilter;
+import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
@@ -47,6 +48,7 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -64,6 +66,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -108,6 +111,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Callback;
+
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -246,7 +250,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		addIsDescdantOfFilterButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				addSearchFilter(new IsDescendantOfFilter());
+				IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
+				addSearchFilter(newFilter);
+				searchViewModel.getFilters().add(newFilter);
 			}
 		});
 
@@ -323,15 +329,15 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	 * both the GridPane and the searchViewModel
 	 * 
 	 */
-	private void addSearchFilter(NonSearchTypeFilter filter) {
+	private void addSearchFilter(final NonSearchTypeFilter<?> filter) {
 		int index = searchFilterGridPane.getChildren().size();
 
 		HBox row = new HBox();
 		HBox.setMargin(row, new Insets(5, 5, 5, 5));
 		row.setUserData(filter);
-		if (! searchViewModel.getFilters().contains(filter)) {
-			searchViewModel.getFilters().add(filter);
-		}
+//		if (! searchViewModel.getFilters().contains(filter)) {
+//			searchViewModel.getFilters().add(filter);
+//		}
 
 		// TODO: add binding to disable deletion of first filter in list containing other filter
 		Button removeFilterButton = new Button("Remove");
@@ -347,15 +353,23 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				newNodes.remove(row);
 
 				// Remove this filter from searchViewModel
+				int preRemovalSize = searchViewModel.getFilters().size();
 				searchViewModel.getFilters().remove(filter);
-				LOG.debug("searchViewModel should no longer contain filter " + filter + ": " + Arrays.toString(searchViewModel.getFilters().toArray()));
-
+				int postRemovalSize = searchViewModel.getFilters().size();
+				// Check before/after list size because bugs could cause identical filters to be created that should be the same exact filter
+				// which would otherwise silently prevent removal from list
+				if (postRemovalSize >= preRemovalSize || searchViewModel.getFilters().contains(filter)) {
+					LOG.error("FAILED removing filter " + filter + " from searchViewModel NonSearchTypeFilter list: " + Arrays.toString(searchViewModel.getFilters().toArray()));
+				} else {
+					LOG.debug("searchViewModel no longer contains filter " + filter + ": " + Arrays.toString(searchViewModel.getFilters().toArray()));
+				}
+				
 				// Remove all nodes from searchFilterGridPane
 				searchFilterGridPane.getChildren().clear();
 
 				// Recreate and add each node to searchFilterGridPane
-				for (int i = 0; i < newNodes.size(); ++i) {
-					addSearchFilter((NonSearchTypeFilter)newNodes.get(i).getUserData());
+				for (NonSearchTypeFilter<?> filter : searchViewModel.getFilters()) {
+					addSearchFilter(filter);
 				}
 			}
 		});
@@ -416,9 +430,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		searchFilterGridPane.getRowConstraints().add(index, rowConstraints);
 	}
 
-	private boolean validateSearchViewModel(SearchViewModel model) {
-		return validateSearchViewModel(model, null);
-	}
+//	private boolean validateSearchViewModel(SearchViewModel model) {
+//		return validateSearchViewModel(model, null);
+//	}
 
 	private boolean validateSearchViewModel(SearchViewModel model, String errorDialogTitle) {
 		if (model.getSearchType() == null) {
@@ -484,7 +498,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				
 				searchFilterGridPane.getChildren().clear();
 
-				for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> filter : model.getFilters()) {
+				for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> filter : searchViewModel.getFilters()) {
 					addSearchFilter(filter);
 				}
 
@@ -1184,6 +1198,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					loadSavedSearch(t1SearchDisplayConcept);
 				} else {
 					LOG.trace("savedSearchesComboBox new value: " + t1);
+					
+					searchSaveNameTextField.clear();
+					searchSaveDescriptionTextField.clear();
 				}
 			}	
 		});
@@ -1226,7 +1243,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		initializeSearchTypeComboBox(null);
 	}
 
-	private void initializeSearchTypeComboBox(final SearchTypeFilter passedSearchTypeFilter) {
+	private void initializeSearchTypeComboBox(final SearchTypeFilter<?> passedSearchTypeFilter) {
 		assert searchTypeComboBox != null : "fx:id=\"searchTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		searchTypeComboBox.setEditable(false);
@@ -1265,7 +1282,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 					searchTypeControlsHbox.getChildren().clear();
 
-					SearchTypeFilter filter = null;
+					SearchTypeFilter<?> filter = null;
 
 					if (searchType == SearchType.LUCENE) {
 						LuceneSearchTypeFilter displayableLuceneFilter = (passedSearchTypeFilter != null && passedSearchTypeFilter instanceof LuceneSearchTypeFilter) ? (LuceneSearchTypeFilter)passedSearchTypeFilter : new LuceneSearchTypeFilter();
@@ -1396,7 +1413,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			return;
 		}
 
-		SearchTypeFilter filter = model.getSearchType();
+		SearchTypeFilter<?> filter = model.getSearchType();
 
 		if (! (filter instanceof LuceneSearchTypeFilter)) {
 			String title = "Search failed";
@@ -1413,23 +1430,28 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		SearchResultsFilter searchResultsFilter = null;
 		if (model.getFilters() != null) {
 			List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
-			for (NonSearchTypeFilter nonSearchTypeFilter : model.getFilters()) {
-				// TODO: This must be changed when support for other NonSearchTypeFilter types added
-				searchResultsFilters.add(SearchResultsFilterFactory.createSearchResultsFilter((IsDescendantOfFilter)nonSearchTypeFilter));
+
+			try {
+				for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
+					SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
+					
+					searchResultsFilters.add(newSearchResultsFilter);
+				}
+				LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
+				searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
+
+				//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
+			} catch (SearchResultsFilterException e) {
+				String title = "Failed creating SearchResultsFilter";
+				String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
+				String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
+				LOG.error(details);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				ssh.cancel();
+				
+				return;
 			}
-			searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
-			
-//			try {
-//				searchResultsFilter = SearchResultsFilterFactory.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
-//			} catch (SearchResultsFilterException e) {
-//				String title = "Failed creating SearchResultsFilter";
-//				String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
-//				String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
-//				LOG.error(details);
-//				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-//			
-//				return;
-//			}
 		}
 
 		// "we get called back when the results are ready."
@@ -1472,7 +1494,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			String title = "Unsupported Aggregation Type";
 			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
 			LOG.error(title);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());							break;
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
+
+			ssh.cancel();
+			break;
 		}
 	}
 

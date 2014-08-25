@@ -344,14 +344,14 @@ public class SearchConceptHelper {
 		loadEmbeddedSearchFilterAttributes(refex, newFilter, null);
 	}
 
-	private static <T extends NonSearchTypeFilter<T>> void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Filter newFilter, Map<Integer, Collection<T>> filterOrderMap) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException, SearchConceptException {
+	private static <T extends NonSearchTypeFilter<T>> void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Filter<?> newFilter, Map<Integer, Collection<T>> filterOrderMap) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException, SearchConceptException {
 		LOG.debug("Loading data into model from embedded Search Filter Attributes refex");
 
-		SearchTypeFilter searchTypeFilter = null;
+		SearchTypeFilter<?> searchTypeFilter = null;
 		T nonSearchTypeFilter = null;
 		
 		if (newFilter instanceof SearchTypeFilter) {
-			searchTypeFilter = (SearchTypeFilter)newFilter;
+			searchTypeFilter = (SearchTypeFilter<?>)newFilter;
 			if (filterOrderMap != null) {
 				throw new SearchConceptException("Cannot call this method with a non-null filterOrderMap when passing a SearchTypeFilter. " + newFilter.getClass().getName() + " is a SearchTypeFilter filter.");
 			}
@@ -554,7 +554,7 @@ public class SearchConceptHelper {
 				
 				// At this point the filterOrderMap should NOT contain any SearchTypeFilter filter
 				for (int order : filterOrderMap.keySet()) {
-					for (NonSearchTypeFilter f : filterOrderMap.get(order)) {
+					for (NonSearchTypeFilter<?> f : filterOrderMap.get(order)) {
 						model.getFilters().add(f);
 					}
 				}

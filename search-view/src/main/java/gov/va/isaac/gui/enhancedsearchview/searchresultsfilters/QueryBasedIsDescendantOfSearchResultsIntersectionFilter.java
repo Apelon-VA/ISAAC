@@ -18,7 +18,7 @@
  */
 
 /**
- * IsDescendantOfSearchResultsFilter
+ * QueryBasedIsDescendantOfSearchResultsFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -47,57 +47,25 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class NonSearchTypeFilterSearchResultsIntersectionFilter implements SearchResultsFilter {
-	private static final Logger LOG = LoggerFactory.getLogger(NonSearchTypeFilterSearchResultsIntersectionFilter.class);
+class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchResultsFilter {
+	private static final Logger LOG = LoggerFactory.getLogger(QueryBasedIsDescendantOfSearchResultsIntersectionFilter.class);
 
-	private final List<NonSearchTypeFilter> filters = new ArrayList<>();
+	private final List<NonSearchTypeFilter<?>> filters = new ArrayList<>();
 	
-	public NonSearchTypeFilterSearchResultsIntersectionFilter(NonSearchTypeFilter...passedFilters) throws SearchResultsFilterException {
-		validateFilters(passedFilters);
-		for (NonSearchTypeFilter filter : passedFilters) {
+	public QueryBasedIsDescendantOfSearchResultsIntersectionFilter(IsDescendantOfFilter...passedFilters) throws SearchResultsFilterException {
+		SearchResultsFilterHelper.validateFilters(passedFilters);
+		for (NonSearchTypeFilter<?> filter : passedFilters) {
 			filters.add(filter);
 		}
 	}
-	public NonSearchTypeFilterSearchResultsIntersectionFilter(Collection<NonSearchTypeFilter> passedFilters) throws SearchResultsFilterException {
-		this(passedFilters == null ? (NonSearchTypeFilter[])null : new ArrayList<>(passedFilters).toArray(new NonSearchTypeFilter[passedFilters.size()]));
+	public QueryBasedIsDescendantOfSearchResultsIntersectionFilter(Collection<IsDescendantOfFilter> passedFilters) throws SearchResultsFilterException {
+		this(passedFilters == null ? (IsDescendantOfFilter[])null : new ArrayList<>(passedFilters).toArray(new IsDescendantOfFilter[passedFilters.size()]));
 	}
 	
-	private void validateFilters(NonSearchTypeFilter...passedFilters) throws SearchResultsFilterException {
-		if (passedFilters != null) {
-			if (passedFilters.length == 0) {
-				LOG.warn("No filters in list/array.  All results will pass.");
-			} else {
-				for (NonSearchTypeFilter filter : passedFilters) {
-					// Ensure only supported NonSearchTypeFilter types handled
-					if (filter instanceof IsDescendantOfFilter) {
-						// ok
-					} else {
-						String msg = "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported";
-						LOG.error(msg);
-						throw new SearchResultsFilterException(NonSearchTypeFilterSearchResultsIntersectionFilter.this, msg);
-					}
-
-					// Ensure NonSearchTypeFilter, itself, knows it is valid
-					if (! filter.isValid()) {
-						String msg = "NonSearchTypeFilter is invalid: " + filter;
-						LOG.error(msg);
-						throw new SearchResultsFilterException(NonSearchTypeFilterSearchResultsIntersectionFilter.this, msg);
-					}
-				}
-			}
-		} else {
-			String msg = "Passed null NonSearchTypeFilter...filters";
-			LOG.error(msg);
-			throw new SearchResultsFilterException(NonSearchTypeFilterSearchResultsIntersectionFilter.this, msg);
-		}
-	}
-	private void validateFilters(Collection<NonSearchTypeFilter> passedFilters) throws SearchResultsFilterException {
-		validateFilters(passedFilters == null ? (NonSearchTypeFilter[])null : new ArrayList<>(passedFilters).toArray(new NonSearchTypeFilter[passedFilters.size()]));
-	}
 	
 	@Override
 	public Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException {
-		validateFilters(filters);
+		SearchResultsFilterHelper.validateFilters(filters);
 		
         List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
 
@@ -126,14 +94,14 @@ class NonSearchTypeFilterSearchResultsIntersectionFilter implements SearchResult
 
 			@Override
 			public void Let() throws IOException {
-				for (NonSearchTypeFilter filter : filters) {
+				for (NonSearchTypeFilter<?> filter : filters) {
 					if (filter instanceof IsDescendantOfFilter) {
 						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
 
 						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
 					} else {
 						// This should never happen, since validateFilters(filters) was already called
-						throw new RuntimeException(new SearchResultsFilterException(NonSearchTypeFilterSearchResultsIntersectionFilter.this, "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported"));
+						throw new RuntimeException(new SearchResultsFilterException(QueryBasedIsDescendantOfSearchResultsIntersectionFilter.this, "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported"));
 					}
 				}
 			}
@@ -151,7 +119,7 @@ class NonSearchTypeFilterSearchResultsIntersectionFilter implements SearchResult
 						
 				ArrayList<Clause> subclauses = new ArrayList<>();
 				
-				for (NonSearchTypeFilter filter : filters) {
+				for (NonSearchTypeFilter<?> filter : filters) {
 					Clause currentClause = null;
 					if (filter instanceof IsDescendantOfFilter) {
 						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
@@ -161,7 +129,7 @@ class NonSearchTypeFilterSearchResultsIntersectionFilter implements SearchResult
 						// This should never happen, since validateFilters(filters) was already called
 						String msg = "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported";
 						LOG.error(msg);
-						throw new RuntimeException(new SearchResultsFilterException(NonSearchTypeFilterSearchResultsIntersectionFilter.this, msg));
+						throw new RuntimeException(new SearchResultsFilterException(QueryBasedIsDescendantOfSearchResultsIntersectionFilter.this, msg));
 					}
 					
 					if (filter instanceof Invertable && ((Invertable)filter).getInvert()) {
@@ -186,11 +154,11 @@ class NonSearchTypeFilterSearchResultsIntersectionFilter implements SearchResult
 
         NativeIdSetBI outputNids = null;
         try {
-			SearchResultsFilterFactory.LOG.debug("Applying " + filters.size() + " clauses to " + finalInputNids.size() + " nids");
+			SearchResultsFilterHelper.LOG.debug("Applying " + filters.size() + " clauses to " + finalInputNids.size() + " nids");
 
 			outputNids = q.compute();
 			
-			SearchResultsFilterFactory.LOG.debug(outputNids.size() + " nids remained after applying " + filters.size() + " clauses to filtering a total of " + finalInputNids + " nids");
+			SearchResultsFilterHelper.LOG.debug(outputNids.size() + " nids remained after applying " + filters.size() + " clauses to filtering a total of " + finalInputNids + " nids");
 		} catch (Exception e) {
 			String msg = "Failed calling Query.compute() for " + filters.size() + " filters: " + Arrays.toString(filters.toArray());
 			LOG.error(msg);
@@ -208,6 +176,6 @@ class NonSearchTypeFilterSearchResultsIntersectionFilter implements SearchResult
 
 	@Override
 	public String toString() {
-		return "NonSearchTypeFilterSearchResultsIntersectionFilter [filters=" + Arrays.toString(filters.toArray()) + "]";
+		return "QueryBasedIsDescendantOfSearchResultsIntersectionFilter [filters=" + Arrays.toString(filters.toArray()) + "]";
 	}
 }
