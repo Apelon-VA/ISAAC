@@ -99,110 +99,6 @@ public class SummaryController implements PanelControllersI {
 		});
 	}
 
-//	private void setupColumnContent(RefexData refexData ) {
-//		VBox columns = new VBox(15);
-//		columns.setAlignment(Pos.TOP_CENTER);
-//		columnGridPane.getChildren().clear();
-//		
-//		
-//		int row = 0;
-//		for (int i = 0; i < refexData.getExtendedFieldsCount(); i++) {
-//			RefexDynamicColumnInfo rdci = refexData.getColumnInfo().get(i);
-//			if (row > 0)
-//			{
-//				Separator sep = new Separator(Orientation.HORIZONTAL);
-//				sep.setPadding(new Insets(10, 0, 10, 0));
-//				columnGridPane.add(sep, 0, row++, 3, 1);
-//				GridPane.setFillWidth(sep, true);
-//			}
-//			
-//			// Create Column header
-//			Label header = createColumnHeader(i);
-//			columnGridPane.add(header, 0, row++, 3, 1);
-//			GridPane.setHalignment(header, HPos.CENTER);
-//			
-//			//row 1
-//			HBox nameBox = createColumnName(rdci.getColumnName());
-//			columnGridPane.add(nameBox, 0, row++, 3, 1);
-//			GridPane.setHalignment(nameBox, HPos.CENTER);
-//			
-//			//row 2
-//			Label descriptionLabel = createLabel("Description", true);
-//			columnGridPane.add(descriptionLabel, 0, row);
-//			GridPane.setHalignment(descriptionLabel, HPos.CENTER);
-//			columnGridPane.add(createLabel("Type", true), 1, row);
-//			columnGridPane.add(createLabel(rdci.getColumnDataType().getDisplayName(), false), 2, row++);
-//
-//			//row 3
-//			TextArea description = new TextArea(rdci.getColumnDescription());
-//			description.setEditable(false);
-//			description.setWrapText(true);
-//			description.setMaxHeight(90);
-//			columnGridPane.add(description, 0, row++, 1, 3);
-//			GridPane.setValignment(description, VPos.TOP);
-//			columnGridPane.add(createLabel("Mandatory", true), 1, row);
-//			columnGridPane.add(createLabel(rdci.isColumnRequired() + "", false), 2, row++);
-//			
-//			//row 4
-//			Label l = createLabel("Default Value", true);
-//			columnGridPane.add(l, 1, row);
-//			GridPane.setValignment(l, VPos.TOP);
-//
-//			if (rdci.getDefaultColumnValue() != null)
-//			{
-//				l = createLabel(rdci.getDefaultColumnValue().getDataObject().toString(), false);
-//				GridPane.setValignment(l, VPos.TOP);
-//				columnGridPane.add(l, 2, row++);
-//			} else 
-//			{
-//				l = createLabel("<None>", false);
-//				GridPane.setValignment(l, VPos.TOP);
-//				columnGridPane.add(l, 2, row++);
-//			}
-//			//TODO validators
-//		}
-//		if (row == 0)
-//		{
-//			columnGridPane.add(createLabel("No Data Columns", true), 0, row, 3, 1);
-//			GridPane.setHalignment(columnGridPane.getChildren().get(0), HPos.CENTER);
-//		}
-//	}
-
-//	private Label createLabel(String val, boolean bold) {
-//		Label l = new Label(val);
-//		l.setWrapText(true);
-//		if (bold)
-//		{
-//			l.getStyleClass().add("boldLabel");
-//		}
-//
-//		return l;
-//	}
-
-//	private Label createColumnHeader(int column) {
-//		Label columnHeader = new Label("Column Definition #" + (column + 1));
-//		Font headerFont = new Font("System Bold", 18);
-//		columnHeader.setFont(headerFont);
-//		columnHeader.setAlignment(Pos.CENTER);
-//		
-//		return columnHeader;
-//	}
-//
-//	private HBox createColumnName(String colName) {
-//		HBox nameBox = new HBox(5);
-//		nameBox.setAlignment(Pos.CENTER);
-//
-//		Label nameLabel = createLabel("Name", true);
-//		nameLabel.setFont(new Font(15));
-//		nameBox.getChildren().add(nameLabel);
-//
-//		Label nameVal = new Label(colName);
-//		nameVal.setFont(new Font(15));
-//		nameBox.getChildren().add(nameVal);
-//		
-//		return nameBox;
-//	}
-
 	private void setupRefexContent(RefexData refexData) {
 		actualRefexName.setText(refexData.getRefexName());
 		actualRefexDescription.setText(refexData.getRefexDescription());
@@ -235,7 +131,6 @@ public class SummaryController implements PanelControllersI {
 	public void updateValues(RefexData refexData)
 	{
 		setupRefexContent(refexData);
-//		setupColumnContent(refexData);
 	}
 
 	/**
