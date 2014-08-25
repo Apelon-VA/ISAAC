@@ -29,5 +29,5 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 class NestedPolymorphicData
 {
 	RefexDynamicDataType dataType;
-	NodeDetails nestedNode;
+	RefexDataTypeNodeDetails nestedNode;
 }

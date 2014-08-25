@@ -23,8 +23,10 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
-import gov.va.isaac.gui.refexViews.util.NodeDetails;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
+import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
+import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeFXNodeBuilder;
+import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
@@ -60,6 +62,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sun.javafx.collections.ObservableListWrapper;
@@ -86,6 +89,10 @@ public class ColumnController implements PanelControllersI {
 	@FXML private Button newColNameButton;
 	@FXML private CheckBox isMandatory;
 	@FXML private GridPane gridPane;
+	@FXML private ChoiceBox<RefexDynamicValidatorType> validatorType;
+	@FXML private HBox validatorDataHolder;
+	
+	private RefexValidatorTypeNodeDetails validatorTypeNode;
 
 	private ScreensController processController_;
 	private Region sceneParent_;
@@ -95,7 +102,7 @@ public class ColumnController implements PanelControllersI {
 	private UpdateableBooleanBinding allValid_;
 	private StringBinding typeValueInvalidReason_;
 	private SimpleStringProperty defaultValueInvalidReason_ = new SimpleStringProperty("");
-	private NodeDetails currentDefaultNodeDetails_;
+	private RefexDataTypeNodeDetails currentDefaultNodeDetails_;
 
 	private ObservableList<SimpleDisplayConcept> columnNameChoices = new ObservableListWrapper<>(new ArrayList<SimpleDisplayConcept>());
 	private Function<ConceptVersionBI, String> colNameReader_ = (conceptVersion) -> 
@@ -161,6 +168,16 @@ public class ColumnController implements PanelControllersI {
 					if (currentDefaultNodeDetails_ != null)
 					{
 						for (ReadOnlyStringProperty sp : currentDefaultNodeDetails_.getBoundToAllValid())
+						{
+							if (sp.get().length() > 0)
+							{
+								return false;
+							}
+						}
+					}
+					if (validatorTypeNode != null)
+					{
+						for (ReadOnlyStringProperty sp : validatorTypeNode.getBoundToAllValid())
 						{
 							if (sp.get().length() > 0)
 							{
@@ -247,15 +264,7 @@ public class ColumnController implements PanelControllersI {
 			}
 		});
 		
-//		defaultValue.textProperty().addListener(new ChangeListener<String>()
-//		{
-//			@Override
-//			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
-//			{
-//				defaultValueInvalidReason_.set(verifyDefaultValue());
-//			}
-//		});
-	
+
 		typeOption.setConverter(new StringConverter<RefexDynamicDataType>()
 		{
 			
@@ -315,19 +324,76 @@ public class ColumnController implements PanelControllersI {
 			}
 		});
 		
+		validatorType.setConverter(new StringConverter<RefexDynamicValidatorType>()
+		{
+			
+			@Override
+			public String toString(RefexDynamicValidatorType object)
+			{
+				if (object == RefexDynamicValidatorType.UNKNOWN)
+				{
+					return "No Validator";
+				}
+				else
+				{
+					return object.getDisplayName();
+				}
+			}
+			
+			@Override
+			public RefexDynamicValidatorType fromString(String string)
+			{
+				throw new RuntimeException("unecessary");
+			}
+		});
+		
+		validatorType.valueProperty().addListener((change) ->
+		{
+			validatorDataHolder.getChildren().clear();
+			
+			if (validatorTypeNode != null)
+			{
+				for (ReadOnlyStringProperty binding : validatorTypeNode.getBoundToAllValid())
+				{
+					allValid_.removeBinding(binding);
+				}
+			}
+			validatorTypeNode = null;
+			
+			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
+			{
+				validatorTypeNode = RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
+						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_);
+				validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
+				HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
+			}
+			allValid_.invalidate();
+		});
+		
 		StackPane sp = new StackPane();
 		ErrorMarkerUtils.swapGridPaneComponents(typeOption, sp, gridPane);
 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
+		//TODO tie validator run into default field
+		//TODO fix interval validator - not handling [4,] - nor checking for left < right
+		//TODO make sure blueprint is running validator on default value
 	}
 	
 	private void initializeTypeConcepts() {
-
-		RefexDynamicDataType[] columnTypes = RefexDynamicDataType.values();
-		
-		for (RefexDynamicDataType type : columnTypes) {
+		for (RefexDynamicDataType type : RefexDynamicDataType.values()) {
 			typeOption.getItems().add(type);
 		}
 		typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
+		
+		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values())
+		{
+			if (type == RefexDynamicValidatorType.DROOLS)
+			{
+				//not yet supported
+				continue;
+			}
+			validatorType.getItems().add(type);
+		}
+		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
 	}
 
 	private void createNewColumnConcept() {
@@ -404,10 +470,25 @@ public class ColumnController implements PanelControllersI {
 			}
 		}
 		isMandatory.setSelected(rdci.isColumnRequired());
+		if (rdci.getValidator() != null)
+		{
+			validatorType.getSelectionModel().select(rdci.getValidator());
+		}
+		else
+		{
+			validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+		}
+		validatorDataHolder.getChildren().clear();
+		if (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
+		{
+			validatorTypeNode = RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
+					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_);
+			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
+			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
+		}
 	}
 
 	public void storeValues() throws PropertyVetoException {
-		//TODO add validator fields
 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
 		
 		rdci.setColumnDescriptionConcept(columnNameSelection_.isValid().get() ? columnNameSelection_.getConcept().getPrimordialUuid() : null);
@@ -418,6 +499,15 @@ public class ColumnController implements PanelControllersI {
 			rdci.setColumnDefaultData(RefexDataTypeFXNodeBuilder.getDataForType(currentDefaultNodeDetails_.getDataField(), rdci));
 		}
 		rdci.setColumnRequired(isMandatory.isSelected());
+		rdci.setValidatorType((validatorType.getValue() == RefexDynamicValidatorType.UNKNOWN ? null : validatorType.getSelectionModel().getSelectedItem()));
+		if (rdci.getValidator() == null)
+		{
+			rdci.setValidatorData(null);
+		}
+		else
+		{
+			rdci.setValidatorData(validatorTypeNode.getValidatorDataProperty().get());
+		}
 	}
 
 	public void setColumnNumber(int colNum) {

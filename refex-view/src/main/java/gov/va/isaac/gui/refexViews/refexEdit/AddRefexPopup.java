@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.refexViews.util.NodeDetails;
+import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
@@ -106,7 +106,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private UpdateableBooleanBinding allValid_;
 
 	private ArrayList<ReadOnlyStringProperty> currentDataFieldWarnings_ = new ArrayList<>();
-	private ArrayList<NodeDetails> currentDataFields_ = new ArrayList<>();
+	private ArrayList<RefexDataTypeNodeDetails> currentDataFields_ = new ArrayList<>();
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 	private GridPane gp_;
 
@@ -350,7 +350,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				allValid_.removeBinding(ssp);
 			}
 			currentDataFieldWarnings_.clear();
-			for (NodeDetails nd : currentDataFields_)
+			for (RefexDataTypeNodeDetails nd : currentDataFields_)
 			{
 				nd.cleanupListener();
 			}
@@ -407,7 +407,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType()));
 				}
 				
-				NodeDetails nd = RefexDataTypeFXNodeBuilder.buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), 
+				RefexDataTypeNodeDetails nd = RefexDataTypeFXNodeBuilder.buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), 
 						(currentValues == null ? null : currentValues[row]),valueIsRequired, defaultValueTooltip, 
 						(polymorphicType == null ? null : polymorphicType.getSelectionModel().selectedItemProperty()), allValid_);
 				

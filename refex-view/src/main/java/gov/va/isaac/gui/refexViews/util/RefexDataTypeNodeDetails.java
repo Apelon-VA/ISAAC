@@ -27,7 +27,7 @@ import javafx.scene.Node;
 import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
- * {@link NodeDetails}
+ * {@link RefexDataTypeNodeDetails}
  * 
  * A helper class that contains all of the return details for the structured created by a static call to 
  * {@link RefexDataTypeFXNodeBuilder}.
@@ -41,7 +41,7 @@ import com.sun.javafx.collections.ObservableListWrapper;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class NodeDetails
+public class RefexDataTypeNodeDetails
 {
 	protected Object dataField;
 	protected Node nodeForDisplay;

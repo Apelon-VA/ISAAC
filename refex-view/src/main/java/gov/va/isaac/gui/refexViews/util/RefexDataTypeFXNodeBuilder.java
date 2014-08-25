@@ -84,7 +84,7 @@ public class RefexDataTypeFXNodeBuilder
 	 * @param allValid - Bindings will be added to this UpdateableBooleanBinding depending on the node construction.  The objects that were bound will be returned in the 
 	 * result object.
 	 */
-	public static NodeDetails buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, 
+	public static RefexDataTypeNodeDetails buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, 
 			SimpleStringProperty valueIsRequired, SimpleStringProperty defaultValueTooltip, ReadOnlyObjectProperty<RefexDynamicDataType> polymorphicSelection, 
 			UpdateableBooleanBinding allValid)
 	{
@@ -95,12 +95,12 @@ public class RefexDataTypeFXNodeBuilder
 	 * when valueIsRequired is null, it is understood to be optional.  If it is not null, need to tie it in to the listeners on the field - setting
 	 * an appropriate message if the field is empty.
 	 */
-	private static NodeDetails buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, 
+	private static RefexDataTypeNodeDetails buildNodeForType(RefexDynamicDataType dt, RefexDynamicDataBI defaultValue, RefexDynamicDataBI currentValue, 
 			SimpleStringProperty valueIsRequired, SimpleStringProperty defaultValueTooltip, ReadOnlyObjectProperty<RefexDynamicDataType> polymorphicSelection, 
 			UpdateableBooleanBinding allValid, boolean isFirstLevel)
 	{
 		//TODO support validators....
-		NodeDetails returnValue = new NodeDetails();;
+		RefexDataTypeNodeDetails returnValue = new RefexDataTypeNodeDetails();;
 		if (RefexDynamicDataType.BOOLEAN == dt)
 		{
 			ChoiceBox<String> cb = new ChoiceBox<>();
