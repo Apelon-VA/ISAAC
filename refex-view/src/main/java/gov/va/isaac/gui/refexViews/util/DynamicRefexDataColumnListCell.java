@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.refexViews.util;
 
+import gov.va.isaac.util.WBUtility;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -31,6 +32,8 @@ import javafx.scene.layout.Region;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 
 /**
  * {@link DynamicRefexDataColumnListCell}
@@ -102,6 +105,22 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 				{
 					temp = "Byte array of size " + ((RefexDynamicByteArray) item.getDefaultColumnValue()).getDataByteArray().length;
 				}
+				else if (item.getColumnDataType() == RefexDynamicDataType.NID)
+				{
+					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getDefaultColumnValue()).getDataNid());
+					if (temp == null)
+					{
+						temp = "NID: " + item.getDefaultColumnValue().getDataObject().toString();
+					}
+				}
+				else if (item.getColumnDataType() == RefexDynamicDataType.UUID)
+				{
+					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getDefaultColumnValue()).getDataUUID());
+					if (temp == null)
+					{
+						temp = "UUID: " + item.getDefaultColumnValue().getDataObject().toString();
+					}
+				}
 				else
 				{
 					temp = item.getDefaultColumnValue().getDataObject().toString();
@@ -122,6 +141,22 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 				if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.BYTEARRAY)
 				{
 					valdiatorData = "Byte array of size " + ((RefexDynamicByteArray) item.getValidatorData()).getDataByteArray().length;
+				}
+				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.NID)
+				{
+					valdiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
+					if (valdiatorData == null)
+					{
+						valdiatorData = "NID: " + item.getValidatorData().getDataObject().toString();
+					}
+				}
+				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.UUID)
+				{
+					valdiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
+					if (valdiatorData == null)
+					{
+						valdiatorData = "UUID: " + item.getValidatorData().getDataObject().toString();
+					}
 				}
 				else
 				{
