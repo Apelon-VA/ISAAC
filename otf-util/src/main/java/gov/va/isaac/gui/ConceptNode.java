@@ -389,6 +389,11 @@ public class ConceptNode implements ConceptLookupCallback
 		return isValid;
 	}
 	
+	public void revalidate()
+	{
+		lookup();
+	}
+	
 	@Override
 	public void lookupComplete(final ConceptVersionBI concept, final long submitTime, Integer callId)
 	{
