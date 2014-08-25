@@ -25,8 +25,6 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -42,8 +40,6 @@ public class RefexData
 	private boolean isAnnotatedStyle_;
 	private ConceptVersionBI parentConcept_;
 	private ArrayList<RefexDynamicColumnInfo> columnInfo_ = new ArrayList<>();
-
-	private final Logger logger = LoggerFactory.getLogger(RefexData.class);
 
 	public RefexData(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotatedStyle)
 	{
@@ -136,5 +132,4 @@ public class RefexData
 	{
 		return columnInfo_;
 	}
-	//TODO add GUI for selecting validator details
 }
