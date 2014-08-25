@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.YesNoDialog;
@@ -30,7 +31,9 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.fxml.FXML;
@@ -46,6 +49,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.slf4j.Logger;
@@ -120,7 +125,6 @@ public class DefinitionController implements PanelControllersI {
 				processController_.showNextScreen();
 			}
 		});
-		//TODO add validator for concept already exists on FSN of refex!
 		
 		refexNameInvalidReason = new StringBinding()
 		{
@@ -136,7 +140,18 @@ public class DefinitionController implements PanelControllersI {
 				}
 				else
 				{
-					return "";
+					//This test isn't perfect... won't detect all cases where the FSN is actually identical to something that exists.
+					//But it will detect the cases that will cause the blueprint construct to blowup
+					UUID uuidWeWouldGetUponCreate = ConceptCB.computeComponentUuid(IdDirective.GENERATE_HASH, Arrays.asList(new String[] {refexName.getText().trim()}), 
+							Arrays.asList(new String[] {refexName.getText().trim()}), null);
+					if (ExtendedAppContext.getDataStore().hasUuid(uuidWeWouldGetUponCreate))
+					{
+						return "A concept already exists with this FSN";
+					}
+					else
+					{
+						return "";
+					}
 				}
 			}
 		};
