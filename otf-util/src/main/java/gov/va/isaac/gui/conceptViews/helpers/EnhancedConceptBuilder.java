@@ -3,6 +3,8 @@ package gov.va.isaac.gui.conceptViews.helpers;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailTermRow;
+import gov.va.isaac.gui.conceptViews.componentRows.HistoricalRelRow;
+import gov.va.isaac.gui.conceptViews.componentRows.HistoricalTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.RelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
@@ -189,10 +191,10 @@ public class EnhancedConceptBuilder {
 			executeRelBuilderWithSpecifiedRels(con.getRelationshipsOutgoingActive());
 			relVBox.getChildren().add(rr.getGridPane());
 
-			if (mode != ConceptViewMode.SIMPLE_VIEW) {
+			if (mode == ConceptViewMode.DETAIL_VIEW) {
 				rr.resetCounter();
 				executeRelBuilderWithSpecifiedRels(con.getRelationshipsIncomingActive());
-				GridPane gp = ((DetailRelRow)rr).getDestinationGridPane();
+				GridPane gp = rr.getDestinationGridPane();
 
 				if (!gp.getChildren().isEmpty()) {
 					destVBox.getChildren().add(gp);
@@ -231,6 +233,9 @@ public class EnhancedConceptBuilder {
 		} else if (mode == ConceptViewMode.DETAIL_VIEW) {
 			tr = new DetailTermRow(labelHelper);
 			rr = new DetailRelRow(labelHelper);
+		} else if (mode == ConceptViewMode.HISTORICAL_VIEW) {
+			tr = new HistoricalTermRow(labelHelper);
+			rr = new HistoricalRelRow(labelHelper);
 		}
 		
 	}
