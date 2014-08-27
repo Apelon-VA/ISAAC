@@ -184,6 +184,13 @@ public class EnhancedConceptViewController {
 				conceptView.setViewMode(ConceptViewMode.SIMPLE_VIEW);
 			}
 		});
+
+		historicalRadio.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				conceptView.setViewMode(ConceptViewMode.HISTORICAL_VIEW);
+			}
+		});
 	}
 	
 	public void setViewMode(ConceptViewMode mode) {
@@ -200,12 +207,6 @@ public class EnhancedConceptViewController {
 		creator.setLabelHelper(labelHelper);
 		
 		setModeType(mode);
-
-		// TODO (Until handled, make disabled)
-		historicalRadio.setDisable(true);
-
-		Tooltip notYetImplTooltip = new Tooltip("Not Yet Implemented");
-		historicalRadio.setTooltip(notYetImplTooltip);
 	}
 
 	void intializePane(ConceptViewMode view) {
@@ -227,6 +228,8 @@ public class EnhancedConceptViewController {
 			basicRadio.setSelected(true);
 		} else if (mode == ConceptViewMode.DETAIL_VIEW) {
 			detailedRadio.setSelected(true);
+		} else if (mode == ConceptViewMode.HISTORICAL_VIEW) {
+			historicalRadio.setSelected(true);
 		}
 	}
 

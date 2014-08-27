@@ -490,7 +490,6 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
-		LOG.debug("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
@@ -753,9 +752,13 @@ public class WBUtility {
 	}
 
 	public static String getTimeString(ComponentVersionBI comp) {
-	    Date date = new Date(comp.getTime());
-
-	    return format.format(date);		
+		if (comp.getTime() != Long.MAX_VALUE) {
+		    Date date = new Date(comp.getTime());
+	
+		    return format.format(date);		
+		} else {
+			return "Uncommitted";
+		}
 	}
 
 	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
