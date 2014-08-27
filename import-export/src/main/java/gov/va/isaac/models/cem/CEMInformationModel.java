@@ -18,139 +18,257 @@
  */
 package gov.va.isaac.models.cem;
 
-import static gov.va.isaac.models.cem.CEMInformationModel.ComponentType.ATT;
-import static gov.va.isaac.models.cem.CEMInformationModel.ComponentType.MOD;
-import static gov.va.isaac.models.cem.CEMInformationModel.ComponentType.QUAL;
-import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
-import gov.va.isaac.models.util.AbstractInformationModel;
+import gov.va.isaac.models.util.DefaultInformationModel;
 
 import java.util.List;
 
-import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
-
-import com.google.common.collect.Lists;
-
 /**
- * A concrete {@link InformationModel} for displaying CEM models.
+ * An {@link InformationModel} for allowing applications to interact more
+ * naturally with CEM models.
  *
  * @author ocarlsen
+ * @author bcarslen
  */
-public class CEMInformationModel extends AbstractInformationModel implements InformationModel {
+@SuppressWarnings("static-method")
+public class CEMInformationModel extends DefaultInformationModel {
+  
+  /**
+   * Instantiates an empty {@link CEMInformationModel}.
+   */
+  public CEMInformationModel() {
+    // do nothing
+  }
 
-    public static final class Constraint {
-        private final String path;
-        private final String value;
-        public Constraint(String path, String value) {
-            super();
-            this.path = path;
-            this.value = value;
-        }
-        public String getPath() {
-            return path;
-        }
-        public String getValue() {
-            return value;
-        }
+  /**
+   * Adds the qual component.
+   *
+   * @param component the component
+   * @return the composition
+   */
+  public Composition addQualComponent(String component) {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Returns the qual components.
+   *
+   * @return the qual components
+   */
+  public List<Composition> getQualComponents() {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Adds the mod component.
+   *
+   * @param component the component
+   * @return the composition
+   */
+  public Composition addModComponent(String component) {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Returns the mod components.
+   *
+   * @return the mod components
+   */
+  public List<Composition> getModComponents() {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Adds the att component.
+   *
+   * @param component the component
+   * @return the composition
+   */
+  public Composition addAttComponent(String component) {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Returns the att components.
+   *
+   * @return the att components
+   */
+  public List<Composition> getAttComponents() {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Adds the constraint.
+   *
+   * @param constraint the constraint
+   * @return the constraint
+   */
+  public Constraint addConstraint(Constraint constraint) {
+    // TODO
+    return null;
+  }
+
+  /**
+   * Returns the constraints.
+   *
+   * @return the constraints
+   */
+  public List<Constraint> getConstraints() {
+    // TODO
+    return null;
+  }
+
+  //
+  // INNER CLASSES
+  //
+
+  /**
+   * Represents a CEM "constraint"
+   */
+  public static final class Constraint {
+
+    /** The path. */
+    private final String path;
+
+    /** The value. */
+    private final String value;
+
+    /**
+     * Instantiates a {@link Constraint} from the specified parameters.
+     *
+     * @param path the path
+     * @param value the value
+     */
+    public Constraint(String path, String value) {
+      super();
+      this.path = path;
+      this.value = value;
     }
 
-    public static enum ComponentType {
-        QUAL, MOD, ATT;
+    /**
+     * Returns the path.
+     *
+     * @return the path
+     */
+    public String getPath() {
+      return path;
     }
 
-    public static final class Composition {
-        private final ComponentType componentType;
-        private final String component;
-        private Constraint constraint;
-        private String value;
-        private Composition(ComponentType componentType, String component) {
-            super();
-            this.componentType = componentType;
-            this.component = component;
-        }
-        public ComponentType getComponentType() {
-            return componentType;
-        }
-        public String getComponent() {
-            return component;
-        }
-        public Constraint getConstraint() {
-            return constraint;
-        }
-        public void setConstraint(Constraint constraint) {
-            this.constraint = constraint;
-        }
-        public String getValue() {
-            return value;
-        }
-        public void setValue(String value) {
-            this.value = value;
-        }
+    /**
+     * Returns the value.
+     *
+     * @return the value
+     */
+    public String getValue() {
+      return value;
+    }
+  }
+
+  /**
+   * The Enum ComponentType.
+   *
+   * @author ${author}
+   */
+  public static enum ComponentType {
+
+    /** The qual. */
+    QUAL,
+    /** The mod. */
+    MOD,
+    /** The att. */
+    ATT;
+  }
+
+  /**
+   * The Class Composition.
+   *
+   * @author ${author}
+   */
+  public static final class Composition {
+
+    /** The component type. */
+    private final ComponentType componentType;
+
+    /** The component. */
+    private final String component;
+
+    /** The constraint. */
+    private Constraint constraint;
+
+    /** The value. */
+    private String value;
+
+    /**
+     * Instantiates a {@link Composition} from the specified parameters.
+     *
+     * @param componentType the component type
+     * @param component the component
+     */
+    private Composition(ComponentType componentType, String component) {
+      super();
+      this.componentType = componentType;
+      this.component = component;
     }
 
-    private final List<Composition> qualComponents = Lists.newArrayList();
-    private final List<Composition> modComponents = Lists.newArrayList();
-    private final List<Composition> attComponents = Lists.newArrayList();
-    private final List<Constraint> constraints = Lists.newArrayList();
-
-    private String key;
-    private ConceptSpec dataType;
-
-    public CEMInformationModel(String name) {
-        super(name, null, InformationModelType.CEM);
+    /**
+     * Returns the component type.
+     *
+     * @return the component type
+     */
+    public ComponentType getComponentType() {
+      return componentType;
     }
 
-    public String getKey() {
-        return key;
+    /**
+     * Returns the component.
+     *
+     * @return the component
+     */
+    public String getComponent() {
+      return component;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    /**
+     * Returns the constraint.
+     *
+     * @return the constraint
+     */
+    public Constraint getConstraint() {
+      return constraint;
     }
 
-    public ConceptSpec getDataType() {
-        return dataType;
+    /**
+     * Sets the constraint.
+     *
+     * @param constraint the constraint
+     */
+    public void setConstraint(Constraint constraint) {
+      this.constraint = constraint;
     }
 
-    public void setDataType(ConceptSpec dataType) {
-        this.dataType = dataType;
+    /**
+     * Returns the value.
+     *
+     * @return the value
+     */
+    public String getValue() {
+      return value;
     }
 
-    public Composition addQualComponent(String component) {
-        Composition qualComponent = new Composition(QUAL, component);
-        qualComponents.add(qualComponent);
-        return qualComponent;
+    /**
+     * Sets the value.
+     *
+     * @param value the value
+     */
+    public void setValue(String value) {
+      this.value = value;
     }
+  }
 
-    public List<Composition> getQualComponents() {
-        return qualComponents;
-    }
-
-    public Composition addModComponent(String component) {
-        Composition modComponent = new Composition(MOD, component);
-        modComponents.add(modComponent);
-        return modComponent;
-    }
-
-    public List<Composition> getModComponents() {
-        return modComponents;
-    }
-
-    public Composition addAttComponent(String component) {
-        Composition attComponent = new Composition(ATT, component);
-        attComponents.add(attComponent);
-        return attComponent;
-    }
-
-    public List<Composition> getAttComponents() {
-        return attComponents;
-    }
-
-    public void addConstraint(Constraint constraint) {
-        constraints.add(constraint);
-    }
-
-    public List<Constraint> getConstraints() {
-        return constraints;
-    }
 }

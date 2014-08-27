@@ -24,14 +24,15 @@ import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.interfaces.gui.views.RefsetViewI;
-import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -55,6 +56,7 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.jvnet.hk2.annotations.Service;
@@ -168,13 +170,13 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		BorderPane.setMargin(bp.getTop(), new Insets(5, 5, 5, 5));
 		
 		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
+/** TODO - BAC
 		//TODO this shouldn't require a hard import on the import-export project... need to refactor, use interfaces
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			list.getItems().add(cs.getDescription());
 		}
-		
+**/		
 		list.setPrefHeight(400);
 		list.setPrefWidth(500);
 		bp.setCenter(list);
@@ -202,7 +204,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		sp.setContent(refsetArea);
 		VBox.setVgrow(sp, Priority.ALWAYS);
 		root.getChildren().add(sp);
-
+/** TODO - BAC
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs == CEMMetadataBinding.CEM_DATA_REFSET || cs == CEMMetadataBinding.CEM_TYPE_REFSET)
@@ -211,7 +213,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 				list.getSelectionModel().select(cs.getDescription());
 			}
 		}
-		
+**/		
 		list.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>()
 		{
 			@Override
@@ -221,11 +223,12 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 				//manually compute what needs to change.  Sigh.
 				//TODO file a bug on JavaFX.  The old code here should have worked...
 				HashSet<String> all = new HashSet<>();
+				/** TODO - BAC
 				for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 				{
 					all.add(cs.getDescription());
 				}
-				
+				**/
 				//Add the ones that we currently aren't showing
 				for (String s : list.getSelectionModel().getSelectedItems())
 				{
@@ -246,7 +249,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	}
 	
 	private void addRefsetView(String name)
-	{
+	{/** TODO - BAC
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs.getDescription().equals(name))
@@ -255,6 +258,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 				break;
 			}
 		}
+  **/
 	}
 	
 	private void removeRefsetView(String name)

@@ -19,13 +19,15 @@
 package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
+
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
+
 import javafx.beans.property.SimpleStringProperty;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -382,7 +384,7 @@ public class RefsetInstanceAccessor {
 				
 				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
 				compositeMemberNid = member.getNid();
-				
+				/**TODO - BAC
 				//TODO this should be done generically in the refset view API, not CEM specific.
 				for (RefexVersionBI<?> parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
@@ -399,6 +401,7 @@ public class RefsetInstanceAccessor {
 						valueExt = new SimpleStringProperty(((RefexStringVersionBI<?>)parentAnnot).getString1());
 					}
 				}
+				**/
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

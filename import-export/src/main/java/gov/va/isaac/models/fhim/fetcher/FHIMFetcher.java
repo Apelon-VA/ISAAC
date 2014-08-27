@@ -20,9 +20,8 @@ package gov.va.isaac.models.fhim.fetcher;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.models.InformationModel;
-import gov.va.isaac.models.InformationModel.Metadata;
+import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
-import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
 import java.util.List;
@@ -58,7 +57,7 @@ public class FHIMFetcher extends ExporterBase {
         FxUtils.checkBackgroundThread();
 
         // Get the roots of all FHIM models.
-        ConceptChronicleBI modelsRefsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
+        ConceptChronicleBI modelsRefsetConcept = null; //getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
         List<StringMember> modelRefsetMembers = getRefsetMembers(modelsRefsetConcept, StringMember.class);
         if (modelRefsetMembers.isEmpty()) {
             LOG.info("No FHIM_MODELS_REFSET members found.");
@@ -71,18 +70,19 @@ public class FHIMFetcher extends ExporterBase {
             UUID modelUUID = modelRefsetMember.getUUIDs().get(0);
             FHIMInformationModel informationModel = new FHIMInformationModel(modelName, modelUUID);
 
-            Metadata metadata = Metadata.newInstance(modelRefsetMember.getStamp(),
+            InformationModelMetadata metadata = InformationModelMetadata.newInstance(modelRefsetMember.getStamp(),
                     getDataStore(), getVC());
             informationModel.setMetadata(metadata);
 
             int focusConceptNid = modelRefsetMember.getReferencedComponentNid();
             ComponentChronicleBI<ConceptVersionBI> focusConcept = getDataStore().getConcept(focusConceptNid);
             ConceptVersionBI focusConceptVersion = focusConcept .getVersion(getVC());
-            String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
-            informationModel.setFocusConceptName(focusConceptName);
-
-            UUID focusConceptUUID = focusConcept.getPrimordialUuid();
-            informationModel.setFocusConceptUUID(focusConceptUUID);
+            // TODO - BAC
+//            String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
+//            informationModel.setFocusConceptName(focusConceptName);
+//
+//            UUID focusConceptUUID = focusConcept.getPrimordialUuid();
+//            informationModel.setFocusConceptUUID(focusConceptUUID);
 
             LOG.debug("informationModel="+informationModel);
             models.add(informationModel);

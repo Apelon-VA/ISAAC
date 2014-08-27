@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
-import gov.va.isaac.models.InformationModel.Metadata;
+import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
@@ -105,7 +105,7 @@ public class InformationModelDetailsDialogController {
                 // Do work.
                 OutputStream out = new ByteArrayOutputStream();
                 FHIMExporter exporter = new FHIMExporter(out);
-                UUID modelUUID = ((FHIMInformationModel) infoModel).getUUID();
+                UUID modelUUID = infoModel.getUuid();
                 exporter.exportModel(modelUUID);
                 return out.toString();
             }
@@ -125,7 +125,7 @@ public class InformationModelDetailsDialogController {
                 // Do work.
                 OutputStream out = new ByteArrayOutputStream();
                 CEMExporter exporter = new CEMExporter(out);
-                UUID conceptUUID = infoModel.getFocusConceptUUID();
+                UUID conceptUUID = infoModel.getUuid();
                 exporter.exportModel(conceptUUID);
                 return out.toString();
             }
@@ -167,10 +167,10 @@ public class InformationModelDetailsDialogController {
             // Update UI.
             modelNameLabel.setText(infoModel.getName());
             modelTypeLabel.setText(infoModel.getType().getDisplayName());
-            focusConceptLabel.setText(infoModel.getFocusConceptName());
-            uuidLabel.setText(infoModel.getFocusConceptUUID().toString());
+            focusConceptLabel.setText("TBD - BAC");
+            uuidLabel.setText("TBD - BAC");
 
-            Metadata metadata = infoModel.getMetadata();
+            InformationModelMetadata metadata = infoModel.getMetadata();
             importerNameLabel.setText(metadata.getImporterName());
             importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
             importPathLabel.setText(metadata.getPath().toString());

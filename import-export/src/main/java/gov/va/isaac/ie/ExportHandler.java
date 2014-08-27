@@ -69,7 +69,7 @@ public class ExportHandler {
             exporter.exportModel(conceptUUID);
         } else if (modelType == InformationModelType.FHIM) {
             FHIMExporter exporter = new FHIMExporter(new FileOutputStream(file));
-            UUID modelUUID = ((FHIMInformationModel) informationModel).getUUID();
+            UUID modelUUID = informationModel.getUuid();
             exporter.exportModel(modelUUID);
         } else {
             throw new UnsupportedOperationException(modelType.getDisplayName() +

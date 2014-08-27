@@ -9,12 +9,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -180,10 +178,16 @@ public class RootConceptBuilder extends AbstractMojo {
   public static EditCoordinate getEC() throws ValidationException, IOException {
     int authorNid = TermAux.USER.getLenient().getConceptNid();
     int module = Snomed.CORE_MODULE.getLenient().getNid();
-    int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
+    int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
     return new EditCoordinate(authorNid, module, editPathNid);
   }
   
+  /**
+   * Returns the vc.
+   *
+   * @return the vc
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static ViewCoordinate getVC() throws IOException {
 	  return StandardViewCoordinates.getSnomedStatedLatest();
   }

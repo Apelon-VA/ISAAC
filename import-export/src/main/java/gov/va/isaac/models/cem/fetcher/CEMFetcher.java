@@ -19,9 +19,8 @@
 package gov.va.isaac.models.cem.fetcher;
 
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.models.InformationModel.Metadata;
+import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.cem.CEMInformationModel;
-import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
 import java.util.Collection;
@@ -62,9 +61,9 @@ public class CEMFetcher extends ExporterBase {
         Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations =
                 getLatestAnnotations(focusConcept);
 
-        // Type attribute (1).
-        StringMember typeAnnotation = getSingleAnnotation(focusConceptAnnotations,
-                CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
+        // Type attribute (1). TODO-BAC
+        StringMember typeAnnotation = null; //getSingleAnnotation(focusConceptAnnotations,
+//                CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
 
         // Abort if not found.
         if (typeAnnotation == null) {
@@ -72,16 +71,18 @@ public class CEMFetcher extends ExporterBase {
         }
 
         String modelName = typeAnnotation.getString1();
-        CEMInformationModel informationModel = new CEMInformationModel(modelName);
+        // TODO - BAC
+        CEMInformationModel informationModel = null; //new CEMInformationModel(modelName);
 
-        Metadata metadata = Metadata.newInstance(typeAnnotation.getStamp(),
+        InformationModelMetadata metadata = InformationModelMetadata.newInstance(typeAnnotation.getStamp(),
                 getDataStore(), getVC());
         informationModel.setMetadata(metadata);
 
         ConceptVersionBI focusConceptVersion = focusConcept.getVersion(getVC());
         String focusConceptName = focusConceptVersion.getFullySpecifiedDescription().getText();
-        informationModel.setFocusConceptName(focusConceptName);
-        informationModel.setFocusConceptUUID(focusConceptUUID);
+        // TODO - BAC
+        //informationModel.setFocusConceptName(focusConceptName);
+        //informationModel.setFocusConceptUUID(focusConceptUUID);
 
         LOG.debug("informationModel="+informationModel);
         LOG.info("Ending fetch of CEM model type");

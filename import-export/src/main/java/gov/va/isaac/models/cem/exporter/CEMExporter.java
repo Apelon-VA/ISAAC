@@ -23,7 +23,6 @@ import gov.va.isaac.models.cem.CEMInformationModel.ComponentType;
 import gov.va.isaac.models.cem.CEMInformationModel.Composition;
 import gov.va.isaac.models.cem.CEMInformationModel.Constraint;
 import gov.va.isaac.models.cem.CEMXmlConstants;
-import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
 import java.io.File;
@@ -48,7 +47,6 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_membership.MembershipMember;
-import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_string.NidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
 import org.slf4j.Logger;
@@ -56,8 +54,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import com.google.common.collect.Lists;
 
 /**
  * Class for exporting a CEM model to an XML {@link File}.
@@ -119,6 +115,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations)
             throws ValidationException, IOException, ContradictionException {
 
+      CEMInformationModel infoModel = null;
+      /** TODO - BAC
         // Name attribute (1).
         StringMember nameAnnotation = getSingleAnnotation(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_TYPE_REFSET, StringMember.class);
@@ -128,7 +126,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         }
 
         String name = nameAnnotation.getString1();
-        CEMInformationModel infoModel = new CEMInformationModel(name);
+        // TODO - BAC
+        CEMInformationModel infoModel = null; //new CEMInformationModel(name);
 
         // Key element (0-1).
         StringMember keyAnnotation = getSingleAnnotation(focusConceptAnnotations,
@@ -157,7 +156,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             } else {
                 throw new IllegalStateException("Unrecognized CEM_DATA_REFSET member nid: " + nid);
             }
-            infoModel.setDataType(dataType);
+            // TODO - BAC
+            // infoModel.setDataType(dataType);
         }
 
         // Qual elements (0-M).
@@ -207,7 +207,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
                 addConstraint(infoModel, constraintAnnotation);
             }
         }
-
+*/
         return infoModel;
     }
 
@@ -239,6 +239,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             throw new IllegalArgumentException("Unrecognized componentType: " + componentType);
         }
 
+        /** TODO - BAC
         // Constraint.
         MembershipMember constraintAnnotation = getMembershipAnnotation(compositionAnnotation,
                 CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
@@ -256,12 +257,15 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         } else {
             String value = valueAnnotation.getString1();
             composition.setValue(value);
-        }
+        } 
+        **/
     }
 
     private Constraint createConstraint(MembershipMember constraintAnnotation) throws IOException,
             ContradictionException {
         String path = null;
+        String value = null;
+        /** TODO - BAC
         StringMember pathAnnotation = getStringAnnotation(constraintAnnotation, CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET);
         if (pathAnnotation == null) {
             LOG.info("No CEM_CONSTRAINTS_PATH_REFSET members found.");
@@ -269,14 +273,13 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             path = pathAnnotation.getString1();
         }
 
-        String value = null;
         StringMember valueAnnotation = getStringAnnotation(constraintAnnotation, CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET);
         if (valueAnnotation == null) {
             LOG.info("No CEM_CONSTRAINTS_VALUE_REFSET members found.");
         } else {
             value = valueAnnotation.getString1();
         }
-
+         **/
         return new Constraint(path, value);
     }
 
@@ -312,7 +315,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         cetype.appendChild(keyElement);
 
         // Data element (0-1).
-        ConceptSpec dataType = infoModel.getDataType();
+        // TODO - BAC
+        ConceptSpec dataType = null; //infoModel.getDataType();
         Element dataElement = buildDataElement(dataType);
         cetype.appendChild(dataElement);
 
@@ -407,6 +411,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             throws ValidationException, IOException {
         Element data = document.createElement(DATA);
 
+        /** TODO - BAC
         // Convert to string.
         int nid = dataType.getNid();
         String type = null;
@@ -422,7 +427,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
         Attr typeAttr = document.createAttribute(TYPE);
         typeAttr.setNodeValue(type);
         data.setAttributeNode(typeAttr);
-
+         **/
         return data;
     }
 
@@ -478,7 +483,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
             Collection<? extends RefexChronicleBI<?>> focusConceptAnnotations,
             ConceptSpec refsetSpec)
             throws ValidationException, IOException {
-
+/**TODO-BAC
         // Filter members of CEMMetadataBinding.CEM_COMPOSITION_REFSET.
         List<NidStringMember> annotations = filterAnnotations(focusConceptAnnotations,
                 CEMMetadataBinding.CEM_COMPOSITION_REFSET, NidStringMember.class);
@@ -490,8 +495,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
                 filtered.add(annotation);
             }
         }
-
-        return filtered;
+*/
+        return null; //filtered;
     }
 
     private Document buildDom() throws ParserConfigurationException {

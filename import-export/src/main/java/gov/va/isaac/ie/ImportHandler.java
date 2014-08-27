@@ -18,20 +18,24 @@
  */
 package gov.va.isaac.ie;
 
-import java.io.File;
+import gov.va.isaac.models.InformationModel;
 
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import java.io.File;
 
 /**
  * Interface for handling the ISAAC import functionality.
  *
  * @author ocarlsen
+ * @author bcarlsenca
  */
 public interface ImportHandler {
 
-    /**
-     * Method called by the ISAAC application to perform the import. Will be
-     * invoked on a background thread.
-     */
-    public ConceptChronicleBI importModel(File file) throws Exception;
+  /**
+   * Method called by the ISAAC application to perform the import. Will be
+   * invoked on a background thread.
+   * @param file the input file
+   * @return the information model
+   * @throws Exception if anything goes wrong
+   */
+  public InformationModel importModel(File file) throws Exception;
 }

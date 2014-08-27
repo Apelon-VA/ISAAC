@@ -20,29 +20,20 @@ package gov.va.isaac.models.cem.importer;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.ImportHandler;
+import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.cem.CEMInformationModel;
-import gov.va.isaac.models.cem.CEMInformationModel.Composition;
-import gov.va.isaac.models.cem.CEMInformationModel.Constraint;
 import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
-import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -53,172 +44,65 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Preconditions;
 
 /**
- * Class for importing a CEM model from an XML {@link File}.
- *
+ * An {@link ImportHandler} for importing a CEM model from an XML file.
+ * 
  * @author alo
  * @author ocarlsen
+ * @author bcarlsenca
  */
-@SuppressWarnings("rawtypes")
 public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlConstants {
 
+    /**  The Constant LOG. */
     private static final Logger LOG = LoggerFactory.getLogger(CEMImporter.class);
 
+    /**
+     * Instantiates an empty {@link CEMImporter}.
+     */
     public CEMImporter() {
         super();
     }
 
+    /* (non-Javadoc)
+     * @see gov.va.isaac.ie.ImportHandler#importModel(java.io.File)
+     */
     @Override
-    public ConceptChronicleBI importModel(File file) throws Exception {
+    public InformationModel importModel(File file) throws Exception {
         LOG.info("Preparing to import CEM model from: " + file.getName());
 
         // Make sure in background thread.
         FxUtils.checkBackgroundThread();
 
+        InformationModelService service = getInformationModelService();
+        
+        // focus concept is no longer hardcoded - this will be connected to model LATER using UI
         // Get focus concept.
-        String focusConceptUuid = "215fd598-e21d-3e27-a0a2-8e23b1b36dfc";
-        ConceptChronicleBI focusConcept = getDataStore().getConcept(UUID.fromString(focusConceptUuid));
-        LOG.info("focusConcept: " + focusConcept.toString());
-
-        // Throw exception if import already performed.
-        ComponentVersionBI latestVersion = focusConcept.getVersion(getVC());
-        Collection<? extends RefexChronicleBI<?>> annotations = latestVersion.getAnnotations();
-        for (RefexChronicleBI<?> annotation : annotations) {
-            Preconditions.checkState(annotation.getAssemblageNid() != CEMMetadataBinding.CEM_TYPE_REFSET.getNid(),
-                    "CEM import has already been performed on " + focusConceptUuid);
-        }
+        // String focusConceptUuid = "215fd598-e21d-3e27-a0a2-8e23b1b36dfc";
+        // ConceptChronicleBI focusConcept = getDataStore().getConcept(UUID.fromString(focusConceptUuid));
+        // LOG.info("focusConcept: " + focusConcept.toString());
 
         // Load DOM tree from file.
         Node domRoot = loadModel(file);
 
         // Parse into CEM model.
         CEMInformationModel infoModel = createInformationModel(domRoot);
+        service.saveInformationModel(infoModel);
 
-        // Annotate focusConcept with Refset members.
-        annotateWithRefsets(focusConcept, infoModel);
-
-        getDataStore().addUncommitted(focusConcept);
-        getDataStore().commit();
-
-        LOG.debug("Long form after commit:" + focusConcept.toLongString());
         LOG.info("Ending import of CEM model from: " + file.getName());
 
-        return focusConcept;
+        
+        InformationModel m2 = service.getInformationModel(InformationModelType.CEM, "DiastolicBloodPressureMeas");
+        LOG.info("M2 = " + m2.getUuid());
+        return infoModel;
     }
 
-    @SuppressWarnings("unused")
-    private void annotateWithRefsets(ConceptChronicleBI focusConcept,
-            CEMInformationModel infoModel)
-            throws IOException, InvalidCAB, ContradictionException {
-
-        // CEM Type refset.
-        String type = infoModel.getName();
-        addMemberInTypeRefset(focusConcept, type);
-
-        // CEM Key refset.
-        String key = infoModel.getKey();
-        addMemberInKeyRefset(focusConcept, key);
-
-        // CEM Data refset.
-        ConceptSpec dataType = infoModel.getDataType();
-        addMemberInDataRefset(focusConcept, dataType);
-
-        // CEM Composition refset : Quals.
-        List<Composition> quals = infoModel.getQualComponents();
-        for (Composition qual : quals) {
-            String component = qual.getComponent();
-            RefexChronicleBI qualRefex = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_QUAL, component);
-
-            // Constraint?
-            Constraint constraint = qual.getConstraint();
-            if (constraint !=  null) {
-                String path = constraint.getPath();
-                String value = constraint.getValue();
-
-                // Simulate String-String refset for CEM Constraints.
-                RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(qualRefex);
-                RefexChronicleBI pathRefex = addStrExtensionAnnotation(constraintRefex,
-                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI qalueRefex = addStrExtensionAnnotation(constraintRefex,
-                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
-            }
-
-            // Value?
-            String value = qual.getValue();
-            if (value != null) {
-                RefexChronicleBI qualCompRefex = addMemberInValueRefset(qualRefex, value);
-            }
-        }
-
-        // CEM Composition refset : Mods.
-        List<Composition> mods = infoModel.getModComponents();
-        for (Composition mod : mods) {
-            String component = mod.getComponent();
-            RefexChronicleBI modRefex = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_MOD, component);
-
-            // Constraint?
-            Constraint constraint = mod.getConstraint();
-            if (constraint !=  null) {
-                String path = constraint.getPath();
-                String value = constraint.getValue();
-
-                // Simulate String-String refset for CEM Constraints.
-                RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(modRefex);
-                RefexChronicleBI pathRefex = addStrExtensionAnnotation(constraintRefex,
-                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI qalueRefex = addStrExtensionAnnotation(constraintRefex,
-                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
-            }
-
-            // Value?
-            String value = mod.getValue();
-            if (value != null) {
-                RefexChronicleBI modCompRefex = addMemberInValueRefset(modRefex, value);
-            }
-        }
-
-        // CEM Composition refset : Atts.
-        List<Composition> atts = infoModel.getAttComponents();
-        for (Composition att : atts) {
-            String component = att.getComponent();
-            RefexChronicleBI attRefex = addMemberInCompositionRefset(focusConcept, CEMMetadataBinding.CEM_ATT, component);
-
-            // Constraint?
-            Constraint constraint = att.getConstraint();
-            if (constraint !=  null) {
-                String path = constraint.getPath();
-                String value = constraint.getValue();
-
-                // Simulate String-String refset for CEM Constraints.
-                RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(attRefex);
-                RefexChronicleBI pathRefex = addStrExtensionAnnotation(constraintRefex,
-                        CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-                RefexChronicleBI qalueRefex = addStrExtensionAnnotation(constraintRefex,
-                        CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
-            }
-
-            // Value?
-            String value = att.getValue();
-            if (value != null) {
-                RefexChronicleBI attCompRefex = addMemberInValueRefset(attRefex, value);
-            }
-        }
-
-        // CEM Constraints refset.
-        List<Constraint> constraints = infoModel.getConstraints();
-        for (Constraint constraint : constraints) {
-            String path = constraint.getPath();
-            String value = constraint.getValue();
-
-            // Simulate String-String refset for CEM Constraints.
-            RefexChronicleBI constraintRefex = addMemberInConstraintsRefset(focusConcept);
-            RefexChronicleBI constraintPathRefex = addStrExtensionAnnotation(constraintRefex,
-                    CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET, path);
-            RefexChronicleBI constraintValueRefex = addStrExtensionAnnotation(constraintRefex,
-                    CEMMetadataBinding.CEM_CONSTRAINTS_VALUE_REFSET, value);
-        }
-    }
-
-    private CEMInformationModel createInformationModel(Node rootNode) {
+    /**
+     * Creates the information model from the XML DOM {@link Node}.
+     *
+     * @param rootNode the root node
+     * @return the CEM information model
+     * @throws IOException 
+     */
+    private CEMInformationModel createInformationModel(Node rootNode) throws IOException {
 
         // Look for CETYPE child node.
         Node cetypeNode = null;
@@ -237,11 +121,14 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
         Preconditions.checkNotNull(cetypeNode, "No CETYPE child node in XML file!");
         LOG.debug("cetype: " + cetypeNode.getNodeName());
 
+        // Create the model
+        CEMInformationModel infoModel = new CEMInformationModel();
+        infoModel.setType(InformationModelType.CEM);
+        
         // Parse CETYPE node attributes.
         String name = cetypeNode.getAttributes().getNamedItem(NAME).getTextContent();
+        infoModel.setName(name);
         LOG.info("name: " + name);
-
-        CEMInformationModel infoModel = new CEMInformationModel(name);
 
         // Iterate through CETYPE node children and process.
         NodeList cetypeChildren = cetypeNode.getChildNodes();
@@ -258,6 +145,8 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
             case DATA:
                 String data = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
                 LOG.info("data: " + data);
+                // TODO - BAC
+                /**
                 switch (data.toUpperCase()) {
                 case PQ:
                     infoModel.setDataType(CEMMetadataBinding.CEM_PQ);
@@ -270,14 +159,15 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
                     break;
                     //TODO: add the rest of data types
                 }
+                **/
                 break;
+                /** TODO - BAC
             case QUAL:
                 String qualName = loopNode.getAttributes().getNamedItem(NAME).getTextContent();
                 String qualType = loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
                 String qualCard = loopNode.getAttributes().getNamedItem(CARD).getTextContent();
                 String qualCompValue = loopNode.getTextContent();
                 LOG.info(String.format("mod: %s %s %s %s", qualName, qualType, qualCard, qualCompValue));
-
                 Composition qual = infoModel.addQualComponent(qualType);
 
                 // Cardinality constraint.
@@ -343,53 +233,26 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
                 infoModel.addConstraint(constraint);
 
                 break;
+**/
+              default:
+                break;
             }
         }
 
         return infoModel;
     }
 
-    private RefexChronicleBI addMemberInValueRefset(RefexChronicleBI focusComponent, String value)
-            throws IOException, InvalidCAB, ContradictionException {
-        return addStrExtensionAnnotation(focusComponent, CEMMetadataBinding.CEM_VALUE_REFSET,
-                value);
-    }
 
-    private RefexChronicleBI addMemberInDataRefset(ConceptChronicleBI focusConcept,
-            ConceptSpec conceptExtension)
-            throws IOException, InvalidCAB, ContradictionException {
-        return addCidExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_DATA_REFSET,
-                conceptExtension);
-    }
-
-    private RefexChronicleBI addMemberInCompositionRefset(ConceptChronicleBI focusConcept,
-            ConceptSpec componentExtension, String stringExtension)
-            throws IOException, InvalidCAB, ContradictionException {
-        return addCidStrExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_COMPOSITION_REFSET,
-                componentExtension, stringExtension);
-    }
-
-    private RefexChronicleBI addMemberInConstraintsRefset(ComponentChronicleBI focusComponent)
-            throws IOException, InvalidCAB, ContradictionException {
-        return addMemberAnnotation(focusComponent, CEMMetadataBinding.CEM_CONSTRAINTS_REFSET);
-    }
-
-    private RefexChronicleBI addMemberInKeyRefset(ConceptChronicleBI focusConcept,
-            String key)
-            throws IOException, InvalidCAB, ContradictionException {
-        return addStrExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_KEY_REFSET, key);
-
-    }
-
-    private RefexChronicleBI addMemberInTypeRefset(ConceptChronicleBI focusConcept,
-            String type)
-            throws IOException, InvalidCAB, ContradictionException {
-        return addStrExtensionAnnotation(focusConcept, CEMMetadataBinding.CEM_TYPE_REFSET, type);
-
-    }
-
+    /**
+     * Load model from XML file into a {@link Node}.
+     *
+     * @param file the file
+     * @return the node
+     * @throws ParserConfigurationException the parser configuration exception
+     * @throws SAXException the SAX exception
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     private Node loadModel(File file) throws ParserConfigurationException, SAXException, IOException {
-
         // Parse XML file.
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
@@ -403,7 +266,6 @@ public class CEMImporter extends ImporterBase implements ImportHandler, CEMXmlCo
                 "No CEML root node in XML file! " + file.getName());
 
         LOG.info("File OK: " + file.getName());
-
         return rootNode;
     }
 }

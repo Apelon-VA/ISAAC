@@ -20,80 +20,84 @@ package gov.va.isaac.models;
 
 import gov.va.isaac.model.InformationModelType;
 
-import java.io.IOException;
 import java.util.UUID;
 
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.coordinate.Path;
-import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-
 /**
- * Defines API for displaying information models.
+ * Generically represents an information model.
  *
  * @author ocarlsen
+ * @author bcarlsenca
  */
 public interface InformationModel {
 
-    public static final class Metadata {
+  /**
+   * Returns the key identifying this model.
+   *
+   * @return the key identifying this model
+   */
+  public String getKey();
 
-        private final String importerName;
-        private final long time;
-        private final Path path;
-        private final String moduleName;
+  /**
+   * Sets the key.
+   *
+   * @param key the key
+   */
+  public void setKey(String key);
 
-        public static Metadata newInstance(int stampNid, BdbTerminologyStore dataStore,
-                ViewCoordinate vc) throws IOException, ContradictionException {
+  /**
+   * Returns the name.
+   *
+   * @return the name
+   */
+  public String getName();
 
-            String importerName = "Hard-coded placeholder";
+  /**
+   * Sets the name.
+   *
+   * @param name the name
+   */
+  public void setName(String name);
 
-            long time = dataStore.getTimeForStamp(stampNid);
+  /**
+   * Returns the UUID.
+   *
+   * @return the UUID
+   */
+  public UUID getUuid();
 
-            int pathNid = dataStore.getPathNidForStamp(stampNid);
-            Path path = dataStore.getPath(pathNid);
+  /**
+   * Sets the uuid.
+   *
+   * @param uuid the uuid
+   */
+  public void setUuid(UUID uuid);
 
-            int moduleNid = dataStore.getModuleNidForStamp(stampNid);
-            ConceptChronicleBI module = dataStore.getConcept(moduleNid);
-            ConceptVersionBI version = module.getVersion(vc);
-            String moduleName = version.getFullySpecifiedDescription().getText();
+  /**
+   * Returns the type.
+   *
+   * @return the type
+   */
+  public InformationModelType getType();
 
-            return new Metadata(importerName, time, path, moduleName);
-        }
+  /**
+   * Sets the type.
+   *
+   * @param type the type
+   */
+  public void setType(InformationModelType type);
 
-        public Metadata(String importerName, long time, Path path, String moduleName) {
-            this.importerName = importerName;
-            this.time = time;
-            this.path = path;
-            this.moduleName = moduleName;
-        }
+  /**
+   * Returns the metadata.
+   *
+   * @return the metadata
+   */
+  public InformationModelMetadata getMetadata();
 
-        public String getImporterName() {
-            return importerName;
-        }
-
-        public long getTime() {
-            return time;
-        }
-
-        public Path getPath() {
-            return path;
-        }
-
-        public String getModuleName() {
-            return moduleName;
-        }
-    }
-
-    public String getName();
-
-    public InformationModelType getType();
-
-    public Metadata getMetadata();
-
-    public String getFocusConceptName();
-
-    public UUID getFocusConceptUUID();
+  /**
+   * Sets the metadata.
+   *
+   * @param metadata the metadata
+   */
+  public void setMetadata(InformationModelMetadata metadata);
 
 }
