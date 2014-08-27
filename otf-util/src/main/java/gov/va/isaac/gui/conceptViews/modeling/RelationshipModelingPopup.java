@@ -161,31 +161,33 @@ public class RelationshipModelingPopup extends ModelingPopup
 			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
 				int newGroup = 0; 
 				if (rel != null) {
+					if (newVal.trim().length() > 0) {
+						groupNewSelected.set(true);
+					} else {
+						groupNewSelected.set(false);
+					}
+					
+					if (modificationMade.get() || groupNewSelected.get()) {
+						try {
+							newGroup = Integer.parseInt(newVal);
+							if (newGroup < 0) {
+								reasonSaveDisabled_.set("Group must be 0 or greater");
+							
+								if (!passesQA()) {
+									reasonSaveDisabled_.set("Failed QA");
+								}
+							}
+						} catch (NumberFormatException e) {
+							reasonSaveDisabled_.set("Must select an integer");
+						} 
+					}
+
 					if (rel.getGroup() != newGroup) {
 						modificationMade.set(true);
 					} else {
 						modificationMade.set(false);
 						reasonSaveDisabled_.set("Cannot save unless original content changed");
 					}
-				} else if (newVal.trim().length() > 0) {
-					groupNewSelected.set(true);
-				} else {
-					groupNewSelected.set(false);
-				}
-				
-				if (modificationMade.get() || groupNewSelected.get()) {
-					try {
-						newGroup = Integer.parseInt(newVal);
-						if (newGroup < 0) {
-							reasonSaveDisabled_.set("Group must be 0 or greater");
-						
-							if (!passesQA()) {
-								reasonSaveDisabled_.set("Failed QA");
-							}
-						}
-					} catch (NumberFormatException e) {
-						reasonSaveDisabled_.set("Must select an integer");
-					} 
 				}
 			}
 		});
@@ -287,7 +289,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					
 				if (modificationMade.get() || typeNewSelected.get()) {
 					if (!typeCon.isValid().getValue()) {
-						reasonSaveDisabled_.set(typeCon.getInvalidReason().getValue());
+						reasonSaveDisabled_.set(typeCon.isValid().getReasonWhyInvalid().getValue());
 					} else if (!passesQA()) {
 						reasonSaveDisabled_.set("Failed QA");
 					}
@@ -320,7 +322,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					
 				if (modificationMade.get() || otherConceptNewSelected.get()) {
 					if (!otherEndCon.isValid().getValue()) {
-						reasonSaveDisabled_.set(otherEndCon.getInvalidReason().getValue());
+						reasonSaveDisabled_.set(otherEndCon.isValid().getReasonWhyInvalid().getValue());
 					} else if (!passesQA()) {
 						reasonSaveDisabled_.set("Failed QA");
 					}

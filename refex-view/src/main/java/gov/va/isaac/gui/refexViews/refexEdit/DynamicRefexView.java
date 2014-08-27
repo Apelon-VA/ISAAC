@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -377,16 +376,6 @@ public class DynamicRefexView implements RefexViewI
 		return rootNode_;
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		// We don't currently have any custom menus with this view
-		return new ArrayList<MenuItemI>();
-	}
-	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
 	 */

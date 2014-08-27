@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.models.api.BdbInformationModelService;
 import gov.va.isaac.models.api.InformationModelService;
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @Singleton
-public class CEMMetadataCreatorView implements PopupViewI
+public class CEMMetadataCreatorView implements PopupViewI, IsaacViewWithMenusI
 {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

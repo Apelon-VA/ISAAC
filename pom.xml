@@ -265,8 +265,6 @@
         <module>search-view</module>
         <module>isaac-app</module>
         <module>isaac-workflow</module>
-        <!-- <module>refset-spec-view</module>
-         --><module>refset-view</module>
         <module>info-model-view</module>
         <module>list-view</module>
         <module>mojos</module>

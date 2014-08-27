@@ -25,8 +25,8 @@
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -87,5 +87,17 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 	public void copy(IsDescendantOfFilter toCopy) {
 		invert.set(toCopy.getInvert());
 		nid.set(toCopy.getNid());
+	}
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.search.IndividualSearchResultFilter#getInvert()
+	 */
+	@Override
+	public boolean getInvert() {
+		return invert.get();
+	}
+	@Override
+	public String toString() {
+		return "IsDescendantOfFilter [isValid=" + isValid.get() + ", invert="
+				+ invert.get() + ", nid=" + nid.get() + "]";
 	}
 }

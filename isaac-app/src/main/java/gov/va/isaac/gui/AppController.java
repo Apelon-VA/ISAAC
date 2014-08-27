@@ -24,7 +24,7 @@ import gov.va.isaac.gui.util.ToolTipDefaultsFixer;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.gui.views.IsaacViewI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import javafx.beans.InvalidationListener;
@@ -67,7 +67,7 @@ public class AppController {
     private VBox loadWait;
 
     @Inject
-    private IterableProvider<IsaacViewI> moduleViews_;
+    private IterableProvider<IsaacViewWithMenusI> moduleViews_;
     @Inject
     private IterableProvider<DockedViewI> dockedViews_;
 
@@ -118,7 +118,7 @@ public class AppController {
 
         //Sort them...
         TreeSet<MenuItemI> menusToAdd = new TreeSet<>();
-        for (IsaacViewI view : moduleViews_)
+        for (IsaacViewWithMenusI view : moduleViews_)
         {
             for (MenuItemI menuItem : view.getMenuBarMenus())
             {

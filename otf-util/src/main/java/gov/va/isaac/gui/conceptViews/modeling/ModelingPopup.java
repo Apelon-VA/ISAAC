@@ -3,14 +3,9 @@ package gov.va.isaac.gui.conceptViews.modeling;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
@@ -30,7 +25,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,16 +117,6 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 		setScene(scene);
 
 	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<>();
-	}
-
 
 	/**
 	 * Call setReferencedComponent first

@@ -22,4 +22,8 @@ public abstract class RelRow extends Row {
 	}
 
 	abstract public void addRelRow(RelationshipVersionBI<?> rel);
+
+	public GridPane getDestinationGridPane() {
+		return dgp;
+	}
 }

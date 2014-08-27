@@ -18,33 +18,24 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.UUID;
-import javafx.scene.layout.Region;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import java.util.List;
 import org.jvnet.hk2.annotations.Contract;
 
-//TODO get rid of this confusing contract... need to not go back and forth between Refset and Refex.
-//This is actually used as an info-model viewer, which is kind of a different animal.
 /**
- * RefsetViewI
+ * IsaacViewI
  * 
- * An interface that allows the creation of a RefsetView implementation, which 
- * will be a JavaFX component that extends {@link Region} that can be embedded
- * into other views 
+ * An extension of {@link IsaacViewI} which adds menus that will be shown in the top level window of the application.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface RefsetViewI extends ViewI
+public abstract interface IsaacViewWithMenusI extends IsaacViewI
 {
 	/**
-	 * Tell this view to display a particular refset
+	 * Provides the specs of all of the menus required by this view which will be shown in the top level of the application  
+	 * May return an empty list, will not return null.
 	 */
-	public void setRefsetAndComponent(UUID refsetUUID, UUID componentUUID);
+	public List<MenuItemI> getMenuBarMenus();
 	
-	/**
-	 * Tell this view to display activeOnly in the current view coordinate, or 
-	 * all values.  Implementations should default this value to true.
-	 * @param activeOnly
-	 */
-	public void setViewActiveOnly(boolean activeOnly);
 }

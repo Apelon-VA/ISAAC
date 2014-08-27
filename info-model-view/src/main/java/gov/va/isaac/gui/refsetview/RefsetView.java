@@ -18,17 +18,9 @@
  */
 package gov.va.isaac.gui.refsetview;
 
-import gov.va.isaac.gui.refsetview.RefsetViewController;
-import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.RefsetViewI;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-
 import javafx.scene.layout.Region;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * 
@@ -37,50 +29,32 @@ import org.jvnet.hk2.annotations.Service;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 
-@Service
-@PerLookup
-public class RefsetView implements RefsetViewI
+public class RefsetView
 {
 	private RefsetViewController rvc_;
 	
-	private RefsetView() throws IOException
+	public RefsetView()
 	{
-		//created by HK2
-		rvc_ = RefsetViewController.init();
+		try
+		{
+			rvc_ = RefsetViewController.init();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
-	 */
-	@Override
 	public Region getView()
 	{		
 		return rvc_.getRoot();
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		// We don't currently have any custom menus with this view
-		return new ArrayList<MenuItemI>();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setRefsetAndComponent(java.util.UUID, java.util.UUID)
-	 */
-	@Override
 	public void setRefsetAndComponent(UUID refsetUUID, UUID componentId)
 	{
 		rvc_.setRefsetAndComponent(refsetUUID, componentId);
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefsetViewI#setViewActiveOnly(boolean)
-	 */
-	@Override
 	public void setViewActiveOnly(boolean activeOnly)
 	{
 		rvc_.setViewActiveOnly(activeOnly);

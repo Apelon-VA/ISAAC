@@ -24,6 +24,7 @@ import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -228,6 +229,7 @@ public class App extends Application implements ApplicationWindowI{
         LOG.info("Shutting down");
         shutdown = true;
         try {
+            Utility.shutdownThreadPools();
             //TODO OTF fix note - the current BDB access model gives me no way to know if I should call shutdown, as I don't know if it was started.
             //If it wasn't started, calling shutdown tries to start the DB, because it inits in the constructor call.  https://jira.ihtsdotools.org/browse/OTFISSUE-13
             //don't bother with shutdown if we know the path was bad... other wise, this actually tries to init the DB.  Sigh.

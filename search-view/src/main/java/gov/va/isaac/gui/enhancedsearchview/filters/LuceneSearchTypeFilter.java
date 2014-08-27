@@ -18,7 +18,7 @@
  */
 
 /**
- * LuceneFilter
+ * LuceneSearchTypeFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -31,11 +31,11 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-public class LuceneFilter implements SearchTypeFilter<LuceneFilter> {
+public class LuceneSearchTypeFilter implements SearchTypeFilter<LuceneSearchTypeFilter> {
 	private StringProperty searchParameter = new SimpleStringProperty();
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 
-	public LuceneFilter() {
+	public LuceneSearchTypeFilter() {
 		searchParameter.addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(
@@ -64,7 +64,7 @@ public class LuceneFilter implements SearchTypeFilter<LuceneFilter> {
 
 	@Override
 	public String toString() {
-		return "LuceneFilter [searchParameter=" + searchParameter.get()
+		return "LuceneSearchTypeFilter [searchParameter=" + searchParameter.get()
 				+ ", isValid=" + isValid.get() + "]";
 	}
 	/* (non-Javadoc)
@@ -79,7 +79,7 @@ public class LuceneFilter implements SearchTypeFilter<LuceneFilter> {
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#copy(gov.va.isaac.gui.enhancedsearchview.filters.Filter)
 	 */
 	@Override
-	public void copy(LuceneFilter toCopy) {
+	public void copy(LuceneSearchTypeFilter toCopy) {
 		searchParameter.set(toCopy.getSearchParameter());
 	}
 }
