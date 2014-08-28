@@ -40,14 +40,26 @@ public interface RefexViewI extends ViewI
 	 * be any valid thing that supportes refexes)
 	 * 
 	 * With this call - multiple assemblages will be shown - for a single component (concept)
+	 * 
+	 * @param componentNid - the component to show.
+	 * @param showStampColumns - (optional) if provided, don't show toggle buttons for show/hiding the stamp, instead bind to this.
+	 * @param showActiveOnly - (optional) if provided, don't show toggle buttons for activeOnly / all, instead bind to this.
+	 * @param showFullHistory - (optional) if provided, don't show toggle buttons for show current / show all, instead bind to this.
 	 */
-	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns);
+	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
+			ReadOnlyBooleanProperty showFullHistory);
 	
 	/**
 	 * Tell this view to display the refexes for a particular assemblage concept.
 	 * 
 	 * With this call - only a single assemblage will be shown - but multiple components may be shown (typically concepts, 
 	 * but could also be any valid thing that supports refexes, such as descriptions)
+	 * 
+	 * @param assemblageConceptNid - the assemblage to show
+	 * @param showStampColumns - (optional) if provided, don't show toggle buttons for show/hiding the stamp, instead bind to this.
+	 * @param showActiveOnly - (optional) if provided, don't show toggle buttons for activeOnly / all, instead bind to this.
+	 * @param showFullHistory - (optional) if provided, don't show toggle buttons for show current / show all, instead bind to this.
 	 */
-	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns);
+	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
+			ReadOnlyBooleanProperty showFullHistory);
 }

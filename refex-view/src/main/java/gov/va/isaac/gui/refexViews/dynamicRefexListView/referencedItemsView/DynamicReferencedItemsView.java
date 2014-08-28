@@ -78,6 +78,6 @@ public class DynamicReferencedItemsView implements PopupViewI
 		stage.setWidth(800);
 		stage.setHeight(600);
 		stage.show();
-		drv_.setAssemblage(assemblageConcept_.getNid(), null);
+		drv_.setAssemblage(assemblageConcept_.getNid(), null, null, null);
 	}
 }
