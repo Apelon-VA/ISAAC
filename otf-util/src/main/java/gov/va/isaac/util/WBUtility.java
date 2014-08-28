@@ -28,7 +28,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -655,6 +657,14 @@ public class WBUtility {
 	}
 	
 	/**
+	 * Recursively get Is a parents of a concept
+	 */
+	public static Set<ConceptVersionBI> getConceptAncestors(int nid) throws IOException, ContradictionException
+	{
+		return getConceptAncestors(getConceptVersion(nid));
+	}
+	
+	/**
 	 * Recursively get Is a children of a concept
 	 */
 	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
@@ -669,6 +679,22 @@ public class WBUtility {
 			{
 				results.addAll(getAllChildrenOfConcept(r.getOriginNid(), recursive));
 			}
+		}
+		return results;
+	}
+
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
+		{
+			results.add(getConceptVersion(r.getDestinationNid()));
+			results.addAll(getConceptAncestors(r.getDestinationNid()));
 		}
 		return results;
 	}
