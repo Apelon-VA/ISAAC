@@ -92,6 +92,8 @@ public class SnomedConceptViewController {
     @FXML private ProgressIndicator treeViewProgress;
     @FXML private VBox annotationsRegion;
     @FXML private ToggleButton stampToggle;
+    @FXML private ToggleButton historyToggle;
+    @FXML private ToggleButton activeOnlyToggle;
 
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
@@ -145,6 +147,15 @@ public class SnomedConceptViewController {
         stampToggle.setText("");
         stampToggle.setGraphic(Images.STAMP.createImageView());
         stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+        
+        activeOnlyToggle.setText("");
+        activeOnlyToggle.setGraphic(Images.FILTER_16.createImageView());
+        activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
+        activeOnlyToggle.setSelected(true);
+        
+        historyToggle.setText("");
+        historyToggle.setGraphic(Images.HISTORY.createImageView());
+        historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
         //TODO make the other view tables aware of the show/hide stamp call
         
         ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
@@ -272,7 +283,7 @@ public class SnomedConceptViewController {
                 cellValueFactory, cellFactory);
         
         RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
-        v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty());
+        v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty(), activeOnlyToggle.selectedProperty(), historyToggle.selectedProperty());
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());

@@ -68,7 +68,10 @@ public enum Images {
     COMMIT(setupImage("/icons/silk/16x16/database_save.png")),
     CANCEL(setupImage("/icons/misc/16x16/cancel-change.png")),
     EDIT(setupImage("icons/silk/16x16/pencil.png")),
-    ATTACH(setupImage("icons/silk/16x16/attach.png"));
+    ATTACH(setupImage("icons/silk/16x16/attach.png")),
+    HISTORY(setupImage("/icons/fugue/16x16/icons-shadowless/clock.png")),
+    FILTER_16(setupImage("icons/misc/16x16/filter.png")),
+    FILTER_32(setupImage("icons/misc/32x32/filter.png"));
 
     private final Image image;
 

@@ -57,6 +57,8 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 
     private static final ThreadGroup sctTreeItemThreadGroup = new ThreadGroup("SctTreeItem child fetcher pool");
 
+    //TODO dan needs to fix this - the executors are static - but the shutdown registry is per-instance... which isn't right.
+    //realistically, it shouldn't have its own executor service anyway, we should be using thread pools from OTF-UTIL.
     static ExecutorService childFetcherService;
     static ExecutorService conceptFetcherService;
     static {
