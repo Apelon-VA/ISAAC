@@ -669,7 +669,9 @@ public class BdbInformationModelService implements InformationModelService {
             "Has terminology concept");
     LOG.debug("    PT = " + WBUtility.getConPrefTerm(relTypeConcept.getNid()));
     LOG.debug("    UUID = " + relTypeConcept.getPrimordialUuid());
-
+    dataStore.addUncommitted(relTypeConcept);
+    dataStore.commit(relTypeConcept);
+    
   }
 
   /**
