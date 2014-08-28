@@ -214,9 +214,13 @@ public class FHIMInformationModel extends DefaultInformationModel implements Inf
     private final List<Dependency> dependencies = Lists.newArrayList();
     private final List<Association> associations = Lists.newArrayList();
 
+    public FHIMInformationModel(InformationModel model) {
+      super(model);
+  }
+
     public FHIMInformationModel(String name, UUID uuid) {
-        super(name, null, uuid, InformationModelType.FHIM);
-    }
+      super(name, null, uuid, InformationModelType.FHIM);
+  }
 
     public List<Enumeration> getEnumerations() {
         return enumerations;

@@ -21,7 +21,10 @@ package gov.va.isaac.models.util;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.InformationModelMetadata;
+import gov.va.isaac.models.InformationModelProperty;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.base.Objects;
@@ -49,11 +52,31 @@ public class DefaultInformationModel implements InformationModel {
   /** The metadata. */
   private InformationModelMetadata metadata;
 
+  /** The properties. */
+  protected Set<InformationModelProperty> properties = new HashSet<>();
+
+  /** The associated concept uuids */
+  protected Set<UUID> associatedConceptUuids = new HashSet<>();
+
   /**
    * Instantiates an empty {@link DefaultInformationModel}.
    */
   public DefaultInformationModel() {
     // do nothing
+  }
+
+  /**
+   * Instantiates a {@link DefaultInformationModel} from the specified model.
+   * @param model the model
+   */
+  public DefaultInformationModel(InformationModel model) {
+    this.key = model.getKey();
+    this.name = model.getName();
+    this.uuid = model.getUuid();
+    this.type = model.getType();
+    this.metadata = model.getMetadata();
+    this.properties = model.getProperties();
+    this.associatedConceptUuids = model.getAssociatedConceptUuids();
   }
 
   /**
@@ -66,7 +89,7 @@ public class DefaultInformationModel implements InformationModel {
    * @param type the type
    */
   public DefaultInformationModel(String key, String name, UUID uuid,
-    InformationModelType type) {
+      InformationModelType type) {
     super();
     this.key = key;
     this.name = name;
@@ -165,8 +188,11 @@ public class DefaultInformationModel implements InformationModel {
     return metadata;
   }
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.models.InformationModel#setMetadata(gov.va.isaac.models.InformationModelMetadata)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.models.InformationModel#setMetadata(gov.va.isaac.models.
+   * InformationModelMetadata)
    */
   @Override
   public final void setMetadata(InformationModelMetadata metadata) {
@@ -184,4 +210,93 @@ public class DefaultInformationModel implements InformationModel {
         .add("type", getType()).toString();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.models.InformationModel#addProperty(gov.va.isaac.models.
+   * InformationModelProperty)
+   */
+  @Override
+  public void addProperty(InformationModelProperty property) {
+    properties.add(property);
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * gov.va.isaac.models.InformationModel#removeProperty(gov.va.isaac.models
+   * .InformationModelProperty)
+   */
+  @Override
+  public void removeProperty(InformationModelProperty property) {
+    properties.remove(property);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.models.InformationModel#getProperties()
+   */
+  @Override
+  public Set<InformationModelProperty> getProperties() {
+    return new HashSet<>(properties);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.models.InformationModel#setProperties(java.util.Set)
+   */
+  @Override
+  public void setProperties(Set<InformationModelProperty> properties) {
+    this.properties = new HashSet<>(properties);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * gov.va.isaac.models.InformationModel#addAssociatedConceptUuid(java.util
+   * .UUID)
+   */
+  @Override
+  public void addAssociatedConceptUuid(UUID uuid) {
+    this.associatedConceptUuids.add(uuid);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * gov.va.isaac.models.InformationModel#removeAssociatedConceptUuid(java.util
+   * .UUID)
+   */
+  @Override
+  public void removeAssociatedConceptUuid(UUID uuid) {
+    this.associatedConceptUuids.remove(uuid);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.models.InformationModel#getAssociatedConceptUuids()
+   */
+  @Override
+  public Set<UUID> getAssociatedConceptUuids() {
+    return new HashSet<>(associatedConceptUuids);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * gov.va.isaac.models.InformationModel#setAssociatedConceptUuids(java.util
+   * .Set)
+   */
+  @Override
+  public void setAssociatedConceptUuids(Set<UUID> uuids) {
+    this.associatedConceptUuids = new HashSet<>(uuids);
+  }
 }

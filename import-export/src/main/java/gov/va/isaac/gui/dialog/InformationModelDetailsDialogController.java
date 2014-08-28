@@ -168,7 +168,7 @@ public class InformationModelDetailsDialogController {
             modelNameLabel.setText(infoModel.getName());
             modelTypeLabel.setText(infoModel.getType().getDisplayName());
             focusConceptLabel.setText("TBD - BAC");
-            uuidLabel.setText("TBD - BAC");
+            uuidLabel.setText(infoModel.getUuid().toString());
 
             InformationModelMetadata metadata = infoModel.getMetadata();
             importerNameLabel.setText(metadata.getImporterName());

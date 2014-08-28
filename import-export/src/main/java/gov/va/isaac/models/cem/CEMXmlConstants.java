@@ -23,24 +23,58 @@ package gov.va.isaac.models.cem;
  * importing/exporting CEM models from/to XML.
  *
  * @author ocarlsen
+ * @author bcarlsenca
  */
 public interface CEMXmlConstants {
 
+    /**  The Constant CEML. */
     public static final String CEML = "ceml";
+    
+    /**  The Constant CETYPE. */
     public static final String CETYPE = "cetype";
+    
+    /**  The Constant NAME. */
     public static final String NAME = "name";
+    
+    /**  The Constant KEY. */
     public static final String KEY = "key";
+    
+    /**  The Constant DATA. */
     public static final String DATA = "data";
+    
+    /**  The Constant PQ. */
     public static final String PQ = "PQ";
+    
+    /**  The Constant CD. */
     public static final String CD = "CD";
+    
+    /**  The Constant CWE. */
     public static final String CWE = "CWE";
+    
+    /**  The Constant QUAL. */
     public static final String QUAL = "qual";
+    
+    /**  The Constant MOD. */
     public static final String MOD = "mod";
+    
+    /**  The Constant ATT. */
     public static final String ATT = "att";
+    
+    /**  The Constant CONSTRAINT. */
     public static final String CONSTRAINT = "constraint";
+    
+    /**  The Constant CODE. */
     public static final String CODE = "code";
+    
+    /**  The Constant TYPE. */
     public static final String TYPE = "type";
+    
+    /**  The Constant CARD. */
     public static final String CARD = "card";
+    
+    /**  The Constant PATH. */
     public static final String PATH = "path";
+    
+    /**  The Constant VALUE. */
     public static final String VALUE = "value";
 }

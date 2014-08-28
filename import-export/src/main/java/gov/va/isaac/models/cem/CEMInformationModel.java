@@ -18,21 +18,23 @@
  */
 package gov.va.isaac.models.cem;
 
+import gov.va.isaac.models.DefaultInformationModelProperty;
 import gov.va.isaac.models.InformationModel;
+import gov.va.isaac.models.InformationModelProperty;
 import gov.va.isaac.models.util.DefaultInformationModel;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * An {@link InformationModel} for allowing applications to interact more
  * naturally with CEM models.
  *
  * @author ocarlsen
- * @author bcarslen
+ * @author bcarlsenca
  */
-@SuppressWarnings("static-method")
 public class CEMInformationModel extends DefaultInformationModel {
-  
+
   /**
    * Instantiates an empty {@link CEMInformationModel}.
    */
@@ -41,77 +43,224 @@ public class CEMInformationModel extends DefaultInformationModel {
   }
 
   /**
-   * Adds the qual component.
+   * Instantiates an empty {@link CEMInformationModel} from the specified model;
+   * @param model the model
+   */
+  public CEMInformationModel(InformationModel model) {
+    super(model);
+  }
+
+  /**
+   * Sets the data type.
+   *
+   * @param dataType the data type
+   */
+  public void setDataType(String dataType) {
+    InformationModelProperty dataTypeProperty =
+        new DefaultInformationModelProperty();
+    dataTypeProperty.setLabel("data");
+    dataTypeProperty.setType(dataType);
+    addProperty(dataTypeProperty);
+  }
+
+  /**
+   * Returns the data type.
+   *
+   * @return the data type
+   */
+  public String getDataType() {
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals("data")) {
+        return property.getType();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Adds the component.
    *
    * @param component the component
-   * @return the composition
    */
-  public Composition addQualComponent(String component) {
-    // TODO
-    return null;
+  private void addComponent(CEMComponent component) {
+    InformationModelProperty property = new DefaultInformationModelProperty();
+    property.setLabel(component.getComponentType().getCemlTagName());
+    property.setType(component.getDateTypeRef());
+    property.setName(component.getName());
+    property.setValue(component.getValue() == null ? "" : component.getValue());
+    property.setCardinalityMin(component.getCardinalityMin());
+    property.setCardinalityMax(component.getCardinalityMax());
+    addProperty(property);
   }
 
   /**
-   * Returns the qual components.
-   *
-   * @return the qual components
-   */
-  public List<Composition> getQualComponents() {
-    // TODO
-    return null;
-  }
-
-  /**
-   * Adds the mod component.
+   * Removes the component.
    *
    * @param component the component
-   * @return the composition
    */
-  public Composition addModComponent(String component) {
-    // TODO
-    return null;
+  private void removeComponent(CEMComponent component) {
+    InformationModelProperty property = new DefaultInformationModelProperty();
+    property.setLabel(component.getComponentType().getCemlTagName());
+    property.setType(component.getDateTypeRef());
+    property.setName(component.getName());
+    property.setValue(component.getValue() == null ? "" : component.getValue());
+    property.setCardinalityMin(component.getCardinalityMin());
+    property.setCardinalityMax(component.getCardinalityMax());
+    removeProperty(property);
   }
 
   /**
-   * Returns the mod components.
+   * Returns the components.
    *
-   * @return the mod components
+   * @param type the type
+   * @return the components
    */
-  public List<Composition> getModComponents() {
-    // TODO
-    return null;
+  private Set<CEMComponent> getComponents(CEMComponentType type) {
+    Set<CEMComponent> components = new HashSet<>();
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(type.getCemlTagName())) {
+        CEMComponent component = new CEMComponent();
+        component.setComponentType(type);
+        component.setDateTypeRef(property.getType());
+        component.setName(property.getName());
+        property.setValue(component.getValue() == null ? "" : component.getValue());
+        component.setCardinalityMin(property.getCardinalityMin());
+        component.setCardinalityMax(property.getCardinalityMax());
+        components.add(component);
+      }
+    }
+    return components;
   }
 
   /**
-   * Adds the att component.
+   * Adds the qualifier component.
    *
-   * @param component the component
-   * @return the composition
+   * @param qual the qual
    */
-  public Composition addAttComponent(String component) {
-    // TODO
-    return null;
+  public void addQualifier(CEMComponent qual) {
+    if (qual.getComponentType() != CEMComponentType.QUALIFIER) {
+      throw new IllegalArgumentException("Unexpected component type "
+          + qual.getCardinalityMax());
+    }
+    addComponent(qual);
   }
 
   /**
-   * Returns the att components.
+   * Removes the qualifier component.
    *
-   * @return the att components
+   * @param qual the qual
    */
-  public List<Composition> getAttComponents() {
-    // TODO
-    return null;
+  public void removeQualifier(CEMComponent qual) {
+    if (qual.getComponentType() != CEMComponentType.QUALIFIER) {
+      throw new IllegalArgumentException("Unexpected component type "
+          + qual.getCardinalityMax());
+    }
+    removeComponent(qual);
+  }
+
+  /**
+   * Returns the qualifiers.
+   *
+   * @return the qualifiers
+   */
+  public Set<CEMComponent> getQualifiers() {
+    return getComponents(CEMComponentType.QUALIFIER);
+  }
+
+  /**
+   * Adds the modifier component.
+   *
+   * @param mod the mod
+   */
+  public void addModifier(CEMComponent mod) {
+    if (mod.getComponentType() != CEMComponentType.MODIFIER) {
+      throw new IllegalArgumentException("Unexpected component type "
+          + mod.getCardinalityMax());
+    }
+    addComponent(mod);
+  }
+
+  /**
+   * Remove the modifier component.
+   *
+   * @param mod the mod
+   */
+  public void removeModifier(CEMComponent mod) {
+    if (mod.getComponentType() != CEMComponentType.MODIFIER) {
+      throw new IllegalArgumentException("Unexpected component type "
+          + mod.getCardinalityMax());
+    }
+    removeComponent(mod);
+  }
+
+  /**
+   * Returns the modifiers
+   *
+   * @return the modifiers
+   */
+  public Set<CEMComponent> getModifiers() {
+    return getComponents(CEMComponentType.MODIFIER);
+  }
+
+  /**
+   * Adds the attribution component.
+   *
+   * @param att the att
+   */
+  public void addAttribution(CEMComponent att) {
+    if (att.getComponentType() != CEMComponentType.ATTRIBUTION) {
+      throw new IllegalArgumentException("Unexpected component type "
+          + att.getCardinalityMax());
+    }
+    addComponent(att);
+  }
+
+  /**
+   * Remove the attribution component.
+   *
+   * @param att the att
+   */
+  public void removeAttribution(CEMComponent att) {
+    if (att.getComponentType() != CEMComponentType.ATTRIBUTION) {
+      throw new IllegalArgumentException("Unexpected component type "
+          + att.getCardinalityMax());
+    }
+    removeComponent(att);
+  }
+
+  /**
+   * Returns the attribution.
+   *
+   * @return the attributions
+   */
+  public Set<CEMComponent> getAttributions() {
+    return getComponents(CEMComponentType.ATTRIBUTION);
   }
 
   /**
    * Adds the constraint.
    *
    * @param constraint the constraint
-   * @return the constraint
    */
-  public Constraint addConstraint(Constraint constraint) {
-    // TODO
-    return null;
+  public void addConstraint(CEMConstraint constraint) {
+    InformationModelProperty property = new DefaultInformationModelProperty();
+    property.setLabel(CEMConstraint.getCemlTagName());
+    property.setName(constraint.getPath());
+    property.setValue(constraint.getValue());
+    addProperty(property);
+  }
+
+  /**
+   * Removes the constraint.
+   *
+   * @param constraint the constraint
+   */
+  public void removeConstraint(CEMConstraint constraint) {
+    InformationModelProperty property = new DefaultInformationModelProperty();
+    property.setLabel(CEMConstraint.getCemlTagName());
+    property.setName(constraint.getPath());
+    property.setValue(constraint.getValue());
+    removeProperty(property);
   }
 
   /**
@@ -119,156 +268,50 @@ public class CEMInformationModel extends DefaultInformationModel {
    *
    * @return the constraints
    */
-  public List<Constraint> getConstraints() {
-    // TODO
-    return null;
-  }
-
-  //
-  // INNER CLASSES
-  //
-
-  /**
-   * Represents a CEM "constraint"
-   */
-  public static final class Constraint {
-
-    /** The path. */
-    private final String path;
-
-    /** The value. */
-    private final String value;
-
-    /**
-     * Instantiates a {@link Constraint} from the specified parameters.
-     *
-     * @param path the path
-     * @param value the value
-     */
-    public Constraint(String path, String value) {
-      super();
-      this.path = path;
-      this.value = value;
+  public Set<CEMConstraint> getConstraints() {
+    Set<CEMConstraint> constraints = new HashSet<>();
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(CEMConstraint.getCemlTagName())) {
+        CEMConstraint constraint = new CEMConstraint();
+        constraint.setPath(property.getName());
+        constraint.setValue(property.getValue());
+        constraints.add(constraint);
+      }
     }
-
-    /**
-     * Returns the path.
-     *
-     * @return the path
-     */
-    public String getPath() {
-      return path;
-    }
-
-    /**
-     * Returns the value.
-     *
-     * @return the value
-     */
-    public String getValue() {
-      return value;
-    }
+    return constraints;
   }
 
   /**
-   * The Enum ComponentType.
+   * Returns the constraints for component.
    *
-   * @author ${author}
+   * @param component the component
+   * @return the constraints for component
    */
-  public static enum ComponentType {
+  public Set<CEMConstraint> getConstraintsForComponent(CEMComponent component) {
+    Set<CEMConstraint> constraints = new HashSet<>();
+    for (InformationModelProperty property : properties) {
+      // Check "constraint" properties
+      if (property.getLabel().equals(CEMConstraint.getCemlTagName())) {
 
-    /** The qual. */
-    QUAL,
-    /** The mod. */
-    MOD,
-    /** The att. */
-    ATT;
+        // e.g. "qual.methodDevice"
+        // e.g. "data.pq"
+        if (property.getName().startsWith(
+            component.getComponentType().getCemlTagName() + "."
+                + component.getName() + ".")
+            ||
+
+            property.getName().startsWith(
+                component.getComponentType().getCemlTagName() + "."
+                    + component.getDateTypeRef() + ".")) {
+
+          CEMConstraint constraint = new CEMConstraint();
+          constraint.setPath(property.getName());
+          constraint.setValue(property.getValue());
+          constraints.add(constraint);
+        }
+      }
+    }
+    return constraints;
+
   }
-
-  /**
-   * The Class Composition.
-   *
-   * @author ${author}
-   */
-  public static final class Composition {
-
-    /** The component type. */
-    private final ComponentType componentType;
-
-    /** The component. */
-    private final String component;
-
-    /** The constraint. */
-    private Constraint constraint;
-
-    /** The value. */
-    private String value;
-
-    /**
-     * Instantiates a {@link Composition} from the specified parameters.
-     *
-     * @param componentType the component type
-     * @param component the component
-     */
-    private Composition(ComponentType componentType, String component) {
-      super();
-      this.componentType = componentType;
-      this.component = component;
-    }
-
-    /**
-     * Returns the component type.
-     *
-     * @return the component type
-     */
-    public ComponentType getComponentType() {
-      return componentType;
-    }
-
-    /**
-     * Returns the component.
-     *
-     * @return the component
-     */
-    public String getComponent() {
-      return component;
-    }
-
-    /**
-     * Returns the constraint.
-     *
-     * @return the constraint
-     */
-    public Constraint getConstraint() {
-      return constraint;
-    }
-
-    /**
-     * Sets the constraint.
-     *
-     * @param constraint the constraint
-     */
-    public void setConstraint(Constraint constraint) {
-      this.constraint = constraint;
-    }
-
-    /**
-     * Returns the value.
-     *
-     * @return the value
-     */
-    public String getValue() {
-      return value;
-    }
-
-    /**
-     * Sets the value.
-     *
-     * @param value the value
-     */
-    public void setValue(String value) {
-      this.value = value;
-    }
-  }
-
 }

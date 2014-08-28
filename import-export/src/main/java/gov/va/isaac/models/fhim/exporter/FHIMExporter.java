@@ -168,7 +168,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         LOG.debug("Model UUID: " + modelUUID);
 
         // Get all annotations on the model annotation.
-        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelRefex);
+//        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelRefex);
 
         /** TODO - BAC
         // Enumerations.
@@ -346,7 +346,8 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         LOG.debug("Attribute: " + a.getName());
 
         // Get all annotations on the attribute annotation.
-        Collection<? extends RefexChronicleBI<?>> attributeAnnotations = getLatestAnnotations(attributeAnnotation);
+        Collection<? extends RefexChronicleBI<?>> attributeAnnotations = null;
+        // TODO -BACgetLatestAnnotations(attributeAnnotation);
 
         // DefaultValue.
         String defaultValue = getDefaultValue(attributeAnnotations);

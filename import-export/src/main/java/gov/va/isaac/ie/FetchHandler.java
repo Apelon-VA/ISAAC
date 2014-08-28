@@ -21,100 +21,160 @@ package gov.va.isaac.ie;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
-import gov.va.isaac.models.cem.fetcher.CEMFetcher;
-import gov.va.isaac.models.fhim.fetcher.FHIMFetcher;
+import gov.va.isaac.models.api.InformationModelService;
+import gov.va.isaac.models.cem.CEMInformationModel;
+import gov.va.isaac.models.fhim.FHIMInformationModel;
+import gov.va.isaac.models.util.ExporterBase;
+import gov.va.isaac.util.WBUtility;
 
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 import javax.validation.ValidationException;
 
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
 /**
- * Class for fetching imported information models.
+ * Handles fetching imported information models.
  *
  * @author ocarlsen
+ * @author bcarlsenca
  */
-public class FetchHandler {
+public class FetchHandler extends ExporterBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FetchHandler.class);
+  /** The Constant LOG. */
+  private static final Logger LOG = LoggerFactory.getLogger(FetchHandler.class);
 
-    public FetchHandler() throws ValidationException {
-        super();
+  /**
+   * Instantiates an empty {@link FetchHandler}.
+   *
+   * @throws ValidationException the validation exception
+   */
+  public FetchHandler() throws ValidationException {
+    super();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.models.util.ExporterBase#getLogger()
+   */
+  @Override
+  protected Logger getLogger() {
+    return LOG;
+  }
+
+  /**
+   * Method called by the ISAAC application to fetch the information models.
+   *
+   * @param modelType the model type
+   * @return the list
+   * @throws Exception the exception
+   */
+  public List<InformationModel> fetchModels(InformationModelType modelType)
+    throws Exception {
+    LOG.debug("modelType=" + (modelType != null ? modelType.name() : "All"));
+
+    // Make sure NOT in application thread.
+    FxUtils.checkBackgroundThread();
+
+    // Get "Blood pressure taking (procedure)" concept.
+    UUID conceptUUID = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
+
+    if (modelType == null) {
+
+      // Fetch all model types.
+      List<InformationModel> allModelTypes = Lists.newArrayList();
+      allModelTypes.addAll(fetchCEMModels(conceptUUID));
+      allModelTypes.addAll(fetchFHIMModels());
+      allModelTypes.addAll(fetchHeDModels());
+      return allModelTypes;
+
+    } else {
+
+      // Fetch individual model type.
+      switch (modelType) {
+        case CEM:
+          return fetchCEMModels(conceptUUID);
+        case FHIM:
+          return fetchFHIMModels();
+        case HeD:
+          return fetchHeDModels();
+        default:
+          throw new IllegalArgumentException("Unrecognized modelType: "
+              + modelType);
+      }
     }
+  }
 
-    /**
-     * Method called by the ISAAC application to fetch the information models.
-     * @throws Exception
-     */
-    public List<InformationModel> fetchModels(InformationModelType modelType) throws Exception {
-        LOG.debug("modelType=" + (modelType != null ? modelType.name() : "All"));
+  /**
+   * Fetch he d models.
+   *
+   * @return the list
+   * @throws IOException
+   * @throws ContradictionException
+   */
+  private List<InformationModel> fetchHeDModels() throws IOException,
+    ContradictionException {
 
-        // Make sure NOT in application thread.
-        FxUtils.checkBackgroundThread();
-
-        // Get "Blood pressure taking (procedure)" concept.
-        UUID conceptUUID = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
-
-        if (modelType == null) {
-
-            // Fetch all model types.
-            List<InformationModel> allModelTypes = Lists.newArrayList();
-            allModelTypes.addAll(fetchCEMModels(conceptUUID));
-            allModelTypes.addAll(fetchCIMIModels());
-            allModelTypes.addAll(fetchFHIMModels());
-            allModelTypes.addAll(fetchHeDModels());
-            return allModelTypes;
-
-        } else {
-
-            // Fetch individual model type.
-            switch (modelType) {
-            case CEM:
-                return fetchCEMModels(conceptUUID);
-            case CIMI:
-                return fetchCIMIModels();
-            case FHIM:
-                return fetchFHIMModels();
-            case HeD:
-                return fetchHeDModels();
-            default:
-                throw new IllegalArgumentException("Unrecognized modelType: " + modelType);
-            }
-        }
+    List<InformationModel> models = Lists.newArrayList();
+    InformationModelService service = getInformationModelService();
+    ConceptVersionBI hedConcept =
+        WBUtility.getConceptVersion(InformationModelType.HeD.getUuid());
+    for (ConceptVersionBI hedModel : WBUtility.getAllChildrenOfConcept(
+        hedConcept.getNid(), true)) {
+      models.add(service.getInformationModel(hedModel.getPrimordialUuid()));
     }
+    return models;
 
-    private List<InformationModel> fetchHeDModels() {
+  }
 
-        // Not yet imported.
-        return Collections.emptyList();
+  /**
+   * Fetch fhim models.
+   *
+   * @return the list
+   * @throws Exception the exception
+   */
+  private List<InformationModel> fetchFHIMModels() throws Exception {
+
+    List<InformationModel> models = Lists.newArrayList();
+    InformationModelService service = getInformationModelService();
+    ConceptVersionBI fhimConcept =
+        WBUtility.getConceptVersion(InformationModelType.FHIM.getUuid());
+    for (ConceptVersionBI fhimModel : WBUtility.getAllChildrenOfConcept(
+        fhimConcept.getNid(), true)) {
+      models.add(new FHIMInformationModel(service.getInformationModel(fhimModel
+          .getPrimordialUuid())));
     }
+    return models;
+  }
 
-    private List<InformationModel> fetchFHIMModels() throws Exception {
-        FHIMFetcher fetcher = new FHIMFetcher();
-        return fetcher.fetchFHIMModels();
+  /**
+   * Fetch cem models.
+   *
+   * @param conceptUUID the concept uuid
+   * @return the list
+   * @throws Exception the exception
+   */
+  private List<InformationModel> fetchCEMModels(UUID conceptUUID)
+    throws Exception {
+
+    List<InformationModel> models = Lists.newArrayList();
+    InformationModelService service = getInformationModelService();
+    ConceptVersionBI cemConcept =
+        WBUtility.getConceptVersion(InformationModelType.CEM.getUuid());
+    for (ConceptVersionBI cemModel : WBUtility.getAllChildrenOfConcept(
+        cemConcept.getNid(), true)) {
+      models.add(new CEMInformationModel(service.getInformationModel(cemModel
+          .getPrimordialUuid())));
     }
+    return models;
+  }
 
-    private List<InformationModel> fetchCIMIModels() {
-
-        // Not yet imported.
-        return Collections.emptyList();
-    }
-
-    private List<InformationModel> fetchCEMModels(UUID conceptUUID) throws Exception {
-        List<InformationModel> models = Lists.newArrayList();
-
-        CEMFetcher fetcher = new CEMFetcher();
-        InformationModel model = fetcher.fetchCEMModel(conceptUUID);
-        if (model != null) {
-            models.add(model);
-        }
-
-        return models;
-    }
 }

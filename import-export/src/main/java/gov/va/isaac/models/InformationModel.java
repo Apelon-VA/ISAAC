@@ -20,6 +20,7 @@ package gov.va.isaac.models;
 
 import gov.va.isaac.model.InformationModelType;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -100,4 +101,63 @@ public interface InformationModel {
    */
   public void setMetadata(InformationModelMetadata metadata);
 
+  /**
+   * Adds the property.
+   *
+   * @param property the property
+   */
+  public void addProperty(InformationModelProperty property);
+  
+  /**
+   * Removes the property.
+   *
+   * @param property the property
+   */
+  public void removeProperty(InformationModelProperty property);
+  
+  /**
+   * Returns the properties.
+   *
+   * @return the properties
+   */
+  public Set<InformationModelProperty> getProperties();
+  
+  /**
+   * Sets the properties.
+   *
+   * @param properties the properties
+   */
+  public void setProperties(Set<InformationModelProperty> properties);
+
+  
+  
+  /**
+   * Adds the associated concept UUID.
+   *
+   * @param uuid the associated concept uuid
+   */
+  public void addAssociatedConceptUuid(UUID uuid);
+  
+  /**
+   * Removes the associated concept UUID.
+   *
+   * @param uuid
+   */
+  public void removeAssociatedConceptUuid(UUID uuid);
+  
+  /**
+   * Returns the associated concept UUIDs.
+   *
+   * @return the associated concept UUIDs
+   */
+  public Set<UUID> getAssociatedConceptUuids();
+  
+  /**
+   * Sets the associated concept UUIDs.
+   *
+   * @param uuids associated concept UUIDs
+   */
+  public void setAssociatedConceptUuids(Set<UUID> uuids);
+  
+  
 }
