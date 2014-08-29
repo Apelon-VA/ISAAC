@@ -34,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -53,6 +54,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
@@ -223,6 +225,34 @@ public class BdbInformationModelService implements InformationModelService {
    * (non-Javadoc)
    * 
    * @see
+   * gov.va.isaac.models.api.InformationModelService#getInformationModelChildren
+   * (gov.va.isaac.models.InformationModel)
+   */
+  @Override
+  public Set<InformationModel> getInformationModelChildren(
+    InformationModel model) throws ValidationException, IOException,
+    ContradictionException {
+    ConceptVersionBI modelConcept =
+        WBUtility.getConceptVersion(model.getUuid());
+    Set<InformationModel> models = new HashSet<>();
+    for (RelationshipChronicleBI rel : modelConcept.getRelationshipsIncoming()) {
+      RelationshipVersionBI<?> relVersion =
+          rel.getVersion(WBUtility.getViewCoordinate());
+      // Look for matching typeId and "active" flag
+      if (relVersion.getTypeNid() == TermAux.IS_A.getLenient().getNid()
+          && relVersion.isActive()) {
+        // Add the model
+        models.add(getInformationModel(WBUtility.getConceptVersion(
+            relVersion.getDestinationNid()).getPrimordialUuid()));
+      }
+    }
+    return models;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
    * gov.va.isaac.models.api.InformationModelService#createOrAmmendInformationModel
    * (gov.va.isaac.models.InformationModel)
    */
@@ -282,6 +312,31 @@ public class BdbInformationModelService implements InformationModelService {
         InformationModelMetadata.newInstance(stampNid, dataStore,
             WBUtility.getViewCoordinate());
     model.setMetadata(metadata);
+
+    // Check super-model
+    // Build associated concept UUIDs from relationships
+    for (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
+      RelationshipVersionBI<?> relVersion =
+          rel.getVersion(WBUtility.getViewCoordinate());
+      // Look for matching typeId and "active" flag
+      if (relVersion.getTypeNid() == TermAux.IS_A.getLenient().getNid()
+          && relVersion.isActive()) {
+        UUID superModelUuid =
+            WBUtility.getConceptVersion(relVersion.getDestinationNid())
+                .getPrimordialUuid();
+        // Avoid assigning uuid if parent is the info model type concept
+        if (!superModelUuid.equals(model.getType().getUuid())) {
+          // set the super model uuid unless already set
+          if (model.getSuperModelUuid() != null) {
+            throw new IOException(
+                "Unexpected multiple lineage in information model concept: "
+                    + model.getUuid());
+          } else {
+            model.setSuperModelUuid(superModelUuid);
+          }
+        }
+      }
+    }
 
     // Get property information from dynamic refset members
     // Create refex entries for properties
@@ -473,9 +528,64 @@ public class BdbInformationModelService implements InformationModelService {
       refexBlueprint.setData(data, WBUtility.getViewCoordinate());
 
       // Construct and wire the dynamic refex
-      RefexDynamicChronicleBI<?> refex = WBUtility.getBuilder().construct(refexBlueprint);
+      RefexDynamicChronicleBI<?> refex =
+          WBUtility.getBuilder().construct(refexBlueprint);
       modelConcept.addDynamicAnnotation(refex);
       LOG.debug("    UUID = " + refex.getPrimordialUuid());
+    }
+
+    // Sync super model UUID
+    LOG.debug("  Handle super-model UUID");
+    // Retire any active Isa relationships to non-type UUIDs that are not the
+    // super model UUID
+    boolean found = false;
+    for (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
+      RelationshipVersionBI<?> relVersion =
+          rel.getVersion(WBUtility.getViewCoordinate());
+      // Look for matching typeId and "active" flag
+      if (relVersion.getTypeNid() == TermAux.IS_A.getLenient().getNid()
+          && relVersion.isActive()) {
+        UUID uuid =
+            WBUtility.getConceptVersion(relVersion.getDestinationNid())
+                .getPrimordialUuid();
+
+        // If there's an "isa" to the type concept, bail
+        if (uuid.equals(model.getType().getUuid())) {
+          break;
+        }
+
+        // If the superModelUuid is null or does not match this UUID, retire the
+        // rel
+        if (model.getSuperModelUuid() == null
+            || !uuid.equals(model.getSuperModelUuid())) {
+          LOG.debug("    Found relationship to retire - "
+              + WBUtility.getConPrefTerm(relVersion.getDestinationNid()));
+          RelationshipCAB relCab =
+              relVersion.makeBlueprint(WBUtility.getViewCoordinate(),
+                  IdDirective.PRESERVE, RefexDirective.INCLUDE);
+          relCab.setRetired();
+          WBUtility.getBuilder().constructIfNotCurrent(relCab);
+        }
+
+        // Otherwise mark the found flag
+        else {
+          found = true;
+        }
+      }
+
+      // Create ISA rels for superModelUuid if an existing rel was not already found
+      if (!found && model.getSuperModelUuid() != null) {
+        LOG.debug("  Create IS_A relationship for "
+            + modelConcept.getPrimordialUuid() + " => " + model.getSuperModelUuid());
+        UUID typeUid = TermAux.IS_A.getLenient().getPrimordialUuid();
+        int group = 0;
+        RelationshipType relType = RelationshipType.STATED_ROLE;
+        IdDirective idDir = IdDirective.GENERATE_HASH;
+        RelationshipCAB newRel =
+            new RelationshipCAB(modelConcept.getPrimordialUuid(), typeUid,
+                model.getSuperModelUuid(), group, relType, idDir);
+        WBUtility.getBuilder().construct(newRel);
+      }
     }
 
     // Sync "has terminology concept" relationships
@@ -510,8 +620,8 @@ public class BdbInformationModelService implements InformationModelService {
 
       // Create rels for any UUIDs not accounted for
       for (UUID destinationUuid : associatedConceptUuids) {
-        LOG.debug("  Create relationship for " + modelConcept.getPrimordialUuid() 
-            + " => " + destinationUuid);
+        LOG.debug("  Create relationship for "
+            + modelConcept.getPrimordialUuid() + " => " + destinationUuid);
         UUID typeUid =
             InformationModelAux.HAS_TERMINOLOGY_CONCEPT.getLenient()
                 .getPrimordialUuid();

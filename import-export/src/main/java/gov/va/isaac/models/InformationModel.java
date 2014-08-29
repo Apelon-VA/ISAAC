@@ -107,21 +107,21 @@ public interface InformationModel {
    * @param property the property
    */
   public void addProperty(InformationModelProperty property);
-  
+
   /**
    * Removes the property.
    *
    * @param property the property
    */
   public void removeProperty(InformationModelProperty property);
-  
+
   /**
    * Returns the properties.
    *
    * @return the properties
    */
   public Set<InformationModelProperty> getProperties();
-  
+
   /**
    * Sets the properties.
    *
@@ -129,35 +129,53 @@ public interface InformationModel {
    */
   public void setProperties(Set<InformationModelProperty> properties);
 
-  
-  
   /**
    * Adds the associated concept UUID.
    *
    * @param uuid the associated concept uuid
    */
   public void addAssociatedConceptUuid(UUID uuid);
-  
+
   /**
    * Removes the associated concept UUID.
    *
    * @param uuid
    */
   public void removeAssociatedConceptUuid(UUID uuid);
-  
+
   /**
    * Returns the associated concept UUIDs.
    *
    * @return the associated concept UUIDs
    */
   public Set<UUID> getAssociatedConceptUuids();
-  
+
   /**
    * Sets the associated concept UUIDs.
    *
    * @param uuids associated concept UUIDs
    */
   public void setAssociatedConceptUuids(Set<UUID> uuids);
-  
-  
+
+  /**
+   * Checks for the existence of a super model UUID.
+   *
+   * @return true, if successful
+   */
+  public boolean hasSuperModelUuid();
+
+  /**
+   * Returns the super model uuid. NOTE: only single-inheritance hierarchy is
+   * supported.
+   * @return the super model
+   */
+  public UUID getSuperModelUuid();;
+
+  /**
+   * Sets the super model uuid.
+   *
+   * @param uuid the super model uuid 
+   */
+  public void setSuperModelUuid(UUID uuid);
+
 }

@@ -58,6 +58,9 @@ public class DefaultInformationModel implements InformationModel {
   /** The associated concept uuids */
   protected Set<UUID> associatedConceptUuids = new HashSet<>();
 
+  /**  The super model. */
+  private UUID superModelUuid = null;
+  
   /**
    * Instantiates an empty {@link DefaultInformationModel}.
    */
@@ -299,4 +302,103 @@ public class DefaultInformationModel implements InformationModel {
   public void setAssociatedConceptUuids(Set<UUID> uuids) {
     this.associatedConceptUuids = new HashSet<>(uuids);
   }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    if (uuid != null) {
+      return uuid.hashCode();
+    }
+    final int prime = 31;
+    int result = 1;
+    result =
+        prime
+            * result
+            + ((associatedConceptUuids == null) ? 0 : associatedConceptUuids
+                .hashCode());
+    result = prime * result + ((key == null) ? 0 : key.hashCode());
+    result = prime * result + ((metadata == null) ? 0 : metadata.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result =
+        prime * result + ((properties == null) ? 0 : properties.hashCode());
+    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    DefaultInformationModel other = (DefaultInformationModel) obj;
+    if (uuid != null && other.uuid != null) {
+      return !uuid.equals(other.uuid);
+    }
+
+    if (associatedConceptUuids == null) {
+      if (other.associatedConceptUuids != null)
+        return false;
+    } else if (!associatedConceptUuids.equals(other.associatedConceptUuids))
+      return false;
+    if (key == null) {
+      if (other.key != null)
+        return false;
+    } else if (!key.equals(other.key))
+      return false;
+    if (metadata == null) {
+      if (other.metadata != null)
+        return false;
+    } else if (!metadata.equals(other.metadata))
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (properties == null) {
+      if (other.properties != null)
+        return false;
+    } else if (!properties.equals(other.properties))
+      return false;
+    if (type != other.type)
+      return false;
+    return true;
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.models.InformationModel#hasSuperModelUuid()
+   */
+  @Override
+  public boolean hasSuperModelUuid() {
+    return superModelUuid != null;
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.models.InformationModel#getSuperModelUuid()
+   */
+  @Override
+  public UUID getSuperModelUuid() {
+    return superModelUuid;
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.models.InformationModel#setSuperModelUuid(java.util.UUID)
+   */
+  @Override
+  public void setSuperModelUuid(UUID uuid) {
+    this.superModelUuid = uuid;
+  }
+
 }

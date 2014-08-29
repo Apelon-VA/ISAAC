@@ -24,10 +24,12 @@ import gov.va.isaac.models.InformationModel;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Set;
 import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 
 /**
  * Generically represents a service for interacting with information models.
@@ -76,6 +78,18 @@ public interface InformationModelService {
    */
   public InformationModel getInformationModel(InformationModelType type,
     String key) throws IOException, ContradictionException;
+
+  /**
+   * Returns the information model children.
+   *
+   * @param model the model
+   * @return the information model children
+   * @throws ContradictionException 
+   * @throws IOException 
+   * @throws ValidationException 
+   */
+  public Set<InformationModel> getInformationModelChildren(InformationModel model) throws ValidationException, IOException, ContradictionException;
+    
 
   /**
    * Adds or saves changes to the information model.

@@ -32,6 +32,9 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
  */
 public class InformationModelMetadata {
 
+  /** The stamp nid. */
+  private int stampNid;
+
   /** The importer name. */
   private final String importerName;
 
@@ -57,7 +60,6 @@ public class InformationModelMetadata {
   public static InformationModelMetadata newInstance(int stampNid,
     BdbTerminologyStore dataStore, ViewCoordinate vc) throws IOException,
     ContradictionException {
-
     String importerName = "Hard-coded placeholder";
 
     long time = dataStore.getTimeForStamp(stampNid);
@@ -70,19 +72,23 @@ public class InformationModelMetadata {
     ConceptVersionBI version = module.getVersion(vc);
     String moduleName = version.getFullySpecifiedDescription().getText();
 
-    return new InformationModelMetadata(importerName, time, path, moduleName);
+    return new InformationModelMetadata(importerName, time, path, moduleName,
+        stampNid);
   }
 
   /**
-   * Instantiates a {@link InformationModelMetadata} from the specified parameters.
+   * Instantiates a {@link InformationModelMetadata} from the specified
+   * parameters.
    *
    * @param importerName the importer name
    * @param time the time
    * @param path the path
    * @param moduleName the module name
+   * @param stampNid the STAMP nid
    */
   public InformationModelMetadata(String importerName, long time, Path path,
-      String moduleName) {
+      String moduleName, int stampNid) {
+    this.stampNid = stampNid;
     this.importerName = importerName;
     this.time = time;
     this.path = path;
@@ -123,5 +129,37 @@ public class InformationModelMetadata {
    */
   public String getModuleName() {
     return moduleName;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + stampNid;
+    return result;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    InformationModelMetadata other = (InformationModelMetadata) obj;
+    if (stampNid != other.stampNid)
+      return false;
+    return true;
   }
 }
