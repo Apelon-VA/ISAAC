@@ -34,6 +34,7 @@ import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -305,8 +306,8 @@ public class SnomedConceptViewController {
         }
     }
 
-    public String getTitle() {
-        return fsnLabel.getText();
+    public StringProperty getTitle() {
+        return fsnLabel.textProperty();
     }
 
     public UUID getConceptUuid() {
