@@ -33,6 +33,7 @@ public class SearchBuilder {
 	Integer sizeLimit = Integer.MAX_VALUE;
 	Integer taskId;
 	boolean prefixSearch;
+	SearchResultsFilter filter = null;
 	
 	Comparator<CompositeSearchResult> comparator;
 	TaskCompleteCallback callback;
@@ -132,6 +133,19 @@ public class SearchBuilder {
 		this.prefixSearch = prefixSearch;
 	}
 
+	/**
+	 * @return the filter
+	 */
+	public SearchResultsFilter getFilter() {
+		return filter;
+	}
+	/**
+	 * @param filter the SearchResultsFilter to set
+	 */
+	public void setFilter(SearchResultsFilter filter) {
+		this.filter = filter;
+	}
+	
 	/**
 	 * @return the comparator
 	 */

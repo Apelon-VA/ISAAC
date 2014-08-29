@@ -28,7 +28,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -142,6 +144,15 @@ public class WBUtility {
 		}
 		return editCoord;
 	}
+	
+	/**
+	 * Returns null if no concept exists with this nid
+	 */
+	public static String getDescriptionIfConceptExists(UUID uuid)
+	{
+		ConceptVersionBI result = getConceptVersion(uuid);
+		return (result == null ? null : getDescription(result));
+	}
 
 	public static String getDescription(UUID uuid) {
 		try {
@@ -151,6 +162,15 @@ public class WBUtility {
 			LOG.warn("Unexpected error looking up description", ex);
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns null if no concept exists with this nid
+	 */
+	public static String getDescriptionIfConceptExists(int nid)
+	{
+		ConceptVersionBI result = getConceptVersion(nid);
+		return (result == null ? null : getDescription(result));
 	}
 	
 	public static String getDescription(int nid) {
@@ -472,7 +492,6 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
-		LOG.debug("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
@@ -638,6 +657,14 @@ public class WBUtility {
 	}
 	
 	/**
+	 * Recursively get Is a parents of a concept
+	 */
+	public static Set<ConceptVersionBI> getConceptAncestors(int nid) throws IOException, ContradictionException
+	{
+		return getConceptAncestors(getConceptVersion(nid));
+	}
+	
+	/**
 	 * Recursively get Is a children of a concept
 	 */
 	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
@@ -652,6 +679,22 @@ public class WBUtility {
 			{
 				results.addAll(getAllChildrenOfConcept(r.getOriginNid(), recursive));
 			}
+		}
+		return results;
+	}
+
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
+		{
+			results.add(getConceptVersion(r.getDestinationNid()));
+			results.addAll(getConceptAncestors(r.getDestinationNid()));
 		}
 		return results;
 	}
@@ -735,9 +778,13 @@ public class WBUtility {
 	}
 
 	public static String getTimeString(ComponentVersionBI comp) {
-	    Date date = new Date(comp.getTime());
-
-	    return format.format(date);		
+		if (comp.getTime() != Long.MAX_VALUE) {
+		    Date date = new Date(comp.getTime());
+	
+		    return format.format(date);		
+		} else {
+			return "Uncommitted";
+		}
 	}
 
 	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
@@ -788,8 +835,6 @@ public class WBUtility {
 		        int memberNid = ((NidMember)member).getC1Nid();
 		        ConceptChronicleBI pathConcept = dataStore.getConcept(memberNid);
 		        pathConcepts.add(pathConcept);
-		        LOG.info("UUID = " + pathConcept.getPrimordialUuid());
-		        LOG.info("PT = " + pathConcept.getVersion(WBUtility.getViewCoordinate()).getPreferredDescription());
 		     }
 		    return pathConcepts;
 	}

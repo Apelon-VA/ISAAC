@@ -58,7 +58,6 @@ public class SearchViewModel {
 	private StringProperty droolsExpr = new SimpleStringProperty();
 	
 	public SearchViewModel() {
-		
 	}
 	
 	public void copy(SearchViewModel other) {
@@ -69,6 +68,8 @@ public class SearchViewModel {
 		} else {
 			searchTypeFilter.copy(other.getSearchType());
 		}
+		filters.clear();
+		filters.addAll(other.getFilters());
 		viewCoordinate = other.viewCoordinate;
 		maxResults.set(other.getMaxResults());
 		droolsExpr.set(other.getDroolsExpr());
@@ -90,10 +91,10 @@ public class SearchViewModel {
 		return true;
 	}
 	
-	public SearchTypeFilter getSearchType() {
+	public SearchTypeFilter<?> getSearchType() {
 		return searchTypeFilter;
 	}
-	public void setSearchType(SearchTypeFilter searchTypeFilter) {
+	public void setSearchType(SearchTypeFilter<?> searchTypeFilter) {
 		this.searchTypeFilter = searchTypeFilter;
 	}
 
@@ -149,10 +150,10 @@ public class SearchViewModel {
 		this.droolsExpr.set(droolsExpr);
 	}
 
-	public Collection<Filter> getValidFilters() {
-		List<Filter> validFilters = new ArrayList<>();
+	public Collection<Filter<?>> getValidFilters() {
+		List<Filter<?>> validFilters = new ArrayList<>();
 		
-		for (Filter filter : filters) {
+		for (Filter<?> filter : filters) {
 			if (filter.isValid()) {
 				validFilters.add(filter);
 			}
@@ -161,10 +162,10 @@ public class SearchViewModel {
 		return Collections.unmodifiableCollection(validFilters);
 	}
 
-	public Collection<Filter> getInvalidFilters() {
-		List<Filter> invalidFilters = new ArrayList<>();
+	public Collection<Filter<?>> getInvalidFilters() {
+		List<Filter<?>> invalidFilters = new ArrayList<>();
 		
-		for (Filter filter : filters) {
+		for (Filter<?> filter : filters) {
 			if (! filter.isValid()) {
 				invalidFilters.add(filter);
 			}
@@ -178,7 +179,7 @@ public class SearchViewModel {
 		return "SearchViewModel [isValid=" + isValid + ", name=" + name
 				+ ", description=" + description + ", searchTypeFilter="
 				+ searchTypeFilter + ", maxResults=" + maxResults
-				+ ", droolsExpr=" + droolsExpr + ", filters=" + Arrays.toString(filters.toArray())
+				+ ", droolsExpr=" + droolsExpr + ", filter=" + Arrays.toString(filters.toArray())
 				+ ", viewCoordinate=" + (viewCoordinate != null ? viewCoordinate.getViewPosition() : null) + "]";
 	}
 }

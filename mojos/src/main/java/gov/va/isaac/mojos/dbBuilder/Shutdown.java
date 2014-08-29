@@ -2,12 +2,10 @@ package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
 
-import java.io.File;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.ihtsdo.otf.tcc.api.io.FileIO;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 
@@ -66,14 +64,15 @@ public class Shutdown extends AbstractMojo {
         indexer.closeWriter();
       }
 
-      if (moveToReadOnly) {
+/*      if (moveToReadOnly) {
+          Thread.sleep(5000);
         getLog().info("moving mutable to read-only");
         File readOnlyDir = new File(bdbFolderLocation, "read-only");
         FileIO.recursiveDelete(readOnlyDir);
         File mutableDir = new File(bdbFolderLocation, "mutable");
         mutableDir.renameTo(readOnlyDir);
       }
-      
+*/      
       getLog().info("Done shutting down terminology store");
     } catch (Exception e) {
       throw new MojoExecutionException("Database build failure", e);

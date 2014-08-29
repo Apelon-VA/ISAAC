@@ -189,7 +189,7 @@ public class CommonMenus
 		 * @see gov.va.isaac.util.CommonMenuBuilderI#setInvisibleWhenfalse(javafx.beans.property.BooleanProperty)
 		 */
 		@Override
-		public void setInvisibleWhenfalse(BooleanProperty invisibleWhenfalse) {
+		public void setInvisibleWhenFalse(BooleanProperty invisibleWhenfalse) {
 			this.invisibleWhenfalse = invisibleWhenfalse;
 		}
 		

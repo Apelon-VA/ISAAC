@@ -1,10 +1,8 @@
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
-
 import java.io.IOException;
 import java.util.UUID;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
@@ -178,10 +176,16 @@ public class RootConceptBuilder extends AbstractMojo {
   public static EditCoordinate getEC() throws ValidationException, IOException {
     int authorNid = TermAux.USER.getLenient().getConceptNid();
     int module = Snomed.CORE_MODULE.getLenient().getNid();
-    int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
+    int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
     return new EditCoordinate(authorNid, module, editPathNid);
   }
   
+  /**
+   * Returns the vc.
+   *
+   * @return the vc
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
   public static ViewCoordinate getVC() throws IOException {
 	  return StandardViewCoordinates.getSnomedStatedLatest();
   }

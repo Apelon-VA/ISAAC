@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -100,9 +99,9 @@ public class DynamicRefexView implements RefexViewI
 	private TreeTableView<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ttv_;
 	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
 	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
-	private ToggleButton stampButton_;
+	private ToggleButton stampButton_, activeOnlyButton_, historyButton_;
 	private UpdateableBooleanBinding rowSelected_;
-	private UpdateableBooleanBinding showStampColumns_;
+	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_;
 	private TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
 	
@@ -117,6 +116,7 @@ public class DynamicRefexView implements RefexViewI
 	private Integer newComponentHint = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
+	private volatile boolean noRefresh_ = false;
 	
 	private DynamicRefexView() 
 	{
@@ -176,6 +176,7 @@ public class DynamicRefexView implements RefexViewI
 							{
 								//TODO - have a bug here - should only be able to remove if it is currently active.
 								//but how to know if it is currently active?  We have both...
+								//TODO add some sort of graphical marker about current vs historical - also active vs retired... need a place to put this data.
 								RefexDynamicVersionBI<?> refex = refexTreeItem.getValue();
 								if (!refex.isActive())
 								{
@@ -238,7 +239,7 @@ public class DynamicRefexView implements RefexViewI
 			
 			stampButton_ = new ToggleButton("");
 			stampButton_.setGraphic(Images.STAMP.createImageView());
-			stampButton_.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+			stampButton_.setTooltip(new Tooltip("Show / Hide Stamp Columns"));
 			stampButton_.setVisible(false);
 			t.getItems().add(stampButton_);
 			
@@ -264,6 +265,55 @@ public class DynamicRefexView implements RefexViewI
 						}
 					}
 					return visible;
+				}
+			};
+			
+			activeOnlyButton_ = new ToggleButton("");
+			activeOnlyButton_.setGraphic(Images.FILTER_16.createImageView());
+			activeOnlyButton_.setTooltip(new Tooltip("Show Active Only / Show All"));
+			activeOnlyButton_.setVisible(false);
+			activeOnlyButton_.setSelected(true);
+			t.getItems().add(activeOnlyButton_);
+			
+			showActiveOnly_ = new UpdateableBooleanBinding()
+			{
+				{
+					setComputeOnInvalidate(true);
+				}
+				@Override
+				protected boolean computeValue()
+				{
+					boolean showActive = false;
+					if (listeningTo.size() > 0)
+					{
+						showActive = ((ReadOnlyBooleanProperty)listeningTo.iterator().next()).get();
+					}
+					refresh();
+					return showActive;
+				}
+			};
+			
+			historyButton_ = new ToggleButton("");
+			historyButton_.setGraphic(Images.HISTORY.createImageView());
+			historyButton_.setTooltip(new Tooltip("Show Current Only / Show Full History"));
+			historyButton_.setVisible(false);
+			t.getItems().add(historyButton_);
+			
+			showFullHistory_ = new UpdateableBooleanBinding()
+			{
+				{
+					setComputeOnInvalidate(true);
+				}
+				@Override
+				protected boolean computeValue()
+				{
+					boolean showFullHistory = false;
+					if (listeningTo.size() > 0)
+					{
+						showFullHistory = ((ReadOnlyBooleanProperty)listeningTo.iterator().next()).get();
+					}
+					refresh();
+					return showFullHistory;
 				}
 			};
 			
@@ -315,13 +365,6 @@ public class DynamicRefexView implements RefexViewI
 			{
 				try
 				{
-					//TODO [OTF-API] BUG! So - when you currently commit a change to a member-list style refset - and everything appears to work correctly 
-					//in this session - if you stop and start the OTF backend - the member refset will vanish.  Something nasty going on here.
-					//Definitely an OTF bug, possible in the dynamic refex code, possibly not.  Unsure at this point.
-					
-					//TODO [OTF-API] BUG! Edits and deletes of annotation style refexes currently doesn't work at all.  No idea why.
-					//Works fine for member-style refexes (until they vanish on DB restart)
-					
 					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
 					for (Integer i : componentNids)
 					{
@@ -373,49 +416,53 @@ public class DynamicRefexView implements RefexViewI
 	@Override
 	public Region getView()
 	{
+		//setting up the binding stuff is causing refresh calls
+		noRefresh_ = true;
 		initialInit();
+		noRefresh_ = false;
 		return rootNode_;
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty))
 	 */
 	@Override
-	public List<MenuItemI> getMenuBarMenus()
+	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
+			ReadOnlyBooleanProperty showFullHistory)
 	{
-		// We don't currently have any custom menus with this view
-		return new ArrayList<MenuItemI>();
-	}
-	
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
-	 */
-	@Override
-	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns)
-	{
+		//disable refresh, as the bindings mucking causes many refresh calls
+		noRefresh_ = true;
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
-		handleStamp(showStampColumns);
+		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
 		newComponentHint = null;
+		noRefresh_ = false;
 		refresh();
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setAssemblage(int, boolean, javafx.beans.property.ReadOnlyBooleanProperty)
+	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
 	 */
 	@Override
-	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns)
+	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
+			ReadOnlyBooleanProperty showFullHistory)
 	{
+		//disable refresh, as the bindings mucking causes many refresh calls
+		noRefresh_ = true;
 		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
-		handleStamp(showStampColumns);
+		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
 		newComponentHint = null;
+		noRefresh_ = false;
 		refresh();
 	}
 	
-	private void handleStamp(ReadOnlyBooleanProperty showStampColumns)
+	private void handleExternalBindings(ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
+			ReadOnlyBooleanProperty showFullHistory)
 	{
 		showStampColumns_.clearBindings();
+		showActiveOnly_.clearBindings();
+		showFullHistory_.clearBindings();
 		if (showStampColumns == null)
 		{
 			//Use our own button
@@ -427,6 +474,28 @@ public class DynamicRefexView implements RefexViewI
 			stampButton_.setVisible(false);
 			showStampColumns_.addBinding(showStampColumns);
 		}
+		if (showActiveOnly == null)
+		{
+			//Use our own button
+			activeOnlyButton_.setVisible(true);
+			showActiveOnly_.addBinding(activeOnlyButton_.selectedProperty());
+		}
+		else
+		{
+			activeOnlyButton_.setVisible(false);
+			showActiveOnly_.addBinding(showActiveOnly);
+		}
+		if (showFullHistory == null)
+		{
+			//Use our own button
+			historyButton_.setVisible(true);
+			showFullHistory_.addBinding(historyButton_.selectedProperty());
+		}
+		else
+		{
+			historyButton_.setVisible(false);
+			showFullHistory_.addBinding(showFullHistory);
+		}
 	}
 	
 	protected void setNewComponentHint(int componentNid)
@@ -436,7 +505,11 @@ public class DynamicRefexView implements RefexViewI
 	
 	protected void refresh()
 	{
-		//This is stilly - throwing out the entire table...
+		if (noRefresh_)
+		{
+			return;
+		}
+		//This is silly - throwing out the entire table...
 		//But JavaFX seems to be broken, and the code that should work - simply removing
 		//all children from the rootNode - doesn't work.
 		//So build a completely new table upon every refresh, for now.
@@ -495,7 +568,7 @@ public class DynamicRefexView implements RefexViewI
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
 					{
-						return new ConceptDataCell();
+						return new ConceptDataCell(true);
 						
 					});
 					ttCol.setCellValueFactory((callback) ->
@@ -810,12 +883,36 @@ public class DynamicRefexView implements RefexViewI
 
 		for (RefexDynamicChronicleBI<?> refexChronicle : component.getRefexesDynamic())
 		{
+			RefexDynamicVersionBI<?> refexVersionNewest = null;
 			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
 			{
+				if (!showFullHistory_.get())
+				{
+					if (refexVersionNewest == null || refexVersion.getStamp() > refexVersionNewest.getStamp())
+					{
+						refexVersionNewest = refexVersion;
+					}
+				}
+				else
+				{
+					if (showActiveOnly_.get() && !refexVersion.isActive())
+					{
+						continue;
+					}
+					TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
+					ti.setValue(refexVersion);
+					//recurse
+					getDataRows(refexVersion, ti);
+					rowData.add(ti);
+				}
+			}
+			if (!showFullHistory_.get() && refexVersionNewest != null 
+					&& (!showActiveOnly_.get() || (showActiveOnly_.get() && refexVersionNewest.isActive())))
+			{
 				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
-				ti.setValue(refexVersion);
+				ti.setValue(refexVersionNewest);
 				//recurse
-				getDataRows(refexVersion, ti);
+				getDataRows(refexVersionNewest, ti);
 				rowData.add(ti);
 			}
 		}
@@ -1081,14 +1178,38 @@ public class DynamicRefexView implements RefexViewI
 
 		for (RefexDynamicChronicleBI<?> refexChronicle: refexMembers)
 		{
+			RefexDynamicVersionBI<?> refexVersionNewest = null;
 			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
 			{
+				if (!showFullHistory_.get())
+				{
+					if (refexVersionNewest == null || refexVersion.getStamp() > refexVersionNewest.getStamp())
+					{
+						refexVersionNewest = refexVersion;
+					}
+				}
+				else
+				{
+					if (showActiveOnly_.get() && !refexVersion.isActive())
+					{
+						continue;
+					}
+					TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
+					ti.setValue(refexVersion);
+					//recurse
+					//TODO - note - the full scanner does a recursive search - and it may return a refex that isn't attached to a concept, 
+					//but rather, to something else, including another refex.  Need to figure out how we handle/display those.
+					getDataRows(refexVersion, ti);
+					rowData.add(ti);
+				}
+			}
+			if (!showFullHistory_.get() && refexVersionNewest != null 
+					&& (!showActiveOnly_.get() || (showActiveOnly_.get() && refexVersionNewest.isActive())))
+			{
 				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
-				ti.setValue(refexVersion);
+				ti.setValue(refexVersionNewest);
 				//recurse
-				//TODO - note - the full scanner does a recursive search - and it may return a refex that isn't attached to a concept, 
-				//but rather, to something else, including another refex.  Need to figure out how we handle/display those.
-				getDataRows(refexVersion, ti);
+				getDataRows(refexVersionNewest, ti);
 				rowData.add(ti);
 			}
 		}

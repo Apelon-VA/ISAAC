@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.io.IOException;
 import java.net.URL;
@@ -46,7 +47,7 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @Singleton
-public class WorkflowInbox extends Stage implements PopupViewI
+public class WorkflowInbox extends Stage implements PopupViewI, IsaacViewWithMenusI
 {
 	WorkflowInboxController controller_;
 

@@ -22,17 +22,17 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.EnhancedSearchViewI;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
-
-import org.glassfish.hk2.api.PerLookup;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SearchView
@@ -41,15 +41,15 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@PerLookup
+@Singleton
 public class EnhancedSearchView implements EnhancedSearchViewI
 {
 	private EnhancedSearchViewController svc_;
+	private final Logger LOG = LoggerFactory.getLogger(EnhancedSearchView.class);
 	
 	protected EnhancedSearchView() throws IOException
 	{
 		//created by HK2
-		svc_ = EnhancedSearchViewController.init();
 	}
 	
 	protected void setWindow(Window window) {
@@ -61,6 +61,26 @@ public class EnhancedSearchView implements EnhancedSearchViewI
 	 */
 	@Override
 	public Region getView() {
+		//init had to be delayed, because the current init runs way to slow, and hits the DB in the JavaFX thread.
+		if (svc_ == null)
+		{
+			synchronized (this)
+			{
+				if (svc_ == null)
+				{
+					try
+					{
+						svc_ = EnhancedSearchViewController.init();
+					}
+					catch (IOException e)
+					{
+						LOG.error("Unexpected error initializing the Search View", e);
+						return new Label("oops - check logs");
+					}
+				}
+			}
+			
+		}
 		return svc_.getRoot();
 	}
 

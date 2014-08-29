@@ -79,8 +79,4 @@ public class DetailRelRow extends RelRow {
 		gp.getColumnConstraints().addAll(column1, column2, column3 ); // first column gets any extra width		
 */	
 	}
-
-	public GridPane getDestinationGridPane() {
-		return dgp;
-	}
 }

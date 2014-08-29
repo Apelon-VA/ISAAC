@@ -21,10 +21,7 @@ package gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
-import java.util.ArrayList;
-import java.util.List;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -64,14 +61,6 @@ public class DynamicReferencedItemsView implements PopupViewI
 		root_.setCenter(drv_.getView());
 	}
 	
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<MenuItemI>();
-	}
 
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
@@ -89,6 +78,6 @@ public class DynamicReferencedItemsView implements PopupViewI
 		stage.setWidth(800);
 		stage.setHeight(600);
 		stage.show();
-		drv_.setAssemblage(assemblageConcept_.getNid(), null);
+		drv_.setAssemblage(assemblageConcept_.getNid(), null, null, null);
 	}
 }

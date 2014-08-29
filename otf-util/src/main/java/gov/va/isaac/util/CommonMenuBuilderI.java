@@ -46,6 +46,6 @@ public interface CommonMenuBuilderI {
 
 	public abstract BooleanProperty getInvisibleWhenfalse();
 
-	public abstract void setInvisibleWhenfalse(
+	public abstract void setInvisibleWhenFalse(
 			BooleanProperty invisibleWhenfalse);
 }
