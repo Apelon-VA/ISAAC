@@ -23,6 +23,7 @@ import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 import gov.va.isaac.models.fhim.exporter.FHIMExporter;
+import gov.va.isaac.models.hed.exporter.HeDExporter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ExportHandler {
 
-  /**  The Constant LOG. */
+  /** The Constant LOG. */
   private static final Logger LOG = LoggerFactory
       .getLogger(ExportHandler.class);
 
@@ -77,6 +78,14 @@ public class ExportHandler {
 
       FileOutputStream out = new FileOutputStream(file);
       CEMExporter exporter = new CEMExporter(out);
+      UUID modelUUID = informationModel.getUuid();
+      exporter.exportModel(modelUUID);
+      out.close();
+
+    } else if (modelType == InformationModelType.HeD) {
+
+      FileOutputStream out = new FileOutputStream(file);
+      HeDExporter exporter = new HeDExporter(out);
       UUID modelUUID = informationModel.getUuid();
       exporter.exportModel(modelUUID);
       out.close();

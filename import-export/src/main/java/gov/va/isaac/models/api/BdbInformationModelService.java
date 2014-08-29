@@ -47,7 +47,6 @@ import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -64,7 +63,6 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
-import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
@@ -86,9 +84,6 @@ public class BdbInformationModelService implements InformationModelService {
 
   /** The data store. */
   private BdbTerminologyStore dataStore;
-
-  /** The terminology builder */
-  private TerminologyBuilderBI dataBuilder;
 
   /**
    * Instantiates a {@link BdbInformationModelService} from the specified
@@ -405,9 +400,10 @@ public class BdbInformationModelService implements InformationModelService {
    * strored concept representation. If it does not exist, it creates it. If it
    * has changed, it updates it.
    *
-   * TODO: to properly implement sync, we should take the old version of the model
-   *       and the new version of the model and compare each field to see whether its
-   *       changed.  either retire or add the appropriate underlying data element.
+   * TODO: to properly implement sync, we should take the old version of the
+   * model and the new version of the model and compare each field to see
+   * whether its changed. either retire or add the appropriate underlying data
+   * element.
    * @param modelConcept the model concept
    * @return the information model
    * @throws ContradictionException
@@ -477,12 +473,13 @@ public class BdbInformationModelService implements InformationModelService {
       refexBlueprint.setData(data, WBUtility.getViewCoordinate());
 
       // Construct and wire the dynamic refex
-      RefexDynamicChronicleBI<?> refex = getBuilder().construct(refexBlueprint);
+      RefexDynamicChronicleBI<?> refex = WBUtility.getBuilder().construct(refexBlueprint);
       modelConcept.addDynamicAnnotation(refex);
       LOG.debug("    UUID = " + refex.getPrimordialUuid());
     }
 
     // Sync "has terminology concept" relationships
+    LOG.debug("  Iterate through associated UUIDs");
     Set<UUID> associatedConceptUuids = model.getAssociatedConceptUuids();
     // Retire any active relationships to UUIDs no longer in this set
     for (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
@@ -496,11 +493,13 @@ public class BdbInformationModelService implements InformationModelService {
                 .getPrimordialUuid();
         // If the UUID is not in range, retire the rel
         if (!associatedConceptUuids.contains(uuid)) {
+          LOG.debug("    Found relationship to retire - "
+              + WBUtility.getConPrefTerm(relVersion.getDestinationNid()));
           RelationshipCAB relCab =
               relVersion.makeBlueprint(WBUtility.getViewCoordinate(),
                   IdDirective.PRESERVE, RefexDirective.INCLUDE);
           relCab.setRetired();
-          getBuilder().constructIfNotCurrent(relCab);
+          WBUtility.getBuilder().constructIfNotCurrent(relCab);
         }
 
         // Otherwise, remove from list, no need to create it
@@ -511,6 +510,8 @@ public class BdbInformationModelService implements InformationModelService {
 
       // Create rels for any UUIDs not accounted for
       for (UUID destinationUuid : associatedConceptUuids) {
+        LOG.debug("  Create relationship for " + modelConcept.getPrimordialUuid() 
+            + " => " + destinationUuid);
         UUID typeUid =
             InformationModelAux.HAS_TERMINOLOGY_CONCEPT.getLenient()
                 .getPrimordialUuid();
@@ -520,7 +521,7 @@ public class BdbInformationModelService implements InformationModelService {
         RelationshipCAB newRel =
             new RelationshipCAB(modelConcept.getPrimordialUuid(), typeUid,
                 destinationUuid, group, relType, idDir);
-        getBuilder().construct(newRel);
+        WBUtility.getBuilder().construct(newRel);
       }
     }
 
@@ -671,20 +672,7 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("    UUID = " + relTypeConcept.getPrimordialUuid());
     dataStore.addUncommitted(relTypeConcept);
     dataStore.commit(relTypeConcept);
-    
+
   }
 
-  /**
-   * Returns the terminology builder.
-   *
-   * @return the terminology builder
-   */
-  private TerminologyBuilderBI getBuilder() {
-    if (dataBuilder == null) {
-      dataBuilder =
-          new BdbTermBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
-    }
-
-    return dataBuilder;
-  }
 }

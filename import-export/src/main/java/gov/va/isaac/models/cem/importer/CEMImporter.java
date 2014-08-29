@@ -32,6 +32,7 @@ import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -81,20 +82,18 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
     // Obtain service
     InformationModelService service = getInformationModelService();
 
-    // focus concept is no longer hardcoded - this will be connected to model
-    // LATER using UI
-    // Get focus concept.
-    // String focusConceptUuid = "215fd598-e21d-3e27-a0a2-8e23b1b36dfc";
-    // ConceptChronicleBI focusConcept =
-    // getDataStore().getConcept(UUID.fromString(focusConceptUuid));
-    // LOG.info("focusConcept: " + focusConcept.toString());
-
     // Load DOM tree from file.
     Node domRoot = loadModel(file);
 
     // Parse into CEM model.
     CEMInformationModel infoModel = createInformationModel(domRoot);
 
+    // TODO: this should be made dynamic within the app
+    // Sample connection to a terminology concept
+    // This is to retain functionality from before
+    UUID conceptUuid = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
+    infoModel.addAssociatedConceptUuid(conceptUuid);
+    
     // Save the information model
     service.saveInformationModel(infoModel);
 

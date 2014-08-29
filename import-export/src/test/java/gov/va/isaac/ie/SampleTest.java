@@ -20,12 +20,20 @@ package gov.va.isaac.ie;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.models.util.ExporterBase;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
+import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -86,7 +94,7 @@ public class SampleTest extends ExporterBase {
 
     // FHIM Models RS.
     SampleTest tester = new SampleTest();
-
+    
     tester.shutdown();
   }
 

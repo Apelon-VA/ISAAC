@@ -26,6 +26,7 @@ import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.importer.CEMImporter;
 import gov.va.isaac.models.fhim.importer.FHIMImporter;
+import gov.va.isaac.models.hed.importer.HeDImporter;
 
 import java.io.File;
 
@@ -107,6 +108,9 @@ public class ImportView extends GridPane {
     switch (modelType) {
       case CEM:
         importHandler = new CEMImporter();
+        break;
+      case HeD:
+        importHandler = new HeDImporter();
         break;
       case FHIM:
         importHandler = new FHIMImporter();

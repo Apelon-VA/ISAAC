@@ -27,6 +27,8 @@ import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.cem.exporter.CEMExporter;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.exporter.FHIMExporter;
+import gov.va.isaac.models.hed.HeDInformationModel;
+import gov.va.isaac.models.hed.exporter.HeDExporter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -52,145 +54,193 @@ import com.google.common.base.Preconditions;
  * Controller class for {@link InformationModelDetailsDialog}.
  *
  * @author ocarlsen
+ * @author bcarlsenca
  */
 public class InformationModelDetailsDialogController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InformationModelDetailsDialogController.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(InformationModelDetailsDialogController.class);
 
-    @FXML private Label modelNameLabel;
-    @FXML private Label modelTypeLabel;
-    @FXML private Label focusConceptLabel;
-    @FXML private Label uuidLabel;
-    @FXML private Label importerNameLabel;
-    @FXML private Label importDateLabel;
-    @FXML private Label importPathLabel;
-    @FXML private Label importModuleLabel;
-    @FXML private TextArea modelXmlTextArea;
-    @FXML private ProgressIndicator modelXmlProgress;
+  @FXML
+  private Label modelNameLabel;
 
-    private Stage stage;
+  @FXML
+  private Label modelTypeLabel;
 
-    @FXML
-    public void initialize() {
+  @FXML
+  private Label focusConceptLabel;
+
+  @FXML
+  private Label uuidLabel;
+
+  @FXML
+  private Label importerNameLabel;
+
+  @FXML
+  private Label importDateLabel;
+
+  @FXML
+  private Label importPathLabel;
+
+  @FXML
+  private Label importModuleLabel;
+
+  @FXML
+  private TextArea modelXmlTextArea;
+
+  @FXML
+  private ProgressIndicator modelXmlProgress;
+
+  private Stage stage;
+
+  @FXML
+  public void initialize() {
+  }
+
+  public void setStage(Stage stage) {
+    this.stage = stage;
+  }
+
+  public void displayModel(InformationModel informationModel) {
+    Preconditions.checkNotNull(informationModel);
+
+    // Make sure in application thread.
+    FxUtils.checkFxUserThread();
+
+    if (informationModel.getType() == InformationModelType.CEM) {
+      displayCEM((CEMInformationModel) informationModel);
+    } else if (informationModel.getType() == InformationModelType.HeD) {
+      displayHeD((HeDInformationModel) informationModel);
+    } else if (informationModel.getType() == InformationModelType.FHIM) {
+      displayFHIM((FHIMInformationModel) informationModel);
+    } else {
+      throw new UnsupportedOperationException(informationModel.getType()
+          + " display not yet supported in ISAAC.");
+    }
+  }
+
+  private void displayFHIM(FHIMInformationModel fhimModel) {
+
+    // Do work in background.
+    Task<String> task = new DetailsTask(fhimModel) {
+
+      @Override
+      protected String call() throws Exception {
+
+        // Do work.
+        OutputStream out = new ByteArrayOutputStream();
+        FHIMExporter exporter = new FHIMExporter(out);
+        UUID modelUUID = infoModel.getUuid();
+        exporter.exportModel(modelUUID);
+        return out.toString();
+      }
+    };
+
+    scheduleTask(fhimModel, task);
+  }
+
+  private void displayCEM(CEMInformationModel cemModel) {
+
+    // Do work in background.
+    Task<String> task = new DetailsTask(cemModel) {
+
+      @Override
+      protected String call() throws Exception {
+
+        // Do work.
+        OutputStream out = new ByteArrayOutputStream();
+        CEMExporter exporter = new CEMExporter(out);
+        UUID conceptUUID = infoModel.getUuid();
+        exporter.exportModel(conceptUUID);
+        return out.toString();
+      }
+    };
+
+    scheduleTask(cemModel, task);
+  }
+
+  private void displayHeD(HeDInformationModel hedModel) {
+
+    // Do work in background.
+    Task<String> task = new DetailsTask(hedModel) {
+
+      @Override
+      protected String call() throws Exception {
+
+        // Do work.
+        OutputStream out = new ByteArrayOutputStream();
+        HeDExporter exporter = new HeDExporter(out);
+        UUID conceptUUID = infoModel.getUuid();
+        exporter.exportModel(conceptUUID);
+        return out.toString();
+      }
+    };
+
+    scheduleTask(hedModel, task);
+  }
+
+  private void scheduleTask(InformationModel infoModel, Task<String> task) {
+    // Bind cursor to task state.
+    ObjectBinding<Cursor> cursorBinding =
+        Bindings.when(task.runningProperty()).then(Cursor.WAIT)
+            .otherwise(Cursor.DEFAULT);
+    this.stage.getScene().cursorProperty().bind(cursorBinding);
+
+    // Bind progress indicator to task state.
+    modelXmlProgress.visibleProperty().bind(task.runningProperty());
+
+    Thread t = new Thread(task, "Display_" + infoModel.getName());
+    t.setDaemon(true);
+    t.start();
+  }
+
+  /**
+   * Common superclass {@link Task} for showing {@link InformationModel}
+   * details.
+   *
+   * @author ocarlsen
+   */
+  private abstract class DetailsTask extends Task<String> {
+
+    protected final InformationModel infoModel;
+
+    protected DetailsTask(InformationModel infoModel) {
+      super();
+      this.infoModel = infoModel;
     }
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
+    @Override
+    protected void succeeded() {
+
+      // Update UI.
+      modelNameLabel.setText(infoModel.getName());
+      modelTypeLabel.setText(infoModel.getType().getDisplayName());
+      focusConceptLabel.setText("TBD - BAC");
+      uuidLabel.setText(infoModel.getUuid().toString());
+
+      InformationModelMetadata metadata = infoModel.getMetadata();
+      importerNameLabel.setText(metadata.getImporterName());
+      importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
+      importPathLabel.setText(metadata.getPath().toString());
+      importModuleLabel.setText(metadata.getModuleName());
+
+      String modelXML = this.getValue();
+      modelXmlTextArea.setText(modelXML);
     }
 
-    public void displayModel(InformationModel informationModel) {
-        Preconditions.checkNotNull(informationModel);
+    @Override
+    protected void failed() {
 
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
-
-        if (informationModel.getType() == InformationModelType.CEM) {
-            displayCEM((CEMInformationModel) informationModel);
-        } else if (informationModel.getType() == InformationModelType.FHIM) {
-                displayFHIM((FHIMInformationModel) informationModel);
-        } else {
-            throw new UnsupportedOperationException(informationModel.getType() +
-                    " display not yet supported in ISAAC.");
-        }
+      // Show dialog.
+      Throwable ex = getException();
+      String title = ex.getClass().getName();
+      InformationModelType modelType = infoModel.getType();
+      String msg =
+          String.format("Unexpected error displaying %s model \"%s\"",
+              modelType, infoModel.getName());
+      LOG.error(msg, ex);
+      AppContext.getCommonDialogs()
+          .showErrorDialog(title, msg, ex.getMessage());
     }
-
-    private void displayFHIM(FHIMInformationModel fhimModel) {
-
-        // Do work in background.
-        Task<String> task = new DetailsTask(fhimModel) {
-
-            @Override
-            protected String call() throws Exception {
-
-                // Do work.
-                OutputStream out = new ByteArrayOutputStream();
-                FHIMExporter exporter = new FHIMExporter(out);
-                UUID modelUUID = infoModel.getUuid();
-                exporter.exportModel(modelUUID);
-                return out.toString();
-            }
-        };
-
-        scheduleTask(fhimModel, task);
-    }
-
-    private void displayCEM(CEMInformationModel cemModel) {
-
-        // Do work in background.
-        Task<String> task = new DetailsTask(cemModel) {
-
-            @Override
-            protected String call() throws Exception {
-
-                // Do work.
-                OutputStream out = new ByteArrayOutputStream();
-                CEMExporter exporter = new CEMExporter(out);
-                UUID conceptUUID = infoModel.getUuid();
-                exporter.exportModel(conceptUUID);
-                return out.toString();
-            }
-        };
-
-        scheduleTask(cemModel, task);
-    }
-
-    private void scheduleTask(InformationModel infoModel, Task<String> task) {
-        // Bind cursor to task state.
-        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
-        this.stage.getScene().cursorProperty().bind(cursorBinding);
-
-        // Bind progress indicator to task state.
-        modelXmlProgress.visibleProperty().bind(task.runningProperty());
-
-        Thread t = new Thread(task, "Display_" + infoModel.getName());
-        t.setDaemon(true);
-        t.start();
-    }
-
-    /**
-     * Common superclass {@link Task} for showing {@link InformationModel} details.
-     *
-     * @author ocarlsen
-     */
-    private abstract class DetailsTask extends Task<String> {
-
-        protected final InformationModel infoModel;
-
-        protected DetailsTask(InformationModel infoModel) {
-            super();
-            this.infoModel = infoModel;
-        }
-
-        @Override
-        protected void succeeded() {
-
-            // Update UI.
-            modelNameLabel.setText(infoModel.getName());
-            modelTypeLabel.setText(infoModel.getType().getDisplayName());
-            focusConceptLabel.setText("TBD - BAC");
-            uuidLabel.setText(infoModel.getUuid().toString());
-
-            InformationModelMetadata metadata = infoModel.getMetadata();
-            importerNameLabel.setText(metadata.getImporterName());
-            importDateLabel.setText(TimeHelper.formatDate(metadata.getTime()));
-            importPathLabel.setText(metadata.getPath().toString());
-            importModuleLabel.setText(metadata.getModuleName());
-
-            String modelXML = this.getValue();
-            modelXmlTextArea.setText(modelXML);
-       }
-
-        @Override
-        protected void failed() {
-
-            // Show dialog.
-            Throwable ex = getException();
-            String title = ex.getClass().getName();
-            InformationModelType modelType = infoModel.getType();
-            String msg = String.format("Unexpected error displaying %s model \"%s\"",
-                    modelType, infoModel.getName());
-            LOG.error(msg, ex);
-            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-        }
-    }
+  }
 }

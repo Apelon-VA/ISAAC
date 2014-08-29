@@ -33,15 +33,15 @@ import com.sun.javafx.collections.ImmutableObservableList;
 @SuppressWarnings("restriction")
 public enum InformationModelType {
 
-  /** The FHIM entry. */
-  FHIM("Federal Health Information Model", "uml",
-      "9eddce80-784c-50a3-8ec6-e92278ac7691"),
-
   /** The CEM entry. */
   CEM("Clinical Element Model", "xml", "0a9c9ba5-410e-5a40-88f4-b0cdd17325e1"),
 
   /** The cimi. */
-  CIMI("Clinical Information Model Initiative", null, null),
+  //CIMI("Clinical Information Model Initiative", null, null),
+
+  /** The FHIM entry. */
+  FHIM("Federal Health Information Model", "uml",
+      "9eddce80-784c-50a3-8ec6-e92278ac7691"),
 
   /** The He d. */
   HeD("Health eDecision", "xml", "1cdae521-c637-526a-bf88-134de474f824");

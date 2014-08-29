@@ -24,6 +24,7 @@ import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
+import gov.va.isaac.models.hed.HeDInformationModel;
 import gov.va.isaac.models.util.ExporterBase;
 import gov.va.isaac.util.WBUtility;
 
@@ -84,14 +85,11 @@ public class FetchHandler extends ExporterBase {
     // Make sure NOT in application thread.
     FxUtils.checkBackgroundThread();
 
-    // Get "Blood pressure taking (procedure)" concept.
-    UUID conceptUUID = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
-
     if (modelType == null) {
 
       // Fetch all model types.
       List<InformationModel> allModelTypes = Lists.newArrayList();
-      allModelTypes.addAll(fetchCEMModels(conceptUUID));
+      allModelTypes.addAll(fetchCEMModels());
       allModelTypes.addAll(fetchFHIMModels());
       allModelTypes.addAll(fetchHeDModels());
       return allModelTypes;
@@ -101,7 +99,7 @@ public class FetchHandler extends ExporterBase {
       // Fetch individual model type.
       switch (modelType) {
         case CEM:
-          return fetchCEMModels(conceptUUID);
+          return fetchCEMModels();
         case FHIM:
           return fetchFHIMModels();
         case HeD:
@@ -158,12 +156,10 @@ public class FetchHandler extends ExporterBase {
   /**
    * Fetch cem models.
    *
-   * @param conceptUUID the concept uuid
    * @return the list
    * @throws Exception the exception
    */
-  private List<InformationModel> fetchCEMModels(UUID conceptUUID)
-    throws Exception {
+  private List<InformationModel> fetchCEMModels() throws Exception {
 
     List<InformationModel> models = Lists.newArrayList();
     InformationModelService service = getInformationModelService();
