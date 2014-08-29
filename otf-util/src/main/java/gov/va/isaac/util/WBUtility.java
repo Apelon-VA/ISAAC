@@ -778,4 +778,19 @@ public class WBUtility {
 			LOG.error("addUncommitted failure", e);
 		}
 	}
+	
+	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException  {
+		ConceptChronicleBI pathRefset =
+		        dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
+		    Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
+		    List<ConceptChronicleBI> pathConcepts = new ArrayList<>();
+		    for (RefexChronicleBI<?> member : members) {
+		        int memberNid = ((NidMember)member).getC1Nid();
+		        ConceptChronicleBI pathConcept = dataStore.getConcept(memberNid);
+		        pathConcepts.add(pathConcept);
+		        LOG.info("UUID = " + pathConcept.getPrimordialUuid());
+		        LOG.info("PT = " + pathConcept.getVersion(WBUtility.getViewCoordinate()).getPreferredDescription());
+		     }
+		    return pathConcepts;
+	}
 }
