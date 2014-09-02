@@ -159,7 +159,7 @@ public class ConceptDetailWorkflowController
 		
 		// TODO: determine how creation of request should be reflected in GUI
 		logger.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
-		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName());
+		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName(), new HashMap<String,String>());
 		logger.debug("Created ProcessInstanceCreationRequest: " + createdRequest);
 	}
 

@@ -23,7 +23,9 @@ import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -33,11 +35,13 @@ public class ProcessInstanceSynchronizationTester {
 
     public static void main(String[] args) throws Exception {
         LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-        //ProcessInstanceCreationRequestsAPI procApi = (ProcessInstanceCreationRequestsAPI) wfEngine.getProcessInstanceService();
-        //procApi.dropSchema();
-        //procApi.createSchema();
-        
-        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest("terminology-authoring.test1", "56968009", "Wood asthma (disorder)", "test-user");
+        ProcessInstanceCreationRequestsAPI procApi = (ProcessInstanceCreationRequestsAPI) wfEngine.getProcessInstanceService();
+        procApi.dropSchema();
+        procApi.createSchema();
+        Map<String,String> variables = new HashMap<String, String>();
+        variables.put("coordinateId", "16e04a1e-32a6-11e4-99ba-164230d1df67");
+        variables.put("lastCommitTimeStamp", "1409665029");
+        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest("terminology-authoring.test1", "56968009", "Wood asthma Tuesday Call (disorder)", "test-user", variables);
         System.out.println("New instance: " + newInstance.getId());
         
         List<ProcessInstanceCreationRequestI> pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);

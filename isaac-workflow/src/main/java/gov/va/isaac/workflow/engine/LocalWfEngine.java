@@ -160,6 +160,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         params.put("component_id", instanceRequest.getComponentId());
         params.put("component_name", instanceRequest.getComponentName());
         params.put("created_by", instanceRequest.getUserId());
+        params.putAll(instanceRequest.getVariables());
         if (instanceRequest.getParams() != null) {
             params.putAll(instanceRequest.getParams());
         }

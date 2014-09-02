@@ -22,6 +22,10 @@ import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -29,7 +33,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +55,10 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author) {
+    public ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author, Map<String, String> variables) {
         try {
             // PINST_REQUESTS (id int PRIMARY KEY, component_id varchar(40), component_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), wf_id Integer)");
-            PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message, request_time, sync_time, wf_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message, request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
             psInsert.setString(1, componentId);
             psInsert.setString(2, componentName);
             psInsert.setString(3, processName);
@@ -63,6 +69,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             psInsert.setString(7, String.valueOf(requestTime));
             psInsert.setString(8, "0");
             psInsert.setInt(9, 0);
+            psInsert.setString(10, serializeMap(variables));
             psInsert.executeUpdate();
             
             ProcessInstanceCreationRequestI result = new ProcessInstanceCreationRequest();
@@ -78,6 +85,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             result.setProcessName(processName);
             result.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
             result.setUserId(author);
+            result.setVariables(variables);
             psInsert.closeOnCompletion();
             conn.commit();
             return result;
@@ -248,6 +256,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         request.setSyncMessage(rs.getString(8));
         request.setRequestTime((rs.getString(9).isEmpty()) ? 0L : Long.parseLong(rs.getString(9)));
         request.setSyncTime((rs.getString(10).isEmpty()) ? 0L : Long.parseLong(rs.getString(10)));
+        request.setVariables(rs.getString(11).isEmpty() ? new HashMap<String, String>() : deserializeMap(rs.getString(11)));
 
         return request;
     }
@@ -259,7 +268,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
-                s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, wf_id INTEGER, component_id varchar(40), component_name varchar(255), process_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40))");
+                s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, wf_id INTEGER, component_id varchar(40), component_name varchar(255), process_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), variables long varchar)");
                 s.closeOnCompletion();
                 log.debug("Created table PINST_REQUESTS");
             } else {
@@ -301,6 +310,29 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             conn.commit();
         } catch (SQLException ex) {
             log.error("Unexpected SQL Exception", ex);
+        }
+    }
+
+    private String serializeMap(Map<String, String> map ) {
+        if (map == null) {
+            return "";
+        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        XMLEncoder xmlEncoder = new XMLEncoder(bos);
+        xmlEncoder.writeObject(map);
+        xmlEncoder.close();
+
+        String serializedMap = bos.toString();
+        return serializedMap;
+    }
+
+    private Map<String, String> deserializeMap(String serializedMap) {
+        if (serializedMap == null || serializedMap.isEmpty()) {
+            return new HashMap<String, String>();
+        } else {
+            XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMap.getBytes()));
+            Map<String, String> parsedMap = (Map<String, String>) xmlDecoder.readObject();
+            return parsedMap;
         }
     }
 

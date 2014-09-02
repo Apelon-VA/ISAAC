@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -93,8 +94,8 @@ public class FullSyncTest {
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId());
         }
-        
-        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro");
+        Map<String,String> variables2 = new HashMap<String, String>();
+        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro", variables2);
 //        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
 
         System.out.println("After new instances");

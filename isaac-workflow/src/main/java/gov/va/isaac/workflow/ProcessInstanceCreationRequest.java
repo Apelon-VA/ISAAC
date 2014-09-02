@@ -39,6 +39,7 @@ public class ProcessInstanceCreationRequest implements ProcessInstanceCreationRe
     private RequestStatus status;
     private String syncMessage;
     private long wfId;
+    private Map<String, String> variables;
 
     public ProcessInstanceCreationRequest() {
     }
@@ -219,7 +220,15 @@ public class ProcessInstanceCreationRequest implements ProcessInstanceCreationRe
         this.wfId = wfId;
     }
 
-	@Override
+    public Map<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, String> variables) {
+        this.variables = variables;
+    }
+
+    @Override
 	public String toString() {
 		return "ProcessInstanceCreationRequest [id=" + id + ", processName="
 				+ processName + ", componentId=" + componentId

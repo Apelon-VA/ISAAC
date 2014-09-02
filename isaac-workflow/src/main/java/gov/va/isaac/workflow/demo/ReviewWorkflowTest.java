@@ -25,6 +25,7 @@ import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -46,7 +47,8 @@ public class ReviewWorkflowTest {
         processService.createSchema();
 
         // Create Instance
-        processService.createRequest("terminology-authoring.ReviewWorkflow", "56968009", "Nocturnal intermittent asthma (disorder)", "alejandro");
+        Map<String,String> variables = new HashMap<String, String>();
+        processService.createRequest("terminology-authoring.ReviewWorkflow", "56968009", "Nocturnal intermittent asthma (disorder)", "alejandro", variables);
         wfEngine.synchronizeWithRemote();
 
         // Claim a task
