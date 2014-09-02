@@ -84,7 +84,9 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 					if (UUIDToNid(uuid) == item.getAssemblageNid())
 					{
 						List<RefexDynamicColumnInfo> colInfo =  columnInfo_.get(uuid);
-						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? item.getData()[colInfo.get(listItem_).getColumnOrder()] : null);
+						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? 
+								(item.getData().length <= colInfo.get(listItem_).getColumnOrder() ? null : item.getData()[colInfo.get(listItem_).getColumnOrder()]) 
+								: null);
 						if (data != null)
 						{
 							if (data instanceof RefexDynamicByteArrayBI)

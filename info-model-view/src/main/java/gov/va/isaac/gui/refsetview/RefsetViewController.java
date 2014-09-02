@@ -21,8 +21,8 @@ package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
-import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,6 +42,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -178,7 +180,7 @@ public class RefsetViewController {
 					} else {
 						refCompCon = component;
 					}
-	
+/** TODO - BAC
 					//TODO we shouldn't have any references to the CEM model here in the generic refset viewer.
 					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
 					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
@@ -187,7 +189,7 @@ public class RefsetViewController {
 					} else {
 						processMembers(member, previousMember, refCompCon);
 					}
-					
+				**/	
 					previousMember = member;
 				}
 			}

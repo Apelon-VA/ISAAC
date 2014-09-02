@@ -165,7 +165,7 @@ public class RefexDataTypeFXNodeBuilder
 			{
 				defaultValueAndValidatorTooltip.set("The default value for this field is '" + defaultValue.getDataObject().toString() + "'");
 			}
-			if (validatorType != null && validatorType.get() != null)
+			if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 			{
 				throw new RuntimeException("It doesn't makse sense to assign a validator to a boolean");
 			}
@@ -271,7 +271,7 @@ public class RefexDataTypeFXNodeBuilder
 			{
 				defaultValueAndValidatorTooltip.set("If no file is selected, the default value of " + ((RefexDynamicByteArray)defaultValue).getData().length +  " bytes will be used");
 			}
-			if (validatorType != null && validatorType.get() != null)
+			if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 			{
 				throw new RuntimeException("There are currently no supported cases for a validator on a byte array");
 			}

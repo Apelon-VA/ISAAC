@@ -88,7 +88,6 @@ public class ConceptViewerTooltipHelper {
 					} else {
 						l.getTooltip().setText(tpText.toString().trim());
 					}
-					l.getTooltip().setFont(new Font(16));
 				} else {
 					setDefaultTooltip(l, comp, type);
 				}
@@ -216,7 +215,6 @@ public class ConceptViewerTooltipHelper {
 		}
 
 		tp.setText(txt);
-		tp.setFont(new Font(16));
 
 		return tp;
 	}

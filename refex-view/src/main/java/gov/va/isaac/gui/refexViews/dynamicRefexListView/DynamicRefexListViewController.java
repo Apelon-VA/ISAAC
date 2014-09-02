@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
@@ -33,6 +34,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -55,11 +59,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +110,7 @@ public class DynamicRefexListViewController
 	private int currentlyRenderedRefexNid = 0;
 	private ContextMenu refexDefinitionsContextMenu_;
 
-	private ArrayList<SimpleDisplayConcept> allRefexDefinitions;
+	private HashSet<SimpleDisplayConcept> allRefexDefinitions;
 
 	private final Logger log = LoggerFactory.getLogger(DynamicRefexListViewController.class);
 
@@ -292,15 +299,17 @@ public class DynamicRefexListViewController
 
 				if (allRefexDefinitions == null)
 				{
-					allRefexDefinitions = new ArrayList<>();
-					//TODO this implementation isn't right - we need to actually read a refex to find them all
-					//but this will kinda work for now.
-					ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
-					ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
-
-					for (ConceptVersionBI col : colCons)
+					allRefexDefinitions = new HashSet<>();
+					
+					LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
+					List<SearchResult> refexes = indexer.queryAssemblageUsage(RefexDynamic.REFEX_DYNAMIC_DEFINITION_DESCRIPTION.getNid(), 1000, Long.MAX_VALUE);
+					for (SearchResult sr : refexes)
 					{
-						allRefexDefinitions.add(new SimpleDisplayConcept(col));
+						RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
+						//These are nested refex references - it returns a description component - concept we want is the parent of that.
+						allRefexDefinitions.add(new SimpleDisplayConcept(
+								ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(),
+								null));
 					}
 				}
 				
@@ -330,6 +339,9 @@ public class DynamicRefexListViewController
 				{
 					filteredList.add(enteredConcept);
 				}
+				
+				Collections.sort(filteredList);
+				
 				return null;
 			}
 

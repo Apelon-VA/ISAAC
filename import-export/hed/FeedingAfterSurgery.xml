@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?schematron-schema href="../main/schematron/knowledgeartifact.sch"?>
+<?schematron-schema href="../main/schematron/ecarules.sch"?>
+<knowledgeDocument xmlns="urn:hl7-org:knowledgeartifact:r1"
+	xmlns:vmr="urn:hl7-org:vmr:r2"
+	xmlns:dt="urn:hl7-org:cdsdt:r2" xmlns:p1="http://www.w3.org/1999/xhtml"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:hl7-org:knowledgeartifact:r1 ../schema/knowledgeartifact/knowledgedocument.xsd ">	
+	<metadata>
+		<identifiers>
+			<identifier root="FeedingAfterSurgery" version="1.0" />
+		</identifiers>
+		<artifactType value="Rule" />
+		<schemaIdentifier root="urn:hl7-org:knowledgeartifact:r1" version="1.0" />	
+		<dataModels>
+			<modelReference>
+				<description value="Virtual Medical Record model" />
+				<referencedModel value="urn:hl7-org:vmr:r2"/>
+			</modelReference>
+		</dataModels>
+		<title value="Notify clinician to begin feeding at specified time following surgical procedure."/>
+		<description value="After a patient has colon surgery, notify the physician when feeding should start."/>
+		<keyTerms>
+			<term><dt:originalText value="Feeding"/></term>
+			<term><dt:originalText value="Colon Surgery"/></term>
+			<term><dt:originalText value="Rectal Surgery"/></term>
+			<term><dt:originalText value="Diet Plan"/></term>
+			<term><dt:originalText value="SNOMED"/></term>
+			<term><dt:originalText value="IHTSDO"/></term>
+		</keyTerms>
+		<status value="Draft" />
+		<eventHistory>
+			<artifactLifeCycleEvent>
+				<eventType value="Created" />
+				<eventDateTime value="20140422" />
+			</artifactLifeCycleEvent>
+			<artifactLifeCycleEvent>
+				<eventType value="Published" />
+				<eventDateTime value="20140423" />
+			</artifactLifeCycleEvent>
+		</eventHistory>		
+		<contributions>
+			<contribution>
+				<contributor xsi:type="Organization">
+					<addresses>
+						<address>
+							<dt:part type="SAL" value="750 Main Street Ste 802" />
+							<dt:part type="CTY" value="Hartford" />
+							<dt:part type="ZIP" value="06103" />
+							<dt:part type="STA" value="CT" />
+							<dt:part type="CNT" value="USA" />
+						</address>
+					</addresses>
+					<contacts>
+					<contact value="203-431-2530" use="WP" capabilities="voice" />
+					<contact value="203-431-2523" use="WP" capabilities="fax" />
+					</contacts>
+				<name value="Apelon" />
+				</contributor>
+				<role value="Author"/>
+			</contribution>
+			<contribution>
+				<contributor xsi:type="Organization">
+					<addresses>
+						<address>
+						<dt:part type="CTY" value="Washington, DC" />
+						<dt:part type="ZIP" value="20420" />
+						<dt:part type="CNT" value="USA" />
+						</address>
+					</addresses>
+					<contacts>
+					<contact value="877-234-5678" use="WP" />
+					</contacts>
+				<name value="VHA" />
+				</contributor>
+				<role value="Reviewer"/>
+			</contribution>
+		</contributions>
+		<publishers>
+			<publisher xsi:type="Organization">
+				<addresses>
+					<address>
+						<dt:part type="CTY" value="Washington, DC" />
+						<dt:part type="ZIP" value="20420" />
+						<dt:part type="CNT" value="USA" />
+					</address>
+				</addresses>
+				<contacts>
+					<contact value="877-234-5678" use="WP" />
+				</contacts>
+				<name value="VHA" />
+			</publisher>
+		</publishers>
+		<usageTerms>
+			<rightsDeclaration>
+				<assertedRights value="Copyright (2014), US Department of Veterans Affairs" />
+				<rightsHolder xsi:type="Organization">
+					<addresses>
+						<address>
+							<dt:part type="CTY" value="Washington, DC" />
+							<dt:part type="ZIP" value="20420" />
+							<dt:part type="CNT" value="USA" />
+						</address>
+					</addresses>
+					<contacts>
+						<contact value="877-234-5678" use="WP" />
+					</contacts>
+					<name value="VHA" />
+				</rightsHolder>
+			</rightsDeclaration>
+		</usageTerms>
+	</metadata>
+	<externalData>
+		<def name="Patient">
+			<expression xsi:type="ClinicalRequest" cardinality="Single"
+				dataType="vmr:EvaluatedPerson" isInitial="true">
+				<description>Patient who has been evaluated.</description>
+			</expression>
+		</def>
+		<def name="RectalSurgerySNOMED">
+			<expression xsi:type="ClinicalRequest" cardinality="Multiple"
+				dataType="vmr:Procedure" codeProperty="procedureCode" dateProperty="procedureEventTime.low">
+				<description>Patient has had rectal surgery 1 day prior. </description>
+				<codes xsi:type="ValueSet" id="2.16.840.1.113883.3.666.5.705" authority="NIH VSAC"
+						version="1.0" />
+				<dateRange xsi:type="Interval" endOpen="true">
+					<begin xsi:type="DateAdd">
+						<date xsi:type="Today" />
+						<granularity xsi:type="Literal" valueType="DateGranularity"
+							value="day" />
+						<numberOfPeriods xsi:type="IntegerLiteral" value="-1" />
+					</begin>
+					<end xsi:type="Today" />
+				</dateRange>
+			</expression>
+		</def>
+	</externalData>
+	<conditions>
+		<condition>
+			<logic xsi:type="IsNotEmpty">
+				<description>Patient had rectal surgery the previous day</description>
+				<operand xsi:type="ExpressionRef" name="RectalSurgerySNOMED" />
+			</logic>	
+			<conditionRole value="ApplicableScenario"/>	
+		</condition>
+	</conditions>
+	<actionGroup>
+		<behaviors>
+			<behavior xsi:type="RequiredBehavior" value="Must"/>
+		</behaviors>
+		<title value="Notify the physician to start diet plan" />
+		<description	value="Alert the physician to start a diet plan for a rectal surgery patient." />
+		<subElements>
+			<simpleAction xsi:type="CreateAction">
+				<actionSentence xsi:type="ObjectExpression"
+					objectType="vmr:CommunicationProposal">
+					<property name="message">
+						<value xsi:type="ComplexLiteral">
+							<value xsi:type="dt:ED"
+								value="Start a diet plan for rectal surgery patient on post-operative day 1." />
+						</value>
+					</property>
+				</actionSentence>
+			</simpleAction>
+		</subElements>
+	</actionGroup>
+</knowledgeDocument>

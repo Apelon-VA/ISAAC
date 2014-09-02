@@ -18,10 +18,16 @@ public class SimpleTermRow extends TermRow  {
 	}
 	
 	@Override
-	public void addTermRow(DescriptionVersionBI<?> desc) {
+	public void addTermRow(DescriptionVersionBI<?> desc, boolean isPrefTerm) {
 		Rectangle rec = createAnnotRectangle(desc);
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
-		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		Label descTypeLabel = null;
+
+		if (isPrefTerm) {
+			descTypeLabel = labelHelper.createLabel(desc, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
+		} else {
+			descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		}
 		
 		if (desc.isUncommitted()) {
 			descLabel.setUnderline(true);

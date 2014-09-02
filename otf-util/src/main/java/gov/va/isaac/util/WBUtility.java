@@ -492,6 +492,7 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
+		LOG.debug("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
@@ -824,5 +825,18 @@ public class WBUtility {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
 			LOG.error("addUncommitted failure", e);
 		}
+	}
+	
+	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException  {
+		ConceptChronicleBI pathRefset =
+		        dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
+		    Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
+		    List<ConceptChronicleBI> pathConcepts = new ArrayList<>();
+		    for (RefexChronicleBI<?> member : members) {
+		        int memberNid = ((NidMember)member).getC1Nid();
+		        ConceptChronicleBI pathConcept = dataStore.getConcept(memberNid);
+		        pathConcepts.add(pathConcept);
+		     }
+		    return pathConcepts;
 	}
 }

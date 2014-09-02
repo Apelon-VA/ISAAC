@@ -313,6 +313,16 @@ public class ColumnController implements PanelControllersI {
 				}
 				else
 				{
+					if (newValue == RefexDynamicDataType.BOOLEAN || newValue == RefexDynamicDataType.BYTEARRAY)
+					{
+						validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+						validatorType.setDisable(true);
+					}
+					else
+					{
+						validatorType.setDisable(false);
+					}
+					
 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, null, 
 							processController_.getWizardData().getColumnInfo().get(columnNumber_).getDefaultColumnValue(), null, null, null, allValid_,
 							validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
