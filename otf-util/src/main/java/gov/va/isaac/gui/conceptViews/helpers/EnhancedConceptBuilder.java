@@ -161,13 +161,13 @@ public class EnhancedConceptBuilder {
 			tr.createGridPane();
 
 			// Add PT Row to GridPane
-			tr.addTermRow(ptDesc);
+			tr.addTermRow(ptDesc, true);
 
 			// Add other terms to GridPane
 			for (Integer descType: sortedDescs.keySet()) {
 				for (DescriptionVersionBI<?> desc: sortedDescs.get(descType)) {
 					if (desc.getNid() != con.getPreferredDescription().getNid()) {
-						tr.addTermRow(desc);
+						tr.addTermRow(desc, false);
 					}
 				}
 			}
