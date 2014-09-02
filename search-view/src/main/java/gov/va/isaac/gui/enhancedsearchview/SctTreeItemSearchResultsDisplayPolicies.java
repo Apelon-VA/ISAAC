@@ -92,6 +92,7 @@ public class SctTreeItemSearchResultsDisplayPolicies implements SctTreeItemDispl
 
 	@Override
 	public boolean shouldDisplay(SctTreeItemI treeItem) {
+		// TODO: This is not working properly yet
 		if (! shouldFilter.get()) {
 			// if the shouldFilter boolean property is set to false then display
 			return true;
