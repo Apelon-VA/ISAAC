@@ -22,7 +22,6 @@ import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
 import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMUmlConstants;
-import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.util.List;
 import java.util.Map;
@@ -376,7 +375,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
     private Map<ConceptSpec, Class> buildConceptSpecClassMap() {
         Map<ConceptSpec, Class> m = Maps.newHashMap();
-
+/** TODO - BAC
         m.put(FHIMMetadataBinding.FHIM_CODE,
                 datatypesPkg.createOwnedClass(CODE, false));  // Not abstract.
         m.put(FHIMMetadataBinding.FHIM_PHYSICALQUANTITY,
@@ -387,7 +386,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
                 clinicalObservationPkg.createOwnedClass(OBSERVATION_STATEMENT, false));  // Not abstract.
         m.put(FHIMMetadataBinding.FHIM_PULSEPOSITION,
                 pulsePkg.createOwnedClass(PULSE_POSITION, false));  // Not abstract.
-
+**/
         return m;
     }
 }

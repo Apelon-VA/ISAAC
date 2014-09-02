@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
@@ -53,6 +55,21 @@ public class DynamicRefexHelper {
 	 */
 	private DynamicRefexHelper() {}
 	
+	public static void displayDynamicRefexes(ConceptChronicleBI conceptContainingRefexes) {
+		WBUtility.getConceptVersion(conceptContainingRefexes.getConceptNid());
+	}
+	public static void displayDynamicRefexes(ConceptVersionBI conceptContainingRefexes) {
+		String desc = null;
+		try {
+			desc = WBUtility.getDescription(conceptContainingRefexes);
+			for (RefexDynamicVersionBI<?> refex : conceptContainingRefexes.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+				DynamicRefexHelper.displayDynamicRefex(refex);
+			}
+		} catch (IOException e) {
+			LOG.warn("Failed diplaying refexes in concept " + (desc != null ? desc : "") + ". Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
+			e.printStackTrace();
+		}
+	}
 	public static void displayDynamicRefex(RefexDynamicVersionBI<?> refex) {
 		displayDynamicRefex(refex, 0);
 	}
@@ -83,7 +100,7 @@ public class DynamicRefexHelper {
 			UUID colUuid = currentCol.getColumnDescriptionConcept();
 			RefexDynamicDataBI colData = data[colIndex];
 
-			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + colData.getDataObject());
+			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + (colData != null ? colData.getDataObject() : null));
 		}
 		
 		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;

@@ -37,7 +37,6 @@ import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
-import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.jfree.util.Log;
@@ -59,7 +58,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 	private TextField groupNum;
 	private ChoiceBox<SimpleDisplayConcept> refinabilityCon;
 	private ChoiceBox<SimpleDisplayConcept> characteristicCon;
-	private RelationshipVersionBI rel;
+	private RelationshipVersionBI<?> rel;
 	private boolean isDestination = false;
 	private Label otherConcept;
 	private SimpleBooleanProperty otherConceptNewSelected;
@@ -79,7 +78,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 	@Override
 	protected void finishInit()
 	{
-		rel = (RelationshipVersionBI)origComp;
+		rel = (RelationshipVersionBI<?>)origComp;
 		
 		if (!isDestination) {
 			otherEndCon.set(WBUtility.getConceptVersion(rel.getDestinationNid()));
@@ -162,31 +161,33 @@ public class RelationshipModelingPopup extends ModelingPopup
 			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
 				int newGroup = 0; 
 				if (rel != null) {
+					if (newVal.trim().length() > 0) {
+						groupNewSelected.set(true);
+					} else {
+						groupNewSelected.set(false);
+					}
+					
+					if (modificationMade.get() || groupNewSelected.get()) {
+						try {
+							newGroup = Integer.parseInt(newVal);
+							if (newGroup < 0) {
+								reasonSaveDisabled_.set("Group must be 0 or greater");
+							
+								if (!passesQA()) {
+									reasonSaveDisabled_.set("Failed QA");
+								}
+							}
+						} catch (NumberFormatException e) {
+							reasonSaveDisabled_.set("Must select an integer");
+						} 
+					}
+
 					if (rel.getGroup() != newGroup) {
 						modificationMade.set(true);
 					} else {
 						modificationMade.set(false);
 						reasonSaveDisabled_.set("Cannot save unless original content changed");
 					}
-				} else if (newVal.trim().length() > 0) {
-					groupNewSelected.set(true);
-				} else {
-					groupNewSelected.set(false);
-				}
-				
-				if (modificationMade.get() || groupNewSelected.get()) {
-					try {
-						newGroup = Integer.parseInt(newVal);
-						if (newGroup < 0) {
-							reasonSaveDisabled_.set("Group must be 0 or greater");
-						
-							if (!passesQA()) {
-								reasonSaveDisabled_.set("Failed QA");
-							}
-						}
-					} catch (NumberFormatException e) {
-						reasonSaveDisabled_.set("Must select an integer");
-					} 
 				}
 			}
 		});
@@ -205,7 +206,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.STATED_RELATIONSHIP_RF2));
 		characteristicCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
 			@Override
-			public void changed(ObservableValue ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
+			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
 				if (rel != null) {
 					if (rel.getCharacteristicNid() != newVal.getNid()) {
 						modificationMade.set(true);
@@ -242,7 +243,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.MANDATORY_REFINIBILITY_RF2));
 		refinabilityCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
 			@Override
-			public void changed(ObservableValue ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
+			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
 				if (rel != null) {
 					if (rel.getRefinabilityNid() != newVal.getNid()) {
 						modificationMade.set(true);
@@ -272,7 +273,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 		typeCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
 			@Override
-			public void changed(ObservableValue ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
+			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
 				if (rel != null) {
 					if (rel.getTypeNid() != newVal.getNid()) {
 						modificationMade.set(true);
@@ -288,7 +289,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					
 				if (modificationMade.get() || typeNewSelected.get()) {
 					if (!typeCon.isValid().getValue()) {
-						reasonSaveDisabled_.set(typeCon.getInvalidReason().getValue());
+						reasonSaveDisabled_.set(typeCon.isValid().getReasonWhyInvalid().getValue());
 					} else if (!passesQA()) {
 						reasonSaveDisabled_.set("Failed QA");
 					}
@@ -304,7 +305,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 		otherEndCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
 			@Override
-			public void changed(ObservableValue ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
+			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
 				if (rel != null) {
 					if ((!isDestination && rel.getDestinationNid() != newVal.getNid()) ||
 						(isDestination && rel.getOriginNid() != newVal.getNid())) {
@@ -321,7 +322,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					
 				if (modificationMade.get() || otherConceptNewSelected.get()) {
 					if (!otherEndCon.isValid().getValue()) {
-						reasonSaveDisabled_.set(otherEndCon.getInvalidReason().getValue());
+						reasonSaveDisabled_.set(otherEndCon.isValid().getReasonWhyInvalid().getValue());
 					} else if (!passesQA()) {
 						reasonSaveDisabled_.set("Failed QA");
 					}
@@ -387,7 +388,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 					dcab = new RelationshipCAB(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				}
 	
-				RelationshipChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
+				WBUtility.getBuilder().constructIfNotCurrent(dcab);
 				
 				if (!isDestination) {
 					WBUtility.addUncommitted(rel.getOriginNid());

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?schematron-schema href="../main/schematron/knowledgeartifact.sch"?>
+<?schematron-schema href="../main/schematron/ecarules.sch"?>
+<knowledgeDocument xmlns="urn:hl7-org:knowledgeartifact:r1"
+	xmlns:vmr="urn:hl7-org:vmr:r2"
+	xmlns:dt="urn:hl7-org:cdsdt:r2" xmlns:p1="http://www.w3.org/1999/xhtml"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:hl7-org:knowledgeartifact:r1 ../schema/knowledgeartifact/knowledgedocument.xsd ">	
+	<metadata>
+		<identifiers>
+			<identifier root="MultipleAntiHypertensiveMedicationsOrderedSameClass" version="1.0" />
+		</identifiers>
+		<artifactType value="Rule" />
+		<schemaIdentifier root="urn:hl7-org:knowledgeartifact:r1" version="1.0" />	
+		<dataModels>
+			<modelReference>
+				<description value="Virtual Medical Record model" />
+				<referencedModel value="urn:hl7-org:vmr:r2"/>
+			</modelReference>
+		</dataModels>
+		<title value="Multiple anti-hypertensive medications in the same class ordered"/>
+		<description value="Warns the clinician that a new order will add an additional anti-hypertensive medication in the same class"/>
+		<keyTerms>
+			<term><dt:originalText value="Anti-Hypertensive Medication"/></term>
+			<term><dt:originalText value="SNOMED"/></term>
+			<term><dt:originalText value="IHTSDO"/></term>
+		</keyTerms>
+		<status value="Draft" />
+		<eventHistory>
+			<artifactLifeCycleEvent>
+				<eventType value="Created" />
+				<eventDateTime value="20140625" />
+			</artifactLifeCycleEvent>
+			<artifactLifeCycleEvent>
+				<eventType value="Pre-published" />
+				<eventDateTime value="20140625" />
+			</artifactLifeCycleEvent>
+		</eventHistory>		
+		<contributions>
+			<contribution>
+				<contributor xsi:type="Organization">
+					<addresses>
+						<address>
+							<dt:part type="SAL" value="750 Main Street Ste 802" />
+							<dt:part type="CTY" value="Hartford" />
+							<dt:part type="ZIP" value="06103" />
+							<dt:part type="STA" value="CT" />
+							<dt:part type="CNT" value="USA" />
+						</address>
+					</addresses>
+					<contacts>
+					<contact value="203-431-2530" use="WP" capabilities="voice" />
+					<contact value="203-431-2523" use="WP" capabilities="fax" />
+					</contacts>
+				<name value="Apelon" />
+				</contributor>
+				<role value="Author"/>
+			</contribution>
+			<contribution>
+				<contributor xsi:type="Organization">
+					<addresses>
+						<address>
+						<dt:part type="CTY" value="Washington, DC" />
+						<dt:part type="ZIP" value="20420" />
+						<dt:part type="CNT" value="USA" />
+						</address>
+					</addresses>
+					<contacts>
+					<contact value="877-234-5678" use="WP" />
+					</contacts>
+				<name value="VHA" />
+				</contributor>
+				<role value="Reviewer"/>
+			</contribution>
+		</contributions>
+		<publishers>
+			<publisher xsi:type="Organization">
+				<addresses>
+					<address>
+						<dt:part type="CTY" value="Washington, DC" />
+						<dt:part type="ZIP" value="20420" />
+						<dt:part type="CNT" value="USA" />
+					</address>
+				</addresses>
+				<contacts>
+					<contact value="877-234-5678" use="WP" />
+				</contacts>
+				<name value="VHA" />
+			</publisher>
+		</publishers>
+		<usageTerms>
+			<rightsDeclaration>
+				<assertedRights value="Copyright (2014), US Department of Veterans Affairs" />
+				<rightsHolder xsi:type="Organization">
+					<addresses>
+						<address>
+							<dt:part type="CTY" value="Washington, DC" />
+							<dt:part type="ZIP" value="20420" />
+							<dt:part type="CNT" value="USA" />
+						</address>
+					</addresses>
+					<contacts>
+						<contact value="877-234-5678" use="WP" />
+					</contacts>
+					<name value="VHA" />
+				</rightsHolder>
+			</rightsDeclaration>
+		</usageTerms>
+	</metadata>
+	<externalData>
+		<def name="Patient">
+			<expression xsi:type="ClinicalRequest" cardinality="Single"
+				dataType="vmr:EvaluatedPerson" isInitial="true">
+				<description>Patient who has been evaluated.</description>
+			</expression>
+		</def>
+		<def name="HypertensionDiagnosisSNOMED">
+			<expression xsi:type="ClinicalRequest" cardinality="Multiple"
+				dataType="vmr:Problem" codeProperty="conditionCode" dateProperty="diagnosticEventTime.low">
+				<description>Hypertension diagnosis code entered during this or any prior encounter. </description>
+				<codes xsi:type="ValueSet" id="2.16.840.1.113883.3.464.1003.104.12.1011" authority="NIH VSAC"
+						version="1.0" />
+				<!-- Note that for this rule, date range is not relevant -->
+			</expression>
+		</def>
+		<def name="AntiHypertensiveMedicationPreviouslyPrescribed">
+			<expression xsi:type="ClinicalRequest" cardinality="Multiple" isInitial="false"
+				dataType="vmr:SubstanceAdministrationEvent" codeProperty="substanceAdministrationGeneralPurpose"
+				dateProperty="administrationTimeInterval.low" useValueSets="true">
+				<description>Patient medication list includes anti-hypertensive medication </description>
+				<codes xsi:type="ValueSet" id="2.16.840.1.113883.3.600.1476" authority="NIH VSAC"
+					version="1.0" />
+			</expression>
+		</def>
+		<def name="NewAntiHypertensiveMedicationPrescribed">
+			<expression xsi:type="ClinicalRequest" cardinality="Multiple" isInitial="true"
+				dataType="vmr:SubstanceAdministrationEvent" codeProperty="substanceAdministrationGeneralPurpose"
+				dateProperty="administrationTimeInterval.low" useValueSets="true">
+				<description>Patient just prescribed medication anti-hypertensive medication for first time</description>
+				<codes xsi:type="ValueSet" id="2.16.840.1.113883.3.600.1476" authority="NIH VSAC"
+					version="1.0" />
+			</expression>
+		</def>	
+	</externalData>
+	<expressions>
+		<def name="DifferentAntiHypertensiveMedicationClass">
+			<expression xsi:type="Difference">
+				<description>Two anti-hypertensive medications are different</description>
+					<operand xsi:type="ExpressionRef" name="AntiHypertensiveMedicationPreviouslyPrescribed" />
+					<operand xsi:type="ExpressionRef" name="NewAntiHypertensiveMedicationPrescribed" />
+			</expression>
+		</def>	
+	</expressions>
+	<conditions>
+		<condition>
+			<logic xsi:type="And">
+				<description> Patient has a diagnosis of hypertension either during this encounter or a prior encounter. A new order for an 
+				anti-hypertensive medication has been ordered, and will add an additional medication to the medication list in the same class."
+				</description>
+				<operand xsi:type="IsNotEmpty">
+					<description>Hypertension diagnosis code entered during this or any prior encounter</description>
+					<operand xsi:type="ExpressionRef" name="HypertensionDiagnosisSNOMED" />
+				</operand>
+				<operand xsi:type="IsNotEmpty">
+					<description>Newly prescribed anti-hypertensive medication is different class than previously prescribed anti-hypertensive medication</description>
+					<operand xsi:type="ExpressionRef" name="DifferentAntiHypertensiveMedicationClass" />
+				</operand>
+				</logic>	
+			<conditionRole value="ApplicableScenario"/>	
+		</condition>
+	</conditions>
+	<actionGroup>
+		<behaviors>
+			<behavior xsi:type="RequiredBehavior" value="Must"/>
+		</behaviors>
+		<title value="Alert the physician" />
+		<description	value="Alert the physician the new order for anti-hypertensive medication will add an additional medication in the same class." />
+		<subElements>
+			<simpleAction xsi:type="CreateAction">
+				<actionSentence xsi:type="ObjectExpression"
+					objectType="vmr:CommunicationProposal">
+					<property name="message">
+						<value xsi:type="ComplexLiteral">
+							<value xsi:type="dt:ED"
+								value="Multiple anti-hypertensive medications in the same class have been ordered." />
+						</value>
+					</property>
+				</actionSentence>
+			</simpleAction>
+		</subElements>
+	</actionGroup>
+</knowledgeDocument>

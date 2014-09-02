@@ -23,10 +23,8 @@ import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.VBox;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
@@ -47,13 +45,13 @@ public class ConceptModelingPopup extends ModelingPopup
 {
 	private SimpleBooleanProperty definedIsValid_;
 	private ChoiceBox<String> cb;
-	private ConceptAttributeVersionBI attr;
+	private ConceptAttributeVersionBI<?> attr;
 	
 	@Override
 	protected void finishInit()
 	{
 		row = 0;
-		attr = (ConceptAttributeVersionBI)origComp;
+		attr = (ConceptAttributeVersionBI<?>)origComp;
 		
 		if (attr.isDefined()) {
 			cb.getSelectionModel().select("True");
@@ -84,21 +82,18 @@ public class ConceptModelingPopup extends ModelingPopup
 
 		cb.getItems().add("True");
 		cb.getItems().add("False");
-		cb.valueProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
-				if (attr.isDefined() && newVal.equals("False") ||
-					!attr.isDefined() && newVal.equals("True")) {
-					modificationMade.set(true);
-					
-					if (!passesQA()) {
-						definedIsValid_.set(false);;
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
+		cb.valueProperty().addListener((ChangeListener<String>) (ov, oldVal, newVal) -> {
+			if (attr.isDefined() && newVal.equals("False") ||
+				!attr.isDefined() && newVal.equals("True")) {
+				modificationMade.set(true);
+				
+				if (!passesQA()) {
+					definedIsValid_.set(false);;
+					reasonSaveDisabled_.set("Failed QA");
 				}
+			} else {
+				modificationMade.set(false);
+				reasonSaveDisabled_.set("Cannot save unless original content changed");
 			}
 		});
 

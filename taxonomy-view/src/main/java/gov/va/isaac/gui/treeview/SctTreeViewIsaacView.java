@@ -18,10 +18,7 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.ViewI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.layout.Region;
@@ -44,9 +41,9 @@ public class SctTreeViewIsaacView  implements ViewI
 		sctTreeView_ = new SctTreeView();
 	}
 	
-	public void init(UUID[] rootConcepts) 
+	public void init(UUID rootConcept) 
 	{
-		sctTreeView_.init(rootConcepts);
+		sctTreeView_.init(rootConcept);
 	}
 	
 	public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) 
@@ -61,14 +58,5 @@ public class SctTreeViewIsaacView  implements ViewI
 	public Region getView()
 	{
 		return sctTreeView_.getView();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<MenuItemI>();
 	}
 }

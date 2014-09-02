@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>1.0-Sprint_12-SNAPSHOT</version>
+		<version>1.0-Sprint_13-SNAPSHOT</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>info-model-view</artifactId>
@@ -34,13 +34,6 @@
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>import-export</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		
-		<!-- ISAAC Refset View. -->
-		<dependency>
-			<groupId>gov.va.isaac.modules</groupId>
-			<artifactId>refset-view</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 

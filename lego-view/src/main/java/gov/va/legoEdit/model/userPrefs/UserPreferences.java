@@ -136,7 +136,8 @@ public class UserPreferences
 
 	public static void setShowSummary(boolean showSummary)
 	{
-		Boolean old = ups_.set("showSummary", showSummary);
+		//Boolean old = 
+		ups_.set("showSummary", showSummary);
 		// TODO cleanup
 		// if (old != showSummary)
 		// {
@@ -151,7 +152,8 @@ public class UserPreferences
 
 	public static void setUseFSN(boolean useFSN)
 	{
-		boolean old = ups_.set("useFSN", useFSN);
+		//boolean old = 
+		ups_.set("useFSN", useFSN);
 		// TODO cleanup
 		// if (old != useFSN)
 		// {

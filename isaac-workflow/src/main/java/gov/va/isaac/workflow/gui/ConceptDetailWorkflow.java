@@ -23,15 +23,12 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 //import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import javafx.fxml.FXMLLoader;
@@ -86,66 +83,6 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		// We don't currently have any custom menus with this view
-		ArrayList<MenuItemI> menus = new ArrayList<>();
-		
-//		MenuItemI mi = new MenuItemI()
-//		{
-//			@Override
-//			public void handleMenuSelection(Window parent)
-//			{
-//				showView(parent);
-//			}
-//			
-//			@Override
-//			public int getSortOrder()
-//			{
-//				return 25;
-//			}
-//			
-//			@Override
-//			public String getParentMenuId()
-//			{
-//				return ApplicationMenus.ACTIONS.getMenuId();
-//			}
-//			
-//			@Override
-//			public String getMenuName()
-//			{
-//				return "View Concept Detail Workflow";
-//			}
-//			
-//			@Override
-//			public String getMenuId()
-//			{
-//				return "viewConceptDetailWorkflowMenu";
-//			}
-//			
-//			@Override
-//			public boolean enableMnemonicParsing()
-//			{
-//				return false;
-//			}
-//
-//			/**
-//			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
-//			 */
-//			@Override
-//			public Image getImage()
-//			{
-//				return Images.INBOX.getImage();
-//			}
-//		};
-//		menus.add(mi);
-		return menus;
-	}
-
-	/**
 	 * Call setReferencedComponent first
 	 * 
 	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
@@ -170,6 +107,7 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		controller_.setConcept(concept);
 	}
 	
+	@Override
 	public void setConcept(UUID conceptUUID) {
 		try {
 			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
@@ -181,6 +119,7 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		}
 	}
 
+	@Override
 	public void setConcept(int conceptNid) {
 		try {
 			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
@@ -192,6 +131,7 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		}
 	}
 
+	@Override
 	public Region getView() {
 		return controller_.getRootNode();
 	}

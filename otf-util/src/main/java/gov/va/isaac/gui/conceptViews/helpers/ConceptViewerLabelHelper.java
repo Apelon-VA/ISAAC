@@ -140,7 +140,7 @@ public class ConceptViewerLabelHelper {
 		// Enable copying of component's various Ids
 		if (comp != null) {
 			if (type != ComponentType.CONCEPT && 
-			   (!(type == ComponentType.RELATIONSHIP && conceptNid != ((RelationshipVersionBI)comp).getOriginNid()))) { 
+				(!(type == ComponentType.RELATIONSHIP && conceptNid != ((RelationshipVersionBI<?>)comp).getOriginNid()))) { 
 				Menu modifyComponentMenu = addModifyMenus(comp, type);
 				rtClickMenu.getItems().add(modifyComponentMenu);
 			}
@@ -215,7 +215,7 @@ public class ConceptViewerLabelHelper {
 					popup = AppContext.getService(DescriptionModelingPopup.class);
 				} else if (type == ComponentType.RELATIONSHIP) {
 					popup = AppContext.getService(RelationshipModelingPopup.class);
-					if (conceptNid != ((RelationshipVersionBI)comp).getOriginNid()) { 
+					if (conceptNid != ((RelationshipVersionBI<?>)comp).getOriginNid()) { 
 						((RelationshipModelingPopup)popup).setDestination(true);
 					}
 				}
@@ -235,7 +235,7 @@ public class ConceptViewerLabelHelper {
 					if (type == ComponentType.CONCEPT) {
 						// TODO: Retire Concept Wizard
 					} else if (type == ComponentType.DESCRIPTION) {
-						DescriptionVersionBI desc = (DescriptionVersionBI)comp;
+						DescriptionVersionBI<?> desc = (DescriptionVersionBI<?>)comp;
 						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dcab.setStatus(Status.INACTIVE);
 						
@@ -244,7 +244,7 @@ public class ConceptViewerLabelHelper {
 						WBUtility.addUncommitted(dcbi.getEnclosingConcept());
 	
 					} else if (type == ComponentType.RELATIONSHIP) {
-						RelationshipVersionBI rel = (RelationshipVersionBI)comp;
+						RelationshipVersionBI<?> rel = (RelationshipVersionBI<?>)comp;
 
 						RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 

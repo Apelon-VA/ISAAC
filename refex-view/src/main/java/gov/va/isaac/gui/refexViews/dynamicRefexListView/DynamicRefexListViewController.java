@@ -19,9 +19,11 @@
 package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
+import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
@@ -32,12 +34,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
@@ -52,17 +56,17 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +101,8 @@ public class DynamicRefexListViewController
 		IDLE, FILTER_UPDATE_PROGRESS, FULL_READ_IN_PROGRESS, DO_FILTER_READ, DO_FULL_READ
 	};
 
+	//TODO this needs some sort of hook to refresh the list when a new one is defined
+	
 	private ConceptNode conceptNode;
 	private volatile boolean disableRead = true;
 	private volatile PendingRead readStatusTracker = PendingRead.IDLE;
@@ -104,7 +110,7 @@ public class DynamicRefexListViewController
 	private int currentlyRenderedRefexNid = 0;
 	private ContextMenu refexDefinitionsContextMenu_;
 
-	private ArrayList<SimpleDisplayConcept> allRefexDefinitions;
+	private HashSet<SimpleDisplayConcept> allRefexDefinitions;
 
 	private final Logger log = LoggerFactory.getLogger(DynamicRefexListViewController.class);
 
@@ -147,10 +153,21 @@ public class DynamicRefexListViewController
 			rebuildList(false);
 		});
 
-		//TODO enhance ConceptNode to allow me to pass in my own concept validator
 		conceptNode = new ConceptNode(null, false);
-		conceptNode.getConceptProperty().addListener((change) -> {
-			conceptNode.getConceptProperty().get();  //Need to do a get after each invalidation, otherwise, we won't get the next invalidation
+		conceptNode.getConceptProperty().addListener((invalidation) -> {
+			ConceptVersionBI cv = conceptNode.getConceptProperty().get();  //Need to do a get after each invalidation, otherwise, we won't get the next invalidation
+			if (cv != null)
+			{
+				//see if it is a valid Dynamic Refex Assemblage
+				try
+				{
+					RefexDynamicUsageDescription.read(cv.getNid());
+				}
+				catch (Exception e)
+				{
+					conceptNode.isValid().setInvalid("The specified concept is not constructed as a Dynamic Refex Assemblage concept");
+				}
+			}
 			rebuildList(false);
 		});
 
@@ -223,7 +240,7 @@ public class DynamicRefexListViewController
 			@Override
 			public ListCell<RefexDynamicColumnInfo> call(ListView<RefexDynamicColumnInfo> param)
 			{
-				return new ExtensionDataCell();
+				return new DynamicRefexDataColumnListCell();
 			}
 		});
 
@@ -282,26 +299,49 @@ public class DynamicRefexListViewController
 
 				if (allRefexDefinitions == null)
 				{
-					allRefexDefinitions = new ArrayList<>();
-					//TODO this implementation isn't right - we need to actually read a refex to find them all
-					//but this will kinda work for now.
-					ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
-					ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
-
-					for (ConceptVersionBI col : colCons)
+					allRefexDefinitions = new HashSet<>();
+					
+					LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
+					List<SearchResult> refexes = indexer.queryAssemblageUsage(RefexDynamic.REFEX_DYNAMIC_DEFINITION_DESCRIPTION.getNid(), 1000, Long.MAX_VALUE);
+					for (SearchResult sr : refexes)
 					{
-						allRefexDefinitions.add(new SimpleDisplayConcept(col));
+						RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
+						//These are nested refex references - it returns a description component - concept we want is the parent of that.
+						allRefexDefinitions.add(new SimpleDisplayConcept(
+								ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(),
+								null));
 					}
+				}
+				
+				//This code for adding the concept from the concept filter panel can be removed, if we fix the above code to actually
+				//find all dynamic refexes in the system.
+				boolean conceptFromOutsideTheList = true;
+				SimpleDisplayConcept enteredConcept = null;
+				if (conceptNode.getConcept() != null && conceptNode.isValid().get())
+				{
+					enteredConcept = new SimpleDisplayConcept(conceptNode.getConcept());
 				}
 
 				filteredList = new ArrayList<>();
 				for (SimpleDisplayConcept sdc : allRefexDefinitions)
 				{
+					if (enteredConcept != null && sdc.getNid() == enteredConcept.getNid())
+					{
+						conceptFromOutsideTheList = false;
+					}
 					if (passesFilters(sdc))
 					{
 						filteredList.add(sdc);
 					}
 				}
+				
+				if (enteredConcept != null && conceptFromOutsideTheList)
+				{
+					filteredList.add(enteredConcept);
+				}
+				
+				Collections.sort(filteredList);
+				
 				return null;
 			}
 
@@ -447,6 +487,7 @@ public class DynamicRefexListViewController
 			protected void succeeded()
 			{
 				extensionFields.getItems().addAll(tempColumnInfo);
+				extensionFields.scrollTo(0);
 				finished();
 			}
 
@@ -470,72 +511,6 @@ public class DynamicRefexListViewController
 		Utility.execute(t);
 	}
 	
-	private class ExtensionDataCell extends ListCell<RefexDynamicColumnInfo>
-	{
-		/**
-		 * @see javafx.scene.control.Cell#updateItem(java.lang.Object, boolean)
-		 */
-		@Override
-		protected void updateItem(RefexDynamicColumnInfo item, boolean empty)
-		{
-			super.updateItem(item, empty);
-			if (item != null)
-			{
-				setText("");
-
-				GridPane gp = new GridPane();
-				gp.setHgap(5.0);
-				gp.setVgap(5.0);
-				gp.setPadding(new Insets(5, 5, 5, 5));
-				gp.setMinWidth(250);
-				
-				ColumnConstraints constraint1 = new ColumnConstraints();
-				constraint1.setFillWidth(false);
-				constraint1.setHgrow(Priority.NEVER);
-				constraint1.setMinWidth(160);
-				constraint1.setMaxWidth(160);
-				gp.getColumnConstraints().add(constraint1);
-				
-				ColumnConstraints constraint2 = new ColumnConstraints();
-				constraint2.setFillWidth(true);
-				constraint2.setHgrow(Priority.ALWAYS);
-				gp.getColumnConstraints().add(constraint2);
-				
-				gp.add(new Label("Column Name"), 0, 0);
-				Label name = new Label(item.getColumnName());
-				name.setWrapText(true);
-				name.maxWidthProperty().bind(this.widthProperty().subtract(210));
-				gp.add(name, 1, 0);
-				
-				gp.add(new Label("Column Description"), 0, 1);
-				Label description = new Label(item.getColumnDescription());
-				description.setWrapText(true);
-				description.maxWidthProperty().bind(this.widthProperty().subtract(210));
-				gp.add(description, 1, 1);
-
-				gp.add(new Label("Column Order"), 0, 2);
-				gp.add(new Label(item.getColumnOrder() + 1 + ""), 1, 2);
-				
-				gp.add(new Label("Data Type"), 0, 3);
-				gp.add(new Label(item.getColumnDataType().getDisplayName()), 1, 3);
-				
-				gp.add(new Label("Default Value"), 0, 4);
-				gp.add(new Label(item.getDefaultColumnValue() == null ? "" : item.getDefaultColumnValue().toString()), 1, 4);
-				
-				setGraphic(gp);
-				
-				this.setStyle("-fx-border-width:  0 0 2 0; -fx-border-color: grey; ");
-				
-			}
-			else
-			{
-				setText("");
-				setGraphic(null);
-				this.setStyle("");
-			}
-		}
-	}
-
 	public Region getRoot()
 	{
 		return rootPane;

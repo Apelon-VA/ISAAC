@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.UUID;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -48,7 +47,7 @@ public class DynamicRefexViewRunner extends Application
 		primaryStage.setTitle("Refex View");
 
 		DynamicRefexView refexView = AppContext.getService(DynamicRefexView.class);
-		refexView.setComponent(RefexDynamic.REFEX_DYNAMIC_DEFINITION.getNid(), null);
+		refexView.setComponent(RefexDynamic.REFEX_DYNAMIC_DEFINITION.getNid(), null, null, null);
 
 		primaryStage.setScene(new Scene(refexView.getView(), 800, 600));
 
