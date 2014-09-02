@@ -30,11 +30,12 @@ import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -49,7 +50,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -100,7 +100,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
@@ -109,7 +108,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -391,9 +389,10 @@ public class ListBatchViewController
 					@Override
 					public void handle(MouseEvent event) {
 						if (event.getButton() == MouseButton.SECONDARY) {
+							@SuppressWarnings("unchecked")
 							TableRow<SimpleDisplayConcept> r = (TableRow<SimpleDisplayConcept>)event.getSource();
 							if (r.getIndex() < r.getTableView().getItems().size()) {
-								CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+								CommonMenusDataProvider dp = new CommonMenusDataProvider() {
 									@Override
 									public String[] getStrings() {
 										List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();
@@ -408,7 +407,7 @@ public class ListBatchViewController
 									}
 								};
 
-								CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+								CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 									@Override
 									public Set<Integer> getNIds() {
 										List<SimpleDisplayConcept> selected = r.getTableView().getSelectionModel().getSelectedItems();

@@ -19,10 +19,13 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
-import gov.va.isaac.models.va.importer.VAMetadataCreator;
+import gov.va.isaac.models.api.BdbInformationModelService;
+import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.util.Utility;
 
 import java.util.ArrayList;
@@ -36,6 +39,7 @@ import javafx.stage.Window;
 
 import javax.inject.Singleton;
 
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @Singleton
-public class CEMMetadataCreatorView implements PopupViewI
+public class CEMMetadataCreatorView implements PopupViewI, IsaacViewWithMenusI
 {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -76,7 +80,7 @@ public class CEMMetadataCreatorView implements PopupViewI
 			@Override
 			public String getParentMenuId()
 			{
-				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
+				return ApplicationMenus.ACTIONS.getMenuId();
 			}
 			
 			@Override
@@ -114,13 +118,10 @@ public class CEMMetadataCreatorView implements PopupViewI
 			@Override
 			protected Boolean call() throws Exception
 			{
-//				boolean cemCreated = new CEMMetadataCreator().createMetadata();
-//				boolean fhimCreated = new FHIMMetadataCreator().createMetadata();
-				boolean vaCreated = new VAMetadataCreator().createMetadata();
-
-				// If any one of them was created, return true.
-//				return cemCreated || fhimCreated;
-				return vaCreated;
+			  BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+			  InformationModelService service = new BdbInformationModelService(dataStore);
+			  service.createMetadataConcepts();
+			  return true;
 			}
 
 			@Override

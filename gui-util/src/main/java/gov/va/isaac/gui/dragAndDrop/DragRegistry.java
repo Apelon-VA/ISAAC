@@ -20,10 +20,14 @@ package gov.va.isaac.gui.dragAndDrop;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
+import gov.va.isaac.util.Utility;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
@@ -50,6 +54,7 @@ public class DragRegistry
 {
 	private static Logger logger = LoggerFactory.getLogger(DragRegistry.class);
 	private AtomicLong dragStartedAt = new AtomicLong();
+	ScheduledFuture<?> timedDragCancel;
 	private Set<Node> codeDropTargets = Collections.newSetFromMap(new WeakHashMap<Node, Boolean>());
 	private WeakHashMap<Node, Effect> existingEffect = new WeakHashMap<Node, Effect>();
 
@@ -205,7 +210,7 @@ public class DragRegistry
 		});
 	}
 
-	protected void conceptDragStarted()
+	protected synchronized void conceptDragStarted()
 	{
 		logger.debug("Drag Started");
 		// There is a bug in javafx with comboboxs - it seems to fire dragStarted events twice.
@@ -230,15 +235,28 @@ public class DragRegistry
 			}
 			n.setEffect(FxUtils.lightGreenDropShadow);
 		}
+		timedDragCancel = Utility.schedule(() ->
+		{
+			if (dragStartedAt.get() > 0)
+			{
+				logger.warn("Unclosed drag event is still active 10 seconds after starting!  Cleaning up...");
+				Platform.runLater(() -> {conceptDragCompleted();});
+			}
+		}, 10, TimeUnit.SECONDS);
 	}
 
-	protected void conceptDragCompleted()
+	protected synchronized void conceptDragCompleted()
 	{
 		logger.debug("Drag Completed");
 		dragStartedAt.set(0);
 		for (Node n : codeDropTargets)
 		{
 			n.setEffect(existingEffect.remove(n));
+		}
+		if (timedDragCancel != null)
+		{
+			timedDragCancel.cancel(false);
+			timedDragCancel = null;
 		}
 	}
 }

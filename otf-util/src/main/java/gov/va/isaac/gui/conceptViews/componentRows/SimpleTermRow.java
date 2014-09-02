@@ -18,7 +18,7 @@ public class SimpleTermRow extends TermRow  {
 	}
 	
 	@Override
-	public void addTermRow(DescriptionVersionBI desc) {
+	public void addTermRow(DescriptionVersionBI<?> desc) {
 		Rectangle rec = createAnnotRectangle(desc);
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
 		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
@@ -31,12 +31,12 @@ public class SimpleTermRow extends TermRow  {
 		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
-		gp.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER);
-		gp.setConstraints(descLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER);
-		gp.setConstraints(descTypeLabel,  2,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER);
+		GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER);
+		GridPane.setConstraints(descLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER);
+		GridPane.setConstraints(descTypeLabel,  2,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER);
 		
-		gp.setMargin(descLabel, new Insets(0, 20, 0, 0));
-		gp.setMargin(descTypeLabel, new Insets(0, 0, 0, 20));
+		GridPane.setMargin(descLabel, new Insets(0, 20, 0, 0));
+		GridPane.setMargin(descTypeLabel, new Insets(0, 0, 0, 20));
 		gp.addRow(counter++, rec, descLabel, descTypeLabel);
 	}
 

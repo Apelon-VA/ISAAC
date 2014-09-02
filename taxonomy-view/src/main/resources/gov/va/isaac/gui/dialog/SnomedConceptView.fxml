@@ -34,7 +34,10 @@
                         <Insets left="10.0" />
                       </HBox.margin>
                     </Label>
-                    <Label fx:id="conceptDefinedLabel" text="False" /><ToggleButton fx:id="stampToggle" mnemonicParsing="false" text="T" />
+                    <Label fx:id="conceptDefinedLabel" text="False" />
+                    <ToggleButton fx:id="stampToggle" mnemonicParsing="false" text="T" />
+                    <ToggleButton fx:id="historyToggle" mnemonicParsing="false" text="T" />
+                    <ToggleButton fx:id="activeOnlyToggle" mnemonicParsing="false" text="T" />
                   </children>
                 </HBox>
               </children>

@@ -2,7 +2,6 @@ package gov.va.isaac.gui.conceptViews.componentRows;
 
 import gov.va.isaac.gui.conceptViews.componentRows.Row;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import javafx.scene.layout.GridPane;
 
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 
@@ -22,6 +21,6 @@ public abstract class TermRow extends Row {
 	}
 	
 
-	abstract public void addTermRow(DescriptionVersionBI rel);
+	abstract public void addTermRow(DescriptionVersionBI<?> rel);
 
 }

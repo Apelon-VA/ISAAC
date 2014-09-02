@@ -21,19 +21,14 @@ package gov.va.isaac.gui.conceptViews.modeling;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
-import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -42,14 +37,14 @@ import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
-import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * 
- * ConceptModelingPopup
+ * RelationshipModelingPopup
  * 
  * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a>
  */
@@ -58,16 +53,19 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class RelationshipModelingPopup extends ModelingPopup
 {
-	private GridPane gp_;
 	private ConceptNode otherEndCon;
 	private ConceptNode typeCon;
 	private TextField groupNum;
 	private ChoiceBox<SimpleDisplayConcept> refinabilityCon;
 	private ChoiceBox<SimpleDisplayConcept> characteristicCon;
-	private RelationshipVersionBI rel;
+	private RelationshipVersionBI<?> rel;
 	private boolean isDestination = false;
 	private Label otherConcept;
-	private Label title;
+	private SimpleBooleanProperty otherConceptNewSelected;
+	private SimpleBooleanProperty typeNewSelected;
+	private SimpleBooleanProperty refineNewSelected;
+	private SimpleBooleanProperty charNewSelected;
+	private SimpleBooleanProperty groupNewSelected;
 
 	public RelationshipModelingPopup() {
 		
@@ -80,7 +78,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 	@Override
 	protected void finishInit()
 	{
-		rel = (RelationshipVersionBI)origComp;
+		rel = (RelationshipVersionBI<?>)origComp;
 		
 		if (!isDestination) {
 			otherEndCon.set(WBUtility.getConceptVersion(rel.getDestinationNid()));
@@ -96,178 +94,243 @@ public class RelationshipModelingPopup extends ModelingPopup
 		characteristicCon.getSelectionModel().select(new SimpleDisplayConcept(WBUtility.getConceptVersion(rel.getCharacteristicNid())));
 		
 		if (isDestination) {
-			otherConcept.setText("Origin Concept");
+			otherConcept.setText("Origin");
 			title.setText("Modify Destination Relationship");
 		}
 
+		row = 0;
+
+		try {
+			// TODO: Needs to reference previous commit, not component as-is before panel opened
+			if (isDestination) {
+				createOriginalLabel(WBUtility.getConceptVersion(rel.getOriginNid()).getPreferredDescription().getText());
+			} else {
+				createOriginalLabel(WBUtility.getConceptVersion(rel.getDestinationNid()).getPreferredDescription().getText());
+			}
+			createOriginalLabel(WBUtility.getConceptVersion(rel.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(WBUtility.getConceptVersion(rel.getRefinabilityNid()).getPreferredDescription().getText());
+			createOriginalLabel(WBUtility.getConceptVersion(rel.getCharacteristicNid()).getPreferredDescription().getText());
+			createOriginalLabel(String.valueOf(rel.getGroup()));
+		} catch (Exception e) {
+			Log.error("Cannot access Pref Term for attributes of relationship: "  + rel.getPrimordialUuid(), e);
+		}
+
+		setupGridPaneConstraints();
 	}
 	
 	@Override 
 	protected void setupTopItems(VBox topItems) {
-		gp_ = new GridPane();
 		refinabilityCon  = new ChoiceBox<>();
 		characteristicCon  = new ChoiceBox<>();
 		otherEndCon = new ConceptNode(null, true);
 		typeCon = new ConceptNode(null, true);
 		groupNum = new TextField();
+		
+		otherConceptNewSelected = new SimpleBooleanProperty(false);
+		typeNewSelected = new SimpleBooleanProperty(false);
+		refineNewSelected = new SimpleBooleanProperty(false);
+		charNewSelected = new SimpleBooleanProperty(false);
+		groupNewSelected = new SimpleBooleanProperty(false);
 
 		popupTitle = "Modify Source Relationship";
 
-		title = new Label(popupTitle);
-		title.getStyleClass().add("titleLabel");
-		title.setAlignment(Pos.CENTER);
-		title.prefWidthProperty().bind(topItems.widthProperty());
-		topItems.getChildren().add(title);
-		VBox.setMargin(title, new Insets(10, 10, 10, 10));
-
-		gp_ = new GridPane();
-		gp_.setHgap(10.0);
-		gp_.setVgap(10.0);
-		VBox.setMargin(gp_, new Insets(5, 5, 5, 5));
-		topItems.getChildren().add(gp_);
-
+		setupGridPane(topItems);
+		
 		// Setup Type (Row #1)
-		otherConcept = new Label("Destination Concept");
-		otherConcept.getStyleClass().add("boldLabel");
-		gp_.add(otherConcept, 0, 0);
+		setupType();
 
-		otherEndCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
-			@Override
-			public void changed(ObservableValue ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
-				if (!otherEndCon.isValid().getValue()) {
-					reasonSaveDisabled_.set(otherEndCon.getInvalidReason().getValue());
-				} else  if ((!isDestination && rel.getDestinationNid() != newVal.getNid()) ||
-					(isDestination && rel.getOriginNid() != newVal.getNid())) {
-					modificationMade.set(true);
-					
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				} else {
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
-				}
-			}
-		});
-		gp_.add(otherEndCon.getNode(), 1, 0);
-
-		
 		// Setup Term (Row #2)
-		Label type = new Label("Relationship Type");
-		type.getStyleClass().add("boldLabel");
-		gp_.add(type, 0, 1);
-
-		typeCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
-			@Override
-			public void changed(ObservableValue ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
-				if (!typeCon.isValid().getValue()) {
-					reasonSaveDisabled_.set(typeCon.getInvalidReason().getValue());
-				} else if (rel.getTypeNid() != newVal.getNid()) {
-					modificationMade.set(true);
-					
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
-				}
-			}
-		});
-		gp_.add(typeCon.getNode(), 1, 1);
-
+		setupTerm();
 		
+		// Setup Refinability (Row #3)
+		setupRefinability();
 		
-		// Setup LangCode (Row #3)
-		Label refinability = new Label("Refinability");
-		refinability.getStyleClass().add("boldLabel");
-		gp_.add(refinability, 0, 2);
-		
-		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.NOT_REFINABLE_RF2));
-		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.OPTIONAL_REFINIBILITY_RF2));
-		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.MANDATORY_REFINIBILITY_RF2));
-		refinabilityCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
-			@Override
-			public void changed(ObservableValue ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
-				if (rel.getRefinabilityNid() != newVal.getNid()) {
-					modificationMade.set(true);
-					
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
-				}
-			}
-		});
-		gp_.add(refinabilityCon, 1, 2);
-
-		// Setup Initial Cap (Row #4)
-		Label characteristic = new Label("Characteristic Type?");
-		characteristic.getStyleClass().add("boldLabel");
-		gp_.add(characteristic, 0, 3);
-
-		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.QUALIFYING_RELATIONSSHIP_RF2));
-		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.HISTORICAL_RELATIONSSHIP_RF2));
-		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.STATED_RELATIONSHIP_RF2));
-		characteristicCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
-			@Override
-			public void changed(ObservableValue ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
-				if (rel.getCharacteristicNid() != newVal.getNid()) {
-					modificationMade.set(true);
-					
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
-				}
-			}
-		});
-
-		gp_.add(characteristicCon, 1, 3);
-		
+		// Setup Characteristic (Row #4)
+		setupCharacteristic();
 		
 		// Group (Row #5)
-		Label group = new Label("Group");
-		group.getStyleClass().add("boldLabel");
-		gp_.add(group, 0, 4);
+		setupGroup();
+	}
+
+	private void setupGroup() {
+		createTitleLabel("Group");
 
 		groupNum.textProperty().addListener(new ChangeListener<String>() {
 
 			@Override
 			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
 				int newGroup = 0; 
-				try {
-					newGroup = Integer.parseInt(newVal);
-					 if (newGroup < 0) {
-						reasonSaveDisabled_.set("Group must be 0 or greater");
-					} else if (rel.getGroup() != newGroup) {
+				if (rel != null) {
+					if (newVal.trim().length() > 0) {
+						groupNewSelected.set(true);
+					} else {
+						groupNewSelected.set(false);
+					}
+					
+					if (modificationMade.get() || groupNewSelected.get()) {
+						try {
+							newGroup = Integer.parseInt(newVal);
+							if (newGroup < 0) {
+								reasonSaveDisabled_.set("Group must be 0 or greater");
+							
+								if (!passesQA()) {
+									reasonSaveDisabled_.set("Failed QA");
+								}
+							}
+						} catch (NumberFormatException e) {
+							reasonSaveDisabled_.set("Must select an integer");
+						} 
+					}
+
+					if (rel.getGroup() != newGroup) {
 						modificationMade.set(true);
-						
-						if (!passesQA()) {
-							reasonSaveDisabled_.set("Failed QA");
-						}
 					} else {
 						modificationMade.set(false);
 						reasonSaveDisabled_.set("Cannot save unless original content changed");
 					}
-				} catch (NumberFormatException e) {
-					reasonSaveDisabled_.set("Must select an integer");
-				} 
+				}
 			}
 		});
-		gp_.add(groupNum, 1, 4);
+		gp_.add(groupNum, 2, row);
+		row++;
+	}
 
-		ColumnConstraints cc = new ColumnConstraints();
-		cc.setHgrow(Priority.NEVER);
-		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(characteristic));
-		gp_.getColumnConstraints().add(cc);
+	private void setupCharacteristic() {
+		createTitleLabel("Characteristic");
 
-		cc = new ColumnConstraints();
-		cc.setHgrow(Priority.ALWAYS);
-		gp_.getColumnConstraints().add(cc);
+		if (rel == null) {
+			characteristicCon.getItems().add(null);
+		}
+		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.QUALIFYING_RELATIONSSHIP_RF2));
+		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.HISTORICAL_RELATIONSSHIP_RF2));
+		characteristicCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.STATED_RELATIONSHIP_RF2));
+		characteristicCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
+			@Override
+			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
+				if (rel != null) {
+					if (rel.getCharacteristicNid() != newVal.getNid()) {
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (newVal != null) {
+					charNewSelected.set(true);
+				} else {
+					charNewSelected.set(false);
+				}
+
+				if (modificationMade.get() || charNewSelected.get()) {
+					if (!passesQA()) {
+						reasonSaveDisabled_.set("Failed QA");
+					}
+				}
+			}
+		});
+
+		gp_.add(characteristicCon, 2, row);
+		row++;
+	}
+
+	private void setupRefinability() {
+		createTitleLabel("Refinability");
+		
+		if (rel == null) {
+			refinabilityCon.getItems().add(null);
+		}
+		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.NOT_REFINABLE_RF2));
+		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.OPTIONAL_REFINIBILITY_RF2));
+		refinabilityCon.getItems().add(new SimpleDisplayConcept(SnomedMetadataRf2.MANDATORY_REFINIBILITY_RF2));
+		refinabilityCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
+			@Override
+			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
+				if (rel != null) {
+					if (rel.getRefinabilityNid() != newVal.getNid()) {
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (newVal != null) {
+					refineNewSelected.set(true);
+				} else {
+					refineNewSelected.set(false);
+				}
+
+				if (modificationMade.get() || refineNewSelected.get()) {
+					if (!passesQA()) {
+						reasonSaveDisabled_.set("Failed QA");
+					}
+				}
+			}
+		});
+		gp_.add(refinabilityCon, 2, row);
+		row++;
+	}
+
+	private void setupTerm() {
+		createTitleLabel("Type");
+
+		typeCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+			@Override
+			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
+				if (rel != null) {
+					if (rel.getTypeNid() != newVal.getNid()) {
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (newVal != null) {
+					typeNewSelected.set(true);
+				} else {
+					typeNewSelected.set(false);
+				}
+					
+				if (modificationMade.get() || typeNewSelected.get()) {
+					if (!typeCon.isValid().getValue()) {
+						reasonSaveDisabled_.set(typeCon.isValid().getReasonWhyInvalid().getValue());
+					} else if (!passesQA()) {
+						reasonSaveDisabled_.set("Failed QA");
+					}
+				}
+			}
+		});
+		gp_.add(typeCon.getNode(), 2, row);
+		row++;
+	}
+
+	private void setupType() {
+		createTitleLabel("Destination");
+
+		otherEndCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+			@Override
+			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
+				if (rel != null) {
+					if ((!isDestination && rel.getDestinationNid() != newVal.getNid()) ||
+						(isDestination && rel.getOriginNid() != newVal.getNid())) {
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (newVal != null) {
+					otherConceptNewSelected.set(true);
+				} else {
+					otherConceptNewSelected.set(false);
+				}
+					
+				if (modificationMade.get() || otherConceptNewSelected.get()) {
+					if (!otherEndCon.isValid().getValue()) {
+						reasonSaveDisabled_.set(otherEndCon.isValid().getReasonWhyInvalid().getValue());
+					} else if (!passesQA()) {
+						reasonSaveDisabled_.set("Failed QA");
+					}
+				}
+			}
+		});
+		gp_.add(otherEndCon.getNode(), 2, row);
+		row++;
 	}
 
 	@Override 
@@ -275,18 +338,24 @@ public class RelationshipModelingPopup extends ModelingPopup
 		allValid_ = new UpdateableBooleanBinding()
 		{
 			{
-				addBinding(modificationMade);
+				if (rel != null) {
+					addBinding(modificationMade);
+				} else {
+					addBinding(otherConceptNewSelected, typeNewSelected, refineNewSelected, charNewSelected, groupNewSelected);
+				}
 			}
 
 			@Override
 			protected boolean computeValue()
 			{
-				if (modificationMade.get())
-				{
-					reasonSaveDisabled_.set("");
-					return true;
-				}
+				if ((rel != null && modificationMade.get()) ||
+					(rel == null && otherConceptNewSelected.get() && typeNewSelected.get() && refineNewSelected.get() && charNewSelected.get() && groupNewSelected.get())) 
+					{
+						reasonSaveDisabled_.set("");
+						return true;
+					}
 
+				reasonSaveDisabled_.set("Cannot create new relationship until all values are specified");
 				return false;
 			}
 		};
@@ -297,26 +366,35 @@ public class RelationshipModelingPopup extends ModelingPopup
 	{	
 		try
 		{
-
 			int otherEndConNid = otherEndCon.getConcept().getNid(); 
 			int typeConNid = typeCon.getConcept().getNid(); 
 			int group = Integer.parseInt(groupNum.getText());
 			int refNid = refinabilityCon.getSelectionModel().getSelectedItem().getNid();
 			int charNid = characteristicCon.getSelectionModel().getSelectedItem().getNid(); 
 
-			RelationshipCAB dcab;
-			if (!isDestination) {
-				dcab = new RelationshipCAB(rel.getOriginNid(), typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			} else {
-				dcab = new RelationshipCAB(otherEndConNid, typeConNid, rel.getDestinationNid(), group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			}
-
-			RelationshipChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
 			
-			if (!isDestination) {
-				WBUtility.addUncommitted(rel.getOriginNid());
+			if (rel == null) {
+				if (!isDestination) {
+					WBUtility.createNewRelationship((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid));
+				} else {
+					WBUtility.createNewRelationship(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid));
+				}
 			} else {
-				WBUtility.addUncommitted(otherEndConNid);
+				RelationshipCAB dcab;
+				
+				if (!isDestination) {
+					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				} else {
+					dcab = new RelationshipCAB(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				}
+	
+				WBUtility.getBuilder().constructIfNotCurrent(dcab);
+				
+				if (!isDestination) {
+					WBUtility.addUncommitted(rel.getOriginNid());
+				} else {
+					WBUtility.addUncommitted(otherEndConNid);
+				}
 			}
 		}
 		catch (Exception e)

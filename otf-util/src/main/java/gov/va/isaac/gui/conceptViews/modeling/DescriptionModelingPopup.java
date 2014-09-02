@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 
@@ -30,14 +29,8 @@ import java.util.Set;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -49,6 +42,7 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -62,20 +56,20 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class DescriptionModelingPopup extends ModelingPopup
 {
-	private SimpleBooleanProperty definedIsValid_;
-	private GridPane gp_;
 	private ChoiceBox<String> isCapCb;
 	private ChoiceBox<String> languageCodeCb;
 	private ChoiceBox<String> typeCb;
 	private TextField termTf;
-	private DescriptionVersionBI desc;
-	private Label currentTerm;
+	private DescriptionVersionBI<?> desc;
+	private SimpleBooleanProperty langCodeNewSelected;
+	private SimpleBooleanProperty textNewSelected;
+	private SimpleBooleanProperty typeNewSelected;
+	private SimpleBooleanProperty isCapNewSelected;
 
 	@Override
 	protected void finishInit()
 	{
-		desc = (DescriptionVersionBI)origComp;
-		currentTerm.setText(desc.getText());
+		desc = (DescriptionVersionBI<?>)origComp;
 		termTf.setText(desc.getText());
 
 		try {
@@ -95,148 +89,194 @@ public class DescriptionModelingPopup extends ModelingPopup
 		} else {
 			isCapCb.getSelectionModel().select("False");
 		}
-}
-	
+		
+		row = 0;
+		
+		try {
+			// TODO: Needs to reference previous commit, not component as-is before panel opened
+			createOriginalLabel(WBUtility.getConceptVersion(desc.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(desc.getText());
+			createOriginalLabel(desc.getLang());
+			createOriginalLabel((desc.isInitialCaseSignificant()) ? "True" : "False");
+		} catch (Exception e) {
+			Log.error("Cannot access Pref Term for attributes of relationship: "  + desc.getPrimordialUuid(), e);
+		}
+		
+		setupGridPaneConstraints();
+	}
+
 	@Override 
 	protected void setupTopItems(VBox topItems) {
-		definedIsValid_ = new SimpleBooleanProperty(true);
-		gp_ = new GridPane();
 		isCapCb  = new ChoiceBox<>();
 		languageCodeCb  = new ChoiceBox<>();
 		termTf = new TextField();
 		typeCb= new ChoiceBox<>();
+		langCodeNewSelected = new SimpleBooleanProperty(false);
+		textNewSelected = new SimpleBooleanProperty(false);
+		typeNewSelected = new SimpleBooleanProperty(false);
+		isCapNewSelected = new SimpleBooleanProperty(false);
 		
 		popupTitle = "Modify Description";
-		Label title = new Label(popupTitle);
-		title.getStyleClass().add("titleLabel");
-		title.setAlignment(Pos.CENTER);
-		title.prefWidthProperty().bind(topItems.widthProperty());
-		topItems.getChildren().add(title);
-		VBox.setMargin(title, new Insets(10, 10, 10, 10));
 
-		gp_ = new GridPane();
-		gp_.setHgap(10.0);
-		gp_.setVgap(10.0);
-		VBox.setMargin(gp_, new Insets(5, 5, 5, 5));
-		topItems.getChildren().add(gp_);
+		setupGridPane(topItems);
 
 		// Setup Type (Row #1)
-		Label type = new Label("Type");
-		type.getStyleClass().add("boldLabel");
-		gp_.add(type, 0, 0);
+		setupType();
+		
+		// Setup Term (Row #2)
+		setupTerm();
+		
+		// Setup LangCode (Row #3)
+		createLangCode();
+		
+		// Setup Initial Cap (Row #4)
+		setupInitCap();
+	}
 
-		typeCb.getItems().add("Synonym");
-		typeCb.getItems().add("Definition");
-		typeCb.valueProperty().addListener(new ChangeListener<String>() {
+	private void setupInitCap() {
+		createTitleLabel("Is Initial Capitilization");
+
+		if (desc == null) {
+			isCapCb.getItems().add(SELECT_VALUE);
+		}
+		isCapCb.getItems().add("True");
+		isCapCb.getItems().add("False");
+		isCapCb.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
-				if (desc.getTypeNid() != getSelectedType()) {
-					modificationMade.set(true);
-					
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal) {
+				if (desc != null) {
+					 if ((desc.isInitialCaseSignificant() && newVal.equals("False")) ||
+						(!desc.isInitialCaseSignificant() && newVal.equals("True"))) {
+						 modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (!newVal.equals(SELECT_VALUE)) {
+					isCapNewSelected.set(true);
+				} else {
+					isCapNewSelected.set(false);
+				}
+				
+				if (modificationMade.get() || isCapNewSelected.get()) {
 					if (!passesQA()) {
-						definedIsValid_.set(false);;
 						reasonSaveDisabled_.set("Failed QA");
 					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
 				}
 			}
 		});
-		gp_.add(typeCb, 1, 0);
 
+		gp_.add(isCapCb, 2, row);
+				
+		row++;
+	}
+
+	private void createLangCode() {
+		createTitleLabel("Language Code");
 		
-		// Setup Term (Row #2)
-		Label term = new Label("Current Term");
-		term.getStyleClass().add("boldLabel");
-		gp_.add(term, 0, 1);
+		Set<String> noDialectCodes = new HashSet<>();
+		for (LanguageCode val : LanguageCode.values()) {
+			noDialectCodes.add(val.getFormatedLanguageNoDialectCode());
+		}
+		if (desc == null) {
+			languageCodeCb.getItems().add(SELECT_VALUE);
+		}
 
-		currentTerm = new Label();
-		term.getStyleClass().add("boldLabel");
-		gp_.add(currentTerm, 1, 1);
+		languageCodeCb.getItems().addAll(noDialectCodes);
+		languageCodeCb.valueProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal) {
+				if (desc != null) {
+					if (!desc.getLang().equals(newVal.toString())) { 
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (!newVal.equals(SELECT_VALUE)) {
+					langCodeNewSelected.set(true);
+				} else {
+					langCodeNewSelected.set(false);
+				}
+					
+				if (modificationMade.get() || langCodeNewSelected.get()) {
+					if (!passesQA()) {
+						reasonSaveDisabled_.set("Failed QA");
+					}
+				}
+			}
+		});
+		gp_.add(languageCodeCb, 2, row);
+
+		row++;
+	}
+
+	private void setupTerm() {
+		createTitleLabel("Current Term");
 
 		termTf.textProperty().addListener(new ChangeListener<String>() {
 
 			@Override
 			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
-				if (!desc.getLang().equals(newVal.toString())) {
-					modificationMade.set(true);
+				if (desc != null) {
+					if (!desc.getText().equals(newVal.toString())) {
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (newVal.trim().length() > 0) {
+					textNewSelected.set(true);
+				} else {
+					textNewSelected.set(false);
+				}
 					
+				if (modificationMade.get() || textNewSelected.get()) {
 					if (!passesQA()) {
-						definedIsValid_.set(false);;
 						reasonSaveDisabled_.set("Failed QA");
 					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
 				}
 			}
 		});
-		gp_.add(termTf, 0, 2);
+		gp_.add(termTf, 2, row);
 
-		// Setup LangCode (Row #3)
-		Label langCode = new Label("Language Code");
-		langCode.getStyleClass().add("boldLabel");
-		gp_.add(langCode, 0, 3);
-		
-		Set<String> noDialectCodes = new HashSet();
-		for (LanguageCode val : LanguageCode.values()) {
-			noDialectCodes.add(val.getFormatedLanguageNoDialectCode());
+		row++;
+	}
+
+	private void setupType() {
+		createTitleLabel("Type");
+
+		if (desc == null) {
+			typeCb.getItems().add(SELECT_VALUE);
 		}
-		languageCodeCb.getItems().addAll(noDialectCodes);
-		languageCodeCb.valueProperty().addListener(new ChangeListener<String>() {
+		
+		typeCb.getItems().add("Synonym");
+		typeCb.getItems().add("Definition");
+		typeCb.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
-				if (!desc.getLang().equals(newVal.toString())) {
-					modificationMade.set(true);
-					
+			public void changed(ObservableValue<? extends String> ov, String oldVal, String newVal) {
+				if (desc != null) {
+					if (desc.getTypeNid() != getSelectedType()) {
+						modificationMade.set(true);
+					} else {
+						modificationMade.set(false);
+						reasonSaveDisabled_.set("Cannot save unless original content changed");
+					}
+				} else if (!newVal.equals(SELECT_VALUE)) {
+					typeNewSelected.set(true);
+				} else {
+					typeNewSelected.set(false);
+				}
+
+				if (modificationMade.get() || typeNewSelected.get()) {
 					if (!passesQA()) {
-						definedIsValid_.set(false);;
 						reasonSaveDisabled_.set("Failed QA");
 					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
 				}
 			}
 		});
-		gp_.add(languageCodeCb, 1, 3);
-
-		// Setup Initial Cap (Row #4)
-		Label isInitCap = new Label("Is Initial Capitilization?");
-		isInitCap.getStyleClass().add("boldLabel");
-		gp_.add(isInitCap, 0, 4);
-
-		isCapCb.getItems().add("True");
-		isCapCb.getItems().add("False");
-		isCapCb.valueProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue ov, String oldVal, String newVal) {
-				if (desc.isInitialCaseSignificant() && newVal.equals("False") ||
-					!desc.isInitialCaseSignificant() && newVal.equals("True")) {
-					modificationMade.set(true);
-					
-					if (!passesQA()) {
-						definedIsValid_.set(false);;
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				} else {
-					modificationMade.set(false);
-					reasonSaveDisabled_.set("Cannot save unless original content changed");
-				}
-			}
-		});
-
-		gp_.add(isCapCb, 1, 4);
-				
-		ColumnConstraints cc = new ColumnConstraints();
-		cc.setHgrow(Priority.NEVER);
-		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(isInitCap));
-		gp_.getColumnConstraints().add(cc);
-
-		cc = new ColumnConstraints();
-		cc.setHgrow(Priority.ALWAYS);
-		gp_.getColumnConstraints().add(cc);
+		gp_.add(typeCb, 2, row);
+		row++;
 	}
 
 	@Override 
@@ -244,18 +284,24 @@ public class DescriptionModelingPopup extends ModelingPopup
 		allValid_ = new UpdateableBooleanBinding()
 		{
 			{
-				addBinding(definedIsValid_, modificationMade);
+				if (desc != null) {
+					addBinding(modificationMade);
+				} else {
+					addBinding(isCapNewSelected, langCodeNewSelected, textNewSelected, typeNewSelected);
+				}
 			}
 
 			@Override
 			protected boolean computeValue()
 			{
-				if (definedIsValid_.get() && modificationMade.get())
+				if ((desc != null && modificationMade.get()) ||
+					(desc == null && isCapNewSelected.get() && langCodeNewSelected.get() && textNewSelected.get() && typeNewSelected.get())) 
 				{
 					reasonSaveDisabled_.set("");
 					return true;
 				}
 
+				reasonSaveDisabled_.set("Cannot create new description until all values are specified");
 				return false;
 			}
 		};
@@ -272,10 +318,14 @@ public class DescriptionModelingPopup extends ModelingPopup
 			String term = termTf.getText(); 
 			boolean isInitCap = (isCapCb.getSelectionModel().getSelectedIndex() == 0); 
 
-			DescriptionCAB dcab = new DescriptionCAB(desc.getConceptNid(), type, LanguageCode.getLangCode(langCode), term, isInitCap, desc, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-
-			DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
-			WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+			if (desc == null) {
+				WBUtility.createNewDescription((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap);
+			} else {
+				DescriptionCAB dcab = new DescriptionCAB((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap, desc, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+	
+				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
+				WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+			}
 		}
 		catch (Exception e)
 		{

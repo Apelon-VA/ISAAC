@@ -23,8 +23,10 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.ie.ImportHandler;
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.cem.importer.CEMImporter;
 import gov.va.isaac.models.fhim.importer.FHIMImporter;
+import gov.va.isaac.models.hed.importer.HeDImporter;
 
 import java.io.File;
 
@@ -38,7 +40,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,132 +50,179 @@ import com.google.common.base.Preconditions;
  *
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+ * @author bcarlsenca
  */
+@SuppressWarnings("restriction")
 public class ImportView extends GridPane {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ImportView.class);
+  /**  The Constant LOG. */
+  static final Logger LOG = LoggerFactory.getLogger(ImportView.class);
 
-    private final Label modelTypeLabel = new Label();
-    private final Label fileNameLabel = new Label();
-    private final Label resultLabel = new Label();
+  /**  The model type label. */
+  private final Label modelTypeLabel = new Label();
 
-    public ImportView() {
-        super();
+  /**  The file name label. */
+  private final Label fileNameLabel = new Label();
 
-        // GUI placeholders.
-        GridPaneBuilder builder = new GridPaneBuilder(this);
-        builder.addRow("Information Model: ", modelTypeLabel);
-        builder.addRow("File Name: ", fileNameLabel);
-        builder.addRow("Result: ", resultLabel);
+  /**  The result label. */
+  final Label resultLabel = new Label();
 
-        setConstraints();
+  /**
+   * Instantiates an empty {@link ImportView}.
+   */
+  public ImportView() {
+    super();
 
-        // Set minimum dimensions.
-        setMinHeight(200);
-        setMinWidth(600);
+    // GUI placeholders.
+    GridPaneBuilder builder = new GridPaneBuilder(this);
+    builder.addRow("Information Model: ", modelTypeLabel);
+    builder.addRow("File Name: ", fileNameLabel);
+    builder.addRow("Result: ", resultLabel);
+
+    setConstraints();
+
+    // Set minimum dimensions.
+    setMinHeight(200);
+    setMinWidth(600);
+  }
+
+  /**
+   * Do import for the specified type and file name.
+   *
+   * @param modelType the model type
+   * @param fileName the file name
+   */
+  public void doImport(InformationModelType modelType, final String fileName) {
+    Preconditions.checkNotNull(modelType);
+    Preconditions.checkNotNull(fileName);
+
+    // Make sure in application thread.
+    FxUtils.checkFxUserThread();
+
+    // Update UI.
+    modelTypeLabel.setText(modelType.getDisplayName());
+    fileNameLabel.setText(fileName);
+
+    // Instantiate appropriate importer class.
+    ImportHandler importHandler = null;
+    switch (modelType) {
+      case CEM:
+        importHandler = new CEMImporter();
+        break;
+      case HeD:
+        importHandler = new HeDImporter();
+        break;
+      case FHIM:
+        importHandler = new FHIMImporter();
+        break;
+      default:
+        throw new UnsupportedOperationException(modelType.getDisplayName()
+            + " import not yet supported in ISAAC.");
     }
 
-    public void doImport(InformationModelType modelType, final String fileName) {
-        Preconditions.checkNotNull(modelType);
-        Preconditions.checkNotNull(fileName);
+    // Do work in background.
+    Task<InformationModel> task = new ImporterTask(fileName, importHandler);
 
-        // Make sure in application thread.
-        FxUtils.checkFxUserThread();
+    // Bind cursor to task state.
+    ObjectBinding<Cursor> cursorBinding =
+        Bindings.when(task.runningProperty()).then(Cursor.WAIT)
+            .otherwise(Cursor.DEFAULT);
+    this.getScene().cursorProperty().bind(cursorBinding);
 
-        // Update UI.
-        modelTypeLabel.setText(modelType.getDisplayName());
-        fileNameLabel.setText(fileName);
+    Thread t = new Thread(task, "Importer_" + modelType);
+    t.setDaemon(true);
+    t.start();
+  }
 
-        // Instantiate appropriate importer class.
-        ImportHandler importHandler = null;
-        switch (modelType) {
-        case CEM:
-            importHandler = new CEMImporter();
-            break;
-        case FHIM:
-            importHandler = new FHIMImporter();
-            break;
-        default:
-            throw new UnsupportedOperationException(modelType.getDisplayName() +
-                    " import not yet supported in ISAAC.");
-        }
+  /**
+   * Sets the FX constraints.
+   */
+  private void setConstraints() {
 
-        // Do work in background.
-        Task<ConceptChronicleBI> task = new ImporterTask(fileName, importHandler);
+    // Column 1 has empty constraints.
+    this.getColumnConstraints().add(new ColumnConstraints());
 
-        // Bind cursor to task state.
-        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
-        this.getScene().cursorProperty().bind(cursorBinding);
+    // Column 2 should grow to fill space.
+    ColumnConstraints column2 = new ColumnConstraints();
+    column2.setHgrow(Priority.ALWAYS);
+    this.getColumnConstraints().add(column2);
 
-        Thread t = new Thread(task, "Importer_" + modelType);
-        t.setDaemon(true);
-        t.start();
-    }
+    // Rows 1-4 have empty constraints.
+    this.getRowConstraints().add(new RowConstraints());
+    this.getRowConstraints().add(new RowConstraints());
+    this.getRowConstraints().add(new RowConstraints());
+    this.getRowConstraints().add(new RowConstraints());
 
-    private void setConstraints() {
+    // Row 5 should
+    RowConstraints row5 = new RowConstraints();
+    row5.setVgrow(Priority.ALWAYS);
+    this.getRowConstraints().add(row5);
+  }
 
-        // Column 1 has empty constraints.
-        this.getColumnConstraints().add(new ColumnConstraints());
+  /**
+   * Concrete {@link Task} for executing the import.
+   *
+   * @author ocarlsen
+   * @author bcarlsenca
+   */
+  class ImporterTask extends Task<InformationModel> {
 
-        // Column 2 should grow to fill space.
-        ColumnConstraints column2 = new ColumnConstraints();
-        column2.setHgrow(Priority.ALWAYS);
-        this.getColumnConstraints().add(column2);
+    /**  The file name. */
+    private final String fileName;
 
-        // Rows 1-4 have empty constraints.
-        this.getRowConstraints().add(new RowConstraints());
-        this.getRowConstraints().add(new RowConstraints());
-        this.getRowConstraints().add(new RowConstraints());
-        this.getRowConstraints().add(new RowConstraints());
-
-        // Row 5 should
-        RowConstraints row5 = new RowConstraints();
-        row5.setVgrow(Priority.ALWAYS);
-        this.getRowConstraints().add(row5);
-    }
+    /**  The import handler. */
+    private final ImportHandler importHandler;
 
     /**
-     * Concrete {@link Task} for executing the import.
+     * Instantiates a {@link ImporterTask} from the specified parameters.
      *
-     * @author ocarlsen
+     * @param fileName the file name
+     * @param importHandler the import handler
      */
-    private class ImporterTask extends Task<ConceptChronicleBI> {
-
-        private final String fileName;
-        private final ImportHandler importHandler;
-
-        private ImporterTask(String fileName, ImportHandler importHandler) {
-            this.fileName = fileName;
-            this.importHandler = importHandler;
-        }
-
-        @Override
-        protected ConceptChronicleBI call() throws Exception {
-
-            // Do work.
-            return importHandler.importModel(new File(fileName));
-        }
-
-        @Override
-        protected void succeeded() {
-            ConceptChronicleBI result = this.getValue();
-
-            // Update UI.
-            resultLabel.setText("Successfully imported concept: " + result.toUserString());
-         }
-
-        @Override
-        protected void failed() {
-            Throwable ex = getException();
-
-            // Update UI.
-            resultLabel.setText("Failed to import model: " + ex.getMessage());
-
-            // Show dialog.
-            String title = ex.getClass().getName();
-            String msg = String.format("Unexpected error importing from file \"%s\"", fileName);
-            LOG.error(msg, ex);
-            AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-        }
+    ImporterTask(String fileName, ImportHandler importHandler) {
+      this.fileName = fileName;
+      this.importHandler = importHandler;
     }
+
+    /* (non-Javadoc)
+     * @see javafx.concurrent.Task#call()
+     */
+    @Override
+    protected InformationModel call() throws Exception {
+
+      // Do work.
+      return importHandler.importModel(new File(fileName));
+    }
+
+    /* (non-Javadoc)
+     * @see javafx.concurrent.Task#succeeded()
+     */
+    @Override
+    protected void succeeded() {
+      InformationModel result = this.getValue();
+
+      // Update UI.
+      resultLabel.setText("Successfully imported model: " + result.toString());
+    }
+
+    /* (non-Javadoc)
+     * @see javafx.concurrent.Task#failed()
+     */
+    @Override
+    protected void failed() {
+      Throwable ex = getException();
+
+      // Update UI.
+      resultLabel.setText("Failed to import model: " + ex.getMessage());
+
+      // Show dialog.
+      String title = ex.getClass().getName();
+      String msg =
+          String
+              .format("Unexpected error importing from file \"%s\"", fileName);
+      LOG.error(msg, ex);
+      AppContext.getCommonDialogs()
+          .showErrorDialog(title, msg, ex.getMessage());
+    }
+  }
 }

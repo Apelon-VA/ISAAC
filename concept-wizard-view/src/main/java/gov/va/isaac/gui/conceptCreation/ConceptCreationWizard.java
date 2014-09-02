@@ -21,6 +21,7 @@ package gov.va.isaac.gui.conceptCreation;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.ConceptCreationViewI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @Singleton
-public class ConceptCreationWizard implements ConceptCreationViewI
+public class ConceptCreationWizard implements ConceptCreationViewI, IsaacViewWithMenusI
 {
 	private ConceptCreationWizard() throws IOException
 	{

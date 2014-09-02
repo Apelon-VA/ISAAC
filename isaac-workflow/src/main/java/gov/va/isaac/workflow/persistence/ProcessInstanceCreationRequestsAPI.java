@@ -261,7 +261,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         return request;
     }
 
-    public void createSchema() {
+    @Override
+	public void createSchema() {
         try {
             log.info("Creating schema");
             DatabaseMetaData dbmd = conn.getMetaData();
@@ -289,7 +290,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         }
     }
 
-    public void dropSchema() {
+    @Override
+	public void dropSchema() {
         try {
             log.info("Dropping PINST_REQUESTS");
             Statement s = conn.createStatement();

@@ -1,23 +1,20 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
-import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -28,11 +25,17 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
-import org.glassfish.hk2.runlevel.RunLevelException;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/**
+ * 
+ * ModelingPopup
+ * 
+ * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a>
+ */
+
 
 public abstract class ModelingPopup extends Stage implements PopupViewI {
 
@@ -43,7 +46,16 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	protected SimpleBooleanProperty modificationMade = new SimpleBooleanProperty(false);
 	protected SimpleStringProperty reasonSaveDisabled_ = new SimpleStringProperty();
 	protected Logger logger_ = LoggerFactory.getLogger(this.getClass());
-
+	protected int row = 0;
+	private Label maxLengthTitleLabel = new Label();
+	private Label maxLengthOriginalLabel = new Label();
+	protected GridPane gp_ = new GridPane();
+	protected Label title;
+	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	protected final String SELECT_VALUE = "<Select a Value>";
+	protected int conceptNid;
+	private Button saveButton;
+	
 	abstract protected void finishInit();
 	abstract protected void setupTopItems(VBox topItems);
 	abstract protected void setupValidations();
@@ -58,7 +70,6 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 		
 		// Component Specific
 		setupTopItems(topItems);
-		setupValidations();
 		root.setTop(topItems);
 		
 		// Buttons
@@ -74,8 +85,7 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 		GridPane.setHalignment(cancelButton, HPos.RIGHT);
 		bottomRow.add(cancelButton, 1, 0);
 
-		Button saveButton = new Button("Save");
-		saveButton.disableProperty().bind(allValid_.not());
+		saveButton = new Button("Save");
 		saveButton.setOnAction((action) -> {
 			doSave();
 		});
@@ -109,16 +119,6 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<>();
-	}
-
-
-	/**
 	 * Call setReferencedComponent first
 	 * 
 	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
@@ -126,10 +126,6 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	@Override
 	public void showView(Window parent)
 	{
-		if (origComp == null)
-		{
-			throw new RunLevelException("Component must be set first");
-		}
 		setTitle(popupTitle);
 		setResizable(true);
 
@@ -144,12 +140,15 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	}
 
 
-	public void finishInit(ComponentVersionBI comp, ComponentType type, PopupConceptViewI callingView)
+	public void finishInit(ComponentVersionBI comp, PopupConceptViewI callingView)
 	{
 		origComp = comp;
+		conceptNid = comp.getConceptNid();
 		callingView_ = callingView;
 		
 		finishInit();
+		setupValidations();
+		saveButton.disableProperty().bind(allValid_.not());
 	}
 	
 	protected void doSave()
@@ -159,8 +158,64 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 		if (callingView_ != null)
 		{
 			ExtendedAppContext.getDataStore().waitTillWritesFinished();
-			callingView_.setConcept(origComp.getConceptNid());
+			callingView_.setConcept(conceptNid);
 		}
 		close();
+	}
+	
+	protected void createTitleLabel(String title) {
+		Label ltitle = new Label(title + ":");
+		ltitle.getStyleClass().add("boldLabel");
+		maxLengthTitleLabel = (FxUtils.calculateNecessaryWidthOfBoldLabel(ltitle) > FxUtils.calculateNecessaryWidthOfBoldLabel(maxLengthTitleLabel)) ? ltitle : maxLengthTitleLabel;
+		gp_.add(ltitle, 0, row);		
+	}
+
+	protected void createOriginalLabel(String origValue) {
+		Label lOrig = new Label(origValue);
+		maxLengthOriginalLabel = (FxUtils.calculateNecessaryWidthOfBoldLabel(lOrig) > FxUtils.calculateNecessaryWidthOfBoldLabel(maxLengthOriginalLabel)) ? lOrig : maxLengthOriginalLabel;
+		gp_.add(lOrig, 1, row);		
+		
+		row++;
+	}
+
+	protected void setupGridPaneConstraints() {
+		ColumnConstraints cc = new ColumnConstraints();
+		cc.setHgrow(Priority.NEVER);
+		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(maxLengthTitleLabel));
+		cc.setPrefWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(maxLengthTitleLabel));
+		gp_.getColumnConstraints().add(cc);
+
+		cc = new ColumnConstraints();
+		cc.setHgrow(Priority.NEVER);
+		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(maxLengthOriginalLabel));
+		cc.setPrefWidth(FxUtils.calculateNecessaryWidthOfLabel(maxLengthOriginalLabel));
+		gp_.getColumnConstraints().add(cc);
+
+		cc = new ColumnConstraints();
+		cc.setHgrow(Priority.ALWAYS);
+		gp_.getColumnConstraints().add(cc);
+	}
+
+	protected void setupGridPane(VBox topItems) {
+		title = new Label(popupTitle);
+		title.getStyleClass().add("titleLabel");
+		title.setAlignment(Pos.CENTER);
+		title.prefWidthProperty().bind(topItems.widthProperty());
+		topItems.getChildren().add(title);
+		VBox.setMargin(title, new Insets(10, 10, 10, 10));
+
+		gp_.setHgap(10.0);
+		gp_.setVgap(10.0);
+		VBox.setMargin(gp_, new Insets(5, 5, 5, 5));
+		topItems.getChildren().add(gp_);
+	}
+
+	public void finishInit(int conceptNid, PopupConceptViewI callingView)
+	{
+		this.conceptNid = conceptNid;
+		callingView_ = callingView;
+		
+		setupValidations();
+		saveButton.disableProperty().bind(allValid_.not());
 	}
 }

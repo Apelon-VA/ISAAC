@@ -143,6 +143,8 @@ public class DBBuilder extends AbstractMojo {
         }
 
         if (!dbExists && moveToReadOnly) {
+          //TODO OTF Bug - figure out why on earth we need this arbitrary sleep.
+          Thread.sleep(5000);
           getLog().info("moving mutable to read-only");
           File readOnlyDir = new File(bdbFolderLocation, "read-only");
           FileIO.recursiveDelete(readOnlyDir);

@@ -30,7 +30,7 @@ public class WorkflowApiDemo {
     public static void main(String[] args) {
         LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
         
-        String userId = "test-user";
+//        String userId = "test-user";
         
 //        List<Status> openStatuses = new ArrayList<Status>();
 //        openStatuses.add(Status.Ready);

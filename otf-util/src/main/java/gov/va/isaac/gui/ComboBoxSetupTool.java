@@ -23,10 +23,9 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
-
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import java.util.HashSet;
 import java.util.Set;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
@@ -61,7 +60,7 @@ public class ComboBoxSetupTool
 			}
 		});
 		
-		CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+		CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 			@Override
 			public Set<Integer> getNIds() {
 				Set<Integer> nids = new HashSet<>();
@@ -72,7 +71,7 @@ public class ComboBoxSetupTool
 			}
 		};
 		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
-		menuBuilder.setInvisibleWhenfalse(isComboBoxPopulated);
+		menuBuilder.setInvisibleWhenFalse(isComboBoxPopulated);
 		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
 
 		comboBox.setContextMenu(cm);

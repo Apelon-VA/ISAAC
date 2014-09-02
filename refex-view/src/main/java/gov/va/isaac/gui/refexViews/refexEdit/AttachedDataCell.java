@@ -20,10 +20,12 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
@@ -82,7 +84,9 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 					if (UUIDToNid(uuid) == item.getAssemblageNid())
 					{
 						List<RefexDynamicColumnInfo> colInfo =  columnInfo_.get(uuid);
-						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? item.getData()[colInfo.get(listItem_).getColumnOrder()] : null);
+						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? 
+								(item.getData().length <= colInfo.get(listItem_).getColumnOrder() ? null : item.getData()[colInfo.get(listItem_).getColumnOrder()]) 
+								: null);
 						if (data != null)
 						{
 							if (data instanceof RefexDynamicByteArrayBI)
@@ -150,28 +154,33 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 			}
 			
 				
-			CommonMenus.addCommonMenus(cm, () -> 
+			CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
 			{
-				Integer nid = null;
 				
-				if (data instanceof RefexDynamicNidBI)
+				@Override
+				public Collection<Integer> getNIds()
 				{
-					nid = ((RefexDynamicNidBI)data).getDataNid();
-				}
-				else if (data instanceof RefexDynamicUUIDBI)
-				{
-					ConceptVersionBI c = WBUtility.getConceptVersion(((RefexDynamicUUIDBI)data).getDataUUID());
-					if (c != null)
+					Integer nid = null;
+					
+					if (data instanceof RefexDynamicNidBI)
 					{
-						nid = c.getNid();
+						nid = ((RefexDynamicNidBI)data).getDataNid();
 					}
+					else if (data instanceof RefexDynamicUUIDBI)
+					{
+						ConceptVersionBI c = WBUtility.getConceptVersion(((RefexDynamicUUIDBI)data).getDataUUID());
+						if (c != null)
+						{
+							nid = c.getNid();
+						}
+					}
+					ArrayList<Integer> nids = new ArrayList<>();
+					if (nid != null)
+					{
+						nids.add(nid);
+					}
+					return nids;
 				}
-				ArrayList<Integer> nids = new ArrayList<>();
-				if (nid != null)
-				{
-					nids.add(nid);
-				}
-				return nids;
 			});
 
 			Platform.runLater(() ->

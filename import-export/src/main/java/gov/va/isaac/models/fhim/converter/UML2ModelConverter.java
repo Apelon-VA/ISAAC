@@ -20,10 +20,8 @@ package gov.va.isaac.models.fhim.converter;
 
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Attribute;
-import gov.va.isaac.models.fhim.FHIMInformationModel.External;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 import gov.va.isaac.models.fhim.FHIMUmlConstants;
-import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -335,13 +333,13 @@ public class UML2ModelConverter implements FHIMUmlConstants {
 
     private Map<String, FHIMInformationModel.External> buildNameExternalMap() {
         Map<String, FHIMInformationModel.External> m = Maps.newHashMap();
-
+/** TODO - BAC
         m.put(CODE, new External(CODE, FHIMMetadataBinding.FHIM_CODE));
         m.put(OBSERVATION_QUALIFIER, new External(OBSERVATION_QUALIFIER, FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER));
         m.put(OBSERVATION_STATEMENT, new External(OBSERVATION_STATEMENT, FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT));
         m.put(PHYSICAL_QUANTITY, new External(PHYSICAL_QUANTITY, FHIMMetadataBinding.FHIM_PHYSICALQUANTITY));
         m.put(PULSE_POSITION, new External(PULSE_POSITION, FHIMMetadataBinding.FHIM_PULSEPOSITION));
-
+**/
         return m;
     }
 }

@@ -26,18 +26,17 @@ import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 import gov.va.isaac.workflow.sync.TasksFetcher;
-
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
 import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Content;
+import org.kie.api.task.model.Status;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
 import org.kie.services.client.api.RemoteRestRuntimeFactory;
@@ -103,9 +102,10 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             for (LocalTask loopTask : actions) {
                 Task remoteTask = remoteService.getTaskById(loopTask.getId());
                 if (remoteTask != null) {
-                    if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Completed)) {
+                    remoteTask.getTaskData().getStatus();
+                    if (remoteTask.getTaskData().getStatus().equals(Status.Completed)) {
                         // too late, task not available
-                    } else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().Reserved)) {
+                    } else if (remoteTask.getTaskData().getStatus().equals(Status.Reserved)) {
                         // start and action
                         if (loopTask.getAction().equals("COMPLETE")) {
                             remoteService.start(loopTask.getId(), userId);
@@ -115,7 +115,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
                             remoteService.release(loopTask.getId(), userId);
                             ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
                         }
-                    }  else if (remoteTask.getTaskData().getStatus().equals(remoteTask.getTaskData().getStatus().InProgress)) {
+                    }  else if (remoteTask.getTaskData().getStatus().equals(Status.InProgress)) {
                         // action
                         if (loopTask.getAction().equals("COMPLETE")) {
                             remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));

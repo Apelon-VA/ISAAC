@@ -28,3 +28,11 @@
 	-fx-border-width: 2;
 	-fx-border-radius: 10;
 }
+
+.evenGridRow {
+	-fx-background-color: rgba(120, 120, 120, .1);
+}
+
+.oddGridRow {
+	-fx-background-color: rgba(20, 20, 20, .1);
+}

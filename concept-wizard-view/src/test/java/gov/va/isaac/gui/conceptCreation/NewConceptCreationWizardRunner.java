@@ -24,7 +24,6 @@ import gov.va.isaac.gui.conceptCreation.ConceptCreationWizard;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.UUID;
 
 import javafx.application.Application;
 import javafx.scene.Scene;

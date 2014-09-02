@@ -10,7 +10,7 @@ import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 public abstract class Row {
 	GridPane gp = null;
 
-	protected static ConceptViewerLabelHelper labelHelper;
+	protected ConceptViewerLabelHelper labelHelper;
 
 	abstract public void createGridPane();
 	
