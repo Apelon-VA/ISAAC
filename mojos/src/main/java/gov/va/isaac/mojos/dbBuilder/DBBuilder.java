@@ -143,6 +143,7 @@ public class DBBuilder extends AbstractMojo {
         }
 
         if (!dbExists && moveToReadOnly) {
+          Thread.sleep(5000);
           getLog().info("moving mutable to read-only");
           File readOnlyDir = new File(bdbFolderLocation, "read-only");
           FileIO.recursiveDelete(readOnlyDir);

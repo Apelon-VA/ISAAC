@@ -12,7 +12,7 @@
       <children>
 <HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
 <children>
-        <Label text="Clinical Information Model:">
+        <Label text="Type:">
           <FlowPane.margin>
             <Insets />
           </FlowPane.margin>

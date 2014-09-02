@@ -24,10 +24,11 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidExtRefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidStrExtRefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
-import gov.va.isaac.models.cem.importer.CEMMetadataBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -38,6 +39,7 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Font;
+
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
@@ -52,6 +54,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -75,9 +78,11 @@ public class RefsetTableHandler {
 		refsetNid = rNid;
 		
 		try {
+		  /** TODO - BAC
 			if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid()) {
 				refsetType = RefexType.UNKNOWN;
 			}
+			*/
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -233,7 +238,7 @@ public class RefsetTableHandler {
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
 							ComponentChronicleBI<?> compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
-							
+/** TODO - BAC							
 							RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
@@ -245,6 +250,7 @@ public class RefsetTableHandler {
 							
 							WBUtility.addUncommitted(instance.getRefCompConNid());
 							rvc_.reloadData();
+**/
 							return;
 						} else {
 							bp = createBlueprint(instance.getValueMemberNid());

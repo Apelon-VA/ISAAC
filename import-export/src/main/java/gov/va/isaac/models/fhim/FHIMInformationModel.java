@@ -20,7 +20,7 @@ package gov.va.isaac.models.fhim;
 
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
-import gov.va.isaac.models.util.AbstractInformationModel;
+import gov.va.isaac.models.util.DefaultInformationModel;
 
 import java.util.List;
 import java.util.Set;
@@ -34,7 +34,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-public class FHIMInformationModel extends AbstractInformationModel implements InformationModel {
+public class FHIMInformationModel extends DefaultInformationModel implements InformationModel {
 
     /**
      * For unlimited values, see {@link LiteralUnlimitedNatural}
@@ -214,9 +214,13 @@ public class FHIMInformationModel extends AbstractInformationModel implements In
     private final List<Dependency> dependencies = Lists.newArrayList();
     private final List<Association> associations = Lists.newArrayList();
 
+    public FHIMInformationModel(InformationModel model) {
+      super(model);
+  }
+
     public FHIMInformationModel(String name, UUID uuid) {
-        super(name, uuid, InformationModelType.FHIM);
-    }
+      super(name, null, uuid, InformationModelType.FHIM);
+  }
 
     public List<Enumeration> getEnumerations() {
         return enumerations;

@@ -30,7 +30,6 @@ import gov.va.isaac.models.fhim.FHIMInformationModel.Multiplicity;
 import gov.va.isaac.models.fhim.FHIMInformationModel.Type;
 import gov.va.isaac.models.fhim.FHIMUmlConstants;
 import gov.va.isaac.models.fhim.converter.Model2UMLConverter;
-import gov.va.isaac.models.fhim.importer.FHIMMetadataBinding;
 import gov.va.isaac.models.util.ExporterBase;
 
 import java.io.File;
@@ -45,7 +44,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.uml2.uml.LiteralUnlimitedNatural;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
@@ -54,8 +52,6 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid.NidMember;
-import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_boolean.NidBooleanMember;
-import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_int.NidIntMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_nid_string.NidNidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_nid_string.NidStringMember;
 import org.ihtsdo.otf.tcc.model.cc.refex.type_string.StringMember;
@@ -172,8 +168,9 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         LOG.debug("Model UUID: " + modelUUID);
 
         // Get all annotations on the model annotation.
-        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelRefex);
+//        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelRefex);
 
+        /** TODO - BAC
         // Enumerations.
         List<StringMember> enumAnnotations = filterAnnotations(modelAnnotations,
                 FHIMMetadataBinding.FHIM_ENUMERATIONS_REFSET, StringMember.class);
@@ -240,7 +237,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
                 infoModel.addAssociation(a);
             }
         }
-
+**/
         return infoModel;
     }
 
@@ -249,7 +246,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         String name = associationAnnotation.getString1();
         Association a = new Association(name);
         LOG.debug("Association: " + name);
-
+/** TODO - BAC
         // Association Ends.
         List<NidBooleanMember> associationEndAnnotations = filterAnnotations(
                 getLatestAnnotations(associationAnnotation),
@@ -270,7 +267,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
                 }
             }
         }
-
+**/
         return a;
     }
 
@@ -297,6 +294,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         Class c = getClass(nid);
         LOG.debug("Class: " + c.getName());
 
+        /** TODO - BAC
         // Attributes.
         Collection<NidStringMember> attributeAnnotations = filterAnnotations(
                 getLatestAnnotations(classAnnotation),
@@ -316,7 +314,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
             Generalization g = buildGeneralization(classAnnotation, generalizationAnnotation);
             c.addGeneralization(g);
         }
-
+**/
         return c;
     }
 
@@ -348,7 +346,8 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         LOG.debug("Attribute: " + a.getName());
 
         // Get all annotations on the attribute annotation.
-        Collection<? extends RefexChronicleBI<?>> attributeAnnotations = getLatestAnnotations(attributeAnnotation);
+        Collection<? extends RefexChronicleBI<?>> attributeAnnotations = null;
+        // TODO -BACgetLatestAnnotations(attributeAnnotation);
 
         // DefaultValue.
         String defaultValue = getDefaultValue(attributeAnnotations);
@@ -379,7 +378,8 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
     private VisibilityKind getVisibility(Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
             throws ValidationException, IOException {
-        StringMember visibilityAnnotation = getSingleAnnotation(attributeAnnotations,
+      /** TODO - BAC
+      StringMember visibilityAnnotation = getSingleAnnotation(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_VISIBILITY_REFSET, StringMember.class);
 
         // If none, abort.
@@ -389,11 +389,14 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
         String name = visibilityAnnotation.getString1();
         return VisibilityKind.valueOf(name);
+        **/
+      return null;
     }
 
     private Multiplicity buildMultiplicity(
             Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
             throws IOException {
+      /** TODO - BAC
         List<NidIntMember> multiplicityAnnotations = filterAnnotations(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_MULTIPLICITY_REFSET, NidIntMember.class);
 
@@ -423,12 +426,15 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         }
 
         return new Multiplicity(lower, upper);
+        **/
+      return null;
     }
 
     private String getDefaultValue(
             Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
             throws ValidationException, IOException {
-        List<StringMember> defaultValueAnnotations = filterAnnotations(attributeAnnotations,
+      /** TODO - BAC 
+      List<StringMember> defaultValueAnnotations = filterAnnotations(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_DEFAULTVALUES_REFSET, StringMember.class);
 
         // If no default value annotations, abort.
@@ -444,6 +450,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
         StringMember defaultValueAnnotation = defaultValueAnnotations.get(0);
         return defaultValueAnnotation.getString1();
+        **/ return null;
     }
 
     private Type getTypeForNid(int nid) {
@@ -498,7 +505,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         String name = enumAnnotation.getString1();
         Enumeration e = new Enumeration(name);
         LOG.debug("Attribute: " + e.getName());
-
+/** TODO - BAC
         // Enumeration values.
         Collection<StringMember> valueAnnotations = filterAnnotations(
                 getLatestAnnotations(enumAnnotation),
@@ -512,7 +519,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         // Keep track for later.
         int nid = enumAnnotation.getNid();
         nidEnumerationMap.put(nid, e);
-
+**/
         return e;
     }
 
@@ -522,7 +529,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         Map<Integer, External> m = Maps.newHashMap();
 
         External e = null;
-
+/** TODO -BAC
         // Code.
         e = new External(CODE, FHIMMetadataBinding.FHIM_CODE);
         m.put(FHIMMetadataBinding.FHIM_CODE.getNid(), e);
@@ -542,7 +549,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         // PulsePosition.
         e = new External(PULSE_POSITION, FHIMMetadataBinding.FHIM_PULSEPOSITION);
         m.put(FHIMMetadataBinding.FHIM_PULSEPOSITION.getNid(), e);
-
+**/
         return m;
     }
 }
