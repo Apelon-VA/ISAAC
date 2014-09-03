@@ -40,8 +40,8 @@ public class RemoteServiceDemo {
 
         Map<String, Object> params = new HashMap<String, Object>();
         String rndId = UUID.randomUUID().toString();
-        params.put("componentId", rndId);
-        params.put("componentName", "Component with Id:" + rndId);
+        params.put("component_id", rndId);
+        params.put("component_name", "Component with Id:" + rndId);
         //wfEngine.requestProcessInstanceCreation("terminology-authoring.test1", params);
         System.out.println("Created remote instance: " + rndId);
 

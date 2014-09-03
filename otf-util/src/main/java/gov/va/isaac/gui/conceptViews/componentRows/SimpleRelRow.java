@@ -7,7 +7,6 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
@@ -21,20 +20,25 @@ public class SimpleRelRow extends RelRow {
 	}
 
 	@Override
-	public void addRelRow(RelationshipVersionBI rel) {
+	public void addRelRow(RelationshipVersionBI<?> rel) {
 		if (!rel.isInferred()) {
 			Rectangle rec = createAnnotRectangle(rel);
 			Label relLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
 			Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
-	
+			
+			if (rel.isUncommitted()) {
+				relLabel.setUnderline(true);
+				relTypeLabel.setUnderline(true);
+			}
+
 			//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 			//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
-			gp.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-			gp.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-			gp.setConstraints(relTypeLabel,  2,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+			GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+			GridPane.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+			GridPane.setConstraints(relTypeLabel,  2,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
 			
-			gp.setMargin(relLabel, new Insets(0, 20, 0, 0));
-			gp.setMargin(relTypeLabel, new Insets(0, 0, 0, 20));
+			GridPane.setMargin(relLabel, new Insets(0, 20, 0, 0));
+			GridPane.setMargin(relTypeLabel, new Insets(0, 0, 0, 20));
 
 			gp.addRow(counter++, rec, relLabel, relTypeLabel);
 		}

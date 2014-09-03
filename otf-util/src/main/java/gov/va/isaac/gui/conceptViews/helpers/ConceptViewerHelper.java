@@ -23,6 +23,19 @@ public class ConceptViewerHelper {
 
 	public enum ComponentType {
 		CONCEPT, DESCRIPTION, RELATIONSHIP;
+		
+		@Override
+		public String toString() {
+			if (this.equals(CONCEPT)) {
+				return "Concept";				
+			} else if (this.equals(DESCRIPTION)) {
+				return "Description";
+			} else if (this.equals(RELATIONSHIP)) {
+				return "Relationship";
+			}
+			
+			return "";
+	    }
 	}
 	
 	private ConceptViewerHelper()
@@ -43,9 +56,9 @@ public class ConceptViewerHelper {
 		// Official approach found int AlternativeIdResource.class
 		
 		try {
-			for (RefexChronicleBI annotation : attr.getAnnotations()) {
+			for (RefexChronicleBI<?> annotation : attr.getAnnotations()) {
 				if (annotation.getAssemblageNid() == getSnomedAssemblageNid()) {
-					RefexLongVersionBI sctid = (RefexLongVersionBI) annotation.getPrimordialVersion();
+					RefexLongVersionBI<?> sctid = (RefexLongVersionBI<?>) annotation.getPrimordialVersion();
 					sctidString = Long.toString(sctid.getLong1());
 				}
 			}
@@ -56,7 +69,7 @@ public class ConceptViewerHelper {
 	}
 
 
-	public static String getPrimDef(ConceptAttributeVersionBI attr) {
+	public static String getPrimDef(ConceptAttributeVersionBI<?> attr) {
 		String status = "Primitive";
 		if (attr.isDefined()) {
 			status = "Fully Defined";
@@ -65,7 +78,7 @@ public class ConceptViewerHelper {
 		return status;
 	}
 	
-	public static int getPrimDefNid(ConceptAttributeVersionBI attr) {
+	public static int getPrimDefNid(ConceptAttributeVersionBI<?> attr) {
 		try {
 			int nid = SnomedMetadataRf2.PRIMITIVE_RF2.getLenient().getNid();
 			if (attr.isDefined()) {
@@ -79,14 +92,14 @@ public class ConceptViewerHelper {
 	}
 
 
-	public static ConceptAttributeVersionBI getConceptAttributes(ConceptVersionBI con) {
+	public static ConceptAttributeVersionBI<?> getConceptAttributes(ConceptVersionBI con) {
 		try {
-			ConceptAttributeVersionBI attr = con.getConceptAttributesActive();
+			ConceptAttributeVersionBI<?> attr = con.getConceptAttributesActive();
 			if (attr == null) {
 				attr = con.getConceptAttributes().getVersion(WBUtility.getViewCoordinate());
 				if (attr == null) {
 					// handle Unhandled functionality
-					attr = (ConceptAttributeVersionBI) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
+					attr = (ConceptAttributeVersionBI<?>) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
 				}
 			}
 		
@@ -97,11 +110,11 @@ public class ConceptViewerHelper {
 		}
 	}
 
-	public static Set<RefexVersionBI> getAnnotations(ComponentVersionBI comp) {
-		Set<RefexVersionBI> retSet = new HashSet<RefexVersionBI>();
+	public static Set<RefexVersionBI<?>> getAnnotations(ComponentVersionBI comp) {
+		Set<RefexVersionBI<?>> retSet = new HashSet<>();
 		
 		try {
-			for (RefexVersionBI annot : comp.getAnnotationsActive(WBUtility.getViewCoordinate())) {
+			for (RefexVersionBI<?> annot : comp.getAnnotationsActive(WBUtility.getViewCoordinate())) {
 				if (annot.getAssemblageNid() != getSnomedAssemblageNid()) {
 					retSet.add(annot);
 				}
@@ -112,5 +125,5 @@ public class ConceptViewerHelper {
 		
 		return retSet;
 	}
-
+	
 }

@@ -28,7 +28,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +57,6 @@ import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -91,6 +92,8 @@ public class WBUtility {
 	
 	public static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
 
+	public static ConceptSpec ISAAC_ROOT = new ConceptSpec("ISAAC Root", UUID.fromString("c767a452-41e3-5835-90b7-439f5b738035"));
+		
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
@@ -141,6 +144,15 @@ public class WBUtility {
 		}
 		return editCoord;
 	}
+	
+	/**
+	 * Returns null if no concept exists with this nid
+	 */
+	public static String getDescriptionIfConceptExists(UUID uuid)
+	{
+		ConceptVersionBI result = getConceptVersion(uuid);
+		return (result == null ? null : getDescription(result));
+	}
 
 	public static String getDescription(UUID uuid) {
 		try {
@@ -150,6 +162,15 @@ public class WBUtility {
 			LOG.warn("Unexpected error looking up description", ex);
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns null if no concept exists with this nid
+	 */
+	public static String getDescriptionIfConceptExists(int nid)
+	{
+		ConceptVersionBI result = getConceptVersion(nid);
+		return (result == null ? null : getDescription(result));
 	}
 	
 	public static String getDescription(int nid) {
@@ -209,7 +230,28 @@ public class WBUtility {
 		return (fsn != null ? fsn : (preferred != null ? preferred
 				: (bestFound != null ? bestFound : concept.toUserString())));
 	}
+	public static String getFullySpecifiedName(ConceptChronicleBI concept) {
+		try {
+			if (concept.getDescriptions() != null) {
+				for (DescriptionChronicleBI desc : concept.getDescriptions()) {
+					int versionCount = desc.getVersions().size();
+					DescriptionVersionBI<?> descVer = desc.getVersions()
+							.toArray(new DescriptionVersionBI[versionCount])[versionCount - 1];
 
+					if (descVer.getTypeNid() == getFSNTypeNid()) {
+						if (descVer.getStatus() == Status.ACTIVE) {
+								return descVer.getText();
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			// noop
+		}
+		
+		return null;
+	}
+	
 	private static int getFSNTypeNid() {
 		if (fsnTypeNid == null) {
 			try {
@@ -616,6 +658,14 @@ public class WBUtility {
 	}
 	
 	/**
+	 * Recursively get Is a parents of a concept
+	 */
+	public static Set<ConceptVersionBI> getConceptAncestors(int nid) throws IOException, ContradictionException
+	{
+		return getConceptAncestors(getConceptVersion(nid));
+	}
+	
+	/**
 	 * Recursively get Is a children of a concept
 	 */
 	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
@@ -634,7 +684,32 @@ public class WBUtility {
 		return results;
 	}
 
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
+		{
+			results.add(getConceptVersion(r.getDestinationNid()));
+			results.addAll(getConceptAncestors(r.getDestinationNid()));
+		}
+		return results;
+	}
+
     public static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
+            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+
+        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+
+        return newCon;
+    }
+    
+    public static ConceptChronicleBI createAndCommitNewConcept(ConceptChronicleBI parent, String fsn,
             String prefTerm) throws IOException, InvalidCAB, ContradictionException {
         ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
 
@@ -645,7 +720,7 @@ public class WBUtility {
 
         return newCon;
     }
-
+    
     public static ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm) throws ValidationException, IOException, InvalidCAB, ContradictionException {
         LanguageCode lc = LanguageCode.EN_US;
         UUID isA = Snomed.IS_A.getUuids()[0];
@@ -704,9 +779,13 @@ public class WBUtility {
 	}
 
 	public static String getTimeString(ComponentVersionBI comp) {
-	    Date date = new Date(comp.getTime());
-
-	    return format.format(date);		
+		if (comp.getTime() != Long.MAX_VALUE) {
+		    Date date = new Date(comp.getTime());
+	
+		    return format.format(date);		
+		} else {
+			return "Uncommitted";
+		}
 	}
 
 	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
@@ -720,25 +799,7 @@ public class WBUtility {
 		
 		WBUtility.getBuilder().construct(newRel);
 	}
-	
-	//TODO this will be removed, when the DB Builder starts building a single 
-	// root node, and constructing the hierarcy from there....
-	public static UUID[] getTreeRoots()
-	{
-		ArrayList<UUID> roots = new ArrayList<>();
-		roots.add(Taxonomies.SNOMED.getUuids()[0]);
-		roots.add(Taxonomies.REFSET_AUX.getUuids()[0]);
-		roots.add(Taxonomies.WB_AUX.getUuids()[0]);
 		
-		UUID uuid = UUID.fromString("3958d043-9e8c-508e-bf6d-fd9c83a856da");  //loinc root
-		if (getConceptVersion(uuid) != null)
-		{
-			roots.add(uuid);
-		}
-		//RxNorm doesn't have a root...
-		return roots.toArray(new UUID[roots.size()]);
-	}
-	
 	public static void createNewDescription(int conNid, String term) throws IOException, InvalidCAB, ContradictionException {
 		DescriptionCAB newDesc = new DescriptionCAB(conNid, SnomedMetadataRf2.SYNONYM_RF2.getNid(), LanguageCode.EN_US, term, false, IdDirective.GENERATE_HASH); 
 
@@ -764,5 +825,18 @@ public class WBUtility {
 			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
 			LOG.error("addUncommitted failure", e);
 		}
+	}
+	
+	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException  {
+		ConceptChronicleBI pathRefset =
+		        dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
+		    Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
+		    List<ConceptChronicleBI> pathConcepts = new ArrayList<>();
+		    for (RefexChronicleBI<?> member : members) {
+		        int memberNid = ((NidMember)member).getC1Nid();
+		        ConceptChronicleBI pathConcept = dataStore.getConcept(memberNid);
+		        pathConcepts.add(pathConcept);
+		     }
+		    return pathConcepts;
 	}
 }

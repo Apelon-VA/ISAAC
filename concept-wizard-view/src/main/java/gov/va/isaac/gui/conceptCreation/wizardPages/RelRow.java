@@ -32,7 +32,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.StackPane;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 
@@ -58,6 +57,9 @@ public class RelRow
 	
 	// TODO add validation of this type (unless drools covers it)
 	SimpleStringProperty typeTargetInvalidReason_ = new SimpleStringProperty("Relationship type may not be same as relationship target");
+
+	// TODO Need to add soon
+	SimpleStringProperty typeIsaInvalidReason_ = new SimpleStringProperty("Relationship type may not be IS_A as that is defined in first screen");
 
 	public RelRow()
 	{

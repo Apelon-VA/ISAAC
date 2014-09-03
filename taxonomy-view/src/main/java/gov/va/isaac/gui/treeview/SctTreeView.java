@@ -21,13 +21,15 @@ package gov.va.isaac.gui.treeview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
@@ -40,6 +42,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -66,13 +69,18 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
+    private final static SctTreeItemDisplayPolicies defaultDisplayPolicies = new DefaultSctTreeItemDisplayPolicies();
+
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
     private Object lock_ = new Object();
+    private boolean initRun = false;
     private boolean initialLoadComplete_ = false;
     private StackPane sp_;
+    private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
+    private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
 
     protected SctTreeView() {
         treeView_ = new TreeView<>();
@@ -88,35 +96,97 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     
     public StackPane getView()
     {
+    	if (! initRun) {
+    		LOG.warn("getView() called before init() run");
+    	}
         return sp_;
     }
-    
-    public void init(final UUID[] rootConcepts) {
 
-        // Do work in background.
-        Task<ConceptChronicleDdo[]> task = new Task<ConceptChronicleDdo[]>() {
+    public void refresh() {
+    	if (! initRun) {
+    		init();
+    	}
 
+    	Task<Object> task = new Task<Object>() {
             @Override
-            protected ConceptChronicleDdo[] call() throws Exception {
-                LOG.debug("Loading concepts {} as the root of a tree view", Arrays.toString(rootConcepts));
-                ConceptChronicleDdo[] result = new ConceptChronicleDdo[rootConcepts.length];
-                int i = 0;
-                for (UUID uuid : rootConcepts)
+            protected Object call() throws Exception {
+                LOG.debug("Ensuring init completed");
+                
+                synchronized (lock_)
                 {
-                    result[i++] = ExtendedAppContext.getDataStore().getFxConcept(
-                            uuid,
-                            WBUtility.getViewCoordinate(),
-                            VersionPolicy.ACTIVE_VERSIONS,
-                            RefexPolicy.REFEX_MEMBERS,
-                            RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+                    if (!initialLoadComplete_)
+                    {
+                    	try {
+                    		LOG.info("Waiting for init() to complete...");
+                    		lock_.wait();
+                    		LOG.info("Completed waiting for init() to complete");
+                    	} catch (Exception e) {
+                    		LOG.error("Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\" while waiting for init() to complete");
+                    	}
+                    }
                 }
-                LOG.debug("Finished loading root concepts");
-                return result;
+                
+                LOG.debug("Finished ensuring init completed");
+                return new Object();
             }
 
             @Override
             protected void succeeded() {
-                ConceptChronicleDdo[] result = this.getValue();
+            	LOG.debug("Succeeded waiting for init() to complete");
+
+            	LOG.debug("Removing existing children...");
+            	rootTreeItem.getChildren().clear();
+            	LOG.debug("Removed existing children.");
+            	
+            	LOG.debug("Re-adding children...");
+            	rootTreeItem.addChildren();
+            	LOG.debug("Re-added children.");
+            }
+
+            @Override
+            protected void failed() {
+                Throwable ex = getException();
+                String title = "Unexpected error waiting for init() to complete";
+                String msg = ex.getClass().getName();
+                LOG.error(title, ex);
+                if (!shutdownRequested)
+                {
+                    AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+                }
+            }
+        };
+
+        Utility.execute(task);
+    }
+    
+    public void init() {
+    	init(WBUtility.ISAAC_ROOT.getUuids()[0]);
+    }
+
+    private void init(final UUID rootConcept) {
+    	initRun = true;
+    	
+        // Do work in background.
+        Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
+
+            @Override
+            protected ConceptChronicleDdo call() throws Exception {
+                LOG.debug("Loading concept {} as the root of a tree view", rootConcept);
+                ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
+                        rootConcept,
+                        WBUtility.getViewCoordinate(),
+                        VersionPolicy.ACTIVE_VERSIONS,
+                        RefexPolicy.REFEX_MEMBERS,
+                        RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
+                LOG.debug("Finished loading root concept");
+                return rootConceptCC;
+            }
+
+            @Override
+            protected void succeeded() {
+            	LOG.debug("getFxConcept() (called by init()) succeeded");
+
+                ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
             }
 
@@ -136,7 +206,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         Utility.execute(task);
     }
     
-    private void finishTreeSetup(ConceptChronicleDdo[] rootConcepts) {
+    private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
+    	LOG.debug("Running finishTreeSetup()...");
+    	
         treeView_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         treeView_.setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
@@ -147,51 +219,46 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         });
 
         TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept);
+        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, displayPolicies);
         treeView_.setShowRoot(false);
         treeView_.setRoot(hiddenRootItem);
 
-        
-        for (ConceptChronicleDdo rootConcept : rootConcepts)
-        {
-            TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
-            visibleRootConcept.setConcept(rootConcept);
-    
-            SctTreeItem rootTreeItem = new SctTreeItem(visibleRootConcept, Images.ROOT.createImageView());
-    
-            hiddenRootItem.getChildren().add(rootTreeItem);
+        TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
+        visibleRootConcept.setConcept(rootConcept);
 
-            rootTreeItem.addChildren();
-    
-            // put this event handler on the root
-            rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchCollapsedEvent(),
-                    new EventHandler<TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept>>() {
-                        @Override
-                        public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
-                            // remove grandchildren
-                            SctTreeItem sourceTreeItem = (SctTreeItem) t
-                                    .getSource();
-                            sourceTreeItem.removeGrandchildren();
-                        }
-                    });
-    
-            rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchExpandedEvent(),
-                    new EventHandler<TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept>>() {
-                        @Override
-                        public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
-                            // add grandchildren
-                            SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
-                            ProgressIndicator p2 = new ProgressIndicator();
-    
-                            //TODO figure out what to do with the progress indicator
-    //                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
-                            p2.setPrefSize(16, 16);
-                            p2.setProgress(-1);
-                            sourceTreeItem.setProgressIndicator(p2);
-                            sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
-                        }
-                    });
-        }
+        rootTreeItem = new SctTreeItem(visibleRootConcept, displayPolicies, Images.ROOT.createImageView());
+
+        hiddenRootItem.getChildren().add(rootTreeItem);
+        rootTreeItem.addChildren();
+
+        // put this event handler on the root
+        rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchCollapsedEvent(),
+                new EventHandler<TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept>>() {
+                    @Override
+                    public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
+                        // remove grandchildren
+                        SctTreeItem sourceTreeItem = (SctTreeItem) t
+                                .getSource();
+                        sourceTreeItem.removeGrandchildren();
+                    }
+                });
+
+        rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchExpandedEvent(),
+                new EventHandler<TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept>>() {
+                    @Override
+                    public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
+                        // add grandchildren
+                        SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
+                        ProgressIndicator p2 = new ProgressIndicator();
+
+                        //TODO figure out what to do with the progress indicator
+//                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
+                        p2.setPrefSize(16, 16);
+                        p2.setProgress(-1);
+                        sourceTreeItem.setProgressIndicator(p2);
+                        sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                    }
+                });
         sp_.getChildren().add(treeView_);
         sp_.getChildren().remove(0);  //remove the progress indicator
         synchronized (lock_)
@@ -202,6 +269,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
+		if (! initRun) {
+    		init();
+    	}
 
         // Do work in background.
         Task<SctTreeItem> task = new Task<SctTreeItem>() {
@@ -250,18 +320,17 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                     }
                 }
 
-                //TODO fix this bad  hack - need to redo this algoritm to handle multiple roots.
-                //currently  assumes SCT is the first node.
-                SctTreeItem currentTreeItem = (SctTreeItem)treeView_.getRoot().getChildren().get(0);
+                SctTreeItem currentTreeItem = rootTreeItem;
 
                 // Walk down path from root.
+                boolean isLast = true;
                 for (int i = pathToRoot.size() - 1; i >= 0; i--) {
-                    boolean isLast = (i == 0);
                     SctTreeItem child = findChild(currentTreeItem, pathToRoot.get(i), isLast);
                     if (child == null) {
                         break;
                     }
                     currentTreeItem = child;
+                    isLast = false;
                 }
 
                 return currentTreeItem;
@@ -343,9 +412,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                     } else {
                         SctTreeItem answer = answers.get(0);
                         treeView_.scrollTo(treeView_.getRow(answer));
+                        answer.setExpanded(true);
                         if (! isLast) {
                             // Start fetching the next level.
-                            answer.setExpanded(true);
                             answer.addChildren();
                         }
                     }
@@ -399,6 +468,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
     }
 
+	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
+		this.displayPolicies = policies;
+	}
+
+	public static SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
+		return defaultDisplayPolicies;
+	}
+	
     /**
      * Tell the tree to stop whatever threading operations it has running,
      * since the application is exiting.

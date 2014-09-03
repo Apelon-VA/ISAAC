@@ -148,7 +148,7 @@ public class FindAndReplace extends Operation
 					}
 
 					String newTxt = null;
-					Set<String> successMatches = new HashSet();
+					Set<String> successMatches = new HashSet<>();
 
 					updateProgress(i, conceptList_.size());
 					updateMessage("Processing " + c.getDescription());
@@ -156,9 +156,9 @@ public class FindAndReplace extends Operation
 
 					// For each concept, filter the descriptions to be changed based on user selected DescType
 					ConceptVersionBI con = WBUtility.getConceptVersion(c.getNid());
-					Set<DescriptionVersionBI> descsToChange= getDescsToChange(con);
+					Set<DescriptionVersionBI<?>> descsToChange= getDescsToChange(con);
 					
-					for (DescriptionVersionBI desc : descsToChange) {
+					for (DescriptionVersionBI<?> desc : descsToChange) {
 						// First see if text is found in desc before moving onward
 						if (frc_.isRegExp() && hasRegExpMatch(desc) ||
 							!frc_.isRegExp() && hasGenericMatch(desc)) { 
@@ -191,7 +191,7 @@ public class FindAndReplace extends Operation
 				return new OperationResult(FindAndReplace.this.getTitle(), modifiedConcepts, getMsgBuffer());
 			}
 
-			private boolean hasRegExpMatch(DescriptionVersionBI desc) {
+			private boolean hasRegExpMatch(DescriptionVersionBI<?> desc) {
 				Pattern pattern = Pattern.compile(frc_.getSearchText());
 		        
 				matcher = pattern.matcher(desc.getText());
@@ -208,7 +208,7 @@ public class FindAndReplace extends Operation
 		        return matcher.replaceAll(frc_.getReplaceText());				
 			}
 
-			private String replaceGeneric(DescriptionVersionBI desc) {
+			private String replaceGeneric(DescriptionVersionBI<?> desc) {
 				String txt = desc.getText();
 				
 				if (frc_.isCaseSens()) {
@@ -231,7 +231,7 @@ public class FindAndReplace extends Operation
 				return txt;
 			}
 			
-			private boolean hasGenericMatch(DescriptionVersionBI desc) {
+			private boolean hasGenericMatch(DescriptionVersionBI<?> desc) {
 				String txt = desc.getText();
 				
 				if (frc_.isCaseSens()) {
@@ -247,19 +247,18 @@ public class FindAndReplace extends Operation
 				return true;
 			}
 
-			private void updateDescription(DescriptionVersionBI desc, String newTxt) throws IOException, InvalidCAB, ContradictionException {
+			private void updateDescription(DescriptionVersionBI<?> desc, String newTxt) throws IOException, InvalidCAB, ContradictionException {
 				DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
 				dcab.setText(newTxt);
 				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
 				WBUtility.addUncommitted(dcbi.getEnclosingConcept());
 			}
 
-			private Set<DescriptionVersionBI> getDescsToChange(ConceptVersionBI con) {
-				Set<DescriptionVersionBI> descsToChange = new HashSet<DescriptionVersionBI>();
+			private Set<DescriptionVersionBI<?>> getDescsToChange(ConceptVersionBI con) {
+				Set<DescriptionVersionBI<?>> descsToChange = new HashSet<>();
 				
 				try {
-					for (DescriptionVersionBI desc : con.getDescriptionsActive()) {
-						DescriptionType descType = getDescType(con, desc);
+					for (DescriptionVersionBI<?> desc : con.getDescriptionsActive()) {
 
 						if (frc_.getSelectedDescTypes().contains(DescriptionType.FSN) &&
 							con.getFullySpecifiedDescription().getNid() == desc.getNid()) {
@@ -281,7 +280,7 @@ public class FindAndReplace extends Operation
 				return descsToChange;
 			}
 
-			private DescriptionType getDescType(ConceptVersionBI con, DescriptionVersionBI desc) throws IOException, ContradictionException {
+			private DescriptionType getDescType(ConceptVersionBI con, DescriptionVersionBI<?> desc) throws IOException, ContradictionException {
 				// TODO Auto-generated method stub
 				if (con.getFullySpecifiedDescription().getNid() == desc.getNid()) {
 					return DescriptionType.FSN;

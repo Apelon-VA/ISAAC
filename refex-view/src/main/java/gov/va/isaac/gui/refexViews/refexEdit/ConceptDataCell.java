@@ -18,14 +18,19 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.util.Arrays;
+import java.util.Collection;
 import javafx.concurrent.Task;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TreeTableCell;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
@@ -43,6 +48,17 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 {
 	private static Logger logger_ = LoggerFactory.getLogger(ConceptDataCell.class);
 	
+	private boolean isAssemblage_ = false;
+	
+	protected ConceptDataCell(boolean isAssemblage)
+	{
+		isAssemblage_ = isAssemblage;
+	}
+	
+	protected ConceptDataCell()
+	{
+		isAssemblage_ = false;
+	}
 
 	/**
 	 * @see javafx.scene.control.Cell#updateItem(java.lang.Object, boolean)
@@ -89,9 +105,28 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 					}
 					else
 					{
-						CommonMenus.addCommonMenus(cm, () -> 
+						if (isAssemblage_)
 						{
-							return Arrays.asList(new Integer[] {nid});
+							MenuItem mi = new MenuItem("View Refex Assemblage Usage");
+							mi.setOnAction((action) ->
+							{
+								SimpleDisplayConcept sdc = new SimpleDisplayConcept(c);
+								DynamicReferencedItemsView driv = new DynamicReferencedItemsView(sdc);
+								driv.showView(null);
+							});
+							mi.setGraphic(Images.SEARCH.createImageView());
+							cm.getItems().add(mi);
+						}
+						
+						
+						CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
+						{
+							
+							@Override
+							public Collection<Integer> getNIds()
+							{
+								return Arrays.asList(new Integer[] {nid});
+							}
 						});
 						text = WBUtility.getDescription(c);
 					}

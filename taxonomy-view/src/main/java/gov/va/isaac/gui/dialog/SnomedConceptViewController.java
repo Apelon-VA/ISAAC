@@ -34,6 +34,7 @@ import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -92,6 +93,8 @@ public class SnomedConceptViewController {
     @FXML private ProgressIndicator treeViewProgress;
     @FXML private VBox annotationsRegion;
     @FXML private ToggleButton stampToggle;
+    @FXML private ToggleButton historyToggle;
+    @FXML private ToggleButton activeOnlyToggle;
 
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
@@ -145,6 +148,15 @@ public class SnomedConceptViewController {
         stampToggle.setText("");
         stampToggle.setGraphic(Images.STAMP.createImageView());
         stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+        
+        activeOnlyToggle.setText("");
+        activeOnlyToggle.setGraphic(Images.FILTER_16.createImageView());
+        activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
+        activeOnlyToggle.setSelected(true);
+        
+        historyToggle.setText("");
+        historyToggle.setGraphic(Images.HISTORY.createImageView());
+        historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
         //TODO make the other view tables aware of the show/hide stamp call
         
         ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
@@ -155,7 +167,7 @@ public class SnomedConceptViewController {
             @Override
             public void handle(ActionEvent event) {
                 treeViewSearchRunning.set(true);
-                sctTree.showConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
+                sctTree.locateConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
             }
         });
 
@@ -272,7 +284,7 @@ public class SnomedConceptViewController {
                 cellValueFactory, cellFactory);
         
         RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
-        v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty());
+        v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty(), activeOnlyToggle.selectedProperty(), historyToggle.selectedProperty());
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());
@@ -282,20 +294,20 @@ public class SnomedConceptViewController {
         // Load the inner tree view.
         try {
             sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
-            sctTree.init(WBUtility.getTreeRoots());
+            sctTree.init();
             Region r = sctTree.getView();
             splitRight.getChildren().add(r);
             VBox.setVgrow(r, Priority.ALWAYS);
             treeViewSearchRunning.set(true);
-            sctTree.showConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
+            sctTree.locateConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
         } catch (Exception ex) {
             LOG.error("Error creating tree view", ex);
             splitRight.getChildren().add(new Label("Unexpected error building tree"));
         }
     }
 
-    public String getTitle() {
-        return fsnLabel.getText();
+    public StringProperty getTitle() {
+        return fsnLabel.textProperty();
     }
 
     public UUID getConceptUuid() {

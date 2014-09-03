@@ -36,6 +36,7 @@ public interface MultipleConceptIdProvider extends ConceptIdProvider {
 	/**
 	 * Get methods only use bulk methods if unambiguous (only 1 entry avail)
 	 */
+	@Override
 	public default String getSctId() {
 		if (getSctIds() != null && getSctIds().length == 1) {
 			return getSctIds()[0];
@@ -51,6 +52,7 @@ public interface MultipleConceptIdProvider extends ConceptIdProvider {
 		}
 	}
 
+	@Override
 	public default UUID getUUID() {
 		if (getUUIDs() != null && getUUIDs().length == 1) {
 			return getUUIDs()[0];
@@ -66,6 +68,7 @@ public interface MultipleConceptIdProvider extends ConceptIdProvider {
 		}
 	}
 
+	@Override
 	public default Integer getNid() {
 		if (getNids() != null && getNids().length == 1) {
 			return getNids()[0];

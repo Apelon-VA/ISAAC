@@ -28,7 +28,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -72,7 +71,7 @@ public class ComponentsController implements PanelControllers {
 	@FXML private Button cancelButton;
 	@FXML private Button backButton;
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ComponentsController.class);
+	private final Logger LOG = LoggerFactory.getLogger(ComponentsController.class);
 	
 	static ViewCoordinate vc = null;
 	ScreensController processController;
@@ -84,7 +83,8 @@ public class ComponentsController implements PanelControllers {
 
 	//TODO this page still needs a vertical scrollbar
 	@Override
-	public void initialize() {		
+	public void initialize() {
+		LOG.debug("Creating a ComponentsController");
 		vc = WBUtility.getViewCoordinate();
 			
 		// Buttons

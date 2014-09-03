@@ -34,10 +34,8 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
-import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
-import org.ihtsdo.otf.tcc.model.cc.description.DescriptionRevision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +48,13 @@ import org.slf4j.LoggerFactory;
  */
 public class WizardController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(WizardController.class);
+	private final Logger LOG = LoggerFactory.getLogger(WizardController.class);
 	private String fsn;
 	private String prefTerm;
 	private List<ConceptVersionBI> parents;
 	private boolean isPrimitive;
 	private List<TermRow> syns;
 	private List<RelRow> rels;
-	private int acceptableTypeNid = 0;
 
 	public void setConceptDefinitionVals(String fsn, String prefTerm,
 			List<ConceptVersionBI> parents, boolean isPrimitive) {
@@ -150,6 +147,8 @@ public class WizardController {
 	public ConceptChronicleBI createNewConcept() throws ValidationException, IOException, InvalidCAB, ContradictionException {
 		String fsn = getConceptFSN();
 		String prefTerm = getConceptPT();
+
+		LOG.debug("Creating concept {}", fsn);
 		
 		UUID isA = Snomed.IS_A.getUuids()[0];
 		UUID parentCons[] = new UUID[parents.size()];

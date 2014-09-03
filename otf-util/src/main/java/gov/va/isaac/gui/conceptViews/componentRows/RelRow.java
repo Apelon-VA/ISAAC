@@ -7,17 +7,23 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public abstract class RelRow extends Row {
 	int counter = 0;
-	protected GridPane dgp = new GridPane();
+	protected GridPane dgp;
 	protected GridPane currentPane;
+	boolean isDetailed = false;
 
 	public void resetCounter() {
 		counter = 0;
 		currentPane = dgp;
+		isDetailed = true;
 	}
 
 	public RelRow(ConceptViewerLabelHelper labelHelper) {
 		super(labelHelper);
 	}
 
-	abstract public void addRelRow(RelationshipVersionBI rel);
+	abstract public void addRelRow(RelationshipVersionBI<?> rel);
+
+	public GridPane getDestinationGridPane() {
+		return dgp;
+	}
 }

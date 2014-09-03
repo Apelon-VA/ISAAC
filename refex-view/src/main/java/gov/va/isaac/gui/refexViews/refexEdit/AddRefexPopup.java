@@ -22,21 +22,21 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
+import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -47,22 +47,24 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.util.StringConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.runlevel.RunLevelException;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -76,19 +78,8 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicBooleanBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexBoolean;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexByteArray;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDouble;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexFloat;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexLong;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexNid;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexString;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexUUID;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,16 +103,14 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private ConceptNode selectableConcept_;
 	private RefexDynamicUsageDescription assemblageInfo_;
 	private SimpleBooleanProperty assemblageIsValid_ = new SimpleBooleanProperty(false);
-	private SimpleStringProperty reasonSaveDisabled_ = new SimpleStringProperty();
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 	private UpdateableBooleanBinding allValid_;
 
-	private ArrayList<StringProperty> currentDataFieldWarnings_ = new ArrayList<>();
-	private ArrayList<Object> currentDataFields_ = new ArrayList<>();
+	private ArrayList<ReadOnlyStringProperty> currentDataFieldWarnings_ = new ArrayList<>();
+	private ArrayList<RefexDataTypeNodeDetails> currentDataFields_ = new ArrayList<>();
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 	private GridPane gp_;
 
-	//TODO implement manditory columns
 	//TODO use the word Sememe
 	
 	private AddRefexPopup()
@@ -175,8 +164,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						}
 						catch (Exception e)
 						{
-							selectableConcept_.isValid().set(false);
-							selectableConcept_.getInvalidReason().set("The selected concept is not properly constructed for use as an Assemblage concept");
+							selectableConcept_.isValid().setInvalid("The selected concept is not properly constructed for use as an Assemblage concept");
 							logger_.info("Concept not a valid concept for a refex assemblage", e);
 							assemblageIsValid_.set(false);
 						}
@@ -192,7 +180,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		});
 
 		//delay adding concept till we know where
-
 		ColumnConstraints cc = new ColumnConstraints();
 		cc.setHgrow(Priority.NEVER);
 		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(referencedComponent));
@@ -227,7 +214,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				if (assemblageIsValid_.get() && selectableConcept_.isValid().get())
 				{
 					boolean allDataValid = true;
-					for (StringProperty ssp : currentDataFieldWarnings_)
+					for (ReadOnlyStringProperty ssp : currentDataFieldWarnings_)
 					{
 						if (ssp.get().length() > 0)
 						{
@@ -237,11 +224,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 					}
 					if (allDataValid)
 					{
-						reasonSaveDisabled_.set("");
+						clearInvalidReason();
 						return true;
 					}
 				}
-				reasonSaveDisabled_.set("All errors must be corrected before save is allowed");
+				setInvalidReason("All errors must be corrected before save is allowed");
 				return false;
 			}
 		};
@@ -263,7 +250,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		saveButton.setOnAction((action) -> {
 			doSave();
 		});
-		Node wrappedSave = ErrorMarkerUtils.setupDisabledInfoMarker(saveButton, reasonSaveDisabled_);
+		Node wrappedSave = ErrorMarkerUtils.setupDisabledInfoMarker(saveButton, allValid_.getReasonWhyInvalid());
 		GridPane.setMargin(wrappedSave, new Insets(5, 0, 5, 20));
 		bottomRow.add(wrappedSave, 2, 0);
 
@@ -291,15 +278,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		setScene(scene);
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<>();
-	}
-	
 	public void finishInit(RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex, DynamicRefexView viewToRefresh)
 	{
 		finishInit(new InputType(refex), viewToRefresh);
@@ -368,11 +346,15 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	{
 		if (assemblageValid)
 		{
-			for (StringProperty ssp : currentDataFieldWarnings_)
+			for (ReadOnlyStringProperty ssp : currentDataFieldWarnings_)
 			{
 				allValid_.removeBinding(ssp);
 			}
 			currentDataFieldWarnings_.clear();
+			for (RefexDataTypeNodeDetails nd : currentDataFields_)
+			{
+				nd.cleanupListener();
+			}
 			currentDataFields_.clear();
 
 			GridPane gp = new GridPane();
@@ -380,15 +362,104 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			gp.setVgap(10.0);
 			gp.setStyle("-fx-padding: 5;");
 			int row = 0;
+			boolean extraInfoColumnIsRequired = false;
 			for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
 			{
+				SimpleStringProperty valueIsRequired = (ci.isColumnRequired() ? new SimpleStringProperty("") : null);
+				SimpleStringProperty defaultValueTooltip = ((ci.getDefaultColumnValue() == null && ci.getValidator() == null) ? null : new SimpleStringProperty());
+				ComboBox<RefexDynamicDataType> polymorphicType = null;
+				
 				Label l = new Label(ci.getColumnName());
 				l.getStyleClass().add("boldLabel");
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
-				gp.add(l, 0, row);
-				Node n = buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), (currentValues == null ? null : currentValues[row]));
-				gp.add(n, 1, row);
-				gp.add(new Label(ci.getColumnDataType().getDisplayName()), 2, row++);
+				int col = 0;
+				gp.add(l, col++, row);
+				
+				if (ci.getColumnDataType() == RefexDynamicDataType.POLYMORPHIC)
+				{
+					polymorphicType = new ComboBox<>();
+					polymorphicType.setEditable(false);
+					polymorphicType.setConverter(new StringConverter<RefexDynamicDataType>()
+					{
+						
+						@Override
+						public String toString(RefexDynamicDataType object)
+						{
+							return object.getDisplayName();
+						}
+						
+						@Override
+						public RefexDynamicDataType fromString(String string)
+						{
+							throw new RuntimeException("unecessary");
+						}
+					});
+					for (RefexDynamicDataType type : RefexDynamicDataType.values())
+					{
+						if (type == RefexDynamicDataType.POLYMORPHIC || type == RefexDynamicDataType.UNKNOWN)
+						{
+							continue;
+						}
+						else
+						{
+							polymorphicType.getItems().add(type);
+						}
+					}
+					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType()));
+				}
+				
+				RefexDataTypeNodeDetails nd = RefexDataTypeFXNodeBuilder.buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), 
+						(currentValues == null ? null : currentValues[row]),valueIsRequired, defaultValueTooltip, 
+						(polymorphicType == null ? null : polymorphicType.getSelectionModel().selectedItemProperty()), allValid_,
+						new SimpleObjectProperty<>(ci.getValidator()), new SimpleObjectProperty<>(ci.getValidatorData()));
+				
+				currentDataFieldWarnings_.addAll(nd.getBoundToAllValid());
+				if (ci.getColumnDataType() == RefexDynamicDataType.POLYMORPHIC)
+				{
+					nd.addUpdateParentListListener(currentDataFieldWarnings_);
+				}
+				
+				currentDataFields_.add(nd);
+				
+				gp.add(nd.getNodeForDisplay(), col++, row);
+				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null || ci.getValidator() != null)
+				{
+					extraInfoColumnIsRequired = true;
+					
+					StackPane stackPane = new StackPane();
+					stackPane.setMaxWidth(Double.MAX_VALUE);
+					
+					if (ci.getDefaultColumnValue() != null || ci.getValidator() != null)
+					{
+						ImageView information = Images.INFORMATION.createImageView();
+						Tooltip tooltip = new Tooltip();
+						tooltip.textProperty().bind(defaultValueTooltip);
+						Tooltip.install(information, tooltip);
+						tooltip.setAutoHide(true);
+						information.setOnMouseClicked(event -> tooltip.show(information, event.getScreenX(), event.getScreenY()));
+						stackPane.getChildren().add(information);
+					}
+					
+					if (ci.isColumnRequired())
+					{
+						ImageView exclamation = Images.EXCLAMATION.createImageView();
+
+						final BooleanProperty showExclamation = new SimpleBooleanProperty(StringUtils.isNotBlank(valueIsRequired.get()));
+						valueIsRequired.addListener((ChangeListener<String>) (observable, oldValue, newValue) -> showExclamation.set(StringUtils.isNotBlank(newValue)));
+
+						exclamation.visibleProperty().bind(showExclamation);
+						Tooltip tooltip = new Tooltip();
+						tooltip.textProperty().bind(valueIsRequired);
+						Tooltip.install(exclamation, tooltip);
+						tooltip.setAutoHide(true);
+						
+						exclamation.setOnMouseClicked(event -> tooltip.show(exclamation, event.getScreenX(), event.getScreenY()));
+						stackPane.getChildren().add(exclamation);
+					}
+
+					gp.add(stackPane, col++, row);
+				}
+				gp.add((polymorphicType == null ? new Label(ci.getColumnDataType().getDisplayName()) : polymorphicType), col++, row++);
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
@@ -398,6 +469,13 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			cc = new ColumnConstraints();
 			cc.setHgrow(Priority.ALWAYS);
 			gp.getColumnConstraints().add(cc);
+
+			if (extraInfoColumnIsRequired)
+			{
+				cc = new ColumnConstraints();
+				cc.setHgrow(Priority.NEVER);
+				gp.getColumnConstraints().add(cc);
+			}
 			
 			cc = new ColumnConstraints();
 			cc.setHgrow(Priority.NEVER);
@@ -411,6 +489,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				sp_.setContent(gp);
 			}
+			allValid_.invalidate();
 		}
 		else
 		{
@@ -418,174 +497,15 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 	}
 
-	private Node buildNodeForType(RefexDynamicDataType dt, Object defaultValue, RefexDynamicDataBI currentValue)
-	{
-		if (RefexDynamicDataType.BOOLEAN == dt)
-		{
-			ChoiceBox<String> cb = new ChoiceBox<>();
-			cb.getItems().add("No Value");
-			cb.getItems().add("True");
-			cb.getItems().add("False");
-			if (currentValue == null)
-			{
-				cb.getSelectionModel().select(0);
-			}
-			else
-			{
-				if (((RefexDynamicBooleanBI)currentValue).getDataBoolean())
-				{
-					cb.getSelectionModel().select(1);
-				}
-				{
-					cb.getSelectionModel().select(2);
-				}
-			}
-			currentDataFields_.add(cb);
-			return cb;
-		}
-		else if (RefexDynamicDataType.BYTEARRAY == dt)
-		{
-			currentDataFields_.add(new byte[] {});
-			//TODO add in a file chooser button
-			return new Label("Byte Array not yet supported in the GUI");
-
-		}
-		else if (RefexDynamicDataType.DOUBLE == dt || RefexDynamicDataType.FLOAT == dt || RefexDynamicDataType.INTEGER == dt || RefexDynamicDataType.LONG == dt
-				|| RefexDynamicDataType.STRING == dt || RefexDynamicDataType.UUID == dt)
-		{
-			TextField tf = new TextField();
-			currentDataFields_.add(tf);
-
-			if (defaultValue != null)
-			{
-				tf.setPromptText(defaultValue.toString());
-			}
-			SimpleStringProperty valueInvalidReason = new SimpleStringProperty("");
-			currentDataFieldWarnings_.add(valueInvalidReason);
-			allValid_.addBinding(valueInvalidReason);
-			Node n = ErrorMarkerUtils.setupErrorMarker(tf, valueInvalidReason);
-
-			tf.textProperty().addListener(new ChangeListener<String>()
-			{
-				@Override
-				public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
-				{
-					if (newValue.length() == 0)
-					{
-						valueInvalidReason.setValue("");
-					}
-					else if (RefexDynamicDataType.DOUBLE == dt)
-					{
-						try
-						{
-							Double.parseDouble(tf.getText());
-							valueInvalidReason.set("");
-						}
-						catch (Exception e)
-						{
-							valueInvalidReason.set("The value (if present) must be a double");
-						}
-
-					}
-					else if (RefexDynamicDataType.FLOAT == dt)
-					{
-						try
-						{
-							Float.parseFloat(tf.getText());
-							valueInvalidReason.set("");
-						}
-						catch (Exception e)
-						{
-							valueInvalidReason.set("The value (if present) must be a float");
-						}
-					}
-					else if (RefexDynamicDataType.INTEGER == dt)
-					{
-						try
-						{
-							Integer.parseInt(tf.getText());
-							valueInvalidReason.set("");
-						}
-						catch (Exception e)
-						{
-							valueInvalidReason.set("The value (if present) must be an integer");
-						}
-					}
-					else if (RefexDynamicDataType.LONG == dt)
-					{
-						try
-						{
-							Long.parseLong(tf.getText());
-							valueInvalidReason.set("");
-						}
-						catch (Exception e)
-						{
-							valueInvalidReason.set("The value (if present) must be a long");
-						}
-					}
-					else if (RefexDynamicDataType.STRING == dt)
-					{
-						valueInvalidReason.set("");
-					}
-					else if (RefexDynamicDataType.UUID == dt)
-					{
-						if (Utility.isUUID(tf.getText()))
-						{
-							valueInvalidReason.set("");
-						}
-						else
-						{
-							valueInvalidReason.set("The value (if present) must be a properly formatted UUID");
-						}
-					}
-				}
-			});
-			
-			if (currentValue != null)
-			{
-				tf.setText(currentValue.getDataObject().toString());
-			}
-
-			return n;
-		}
-		else if (RefexDynamicDataType.NID == dt)
-		{
-			ConceptNode cn = new ConceptNode(null, false);
-			currentDataFields_.add(cn);
-			currentDataFieldWarnings_.add(cn.getInvalidReason());
-			allValid_.addBinding(cn.getInvalidReason());
-			
-			if (currentValue != null)
-			{
-				cn.set(WBUtility.getConceptVersion(((RefexDynamicNidBI)currentValue).getDataNid()));
-			}
-
-			return cn.getNode();
-		}
-		else if (RefexDynamicDataType.POLYMORPHIC == dt)
-		{
-			//TODO will need to make a data type selector, and a data field... can recurse for part of it, 
-			//but need to make sure that the error markers and such don't get confused.
-			HBox hBox = new HBox();
-			currentDataFields_.add(null);
-			hBox.getChildren().add(new Label("Polymorphic is not yet supported in the GUI"));
-			return hBox;
-		}
-		else
-		{
-			throw new RuntimeException("Unexpected datatype " + dt);
-		}
-	}
-
 	private void doSave()
 	{
 		try
 		{
-			RefexDynamicData[] data = new RefexDynamicData[assemblageInfo_.getColumnInfo().length];
+			RefexDynamicDataBI[] data = new RefexDynamicData[assemblageInfo_.getColumnInfo().length];
 			int i = 0;
 			for (RefexDynamicColumnInfo ci : assemblageInfo_.getColumnInfo())
 			{
-				data[i] = getDataForType(currentDataFields_.get(i++), ci);
+				data[i] = RefexDataTypeFXNodeBuilder.getDataForType(currentDataFields_.get(i++).getDataField(), ci);
 			}
 			
 			int componentNid;
@@ -618,7 +538,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 			}
-			cab.setData(data);
+			cab.setData(data, WBUtility.getViewCoordinate());
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
 			builder.construct(cab);
 			
@@ -639,91 +559,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		{
 			logger_.error("Error saving refex", e);
 			AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "There was an error saving the refex", e.getMessage(), this);
-		}
-	}
-
-	private RefexDynamicData getDataForType(Object data, RefexDynamicColumnInfo ci) throws PropertyVetoException
-	{
-		if (RefexDynamicDataType.BOOLEAN == ci.getColumnDataType())
-		{
-			@SuppressWarnings("unchecked")
-			ChoiceBox<String> cb = (ChoiceBox<String>) data;
-
-			Boolean value = null;
-			if (cb.getSelectionModel().getSelectedItem().equals("True"))
-			{
-				value = true;
-			}
-			else if (cb.getSelectionModel().getSelectedItem().equals("False"))
-			{
-				value = false;
-			}
-			else
-			{
-				value = (Boolean) ci.getDefaultColumnValue();
-			}
-			return (value == null ? null : new RefexBoolean(value, ci.getColumnName()));
-		}
-		else if (RefexDynamicDataType.BYTEARRAY == ci.getColumnDataType())
-		{
-			return new RefexByteArray((byte[])data, ci.getColumnName());
-		}
-		else if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType() || RefexDynamicDataType.FLOAT == ci.getColumnDataType()
-				|| RefexDynamicDataType.INTEGER == ci.getColumnDataType() || RefexDynamicDataType.LONG == ci.getColumnDataType()
-				|| RefexDynamicDataType.STRING == ci.getColumnDataType() || RefexDynamicDataType.UUID == ci.getColumnDataType())
-		{
-			TextField tf = (TextField) data;
-			String text = tf.getText();
-			if (text.length() == 0 && ci.getDefaultColumnValue() == null)
-			{
-				return null;
-			}
-			if (RefexDynamicDataType.DOUBLE == ci.getColumnDataType())
-			{
-				return new RefexDouble(text.length() > 0 ? Double.parseDouble(text) : (Double)ci.getDefaultColumnValue(), ci.getColumnName());
-			}
-			else if (RefexDynamicDataType.FLOAT == ci.getColumnDataType())
-			{
-				return new RefexFloat(text.length() > 0 ? Float.parseFloat(text) : (Float)ci.getDefaultColumnValue(), ci.getColumnName());
-			}
-			else if (RefexDynamicDataType.INTEGER == ci.getColumnDataType())
-			{
-				return new RefexInteger(text.length() > 0 ? Integer.parseInt(text) : (Integer)ci.getDefaultColumnValue(), ci.getColumnName());
-			}
-			else if (RefexDynamicDataType.LONG == ci.getColumnDataType())
-			{
-				return new RefexLong(text.length() > 0 ? Long.parseLong(text) : (Long)ci.getDefaultColumnValue(), ci.getColumnName());
-			}
-			else if (RefexDynamicDataType.STRING == ci.getColumnDataType())
-			{
-				return new RefexString(text.length() > 0 ? text : (String)ci.getDefaultColumnValue(), ci.getColumnName());
-			}
-			else if (RefexDynamicDataType.UUID == ci.getColumnDataType())
-			{
-				return new RefexUUID(text.length() > 0 ? UUID.fromString(text) : (UUID)ci.getDefaultColumnValue(), ci.getColumnName());
-			}
-			else
-			{
-				throw new RuntimeException("oops");
-			}
-		}
-		else if (RefexDynamicDataType.NID == ci.getColumnDataType())
-		{
-			ConceptNode cn = (ConceptNode)data;
-			if (cn.getConcept() == null && ci.getDefaultColumnValue() == null)
-			{
-				return null;
-			}
-			return new RefexNid(cn.getConcept().getNid(), ci.getColumnName());
-		}
-		else if (RefexDynamicDataType.POLYMORPHIC == ci.getColumnDataType())
-		{
-			//TODO implement polymorphic support
-			return new RefexString("", ci.getColumnName());
-		}
-		else
-		{
-			throw new RuntimeException("Unexpected datatype " + ci.getColumnDataType());
 		}
 	}
 

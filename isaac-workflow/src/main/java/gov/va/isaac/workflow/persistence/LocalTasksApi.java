@@ -20,7 +20,6 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
-
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,7 +287,9 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             return new HashMap<String, String>();
         } else {
             XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMap.getBytes()));
+            @SuppressWarnings("unchecked")
             Map<String, String> parsedMap = (Map<String, String>) xmlDecoder.readObject();
+            xmlDecoder.close();
             return parsedMap;
         }
     }

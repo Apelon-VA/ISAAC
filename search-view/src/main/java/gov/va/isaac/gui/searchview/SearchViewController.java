@@ -19,29 +19,28 @@
 package gov.va.isaac.gui.searchview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -60,7 +59,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,7 +141,7 @@ public class SearchViewController implements TaskCompleteCallback {
                             });
                             
                             ContextMenu cm = new ContextMenu();
-                            CommonMenus.DataProvider dp = new CommonMenus.DataProvider() {
+                            CommonMenusDataProvider dp = new CommonMenusDataProvider() {
                                 @Override
                                 public String[] getStrings() {
                                     List<String> items = new ArrayList<>();
@@ -163,7 +161,7 @@ public class SearchViewController implements TaskCompleteCallback {
                                     return itemArray;
                                 }
                             };
-                            CommonMenus.NIdProvider nidProvider = new CommonMenus.NIdProvider() {
+                            CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
                                 @Override
                                 public Set<Integer> getNIds() {
                                     Set<Integer> nids = new HashSet<>();

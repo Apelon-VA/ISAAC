@@ -18,8 +18,6 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import gov.va.isaac.interfaces.gui.MenuItemI;
-import java.util.List;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -32,9 +30,5 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public abstract interface IsaacViewI
 {
-	/**
-	 * Provides the specs of all of the menus required by this view.  May return an empty list, will not return null.
-	 */
-	public List<MenuItemI> getMenuBarMenus();
 	
 }

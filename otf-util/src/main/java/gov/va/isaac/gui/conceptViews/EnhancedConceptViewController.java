@@ -85,6 +85,7 @@ public class EnhancedConceptViewController {
 			initializeWindow(conceptHistoryStack, mode);
 		}
 		concept = WBUtility.getConceptVersion(currentCon);
+		labelHelper.setConcept(concept.getNid());
 		clearContents();
 		updateCommitButton();
 		creator.setConceptValues(concept, mode);
@@ -97,6 +98,7 @@ public class EnhancedConceptViewController {
 		}
 		
 		concept = WBUtility.getConceptVersion(currentCon);
+		labelHelper.setConcept(concept.getNid());
 		clearContents();
 		creator.setConceptValues(concept, mode);
 	}
@@ -127,8 +129,10 @@ public class EnhancedConceptViewController {
 			@Override
 			public void handle(ActionEvent arg0) {
 				WBUtility.commit(concept);
+				clearContents();
 				commitButton.setDisable(true);
 				cancelButton.setDisable(true);
+				creator.setConceptValues(concept, currentMode);
 			}
 		});
 		
@@ -180,6 +184,13 @@ public class EnhancedConceptViewController {
 				conceptView.setViewMode(ConceptViewMode.SIMPLE_VIEW);
 			}
 		});
+
+		historicalRadio.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				conceptView.setViewMode(ConceptViewMode.HISTORICAL_VIEW);
+			}
+		});
 	}
 	
 	public void setViewMode(ConceptViewMode mode) {
@@ -196,12 +207,6 @@ public class EnhancedConceptViewController {
 		creator.setLabelHelper(labelHelper);
 		
 		setModeType(mode);
-
-		// TODO (Until handled, make disabled)
-		historicalRadio.setDisable(true);
-
-		Tooltip notYetImplTooltip = new Tooltip("Not Yet Implemented");
-		historicalRadio.setTooltip(notYetImplTooltip);
 	}
 
 	void intializePane(ConceptViewMode view) {
@@ -223,6 +228,8 @@ public class EnhancedConceptViewController {
 			basicRadio.setSelected(true);
 		} else if (mode == ConceptViewMode.DETAIL_VIEW) {
 			detailedRadio.setSelected(true);
+		} else if (mode == ConceptViewMode.HISTORICAL_VIEW) {
+			historicalRadio.setSelected(true);
 		}
 	}
 

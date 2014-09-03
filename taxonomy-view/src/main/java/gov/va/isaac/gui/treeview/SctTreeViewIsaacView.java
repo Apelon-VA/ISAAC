@@ -18,13 +18,16 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ViewI;
-import java.util.ArrayList;
-import java.util.List;
+import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+import gov.va.isaac.util.WBUtility;
+
 import java.util.UUID;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.layout.Region;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -35,7 +38,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @PerLookup
-public class SctTreeViewIsaacView  implements ViewI 
+public class SctTreeViewIsaacView  implements TaxonomyViewI 
 {
 	private SctTreeView sctTreeView_;
 	
@@ -44,16 +47,11 @@ public class SctTreeViewIsaacView  implements ViewI
 		sctTreeView_ = new SctTreeView();
 	}
 	
-	public void init(UUID[] rootConcepts) 
+	public void init() 
 	{
-		sctTreeView_.init(rootConcepts);
+		sctTreeView_.init();
 	}
 	
-	public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) 
-	{
-		sctTreeView_.showConcept(conceptUUID, workingIndicator);
-	}
-
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
 	 */
@@ -63,12 +61,44 @@ public class SctTreeViewIsaacView  implements ViewI
 		return sctTreeView_.getView();
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#locateConcept(java.util.UUID, javafx.beans.property.BooleanProperty)
 	 */
 	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		return new ArrayList<MenuItemI>();
+	public void locateConcept(UUID uuid, BooleanProperty busyIndicator) {
+		sctTreeView_.showConcept(uuid, busyIndicator);
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#locateConcept(int, javafx.beans.property.BooleanProperty)
+	 */
+	@Override
+	public void locateConcept(int nid, BooleanProperty busyIndicator) {
+		sctTreeView_.showConcept(WBUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);	
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#setDisplayPolicies(gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies)
+	 */
+	@Override
+	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
+		sctTreeView_.setDisplayPolicies(policies);
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#refresh()
+	 */
+	@Override
+	public void refresh() {
+		sctTreeView_.refresh();
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#getDefaultDisplayPolicies()
+	 */
+	@Override
+	public SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
+		return SctTreeView.getDefaultDisplayPolicies();
 	}
 }

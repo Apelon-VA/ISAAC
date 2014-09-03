@@ -6,14 +6,13 @@ import gov.va.isaac.util.WBUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 
 public class DetailTermRow extends TermRow {
 
@@ -22,25 +21,40 @@ public class DetailTermRow extends TermRow {
 	}
 
 	@Override
-	public void addTermRow(DescriptionVersionBI desc) {
+	public void addTermRow(DescriptionVersionBI<?> desc, boolean isPrefTerm) {
 		Rectangle rec = createAnnotRectangle(desc);
+		
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
-		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		Label descTypeLabel = null;
+		
+		if (isPrefTerm) {
+			descTypeLabel = labelHelper.createLabel(desc, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
+		} else {
+			descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		}
+		
 		Label descCaseLabel = labelHelper.createLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, 0);
 		Label descLangLabel = labelHelper.createLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, 0);
-
+		
+		if (desc.isUncommitted()) {
+			descLabel.setUnderline(true);
+			descTypeLabel.setUnderline(true);
+			descCaseLabel.setUnderline(true);
+			descLangLabel.setUnderline(true);
+		}
+		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
-		gp.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		gp.setConstraints(descLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		gp.setConstraints(descTypeLabel,  2,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		gp.setConstraints(descCaseLabel,  3,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		gp.setConstraints(descLangLabel,  4,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(descLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(descTypeLabel,  2,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(descCaseLabel,  3,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(descLangLabel,  4,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		
-		gp.setMargin(descLabel, new Insets(0, 20, 0, 20));
-		gp.setMargin(descTypeLabel, new Insets(0, 20, 0, 20));
-		gp.setMargin(descCaseLabel, new Insets(0, 20, 0, 20));
-		gp.setMargin(descLangLabel, new Insets(0, 0, 0, 20));
+		GridPane.setMargin(descLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(descTypeLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(descCaseLabel, new Insets(0, 20, 0, 20));
+		GridPane.setMargin(descLangLabel, new Insets(0, 0, 0, 20));
 
 		gp.addRow(counter++, rec, descLabel, descTypeLabel, descCaseLabel, descLangLabel);
 	}

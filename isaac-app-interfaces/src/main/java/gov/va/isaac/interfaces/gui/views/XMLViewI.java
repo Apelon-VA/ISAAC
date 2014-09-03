@@ -34,7 +34,7 @@ import javafx.stage.Window;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface XMLViewI
+public interface XMLViewI extends IsaacViewI
 {
 	/**
 	 * Display this popup view to the user in front of the specified parent window.

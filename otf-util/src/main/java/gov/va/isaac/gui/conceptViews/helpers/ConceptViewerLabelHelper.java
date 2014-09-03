@@ -22,10 +22,13 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
+import gov.va.isaac.gui.conceptViews.modeling.DescriptionModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
+import gov.va.isaac.gui.conceptViews.modeling.RelationshipModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.util.WBUtility;
 //import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -39,7 +42,17 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
+import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +62,8 @@ import org.slf4j.LoggerFactory;
 */
 public class ConceptViewerLabelHelper {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerLabelHelper.class);
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	private int conceptNid = 0;;
 	
 	private AnchorPane pane;
 	private boolean isWindow = false;
@@ -125,7 +139,8 @@ public class ConceptViewerLabelHelper {
 		
 		// Enable copying of component's various Ids
 		if (comp != null) {
-			if (type != ComponentType.CONCEPT) {
+			if (type != ComponentType.CONCEPT && 
+				(!(type == ComponentType.RELATIONSHIP && conceptNid != ((RelationshipVersionBI<?>)comp).getOriginNid()))) { 
 				Menu modifyComponentMenu = addModifyMenus(comp, type);
 				rtClickMenu.getItems().add(modifyComponentMenu);
 			}
@@ -175,11 +190,13 @@ public class ConceptViewerLabelHelper {
 			rtClickMenu.getItems().add(1, viewNewItem);
 		}
 
+		rtClickMenu.getItems().add(addCreateNewComponent());
+		
 		label.setContextMenu(rtClickMenu);
 	}
 
 	Menu addModifyMenus(ComponentVersionBI comp, ComponentType type) {
-		Menu modifyComponentMenu = new Menu("Modify Component");
+		Menu modifyComponentMenu = new Menu("Modify " + type);
 		MenuItem editComponentMenu = new MenuItem("Edit");
 		MenuItem retireComponentMenu = new MenuItem("Retire");
 		MenuItem undoComponentMenu = new MenuItem("Undo");
@@ -195,12 +212,15 @@ public class ConceptViewerLabelHelper {
 				if (type == ComponentType.CONCEPT) {
 					popup = AppContext.getService(ConceptModelingPopup.class);
 				} else if (type == ComponentType.DESCRIPTION) {
-//					popup = AppContext.getService(DescriptionModelingPopup.class);
+					popup = AppContext.getService(DescriptionModelingPopup.class);
 				} else if (type == ComponentType.RELATIONSHIP) {
-//					popup = AppContext.getService(RelationshipModelingPopup.class);
+					popup = AppContext.getService(RelationshipModelingPopup.class);
+					if (conceptNid != ((RelationshipVersionBI<?>)comp).getOriginNid()) { 
+						((RelationshipModelingPopup)popup).setDestination(true);
+					}
 				}
 
-				popup.finishInit(comp, type, conceptView);
+				popup.finishInit(comp, conceptView);
 				popup.showView(pane.getScene().getWindow());
 			}
 		});
@@ -211,12 +231,33 @@ public class ConceptViewerLabelHelper {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				if (type == ComponentType.CONCEPT) {
-					// TODO: Retire Concept Wizard
-				} else if (type == ComponentType.DESCRIPTION) {
-//					popup = AppContext.getService(DescriptionModelingPopup.class);
-				} else if (type == ComponentType.RELATIONSHIP) {
-//					popup = AppContext.getService(RelationshipModelingPopup.class);
+				try {
+					if (type == ComponentType.CONCEPT) {
+						// TODO: Retire Concept Wizard
+					} else if (type == ComponentType.DESCRIPTION) {
+						DescriptionVersionBI<?> desc = (DescriptionVersionBI<?>)comp;
+						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+						dcab.setStatus(Status.INACTIVE);
+						
+						DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
+						
+						WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+	
+					} else if (type == ComponentType.RELATIONSHIP) {
+						RelationshipVersionBI<?> rel = (RelationshipVersionBI<?>)comp;
+
+						RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+
+						rcab.setStatus(Status.INACTIVE);
+						
+						RelationshipChronicleBI rcbi = WBUtility.getBuilder().constructIfNotCurrent(rcab);
+						
+						WBUtility.addUncommitted(rcbi.getEnclosingConcept());
+					}
+					
+					conceptView.setConcept(comp.getConceptNid());
+				} catch (Exception e) {
+					LOG.error("Failure in retiring comp: " + comp.getPrimordialUuid());
 				}
 			}
 		});
@@ -231,16 +272,16 @@ public class ConceptViewerLabelHelper {
 					if (type == ComponentType.CONCEPT) {
 						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
 //						ExtendedAppContext.getDataStore().forget((ConceptAttributeVersionBI)comp);
-						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
 					} else if (type == ComponentType.DESCRIPTION) {
 						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
 //						ExtendedAppContext.getDataStore().forget((DescriptionVersionBI)comp);
-						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
 					} else if (type == ComponentType.RELATIONSHIP) {
 						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
 //						ExtendedAppContext.getDataStore().forget((RelationshipVersionBI)comp);
-						AppContext.getService(EnhancedConceptView.class).setConcept(comp.getConceptNid());
 					}
+					// TODO: Until above TODOs are handled, leave Undo on entire concept
+					WBUtility.forget(comp.getConceptNid());
+					conceptView.setConcept(comp.getConceptNid());
 				} catch (Exception e) {
 					LOG.error("Unable to cancel comp: " + comp.getNid(), e);
 				}
@@ -255,6 +296,39 @@ public class ConceptViewerLabelHelper {
 		return modifyComponentMenu;
 	}
 
+	Menu addCreateNewComponent() {
+		Menu createComponentMenu = new Menu("Create New Component");
+		MenuItem newDescriptionMenu = new MenuItem("Create New Description");
+		MenuItem newRelationshipMenu = new MenuItem("Create New Relationship");
+		createComponentMenu.getItems().addAll(newDescriptionMenu, newRelationshipMenu);
+
+		newDescriptionMenu.setGraphic(Images.EDIT.createImageView());
+		newDescriptionMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				DescriptionModelingPopup popup = AppContext.getService(DescriptionModelingPopup.class);
+				popup.finishInit(conceptNid, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
+
+		newRelationshipMenu.setGraphic(Images.EDIT.createImageView());
+		newRelationshipMenu.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				RelationshipModelingPopup popup = AppContext.getService(RelationshipModelingPopup.class);
+				popup.finishInit(conceptNid, conceptView);
+				popup.showView(pane.getScene().getWindow());
+			}
+		});
+
+		return createComponentMenu;
+	}
+	
 	Menu addIdMenus(ComponentVersionBI comp) {
 		Menu copyIdMenu = new Menu("Copy Ids");
 		MenuItem sctIdItem = new MenuItem("SctId");
@@ -310,6 +384,10 @@ public class ConceptViewerLabelHelper {
 
 	public void setPrevConStack(ObservableList<Integer> conceptHistoryStack) {
 		previousConceptStack = conceptHistoryStack;
+	}
+
+	public void setConcept(int nid) {
+		conceptNid = nid;		
 	}
 
 }

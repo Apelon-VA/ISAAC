@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="summaryPane" minHeight="-Infinity" minWidth="450.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
+<BorderPane fx:id="summaryPane" minHeight="300" minWidth="400.0" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.SummaryController">
 	<top>
 		<VBox alignment="TOP_CENTER" BorderPane.alignment="TOP_CENTER">
 			<children>
@@ -32,28 +33,28 @@
 					<children>
 						<Label text="Refex Name">
 							<font>
-								<Font name="System Bold" size="12.0" />
+								<Font name="System Bold" size="13.0" />
 							</font>
 						</Label>
 						<Label text="Parent Concept" GridPane.rowIndex="1">
 							<font>
-								<Font name="System Bold" size="12.0" />
+								<Font name="System Bold" size="13.0" />
 							</font>
 						</Label>
 						<Label text="Refex Type" GridPane.rowIndex="2">
 							<font>
-								<Font name="System Bold" size="12.0" />
+								<Font name="System Bold" size="13.0" />
 							</font>
 						</Label>
 						<Label text="Refex Description" GridPane.rowIndex="3" GridPane.valignment="TOP">
 							<font>
-								<Font name="System Bold" size="12.0" />
+								<Font name="System Bold" size="13.0" />
 							</font>
 						</Label>
-						<TextArea fx:id="actualRefexDescription" editable="false" minHeight="50.0" prefHeight="50.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-						<TextField fx:id="actualRefexName" editable="false" GridPane.columnIndex="1" />
-						<TextField fx:id="actualParentConcept" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-						<TextField fx:id="actualRefexType" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+						<Label fx:id="actualRefexName" wrapText="true" GridPane.columnIndex="1" />
+						<Label fx:id="actualParentConcept" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+						<Label fx:id="actualRefexType" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+						<Label fx:id="actualRefexDescription" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 					</children>
 					<VBox.margin>
 						<Insets bottom="5.0" left="5.0" right="5.0" />
@@ -67,7 +68,8 @@
 			<children>
 				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
 				<Button fx:id="startOverButton" mnemonicParsing="false" text="Start Over" />
-				<Button fx:id="backButton" mnemonicParsing="false" text="Back" /><Button fx:id="commitButton" mnemonicParsing="false" text="Commit" />
+				<Button fx:id="backButton" mnemonicParsing="false" text="Back" />
+				<Button fx:id="commitButton" mnemonicParsing="false" text="Commit" />
 			</children>
 			<BorderPane.margin>
 				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -75,28 +77,7 @@
 		</HBox>
 	</bottom>
 	<center>
-		<ScrollPane fitToHeight="true" fitToWidth="true" minHeight="50.0" prefHeight="50.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
-			<BorderPane.margin>
-				<Insets left="2.0" right="2.0" />
-			</BorderPane.margin>
-			<VBox.margin>
-				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-			</VBox.margin>
-			<content>
-				<GridPane fx:id="columnGridPane" hgap="5.0" vgap="5.0">
-					<columnConstraints>
-						<ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="115.0" prefWidth="350.0" />
-						<ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="85.0" prefWidth="85.0" />
-						<ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" prefWidth="100.0" />
-					</columnConstraints>
-					<children>
-						<Label text="No Rows" GridPane.columnSpan="3" GridPane.halignment="CENTER" />
-					</children>
-					<rowConstraints>
-						<RowConstraints />
-					</rowConstraints>
-				</GridPane>
-			</content>
-		</ScrollPane>
+		<ListView fx:id="detailsListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0"
+			BorderPane.alignment="CENTER" />
 	</center>
 </BorderPane>

@@ -105,9 +105,10 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
                 }
                 for (RelationshipVersionDdo rv : destRel.getVersions()) {
                     TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                    SctTreeItem childItem = new SctTreeItem(taxRef);
-
-                    childrenToAdd.add(childItem);
+                    SctTreeItem childItem = new SctTreeItem(taxRef, treeItem.getDisplayPolicies());
+                    if (childItem.shouldDisplay()) {
+                    	childrenToAdd.add(childItem);
+                    }
                 }
             }
         }
