@@ -542,7 +542,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
 			builder.construct(cab);
 			
-			ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(componentNid));
+			ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(componentNid));
 			if (!WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex())
 			{
 				ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(assemblageNid));

@@ -24,6 +24,10 @@ import gov.va.isaac.model.ExportType;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.validation.ValidationException;
 
@@ -48,16 +52,30 @@ public class ExportFileHandler {
      * Method called by the ISAAC application to perform the export. Will be
      * invoked on a background thread.
      */
-    public void doExport(int pathNid, ExportType exportType, File file) throws Exception {
-        LOG.debug("exportType=" + exportType);
-        LOG.debug("file=" + file);
+    public void doExport(int pathNid, ExportType exportType, File folder, boolean zip) throws Exception {
 
         // Make sure NOT in application thread.
         FxUtils.checkBackgroundThread();
 
         if (exportType == ExportType.ECONCEPT) {
-            EConceptExporter exporter = new EConceptExporter(new FileOutputStream(file));
+            String fileName = "eConcepts.jbin";
+            File file = new File(folder, fileName);            
+            
+            OutputStream outputStream = null;
+			if(zip) {
+            	ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(file + ".zip"));
+            	ZipEntry entry = new ZipEntry(fileName);
+            	entry.setMethod(ZipEntry.DEFLATED);
+            	zos.putNextEntry(entry);
+            	outputStream = zos;
+			} else {
+				outputStream = new FileOutputStream(file);
+			}
+			
+			EConceptExporter exporter = new EConceptExporter(outputStream);
             exporter.export(pathNid);
+            outputStream.flush();
+            outputStream.close();
         } else {
             throw new UnsupportedOperationException(exportType.getDisplayName() +
                     " export not yet supported in ISAAC.");

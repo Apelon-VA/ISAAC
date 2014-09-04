@@ -27,6 +27,7 @@ package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.search.SearchResultsFilter;
@@ -65,6 +66,10 @@ public class SearchResultsFilterHelper {
 				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
 
 				intersectionFilter.getFilters().add(new IsDescendantOfSearchResultsFilter((IsDescendantOfFilter)filter));
+			} else if (filter instanceof IsAFilter) {
+				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
+
+				intersectionFilter.getFilters().add(new IsASearchResultsFilter((IsAFilter)filter));
 			}
 		}
 		
@@ -79,6 +84,8 @@ public class SearchResultsFilterHelper {
 				for (NonSearchTypeFilter<?> filter : passedFilters) {
 					// Ensure only supported NonSearchTypeFilter types handled
 					if (filter instanceof IsDescendantOfFilter) {
+						// ok
+					} else if (filter instanceof IsAFilter) {
 						// ok
 					} else {
 						String msg = "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported";
