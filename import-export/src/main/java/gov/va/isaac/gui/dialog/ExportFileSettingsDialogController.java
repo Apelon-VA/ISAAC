@@ -44,6 +44,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -80,13 +81,12 @@ public class ExportFileSettingsDialogController {
     @FXML private ComboBox<ExportType> modelTypeCombo;
     @FXML private ComboBox<ConceptChronicleBI> pathCombo;
     @FXML private Label folderSelectionLabel;
+    @FXML private CheckBox zip;
 
     private ExportFileSettingsDialog exportSettingsDialog;
-    private Stage exportStage;
 
     public void setVariables(ExportFileSettingsDialog exportSettingsDialog, Window parent) {
         this.exportSettingsDialog = exportSettingsDialog;
-        exportStage = buildExportStage(parent);
     }
 
     @FXML
@@ -143,7 +143,7 @@ public class ExportFileSettingsDialogController {
         DirectoryChooser folderChooser = new DirectoryChooser();
 
         // Show dialog.
-        File file = folderChooser.showDialog(exportStage);
+        File file = folderChooser.showDialog(exportSettingsDialog);
         if (file != null) {
             folderSelectionLabel.setText(file.getPath());
         }
@@ -154,7 +154,6 @@ public class ExportFileSettingsDialogController {
      */
     public void handleOk() {
         ExportType exportType = modelTypeCombo.getValue();
-        String fileName = "eConcepts.jbin";
         String folderName = folderSelectionLabel.getText();
         int pathNid = pathCombo.getValue().getConceptNid();
 
@@ -169,11 +168,10 @@ public class ExportFileSettingsDialogController {
             return;
         }
 
-        exportSettingsDialog.close();
-        performExport(exportType, pathNid, folderName, fileName);
+        performExport(exportType, pathNid, folderName);
     }
 
-    private void performExport(ExportType exportType, int pathNid, final String folderName, final String fileName) {
+    private void performExport(ExportType exportType, int pathNid, final String folderName) {
 
         // Do work in background.
         Task<Boolean> task = new Task<Boolean>() {
@@ -183,19 +181,9 @@ public class ExportFileSettingsDialogController {
 
                 // Create empty file.
                 File folder = new File(folderName);
-                File file = new File(folder, fileName);
-
-                // Sanity checks.
-                if (file.exists()) {
-                    throw new IOException("File already exists: " + file);
-                }
-                if (! file.createNewFile()) {
-                    throw new IOException("Could not create file: " + file);
-                }
-
                 // Inject into an ExportHandler.
                 ExportFileHandler exportHandler = new ExportFileHandler();
-				exportHandler.doExport(pathNid, exportType, file);
+				exportHandler.doExport(pathNid, exportType, folder, zip.isSelected());
 
                 return true;
             }
@@ -205,12 +193,12 @@ public class ExportFileSettingsDialogController {
                 @SuppressWarnings("unused")
                 Boolean result = this.getValue();
 
+                exportSettingsDialog.close();
                 // Show confirmation dialog.
                 String title = "Export Complete";
-                String message = String.format("Export to \"%s\" successful.", fileName);
+                String message = String.format("Export to \"%s\" successful.", folderName);
                 AppContext.getCommonDialogs().showInformationDialog(title, message);
 
-                exportStage.close();
             }
 
             @Override
@@ -224,23 +212,12 @@ public class ExportFileSettingsDialogController {
         };
 
         // Bind cursor to task state.
-//        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
-//        exportStage.getScene().cursorProperty().bind(cursorBinding);
+        ObjectBinding<Cursor> cursorBinding = Bindings.when(task.runningProperty()).then(Cursor.WAIT).otherwise(Cursor.DEFAULT);
+        exportSettingsDialog.getScene().cursorProperty().bind(cursorBinding);
 
         Utility.execute(task);
     }
     
-    private Stage buildExportStage(Window owner) {
-        // Use dialog for now, so Alo/Dan can use it.
-        Stage stage = new Stage();
-        stage.initModality(Modality.NONE);
-        stage.initOwner(owner);
-        stage.initStyle(StageStyle.DECORATED);
-        stage.setTitle("Export View");
-
-        return stage;
-    }
-
     /**
      * Handler for cancel button.
      */

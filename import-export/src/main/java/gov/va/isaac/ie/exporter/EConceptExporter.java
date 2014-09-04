@@ -8,11 +8,11 @@ import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.dto.ChronicleConverter;
@@ -32,7 +32,7 @@ public class EConceptExporter extends CommonBase implements ProcessUnfetchedConc
 
 	private int pathNid;
 
-	public EConceptExporter(FileOutputStream fileOutputStream) {
+	public EConceptExporter(OutputStream fileOutputStream) {
 		dos = new DataOutputStream(new BufferedOutputStream(fileOutputStream));
 	}
 
