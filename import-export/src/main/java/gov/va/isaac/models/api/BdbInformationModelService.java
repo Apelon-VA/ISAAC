@@ -747,7 +747,7 @@ public class BdbInformationModelService implements InformationModelService {
       LOG.debug("    UUID = " + columnConcept.getPrimordialUuid());
       RefexDynamicColumnInfo column =
           new RefexDynamicColumnInfo(i, columnConcept.getPrimordialUuid(),
-              RefexDynamicDataType.STRING, null, true, null, null);
+              RefexDynamicDataType.STRING, null, false, null, null);
       columns.add(column);
     }
 
