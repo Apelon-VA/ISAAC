@@ -22,7 +22,9 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenus.CommonMenuItem;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
@@ -33,9 +35,13 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TreeTableCell;
+import javafx.scene.text.Text;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+//TODO rename this
 public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>
 {
 	private static Logger logger_ = LoggerFactory.getLogger(ConceptDataCell.class);
@@ -76,7 +83,6 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 		else if (item != null)
 		{
 			conceptLookup(item);
-			
 		}
 	}
 	
@@ -99,9 +105,87 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 					{
 						//This may be a different component - like a description, or another refex... need to handle.
 						ComponentVersionBI cv = ExtendedAppContext.getDataStore().getComponentVersion(WBUtility.getViewCoordinate(), nid);
-						System.out.println("The component type " + cv + " is not handled yet!");
-						//TODO implement
-						text = cv.toUserString();
+						
+						if (cv instanceof DescriptionVersionBI<?>)
+						{
+							DescriptionVersionBI<?> dv = (DescriptionVersionBI<?>) cv;
+							text = "Description: " + dv.getText();
+							
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
+							
+							CommonMenus.addCommonMenus(cm, menuBuilder, new CommonMenusNIdProvider()
+							{
+								
+								@Override
+								public Collection<Integer> getNIds()
+								{
+									return Arrays.asList(new Integer[] {dv.getNid()});
+								}
+							});
+						}
+						else if (cv instanceof RelationshipVersionBI<?>)
+						{
+							RelationshipVersionBI<?> rv = (RelationshipVersionBI<?>) cv;
+							text = "Relationship: " + WBUtility.getDescription(rv.getOriginNid()) + "->" 
+									+ WBUtility.getDescription(rv.getTypeNid()) + "->"
+									+ WBUtility.getDescription(rv.getDestinationNid());
+							
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
+							
+							CommonMenus.addCommonMenus(cm, menuBuilder, new CommonMenusNIdProvider()
+							{
+								
+								@Override
+								public Collection<Integer> getNIds()
+								{
+									return Arrays.asList(new Integer[] {rv.getNid()});
+								}
+							});
+						}
+						else if (cv instanceof RefexDynamicVersionBI<?>)
+						{
+							RefexDynamicVersionBI<?> rdv = (RefexDynamicVersionBI<?>) cv;
+							text = "Nested Refex Dynamic: using assemblage " + WBUtility.getDescription(rdv.getAssemblageNid());
+							
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
+							
+							CommonMenus.addCommonMenus(cm, menuBuilder, new CommonMenusNIdProvider()
+							{
+								
+								@Override
+								public Collection<Integer> getNIds()
+								{
+									return Arrays.asList(new Integer[] {rdv.getNid()});
+								}
+							});
+						}
+						else if (cv instanceof RefexVersionBI<?>)
+						{
+							RefexVersionBI<?> rv = (RefexVersionBI<?>) cv;
+							text = "Nested Refex: using assemblage " + WBUtility.getDescription(rv.getAssemblageNid());
+							
+							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
+							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
+							
+							CommonMenus.addCommonMenus(cm, menuBuilder, new CommonMenusNIdProvider()
+							{
+								
+								@Override
+								public Collection<Integer> getNIds()
+								{
+									return Arrays.asList(new Integer[] {rv.getNid()});
+								}
+							});
+						}
+						else
+						{
+							logger_.warn("The component type " + cv + " is not handled yet!");
+							//Not sure what else there may be?  media - doesn't seem to be used... anything else?
+							text = cv.toUserString();
+						}
 					}
 					else
 					{
@@ -115,6 +199,14 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 								driv.showView(null);
 							});
 							mi.setGraphic(Images.SEARCH.createImageView());
+							cm.getItems().add(mi);
+							
+							mi = new MenuItem("Configure Refex Indexing");
+							mi.setOnAction((action) ->
+							{
+								new ConfigureDynamicRefexIndexingView(c).showView(null);
+							});
+							mi.setGraphic(Images.CONFIGURE.createImageView());
 							cm.getItems().add(mi);
 						}
 						
@@ -145,12 +237,15 @@ public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? exten
 			@Override
 			protected void succeeded()
 			{
-				setText(text);
+				//default text is a label, which doesn't wrap properly.
+				setText(null);
+				Text textHolder = new Text(text);
+				textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
 				if (cm.getItems().size() > 0)
 				{
 					setContextMenu(cm);
 				}
-				setGraphic(null);
+				setGraphic(textHolder);
 			}
 		};
 		Utility.execute(t);

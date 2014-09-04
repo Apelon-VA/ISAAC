@@ -34,6 +34,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
+import javafx.scene.text.Text;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
@@ -105,8 +106,11 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 							}
 							else
 							{
-								setText(data.getDataObject().toString());
-								setGraphic(null);
+								//default text is a label, which doesn't wrap properly.
+								setText(null);
+								Text textHolder = new Text(data.getDataObject().toString());
+								textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
+								setGraphic(textHolder);
 							}
 						}
 						else
@@ -185,20 +189,24 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 
 			Platform.runLater(() ->
 			{
+				String textValue;
 				if (value == null)
 				{
-					setText(data.getDataObject().toString());
+					textValue = data.getDataObject().toString();
 				}
 				else
 				{
-					setText(value);
+					textValue = value;
 					setTooltip(new Tooltip(data.getDataObject().toString()));
 					if (cm.getItems().size() > 0)
 					{
 						setContextMenu(cm);
 					}
 				}
-				setGraphic(null);
+				Text textHolder = new Text(textValue);
+				textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
+				setGraphic(textHolder);
+				setText(null);
 			});
 		});
 	}

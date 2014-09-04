@@ -134,6 +134,12 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
             protected void succeeded() {
             	LOG.debug("Succeeded waiting for init() to complete");
 
+            	if (rootTreeItem.getChildren().size() > 0) {
+                	LOG.debug("Removing existing grandchildren...");
+            		rootTreeItem.removeGrandchildren();
+                	LOG.debug("Removed existing grandchildren.");
+            	}
+            	
             	LOG.debug("Removing existing children...");
             	rootTreeItem.getChildren().clear();
             	LOG.debug("Removed existing children.");
@@ -256,7 +262,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         p2.setPrefSize(16, 16);
                         p2.setProgress(-1);
                         sourceTreeItem.setProgressIndicator(p2);
-                        sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                        if (sourceTreeItem.shouldDisplay()) {
+                        	sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                        }
                     }
                 });
         sp_.getChildren().add(treeView_);

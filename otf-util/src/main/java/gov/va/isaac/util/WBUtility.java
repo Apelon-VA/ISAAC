@@ -42,6 +42,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -57,6 +58,7 @@ import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -92,7 +94,7 @@ public class WBUtility {
 	
 	public static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
 
-	public static ConceptSpec ISAAC_ROOT = new ConceptSpec("ISAAC Root", UUID.fromString("c767a452-41e3-5835-90b7-439f5b738035"));
+	public static ConceptSpec ISAAC_ROOT = Taxonomies.ISAAC_ROOT;
 		
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
@@ -512,6 +514,36 @@ public class WBUtility {
 		catch (IOException ex)
 		{
 			LOG.error("Trouble getting concept: " + nid, ex);
+		}
+		return null;
+	}
+	
+	/**
+	 * Get the Component identified by NID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
+	 * only if it exists at that point.  Returns null otherwise.
+	 */
+	public static ComponentChronicleBI<?> getComponentChronicle(int nid)
+	{
+		LOG.debug("Get component chronicle by nid: '{}'", nid);
+		if (nid == 0)
+		{
+			return null;
+		}
+		try
+		{
+			ComponentChronicleBI<?> result = dataStore.getComponent(nid);
+			// Nothing like an undocumented getter which, rather than returning null when
+			// the thing you are asking for doesn't exist - it goes off and returns
+			// essentially a new, empty, useless node. Sigh.
+			if (result.getUUIDs().size() == 0)
+			{
+				return null;
+			}
+			return result;
+		}
+		catch (IOException ex)
+		{
+			LOG.error("Trouble getting component: " + nid, ex);
 		}
 		return null;
 	}

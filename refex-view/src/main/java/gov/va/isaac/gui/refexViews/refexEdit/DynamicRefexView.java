@@ -65,7 +65,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javax.inject.Named;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.glassfish.hk2.api.PerLookup;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
@@ -78,6 +81,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,9 +190,8 @@ public class DynamicRefexView implements RefexViewI
 								rcab.setStatus(Status.INACTIVE);
 								WBUtility.getBuilder().construct(rcab);
 								
-								//TODO this isn't right for a nested refex
 								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getAssemblageNid());
-								ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
+								ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(refex.getReferencedComponentNid()));
 								if (!assemblage.isAnnotationStyleRefex())
 								{
 									ExtendedAppContext.getDataStore().addUncommitted(assemblage);
@@ -329,8 +332,7 @@ public class DynamicRefexView implements RefexViewI
 					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
 					for (Integer i : componentNids)
 					{
-						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
-						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConceptForNid(i);
 						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
 						{
 							ExtendedAppContext.getDataStore().cancel(cc);
@@ -368,8 +370,7 @@ public class DynamicRefexView implements RefexViewI
 					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
 					for (Integer i : componentNids)
 					{
-						//TODO how to handle cases where it isn't a concept?  Might be a description... we probably have to commit the parent concept?
-						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
+						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConceptForNid(i);
 						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
 						{
 							ExtendedAppContext.getDataStore().commit(cc);
@@ -582,7 +583,7 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.setText("Attached Data");
 				ttStringCol.setSortable(true);
 				ttStringCol.setResizable(true);
-				treeColumns.add(ttStringCol);
+				//don't add yet - we might not need this column.  throw away later, if we don't need it
 				
 				/**
 				 * The key of the first hashtable is the column description concept, while the key of the second hashtable is the assemblage concept
@@ -684,6 +685,12 @@ public class DynamicRefexView implements RefexViewI
 						
 						ttStringCol.getColumns().add(nestedCol);
 					}
+				}
+				
+				//Only add attached data column if necessary
+				if (ttStringCol.getColumns().size() > 0)
+				{
+					treeColumns.add(ttStringCol);
 				}
 				
 				//Create the STAMP columns
@@ -791,7 +798,6 @@ public class DynamicRefexView implements RefexViewI
 					Font f = new Font("System Bold", 13.0);
 					for (final TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> col : ttv_.getColumns())
 					{
-						float nestedTotal = 0;
 						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nCol : col.getColumns())
 						{
 							String text = (nCol.getGraphic() != null && nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() : nCol.getText());
@@ -827,7 +833,11 @@ public class DynamicRefexView implements RefexViewI
 						}
 						else
 						{
-							col.setMinWidth(nestedTotal > 0 ? nestedTotal : Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10);
+							if (col.getText().equalsIgnoreCase("Assemblage") || col.getText().equalsIgnoreCase("Component"))
+							{
+								col.setPrefWidth(250);
+							}
+							col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10);
 						}
 					}
 					showStampColumns_.invalidate();
@@ -1064,115 +1074,127 @@ public class DynamicRefexView implements RefexViewI
 
 	@SuppressWarnings("unchecked")
 	private ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> getDataRows(int assemblageNid) 
-			throws IOException, ContradictionException, InterruptedException
+			throws IOException, ContradictionException, InterruptedException, NumberFormatException, ParseException
 	{
 		ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = new ArrayList<>();
 		Collection<RefexDynamicChronicleBI<?>> refexMembers;
-		boolean annotationStyle;
-		boolean noIndex = true;
+		
+		dr_ = null;
 		
 		ConceptVersionBI assemblageConceptFull = WBUtility.getConceptVersion(assemblageNid);
-		annotationStyle = assemblageConceptFull.isAnnotationStyleRefex();
-		if (!annotationStyle)
+		if (!assemblageConceptFull.isAnnotationStyleRefex())
 		{
 			refexMembers = (Collection<RefexDynamicChronicleBI<?>>)assemblageConceptFull.getRefsetDynamicMembers();
 		}
 		else
 		{
-			//TODO see if there is an index, use it here.
 			refexMembers = new ArrayList<>();
 			
-			//add in the newComponentHint
-			if (newComponentHint != null)
+			if (LuceneDynamicRefexIndexerConfiguration.isAssemblageIndexed(assemblageConceptFull.getNid()))
 			{
-				ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
-				if (c != null)
+				Platform.runLater(() ->
 				{
-					Collection<RefexDynamicChronicleBI<?>> dynamicAnnotations = (Collection<RefexDynamicChronicleBI<?>>)c.getRefexDynamicAnnotations();
-					
-					for (RefexDynamicChronicleBI<?> r : dynamicAnnotations)
+					progressBar_.setProgress(-1);
+					ttv_.setPlaceholder(progressBar_);
+				});
+				
+				LuceneDynamicRefexIndexer ldri = AppContext.getService(LuceneDynamicRefexIndexer.class);
+				List<SearchResult> results = ldri.queryAssemblageUsage(assemblageConceptFull.getNid(), Integer.MAX_VALUE, null);
+				for (SearchResult sr : results)
+				{
+					refexMembers.add((RefexDynamicChronicleBI<?>)ExtendedAppContext.getDataStore().getComponent(sr.getNid()));
+				}
+			}
+			else
+			{
+				Platform.runLater(() ->
+				{
+					synchronized (dialogThreadBlock_)
 					{
-						if (r.getAssemblageNid() == assemblageNid)
+						YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
+						dr_ = dialog.showYesNoDialog("Scan for Annotation Refex entries?", "This is an annotation style Refex with no index."
+								+ "  Without a supporting index, displaying the refex entries will take a long time.  Scan for entries?");
+						if (dr_ == DialogResponse.NO)
 						{
-							refexMembers.add(r);
+							placeholderText.setText("No index is available to fetch the entries");
+						}
+						else if (dr_ == DialogResponse.YES)
+						{
+							VBox temp = new VBox();
+							temp.setAlignment(Pos.CENTER);
+							temp.getChildren().add(progressBar_);
+							progressBar_.setProgress(-1);
+							temp.getChildren().add(backgroundSearchCancelButton_);
+							ttv_.setPlaceholder(temp);
+						}
+						dialogThreadBlock_.notifyAll();
+					}
+				});
+
+				while (dr_ == null)
+				{
+					//wait until they click yes, no, or close the dialog
+					//sync block will block us until they answer
+					synchronized (dialogThreadBlock_)
+					{
+						if (dr_ != null)
+						{
+							break;
+						}
+					}
+					if (dr_ == null)
+					{
+						//Means that our thread got here before the other thread started and acquired the
+						//sync lock.  sleep, try to acquire the lock again - at which point, we will block 
+						//until the dialog is closed.
+						Thread.sleep(50);
+					}
+				}
+				
+				if (dr_ == DialogResponse.YES)
+				{
+					processor_ = new RefexAnnotationSearcher((refex) -> 
+					{
+						if (refex.getAssemblageNid() == assemblageConceptFull.getConceptNid())
+						{
+							return true;
+						}
+						return false;
+					}, progressBar_);
+
+					try
+					{
+						ExtendedAppContext.getDataStore().iterateConceptDataInParallel(processor_);
+					}
+					catch (Exception e)
+					{
+						logger_.error("Unexpected error during background processing", e);
+						AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error scanning the database", e.getMessage(), 
+								(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+					}
+					
+					refexMembers.addAll(processor_.getResults());
+				}
+				else
+				{
+					//add in the newComponentHint - because they said no to the scan, and we have no index
+					if (newComponentHint != null)
+					{
+						ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
+						if (c != null)
+						{
+							Collection<RefexDynamicChronicleBI<?>> dynamicAnnotations = (Collection<RefexDynamicChronicleBI<?>>)c.getRefexDynamicAnnotations();
+							
+							for (RefexDynamicChronicleBI<?> r : dynamicAnnotations)
+							{
+								if (r.getAssemblageNid() == assemblageNid)
+								{
+									refexMembers.add(r);
+								}
+							}
 						}
 					}
 				}
-			}
-		}
-		
-		dr_ = null;
-		
-		if (annotationStyle && noIndex)
-		{
-			Platform.runLater(() ->
-			{
-				synchronized (dialogThreadBlock_)
-				{
-					YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
-					dr_ = dialog.showYesNoDialog("Scan for Annotation Refex entries?", "This is an annotation style Refex."
-							+ "  Without a supporting index, displaying the refex entries will take a long time.  Scan for entries?");
-					if (dr_ == DialogResponse.NO)
-					{
-						placeholderText.setText("No index is available to fetch the entries");
-					}
-					else if (dr_ == DialogResponse.YES)
-					{
-						VBox temp = new VBox();
-						temp.setAlignment(Pos.CENTER);
-						temp.getChildren().add(progressBar_);
-						progressBar_.setProgress(-1);
-						temp.getChildren().add(backgroundSearchCancelButton_);
-						ttv_.setPlaceholder(temp);
-					}
-					dialogThreadBlock_.notifyAll();
-				}
-			});
-
-			while (dr_ == null)
-			{
-				//wait until they click yes, no, or close the dialog
-				//sync block will block us until they answer
-				synchronized (dialogThreadBlock_)
-				{
-					if (dr_ != null)
-					{
-						break;
-					}
-				}
-				if (dr_ == null)
-				{
-					//Means that our thread got here before the other thread started and acquired the
-					//sync lock.  sleep, try to acquire the lock again - at which point, we will block 
-					//until the dialog is closed.
-					Thread.sleep(50);
-				}
-			}
-			
-			if (dr_ == DialogResponse.YES)
-			{
-				processor_ = new RefexAnnotationSearcher((refex) -> 
-				{
-					if (refex.getAssemblageNid() == assemblageConceptFull.getConceptNid())
-					{
-						return true;
-					}
-					return false;
-				}, progressBar_);
-
-				try
-				{
-					ExtendedAppContext.getDataStore().iterateConceptDataInParallel(processor_);
-				}
-				catch (Exception e)
-				{
-					logger_.error("Unexpected error during background processing", e);
-					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error scanning the database", e.getMessage(), 
-							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
-				}
-				
-				refexMembers.clear();  //remove the one from the hint, so we dont' get a dupe
-				refexMembers.addAll(processor_.getResults());
 			}
 		}
 
@@ -1197,8 +1219,6 @@ public class DynamicRefexView implements RefexViewI
 					TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
 					ti.setValue(refexVersion);
 					//recurse
-					//TODO - note - the full scanner does a recursive search - and it may return a refex that isn't attached to a concept, 
-					//but rather, to something else, including another refex.  Need to figure out how we handle/display those.
 					getDataRows(refexVersion, ti);
 					rowData.add(ti);
 				}

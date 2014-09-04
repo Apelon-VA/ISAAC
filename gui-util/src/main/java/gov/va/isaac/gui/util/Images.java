@@ -73,7 +73,8 @@ public enum Images {
     ATTACH(setupImage("icons/silk/16x16/attach.png")),
     HISTORY(setupImage("/icons/fugue/16x16/icons-shadowless/clock.png")),
     FILTER_16(setupImage("icons/misc/16x16/filter.png")),
-    FILTER_32(setupImage("icons/misc/32x32/filter.png"));
+    FILTER_32(setupImage("icons/misc/32x32/filter.png")),
+    CONFIGURE(setupImage("/icons/fugue/16x16/icons-shadowless/ui-check-boxes-series.png"));
 
     private final Image image;
 
