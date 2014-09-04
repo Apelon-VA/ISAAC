@@ -42,6 +42,8 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -355,10 +357,10 @@ public class CommonMenus
 				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" 
-							+ CommonMenusNIdProvider.getNIds().iterator().next() + "\"");
+							+ getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()) + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
-					cv.setConcept(CommonMenusNIdProvider.getNIds().iterator().next());
+					cv.setConcept(getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()));
 					cv.showView(null);
 				},
 				() -> { // onNotHandlable
@@ -377,10 +379,10 @@ public class CommonMenus
 				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> {
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" 
-							+ CommonMenusNIdProvider.getNIds().iterator().next() + "\"");
+							+ getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()) + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "LegacyStyle");
-					cv.setConcept(CommonMenusNIdProvider.getNIds().iterator().next());
+					cv.setConcept(getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()));
 
 					cv.showView(null);
 				},
@@ -400,7 +402,7 @@ public class CommonMenus
 				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
 				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				// onHandlable
-				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(CommonMenusNIdProvider.getNIds().iterator().next(), null); },
+				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()), null); },
 				// onNotHandlable
 				() -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");});
 		if (findInTaxonomyViewMenuItem != null)
@@ -502,7 +504,10 @@ public class CommonMenus
 				nids.getObservableNidCount().greaterThan(0),				//make visible
 				() -> { // onHandlable
 					ArrayList<Integer> nidList = new ArrayList<>();
-					nidList.addAll(nids.getNIds());
+					for (int i : nids.getNIds())
+					{
+						nidList.add(getComponentParentConceptNid(i));
+					}
 					LOG.debug("Using \"" + CommonMenuItem.LIST_VIEW.getText() + "\" menu item to list concept(s) with id(s) \"" 
 							+ Arrays.toString(nidList.toArray()) + "\"");
 
@@ -529,7 +534,7 @@ public class CommonMenus
 				nids.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
 					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-					view.setConcept(nids.getNIds().iterator().next());
+					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
 					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 				},
 				() -> { // onNotHandlable
@@ -595,11 +600,18 @@ public class CommonMenus
 		ArrayList<String> sctIds = new ArrayList<>();
 
 		for (Integer i : nids.getNIds()) {
-			ConceptVersionBI concept = null;
-			concept = WBUtility.getConceptVersion(i);
-			if (concept != null) {
-				uuids.add(concept != null ? concept.getPrimordialUuid() : null);
-				sctIds.add(concept != null ? ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(concept)).trim() : null);
+			ComponentChronicleBI<?> component = WBUtility.getComponentChronicle(i);
+			
+			if (component != null && component.getPrimordialUuid() != null) {
+				uuids.add(component.getPrimordialUuid());
+				if (component instanceof ConceptChronicleBI)
+				{
+					ConceptVersionBI concept = WBUtility.getConceptVersion(i);
+					if (concept != null)
+					{
+						sctIds.add(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(concept)).trim());
+					}
+				}
 			}
 		}
 
@@ -656,5 +668,27 @@ public class CommonMenus
 		}
 
 		return menuItems;
+		
+	}
+	
+	/**
+	 * If this nid is a component ref, rather than a concept ref, get the enclosing concept ref.
+	 * @param nid
+	 */
+	private static int getComponentParentConceptNid(int nid)
+	{
+		//TODO Dan doesn't like this, because it is being done at menu execution time, in the FX Thread, rather
+		//that in the background... but not sure how to restructure this class just now to properly handle other 
+		//types of nids...
+		ComponentChronicleBI<?> cc = WBUtility.getComponentChronicle(nid);
+		if (cc != null)
+		{
+			return cc.getConceptNid();
+		}
+		else
+		{
+			LOG.error("Unexpected - couldn't find component for nid {}", nid);
+			return nid;
+		}
 	}
 }
