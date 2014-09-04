@@ -36,7 +36,7 @@ import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class SimpleDisplayConcept
+public class SimpleDisplayConcept implements Comparable<SimpleDisplayConcept>
 {
 	private String description_;
 	private int nid_;
@@ -176,5 +176,14 @@ public class SimpleDisplayConcept
 	public SimpleDisplayConcept clone()
 	{
 		return new SimpleDisplayConcept(this.description_, this.nid_, false);
+	}
+
+	/**
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(SimpleDisplayConcept o)
+	{
+		return description_.compareToIgnoreCase(o.description_);
 	}
 }

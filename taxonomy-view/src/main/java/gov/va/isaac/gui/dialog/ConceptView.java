@@ -175,7 +175,7 @@ public class ConceptView implements PopupConceptViewI {
 		s.getIcons().add(Images.CONCEPT_VIEW.getImage());
 
 		// Title will change after concept is set.
-		s.setTitle(controller.getTitle());
+		s.titleProperty().bind(controller.getTitle());
 		s.show();
 		//doesn't come to the front unless you do this (on linux, at least)
 		Platform.runLater(() -> {s.toFront();});

@@ -30,6 +30,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -85,6 +86,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.SplitPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -164,6 +167,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		public String toString() { return display; }
 	}
 
+	enum TaxonomyViewMode {
+		FILTERED,
+		UNFILTERED
+	}
+	
 	@FXML private HBox maxResultsHBox;
 	@FXML private Label maxResultsCustomTextFieldLabel;
 	private IntegerField maxResultsCustomTextField;
@@ -173,7 +181,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button searchButton;
 
 	@FXML private Label totalResultsDisplayedLabel;
-	@FXML private Pane pane;
+	//@FXML private Pane pane;
 	@FXML private ComboBox<AggregationType> aggregationTypeComboBox;
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
@@ -183,6 +191,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Label totalResultsSelectedLabel;
 	@FXML private Button resetDefaultsButton;
 	@FXML private Button addIsDescdantOfFilterButton;
+	
+	@FXML private SplitPane searchResultsAndTaxonomySplitPane;
+	private BorderPane taxonomyPanelBorderPane;
+	private ComboBox<TaxonomyViewMode> taxonomyPanelViewModeComboBox;
+	private Button taxonomyPanelCloseButton;
+	
+	@FXML private Button exportResultsToSearchTaxonomyPanelButton;
 
 	@FXML private HBox searchTypeControlsHbox;
 	@FXML private ComboBox<SearchType> searchTypeComboBox;
@@ -196,6 +211,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	final private SearchViewModel searchViewModel = new SearchViewModel();
 
+	private TaxonomyViewI taxonomyView = null;
+	private final BooleanProperty taxonomyPanelShouldFilterProperty = new SimpleBooleanProperty(false);
+	private SctTreeItemSearchResultsDisplayPolicies taxonomyDisplayPolicies = null;
+	
 	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
 	private SearchHandle ssh = null;
 
@@ -216,7 +235,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	public void initialize() {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		//assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert totalResultsSelectedLabel != null : "fx:id=\"totalResultsSelectedLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
@@ -229,12 +247,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchFilterGridPane != null : "fx:id=\"searchFilterGridPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchTypeComboBox != null : "fx:id=\"searchTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
-		if (! pane.getStylesheets().contains(styleSheet)) {
-			pane.getStylesheets().add(styleSheet);
+		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
+			searchResultsAndTaxonomySplitPane.getStylesheets().add(styleSheet);
 		}
-
+		
+		initializeTaxonomyPanel();
+		
 		if (searchSaveNameTextField == null) {
 			searchSaveNameTextField = new TextField();
 		}
@@ -255,7 +277,55 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				searchViewModel.getFilters().add(newFilter);
 			}
 		});
+		
+		exportResultsToSearchTaxonomyPanelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				if (taxonomyView == null) {
+					taxonomyView = AppContext.getService(TaxonomyViewI.class);
 
+					taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
+					taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
+
+					taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
+
+					taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
+					taxonomyPanelBorderPane.setMinWidth(200);
+				}
+				
+				if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+					searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
+					searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
+					searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
+					LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
+				}
+				
+				taxonomyDisplayPolicies.getSearchResultAncestors().clear();
+				taxonomyDisplayPolicies.getSearchResults().clear();
+				for (CompositeSearchResult c : searchResultsTable.getItems()) {
+					taxonomyDisplayPolicies.getSearchResults().add(c.getConceptNid());
+					
+					Set<ConceptVersionBI> ancestorNids = null;
+					try {
+						ancestorNids = WBUtility.getConceptAncestors(c.getConceptNid());
+
+						for (ConceptVersionBI concept : ancestorNids) {
+							taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+						}
+					} catch (/* IOException | ContradictionException */ Exception e) {
+						String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+						String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+						String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+						AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+						e.printStackTrace();
+					}
+				}
+
+				taxonomyView.refresh();
+			}
+		});
+		
 		initializeWorkflowServices();
 
 		//final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
@@ -306,6 +376,86 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 
+	private void initializeTaxonomyPanel() {
+		initializeTaxonomyViewModeComboBox();
+		
+		taxonomyPanelBorderPane = new BorderPane();
+		taxonomyPanelBorderPane.setTop(taxonomyPanelViewModeComboBox);
+		taxonomyPanelCloseButton = new Button("Close");
+		taxonomyPanelCloseButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				searchResultsAndTaxonomySplitPane.getItems().remove(taxonomyPanelBorderPane);
+				LOG.debug("Removed taxonomyPanelBorderPane from searchResultsAndTaxonomySplitPane");
+			}
+		});
+		taxonomyPanelBorderPane.setBottom(taxonomyPanelCloseButton);
+	}
+	
+	private void initializeTaxonomyViewModeComboBox() {
+		taxonomyPanelViewModeComboBox = new ComboBox<>();
+
+		// Force single selection
+		taxonomyPanelViewModeComboBox.getSelectionModel().selectFirst();
+		taxonomyPanelViewModeComboBox.setCellFactory((p) -> {
+			final ListCell<TaxonomyViewMode> cell = new ListCell<TaxonomyViewMode>() {
+				@Override
+				protected void updateItem(TaxonomyViewMode a, boolean bln) {
+					super.updateItem(a, bln);
+
+					if(a != null){
+						setText(a.toString() + " view mode");
+					}else{
+						setText(null);
+					}
+				}
+			};
+
+			return cell;
+		});
+		taxonomyPanelViewModeComboBox.setButtonCell(new ListCell<TaxonomyViewMode>() {
+			@Override
+			protected void updateItem(TaxonomyViewMode t, boolean bln) {
+				super.updateItem(t, bln); 
+				if (bln) {
+					setText("");
+				} else {
+					setText(t.toString() + " view mode");
+				}
+			}
+		});
+		taxonomyPanelViewModeComboBox.setOnAction((event) -> {
+			LOG.trace("taxonomyPanelViewModeComboBox event (selected: " + taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			boolean statusChanged = false;
+			
+			switch (taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem()) {
+			case FILTERED:
+				if (! taxonomyPanelShouldFilterProperty.get()) {
+					statusChanged = true;
+				}
+				taxonomyPanelShouldFilterProperty.set(true);
+				break;
+			case UNFILTERED:
+				if (taxonomyPanelShouldFilterProperty.get()) {
+					statusChanged = true;
+				}
+				taxonomyPanelShouldFilterProperty.set(false);
+				break;
+
+				default:
+					throw new RuntimeException("Unsupported TaxonomyViewMode value \"" + taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem() + "\"");
+			}
+			
+			if (statusChanged) {
+				taxonomyView.refresh();
+			}
+		});
+
+		taxonomyPanelViewModeComboBox.setItems(FXCollections.observableArrayList(TaxonomyViewMode.values()));
+		taxonomyPanelViewModeComboBox.getSelectionModel().select(TaxonomyViewMode.UNFILTERED);
+	}
+	
 	private void initializeSearchViewModel() {
 		searchViewModel.setViewCoordinate(WBUtility.getViewCoordinate());
 
@@ -1501,8 +1651,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 	}
 
-	public Pane getRoot() {
-		return pane;
+	public SplitPane getRoot() {
+		return searchResultsAndTaxonomySplitPane;
 	}
 
 	interface ColumnValueExtractor {

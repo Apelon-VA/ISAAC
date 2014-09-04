@@ -125,6 +125,6 @@ public class SearchView implements DockedViewI
 	@Override
 	public String getViewTitle()
 	{
-		return "Snomed Search";
+		return "SOLOR Search";
 	}
 }
