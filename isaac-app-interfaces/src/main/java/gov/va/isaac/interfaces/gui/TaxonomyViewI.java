@@ -18,8 +18,13 @@
  */
 package gov.va.isaac.interfaces.gui;
 
+import gov.va.isaac.interfaces.gui.views.ViewI;
+import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+
 import java.util.UUID;
+
 import javafx.beans.property.BooleanProperty;
+
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -31,7 +36,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Contract
-public interface TaxonomyViewI
+public interface TaxonomyViewI extends ViewI
 {
 	/**
 	 * Locate and highlight the requested concept in the taxonomy view
@@ -41,4 +46,9 @@ public interface TaxonomyViewI
 	 */
 	public void locateConcept(UUID uuid, final BooleanProperty busyIndicator);
 	public void locateConcept(int nid, final BooleanProperty busyIndicator);
+	
+	public SctTreeItemDisplayPolicies getDefaultDisplayPolicies();
+	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies);
+	
+	public void refresh();
 }

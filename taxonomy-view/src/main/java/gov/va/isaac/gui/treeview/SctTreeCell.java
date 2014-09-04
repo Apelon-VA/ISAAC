@@ -109,8 +109,10 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (RelationshipChronicleDdo extraParent : extraParents) {
                     for (RelationshipVersionDdo extraParentVersion : extraParent.getVersions()) {
                         SctTreeItem extraParentItem =
-                                new SctTreeItem(new TaxonomyReferenceWithConcept(extraParentVersion,
-                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION));
+                                new SctTreeItem(
+                                		new TaxonomyReferenceWithConcept(extraParentVersion,
+                                				TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
+                                				treeItem.getDisplayPolicies());
                         ProgressIndicator indicator = new ProgressIndicator();
 //TODO figure out what we will do with this indicator skin
 //                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));

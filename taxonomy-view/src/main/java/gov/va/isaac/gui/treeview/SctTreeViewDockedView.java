@@ -24,6 +24,7 @@ import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
 import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					sctTreeView_.init(WBUtility.ISAAC_ROOT.getUuids()[0]);
+					sctTreeView_.init();
 					hasBeenInited_ = true;
 				}
 			}
@@ -164,5 +165,29 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 	@Override
 	public void locateConcept(int nid, BooleanProperty busyIndicator) {
 		locateConcept(WBUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#setDisplayPolicies(gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies)
+	 */
+	@Override
+	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
+		sctTreeView_.setDisplayPolicies(policies);
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#refresh()
+	 */
+	@Override
+	public void refresh() {
+		sctTreeView_.refresh();
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#getDefaultDisplayPolicies()
+	 */
+	@Override
+	public SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
+		return SctTreeView.getDefaultDisplayPolicies();
 	}
 }
