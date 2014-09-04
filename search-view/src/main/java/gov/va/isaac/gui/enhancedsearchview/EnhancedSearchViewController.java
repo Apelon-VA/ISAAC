@@ -24,12 +24,14 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
+import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
@@ -662,6 +664,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				} else {
 					try {
 						NonSearchTypeFilter<?> newFilter = filterTypeComboBox.getSelectionModel().getSelectedItem().getClazz().newInstance();
+						NonSearchTypeFilter<?> existingFilter = searchViewModel.getFilters().get(index);
+
+						// Attempt to retain existing filter parameters, if possible
+						if ((existingFilter instanceof Invertable) && (newFilter instanceof Invertable)) {
+							((Invertable)newFilter).setInvert(((Invertable)existingFilter).getInvert());
+						}
+						if ((existingFilter instanceof SingleNidFilter) && (newFilter instanceof SingleNidFilter)) {
+							((SingleNidFilter)newFilter).setNid(((SingleNidFilter)existingFilter).getNid());
+						}
+						
 						searchViewModel.getFilters().set(index, newFilter);
 					
 						// Remove all nodes from searchFilterGridPane

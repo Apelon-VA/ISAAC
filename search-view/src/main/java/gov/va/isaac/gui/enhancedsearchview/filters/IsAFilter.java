@@ -37,7 +37,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable {
+public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, SingleNidFilter {
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 	private BooleanProperty invert = new SimpleBooleanProperty(false);
 	private IntegerProperty nid = new SimpleIntegerProperty(0);
@@ -75,9 +75,12 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable {
 	public IntegerProperty getNidProperty() {
 		return nid;
 	}
+	
+	@Override
 	public int getNid() {
 		return nid.get();
 	}
+	@Override
 	public void setNid(int nid) {
 		this.nid.set(nid);
 	}
