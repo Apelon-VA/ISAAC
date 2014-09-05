@@ -41,12 +41,12 @@ public class FullSyncTest {
         LocalTasksServiceBI localTasksService = wfEngine.getLocalTaskService();
         ProcessInstanceServiceBI processService = wfEngine.getProcessInstanceService();
         
-//        localTasksService.dropSchema();
-//        localTasksService.createSchema();
-//        processService.dropSchema();
-//        processService.createSchema();
+        localTasksService.dropSchema();
+        localTasksService.createSchema();
+        processService.dropSchema();
+        processService.createSchema();
         
-        //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() == 0);
+//        assertTrue(localTasksService.getOpenOwnedTasks(userid).size() == 0);
         
         wfEngine.synchronizeWithRemote();
         
@@ -55,6 +55,7 @@ public class FullSyncTest {
        Long lastTaskId = null;
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
             System.out.println("TaskId: " + loopTask.getId() + " " + loopTask.getName());
+            System.out.println("Component: " + loopTask.getComponentId() + " " + loopTask.getComponentName());
             lastTaskId = loopTask.getId();
             if (loopTask.getInputVariables() != null) {
                 for (String key : loopTask.getInputVariables().keySet()) {
@@ -64,36 +65,36 @@ public class FullSyncTest {
         }
 
         //localTasksService.setAction(29L, "COMPLETE", "pending");
-       System.out.println("LastTaskId: " + lastTaskId);
-       HashMap<String, String> variables = new HashMap<String, String>();
-       variables.put("out_evaluation", "value1");
-       localTasksService.setAction(lastTaskId, "COMPLETE", "pending", variables);
-        //localTasksService.setAction(25L, "RELEASE", "pending");
-        
-        wfEngine.synchronizeWithRemote();
-        
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
-            System.out.println("TaskId: " + loopTask.getId());
-        }
-        
-        
-       wfEngine.claim(1, userid);
-       System.out.println("After claim");
-        wfEngine.synchronizeWithRemote();
-        
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
-            System.out.println("TaskId: " + loopTask.getId());
-        }
-        Map<String,String> variables2 = new HashMap<String, String>();
-        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro", variables2);
-//        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
-
-        System.out.println("After new instances");
-        wfEngine.synchronizeWithRemote();
-
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
-            System.out.println("TaskId: " + loopTask.getId());
-        }
+//       System.out.println("LastTaskId: " + lastTaskId);
+//       HashMap<String, String> variables = new HashMap<String, String>();
+//       variables.put("out_evaluation", "value1");
+//       localTasksService.setAction(lastTaskId, "COMPLETE", "pending", variables);
+//        //localTasksService.setAction(25L, "RELEASE", "pending");
+//
+//        wfEngine.synchronizeWithRemote();
+//
+//        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
+//            System.out.println("TaskId: " + loopTask.getId());
+//        }
+//
+//
+//       wfEngine.claim(1, userid);
+//       System.out.println("After claim");
+//        wfEngine.synchronizeWithRemote();
+//
+//        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
+//            System.out.println("TaskId: " + loopTask.getId());
+//        }
+//        Map<String,String> variables2 = new HashMap<String, String>();
+//        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo Wood asthma (disorder)", "alejandro", variables2);
+////        processService.createRequest("terminology-authoring.test1", "56968009", "Guillermo 2 Wood asthma (disorder)", "alejandro");
+//
+//        System.out.println("After new instances");
+//        wfEngine.synchronizeWithRemote();
+//
+//        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
+//            System.out.println("TaskId: " + loopTask.getId());
+//        }
 
     }
 }
