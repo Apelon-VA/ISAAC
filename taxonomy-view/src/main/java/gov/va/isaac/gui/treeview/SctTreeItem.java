@@ -19,22 +19,27 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.treeview.SctTreeItemI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeItem;
+
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.thread.NamedThreadFactory;
@@ -51,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements Comparable<SctTreeItem>, ShutdownBroadcastListenerI{
+public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctTreeItemI, Comparable<SctTreeItem>, ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeItem.class);
 
@@ -72,20 +77,29 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     private boolean multiParent = false;
     private int multiParentDepth = 0;
     private boolean secondaryParentOpened = false;
+    private SctTreeItemDisplayPolicies displayPolicies;
 
-    public SctTreeItem(TaxonomyReferenceWithConcept taxRef) {
-        this(taxRef, (Node) null);
+    public SctTreeItem(TaxonomyReferenceWithConcept taxRef, SctTreeItemDisplayPolicies displayPolicies) {
+        this(taxRef, displayPolicies, (Node) null);
     }
 
-    public SctTreeItem(TaxonomyReferenceWithConcept t, Node node) {
+    public SctTreeItem(TaxonomyReferenceWithConcept t, SctTreeItemDisplayPolicies displayPolicies, Node node) {
         super(t, node);
+        this.displayPolicies = displayPolicies;
         AppContext.getMainApplicationWindow().registerShutdownListener(this);
     }
 
+    public SctTreeItemDisplayPolicies getDisplayPolicies() {
+    	return displayPolicies;
+    }
+   
     public void addChildren() {
+    	LOG.debug("Adding children to " + getConceptUuid());
         final TaxonomyReferenceWithConcept taxRef = getValue();
-        if (taxRef.getConcept() != null) {
-
+        if (! shouldDisplay()) {
+    		// Don't add children to something that shouldn't be displayed
+    		LOG.debug("this.shouldDisplay() == false: not adding children to " + this.getConceptUuid());
+    	} else if (taxRef.getConcept() != null) {
             // Configure a new progress indicator.
             ProgressIndicator pi = new ProgressIndicator();
             //TODO Figure out what to do with the progress indicator
@@ -101,9 +115,12 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
                 for (RelationshipVersionDdo rv : r.getVersions()) {
                     try {
                         TaxonomyReferenceWithConcept fxtrc = new TaxonomyReferenceWithConcept(rv);
-                        SctTreeItem childItem = new SctTreeItem(fxtrc);
-
-                        childrenToProcess.add(childItem);
+                        SctTreeItem childItem = new SctTreeItem(fxtrc, displayPolicies);
+                        if (childItem.shouldDisplay()) {
+                            childrenToProcess.add(childItem);
+                        } else {
+                    		LOG.debug("item.shouldDisplay() == false: not adding " + childItem.getConceptUuid() + " as child of " + this.getConceptUuid());
+                        }
                     } catch (IOException | ContradictionException ex) {
                         LOG.error(null, ex);
                     }
@@ -123,44 +140,58 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     public void addChildrenConceptsAndGrandchildrenItems(ProgressIndicator p1) {
         ArrayList<SctTreeItem> grandChildrenToProcess = new ArrayList<>();
 
-        for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren()) {
-            if (child.getChildren().isEmpty() && (child.getValue().getConcept() != null)) {
-                if (child.getValue().getConcept().getDestinationRelationships().isEmpty()) {
-                    TaxonomyReferenceWithConcept value = child.getValue();
-                    child.setValue(null);
-                    SctTreeItem noChildItem = (SctTreeItem) child;
-                    noChildItem.computeGraphic();
-                    noChildItem.setValue(value);
-                } else {
-                    ArrayList<SctTreeItem> grandChildrenToAdd = new ArrayList<>();
+        if (! shouldDisplay()) {
+        	// Don't add children to something that shouldn't be displayed
+        	LOG.debug("this.shouldDisplay() == false: not adding children concepts and grandchildren items to " + this.getConceptUuid());
+        } else {
+        	for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren()) {
+        		SctTreeItem tempChild = new SctTreeItem(child.getValue(), this.getDisplayPolicies());
+        		if (tempChild.shouldDisplay()) {
+        			if (child.getChildren().isEmpty() && (child.getValue().getConcept() != null)) {
+        				if (child.getValue().getConcept().getDestinationRelationships().isEmpty()) {
+        					TaxonomyReferenceWithConcept value = child.getValue();
+        					child.setValue(null);
+        					SctTreeItem noChildItem = (SctTreeItem) child;
+        					noChildItem.computeGraphic();
+        					noChildItem.setValue(value);
+        				} else {
+        					ArrayList<SctTreeItem> grandChildrenToAdd = new ArrayList<>();
 
-                    for (RelationshipChronicleDdo r :
-                            child.getValue().conceptProperty().get().getDestinationRelationships()) {
-                        for (RelationshipVersionDdo rv : r.getVersions()) {
-                            try {
-                                TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                                SctTreeItem grandChildItem = new SctTreeItem(taxRef);
+        					for (RelationshipChronicleDdo r :
+        						child.getValue().conceptProperty().get().getDestinationRelationships()) {
+        						for (RelationshipVersionDdo rv : r.getVersions()) {
+        							try {
+        								TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
+        								SctTreeItem grandChildItem = new SctTreeItem(taxRef, displayPolicies);
 
-                                grandChildrenToProcess.add(grandChildItem);
-                                grandChildrenToAdd.add(grandChildItem);
-                            } catch (IOException | ContradictionException ex) {
-                                LOG.error(null, ex);
-                            }
-                        }
-                    }
+        								if (grandChildItem.shouldDisplay()) {
+        									grandChildrenToProcess.add(grandChildItem);
+        									grandChildrenToAdd.add(grandChildItem);
+        								} else {
+        									LOG.debug("grandChildItem.shouldDisplay() == false: not adding " + grandChildItem.getConceptUuid() + " as child of " + tempChild.getConceptUuid());
+        								}
+        							} catch (IOException | ContradictionException ex) {
+        								LOG.error(null, ex);
+        							}
+        						}
+        					}
 
-                    Collections.sort(grandChildrenToAdd);
-                    child.getChildren().addAll(grandChildrenToAdd);
-                }
-            } else if (child.getValue().getConcept() == null) {
-                grandChildrenToProcess.add((SctTreeItem) child);
-            }
+        					Collections.sort(grandChildrenToAdd);
+        					child.getChildren().addAll(grandChildrenToAdd);
+        				}
+        			} else if (child.getValue().getConcept() == null) {
+        				grandChildrenToProcess.add((SctTreeItem) child);
+        			}
+        		} else {
+					LOG.debug("childItem.shouldDisplay() == false: not adding " + tempChild.getConceptUuid() + " as child of " + this.getConceptUuid());
+        		}
+        	}
+
+        	FetchConceptsTask fetchChildrenTask = new FetchConceptsTask(grandChildrenToProcess);
+
+        	p1.progressProperty().bind(fetchChildrenTask.progressProperty());
+        	FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
         }
-
-        FetchConceptsTask fetchChildrenTask = new FetchConceptsTask(grandChildrenToProcess);
-
-        p1.progressProperty().bind(fetchChildrenTask.progressProperty());
-        FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
     }
 
     @Override
@@ -168,29 +199,43 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         return this.toString().compareTo(o.toString());
     }
 
-    public Node computeGraphic() {
+    public UUID getConceptUuid() {
+    	TaxonomyReferenceWithConcept ref = getValue();
+    	
+    	if (ref != null && ref.getConceptFromRelationshipOrConceptProperties() != null) {
+    		return getValue().getConceptFromRelationshipOrConceptProperties().getUuid();
+    	} else {
+    		return null;
+    	}
+    }
+    public Integer getConceptNid() {
+    	TaxonomyReferenceWithConcept ref = getValue();
+    	
+    	if (ref != null && ref.getConceptFromRelationshipOrConceptProperties() != null) {
+    		return getValue().getConceptFromRelationshipOrConceptProperties().getNid();
+    	} else {
+    		return null;
+    	}
+    }
+    
+    public boolean isRoot() {
         TaxonomyReferenceWithConcept ref = getValue();
-        if (ref != null && ref.getRelationshipVersion() == null) {
-            return Images.ROOT.createImageView();
-        } else if (ref != null && ref.getConcept() != null && ref.getConcept().getOriginRelationships().isEmpty()) {
-            return Images.ROOT.createImageView();
-        } else if (isDefined() && (isMultiParent() || multiParentDepth > 0)) {
 
-            if (isSecondaryParentOpened()) {
-                return Images.DEFINED_MULTI_PARENT_OPEN.createImageView();
-            } else {
-                return Images.DEFINED_MULTI_PARENT_CLOSED.createImageView();
-            }
-        } else if (!isDefined() && (isMultiParent() || multiParentDepth > 0)) {
-            if (isSecondaryParentOpened()) {
-                return Images.PRIMITIVE_MULTI_PARENT_OPEN.createImageView();
-            } else {
-                return Images.PRIMITIVE_MULTI_PARENT_CLOSED.createImageView();
-            }
-        } else if (isDefined() && !isMultiParent()) {
-            return Images.DEFINED_SINGLE_PARENT.createImageView();
+    	if (ref != null && ref.getRelationshipVersion() == null) {
+            return true;
+        } else if (ref != null && ref.getConcept() != null && ref.getConcept().getOriginRelationships().isEmpty()) {
+            return true;
+        } else {
+        	return false;
         }
-        return Images.PRIMITIVE_SINGLE_PARENT.createImageView();
+    }
+    
+    public Node computeGraphic() {
+        return displayPolicies.computeGraphic(this);
+    }
+    
+    public boolean shouldDisplay() {
+    	return displayPolicies.shouldDisplay(this);
     }
 
     public void removeGrandchildren() {

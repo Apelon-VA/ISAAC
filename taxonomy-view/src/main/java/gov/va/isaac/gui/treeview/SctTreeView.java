@@ -21,12 +21,15 @@ package gov.va.isaac.gui.treeview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
@@ -39,6 +42,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -65,14 +69,18 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
+    private final static SctTreeItemDisplayPolicies defaultDisplayPolicies = new DefaultSctTreeItemDisplayPolicies();
+
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
     private Object lock_ = new Object();
+    private boolean initRun = false;
     private boolean initialLoadComplete_ = false;
     private StackPane sp_;
     private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
+    private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
 
     protected SctTreeView() {
         treeView_ = new TreeView<>();
@@ -88,11 +96,82 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     
     public StackPane getView()
     {
+    	if (! initRun) {
+    		LOG.warn("getView() called before init() run");
+    	}
         return sp_;
     }
-    
-    public void init(final UUID rootConcept) {
 
+    public void refresh() {
+    	if (! initRun) {
+    		init();
+    	}
+
+    	Task<Object> task = new Task<Object>() {
+            @Override
+            protected Object call() throws Exception {
+                LOG.debug("Ensuring init completed");
+                
+                synchronized (lock_)
+                {
+                    if (!initialLoadComplete_)
+                    {
+                    	try {
+                    		LOG.info("Waiting for init() to complete...");
+                    		lock_.wait();
+                    		LOG.info("Completed waiting for init() to complete");
+                    	} catch (Exception e) {
+                    		LOG.error("Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\" while waiting for init() to complete");
+                    	}
+                    }
+                }
+                
+                LOG.debug("Finished ensuring init completed");
+                return new Object();
+            }
+
+            @Override
+            protected void succeeded() {
+            	LOG.debug("Succeeded waiting for init() to complete");
+
+            	if (rootTreeItem.getChildren().size() > 0) {
+                	LOG.debug("Removing existing grandchildren...");
+            		rootTreeItem.removeGrandchildren();
+                	LOG.debug("Removed existing grandchildren.");
+            	}
+            	
+            	LOG.debug("Removing existing children...");
+            	rootTreeItem.getChildren().clear();
+            	LOG.debug("Removed existing children.");
+            	
+            	LOG.debug("Re-adding children...");
+            	rootTreeItem.addChildren();
+            	LOG.debug("Re-added children.");
+            }
+
+            @Override
+            protected void failed() {
+                Throwable ex = getException();
+                String title = "Unexpected error waiting for init() to complete";
+                String msg = ex.getClass().getName();
+                LOG.error(title, ex);
+                if (!shutdownRequested)
+                {
+                    AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
+                }
+            }
+        };
+
+        Utility.execute(task);
+    }
+    
+    public void init() {
+    	init(WBUtility.ISAAC_ROOT.getUuids()[0]);
+    }
+
+    private void init(final UUID rootConcept) {
+    	initRun = true;
+    	
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
 
@@ -111,6 +190,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
             @Override
             protected void succeeded() {
+            	LOG.debug("getFxConcept() (called by init()) succeeded");
+
                 ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
             }
@@ -132,6 +213,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     }
     
     private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
+    	LOG.debug("Running finishTreeSetup()...");
+    	
         treeView_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         treeView_.setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
@@ -142,14 +225,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         });
 
         TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept);
+        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, displayPolicies);
         treeView_.setShowRoot(false);
         treeView_.setRoot(hiddenRootItem);
 
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
 
-        rootTreeItem = new SctTreeItem(visibleRootConcept, Images.ROOT.createImageView());
+        rootTreeItem = new SctTreeItem(visibleRootConcept, displayPolicies, Images.ROOT.createImageView());
 
         hiddenRootItem.getChildren().add(rootTreeItem);
         rootTreeItem.addChildren();
@@ -179,7 +262,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         p2.setPrefSize(16, 16);
                         p2.setProgress(-1);
                         sourceTreeItem.setProgressIndicator(p2);
-                        sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                        if (sourceTreeItem.shouldDisplay()) {
+                        	sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                        }
                     }
                 });
         sp_.getChildren().add(treeView_);
@@ -192,6 +277,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
+		if (! initRun) {
+    		init();
+    	}
 
         // Do work in background.
         Task<SctTreeItem> task = new Task<SctTreeItem>() {
@@ -388,6 +476,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
     }
 
+	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
+		this.displayPolicies = policies;
+	}
+
+	public static SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
+		return defaultDisplayPolicies;
+	}
+	
     /**
      * Tell the tree to stop whatever threading operations it has running,
      * since the application is exiting.

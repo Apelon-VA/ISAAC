@@ -24,12 +24,16 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
+import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -81,6 +85,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.SplitPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -160,6 +166,34 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		public String toString() { return display; }
 	}
 
+	enum TaxonomyViewMode {
+		FILTERED,
+		UNFILTERED
+	}
+	
+	enum FilterType {
+		IS_DESCENDANT_OF(IsDescendantOfFilter.class),
+		IS_A(IsAFilter.class);
+		
+		private final Class<? extends NonSearchTypeFilter<?>> clazz;
+		
+		private FilterType(Class<? extends NonSearchTypeFilter<?>> aClazz) {
+			clazz = aClazz;
+		}
+		
+		public Class<? extends NonSearchTypeFilter<?>> getClazz() { return clazz; }
+		
+		public static FilterType valueOf(Class<? extends NonSearchTypeFilter> filterType) {
+			for (FilterType type : values()) {
+				if (type.getClazz() == filterType) {
+					return type;
+				}
+			}
+			
+			return null;
+		}
+	}
+
 	@FXML private HBox maxResultsHBox;
 	@FXML private Label maxResultsCustomTextFieldLabel;
 	private IntegerField maxResultsCustomTextField;
@@ -169,7 +203,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button searchButton;
 
 	@FXML private Label totalResultsDisplayedLabel;
-	@FXML private Pane pane;
+	//@FXML private Pane pane;
 	@FXML private ComboBox<AggregationType> aggregationTypeComboBox;
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
@@ -178,7 +212,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private ProgressIndicator searchProgress;
 	@FXML private Label totalResultsSelectedLabel;
 	@FXML private Button resetDefaultsButton;
-	@FXML private Button addIsDescdantOfFilterButton;
+	private Button addIsDescendantOfFilterButton;
+	
+	@FXML private SplitPane searchResultsAndTaxonomySplitPane;
+	private BorderPane taxonomyPanelBorderPane;
+	private ComboBox<TaxonomyViewMode> taxonomyPanelViewModeComboBox;
+	private Button taxonomyPanelCloseButton;
+	
+	@FXML private Button exportResultsToSearchTaxonomyPanelButton;
 
 	@FXML private HBox searchTypeControlsHbox;
 	@FXML private ComboBox<SearchType> searchTypeComboBox;
@@ -192,6 +233,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	final private SearchViewModel searchViewModel = new SearchViewModel();
 
+	private TaxonomyViewI taxonomyView = null;
+	private final BooleanProperty taxonomyPanelShouldFilterProperty = new SimpleBooleanProperty(false);
+	private SctTreeItemSearchResultsDisplayPolicies taxonomyDisplayPolicies = null;
+	
 	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
 	private SearchHandle ssh = null;
 
@@ -212,7 +257,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	public void initialize() {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		//assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert totalResultsSelectedLabel != null : "fx:id=\"totalResultsSelectedLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
@@ -221,16 +265,20 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert maxResultsCustomTextFieldLabel != null : "fx:id=\"maxResultsCustomTextFieldLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert saveSearchButton != null : "fx:id=\"saveSearchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert savedSearchesComboBox != null : "fx:id=\"savedSearchesComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert addIsDescdantOfFilterButton != null : "fx:id=\"addIsDescdantOfFilterButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		//assert addIsDescendantOfFilterButton != null : "fx:id=\"addIsDescendantOfFilterButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchFilterGridPane != null : "fx:id=\"searchFilterGridPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchTypeComboBox != null : "fx:id=\"searchTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
-		if (! pane.getStylesheets().contains(styleSheet)) {
-			pane.getStylesheets().add(styleSheet);
+		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
+			searchResultsAndTaxonomySplitPane.getStylesheets().add(styleSheet);
 		}
-
+		
+		initializeTaxonomyPanel();
+		
 		if (searchSaveNameTextField == null) {
 			searchSaveNameTextField = new TextField();
 		}
@@ -243,7 +291,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		initializeSearchTypeComboBox();
 
-		addIsDescdantOfFilterButton.setOnAction(new EventHandler<ActionEvent>() {
+		if (addIsDescendantOfFilterButton == null) {
+			addIsDescendantOfFilterButton = new Button("Add Filter");
+		}
+		addIsDescendantOfFilterButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
@@ -251,7 +302,55 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				searchViewModel.getFilters().add(newFilter);
 			}
 		});
+		
+		exportResultsToSearchTaxonomyPanelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				if (taxonomyView == null) {
+					taxonomyView = AppContext.getService(TaxonomyViewI.class);
 
+					taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
+					taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
+
+					taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
+
+					taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
+					//taxonomyPanelBorderPane.setMinWidth(200);
+				}
+				
+				if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+					searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
+					searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
+					//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
+					LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
+				}
+				
+				taxonomyDisplayPolicies.getSearchResultAncestors().clear();
+				taxonomyDisplayPolicies.getSearchResults().clear();
+				for (CompositeSearchResult c : searchResultsTable.getItems()) {
+					taxonomyDisplayPolicies.getSearchResults().add(c.getConceptNid());
+					
+					Set<ConceptVersionBI> ancestorNids = null;
+					try {
+						ancestorNids = WBUtility.getConceptAncestors(c.getConceptNid());
+
+						for (ConceptVersionBI concept : ancestorNids) {
+							taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+						}
+					} catch (/* IOException | ContradictionException */ Exception e) {
+						String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+						String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+						String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+						AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+						e.printStackTrace();
+					}
+				}
+
+				taxonomyView.refresh();
+			}
+		});
+		
 		initializeWorkflowServices();
 
 		//final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
@@ -302,6 +401,86 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 
+	private void initializeTaxonomyPanel() {
+		initializeTaxonomyViewModeComboBox();
+		
+		taxonomyPanelBorderPane = new BorderPane();
+		taxonomyPanelBorderPane.setTop(taxonomyPanelViewModeComboBox);
+		taxonomyPanelCloseButton = new Button("Close");
+		taxonomyPanelCloseButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				searchResultsAndTaxonomySplitPane.getItems().remove(taxonomyPanelBorderPane);
+				LOG.debug("Removed taxonomyPanelBorderPane from searchResultsAndTaxonomySplitPane");
+			}
+		});
+		taxonomyPanelBorderPane.setBottom(taxonomyPanelCloseButton);
+	}
+	
+	private void initializeTaxonomyViewModeComboBox() {
+		taxonomyPanelViewModeComboBox = new ComboBox<>();
+
+		// Force single selection
+		taxonomyPanelViewModeComboBox.getSelectionModel().selectFirst();
+		taxonomyPanelViewModeComboBox.setCellFactory((p) -> {
+			final ListCell<TaxonomyViewMode> cell = new ListCell<TaxonomyViewMode>() {
+				@Override
+				protected void updateItem(TaxonomyViewMode a, boolean bln) {
+					super.updateItem(a, bln);
+
+					if(a != null){
+						setText(a.toString() + " view mode");
+					}else{
+						setText(null);
+					}
+				}
+			};
+
+			return cell;
+		});
+		taxonomyPanelViewModeComboBox.setButtonCell(new ListCell<TaxonomyViewMode>() {
+			@Override
+			protected void updateItem(TaxonomyViewMode t, boolean bln) {
+				super.updateItem(t, bln); 
+				if (bln) {
+					setText("");
+				} else {
+					setText(t.toString() + " view mode");
+				}
+			}
+		});
+		taxonomyPanelViewModeComboBox.setOnAction((event) -> {
+			LOG.trace("taxonomyPanelViewModeComboBox event (selected: " + taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			boolean statusChanged = false;
+			
+			switch (taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem()) {
+			case FILTERED:
+				if (! taxonomyPanelShouldFilterProperty.get()) {
+					statusChanged = true;
+				}
+				taxonomyPanelShouldFilterProperty.set(true);
+				break;
+			case UNFILTERED:
+				if (taxonomyPanelShouldFilterProperty.get()) {
+					statusChanged = true;
+				}
+				taxonomyPanelShouldFilterProperty.set(false);
+				break;
+
+				default:
+					throw new RuntimeException("Unsupported TaxonomyViewMode value \"" + taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem() + "\"");
+			}
+			
+			if (statusChanged) {
+				taxonomyView.refresh();
+			}
+		});
+
+		taxonomyPanelViewModeComboBox.setItems(FXCollections.observableArrayList(TaxonomyViewMode.values()));
+		taxonomyPanelViewModeComboBox.getSelectionModel().select(TaxonomyViewMode.UNFILTERED);
+	}
+	
 	private void initializeSearchViewModel() {
 		searchViewModel.setViewCoordinate(WBUtility.getViewCoordinate());
 
@@ -326,7 +505,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	 * 
 	 */
 	private void addSearchFilter(final NonSearchTypeFilter<?> filter) {
-		int index = searchFilterGridPane.getChildren().size();
+		final int index = searchFilterGridPane.getChildren().size();
 
 		HBox row = new HBox();
 		HBox.setMargin(row, new Insets(5, 5, 5, 5));
@@ -374,7 +553,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		if (filter instanceof IsDescendantOfFilter) {
 			IsDescendantOfFilter displayableIsDescendantOfFilter = (IsDescendantOfFilter)filter;
 
-			Label searchParamLabel = new Label("Ascendant");
+			Label searchParamLabel = new Label("Ancestor");
 			searchParamLabel.setPadding(new Insets(5.0));
 			searchParamLabel.setMinWidth(70);
 
@@ -397,7 +576,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			//HBox.setMargin(cn.getNode(), new Insets(5, 5, 5, 5));
 
 			cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
-					{
+			{
 				@Override
 				public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
 				{
@@ -407,19 +586,115 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						LOG.debug("isDescendantFilter should now contain concept with NID " + displayableIsDescendantOfFilter.getNid() + ": " + Arrays.toString(searchViewModel.getFilters().toArray()));
 					}
 				}
-					});
+			});
+			
+			
 			if (filter.isValid()) {
 				cn.set(WBUtility.getConceptVersion(((IsDescendantOfFilter) filter).getNid()));
 			}
 
 			row.getChildren().addAll(searchParamLabel, cn.getNode(), excludeMatchesCheckBox);
-		} 
+		} else if (filter instanceof IsAFilter) {
+			IsAFilter displayableIsAFilter = (IsAFilter)filter;
+
+			Label searchParamLabel = new Label("Match");
+			searchParamLabel.setPadding(new Insets(5.0));
+			searchParamLabel.setMinWidth(70);
+
+			CheckBox excludeMatchesCheckBox = new CheckBox("Exclude Matches");
+			excludeMatchesCheckBox.setPadding(new Insets(5.0));
+			excludeMatchesCheckBox.setMinWidth(150);
+			excludeMatchesCheckBox.setSelected(((IsAFilter) filter).getInvert());
+			excludeMatchesCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends Boolean> observable,
+						Boolean oldValue,
+						Boolean newValue) {
+					((IsAFilter) filter).setInvert(newValue);
+				}});
+
+			final ConceptNode cn = new ConceptNode(null, false);
+			cn.setPromptText("Type, drop or select a concept to add");
+			//HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
+			//HBox.setMargin(cn.getNode(), new Insets(5, 5, 5, 5));
+
+			cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
+			{
+				@Override
+				public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
+				{
+					if (newValue != null)
+					{
+						displayableIsAFilter.setNid(newValue.getConceptNid());
+						LOG.debug("isAFilter should now contain concept with NID " + displayableIsAFilter.getNid() + ": " + Arrays.toString(searchViewModel.getFilters().toArray()));
+					}
+				}
+			});
+			
+			
+			if (filter.isValid()) {
+				cn.set(WBUtility.getConceptVersion(((IsAFilter) filter).getNid()));
+			}
+
+			row.getChildren().addAll(searchParamLabel, cn.getNode(), excludeMatchesCheckBox);
+		}
 		else {
 			String msg = "Failed creating DisplayableFilter GridPane cell for filter of unsupported type " + filter.getClass().getName();
 			LOG.error(msg);
 			throw new RuntimeException(msg);
 		}
 
+		ComboBox<FilterType> filterTypeComboBox = new ComboBox<>();
+		filterTypeComboBox.setEditable(false);
+		filterTypeComboBox.setItems(FXCollections.observableArrayList(FilterType.values()));
+		filterTypeComboBox.getSelectionModel().select(FilterType.valueOf(filter.getClass()));
+
+		filterTypeComboBox.setOnAction((event) -> {
+			LOG.trace("filterTypeComboBox event (selected: " + filterTypeComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			if (searchViewModel.getFilters().size() >= (index + 1)) {
+				// Model already has filter at this index
+				if (FilterType.valueOf(searchViewModel.getFilters().get(index).getClass()) == filterTypeComboBox.getSelectionModel().getSelectedItem()) {
+					// Same type as existing filter.  Do nothing.
+				} else {
+					try {
+						NonSearchTypeFilter<?> newFilter = filterTypeComboBox.getSelectionModel().getSelectedItem().getClazz().newInstance();
+						NonSearchTypeFilter<?> existingFilter = searchViewModel.getFilters().get(index);
+
+						// Attempt to retain existing filter parameters, if possible
+						if ((existingFilter instanceof Invertable) && (newFilter instanceof Invertable)) {
+							((Invertable)newFilter).setInvert(((Invertable)existingFilter).getInvert());
+						}
+						if ((existingFilter instanceof SingleNidFilter) && (newFilter instanceof SingleNidFilter)) {
+							((SingleNidFilter)newFilter).setNid(((SingleNidFilter)existingFilter).getNid());
+						}
+						
+						searchViewModel.getFilters().set(index, newFilter);
+					
+						// Remove all nodes from searchFilterGridPane
+						searchFilterGridPane.getChildren().clear();
+
+						// Recreate and add each node to searchFilterGridPane
+						for (NonSearchTypeFilter<?> f : searchViewModel.getFilters()) {
+							addSearchFilter(f);
+						}
+					} catch (Exception e) {
+						String msg = "Failed creating new " + filterTypeComboBox.getSelectionModel().getSelectedItem() + " filter at index " + index;
+
+						String details = msg + ". Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"";
+
+						String title = "Failed creating new filter";
+						AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+						e.printStackTrace();
+					}
+				}
+			}
+		});		
+		
+		row.getChildren().add(filterTypeComboBox);
+		
 		searchFilterGridPane.addRow(index, row);
 		RowConstraints rowConstraints = new RowConstraints();
 		rowConstraints.setVgrow(Priority.NEVER);
@@ -1280,6 +1555,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 					SearchTypeFilter<?> filter = null;
 
+					searchTypeControlsHbox.getChildren().add(addIsDescendantOfFilterButton);
 					if (searchType == SearchType.LUCENE) {
 						LuceneSearchTypeFilter displayableLuceneFilter = (passedSearchTypeFilter != null && passedSearchTypeFilter instanceof LuceneSearchTypeFilter) ? (LuceneSearchTypeFilter)passedSearchTypeFilter : new LuceneSearchTypeFilter();
 						filter = displayableLuceneFilter;
@@ -1497,8 +1773,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 	}
 
-	public Pane getRoot() {
-		return pane;
+	public SplitPane getRoot() {
+		return searchResultsAndTaxonomySplitPane;
 	}
 
 	interface ColumnValueExtractor {
