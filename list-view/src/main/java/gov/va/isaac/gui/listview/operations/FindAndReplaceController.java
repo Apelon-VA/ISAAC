@@ -129,7 +129,7 @@ public class FindAndReplaceController
 
 		//Sigh - TitlePane doesn't advertise its size properly, unless you manually set the min sizes.
 		//Add a couple listeners, do a bunch of hacking to work around it.
-		//TODO file JavaFX bug
+		//TODO file JavaFX bug - but test in the latest JavaFX - might not need this mess anymore.
 		optionsTitledPane.expandedProperty().addListener(new ChangeListener<Boolean>()
 		{
 			@Override
