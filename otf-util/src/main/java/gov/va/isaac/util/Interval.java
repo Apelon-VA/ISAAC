@@ -18,6 +18,17 @@
  */
 package gov.va.isaac.util;
 
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
+
+/**
+ * {@link Interval}
+ * 
+ * The interval parsing code was basically copied from {@link RefexDynamicValidatorType}
+ * 
+ * Maybe find a better place to share this code, rather than copy/paste inheritance...
+ *
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ */
 public class Interval
 {
 	private boolean leftInclusive_, rightInclusive_;
