@@ -59,6 +59,8 @@ $RECYCLE.BIN/
 /isaac-app/berkeley-db/
 legoData.db/
 UserPreferences.xml
+workflowDB
+workflowDB/**
 *.eccs
 
 *.log

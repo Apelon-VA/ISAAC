@@ -37,7 +37,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfFilter>, Invertable, SingleNidFilter {
+public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, SingleNidFilter {
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 	private BooleanProperty invert = new SimpleBooleanProperty(false);
 	private IntegerProperty nid = new SimpleIntegerProperty(0);
@@ -55,8 +55,8 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 			}});
 	}
 
-	public IsDescendantOfFilter() {}
-	
+	public IsAFilter() {}
+
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValidProperty()
 	 */
@@ -75,16 +75,11 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 	public IntegerProperty getNidProperty() {
 		return nid;
 	}
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter#getNid()
-	 */
+	
 	@Override
 	public int getNid() {
 		return nid.get();
 	}
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter#setNid(int)
-	 */
 	@Override
 	public void setNid(int nid) {
 		this.nid.set(nid);
@@ -94,7 +89,7 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#copy(gov.va.isaac.gui.enhancedsearchview.filters.Filter)
 	 */
 	@Override
-	public void copy(IsDescendantOfFilter toCopy) {
+	public void copy(IsAFilter toCopy) {
 		invert.set(toCopy.getInvert());
 		nid.set(toCopy.getNid());
 	}
@@ -107,7 +102,7 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 	}
 	@Override
 	public String toString() {
-		return "IsDescendantOfFilter [isValid=" + isValid.get() + ", invert="
+		return "IsAFilter [isValid=" + isValid.get() + ", invert="
 				+ invert.get() + ", nid=" + nid.get() + "]";
 	}
 }

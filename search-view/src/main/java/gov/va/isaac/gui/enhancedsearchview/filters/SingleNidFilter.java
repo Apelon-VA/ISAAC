@@ -18,31 +18,22 @@
  */
 
 /**
- * ConceptWorkflowServiceI
+ * SingleNidFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.workflow;
-
-import java.util.Map;
-import java.util.UUID;
-
-import org.jvnet.hk2.annotations.Contract;
+package gov.va.isaac.gui.enhancedsearchview.filters;
 
 /**
- * ConceptWorkflowServiceI
+ * SingleNidFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
+ * This interface is used solely in the GUI to attempt to retain filter parameters
+ * when replacing an existing filter with a new one
+ * 
  */
-@Contract
-public interface ConceptWorkflowServiceI {
-	public abstract void synchronizeWithRemote();
-
-	public abstract ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(
-			String preferredDescription,
-			UUID UUID,
-			String userName,
-			String processName,
-            Map<String,String> variables);
+public interface SingleNidFilter {
+	public abstract int getNid();
+	public abstract void setNid(int nid);
 }

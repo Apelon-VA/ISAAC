@@ -81,4 +81,8 @@ public interface ProcessInstanceCreationRequestI {
 
 	public abstract void setWfId(long wfId);
 
+    public abstract Map<String, String> getVariables();
+
+    public abstract void setVariables(Map<String, String> variables);
+
 }
