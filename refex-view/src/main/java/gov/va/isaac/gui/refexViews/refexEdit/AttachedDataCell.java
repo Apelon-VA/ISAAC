@@ -19,6 +19,8 @@
 package gov.va.isaac.gui.refexViews.refexEdit;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
@@ -111,6 +114,15 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 								Text textHolder = new Text(data.getDataObject().toString());
 								textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
 								setGraphic(textHolder);
+								ContextMenu cm = new ContextMenu();
+								MenuItem mi = new MenuItem("Copy");
+								mi.setGraphic(Images.COPY.createImageView());
+								mi.setOnAction((action) -> 
+								{
+									CustomClipboard.set(data.getDataObject().toString());
+								});
+								cm.getItems().add(mi);
+								setContextMenu(cm);
 							}
 						}
 						else
