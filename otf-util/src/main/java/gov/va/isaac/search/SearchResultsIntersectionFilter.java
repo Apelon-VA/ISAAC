@@ -43,7 +43,7 @@ public class SearchResultsIntersectionFilter implements SearchResultsFilter {
 
 	List<SearchResultsFilter> filters = new ArrayList<>();
 	
-	public SearchResultsIntersectionFilter(Collection<SearchResultsFilter> passedFilters) {
+	public SearchResultsIntersectionFilter(List<SearchResultsFilter> passedFilters) {
 		filters.addAll(passedFilters);
 	}
 		
@@ -61,10 +61,10 @@ public class SearchResultsIntersectionFilter implements SearchResultsFilter {
 	 * @see gov.va.isaac.search.SearchResultsFilter#filter(java.util.Collection)
 	 */
 	@Override
-	public Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results)
+	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results)
 			throws SearchResultsFilterException {
 
-		Collection<CompositeSearchResult> filteredResults = results;
+		List<CompositeSearchResult> filteredResults = results;
 		for (SearchResultsFilter filter : filters) {
 			int numResultsToFilter = filteredResults.size();
 			LOG.debug("Applying SearchResultsFilter " + filter + " to " + numResultsToFilter + " search results");

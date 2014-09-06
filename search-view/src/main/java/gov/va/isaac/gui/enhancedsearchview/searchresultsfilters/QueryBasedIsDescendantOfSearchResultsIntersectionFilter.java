@@ -64,22 +64,22 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 	
 	
 	@Override
-	public Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
 		SearchResultsFilterHelper.validateFilters(filters);
 		
-        List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
+		List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
 
-        // If no filters, pass all results straight through
-        if (filters.size() == 0) {
-        	filteredResults.addAll(results);
-        	
-        	return filteredResults;
-        }
-        
+		// If no filters, pass all results straight through
+		if (filters.size() == 0) {
+			filteredResults.addAll(results);
+			
+			return filteredResults;
+		}
+		
 		NativeIdSetBI inputNids = new IntSet();
 
 		for (CompositeSearchResult result : results) {
-			inputNids.add(result.getConceptNid());
+			inputNids.add(result.getContainingConcept().getNid());
 		}
 
 		final NativeIdSetBI finalInputNids = inputNids;
@@ -108,9 +108,9 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 
 			@Override
 			public Clause Where() {
-				//		                return And(ConceptIsKindOf("Physical force"),
-				//		                            Xor(ConceptIsKindOf("Motion"),
-				//		    
+				//						return And(ConceptIsKindOf("Physical force"),
+				//									Xor(ConceptIsKindOf("Motion"),
+				//			
 //				Clause c = (first one)
 //						for (filter f : filters)
 //						{
@@ -152,8 +152,8 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 			}
 		};
 
-        NativeIdSetBI outputNids = null;
-        try {
+		NativeIdSetBI outputNids = null;
+		try {
 			SearchResultsFilterHelper.LOG.debug("Applying " + filters.size() + " clauses to " + finalInputNids.size() + " nids");
 
 			outputNids = q.compute();
@@ -164,9 +164,9 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 			LOG.error(msg);
 			throw new SearchResultsFilterException(this, msg, e);
 		}
-        
+		
 		for (CompositeSearchResult result : results) {
-			if (outputNids.contains(result.getConceptNid())) {
+			if (outputNids.contains(result.getContainingConcept().getNid())) {
 				filteredResults.add(result);
 			}
 		}
