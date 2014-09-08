@@ -551,7 +551,7 @@ public class DynamicRefexView implements RefexViewI
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
 					{
-						return new ConceptDataCell();
+						return new ComponentDataCell();
 						
 					});
 					ttCol.setCellValueFactory((callback) ->
@@ -569,7 +569,7 @@ public class DynamicRefexView implements RefexViewI
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
 					{
-						return new ConceptDataCell(true);
+						return new ComponentDataCell(true);
 						
 					});
 					ttCol.setCellValueFactory((callback) ->
@@ -736,7 +736,7 @@ public class DynamicRefexView implements RefexViewI
 				nestedIntCol.setResizable(true);
 				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ConceptDataCell();
+					return new ComponentDataCell();
 					
 				});
 				nestedIntCol.setCellValueFactory((callback) ->
@@ -753,7 +753,7 @@ public class DynamicRefexView implements RefexViewI
 				nestedIntCol.setVisible(false);
 				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ConceptDataCell();
+					return new ComponentDataCell();
 					
 				});
 				nestedIntCol.setCellValueFactory((callback) ->
@@ -769,7 +769,7 @@ public class DynamicRefexView implements RefexViewI
 				nestedIntCol.setVisible(false);
 				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ConceptDataCell();
+					return new ComponentDataCell();
 					
 				});
 				nestedIntCol.setCellValueFactory((callback) ->

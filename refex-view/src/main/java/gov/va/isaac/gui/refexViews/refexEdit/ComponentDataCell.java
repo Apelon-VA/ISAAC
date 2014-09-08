@@ -46,23 +46,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link ConceptDataCell}
+ * {@link ComponentDataCell}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-//TODO rename this
-public class ConceptDataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>
+public class ComponentDataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>
 {
-	private static Logger logger_ = LoggerFactory.getLogger(ConceptDataCell.class);
+	private static Logger logger_ = LoggerFactory.getLogger(ComponentDataCell.class);
 	
 	private boolean isAssemblage_ = false;
 	
-	protected ConceptDataCell(boolean isAssemblage)
+	protected ComponentDataCell(boolean isAssemblage)
 	{
 		isAssemblage_ = isAssemblage;
 	}
 	
-	protected ConceptDataCell()
+	protected ComponentDataCell()
 	{
 		isAssemblage_ = false;
 	}
