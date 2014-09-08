@@ -20,6 +20,7 @@ package gov.va.isaac.gui.refexViews.util;
 
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 import javafx.beans.property.SimpleStringProperty;
@@ -30,10 +31,7 @@ import javafx.scene.control.TextField;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicDouble;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicFloat;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 
@@ -71,7 +69,7 @@ public class RefexValidatorTypeFXNodeBuilder
 					{
 						try
 						{
-							returnValue.validatorData.set(parseNumber(tf.getText().trim()));
+							returnValue.validatorData.set(NumberUtilities.wrapIntoRefexHolder(NumberUtilities.parseNumber(tf.getText().trim())));
 							valueInvalidReason.set("");
 						}
 						catch (Exception e)
@@ -171,41 +169,5 @@ public class RefexValidatorTypeFXNodeBuilder
 			throw new RuntimeException("Unexpected datatype " + dt);
 		}
 		return returnValue;
-	}
-
-	private static RefexDynamicDataBI parseNumber(String value)
-	{
-		try
-		{
-			return new RefexDynamicInteger(Integer.parseInt(value));
-		}
-		catch (Exception e)
-		{
-			//noop
-		}
-		try
-		{
-			return new RefexDynamicLong(Long.parseLong(value));
-		}
-		catch (Exception e)
-		{
-			//noop
-		}
-		try
-		{
-			return new RefexDynamicFloat(Float.parseFloat(value));
-		}
-		catch (Exception e)
-		{
-			//noop
-		}
-		try
-		{
-			return new RefexDynamicDouble(Double.parseDouble(value));
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException("The value must be a numeric value of type int, long, float or double.");
-		}
 	}
 }

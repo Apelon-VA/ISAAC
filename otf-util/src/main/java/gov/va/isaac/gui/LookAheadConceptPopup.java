@@ -306,7 +306,7 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 				synchronized (runningSearches)
 				{
 					int id = searchCounter++;
-					SearchHandle ssh = SearchHandler.conceptPrefixSearch(text, 5, this, id);
+					SearchHandle ssh = SearchHandler.descriptionSearch(text, 5, true, this, id, null, null, true);
 					runningSearches.put(id, ssh);
 				}
 			}
@@ -361,13 +361,13 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 		VBox box = new VBox();
 		box.setPadding(new Insets(3, 3, 3, 3));
 
-		ConceptVersionBI c = result.getConcept();
+		ConceptVersionBI c = result.getContainingConcept();
 
 		Label concept = new Label(WBUtility.getDescription(c));
 		concept.getStyleClass().add("lookAheadBoldLabel");
 		box.getChildren().add(concept);
 
-		for (String s : result.getMatchStrings())
+		for (String s : result.getMatchingStrings())
 		{
 			if (s.equals(WBUtility.getDescription(c)))
 			{

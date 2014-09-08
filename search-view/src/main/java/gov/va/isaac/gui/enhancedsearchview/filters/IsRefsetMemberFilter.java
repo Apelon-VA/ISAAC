@@ -37,7 +37,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, SingleNidFilter {
+public class IsRefsetMemberFilter implements NonSearchTypeFilter<IsRefsetMemberFilter>, Invertable, SingleNidFilter {
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 	private BooleanProperty invert = new SimpleBooleanProperty(false);
 	private IntegerProperty nid = new SimpleIntegerProperty(0);
@@ -55,8 +55,8 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, Si
 			}});
 	}
 
-	public IsAFilter() {}
-
+	public IsRefsetMemberFilter() {}
+	
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValidProperty()
 	 */
@@ -75,7 +75,6 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, Si
 	public IntegerProperty getNidProperty() {
 		return nid;
 	}
-	
 	@Override
 	public int getNid() {
 		return nid.get();
@@ -89,7 +88,7 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, Si
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#copy(gov.va.isaac.gui.enhancedsearchview.filters.Filter)
 	 */
 	@Override
-	public void copy(IsAFilter toCopy) {
+	public void copy(IsRefsetMemberFilter toCopy) {
 		invert.set(toCopy.getInvert());
 		nid.set(toCopy.getNid());
 	}
@@ -102,7 +101,7 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, Si
 	}
 	@Override
 	public String toString() {
-		return "IsAFilter [isValid=" + isValid.get() + ", invert="
+		return "IsRefsetMemberFilter [isValid=" + isValid.get() + ", invert="
 				+ invert.get() + ", nid=" + nid.get() + "]";
 	}
 }

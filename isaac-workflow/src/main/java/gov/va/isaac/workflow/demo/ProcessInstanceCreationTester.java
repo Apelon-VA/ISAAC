@@ -21,6 +21,9 @@ package gov.va.isaac.workflow.demo;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author alo
@@ -31,7 +34,10 @@ public class ProcessInstanceCreationTester {
         ProcessInstanceCreationRequestsAPI papi = new ProcessInstanceCreationRequestsAPI();
         papi.dropSchema();
         papi.createSchema();
-        papi.createRequest("processName", "componentId1", "componentName1", "author");
+        Map<String,String> variables = new HashMap<String, String>();
+        variables.put("key 1", "value 1");
+        variables.put("key 2", "value 2");
+        papi.createRequest("processName", "componentId1", "componentName1", "author", variables);
         for (ProcessInstanceCreationRequestI loopR : papi.getRequests()) {
             System.out.println("id: " + loopR.getId() + " - pname: "  + loopR.getProcessName() + " - cid: " + loopR.getComponentId() + " - cname: " + loopR.getComponentName() + " - rtime: "  + loopR.getRequestTime() + " - status: "  + loopR.getStatus() + " - userId: "  + loopR.getUserId());
         }

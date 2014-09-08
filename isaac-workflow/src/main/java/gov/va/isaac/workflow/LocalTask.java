@@ -82,8 +82,8 @@ public class LocalTask {
         if (fetchAttachments) {
             LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
-            this.componentId = (String) vmap.get("in_componentId");
-            this.componentName = (String) vmap.get("in_componentName");
+            this.componentId = (String) vmap.get("in_component_id");
+            this.componentName = (String) vmap.get("in_component_name");
             this.name = (String) vmap.get("NodeName");
             this.setInputVariables(new HashMap<String, String>());
             for (String key : vmap.keySet()) {
@@ -105,8 +105,8 @@ public class LocalTask {
         if (fetchAttachments) {
             LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
-            this.componentId = (String) vmap.get("in_componentId");
-            this.componentName = (String) vmap.get("in_componentName");
+            this.componentId = (String) vmap.get("in_component_id");
+            this.componentName = (String) vmap.get("in_component_name");
             this.name = (String) vmap.get("NodeName");
             this.setInputVariables(new HashMap<String, String>());
             for (String key : vmap.keySet()) {
