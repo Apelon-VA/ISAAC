@@ -306,49 +306,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		exportResultsToSearchTaxonomyPanelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				if (taxonomyView == null) {
-					taxonomyView = AppContext.getService(TaxonomyViewI.class);
-
-					taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
-					taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
-
-					taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
-
-					taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
-					//taxonomyPanelBorderPane.setMinWidth(200);
-				}
-				
-				if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
-					searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
-					searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
-					//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
-					LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
-				}
-				
-				taxonomyDisplayPolicies.getSearchResultAncestors().clear();
-				taxonomyDisplayPolicies.getSearchResults().clear();
-				for (CompositeSearchResult c : searchResultsTable.getItems()) {
-					taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
-					
-					Set<ConceptVersionBI> ancestorNids = null;
-					try {
-						ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
-
-						for (ConceptVersionBI concept : ancestorNids) {
-							taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+				exportResultsToSearchTaxonomyPanel();
 						}
-					} catch (/* IOException | ContradictionException */ Exception e) {
-						String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-						String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
-						String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-						AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-						e.printStackTrace();
-					}
-				}
-
-				taxonomyView.refresh();
-			}
 		});
 		
 		initializeWorkflowServices();
@@ -401,6 +360,50 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 
+	private void exportResultsToSearchTaxonomyPanel() {
+		if (taxonomyView == null) {
+			taxonomyView = AppContext.getService(TaxonomyViewI.class);
+
+			taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
+			taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
+
+			taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
+
+			taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
+		}
+
+		if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+			searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
+			searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
+			//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
+			LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
+		}
+
+		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
+		taxonomyDisplayPolicies.getSearchResults().clear();
+		for (CompositeSearchResult c : searchResultsTable.getItems()) {
+			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
+
+			Set<ConceptVersionBI> ancestorNids = null;
+			try {
+				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+
+				for (ConceptVersionBI concept : ancestorNids) {
+					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+				}
+			} catch (/* IOException | ContradictionException */ Exception e) {
+				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				e.printStackTrace();
+			}
+		}
+
+		taxonomyView.refresh();
+	}
+	
 	private void initializeTaxonomyPanel() {
 		initializeTaxonomyViewModeComboBox();
 		
@@ -1053,6 +1056,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							searchResultsTable.getItems().addAll(ssh.getResults());
 
 							refreshTotalResultsDisplayedLabel();
+							
+							if (searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+								exportResultsToSearchTaxonomyPanel();
+							}
 						}
 					} catch (Exception ex) {
 						String title = "Unexpected Search Error";

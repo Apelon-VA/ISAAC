@@ -25,7 +25,9 @@
 package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 
 import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
+import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.IsRefsetMemberFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilter;
@@ -47,19 +49,27 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchResultsFilter {
-	private static final Logger LOG = LoggerFactory.getLogger(QueryBasedIsDescendantOfSearchResultsIntersectionFilter.class);
+/*
+ * is kind of filter (ConceptIsDescendentOf(concept UUID) clause)
+ * rel kind filter (RelType clause)
+ * Concept in member filter (RefsetContainsConcept(concept UUID, refset UUID) clause)
+ * text in member filter
+ * refset member filter
+ * 
+ */
+class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
+	private static final Logger LOG = LoggerFactory.getLogger(QueryBasedSearchResultsIntersectionFilter.class);
 
 	private final List<NonSearchTypeFilter<?>> filters = new ArrayList<>();
 	
-	public QueryBasedIsDescendantOfSearchResultsIntersectionFilter(IsDescendantOfFilter...passedFilters) throws SearchResultsFilterException {
+	public QueryBasedSearchResultsIntersectionFilter(NonSearchTypeFilter<?>...passedFilters) throws SearchResultsFilterException {
 		SearchResultsFilterHelper.validateFilters(passedFilters);
 		for (NonSearchTypeFilter<?> filter : passedFilters) {
 			filters.add(filter);
 		}
 	}
-	public QueryBasedIsDescendantOfSearchResultsIntersectionFilter(Collection<IsDescendantOfFilter> passedFilters) throws SearchResultsFilterException {
-		this(passedFilters == null ? (IsDescendantOfFilter[])null : new ArrayList<>(passedFilters).toArray(new IsDescendantOfFilter[passedFilters.size()]));
+	public QueryBasedSearchResultsIntersectionFilter(Collection<NonSearchTypeFilter<?>> passedFilters) throws SearchResultsFilterException {
+		this(passedFilters == null ? (NonSearchTypeFilter<?>[])null : new ArrayList<>(passedFilters).toArray(new NonSearchTypeFilter<?>[passedFilters.size()]));
 	}
 	
 	
@@ -67,15 +77,15 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
 		SearchResultsFilterHelper.validateFilters(filters);
 		
-		List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
+        List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
 
-		// If no filters, pass all results straight through
-		if (filters.size() == 0) {
-			filteredResults.addAll(results);
-			
-			return filteredResults;
-		}
-		
+        // If no filters, pass all results straight through
+        if (filters.size() == 0) {
+        	filteredResults.addAll(results);
+        	
+        	return filteredResults;
+        }
+        
 		NativeIdSetBI inputNids = new IntSet();
 
 		for (CompositeSearchResult result : results) {
@@ -99,18 +109,26 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
 
 						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+					} else if (filter instanceof IsAFilter) {
+						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsAFilter)filter).getNid());
+
+						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+					} else if (filter instanceof IsRefsetMemberFilter) {
+						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsRefsetMemberFilter)filter).getNid());
+
+						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
 					} else {
 						// This should never happen, since validateFilters(filters) was already called
-						throw new RuntimeException(new SearchResultsFilterException(QueryBasedIsDescendantOfSearchResultsIntersectionFilter.this, "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported"));
+						throw new RuntimeException(new SearchResultsFilterException(QueryBasedSearchResultsIntersectionFilter.this, "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter and IsAFilter supported"));
 					}
 				}
 			}
 
 			@Override
 			public Clause Where() {
-				//						return And(ConceptIsKindOf("Physical force"),
-				//									Xor(ConceptIsKindOf("Motion"),
-				//			
+				//		                return And(ConceptIsKindOf("Physical force"),
+				//		                            Xor(ConceptIsKindOf("Motion"),
+				//		    
 //				Clause c = (first one)
 //						for (filter f : filters)
 //						{
@@ -125,11 +143,21 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
 
 						currentClause = ConceptIsDescendentOf(concept.getPrimordialUuid().toString());
-					} else {
+					} else if (filter instanceof IsAFilter) {
+						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsAFilter)filter).getNid());
+
+						currentClause = ConceptIs(concept.getPrimordialUuid().toString());
+					}
+					else if (filter instanceof IsRefsetMemberFilter) {
+						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsRefsetMemberFilter)filter).getNid());
+
+						currentClause = RefsetContainsConcept(concept.getPrimordialUuid().toString(), "dummy");
+					} 
+					else {
 						// This should never happen, since validateFilters(filters) was already called
-						String msg = "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported";
+						String msg = "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter and IsAFilter supported";
 						LOG.error(msg);
-						throw new RuntimeException(new SearchResultsFilterException(QueryBasedIsDescendantOfSearchResultsIntersectionFilter.this, msg));
+						throw new RuntimeException(new SearchResultsFilterException(QueryBasedSearchResultsIntersectionFilter.this, msg));
 					}
 					
 					if (filter instanceof Invertable && ((Invertable)filter).getInvert()) {
@@ -152,8 +180,8 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 			}
 		};
 
-		NativeIdSetBI outputNids = null;
-		try {
+        NativeIdSetBI outputNids = null;
+        try {
 			SearchResultsFilterHelper.LOG.debug("Applying " + filters.size() + " clauses to " + finalInputNids.size() + " nids");
 
 			outputNids = q.compute();
@@ -164,7 +192,7 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 			LOG.error(msg);
 			throw new SearchResultsFilterException(this, msg, e);
 		}
-		
+        
 		for (CompositeSearchResult result : results) {
 			if (outputNids.contains(result.getContainingConcept().getNid())) {
 				filteredResults.add(result);
@@ -176,6 +204,6 @@ class QueryBasedIsDescendantOfSearchResultsIntersectionFilter implements SearchR
 
 	@Override
 	public String toString() {
-		return "QueryBasedIsDescendantOfSearchResultsIntersectionFilter [filters=" + Arrays.toString(filters.toArray()) + "]";
+		return "QueryBasedSearchResultsIntersectionFilter [filters=" + Arrays.toString(filters.toArray()) + "]";
 	}
 }
