@@ -66,7 +66,7 @@ public class ConceptDetailWorkflowController
 	private final static String ACTION_STATUS = "pending";
 	
 	// TODO: This enum should be made freestanding and replace all other uses of these text constants everywhere. Consider eliminating selectionText then.
-	private enum Action { 
+	private enum Action {
 		COMPLETE("Complete task"), 
 		RELEASE("Release task");
 		
@@ -265,7 +265,7 @@ public class ConceptDetailWorkflowController
 						final LocalTask currentlySelectedTask = taskComboBox.getValue();
 						final Action currentlySelectedAction = actionComboBox.getValue();
 
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction.toString(), ACTION_STATUS, new HashMap<String, String>());
+						taskService_.setAction(currentlySelectedTask.getId(), gov.va.isaac.workflow.Action.valueOf(currentlySelectedAction.toString()), ACTION_STATUS, new HashMap<String, String>());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();

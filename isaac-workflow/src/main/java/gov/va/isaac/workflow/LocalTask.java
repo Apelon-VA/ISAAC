@@ -56,7 +56,7 @@ public class LocalTask {
     private String owner;
 
     // Proposed action, added by the user in the client
-    private String action;
+    private Action action;
 
     // Status of the action execution, will be completed when is synchronized and executed in the server
     private String actionStatus;
@@ -169,11 +169,11 @@ public class LocalTask {
         return hash;
     }
 
-    public String getAction() {
+    public Action getAction() {
         return action;
     }
 
-    public void setAction(String action) {
+    public void setAction(Action action) {
         this.action = action;
     }
 
