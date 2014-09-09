@@ -5,7 +5,6 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
@@ -16,16 +15,12 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_long.RefexLongVersionBI;
-import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConceptViewerHelper {
 	private static Integer snomedAssemblageNid;
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
-    private final static ConceptSpec SCT_ID_AUTHORITY =
-        new ConceptSpec("SNOMED integer id",
-        UUID.fromString("0418a591-f75b-39ad-be2c-3ab849326da9"));         
 
 	public enum ComponentType {
 		CONCEPT, DESCRIPTION, RELATIONSHIP;
@@ -41,7 +36,7 @@ public class ConceptViewerHelper {
 			}
 			
 			return "";
-	    }
+		}
 	}
 	
 	private ConceptViewerHelper()
@@ -72,14 +67,14 @@ public class ConceptViewerHelper {
 			}
 
 			if (!found) {
-			  // legacy representation of SCTID for use with older econcepts files
-	          for (IdBI id : attr.getAllIds()) {
-	            // Identify "SCT" identifiers
-	            if (id.getAuthorityNid() == SCT_ID_AUTHORITY.getLenient().getNid()) {
-	             // Found SCTID, return it
-	              sctidString = id.getDenotation().toString();
-	            }
-	          }
+				// legacy representation of SCTID for use with older econcepts files
+				for (IdBI id : attr.getAllIds()) {
+					// Identify "SCT" identifiers
+					if (id.getAuthorityNid() == TermAux.SNOMED_IDENTIFIER.getLenient().getNid()) {
+						// Found SCTID, return it
+						sctidString = id.getDenotation().toString();
+					}
+				}
 			}
 
 		} catch (Exception e) {
