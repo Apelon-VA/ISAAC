@@ -5,21 +5,27 @@ import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.id.IdBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_long.RefexLongVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConceptViewerHelper {
 	private static Integer snomedAssemblageNid;
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
+    private final static ConceptSpec SCT_ID_AUTHORITY =
+        new ConceptSpec("SNOMED integer id",
+        UUID.fromString("0418a591-f75b-39ad-be2c-3ab849326da9"));         
 
 	public enum ComponentType {
 		CONCEPT, DESCRIPTION, RELATIONSHIP;
@@ -55,16 +61,31 @@ public class ConceptViewerHelper {
 		String sctidString = "Unreleased";
 		// Official approach found int AlternativeIdResource.class
 		
+		boolean found = false;
 		try {
 			for (RefexChronicleBI<?> annotation : attr.getAnnotations()) {
 				if (annotation.getAssemblageNid() == getSnomedAssemblageNid()) {
 					RefexLongVersionBI<?> sctid = (RefexLongVersionBI<?>) annotation.getPrimordialVersion();
 					sctidString = Long.toString(sctid.getLong1());
+					found = true;
 				}
 			}
+
+			if (!found) {
+			  // legacy representation of SCTID for use with older econcepts files
+	          for (IdBI id : attr.getAllIds()) {
+	            // Identify "SCT" identifiers
+	            if (id.getAuthorityNid() == SCT_ID_AUTHORITY.getLenient().getNid()) {
+	             // Found SCTID, return it
+	              sctidString = id.getDenotation().toString();
+	            }
+	          }
+			}
+
 		} catch (Exception e) {
 			LOG.error("Could not access annotations for: " + attr.getPrimordialUuid());
 		}
+		
 		return sctidString;
 	}
 

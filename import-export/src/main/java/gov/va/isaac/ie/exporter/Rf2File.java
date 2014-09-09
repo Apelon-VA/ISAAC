@@ -53,8 +53,11 @@ public class Rf2File {
      * The definition status id field.
      */
     DEFINITION_STATUS_ID("definitionStatusId", "\r\n");
+    
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -112,8 +115,11 @@ public class Rf2File {
      * The case significance id field.
      */
     CASE_SIGNIFICANCE_ID("caseSignificanceId", "\r\n");
+    
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -159,8 +165,11 @@ public class Rf2File {
      * The referenced component id field.
      */
     REFERENCED_COMPONENT_ID("referencedComponentId", "\r\n");
+
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -222,8 +231,11 @@ public class Rf2File {
      * The modifier id field.
      */
     MODIFIER_ID("modifierId", "\r\n");
+
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -285,8 +297,11 @@ public class Rf2File {
      * The modifier id field.
      */
     MODIFIER_ID("modifierId", "\r\n");
+
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -336,8 +351,11 @@ public class Rf2File {
      * The acceptability field.
      */
     ACCEPTABILITY("acceptabilityId", "\r\n");
+
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -391,8 +409,11 @@ public class Rf2File {
      * The target time field.
      */
     TARGET_TIME("targetEffectiveTime", "\r\n");
+
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -446,8 +467,11 @@ public class Rf2File {
      * The desc length field.
      */
     DESC_LENGTH("descriptionLength", "\r\n");
+
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -506,8 +530,10 @@ public class Rf2File {
      */
     ATTRIB_ORDER("attributeOrder", "\r\n");
 
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -554,8 +580,10 @@ public class Rf2File {
      */
     REFERENCED_COMPONENT_ID("referencedComponentId", "\r\n");
 
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -610,8 +638,10 @@ public class Rf2File {
      */
     NUMBER("number", "\r\n");
 
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -662,8 +692,10 @@ public class Rf2File {
      */
     VALUE_ID("valueId", "\r\n");
 
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -714,8 +746,10 @@ public class Rf2File {
      */
     TARGET("targetComponent", "\r\n");
 
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -746,8 +780,10 @@ public class Rf2File {
      */
     UUID("uuid", "\r\n");
 
+    /**  The header text. */
     public final String headerText;
 
+    /**  The seperator. */
     public final String seperator;
 
     // ~--- constructors -----------------------------------------------------
@@ -781,6 +817,7 @@ public class Rf2File {
      */
     SNAPSHOT("Snapshot");
 
+    /**  The suffix. */
     public final String suffix;
 
     // ~--- constructors -----------------------------------------------------
