@@ -5,6 +5,6 @@ package gov.va.isaac.workflow;
  */
 public enum TaskActionStatus {
 
-    Pending,Complete,Error,Canceled;
+    Pending,Complete,Error,Canceled,None;
 
 }

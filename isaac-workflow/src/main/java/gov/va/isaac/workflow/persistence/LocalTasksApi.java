@@ -82,8 +82,8 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             psInsert.setString(4, task.getComponentName());
             psInsert.setString(5, task.getStatus().name());
             psInsert.setString(6, task.getOwner());
-            psInsert.setString(7, "NONE");
-            psInsert.setString(8, "");
+            psInsert.setString(7, Action.NONE.name());
+            psInsert.setString(8, TaskActionStatus.None.name());
             psInsert.setString(9, serializeMap(task.getInputVariables()));
             psInsert.setString(10, "");
             psInsert.executeUpdate();

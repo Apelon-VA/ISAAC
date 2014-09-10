@@ -5,6 +5,6 @@ package gov.va.isaac.workflow;
  */
 public enum Action {
 
-    COMPLETE, RELEASE;
+    COMPLETE, RELEASE, NONE;
 
 }
