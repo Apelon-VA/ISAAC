@@ -25,14 +25,12 @@
 package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
-import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -49,19 +47,19 @@ class IsASearchResultsFilter implements SearchResultsFilter {
 	}
 	
 	@Override
-	public Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
 		final ConceptVersionBI possibleMatchingConcept = WBUtility.getConceptVersion(filter.getNid());
 
 		CompositeSearchResult currentResult = null;
-        try {
+		try {
 			LOG.debug("Applying " + (filter.getInvert() ? "! isA() " : "isA() ") + filter + " to " + results.size() + " results");
-	        List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
-	        
-	        for (CompositeSearchResult result : results) {
-	        	currentResult = result;
-				if (result.getConcept().getConceptNid() == filter.getNid() && ! filter.getInvert()) {
+			List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
+			
+			for (CompositeSearchResult result : results) {
+				currentResult = result;
+				if (result.getContainingConcept().getConceptNid() == filter.getNid() && ! filter.getInvert()) {
 					filteredResults.add(result);
-				} else if (result.getConcept().getConceptNid() != filter.getNid() && filter.getInvert()) {
+				} else if (result.getContainingConcept().getConceptNid() != filter.getNid() && filter.getInvert()) {
 					filteredResults.add(result);
 				}
 			}
@@ -69,8 +67,10 @@ class IsASearchResultsFilter implements SearchResultsFilter {
 			LOG.debug(filteredResults.size() + " results remained after filtering a total of " + results.size() + " results");
 			
 			return filteredResults;
-        } catch (Exception e) {
-			throw new SearchResultsFilterException(this, "Failed calling (" + WBUtility.getDescription(currentResult.getConcept()) + " (nid=" + currentResult.getConceptNid() + ")).isKindOf(" + WBUtility.getDescription(possibleMatchingConcept) + " (nid=" + possibleMatchingConcept.getConceptNid() + "))", e);
+		} catch (Exception e) {
+			throw new SearchResultsFilterException(this, "Failed calling (" + WBUtility.getDescription(currentResult.getContainingConcept()) 
+					+ " (nid=" + currentResult.getContainingConcept() + ")).isKindOf(" + WBUtility.getDescription(possibleMatchingConcept) 
+					+ " (nid=" + possibleMatchingConcept.getConceptNid() + "))", e);
 		}
 	}
 

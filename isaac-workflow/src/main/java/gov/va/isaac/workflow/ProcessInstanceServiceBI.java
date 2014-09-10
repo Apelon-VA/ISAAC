@@ -21,6 +21,7 @@ package gov.va.isaac.workflow;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -28,7 +29,7 @@ import java.util.List;
  */
 public interface ProcessInstanceServiceBI {
 
-    ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author);
+    ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author, Map<String, String> variables);
 
     List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner);
 

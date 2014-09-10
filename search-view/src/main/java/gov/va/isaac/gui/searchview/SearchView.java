@@ -48,14 +48,14 @@ public class SearchView implements DockedViewI
 		//created by HK2
 		svc_ = SearchViewController.init();
 	}
-    /**
-     * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
-     */
-    @Override
-    public Region getView() {
-        return svc_.getRoot();
-    }
-    
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
+	 */
+	@Override
+	public Region getView() {
+		return svc_.getRoot();
+	}
+	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
 	 */

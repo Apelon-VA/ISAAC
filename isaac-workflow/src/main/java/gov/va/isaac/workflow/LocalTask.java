@@ -56,7 +56,7 @@ public class LocalTask {
     private String owner;
 
     // Proposed action, added by the user in the client
-    private String action;
+    private Action action;
 
     // Status of the action execution, will be completed when is synchronized and executed in the server
     private String actionStatus;
@@ -82,8 +82,8 @@ public class LocalTask {
         if (fetchAttachments) {
             LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
-            this.componentId = (String) vmap.get("in_componentId");
-            this.componentName = (String) vmap.get("in_componentName");
+            this.componentId = (String) vmap.get("in_component_id");
+            this.componentName = (String) vmap.get("in_component_name");
             this.name = (String) vmap.get("NodeName");
             this.setInputVariables(new HashMap<String, String>());
             for (String key : vmap.keySet()) {
@@ -105,8 +105,8 @@ public class LocalTask {
         if (fetchAttachments) {
             LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
-            this.componentId = (String) vmap.get("in_componentId");
-            this.componentName = (String) vmap.get("in_componentName");
+            this.componentId = (String) vmap.get("in_component_id");
+            this.componentName = (String) vmap.get("in_component_name");
             this.name = (String) vmap.get("NodeName");
             this.setInputVariables(new HashMap<String, String>());
             for (String key : vmap.keySet()) {
@@ -169,11 +169,11 @@ public class LocalTask {
         return hash;
     }
 
-    public String getAction() {
+    public Action getAction() {
         return action;
     }
 
-    public void setAction(String action) {
+    public void setAction(Action action) {
         this.action = action;
     }
 

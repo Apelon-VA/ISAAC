@@ -24,12 +24,14 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
+import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
@@ -63,11 +65,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -308,49 +306,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		exportResultsToSearchTaxonomyPanelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				if (taxonomyView == null) {
-					taxonomyView = AppContext.getService(TaxonomyViewI.class);
-
-					taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
-					taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
-
-					taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
-
-					taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
-					//taxonomyPanelBorderPane.setMinWidth(200);
-				}
-				
-				if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
-					searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
-					searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
-					//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
-					LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
-				}
-				
-				taxonomyDisplayPolicies.getSearchResultAncestors().clear();
-				taxonomyDisplayPolicies.getSearchResults().clear();
-				for (CompositeSearchResult c : searchResultsTable.getItems()) {
-					taxonomyDisplayPolicies.getSearchResults().add(c.getConceptNid());
-					
-					Set<ConceptVersionBI> ancestorNids = null;
-					try {
-						ancestorNids = WBUtility.getConceptAncestors(c.getConceptNid());
-
-						for (ConceptVersionBI concept : ancestorNids) {
-							taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+				exportResultsToSearchTaxonomyPanel();
 						}
-					} catch (/* IOException | ContradictionException */ Exception e) {
-						String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-						String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
-						String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-						AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-						e.printStackTrace();
-					}
-				}
-
-				taxonomyView.refresh();
-			}
 		});
 		
 		initializeWorkflowServices();
@@ -403,6 +360,50 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 
+	private void exportResultsToSearchTaxonomyPanel() {
+		if (taxonomyView == null) {
+			taxonomyView = AppContext.getService(TaxonomyViewI.class);
+
+			taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
+			taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
+
+			taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
+
+			taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
+		}
+
+		if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+			searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
+			searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
+			//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
+			LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
+		}
+
+		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
+		taxonomyDisplayPolicies.getSearchResults().clear();
+		for (CompositeSearchResult c : searchResultsTable.getItems()) {
+			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
+
+			Set<ConceptVersionBI> ancestorNids = null;
+			try {
+				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+
+				for (ConceptVersionBI concept : ancestorNids) {
+					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+				}
+			} catch (/* IOException | ContradictionException */ Exception e) {
+				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				e.printStackTrace();
+			}
+		}
+
+		taxonomyView.refresh();
+	}
+	
 	private void initializeTaxonomyPanel() {
 		initializeTaxonomyViewModeComboBox();
 		
@@ -662,6 +663,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				} else {
 					try {
 						NonSearchTypeFilter<?> newFilter = filterTypeComboBox.getSelectionModel().getSelectedItem().getClazz().newInstance();
+						NonSearchTypeFilter<?> existingFilter = searchViewModel.getFilters().get(index);
+
+						// Attempt to retain existing filter parameters, if possible
+						if ((existingFilter instanceof Invertable) && (newFilter instanceof Invertable)) {
+							((Invertable)newFilter).setInvert(((Invertable)existingFilter).getInvert());
+						}
+						if ((existingFilter instanceof SingleNidFilter) && (newFilter instanceof SingleNidFilter)) {
+							((SingleNidFilter)newFilter).setNid(((SingleNidFilter)existingFilter).getNid());
+						}
+						
 						searchViewModel.getFilters().set(index, newFilter);
 					
 						// Remove all nodes from searchFilterGridPane
@@ -968,10 +979,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		Set<Integer> concepts = new HashSet<>();
 		for (CompositeSearchResult result : searchResultsTable.getItems()) {
-			if (! concepts.contains(result.getConceptNid())) {
-				concepts.add(result.getConceptNid());
+			if (! concepts.contains(result.getContainingConcept().getNid())) {
+				concepts.add(result.getContainingConcept().getNid());
 
-				exportSearchResultToWorkflow(result.getConcept());
+				exportSearchResultToWorkflow(result.getContainingConcept());
 			}
 		}
 
@@ -1000,7 +1011,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 
 		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + processName + "\")");
-		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName);
+		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName, new HashMap<String,String>());
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 	}
 
@@ -1011,8 +1022,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		List<Integer> nids = new ArrayList<>();
 		for (CompositeSearchResult result : searchResultsTable.getItems()) {
-			if (! nids.contains(result.getConceptNid())) {
-				nids.add(result.getConceptNid());
+			if (! nids.contains(result.getContainingConcept().getNid())) {
+				nids.add(result.getContainingConcept().getNid());
 			}
 		}
 
@@ -1045,6 +1056,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							searchResultsTable.getItems().addAll(ssh.getResults());
 
 							refreshTotalResultsDisplayedLabel();
+							
+							if (searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+								exportResultsToSearchTaxonomyPanel();
+							}
 						}
 					} catch (Exception ex) {
 						String title = "Unexpected Search Error";
@@ -1143,7 +1158,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 									Set<Integer> nids = new HashSet<>();
 
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										nids.add(r.getConceptNid());
+										nids.add(r.getContainingConcept().getNid());
 									}
 
 									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
@@ -1245,7 +1260,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// Active status
 		TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
-		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getStatus().toString().trim()));
+		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getStatus().toString().trim()));
 		statusCol.setCellFactory(new MyTableCellCallback<String>());
 
 		// numMatchesCol only meaningful for AggregationType CONCEPT
@@ -1266,7 +1281,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							StringBuilder buffer = new StringBuilder();
 							String fsn = null;
 							try {
-								fsn = result.getConcept().getFullySpecifiedDescription().getText().trim();
+								fsn = result.getContainingConcept().getFullySpecifiedDescription().getText().trim();
 							} catch (IOException | ContradictionException e) {
 								String title = "Failed getting FSN";
 								String msg = "Failed getting fully specified description";
@@ -1297,7 +1312,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		preferredTermCol.setCellFactory(new MyTableCellCallback<String>());
 		preferredTermCol.setCellValueFactory((param) -> {
 			try {
-				return new SimpleStringProperty(param.getValue().getConcept().getPreferredDescription().getText().trim());
+				return new SimpleStringProperty(param.getValue().getContainingConcept().getPreferredDescription().getText().trim());
 			} catch (IOException | ContradictionException e) {
 				String title = "Failed getting preferred description";
 				String msg = "Failed getting preferred description";
@@ -1313,7 +1328,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		fsnCol.setCellFactory(new MyTableCellCallback<String>());
 		fsnCol.setCellValueFactory((param) -> {
 			try {
-				return new SimpleStringProperty(param.getValue().getConcept().getFullySpecifiedDescription().getText().trim());
+				return new SimpleStringProperty(param.getValue().getContainingConcept().getFullySpecifiedDescription().getText().trim());
 			} catch (IOException | ContradictionException e) {
 				String title = "Failed getting FSN";
 				String msg = "Failed getting fully specified description";
@@ -1327,7 +1342,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// Matching description text.
 		// If AggregationType is CONCEPT then arbitrarily picks first matching description
 		TableColumn<CompositeSearchResult, String> matchingTextCol = new TableColumn<>("Text");
-		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchStrings().iterator().next().trim()));
+		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchingStrings().iterator().next().trim()));
 		matchingTextCol.setCellFactory(new MyTableCellCallback<String>());
 
 		// matchingDescTypeCol is string value type of matching description term displayed
@@ -1343,19 +1358,19 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// NID set to invisible because largely for debugging purposes only
 		TableColumn<CompositeSearchResult, Number> nidCol = new TableColumn<>("NID");
-		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getConcept().getNid()));
+		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getContainingConcept().getNid()));
 		nidCol.setCellFactory(new MyTableCellCallback<Number>());
 		nidCol.setVisible(false);
 
 		// UUID set to invisible because largely for debugging purposes only
 		TableColumn<CompositeSearchResult, String> uuIdCol = new TableColumn<>("UUID");
-		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getPrimordialUuid().toString().trim()));
+		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getPrimordialUuid().toString().trim()));
 		uuIdCol.setVisible(false);
 		uuIdCol.setCellFactory(new MyTableCellCallback<String>());
 
 		// Optional SCT ID
 		TableColumn<CompositeSearchResult, String> sctIdCol = new TableColumn<>("SCTID");
-		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getConcept())).trim()));
+		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getContainingConcept())).trim()));
 		sctIdCol.setCellFactory(new MyTableCellCallback<String>());
 
 		searchResultsTable.getColumns().clear();
@@ -1383,8 +1398,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				CompositeSearchResult dragItem = searchResultsTable.getSelectionModel().getSelectedItem();
 				if (dragItem != null)
 				{
-					LOG.debug("Dragging concept id " + dragItem.getConceptNid());
-					return dragItem.getConceptNid() + "";
+					LOG.debug("Dragging concept id " + dragItem.getContainingConcept().getNid());
+					return dragItem.getContainingConcept().getNid() + "";
 				}
 				return null;
 			}
@@ -1734,7 +1749,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					builder.setSizeLimit(maxResults);
 				}
 			}
-			ssh = SearchHandler.doConceptSearch(builder);
+			builder.setMergeResultsOnConcept(true);
+			ssh = SearchHandler.descriptionSearch(builder);
 			break;
 		}
 		case DESCRIPTION:
@@ -1751,7 +1767,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					builder.setSizeLimit(maxResults);
 				}
 			}
-			ssh = SearchHandler.doDescriptionSearch(builder);
+			ssh = SearchHandler.descriptionSearch(builder);
 			break;
 		}
 		default:

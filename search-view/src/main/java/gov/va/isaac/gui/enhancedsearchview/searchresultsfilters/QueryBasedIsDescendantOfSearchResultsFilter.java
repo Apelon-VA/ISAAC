@@ -32,7 +32,6 @@ import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.ihtsdo.otf.query.implementation.Clause;
@@ -50,11 +49,11 @@ class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter
 	}
 	
 	@Override
-	public Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
 		NativeIdSetBI inputNids = new IntSet();
 
 		for (CompositeSearchResult result : results) {
-			inputNids.add(result.getConceptNid());
+			inputNids.add(result.getContainingConcept().getNid());
 		}
 
 		final NativeIdSetBI finalInputNids = inputNids;
@@ -73,9 +72,9 @@ class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter
 
 			@Override
 			public Clause Where() {
-				//		                return And(ConceptIsKindOf("Physical force"),
-				//		                            Xor(ConceptIsKindOf("Motion"),
-				//		                                ConceptIsDescendentOf("Motion")));
+				//		return And(ConceptIsKindOf("Physical force"),
+				//		Xor(ConceptIsKindOf("Motion"),
+				//		ConceptIsDescendentOf("Motion")));
 				if (filter.getInvert()) {
 					return Not(ConceptIsDescendentOf(concept.getPrimordialUuid().toString()));
 				} else {
@@ -84,8 +83,8 @@ class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter
 			}
 		};
 
-        NativeIdSetBI outputNids = null;
-        try {
+		NativeIdSetBI outputNids = null;
+		try {
 			SearchResultsFilterHelper.LOG.debug("Applying " + (filter.getInvert() ? "Not(ConceptIsDescendentOf())" : "ConceptIsDescendentOf()") + filter + " to " + finalInputNids.size() + " nids");
 
 			outputNids = q.compute();
@@ -94,10 +93,10 @@ class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter
 		} catch (Exception e) {
 			throw new SearchResultsFilterException(this, "Failed calling Query.compute()", e);
 		}
-        
-        List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
+
+		List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
 		for (CompositeSearchResult result : results) {
-			if (outputNids.contains(result.getConceptNid())) {
+			if (outputNids.contains(result.getContainingConcept().getNid())) {
 				filteredResults.add(result);
 			}
 		}

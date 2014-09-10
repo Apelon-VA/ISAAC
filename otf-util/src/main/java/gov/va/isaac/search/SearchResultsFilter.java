@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.search;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * IndividualSearchResultFilter
@@ -33,5 +33,5 @@ import java.util.Collection;
  *
  */
 public interface SearchResultsFilter {
-	Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException;
+	List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException;
 }

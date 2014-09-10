@@ -27,6 +27,7 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
 import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
+import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
@@ -225,6 +226,8 @@ public class SearchConceptHelper {
 			filterConceptSpec = Search.SEARCH_REGEXP_FILTER;
 		} else if (currentFilter instanceof IsDescendantOfFilter) {
 			filterConceptSpec = Search.SEARCH_ISDESCENDANTOF_FILTER;
+		} else if (currentFilter instanceof IsAFilter) {
+			filterConceptSpec = Search.SEARCH_ISA_FILTER;
 		} else {
 			throw new SearchConceptException("Unsupported Filter type " + currentFilter.getClass().getName());
 		}
@@ -260,6 +263,15 @@ public class SearchConceptHelper {
 				UUID uuid = WBUtility.getConceptVersion(isDescendantOfFilter.getNid()).getPrimordialUuid();
 				RefexDynamicData ascendantUuidData = new RefexDynamicUUID(uuid);
 				filterRefexData[0] = ascendantUuidData;
+			}
+		} else if (currentFilter instanceof IsAFilter) {
+			// Construct and populate RefexDynamicData for search ascendant uuid
+			IsAFilter isAFilter = (IsAFilter)currentFilter;
+
+			if (isAFilter.getNid() != 0) {
+				UUID uuid = WBUtility.getConceptVersion(isAFilter.getNid()).getPrimordialUuid();
+				RefexDynamicData matchUuidData = new RefexDynamicUUID(uuid);
+				filterRefexData[0] = matchUuidData;
 			}
 		}
 
@@ -532,9 +544,25 @@ public class SearchConceptHelper {
 
 						IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
 
-						RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ASCENDANT_COLUMN.getDescription());
+						RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ANCESTOR_COLUMN.getDescription());
 						if (ascendantUuidCol != null) {
 							UUID uuid = ascendantUuidCol.getDataUUID();
+							int nid = WBUtility.getConceptVersion(uuid).getNid();
+							newFilter.setNid(nid);
+							LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " refex: \"" + uuid + "\"");
+						}
+
+						loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
+					} else if (dud.getRefexName().equals(Search.SEARCH_ISA_FILTER.getDescription() /*"Search IsA Filter"*/)) {
+						// handle "Search IsA Filter"
+
+						LOG.debug("Loading data into model from Search IsA Filter refex");
+
+						IsAFilter newFilter = new IsAFilter();
+
+						RefexDynamicUUIDBI matchUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.MATCH_COLUMN.getDescription());
+						if (matchUuidCol != null) {
+							UUID uuid = matchUuidCol.getDataUUID();
 							int nid = WBUtility.getConceptVersion(uuid).getNid();
 							newFilter.setNid(nid);
 							LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " refex: \"" + uuid + "\"");

@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.interfaces.workflow;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.jvnet.hk2.annotations.Contract;
@@ -42,5 +43,6 @@ public interface ConceptWorkflowServiceI {
 			String preferredDescription,
 			UUID UUID,
 			String userName,
-			String processName);
+			String processName,
+            Map<String,String> variables);
 }

@@ -19,6 +19,7 @@
 package gov.va.isaac.search;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Handle object to get search results.
@@ -30,7 +31,7 @@ public class SearchHandle {
 
     private final long searchStartTime = System.currentTimeMillis();
 
-    private Collection<CompositeSearchResult> result;
+    private List<CompositeSearchResult> result;
     private volatile boolean cancelled = false;
     private Exception error = null;
 
@@ -57,16 +58,33 @@ public class SearchHandle {
         }
         return result;
     }
+    
+    /**
+     * This is not the same as the size of the result collection, as results may be merged.
+     * @return
+     * @throws Exception 
+     */
+    public int getHitCount() throws Exception
+    {
+        int result = 0;
+        for (CompositeSearchResult csr : getResults())
+        {
+            result += csr.getMatchingComponents().size();
+        }
+        return result;
+    }
 
-    protected void setResults(Collection<CompositeSearchResult> results) {
+    protected void setResults(List<CompositeSearchResult> results) {
         synchronized (SearchHandle.this) {
             result = results;
+            SearchHandle.this.notifyAll();
         }
     }
 
     protected void setError(Exception e) {
         synchronized (SearchHandle.this) {
             this.error = e;
+            SearchHandle.this.notifyAll();
         }
     }
 

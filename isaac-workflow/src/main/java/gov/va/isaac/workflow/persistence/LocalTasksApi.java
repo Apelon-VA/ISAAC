@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.workflow.persistence;
 
+import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import java.beans.XMLDecoder;
@@ -128,10 +129,26 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public void setAction(Long taskId, String action, String actionStatus, Map<String,String> outputVariables) {
+    public void setAction(Long taskId, Action action, Map<String,String> outputVariables) {
         try {
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
-            psUpdateStatus.setString(1, action);
+            psUpdateStatus.setString(1, action.name());
+            psUpdateStatus.setString(2, "pending");
+            psUpdateStatus.setString(3, serializeMap(outputVariables));
+            psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
+            psUpdateStatus.executeUpdate();
+            psUpdateStatus.closeOnCompletion();
+            conn.commit();
+        } catch (SQLException ex1) {
+            log.error("Unexpected SQL Error", ex1);
+        }
+    }
+
+    @Override
+    public void setAction(Long taskId, Action action, String actionStatus, Map<String,String> outputVariables) {
+        try {
+            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
+            psUpdateStatus.setString(1, action.name());
             psUpdateStatus.setString(2, actionStatus);
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
@@ -262,7 +279,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         task.setComponentName(rs.getString(4));
         task.setStatus(rs.getString(5));
         task.setOwner(rs.getString(6));
-        task.setAction(rs.getString(7));
+        task.setAction(Action.valueOf(rs.getString(7)));
         task.setActionStatus(rs.getString(8));
         task.setInputVariables(deserializeMap(rs.getString(9)));
         task.setOutputVariables(deserializeMap(rs.getString(10)));

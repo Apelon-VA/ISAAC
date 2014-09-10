@@ -202,8 +202,8 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     public UUID getConceptUuid() {
     	TaxonomyReferenceWithConcept ref = getValue();
     	
-    	if (ref != null && ref.getConcept() != null) {
-    		return getValue().getConcept().getConceptReference().getUuid();
+    	if (ref != null && ref.getConceptFromRelationshipOrConceptProperties() != null) {
+    		return getValue().getConceptFromRelationshipOrConceptProperties().getUuid();
     	} else {
     		return null;
     	}
@@ -211,8 +211,8 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     public Integer getConceptNid() {
     	TaxonomyReferenceWithConcept ref = getValue();
     	
-    	if (ref != null && ref.getConcept() != null) {
-    		return getValue().getConcept().getConceptReference().getNid();
+    	if (ref != null && ref.getConceptFromRelationshipOrConceptProperties() != null) {
+    		return getValue().getConceptFromRelationshipOrConceptProperties().getNid();
     	} else {
     		return null;
     	}

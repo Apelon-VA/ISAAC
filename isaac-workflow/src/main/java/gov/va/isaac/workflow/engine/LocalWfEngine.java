@@ -19,10 +19,7 @@
 package gov.va.isaac.workflow.engine;
 
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-import gov.va.isaac.workflow.LocalTask;
-import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.*;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 import gov.va.isaac.workflow.sync.TasksFetcher;
@@ -107,20 +104,20 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
                         // too late, task not available
                     } else if (remoteTask.getTaskData().getStatus().equals(Status.Reserved)) {
                         // start and action
-                        if (loopTask.getAction().equals("COMPLETE")) {
+                        if (loopTask.getAction().equals(Action.COMPLETE)) {
                             remoteService.start(loopTask.getId(), userId);
                             remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
                             ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete",  loopTask.getOutputVariables());
-                        } else if (loopTask.getAction().equals("RELEASE")) {
+                        } else if (loopTask.getAction().equals(Action.RELEASE)) {
                             remoteService.release(loopTask.getId(), userId);
                             ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
                         }
                     }  else if (remoteTask.getTaskData().getStatus().equals(Status.InProgress)) {
                         // action
-                        if (loopTask.getAction().equals("COMPLETE")) {
+                        if (loopTask.getAction().equals(Action.COMPLETE)) {
                             remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
                             ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete",  loopTask.getOutputVariables());
-                        } else if (loopTask.getAction().equals("RELEASE")) {
+                        } else if (loopTask.getAction().equals(Action.RELEASE)) {
                             remoteService.release(loopTask.getId(), userId);
                             ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
                         }
@@ -160,6 +157,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         params.put("component_id", instanceRequest.getComponentId());
         params.put("component_name", instanceRequest.getComponentName());
         params.put("created_by", instanceRequest.getUserId());
+        params.putAll(instanceRequest.getVariables());
         if (instanceRequest.getParams() != null) {
             params.putAll(instanceRequest.getParams());
         }
