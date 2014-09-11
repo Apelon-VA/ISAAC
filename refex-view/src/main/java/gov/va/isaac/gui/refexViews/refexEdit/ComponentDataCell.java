@@ -30,6 +30,7 @@ import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.ToIntFunction;
 import javafx.concurrent.Task;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -50,19 +51,22 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class ComponentDataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>
+public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynamicGUI>
 {
 	private static Logger logger_ = LoggerFactory.getLogger(ComponentDataCell.class);
 	
 	private boolean isAssemblage_ = false;
+	private ToIntFunction<RefexDynamicVersionBI<?>> nidFetcher_;
 	
-	protected ComponentDataCell(boolean isAssemblage)
+	protected ComponentDataCell(boolean isAssemblage, ToIntFunction<RefexDynamicVersionBI<?>> nidFetcher)
 	{
+		nidFetcher_ = nidFetcher;
 		isAssemblage_ = isAssemblage;
 	}
 	
-	protected ComponentDataCell()
+	protected ComponentDataCell(ToIntFunction<RefexDynamicVersionBI<?>> nidFetcher)
 	{
+		nidFetcher_ = nidFetcher;
 		isAssemblage_ = false;
 	}
 
@@ -70,7 +74,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicVersionBI<? ext
 	 * @see javafx.scene.control.Cell#updateItem(java.lang.Object, boolean)
 	 */
 	@Override
-	protected void updateItem(Integer item, boolean empty)
+	protected void updateItem(RefexDynamicGUI item, boolean empty)
 	{
 		super.updateItem(item, empty);
 		
@@ -85,14 +89,19 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicVersionBI<? ext
 		}
 	}
 	
-	private void conceptLookup(int nid)
+	private void conceptLookup(RefexDynamicGUI item)
 	{
-		setGraphic(new ProgressBar());
+		ProgressBar pb = new ProgressBar();
+		pb.setMaxWidth(Double.MAX_VALUE);
+		setGraphic(pb);
+		
 		setText(null);
 		Task<Void> t = new Task<Void>()
 		{
 			String text;
+			boolean setStyle = false;
 			ContextMenu cm = new ContextMenu();
+			int nid = nidFetcher_.applyAsInt(item.getRefex());
 			
 			@Override
 			protected Void call() throws Exception
@@ -220,6 +229,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicVersionBI<? ext
 							}
 						});
 						text = WBUtility.getDescription(c);
+						setStyle = true;
 					}
 				}
 				catch (Exception e)
@@ -245,6 +255,20 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicVersionBI<? ext
 					setContextMenu(cm);
 				}
 				setGraphic(textHolder);
+				if (setStyle)
+				{
+					if (item.isCurrent())
+					{
+						getTreeTableRow().getStyleClass().removeAll("historical");
+					}
+					else
+					{
+						if (!getTreeTableRow().getStyleClass().contains("historical"))
+						{
+							getTreeTableRow().getStyleClass().add("historical");
+						}
+					}
+				}
 			}
 		};
 		Utility.execute(t);
