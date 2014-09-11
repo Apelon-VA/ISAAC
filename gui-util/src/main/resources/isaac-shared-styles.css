@@ -37,6 +37,10 @@
 	-fx-background-color: rgba(20, 20, 20, .1);
 }
 
+.historical {
+	-fx-opacity: .60;
+}
+
 /*
 For some reason - the treetableview doesn't look like the rest of the table views by default.  This bit of magic
 makes it look like a table view. 
