@@ -3,8 +3,8 @@ package gov.va.isaac.workflow;
 /**
  * Created by alo on 9/9/14.
  */
-public enum Action {
+public enum TaskActionStatus {
 
-    COMPLETE, RELEASE, NONE;
+    Pending,Complete,Error,Canceled,None;
 
 }
