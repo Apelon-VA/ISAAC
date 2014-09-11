@@ -82,6 +82,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.model.index.service.IndexedGenerationCallable;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -118,7 +119,8 @@ public class DynamicRefexView implements RefexViewI
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	private InputType setFromType_ = null;
-	private Integer newComponentHint = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
+	private Integer newComponentHint_ = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
+	IndexedGenerationCallable newComponentIndexGen_ = null; //Useful when adding from the assemblage perspective - if they are using an index, we need to wait till the new thing is indexed
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
@@ -468,7 +470,7 @@ public class DynamicRefexView implements RefexViewI
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
-		newComponentHint = null;
+		newComponentHint_ = null;
 		noRefresh_ = false;
 		refresh();
 	}
@@ -485,7 +487,7 @@ public class DynamicRefexView implements RefexViewI
 		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
-		newComponentHint = null;
+		newComponentHint_ = null;
 		noRefresh_ = false;
 		refresh();
 	}
@@ -531,9 +533,10 @@ public class DynamicRefexView implements RefexViewI
 		}
 	}
 	
-	protected void setNewComponentHint(int componentNid)
+	protected void setNewComponentHint(int componentNid, IndexedGenerationCallable indexGen)
 	{
-		newComponentHint = componentNid;
+		newComponentHint_ = componentNid;
+		newComponentIndexGen_ = indexGen;
 	}
 	
 	protected void refresh()
@@ -577,8 +580,8 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label(" "); 
-				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical");
+				Label l = new Label("s"); 
+				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
 				ttStatusCol.setGraphic(l);
 				ttStatusCol.setText(null);
 				ttStatusCol.setSortable(true);
@@ -909,11 +912,15 @@ public class DynamicRefexView implements RefexViewI
 							{
 								col.setPrefWidth(250);
 							}
-							if (text.equalsIgnoreCase(" "))
+							if (text.equalsIgnoreCase("s"))
 							{
-								col.setPrefWidth(30);
+								col.setPrefWidth(32);
+								col.setMinWidth(32);
 							}
-							col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+							else
+							{
+								col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+							}
 						}
 					}
 					showStampColumns_.invalidate();
@@ -1195,7 +1202,24 @@ public class DynamicRefexView implements RefexViewI
 				});
 				
 				LuceneDynamicRefexIndexer ldri = AppContext.getService(LuceneDynamicRefexIndexer.class);
-				List<SearchResult> results = ldri.queryAssemblageUsage(assemblageConceptFull.getNid(), Integer.MAX_VALUE, null);
+				
+				long waitForLatch = Long.MAX_VALUE;
+				if (newComponentIndexGen_ != null)
+				{
+					try
+					{
+						logger_.debug("waiting for index latch");
+						waitForLatch = newComponentIndexGen_.call();
+					}
+					catch (Exception e)
+					{
+						logger_.error("Unexpected error getting latch");
+					}
+					//We never need to wait for this again.
+					newComponentIndexGen_ = null;
+				}
+				
+				List<SearchResult> results = ldri.queryAssemblageUsage(assemblageConceptFull.getNid(), Integer.MAX_VALUE, waitForLatch);
 				for (SearchResult sr : results)
 				{
 					refexMembers.add((RefexDynamicChronicleBI<?>)ExtendedAppContext.getDataStore().getComponent(sr.getNid()));
@@ -1274,9 +1298,9 @@ public class DynamicRefexView implements RefexViewI
 				else
 				{
 					//add in the newComponentHint - because they said no to the scan, and we have no index
-					if (newComponentHint != null)
+					if (newComponentHint_ != null)
 					{
-						ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
+						ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint_);
 						if (c != null)
 						{
 							Collection<RefexDynamicChronicleBI<?>> dynamicAnnotations = (Collection<RefexDynamicChronicleBI<?>>)c.getRefexDynamicAnnotations();

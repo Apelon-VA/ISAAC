@@ -67,6 +67,7 @@ import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.runlevel.RunLevelException;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
@@ -74,12 +75,14 @@ import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.index.service.IndexedGenerationCallable;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,9 +114,9 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private ArrayList<RefexDataTypeNodeDetails> currentDataFields_ = new ArrayList<>();
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 	private GridPane gp_;
+	private Label title_;
 
 	//TODO use the word Sememe
-	
 	private AddRefexPopup()
 	{
 		super();
@@ -122,12 +125,12 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		VBox topItems = new VBox();
 		topItems.setFillWidth(true);
 
-		Label title = new Label("Create new refex instance");
-		title.getStyleClass().add("titleLabel");
-		title.setAlignment(Pos.CENTER);
-		title.prefWidthProperty().bind(topItems.widthProperty());
-		topItems.getChildren().add(title);
-		VBox.setMargin(title, new Insets(10, 10, 10, 10));
+		title_ = new Label("Create new refex instance");
+		title_.getStyleClass().add("titleLabel");
+		title_.setAlignment(Pos.CENTER);
+		title_.prefWidthProperty().bind(topItems.widthProperty());
+		topItems.getChildren().add(title_);
+		VBox.setMargin(title_, new Insets(10, 10, 10, 10));
 
 		gp_ = new GridPane();
 		gp_.setHgap(10.0);
@@ -285,6 +288,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		createRefexFocus_ = null;
 		editRefex_ = refexToEdit;
 		
+		title_.setText("Edit existing refex instance");
+		
 		gp_.add(unselectableComponentLabel_, 1, 1);
 		unselectableComponentLabel_.setText(WBUtility.getDescription(editRefex_.getRefex().getAssemblageNid()));
 		
@@ -311,6 +316,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		callingView_ = viewToRefresh;
 		createRefexFocus_ = setFromType;
 		editRefex_ = null;
+		
+		title_.setText("Create new refex instance");
 
 		if (createRefexFocus_.getComponentNid() != null)
 		{
@@ -535,17 +542,26 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			
 			cab.setData(data, WBUtility.getViewCoordinate());
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
-			builder.construct(cab);
+			RefexDynamicChronicleBI<?> rdc = builder.construct(cab);
+			
+			boolean isAnnotationStyle = WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex();
+			IndexedGenerationCallable indexGen = null;
+			
+			//In order to make sure we can wait for the index to have this entry, we need a latch...
+			if (isAnnotationStyle)
+			{
+				indexGen = AppContext.getService(LuceneDynamicRefexIndexer.class).getIndexedGenerationCallable(rdc.getNid());
+			}
 			
 			ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(componentNid));
-			if (!WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex())
+			if (!isAnnotationStyle)
 			{
 				ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(assemblageNid));
 			}
 			if (callingView_ != null)
 			{
 				ExtendedAppContext.getDataStore().waitTillWritesFinished();
-				callingView_.setNewComponentHint(componentNid);
+				callingView_.setNewComponentHint(componentNid, indexGen);
 				callingView_.refresh();
 			}
 			close();
