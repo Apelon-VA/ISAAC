@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.kie.api.task.model.Status;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
 
@@ -50,16 +51,16 @@ public class LocalTask {
     private String componentName;
 
     // Current status of the task, in the task lifecycle
-    private String status;
+    private Status status;
 
     // User owner of the task, name that matches KIE name
     private String owner;
 
     // Proposed action, added by the user in the client
-    private String action;
+    private Action action;
 
     // Status of the action execution, will be completed when is synchronized and executed in the server
-    private String actionStatus;
+    private TaskActionStatus actionStatus;
 
     // Input variables for the user, come from the KIE Task
     private Map<String, String> inputVariables;
@@ -73,7 +74,7 @@ public class LocalTask {
     public LocalTask(TaskSummary summary, boolean fetchAttachments) {
         this.id = summary.getId();
         this.name = summary.getName();
-        this.status = summary.getStatus().name();
+        this.status = summary.getStatus();
         if (summary.getActualOwner() != null) {
             this.owner = summary.getActualOwner().getId();
         } else {
@@ -95,7 +96,7 @@ public class LocalTask {
     public LocalTask(Task task, boolean fetchAttachments) {
         this.id = task.getId();
         this.name = task.getNames().iterator().next().getText();
-        this.status = task.getTaskData().getStatus().name();
+        this.status = task.getTaskData().getStatus();
         if (task.getTaskData().getActualOwner() != null) {
             this.owner = task.getTaskData().getActualOwner().getId();
         } else {
@@ -147,11 +148,11 @@ public class LocalTask {
         this.componentName = componentName;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
@@ -169,19 +170,19 @@ public class LocalTask {
         return hash;
     }
 
-    public String getAction() {
+    public Action getAction() {
         return action;
     }
 
-    public void setAction(String action) {
+    public void setAction(Action action) {
         this.action = action;
     }
 
-    public String getActionStatus() {
+    public TaskActionStatus getActionStatus() {
         return actionStatus;
     }
 
-    public void setActionStatus(String actionStatus) {
+    public void setActionStatus(TaskActionStatus actionStatus) {
         this.actionStatus = actionStatus;
     }
 

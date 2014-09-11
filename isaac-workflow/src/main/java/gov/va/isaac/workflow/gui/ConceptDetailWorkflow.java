@@ -138,25 +138,37 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 
 	@Override
 	public UUID getConceptUuid() {
-		// TODO Auto-generated method stub
-		return null;
+		return controller_.getConcept().getPrimordialUuid();
 	}
 
 	@Override
 	public int getConceptNid() {
-		// TODO Auto-generated method stub
-		return 0;
+		return controller_.getConcept().getConceptNid();
 	}
 
 	@Override
 	public void setViewMode(ConceptViewMode mode) {
-		// TODO Auto-generated method stub
-		
+		throw new RuntimeException("setViewMode(" + mode + ") not supported");
 	}
 
 	@Override
 	public ConceptViewMode getViewMode() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI#setInitialTask(long)
+	 */
+	@Override
+	public void setInitialTask(long taskId) {
+		controller_.setInitialTask(taskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI#getInitialTask()
+	 */
+	@Override
+	public Long getInitialTask() {
+		return controller_.getInitialTask() != null ? controller_.getInitialTask().getId() : null;
 	}
 }

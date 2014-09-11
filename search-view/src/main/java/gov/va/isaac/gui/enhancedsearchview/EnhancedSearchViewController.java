@@ -37,6 +37,7 @@ import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
@@ -115,9 +116,11 @@ import javafx.stage.Window;
 import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -977,41 +980,68 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			conceptWorkflowService.synchronizeWithRemote();
 		}
 
-		Set<Integer> concepts = new HashSet<>();
-		for (CompositeSearchResult result : searchResultsTable.getItems()) {
-			if (! concepts.contains(result.getContainingConcept().getNid())) {
-				concepts.add(result.getContainingConcept().getNid());
-
-				exportSearchResultToWorkflow(result.getContainingConcept());
+		Map<Integer, ComponentVersionBI> conceptsOrComponents = new HashMap<>();
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+			for (CompositeSearchResult result : searchResultsTable.getItems()) {
+				ConceptVersionBI conceptVersion = result.getContainingConcept();
+				int nid = conceptVersion.getNid();
+				
+				if (! conceptsOrComponents.containsKey(nid)) {
+					conceptsOrComponents.put(nid, conceptVersion);
+				}
 			}
+		} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+			for (CompositeSearchResult result : searchResultsTable.getItems()) {
+				ComponentVersionBI componentVersion = result.getMatchingComponents().iterator().next();
+				int nid = componentVersion.getNid();
+				
+				if (! conceptsOrComponents.containsKey(nid)) {
+					conceptsOrComponents.put(nid, componentVersion);
+				}
+			}
+		} else {
+			String title = "Failed exporting search results to workflow";
+			String msg = "Unsupported AggregationType " + aggregationTypeComboBox.getSelectionModel().getSelectedItem();
+			LOG.error(title + ". " + msg);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, title + ". " + msg, AppContext.getMainApplicationWindow().getPrimaryStage());
 		}
 
-		if (searchResultsTable.getItems().size() > 0) {
+		if (conceptsOrComponents.size() > 0) {
+			for (ComponentVersionBI conceptOrComponent : conceptsOrComponents.values()) {
+				exportSearchResultToWorkflow(conceptOrComponent);
+			}
+			
 			conceptWorkflowService.synchronizeWithRemote();
 		}
 	}
 
 	// TODO: this should be invoked by context menu
-	private void exportSearchResultToWorkflow(ConceptVersionBI conceptVersion) {
+	private void exportSearchResultToWorkflow(ComponentVersionBI componentOrConceptVersion) {
 		initializeWorkflowServices();
 
-		// TODO: eliminate hard-coding of processName "terminology-authoring.test1"
-		final String processName = "terminology-authoring.test1";
 		// TODO: eliminate hard-coding of userName
+		final WorkflowProcess process = WorkflowProcess.REVIEW;
 		final String userName = "alejandro";
 		String preferredDescription = null;
 		try {
-			preferredDescription = conceptVersion.getPreferredDescription().getText();
-		} catch (IOException | ContradictionException e1) {
+			if (componentOrConceptVersion instanceof ConceptVersionBI) {
+				DescriptionVersionBI desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
+				preferredDescription = desc.getText();
+			} else {
+				preferredDescription = componentOrConceptVersion.toUserString();
+			}
+		} catch (Exception e1) {
 			String title = "Failed creating new concept workflow";
-			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion (nid=" + conceptVersion.getConceptNid() + ", uuid=" + conceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName();
-			LOG.error(title, e1);
+			String msg = title + ". Unexpected error getting description for componentVersion (nid=" + componentOrConceptVersion.getNid() + ", uuid=" + componentOrConceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
+			LOG.error(msg, e1);
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
 			e1.printStackTrace();
+			
+			return;
 		}
 
-		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + processName + "\")");
-		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName, new HashMap<String,String>());
+		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + componentOrConceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + process.getText() + "\")");
+		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, componentOrConceptVersion.getPrimordialUuid(), userName, process, new HashMap<String,String>());
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 	}
 
@@ -1156,9 +1186,17 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								@Override
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
-
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
 										nids.add(r.getContainingConcept().getNid());
+										// TODO: modify to send component nid, if possible
+//										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+//											nids.add(r.getContainingConcept().getNid());
+//										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+//											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
+//										} else {
+//											LOG.error("Unexpected AggregationType value " + aggregationTypeComboBox.getSelectionModel().getSelectedItem());
+//											nids.add(r.getContainingConcept().getNid());
+//										}
 									}
 
 									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
@@ -1735,7 +1773,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// "we get called back when the results are ready."
 		switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
-		case  CONCEPT:
+		case CONCEPT:
 		{
 			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
 			builder.setCallback(this);

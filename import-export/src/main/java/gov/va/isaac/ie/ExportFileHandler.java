@@ -31,6 +31,8 @@ import java.util.zip.ZipOutputStream;
 
 import javax.validation.ValidationException;
 
+import gov.va.isaac.models.owl.exporter.OWLExporter;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +75,28 @@ public class ExportFileHandler {
 			}
 			
 			EConceptExporter exporter = new EConceptExporter(outputStream);
+            exporter.export(pathNid);
+            outputStream.flush();
+            outputStream.close();
+        } else if (exportType == ExportType.OWL) {
+            //Can only export SNOMED at this time
+            if (pathNid != Snomed.SNOMED_RELEASE_PATH.getNid()) {
+                throw new UnsupportedOperationException("OWL Exporter only supports SNOMED path at this time.");
+            }
+            String fileName = "snomed.owl";
+            File file = new File(folder, fileName);
+            OutputStream outputStream = null;
+			if(zip) {
+            	ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(file + ".zip"));
+            	ZipEntry entry = new ZipEntry(fileName);
+            	entry.setMethod(ZipEntry.DEFLATED);
+            	zos.putNextEntry(entry);
+            	outputStream = zos;
+			} else {
+				outputStream = new FileOutputStream(file);
+			}
+
+			OWLExporter exporter = new OWLExporter(outputStream);
             exporter.export(pathNid);
             outputStream.flush();
             outputStream.close();

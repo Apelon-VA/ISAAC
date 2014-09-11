@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,11 +56,11 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author, Map<String, String> variables) {
+    public ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) {
         try {
             // PINST_REQUESTS (id int PRIMARY KEY, component_id varchar(40), component_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), wf_id Integer)");
             PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message, request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
-            psInsert.setString(1, componentId);
+            psInsert.setString(1, componentId != null ? componentId.toString() : null);
             psInsert.setString(2, componentName);
             psInsert.setString(3, processName);
             psInsert.setString(4, author);
@@ -73,7 +74,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             psInsert.executeUpdate();
             
             ProcessInstanceCreationRequestI result = new ProcessInstanceCreationRequest();
-            result.setComponentId(componentId);
+            result.setComponentId(componentId != null ? componentId.toString() : null);
             result.setComponentName(componentName);
             ResultSet generatedKeys = psInsert.getGeneratedKeys();
             if (generatedKeys.next()) {
@@ -147,7 +148,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
     
     @Override
-    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, String componentId) {
+    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId) {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
@@ -162,7 +163,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public List<ProcessInstanceCreationRequestI> getRequestsByComponentId(String componentId) {
+    public List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId) {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
