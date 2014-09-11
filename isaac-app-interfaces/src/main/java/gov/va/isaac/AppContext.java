@@ -21,7 +21,7 @@ package gov.va.isaac;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.oia.HK2Utilities.HK2RuntimeInitializerCustom;
+import gov.va.oia.HK2Utilities.HK2RuntimeInitializer;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -57,7 +57,7 @@ public class AppContext
 		{
 			throw new RuntimeException("Only one service locator should be set");
 		}
-		serviceLocator_ = HK2RuntimeInitializerCustom.init("ISAAC", false, "gov.va", "org.ihtsdo");
+		serviceLocator_ = HK2RuntimeInitializer.init("ISAAC", false, "gov.va", "org.ihtsdo");
 
 		appProperties_ = new AppProperties();
 	}
