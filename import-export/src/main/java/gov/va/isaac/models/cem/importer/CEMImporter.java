@@ -95,6 +95,10 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
     infoModel.addAssociatedConceptUuid(conceptUuid);
     
     // Save the information model
+//    if (service.exists(infoModel)) {
+//      throw new IOException(
+//          "Model already imported");
+//    }
     service.saveInformationModel(infoModel);
 
     LOG.info("Ending import of CEM model from: " + file.getName());

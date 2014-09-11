@@ -91,6 +91,10 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
     HeDInformationModel infoModel = createInformationModel(domRoot);
 
     // Save the information model
+    if (service.exists(infoModel)) {
+      throw new IOException(
+          "Model already imported.");
+    }
     service.saveInformationModel(infoModel);
 
     LOG.info("Ending import of HeD model from: " + file.getName());
