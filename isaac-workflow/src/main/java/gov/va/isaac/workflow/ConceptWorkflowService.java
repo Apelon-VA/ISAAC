@@ -80,13 +80,13 @@ public class ConceptWorkflowService implements ConceptWorkflowServiceI {
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(java.lang.String, java.util.UUID, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(String preferredDescription, UUID UUID, String userName, WorkflowProcess processName, Map<String,String> variables) {
+	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(String preferredDescription, UUID uuid, String userName, WorkflowProcess processName, Map<String,String> variables) {
 		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
-		LOG.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + UUID.toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + userName + "\")");
+		LOG.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + uuid.toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + userName + "\")");
         if (variables == null) {
             variables = new HashMap<String,String>();
         }
-		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName.getText(), UUID.toString(), preferredDescription, userName, variables);
+		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName.getText(), uuid, preferredDescription, userName, variables);
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 		
 		return createdRequest;

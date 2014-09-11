@@ -19,6 +19,7 @@
 package gov.va.isaac.workflow.demo;
 
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
@@ -26,6 +27,8 @@ import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *
@@ -41,7 +44,7 @@ public class ProcessInstanceSynchronizationTester {
         Map<String,String> variables = new HashMap<String, String>();
         variables.put("coordinateId", "16e04a1e-32a6-11e4-99ba-164230d1df67");
         variables.put("lastCommitTimeStamp", "1409665029");
-        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest("terminology-authoring.test1", "56968009", "Wood asthma Tuesday Call (disorder)", "test-user", variables);
+        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest(WorkflowProcess.REVIEW.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         System.out.println("New instance: " + newInstance.getId());
         
         List<ProcessInstanceCreationRequestI> pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
