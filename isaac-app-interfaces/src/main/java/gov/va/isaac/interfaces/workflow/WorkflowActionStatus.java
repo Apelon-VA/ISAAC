@@ -18,31 +18,14 @@
  */
 
 /**
- * ConceptWorkflowServiceI
+ * WorkflowActionStatus
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 package gov.va.isaac.interfaces.workflow;
 
-import java.util.Map;
-import java.util.UUID;
-
-import org.jvnet.hk2.annotations.Contract;
-
-/**
- * ConceptWorkflowServiceI
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- *
- */
-@Contract
-public interface ConceptWorkflowServiceI {
-	public abstract void synchronizeWithRemote();
-
-	public abstract ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(
-			String preferredDescription,
-			UUID UUID,
-			String userName,
-			WorkflowProcess processName,
-            Map<String,String> variables);
-}
+//public enum WorkflowActionStatus {
+//	PENDING,
+//	RELEASED,
+//	DONE;
+//}

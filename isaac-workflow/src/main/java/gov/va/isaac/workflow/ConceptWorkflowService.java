@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
@@ -70,7 +71,7 @@ public class ConceptWorkflowService implements ConceptWorkflowServiceI {
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI, java.lang.String, java.lang.String)
 	 */
-	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(ConceptVersionBI conceptVersion, String userName, String processName, Map<String,String> variables) throws IOException, ContradictionException {
+	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(ConceptVersionBI conceptVersion, String userName, WorkflowProcess processName, Map<String,String> variables) throws IOException, ContradictionException {
 		String preferredDescription = conceptVersion.getPreferredDescription().getText();
 
 		return createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName, variables);
@@ -79,13 +80,13 @@ public class ConceptWorkflowService implements ConceptWorkflowServiceI {
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(java.lang.String, java.util.UUID, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(String preferredDescription, UUID UUID, String userName, String processName, Map<String,String> variables) {
+	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(String preferredDescription, UUID UUID, String userName, WorkflowProcess processName, Map<String,String> variables) {
 		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
 		LOG.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + UUID.toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + userName + "\")");
         if (variables == null) {
             variables = new HashMap<String,String>();
         }
-		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, UUID.toString(), preferredDescription, userName, variables);
+		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName.getText(), UUID.toString(), preferredDescription, userName, variables);
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 		
 		return createdRequest;

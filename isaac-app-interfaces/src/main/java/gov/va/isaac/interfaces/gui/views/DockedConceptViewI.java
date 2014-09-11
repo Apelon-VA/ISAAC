@@ -21,15 +21,14 @@ package gov.va.isaac.interfaces.gui.views;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link ConceptWorkflowViewI}
+ * {@link DockedConceptViewI}
  * 
  * An interface that requests a pop up window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ConceptWorkflowViewI extends PopupConceptViewI
+public interface DockedConceptViewI extends DockedViewI, ConceptViewI
 {
-	public void setInitialTask(long taskId);
-	public Long getInitialTask();
+
 }
