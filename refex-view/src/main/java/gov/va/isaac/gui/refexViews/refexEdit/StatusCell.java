@@ -18,8 +18,13 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
+import gov.va.isaac.gui.util.Images;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,39 +51,74 @@ public class StatusCell extends TreeTableCell<RefexDynamicGUI, RefexDynamicGUI>
 		}
 		else if (item != null)
 		{
+			String tooltipText = "";
+			StackPane sp = new StackPane();
+			sp.setPrefSize(25, 25);
+
 			try
 			{
-				if (item.isCurrent())
+				if (item.getRefex().isActive())
 				{
-					if (item.getRefex().isActive())
-					{
-						setText("\u2b24");  //big dot
-						setTooltip(new Tooltip("Current and Active"));
-					}
-					else
-					{
-						setText("\u2d54");  //big circle
-						setTooltip(new Tooltip("Current and Inactive"));
-					}
+					sizeAndPosition(Images.BLACK_DOT, sp, Pos.TOP_LEFT);
+					tooltipText += "Active";
 				}
 				else
 				{
-					if (item.getRefex().isActive())
-					{
-						setText("\u2022");  //small dot
-						setTooltip(new Tooltip("Historical and Active"));
-					}
-					else
-					{
-						setText("\u25e6");  //small circle
-						setTooltip(new Tooltip("Historical and Inactive"));
-					}
+					sizeAndPosition(Images.GREY_DOT, sp, Pos.TOP_LEFT);
+					tooltipText += "Inactive";
+				}
+				
+				if (!item.isCurrent())
+				{
+					sizeAndPosition(Images.HISTORICAL, sp, Pos.BOTTOM_LEFT);
+					tooltipText += " and Historical";
+				}
+				else
+				{
+					tooltipText += " and Current";
+				}
+				
+				if (item.getRefex().getTime() == Long.MAX_VALUE)
+				{
+					sizeAndPosition(Images.YELLOW_DOT, sp, Pos.TOP_RIGHT);
+					tooltipText += " - Uncommitted";
 				}
 			}
 			catch (Exception e)
 			{
 				logger_.error("Unexpected", e);
 			}
+			setGraphic(sp);
+			setTooltip(new Tooltip(tooltipText));
 		}
+	}
+	
+	private void sizeAndPosition(Images image, StackPane sp, Pos position)
+	{
+		ImageView iv = image.createImageView();
+		iv.setFitHeight(12);
+		iv.setFitWidth(12);
+		if (position == Pos.TOP_LEFT)
+		{
+			StackPane.setMargin(iv, new Insets(0, 0, 0, 0));
+		}
+		else if (position == Pos.TOP_RIGHT)
+		{
+			StackPane.setMargin(iv, new Insets(0, 0, 0, 13));
+		}
+		else if (position == Pos.BOTTOM_LEFT)
+		{
+			StackPane.setMargin(iv, new Insets(13, 0, 0, 0));
+		}
+		else if (position == Pos.BOTTOM_RIGHT)
+		{
+			StackPane.setMargin(iv, new Insets(13, 0, 0, 13));
+		}
+		else
+		{
+			throw new RuntimeException("Unsupported Position!");
+		}
+		sp.getChildren().add(iv);
+		StackPane.setAlignment(iv, Pos.TOP_LEFT);
 	}
 }
