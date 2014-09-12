@@ -21,6 +21,8 @@ package gov.va.isaac.workflow;
 import java.util.List;
 import java.util.Map;
 
+import org.kie.api.task.model.Status;
+
 /**
  *
  * @author alo
@@ -29,8 +31,8 @@ public interface LocalTasksServiceBI {
     
     List<LocalTask> getOpenOwnedTasks(String owner);
     List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId);
-    List<LocalTask> getOwnedTasksByStatus(String owner, String status);
-    List<LocalTask> getOwnedTasksByActionStatus(String owner, String actionStatus);
+    List<LocalTask> getOwnedTasksByStatus(String owner, Status status);
+    List<LocalTask> getOwnedTasksByActionStatus(String owner, TaskActionStatus actionStatus);
     LocalTask getTask(Long id);
     List<LocalTask> getTasks();
     List<LocalTask> getTasksByComponentId(String componentId);
