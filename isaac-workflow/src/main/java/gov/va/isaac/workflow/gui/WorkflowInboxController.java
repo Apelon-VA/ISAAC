@@ -185,7 +185,7 @@ public class WorkflowInboxController
 			}
 
 			ConceptVersionBI containingConcept = null;
-			ComponentChronicleBI componentChronicle = WBUtility.getComponentChronicle(componentUuid);
+			ComponentChronicleBI<?> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
 			if (componentChronicle == null) {
 				LOG.warn("Component ID for task " + value.getValue().getId() + " retrieved a null componentChronicle");
 
@@ -237,7 +237,7 @@ public class WorkflowInboxController
 			}
 
 			ConceptVersionBI containingConcept = null;
-			ComponentChronicleBI componentChronicle = WBUtility.getComponentChronicle(componentUuid);
+			ComponentChronicleBI<?> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
 			if (componentChronicle == null) {
 				LOG.warn("Component ID for task " + value.getValue().getId() + " retrieved a null componentChronicle");
 
@@ -295,6 +295,8 @@ public class WorkflowInboxController
 						claimPopover.hide();
 						claimTasksButton.setDisable(false);
 						refreshContent();
+						
+						synchronize();
 					});
 				}
 				catch (Exception e)
@@ -305,28 +307,33 @@ public class WorkflowInboxController
 		});
 
 		synchronizeButton.setOnAction((action) -> {
-			synchronizeButton.setDisable(true);
-			final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
-
-			Utility.execute(() -> {
-				try
-				{
-					wfEngine_.synchronizeWithRemote();
-					Platform.runLater(() -> 
-					{
-						synchronizePopover.hide();
-						synchronizeButton.setDisable(false);
-						refreshContent();
-					});
-				}
-				catch (Exception e)
-				{
-					logger.error("Unexpected error synchronizing tasks", e);
-				}
-			});
+			synchronize();
 		});
 	}
 
+	private void synchronize() {
+		synchronizeButton.setDisable(true);
+
+		final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
+
+		Utility.execute(() -> {
+			try
+			{
+				wfEngine_.synchronizeWithRemote();
+				Platform.runLater(() -> 
+				{
+					synchronizePopover.hide();
+					synchronizeButton.setDisable(false);
+					refreshContent();
+				});
+			}
+			catch (Exception e)
+			{
+				logger.error("Unexpected error synchronizing tasks", e);
+			}
+		});
+	}
+	
 	protected void loadContent()
 	{
 		if (wfEngine_ == null)
