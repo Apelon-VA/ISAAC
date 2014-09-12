@@ -18,10 +18,7 @@ package gov.va.isaac.workflow.demo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import gov.va.isaac.workflow.Action;
-import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.*;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 import java.util.HashMap;
@@ -61,7 +58,7 @@ public class ReviewWorkflowTest {
         //Complete 1st task
         HashMap<String, String> v1 = new HashMap<String, String>();
         v1.put("out_comment", "Edit is finished");
-        localTasksService.setAction(taskId, Action.COMPLETE, "pending", v1);
+        localTasksService.setAction(taskId, Action.COMPLETE, TaskActionStatus.Pending, v1);
         wfEngine.synchronizeWithRemote();
 
         // Claim next task
@@ -73,7 +70,7 @@ public class ReviewWorkflowTest {
         HashMap<String, String> v2 = new HashMap<String, String>();
         v2.put("out_comment", "The edit looks OK");
         v2.put("out_response", "approve");
-        localTasksService.setAction(secondTaskId, Action.COMPLETE, "pending", v2);
+        localTasksService.setAction(secondTaskId, Action.COMPLETE, TaskActionStatus.Pending, v2);
         wfEngine.synchronizeWithRemote();
 
         // Claim next task
@@ -85,7 +82,7 @@ public class ReviewWorkflowTest {
         HashMap<String, String> v3 = new HashMap<String, String>();
         v3.put("out_comment", "Ready to be published");
         v3.put("out_response", "approve");
-        localTasksService.setAction(thirdTaskId, Action.COMPLETE, "pending", v3);
+        localTasksService.setAction(thirdTaskId, Action.COMPLETE, TaskActionStatus.Pending, v3);
         wfEngine.synchronizeWithRemote();
 
 

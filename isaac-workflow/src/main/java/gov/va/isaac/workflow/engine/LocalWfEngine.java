@@ -107,19 +107,19 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
                         if (loopTask.getAction().equals(Action.COMPLETE)) {
                             remoteService.start(loopTask.getId(), userId);
                             remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete",  loopTask.getOutputVariables());
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Complete,  loopTask.getOutputVariables());
                         } else if (loopTask.getAction().equals(Action.RELEASE)) {
                             remoteService.release(loopTask.getId(), userId);
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Canceled,  loopTask.getOutputVariables());
                         }
                     }  else if (remoteTask.getTaskData().getStatus().equals(Status.InProgress)) {
                         // action
                         if (loopTask.getAction().equals(Action.COMPLETE)) {
                             remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "complete",  loopTask.getOutputVariables());
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Complete,  loopTask.getOutputVariables());
                         } else if (loopTask.getAction().equals(Action.RELEASE)) {
                             remoteService.release(loopTask.getId(), userId);
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), "released",  loopTask.getOutputVariables());
+                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Canceled,  loopTask.getOutputVariables());
                         }
                     }
                 }
