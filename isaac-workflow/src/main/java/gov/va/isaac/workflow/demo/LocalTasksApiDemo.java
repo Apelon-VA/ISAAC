@@ -20,6 +20,7 @@ package gov.va.isaac.workflow.demo;
 
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class LocalTasksApiDemo {
 
         Map<String, String> outputVariables = new HashMap<String, String>();
         outputVariables.put("assessment", "correct");
-        tapi.setAction(retrievedTask.getId(), Action.COMPLETE, "pending", outputVariables);
+        tapi.setAction(retrievedTask.getId(), Action.COMPLETE, TaskActionStatus.Pending, outputVariables);
         
         retrievedTask = tapi.getTask(70L);
         System.out.println("Done after action, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + 

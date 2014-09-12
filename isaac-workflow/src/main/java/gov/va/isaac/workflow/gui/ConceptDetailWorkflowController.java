@@ -338,7 +338,7 @@ public class ConceptDetailWorkflowController
 						final LocalTask currentlySelectedTask = taskComboBox.getValue();
 						final Action currentlySelectedAction = actionComboBox.getValue();
 
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending.name(), new HashMap<String, String>());
+						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending, new HashMap<String, String>());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
