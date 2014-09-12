@@ -29,6 +29,7 @@ import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -36,8 +37,8 @@ import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -46,13 +47,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import javafx.event.EventHandler;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
  * {@link WorkflowInboxController}
@@ -64,19 +65,29 @@ public class WorkflowInboxController
 	private static final Logger LOG = LoggerFactory.getLogger(WorkflowInboxController.class);
 
 	
-	@FXML private ResourceBundle resources;
-	@FXML private URL location;
-	@FXML private Button claimTasksButton;
-	@FXML private Button synchronizeButton;
-	@FXML private Label userName;
-	@FXML private TableView<LocalTask> taskTable;
+	@FXML BorderPane rootBorderPane;
+	@FXML ResourceBundle resources;
+	@FXML URL location;
+	@FXML Button claimTasksButton;
+	@FXML Button synchronizeButton;
+	@FXML Label userName;
+	@FXML TableView<LocalTask> taskTable;
 
 	private LocalWorkflowRuntimeEngineBI wfEngine_;
 	private LocalTasksServiceBI taskService_;
 	private final Logger logger = LoggerFactory.getLogger(WorkflowInboxController.class);
 	//TODO figure out how we handle usernames
 	private String user = "alejandro";
-
+	
+	public static WorkflowInboxController init() throws IOException {
+		// Load FXML
+		URL resource = WorkflowInboxController.class.getResource("WorkflowInbox.fxml");
+		LOG.debug("FXML for " + WorkflowInboxController.class + ": " + resource);
+		FXMLLoader loader = new FXMLLoader(resource);
+		loader.load();
+		return loader.getController();
+	}
+	
 	@FXML
 	void initialize()
 	{
@@ -84,6 +95,7 @@ public class WorkflowInboxController
 		assert synchronizeButton != null : "fx:id=\"synchronizeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert userName != null : "fx:id=\"userName\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
+		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
 		userName.setText(user);
 
@@ -289,7 +301,7 @@ public class WorkflowInboxController
 			Utility.execute(() -> {
 				try
 				{
-					wfEngine_.claim(10, user);
+					getWorkflowEngine().claim(10, user);
 					Platform.runLater(() -> 
 					{
 						claimPopover.hide();
@@ -311,6 +323,10 @@ public class WorkflowInboxController
 		});
 	}
 
+	public Region getView() {
+		return rootBorderPane;
+	}
+	
 	private void synchronize() {
 		synchronizeButton.setDisable(true);
 
@@ -319,7 +335,7 @@ public class WorkflowInboxController
 		Utility.execute(() -> {
 			try
 			{
-				wfEngine_.synchronizeWithRemote();
+				getWorkflowEngine().synchronizeWithRemote();
 				Platform.runLater(() -> 
 				{
 					synchronizePopover.hide();
@@ -336,43 +352,32 @@ public class WorkflowInboxController
 	
 	protected void loadContent()
 	{
-		if (wfEngine_ == null)
-		{
-			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-			taskService_ = wfEngine_.getLocalTaskService();
-			ObservableList<LocalTask> tasks = new ObservableListWrapper<LocalTask>(taskService_.getOpenOwnedTasks(user));
-			taskTable.setItems(tasks);
-		}
-		else
-		{
-			refreshContent();
-		}
+		refreshContent();
 	}
 
 	private void refreshContent()
 	{
 		taskTable.getItems().clear();
-		taskTable.getItems().addAll(taskService_.getOpenOwnedTasks("alejandro"));
+		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks("alejandro"));
 	}
 
-	/**
-	 * If this nid is a component ref, rather than a concept ref, get the enclosing concept ref.
-	 * @param nid
-	 */
-	private static int getComponentParentConceptNid(int nid)
-	{
-		ComponentChronicleBI<?> cc = WBUtility.getComponentChronicle(nid);
-		if (cc != null)
+	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
+		if (wfEngine_ == null)
 		{
-			return cc.getConceptNid();
+			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
 		}
-		else
-		{
-			LOG.warn("Unexpected - couldn't find component for nid {}", nid);
-			return nid;
-		}
+		
+		return wfEngine_;
 	}
 
+	private LocalTasksServiceBI getTaskService() {
+		if (taskService_ == null) {
+			taskService_ = getWorkflowEngine().getLocalTaskService();
+		}
+		
+		return taskService_;
+	}
+	
 	private class MyCellFactoryCallback<T> implements Callback<TableColumn<LocalTask, T>, TableCell<LocalTask, T>> {
 		@Override
 		public TableCell<LocalTask, T> call(TableColumn<LocalTask, T> param) {
