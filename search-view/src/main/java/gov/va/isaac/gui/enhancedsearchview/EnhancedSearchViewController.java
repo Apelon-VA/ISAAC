@@ -35,7 +35,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
+import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -245,7 +245,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	private Window windowForTableViewExportDialog;
 
-	ConceptWorkflowServiceI conceptWorkflowService;
+	ComponentWorkflowServiceI conceptWorkflowService;
 
 	public static EnhancedSearchViewController init() throws IOException {
 		// Load FXML
@@ -516,9 +516,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		HBox row = new HBox();
 		HBox.setMargin(row, new Insets(5, 5, 5, 5));
 		row.setUserData(filter);
-//		if (! searchViewModel.getFilters().contains(filter)) {
-//			searchViewModel.getFilters().add(filter);
-//		}
 
 		// TODO: add binding to disable deletion of first filter in list containing other filter
 		Button removeFilterButton = new Button("Remove");
@@ -1041,7 +1038,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		}
 
 		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + componentOrConceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + process.getText() + "\")");
-		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, componentOrConceptVersion.getPrimordialUuid(), userName, process, new HashMap<String,String>());
+		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewComponentWorkflowRequest(preferredDescription, componentOrConceptVersion.getPrimordialUuid(), userName, process.getText(), new HashMap<String,String>());
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 	}
 
@@ -1451,7 +1448,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	private void initializeWorkflowServices() {
 		if (conceptWorkflowService == null) {
-			conceptWorkflowService = AppContext.getService(ConceptWorkflowServiceI.class);
+			conceptWorkflowService = AppContext.getService(ComponentWorkflowServiceI.class);
 		}
 
 		assert conceptWorkflowService != null;

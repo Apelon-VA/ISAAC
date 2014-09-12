@@ -18,7 +18,7 @@
  */
 
 /**
- * ConceptWorkflowService
+ * ComponentWorkflowService
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -36,26 +36,25 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
+import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
 /**
- * ConceptWorkflowService
+ * ComponentWorkflowService
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
 @Service
 @PerLookup
-public class ConceptWorkflowService implements ConceptWorkflowServiceI {
-	private static final Logger LOG = LoggerFactory.getLogger(ConceptWorkflowService.class);
+public class ComponentWorkflowService implements ComponentWorkflowServiceI {
+	private static final Logger LOG = LoggerFactory.getLogger(ComponentWorkflowService.class);
 
 	private final LocalWorkflowRuntimeEngineBI wfEngine_;
 	
-	public ConceptWorkflowService() {
+	public ComponentWorkflowService() {
 		// TODO: determine if LocalWorkflowRuntimeEngineBI wfEngine_ should be static
 		wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
 	}
@@ -71,22 +70,22 @@ public class ConceptWorkflowService implements ConceptWorkflowServiceI {
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI, java.lang.String, java.lang.String)
 	 */
-	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(ConceptVersionBI conceptVersion, String userName, WorkflowProcess processName, Map<String,String> variables) throws IOException, ContradictionException {
+	public ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(ConceptVersionBI conceptVersion, String userName, String processName, Map<String,String> variables) throws IOException, ContradictionException {
 		String preferredDescription = conceptVersion.getPreferredDescription().getText();
 
-		return createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName, variables);
+		return createNewComponentWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName, variables);
 	}
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(java.lang.String, java.util.UUID, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(String preferredDescription, UUID uuid, String userName, WorkflowProcess processName, Map<String,String> variables) {
+	public ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(String preferredDescription, UUID uuid, String userName, String processName, Map<String,String> variables) {
 		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
 		LOG.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + uuid.toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + userName + "\")");
         if (variables == null) {
             variables = new HashMap<String,String>();
         }
-		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName.getText(), uuid, preferredDescription, userName, variables);
+		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, uuid, preferredDescription, userName, variables);
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 		
 		return createdRequest;

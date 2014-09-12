@@ -519,6 +519,68 @@ public class WBUtility {
 	}
 	
 	/**
+	 * Get the ComponentVersionBI identified by NID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
+	 * only if the Component exists at that point.  Returns null otherwise.
+	 */
+	public static ComponentVersionBI getComponentVersion(int nid)
+	{
+		LOG.debug("Get component by nid: '{}'", nid);
+		if (nid == 0)
+		{
+			return null;
+		}
+		
+		try
+		{
+			ComponentChronicleBI<?> componentChronicle = getComponentChronicle(nid);
+			
+			ComponentVersionBI componentVersion = componentChronicle.getVersion(getViewCoordinate());
+			// Nothing like an undocumented getter which, rather than returning null when
+			// the thing you are asking for doesn't exist - it goes off and returns
+			// essentially a new, empty, useless node. Sigh.
+			if (componentVersion.getUUIDs().size() == 0)
+			{
+				return null;
+			} else {
+				return componentVersion;
+			}
+		} catch (ContradictionException e) {
+			LOG.error("Trouble getting concept " + nid + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage(), e);
+
+			return null;
+		}
+	}
+	
+	/**
+	 * Get the ComponentVersionBI identified by NID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
+	 * only if the Component exists at that point.  Returns null otherwise.
+	 */
+	public static ComponentVersionBI getComponentVersion(UUID uuid)
+	{
+		LOG.debug("Get component by nid: '{}'", uuid);
+		
+		try
+		{
+			ComponentChronicleBI<?> componentChronicle = getComponentChronicle(uuid);
+			
+			ComponentVersionBI componentVersion = componentChronicle.getVersion(getViewCoordinate());
+			// Nothing like an undocumented getter which, rather than returning null when
+			// the thing you are asking for doesn't exist - it goes off and returns
+			// essentially a new, empty, useless node. Sigh.
+			if (componentVersion.getUUIDs().size() == 0)
+			{
+				return null;
+			} else {
+				return componentVersion;
+			}
+		} catch (ContradictionException e) {
+			LOG.error("Trouble getting concept " + uuid + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage(), e);
+
+			return null;
+		}
+	}
+	
+	/**
 	 * Get the Component identified by NID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
 	 * only if it exists at that point.  Returns null otherwise.
 	 */
@@ -574,8 +636,9 @@ public class WBUtility {
 		catch (IOException ex)
 		{
 			LOG.error("Trouble getting component: " + uuid, ex);
+
+			return null;
 		}
-		return null;
 	}
 	
 	/**
