@@ -93,7 +93,7 @@
             <dependency> 
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.0.13</version>
+                <version>1.1.2</version>
                 <!-- Default to test scope - only the Parent app should need them at normal scope.   -->
                 <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
                 <scope>test</scope>  
@@ -103,7 +103,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jul-to-slf4j</artifactId>
-                <version>1.7.0</version>
+                <version>1.7.7</version>
                 <!-- Default to test scope - only the Parent app should need them at normal scope.   -->
                 <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
                 <scope>test</scope>
@@ -113,7 +113,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>log4j-over-slf4j</artifactId>
-                <version>1.7.0</version>
+                <version>1.7.7</version>
                 <!-- Default to test scope - only the Parent app should need them at normal scope.   -->
                 <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
                 <scope>test</scope>
@@ -217,13 +217,13 @@
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
-            <version>2.2.0</version>
+            <version>2.3.0</version>
         </dependency>
         
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.7</version>
         </dependency>
         
         <!-- JUnit (test scope only by default) -->

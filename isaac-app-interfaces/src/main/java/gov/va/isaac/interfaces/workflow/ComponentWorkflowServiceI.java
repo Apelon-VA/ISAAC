@@ -18,7 +18,7 @@
  */
 
 /**
- * ConceptWorkflowServiceI
+ * ComponentWorkflowServiceI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -30,19 +30,19 @@ import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ConceptWorkflowServiceI
+ * ComponentWorkflowServiceI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
 @Contract
-public interface ConceptWorkflowServiceI {
+public interface ComponentWorkflowServiceI {
 	public abstract void synchronizeWithRemote();
 
-	public abstract ProcessInstanceCreationRequestI createNewConceptWorkflowRequest(
+	public abstract ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(
 			String preferredDescription,
 			UUID UUID,
 			String userName,
 			String processName,
-            Map<String,String> variables);
+			Map<String,String> variables);
 }

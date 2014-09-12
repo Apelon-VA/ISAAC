@@ -22,6 +22,7 @@ import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  *
@@ -29,11 +30,11 @@ import java.util.Map;
  */
 public interface ProcessInstanceServiceBI {
 
-    ProcessInstanceCreationRequestI createRequest(String processName, String componentId, String componentName, String author, Map<String, String> variables);
+    ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables);
 
     List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner);
 
-    List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, String componentId);
+    List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId);
 
     List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status);
 
@@ -43,7 +44,7 @@ public interface ProcessInstanceServiceBI {
 
     List<ProcessInstanceCreationRequestI> getRequests();
 
-    List<ProcessInstanceCreationRequestI> getRequestsByComponentId(String componentId);
+    List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId);
 
     void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId);
     

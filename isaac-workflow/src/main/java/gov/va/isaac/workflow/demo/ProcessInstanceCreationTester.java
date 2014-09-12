@@ -19,10 +19,13 @@
 package gov.va.isaac.workflow.demo;
 
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *
@@ -37,7 +40,7 @@ public class ProcessInstanceCreationTester {
         Map<String,String> variables = new HashMap<String, String>();
         variables.put("key 1", "value 1");
         variables.put("key 2", "value 2");
-        papi.createRequest("processName", "componentId1", "componentName1", "author", variables);
+        papi.createRequest(WorkflowProcess.REVIEW.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         for (ProcessInstanceCreationRequestI loopR : papi.getRequests()) {
             System.out.println("id: " + loopR.getId() + " - pname: "  + loopR.getProcessName() + " - cid: " + loopR.getComponentId() + " - cname: " + loopR.getComponentName() + " - rtime: "  + loopR.getRequestTime() + " - status: "  + loopR.getStatus() + " - userId: "  + loopR.getUserId());
         }

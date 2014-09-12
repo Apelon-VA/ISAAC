@@ -38,6 +38,10 @@ public class NumberUtilities
 	 */
 	public static RefexDynamicDataBI wrapIntoRefexHolder(Number value) throws NumberFormatException
 	{
+		if (value == null)
+		{
+			return null;
+		}
 		try
 		{
 			if (value instanceof Integer)

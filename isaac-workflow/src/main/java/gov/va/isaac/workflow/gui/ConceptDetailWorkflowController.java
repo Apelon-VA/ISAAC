@@ -20,20 +20,23 @@ package gov.va.isaac.workflow.gui;
 
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -46,12 +49,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.javafx.UnmodifiableArrayList;
 
 /**
  * {@link ConceptDetailWorkflowController}
@@ -61,30 +65,8 @@ import com.sun.javafx.UnmodifiableArrayList;
 public class ConceptDetailWorkflowController
 {	
 	private final static Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflowController.class);
-
-	// TODO: this should be based on a value from the API
-	private final static String ACTION_STATUS = "pending";
 	
-	// TODO: This enum should be made freestanding and replace all other uses of these text constants everywhere. Consider eliminating selectionText then.
-	private enum Action {
-		COMPLETE("Complete task"), 
-		RELEASE("Release task");
-		
-		private final String selectionText;
-		
-		Action(String desc) {
-			selectionText = desc;
-		}
-		
-		@Override
-		public String toString() {
-			return selectionText;
-		}
-	}
 	
-	// Cached Actions in list form for refreshing actionComboBox
-	private final static UnmodifiableArrayList<Action> actions = new UnmodifiableArrayList<>(Action.values(), Action.values().length);
-
 	// Underlying concept for loading detail pane
 	private ConceptVersionBI conceptVersion;
 
@@ -97,7 +79,9 @@ public class ConceptDetailWorkflowController
 
 	@FXML private ComboBox<LocalTask> taskComboBox;
 	@FXML private ComboBox<Action> actionComboBox;
-	@FXML private Button newWorkflowInstanceButton;
+	//@FXML private Button newWorkflowInstanceButton;
+	
+	private LocalTask initialTask = null;
 
 	// handler to disable/enable saveActionButton based on validity of required data
 	// This method is used, but currently referenced only in FXML
@@ -118,11 +102,94 @@ public class ConceptDetailWorkflowController
 	private final String getUserName() {
 		return "alejandro";
 	}
-	
+
+	public LocalTask getInitialTask() {
+		return initialTask;
+	}
+
+	public void setInitialTask(long taskId) {
+		if (initialTask != null) {
+			String msg = "Cannot reset initialTask from " + initialTask.getId() + " to " + taskId;
+			logger.error(msg);
+			throw new RuntimeException(msg);
+		}
+
+		if (conceptVersion != null) {
+			String msg = "Cannot set initialTask to " + taskId + " when conceptVersion is already set to " + new SimpleDisplayConcept(conceptVersion);
+			logger.error(msg);
+			throw new RuntimeException(msg);
+		}
+				
+		initializeServices();
+		
+		initialTask = taskService_.getTask(taskId);
+
+		if (initialTask == null) {
+			logger.error("Task retrieved by id {} is null", taskId);
+
+			return;
+		}
+		if (initialTask.getComponentId() == null) {
+			logger.error("Component ID for task {} is null", initialTask.getId());
+
+			return;
+		}
+		UUID componentUuid = null;
+		try {
+			componentUuid = UUID.fromString(initialTask.getComponentId());
+		} catch (IllegalArgumentException e) {
+			logger.error("Component ID for task {} is not a valid UUID", initialTask.getId());
+
+			return;
+		}
+
+		ConceptVersionBI containingConcept = null;
+		ComponentChronicleBI<? extends ComponentVersionBI> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
+		if (componentChronicle == null) {
+			logger.warn("Component ID for task " + initialTask.getId() + " retrieved a null componentChronicle");
+
+			containingConcept = WBUtility.getConceptVersion(componentUuid);
+			if (containingConcept == null) {
+				logger.error("Component ID for task " + initialTask.getId() + " retrieved a null concept");
+
+				return;
+			}
+		} else {
+			try {
+				containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
+			} catch (Exception e) {
+				logger.error("Failed getting version from ComponentChronicleBI task " + initialTask.getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+				e.printStackTrace();
+			}
+
+			if (containingConcept == null) {
+				logger.error("ComponentChronicleBI task " + initialTask.getId() + " contained a null enclosing concept");
+
+				return;
+			}
+		}
+
+		if (componentChronicle == null) {
+			logger.warn("Component id " + componentUuid + " for task " + initialTask.getId() + " is a concept, not just a component.");
+		}
+		
+		conceptVersion = containingConcept;
+		
+		loadContent();
+	}
+
 	// setConcept() should only be called once
 	public void setConcept(ConceptVersionBI con) {
 		if (conceptVersion != null) {
-			throw new RuntimeException("Cannot reset conceptVersion");
+			String msg = "Cannot reset conceptVersion from " + new SimpleDisplayConcept(conceptVersion) + " to " + new SimpleDisplayConcept(con);
+			logger.error(msg);
+			throw new RuntimeException(msg);
+		}
+		
+		if (initialTask != null) {
+			String msg = "Cannot set conceptVersion to " + new SimpleDisplayConcept(con) + " when initialTask is already set to " + initialTask.getId();
+			logger.error(msg);
+			throw new RuntimeException(msg);
 		}
 
 		this.conceptVersion = con;
@@ -131,6 +198,10 @@ public class ConceptDetailWorkflowController
 		//startNewWorkflowInstance();
 		
 		loadContent();
+	}
+	
+	ConceptVersionBI getConcept() {
+		return conceptVersion;
 	}
 	
 	// Private helper method to test validity of data required for save
@@ -143,35 +214,37 @@ public class ConceptDetailWorkflowController
 	
 	// Method for starting new workflow instance
 	// TODO: need working test case and data for startNewWorkflowInstance().  Current behavior untested.
-	private void startNewWorkflowInstance() {
-		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
-		// TODO: eliminate hard-coding of "terminology-authoring.test1"
-		final String processName = "terminology-authoring.test1";
-		String preferredDescription = null;
-		try {
-			preferredDescription = conceptVersion.getPreferredDescription().getText();
-		} catch (IOException | ContradictionException e1) {
-			String title = "Failed starting new workflow instance";
-			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion: caught " + e1.getClass().getName();
-			logger.error(title, e1);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
-			e1.printStackTrace();
-		}
-		
-		// TODO: determine how creation of request should be reflected in GUI
-		logger.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
-		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName(), new HashMap<String,String>());
-		logger.debug("Created ProcessInstanceCreationRequest: " + createdRequest);
-	}
+//	private void startNewWorkflowInstance() {
+//		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
+//		final String processName = WorkflowProcess.REVIEW.getName();
+//		String preferredDescription = null;
+//		try {
+//			preferredDescription = conceptVersion.getPreferredDescription().getText();
+//		} catch (IOException | ContradictionException e1) {
+//			String title = "Failed starting new workflow instance";
+//			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion: caught " + e1.getClass().getName();
+//			logger.error(title, e1);
+//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
+//			e1.printStackTrace();
+//		}
+//		
+//		// TODO: determine how creation of request should be reflected in GUI
+//		logger.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
+//		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName(), new HashMap<String,String>());
+//		logger.debug("Created ProcessInstanceCreationRequest: " + createdRequest);
+//	}
 
 	// Initialize GUI (invoked by FXML)
 	@FXML
 	void initialize()
 	{
 		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
-		assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
+		//assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
 		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
 		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
+
+		initializeWorkflowEngine();
+		initializeTaskService();
 		
 		// Disabling saveActionButton until dependencies met 
 		saveActionButton.setDisable(true);
@@ -183,7 +256,7 @@ public class ConceptDetailWorkflowController
 		// Force single selection
 		actionComboBox.getSelectionModel().selectFirst();
 		// Use setCellFactory() and setButtonCell() of ComboBox to customize list entry display
-		// TODO: possibly remove: these calls to setCellFactory() and setButtonCell() are only necessary if Action().toString() is not appropriate for this display
+		// TODO: possibly remove: these calls to setCellFactory() and setButtonCell() are only necessary if WorkflowAction().toString() is not appropriate for this display
 		actionComboBox.setCellFactory(new Callback<ListView<Action>,ListCell<Action>>(){
             @Override
             public ListCell<Action> call(ListView<Action> p) {
@@ -265,7 +338,7 @@ public class ConceptDetailWorkflowController
 						final LocalTask currentlySelectedTask = taskComboBox.getValue();
 						final Action currentlySelectedAction = actionComboBox.getValue();
 
-						taskService_.setAction(currentlySelectedTask.getId(), gov.va.isaac.workflow.Action.valueOf(currentlySelectedAction.toString()), ACTION_STATUS, new HashMap<String, String>());
+						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending.name(), new HashMap<String, String>());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
@@ -291,34 +364,43 @@ public class ConceptDetailWorkflowController
 		
 		
 		// This code only for newWorkflowInstanceButton
-		newWorkflowInstanceButton.setOnAction((action) -> {
-			newWorkflowInstanceButton.setDisable(true);
-			final BusyPopover createNewWorkflowInstancePopover = BusyPopover.createBusyPopover("Creating new workflow instance...", newWorkflowInstanceButton);
-
-			Utility.execute(() -> {
-				try
-				{
-					startNewWorkflowInstance();
-
-					Platform.runLater(() -> 
-					{
-						createNewWorkflowInstancePopover.hide();
-						newWorkflowInstanceButton.setDisable(false);
-						refreshContent();
-					});
-				}
-				catch (Exception e)
-				{
-					createNewWorkflowInstancePopover.hide();
-					logger.error("Error creating new workflow instance: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-				}
-			});
-		});
+//		newWorkflowInstanceButton.setOnAction((action) -> {
+//			newWorkflowInstanceButton.setDisable(true);
+//			final BusyPopover createNewWorkflowInstancePopover = BusyPopover.createBusyPopover("Creating new workflow instance...", newWorkflowInstanceButton);
+//
+//			Utility.execute(() -> {
+//				try
+//				{
+//					startNewWorkflowInstance();
+//
+//					Platform.runLater(() -> 
+//					{
+//						createNewWorkflowInstancePopover.hide();
+//						newWorkflowInstanceButton.setDisable(false);
+//						refreshContent();
+//					});
+//				}
+//				catch (Exception e)
+//				{
+//					createNewWorkflowInstancePopover.hide();
+//					logger.error("Error creating new workflow instance: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+//				}
+//			});
+//		});
 	}
 
-	// Load data into GUI components
-	protected void loadContent()
-	{
+	private void initializeServices() {
+		initializeWorkflowEngine();
+		initializeTaskService();
+	}
+	
+	private void initializeTaskService() {
+		if (taskService_ == null) {
+			taskService_ = wfEngine_.getLocalTaskService();
+		}
+	}
+	
+	private void initializeWorkflowEngine() {
 		// TODO: determine if LocalWorkflowRuntimeEngineBI wfEngine_ should be static
 		if (wfEngine_ == null)
 		{
@@ -326,12 +408,13 @@ public class ConceptDetailWorkflowController
 			// TODO: determine if wfEngine_.synchronizeWithRemote() needs to be called more than once
 			wfEngine_.synchronizeWithRemote();
 		}
+	}
+	
+	// Load data into GUI components
+	protected void loadContent()
+	{
+		initializeServices();
 		
-		// TODO: determine if LocalTasksServiceBI taskService_ should be static
-		if (taskService_ == null) {
-			taskService_ = wfEngine_.getLocalTaskService();
-		}
-
 		refreshContent();
 	}
 
@@ -383,9 +466,14 @@ public class ConceptDetailWorkflowController
 //		LocalTask [id=1, name=Step 1, componentId=12314442, componentName=Component 1, status=Reserved, owner=alejandro, action=NONE, actionStatus=]
 		
 		taskComboBox.getItems().clear();
-		List<LocalTask> tasks = taskService_.getOpenOwnedTasksByComponentId(getUserName(), conceptVersion.getPrimordialUuid().toString());
-		Collections.sort(tasks, LocalTask.ID_COMPARATOR);
-		taskComboBox.getItems().addAll(tasks);
+		if (initialTask != null) {
+			taskComboBox.getItems().add(initialTask);
+		} else {
+			List<LocalTask> tasks = taskService_.getOpenOwnedTasksByComponentId(getUserName(), conceptVersion.getPrimordialUuid().toString());
+			Collections.sort(tasks, LocalTask.ID_COMPARATOR);
+			taskComboBox.getItems().addAll(tasks);
+		}
+		
 		try {
 			logger.debug("DEBUG: Loaded " + taskComboBox.getItems().size() + " open tasks for user \"" + getUserName() + "\" for concept UUID \"" + conceptVersion.getPrimordialUuid() + "\" (" + conceptVersion.getPreferredDescription().getText() + ")");
 		} catch (IOException | ContradictionException e1) {
@@ -400,10 +488,32 @@ public class ConceptDetailWorkflowController
 	// Helper to refresh action list in actionComboBox
 	private void refreshActions() {
 		actionComboBox.getItems().clear();
-		actionComboBox.getItems().addAll(actions);
+		
+		for (Action action : Action.values()) {
+			if (action != Action.NONE) {
+				actionComboBox.getItems().add(action);
+			}
+		}
 	}
 	
 	public Region getRootNode() {
 		return borderPane;
+	}
+	/**
+	 * If this nid is a component ref, rather than a concept ref, get the enclosing concept ref.
+	 * @param nid
+	 */
+	private static int getComponentParentConceptNid(int nid)
+	{
+		ComponentChronicleBI<?> cc = WBUtility.getComponentChronicle(nid);
+		if (cc != null)
+		{
+			return cc.getConceptNid();
+		}
+		else
+		{
+			//logger.error("Unexpected - couldn't find component for nid {}", nid);
+			return nid;
+		}
 	}
 }

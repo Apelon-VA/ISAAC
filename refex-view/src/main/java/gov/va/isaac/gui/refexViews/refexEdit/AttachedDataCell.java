@@ -39,7 +39,6 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.text.Text;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
@@ -53,7 +52,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
+public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynamicGUI>
 {
 	private Hashtable<UUID, List<RefexDynamicColumnInfo>> columnInfo_;
 	private int listItem_;
@@ -70,7 +69,7 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 	 * @see javafx.scene.control.Cell#updateItem(java.lang.Object, boolean)
 	 */
 	@Override
-	protected void updateItem(RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> item, boolean empty)
+	protected void updateItem(RefexDynamicGUI item, boolean empty)
 	{
 		super.updateItem(item, empty);
 		
@@ -85,11 +84,12 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicVersionBI<? exte
 			{
 				for (UUID uuid : columnInfo_.keySet())
 				{
-					if (UUIDToNid(uuid) == item.getAssemblageNid())
+					if (UUIDToNid(uuid) == item.getRefex().getAssemblageNid())
 					{
 						List<RefexDynamicColumnInfo> colInfo =  columnInfo_.get(uuid);
 						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? 
-								(item.getData().length <= colInfo.get(listItem_).getColumnOrder() ? null : item.getData()[colInfo.get(listItem_).getColumnOrder()]) 
+								(item.getRefex().getData().length <= colInfo.get(listItem_).getColumnOrder() ? null 
+										: item.getRefex().getData()[colInfo.get(listItem_).getColumnOrder()]) 
 								: null);
 						if (data != null)
 						{

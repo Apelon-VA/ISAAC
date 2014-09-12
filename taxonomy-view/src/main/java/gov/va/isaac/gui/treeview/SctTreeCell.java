@@ -28,11 +28,14 @@ import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenus.CommonMenuItem;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
+
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -44,6 +47,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.RectangleBuilder;
+
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
@@ -252,7 +256,9 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
                 try
                 {
-                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(concept.getPrimordialUuid())});
+                	UUID uid = concept.getPrimordialUuid();
+
+                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uid)});
                 }
                 catch (Exception e)
                 {

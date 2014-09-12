@@ -44,7 +44,7 @@
 						</Button>
 					</children>
 				</HBox>
-				<TitledPane fx:id="optionsPane" text="Options">
+				<TitledPane fx:id="optionsPane" expanded="false" text="Options">
 					<content>
 						<VBox fx:id="optionsContentVBox" spacing="10.0">
 							<children>

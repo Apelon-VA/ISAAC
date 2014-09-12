@@ -30,4 +30,6 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface ConceptWorkflowViewI extends PopupConceptViewI
 {
+	public void setInitialTask(long taskId);
+	public Long getInitialTask();
 }

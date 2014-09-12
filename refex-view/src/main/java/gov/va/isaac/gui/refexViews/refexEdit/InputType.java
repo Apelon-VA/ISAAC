@@ -21,20 +21,21 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 import gov.va.isaac.ExtendedAppContext;
 import java.io.IOException;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 
+/**
+ * Used for keeping track of what mode the RefexViewer GUI is in - centered on the Referenced Component, 
+ * or centered on the AssemblageNID.
+ * 
+ * {@link InputType}
+ *
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+ */
 public class InputType
 {
 	private Integer componentNid_;
 	private Integer assemblyNid_;
-	private RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex_;
 	
 	private ComponentChronicleBI<?> componentCache_;
-	
-	protected InputType(RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex)
-	{
-		refex_ = refex;
-	}
 	
 	protected InputType(int nid, boolean isAssembly)
 	{
@@ -71,10 +72,5 @@ public class InputType
 	public Integer getAssemblyNid()
 	{
 		return assemblyNid_;
-	}
-	
-	public RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> getRefex()
-	{
-		return refex_;
 	}
 }
