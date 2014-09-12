@@ -37,7 +37,7 @@ public class LocalWorkflowRuntimeEngineFactory {
         try {
             // TODO: implement, create engine based on app configuration
             lwf = new LocalWfEngine(new URL("http://162.243.255.43:8080/kie-wb/"),
-                    "alejandro", "alejandro", "gov.va.isaac.demo:terminology-authoring:1.2");
+                    "alejandro", "alejandro", "gov.va.isaac.demo:terminology-authoring:1.3");
             lwf.getLocalTaskService().createSchema();
             lwf.getProcessInstanceService().createSchema();
         } catch (MalformedURLException ex) {
