@@ -40,6 +40,13 @@ import org.ihtsdo.otf.tcc.api.spec.DynamicRefexConceptSpec;
  */
 public class Search {
 
+	/*
+	 * Note - the order of definition matters - make sure that anything referenced is already declared higher in the class, 
+	 * otherwise, you get null pointers in the class initializer at runtime.
+	 */
+	private Search() {
+		//Not intended to be constructed
+	}
 	//This concept doesn't need to be in the taxonomy, it is just used as salt for generating other UUIDs
 	public static ConceptSpec SEARCH_NAMESPACE = new ConceptSpec("Search Namespace", 
 			UUID.fromString("3c92adee-13dc-5c6a-bfe1-acf0d31d05d7"));
@@ -52,6 +59,27 @@ public class Search {
 	public static ConceptSpec SEARCH_PERSISTABLE = new ConceptSpec("Persistable Searches", 
 			UUID.fromString("80d39126-7814-5812-b01f-d6cda1d86496"), 
 			SEARCH_TYPES);
+	
+	public static ConceptSpec VIEW_COORDINATE_COLUMN = new ConceptSpecWithDescriptions(
+			"view coordinate", 
+			UUID.fromString("5010f18f-c469-5315-8c5e-f7d9b65373c5"),
+			new String[] { "view coordinate" }, 
+			new String[] { "view coordinate column" },
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static ConceptSpec MAX_RESULTS_COLUMN = new ConceptSpecWithDescriptions(
+			"max results", 
+			UUID.fromString("63981b45-bbbe-5247-b571-d7fee02aad79"),
+			new String[] { "max results" }, 
+			new String[] { "maximum displayable results column" },
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static ConceptSpec DROOLS_EXPR_COLUMN = new ConceptSpecWithDescriptions(
+			"drools", 
+			UUID.fromString("c0091cf4-f063-5964-85c5-0fdf14b5bb00"),
+			new String[] { "drools" }, 
+			new String[] { "drools expression column" },
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 
 	//TODO [JOEL] On all of these that define refex columns, are the column values required, or optional?  I made everything optional, for now...
 	//when I added the new feature for optional / required
@@ -65,23 +93,18 @@ public class Search {
 				new RefexDynamicColumnInfo(2, Search.DROOLS_EXPR_COLUMN.getUuids()[0], RefexDynamicDataType.STRING, null, false, null, null)},
 			SEARCH_TYPES);
 	
-	public static ConceptSpec VIEW_COORDINATE_COLUMN = new ConceptSpecWithDescriptions(
-			"view coordinate", 
-			UUID.fromString("5010f18f-c469-5315-8c5e-f7d9b65373c5"),
-			new String[] { "view coordinate" }, 
-			new String[] { "view coordinate column" },
+	public static ConceptSpec ORDER_COLUMN = new ConceptSpecWithDescriptions(
+			"order", 
+			UUID.fromString("795bade0-9ffb-54ef-8385-8570b4f708cf"),
+			new String[] { "order" }, 
+			new String[] { "order column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-	public static ConceptSpec MAX_RESULTS_COLUMN = new ConceptSpecWithDescriptions(
-			"max results", 
-			UUID.fromString("63981b45-bbbe-5247-b571-d7fee02aad79"),
-			new String[] { "max results" }, 
-			new String[] { "maximum displayable results column" },
-			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-	public static ConceptSpec DROOLS_EXPR_COLUMN = new ConceptSpecWithDescriptions(
-			"drools", 
-			UUID.fromString("c0091cf4-f063-5964-85c5-0fdf14b5bb00"),
-			new String[] { "drools" }, 
-			new String[] { "drools expression column" },
+	
+	public static ConceptSpec FILTER_INVERT_COLUMN = new ConceptSpecWithDescriptions(
+			"invert", 
+			UUID.fromString("59e916fc-4632-5574-97c2-6e63b74a2ca3"),
+			new String[] { "invert" }, 
+			new String[] { "invert filter/match results column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 	
 	public static DynamicRefexConceptSpec SEARCH_FILTER_ATTRIBUTES = new DynamicRefexConceptSpec("Search Filter Attributes", 
@@ -92,18 +115,11 @@ public class Search {
 				new RefexDynamicColumnInfo(0, Search.ORDER_COLUMN.getUuids()[0], RefexDynamicDataType.INTEGER, null, false, null, null),
 				new RefexDynamicColumnInfo(1, Search.FILTER_INVERT_COLUMN.getUuids()[0], RefexDynamicDataType.BOOLEAN, null, false, null, null)},
 			SEARCH_TYPES);
-	
-	public static ConceptSpec ORDER_COLUMN = new ConceptSpecWithDescriptions(
-			"order", 
-			UUID.fromString("795bade0-9ffb-54ef-8385-8570b4f708cf"),
-			new String[] { "order" }, 
-			new String[] { "order column" },
-			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-	public static ConceptSpec FILTER_INVERT_COLUMN = new ConceptSpecWithDescriptions(
-			"invert", 
-			UUID.fromString("59e916fc-4632-5574-97c2-6e63b74a2ca3"),
-			new String[] { "invert" }, 
-			new String[] { "invert filter/match results column" },
+
+	public static ConceptSpec PARAMETER_COLUMN = new ConceptSpecWithDescriptions("param",
+			UUID.fromString("e28f2c45-1c0b-569a-a329-304ea04ade17"),
+			new String[] { "param" }, 
+			new String[] { "parameter column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 	
 	public static DynamicRefexConceptSpec SEARCH_LUCENE_FILTER = new DynamicRefexConceptSpec("Search Lucene Filter", 
@@ -113,13 +129,7 @@ public class Search {
 			new RefexDynamicColumnInfo[] {
 				new RefexDynamicColumnInfo(0, Search.PARAMETER_COLUMN.getUuids()[0], RefexDynamicDataType.STRING, null, false, null, null)},
 			SEARCH_TYPES);
-	
-	public static ConceptSpec PARAMETER_COLUMN = new ConceptSpecWithDescriptions("param",
-			UUID.fromString("e28f2c45-1c0b-569a-a329-304ea04ade17"),
-			new String[] { "param" }, 
-			new String[] { "parameter column" },
-			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-	
+
 	public static DynamicRefexConceptSpec SEARCH_REGEXP_FILTER = new DynamicRefexConceptSpec("Search RegExp Filter", 
 			UUID.fromString("39c21ff8-cd48-5ac8-8110-40b7d8b30e61"),
 			true, 
@@ -128,6 +138,13 @@ public class Search {
 				new RefexDynamicColumnInfo(0, Search.PARAMETER_COLUMN.getUuids()[0], RefexDynamicDataType.STRING, null, false, null, null)},
 			SEARCH_TYPES);
 
+	public static ConceptSpec ANCESTOR_COLUMN = new ConceptSpecWithDescriptions(
+			"ancestor",
+			UUID.fromString("fdcac37e-e22f-5f51-b7a6-f8de283c6cf0"),
+			new String[] { "ancestor" }, 
+			new String[] { "ancestor concept column" },
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
 	public static DynamicRefexConceptSpec SEARCH_ISDESCENDANTOF_FILTER = new DynamicRefexConceptSpec("Search IsDescendantOf Filter", 
 			UUID.fromString("58bea66c-65fb-5c52-bf71-d742aebe3822"),
 			true, 
@@ -136,13 +153,13 @@ public class Search {
 				new RefexDynamicColumnInfo(0, Search.ANCESTOR_COLUMN.getUuids()[0], RefexDynamicDataType.UUID, null, false, null, null)},
 			SEARCH_TYPES);
 	
-	public static ConceptSpec ANCESTOR_COLUMN = new ConceptSpecWithDescriptions(
-			"ancestor",
-			UUID.fromString("fdcac37e-e22f-5f51-b7a6-f8de283c6cf0"),
-			new String[] { "ancestor" }, 
-			new String[] { "ancestor concept column" },
+	public static ConceptSpec MATCH_COLUMN = new ConceptSpecWithDescriptions(
+			"match",
+			UUID.fromString("53b89cac-54c4-5cf8-bf87-baee591729f5"),
+			new String[] { "match" }, 
+			new String[] { "matching concept column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-
+	
 	public static DynamicRefexConceptSpec SEARCH_ISA_FILTER = new DynamicRefexConceptSpec("Search IsA Filter", 
 			UUID.fromString("77823bc2-5924-544e-9496-bb54cad41d63"),
 			true, 
@@ -150,16 +167,4 @@ public class Search {
 			new RefexDynamicColumnInfo[] {
 				new RefexDynamicColumnInfo(0, Search.MATCH_COLUMN.getUuids()[0], RefexDynamicDataType.UUID, null, false, null, null)},
 			SEARCH_TYPES);
-	
-	public static ConceptSpec MATCH_COLUMN = new ConceptSpecWithDescriptions(
-			"match",
-			UUID.fromString("53b89cac-54c4-5cf8-bf87-baee591729f5"),
-			new String[] { "match" }, 
-			new String[] { "matching concept column" },
-			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-	/**
-	 * 
-	 */
-	private Search() {
-	}
 }
