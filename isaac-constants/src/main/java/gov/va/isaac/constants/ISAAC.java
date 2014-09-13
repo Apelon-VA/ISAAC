@@ -38,22 +38,8 @@ public class ISAAC
 	//Root node
 	public static ConceptSpec ISAAC_ROOT = new ConceptSpec("ISAAC Root", UUID.fromString("c767a452-41e3-5835-90b7-439f5b738035"));
 	
-	//Information models is a top level child of root
-	public static ConceptSpec INFORMATION_MODELS = new ConceptSpec("Information Models", UUID.fromString("ab09b185-b93d-577b-a350-622be832e6c7"),
-			ISAAC_ROOT);
-	
-	//current information models
-	public static ConceptSpec INFORMATION_MODEL_CEM = new ConceptSpec("Clinical Element Model", UUID.fromString("0a9c9ba5-410e-5a40-88f4-b0cdd17325e1"),
-			INFORMATION_MODELS);
-	
-	public static ConceptSpec INFORMATION_MODEL_FHIM = new ConceptSpec("Federal Health Information Model", UUID.fromString("9eddce80-784c-50a3-8ec6-e92278ac7691"),
-			INFORMATION_MODELS);
-
-	public static ConceptSpec INFORMATION_MODEL_HED = new ConceptSpec("Health eDecision", UUID.fromString("1cdae521-c637-526a-bf88-134de474f824"),
-			INFORMATION_MODELS);
-	
-	
 	//Other children of the root node - just reference here, so that the DB Builder can process them and create the rels.
+	//they can be private.  DBBuilder still reads them.  Anyone else should use the refs in Taxonomies.
 	private static ConceptSpec REFSET_AUXILLIARY_REF = Taxonomies.REFSET_AUX;
 	static 
 	{
