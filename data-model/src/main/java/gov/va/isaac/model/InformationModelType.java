@@ -18,10 +18,10 @@
  */
 package gov.va.isaac.model;
 
+import gov.va.isaac.constants.InformationModels;
 import java.util.UUID;
-
 import javafx.collections.ObservableList;
-
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import com.sun.javafx.collections.ImmutableObservableList;
 
 /**
@@ -30,21 +30,19 @@ import com.sun.javafx.collections.ImmutableObservableList;
  * @author ocarlsen
  * @author bcarlsenca
  */
-@SuppressWarnings("restriction")
 public enum InformationModelType {
 
   /** The CEM entry. */
-  CEM("Clinical Element Model", "xml", "0a9c9ba5-410e-5a40-88f4-b0cdd17325e1"),
+  CEM(InformationModels.CEM, "xml"),
 
   /** The cimi. */
   //CIMI("Clinical Information Model Initiative", null, null),
 
   /** The FHIM entry. */
-  FHIM("Federal Health Information Model", "uml",
-      "9eddce80-784c-50a3-8ec6-e92278ac7691"),
+  FHIM(InformationModels.FHIM, "uml"),
 
   /** The He d. */
-  HeD("Health eDecision", "xml", "1cdae521-c637-526a-bf88-134de474f824");
+  HeD(InformationModels.HED, "xml");
 
   /** The Constant VALUES. */
   private static final ImmutableObservableList<InformationModelType> VALUES =
@@ -65,13 +63,10 @@ public enum InformationModelType {
    * @param displayName the display name
    * @param fileExtension the file extension
    */
-  private InformationModelType(String displayName, String fileExtension,
-      String uuid2) {
-    this.displayName = displayName;
+  private InformationModelType(ConceptSpec spec, String fileExtension) {
+    this.displayName = spec.getDescription();
     this.fileExtension = fileExtension;
-    if (uuid2 != null) {
-      this.uuid = UUID.fromString(uuid2);
-    } 
+    this.uuid = spec.getUuids()[0];
   }
 
   /**

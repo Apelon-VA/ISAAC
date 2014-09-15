@@ -20,16 +20,15 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
@@ -42,7 +41,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -166,7 +164,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     }
     
     public void init() {
-    	init(WBUtility.ISAAC_ROOT.getUuids()[0]);
+        init(ISAAC.ISAAC_ROOT.getUuids()[0]);
     }
 
     private void init(final UUID rootConcept) {

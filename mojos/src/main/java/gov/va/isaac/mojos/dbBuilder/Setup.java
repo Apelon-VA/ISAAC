@@ -1,78 +1,83 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
-
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.List;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
-import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 
 /**
- * Goal which loads a database from an eConcept file, and generates the indexes.
+ * Goal which opens (and creates if necessary) an OTF Versioning Store DB.
  * 
  * @goal setup-terminology-store
  * 
  * @phase process-sources
  */
-public class Setup extends AbstractMojo {
+public class Setup extends AbstractMojo
+{
 
-  /**
-   * Location of the file.
-   * 
-   * @parameter
-   * @required
-   */
-  private String bdbFolderLocation;
+	/**
+	 * Location of the file.
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	private String bdbFolderLocation;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
-  @Override
-  public void execute() throws MojoExecutionException {
-    try {
-      getLog().info("Setup terminology store");
-      File bdbFolderFile = new File(bdbFolderLocation);
-      boolean dbExists = bdbFolderFile.exists();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	@Override
+	public void execute() throws MojoExecutionException
+	{
+		try
+		{
+			getLog().info("Setup terminology store");
+			File bdbFolderFile = new File(bdbFolderLocation);
 
-      System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY,
-          bdbFolderLocation);
-      System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY,
-          bdbFolderLocation);
+			System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolderFile.getCanonicalPath());
+			System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, bdbFolderFile.getCanonicalPath());
 
-      getLog().info("  Setup AppContext, bdb location = " + bdbFolderLocation);
-      AppContext.setup();
+			getLog().info("  Setup AppContext, bdb location = " + bdbFolderFile.getCanonicalPath());
+			AppContext.setup();
 
-      // TODO OTF fix: this needs to be fixed so I don't have to hack it with
-      // reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
-      Field f = Hk2Looker.class.getDeclaredField("looker");
-      f.setAccessible(true);
-      f.set(null, AppContext.getServiceLocator());
+			// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
+			Field f = Hk2Looker.class.getDeclaredField("looker");
+			f.setAccessible(true);
+			f.set(null, AppContext.getServiceLocator());
 
-      getLog().info("  Test loading terminology store");
-      AppContext.getService(TerminologyStoreDI.class);
-      getLog().info("  Test locating indexing services");
-      List<IndexerBI> indexers =
-          AppContext.getServiceLocator().getAllServices(IndexerBI.class);
-      getLog().info("  Located " + indexers.size() + " indexers");
-
-      if (!dbExists) {
-        getLog().info("  DB did not exist - disabling indexers for batch index");
-        for (IndexerBI indexer : indexers) {
-          indexer.setEnabled(false);
-        }
-      }      
-      getLog().info("Done setting up terminology store");
-    } catch (Exception e) {
-      throw new MojoExecutionException("Database build failure", e);
-    }
-  }
+			getLog().info("Loading terminology store");
+			AppContext.getService(TerminologyStoreDI.class);
+			
+			getLog().info("Done setting up terminology store");
+		}
+		catch (Exception e)
+		{
+			throw new MojoExecutionException("Database build failure", e);
+		}
+	}
 }

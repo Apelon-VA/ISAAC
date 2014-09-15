@@ -18,25 +18,23 @@
  */
 package gov.va.isaac.workflow.gui;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
-import gov.va.isaac.interfaces.gui.views.PopupViewI;
+
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.scene.layout.Region;
 import javafx.stage.Window;
+
 import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -47,32 +45,12 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @Singleton
-public class WorkflowInbox extends Stage implements PopupViewI, IsaacViewWithMenusI
+public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 {
 	WorkflowInboxController controller_;
 
 	private WorkflowInbox() throws IOException
 	{
-		super();
-
-		URL resource = this.getClass().getResource("WorkflowInbox.fxml");
-		FXMLLoader loader = new FXMLLoader(resource);
-		Parent root = (Parent) loader.load();
-		setScene(new Scene(root));
-		getScene().getStylesheets().add(WorkflowInbox.class.getResource("/isaac-shared-styles.css").toString());
-		getIcons().add(Images.INBOX.getImage());
-
-		controller_ = loader.getController();
-		
-		setTitle("Workflow Inbox");
-		setResizable(true);
-
-		initOwner(AppContext.getMainApplicationWindow().getPrimaryStage());
-		initModality(Modality.NONE);
-		initStyle(StageStyle.DECORATED);
-
-		setWidth(600);
-		setHeight(400);
 	}
 
 	/**
@@ -83,37 +61,72 @@ public class WorkflowInbox extends Stage implements PopupViewI, IsaacViewWithMen
 	{
 		// We don't currently have any custom menus with this view
 		ArrayList<MenuItemI> menus = new ArrayList<>();
-		
-		MenuItemI mi = new MenuItemI()
+		return menus;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.ViewI#getView()
+	 */
+	@Override
+	public Region getView() {
+		//init had to be delayed, because the current init runs way to slow, and hits the DB in the JavaFX thread.
+		if (controller_ == null)
+		{
+			synchronized (this)
+			{
+				if (controller_ == null)
+				{
+					try
+					{
+						controller_ = WorkflowInboxController.init();
+					}
+					catch (IOException e)
+					{
+						//LOG.error("Unexpected error initializing the Search View", e);
+						return new Label("oops - check logs");
+					}
+				}
+			}
+			
+		}
+		return controller_.getView();
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
+	 */
+	@Override
+	public MenuItemI getMenuBarMenuToShowView() {
+		MenuItemI menuItem = new MenuItemI()
 		{
 			@Override
 			public void handleMenuSelection(Window parent)
 			{
-				showView(parent);
+				//noop
 			}
 			
 			@Override
 			public int getSortOrder()
 			{
-				return 25;
+				return 5;
 			}
 			
 			@Override
 			public String getParentMenuId()
 			{
-				return ApplicationMenus.ACTIONS.getMenuId();
+				return ApplicationMenus.PANELS.getMenuId();
 			}
 			
 			@Override
 			public String getMenuName()
 			{
-				return "View Workflow Inbox";
+				return "Workflow Inbox";
 			}
 			
 			@Override
 			public String getMenuId()
 			{
-				return "viewWorkflowInboxMenu";
+				return "workflowInboxMenuItem";
 			}
 			
 			@Override
@@ -121,29 +134,21 @@ public class WorkflowInbox extends Stage implements PopupViewI, IsaacViewWithMen
 			{
 				return false;
 			}
-
-			/**
-			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
-			 */
+			
 			@Override
 			public Image getImage()
 			{
 				return Images.INBOX.getImage();
 			}
 		};
-		menus.add(mi);
-		return menus;
+		return menuItem;
 	}
 
-	/**
-	 * Call setReferencedComponent first
-	 * 
-	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
 	@Override
-	public void showView(Window parent)
-	{
-		show();
-		controller_.loadContent();
+	public String getViewTitle() {
+		return "Workflow Inbox";
 	}
 }

@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.kie.api.task.model.Status;
+
 /**
  *
  * @author alo
@@ -64,7 +66,7 @@ public class FetchTest {
             List<LocalTask> ownedTasksForAsthma = tapi.getOpenOwnedTasksByComponentId(userId, "0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
             System.out.println("Testing getOpenOwnedTasksByComponentId (Asthma, " + userId + "): " + ownedTasksForAsthma.size());
             
-            List<LocalTask> ownedTasksByStatus = tapi.getOwnedTasksByStatus(userId, "Reserved");
+            List<LocalTask> ownedTasksByStatus = tapi.getOwnedTasksByStatus(userId, Status.Reserved);
             System.out.println("Testing ownedTasksByStatus (" + userId + ", Reserved): " + ownedTasksByStatus.size());
             
         } catch (Exception ex) {

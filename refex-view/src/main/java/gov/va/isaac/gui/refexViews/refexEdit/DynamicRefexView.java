@@ -52,6 +52,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
@@ -81,6 +82,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.model.index.service.IndexedGenerationCallable;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -100,13 +102,13 @@ import com.sun.javafx.tk.Toolkit;
 public class DynamicRefexView implements RefexViewI
 {
 	private VBox rootNode_ = null;
-	private TreeTableView<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ttv_;
-	private TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> treeRoot_;
-	private Button removeButton_, addButton_, commitButton_, cancelButton_, editButton_;
+	private TreeTableView<RefexDynamicGUI> ttv_;
+	private TreeItem<RefexDynamicGUI> treeRoot_;
+	private Button retireButton_, addButton_, commitButton_, cancelButton_, editButton_;
 	private ToggleButton stampButton_, activeOnlyButton_, historyButton_;
-	private UpdateableBooleanBinding rowSelected_;
+	private UpdateableBooleanBinding currentRowSelected_, selectedRowIsActive_;
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_;
-	private TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> stampColumn_;
+	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
 	
 	private Text placeholderText = new Text("No Dynamic Refexes were found associated with the component");
@@ -117,7 +119,8 @@ public class DynamicRefexView implements RefexViewI
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
 	private InputType setFromType_ = null;
-	private Integer newComponentHint = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
+	private Integer newComponentHint_ = null;  //Useful when viewing from the assemblage perspective, and they add a new component - we can't find it without an index.
+	IndexedGenerationCallable newComponentIndexGen_ = null; //Useful when adding from the assemblage perspective - if they are using an index, we need to wait till the new thing is indexed
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
@@ -133,6 +136,7 @@ public class DynamicRefexView implements RefexViewI
 		{
 			ttv_ = new TreeTableView<>();
 			ttv_.setTableMenuButtonVisible(true);
+			ttv_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 	
 			treeRoot_ = new TreeItem<>();
 			treeRoot_.setExpanded(true);
@@ -150,22 +154,56 @@ public class DynamicRefexView implements RefexViewI
 			
 			ToolBar t = new ToolBar();
 			
-			rowSelected_ = new UpdateableBooleanBinding()
+			currentRowSelected_ = new UpdateableBooleanBinding()
 			{
 				{
-					addBinding(ttv_.getSelectionModel().getSelectedCells());
+					addBinding(ttv_.getSelectionModel().getSelectedItems());
 				}
 				@Override
 				protected boolean computeValue()
 				{
-					return ttv_.getSelectionModel().getSelectedCells().size() > 0;
+					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem().getValue() != null)
+					{
+						return ttv_.getSelectionModel().getSelectedItem().getValue().isCurrent();
+					}
+					else
+					{
+						return false;
+					}
 				}
 			};
 			
-			removeButton_ = new Button(null, Images.MINUS.createImageView());
-			removeButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
-			removeButton_.disableProperty().bind(rowSelected_.not());
-			removeButton_.setOnAction((action) ->
+			selectedRowIsActive_ = new UpdateableBooleanBinding()
+			{
+				{
+					addBinding(ttv_.getSelectionModel().getSelectedItems());
+				}
+				@Override
+				protected boolean computeValue()
+				{
+					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem().getValue() != null)
+					{
+						try
+						{
+							return ttv_.getSelectionModel().getSelectedItem().getValue().getRefex().isActive();
+						}
+						catch (IOException e)
+						{
+							logger_.error("Unexpeted error!", e);
+							return false;
+						}
+					}
+					else
+					{
+						return false;
+					}
+				}
+			};
+			
+			retireButton_ = new Button(null, Images.MINUS.createImageView());
+			retireButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
+			retireButton_.disableProperty().bind(selectedRowIsActive_.and(currentRowSelected_).not());
+			retireButton_.setOnAction((action) ->
 			{
 				try
 				{
@@ -173,25 +211,22 @@ public class DynamicRefexView implements RefexViewI
 					DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
 					if (DialogResponse.YES == dr)
 					{
-						ObservableList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> selected = ttv_.getSelectionModel().getSelectedItems();
+						ObservableList<TreeItem<RefexDynamicGUI>> selected = ttv_.getSelectionModel().getSelectedItems();
 						if (selected != null && selected.size() > 0)
 						{
-							for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> refexTreeItem : selected)
+							for (TreeItem<RefexDynamicGUI> refexTreeItem : selected)
 							{
-								//TODO - have a bug here - should only be able to remove if it is currently active.
-								//but how to know if it is currently active?  We have both...
-								//TODO add some sort of graphical marker about current vs historical - also active vs retired... need a place to put this data.
-								RefexDynamicVersionBI<?> refex = refexTreeItem.getValue();
-								if (!refex.isActive())
+								RefexDynamicGUI refex = refexTreeItem.getValue();
+								if (!refex.getRefex().isActive())
 								{
 									continue;
 								}
-								RefexDynamicCAB rcab =  refex.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+								RefexDynamicCAB rcab =  refex.getRefex().makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
 								rcab.setStatus(Status.INACTIVE);
 								WBUtility.getBuilder().construct(rcab);
 								
-								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getAssemblageNid());
-								ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(refex.getReferencedComponentNid()));
+								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getRefex().getAssemblageNid());
+								ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(refex.getRefex().getReferencedComponentNid()));
 								if (!assemblage.isAnnotationStyleRefex())
 								{
 									ExtendedAppContext.getDataStore().addUncommitted(assemblage);
@@ -209,7 +244,7 @@ public class DynamicRefexView implements RefexViewI
 				}
 			});
 			
-			t.getItems().add(removeButton_);
+			t.getItems().add(retireButton_);
 			
 			addButton_ = new Button(null, Images.PLUS.createImageView());
 			addButton_.setTooltip(new Tooltip("Add a new Refex Extension"));
@@ -223,10 +258,9 @@ public class DynamicRefexView implements RefexViewI
 			addButton_.setDisable(true);
 			t.getItems().add(addButton_);
 			
-			//TODO similar bug on to the retire but here - should only be able to edit the current one.  but which one is current?
 			editButton_ = new Button(null, Images.EDIT.createImageView());
 			editButton_.setTooltip(new Tooltip("Edit a Refex"));
-			editButton_.disableProperty().bind(rowSelected_.not());
+			editButton_.disableProperty().bind(currentRowSelected_.not());
 			editButton_.setOnAction((action) ->
 			{
 				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
@@ -262,7 +296,7 @@ public class DynamicRefexView implements RefexViewI
 					if (stampColumn_ != null)
 					{
 						stampColumn_.setVisible(visible);
-						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nested : stampColumn_.getColumns())
+						for (TreeTableColumn<RefexDynamicGUI, ?> nested : stampColumn_.getColumns())
 						{
 							nested.setVisible(visible);
 						}
@@ -436,7 +470,7 @@ public class DynamicRefexView implements RefexViewI
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
-		newComponentHint = null;
+		newComponentHint_ = null;
 		noRefresh_ = false;
 		refresh();
 	}
@@ -453,7 +487,7 @@ public class DynamicRefexView implements RefexViewI
 		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
-		newComponentHint = null;
+		newComponentHint_ = null;
 		noRefresh_ = false;
 		refresh();
 	}
@@ -499,9 +533,10 @@ public class DynamicRefexView implements RefexViewI
 		}
 	}
 	
-	protected void setNewComponentHint(int componentNid)
+	protected void setNewComponentHint(int componentNid, IndexedGenerationCallable indexGen)
 	{
-		newComponentHint = componentNid;
+		newComponentHint_ = componentNid;
+		newComponentIndexGen_ = indexGen;
 	}
 	
 	protected void refresh()
@@ -527,8 +562,10 @@ public class DynamicRefexView implements RefexViewI
 
 		ttv_.setPlaceholder(progressBar_);
 		progressBar_.setProgress(-1);
-		rowSelected_.clearBindings();
-		rowSelected_.addBinding(ttv_.getSelectionModel().getSelectedCells());
+		currentRowSelected_.clearBindings();
+		currentRowSelected_.addBinding(ttv_.getSelectionModel().getSelectedItems());
+		selectedRowIsActive_.clearBindings();
+		selectedRowIsActive_.addBinding(ttv_.getSelectionModel().getSelectedItems());
 		
 		loadData();
 	}
@@ -538,48 +575,73 @@ public class DynamicRefexView implements RefexViewI
 		Utility.execute(() -> {
 			try
 			{
-				final ArrayList<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?>> treeColumns = new ArrayList<>();
+				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
 				
+				
+				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
+				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
+				Label l = new Label("s"); 
+				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
+				ttStatusCol.setGraphic(l);
+				ttStatusCol.setText(null);
+				ttStatusCol.setSortable(true);
+				ttStatusCol.setResizable(true);
+				ttStatusCol.setCellFactory((colInfo) -> 
+				{
+					return new StatusCell();
+				});
+				ttStatusCol.setCellValueFactory((callback) ->
+				{
+					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
+				});
+				treeColumns.add(ttStatusCol);
 				
 				//Create columns for basic info
 				if (setFromType_.getComponentNid() == null)
 				{
 					//If the component is null, the assemblage is always the same - don't show.
-					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>  ttCol = new TreeTableColumn<>();
+					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
 					ttCol.setText("Component");
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
 					{
-						return new ComponentDataCell();
+						return new ComponentDataCell((refex) ->
+						{
+							return refex.getReferencedComponentNid();
+						});
 						
 					});
 					ttCol.setCellValueFactory((callback) ->
 					{
-						return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getReferencedComponentNid());
+						return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
 					});
 					treeColumns.add(ttCol);
 				}
 				else
 				{
 					//if the assemblage is null, the component is always the same - don't show.
-					TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer>  ttCol = new TreeTableColumn<>();
+					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
 					ttCol.setText("Assemblage");
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
 					{
-						return new ComponentDataCell(true);
+						return new ComponentDataCell(true, (refex) ->
+						{
+							return refex.getAssemblageNid();
+						});
 						
 					});
 					ttCol.setCellValueFactory((callback) ->
 					{
-						return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getAssemblageNid());
+						return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
 					});
 					treeColumns.add(ttCol);
 				}
 				
-				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> ttStringCol = new TreeTableColumn<>();
+				TreeTableColumn<RefexDynamicGUI, String> ttStringCol = new TreeTableColumn<>();
+				ttStringCol = new TreeTableColumn<>();
 				ttStringCol.setText("Attached Data");
 				ttStringCol.setSortable(true);
 				ttStringCol.setResizable(true);
@@ -641,8 +703,6 @@ public class DynamicRefexView implements RefexViewI
 					}
 				}
 				
-				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				
 				ArrayList<Hashtable<UUID, List<RefexDynamicColumnInfo>>> sortedUniqueColumns = new ArrayList<>();
 				sortedUniqueColumns.addAll(uniqueColumns.values());
 				Collections.sort(sortedUniqueColumns, new Comparator<Hashtable<UUID, List<RefexDynamicColumnInfo>>>()
@@ -668,9 +728,8 @@ public class DynamicRefexView implements RefexViewI
 					
 					for (int i = 0; i < max; i++)
 					{
-						TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> nestedCol = 
-								new TreeTableColumn<>();
-						Label l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
+						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>();
+						l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
 						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
 						nestedCol.setGraphic(l);
 						nestedCol.setSortable(true);
@@ -701,13 +760,13 @@ public class DynamicRefexView implements RefexViewI
 				stampColumn_ = ttStringCol;
 				treeColumns.add(ttStringCol);
 				
-				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, String> nestedCol = new TreeTableColumn<>();
+				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText("Status");
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyStringWrapper(callback.getValue().getValue().getStatus().toString());
+					return new ReadOnlyStringWrapper(callback.getValue().getValue().getRefex().getStatus().toString());
 				});
 				ttStringCol.getColumns().add(nestedCol);
 				
@@ -718,30 +777,33 @@ public class DynamicRefexView implements RefexViewI
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					long l = callback.getValue().getValue().getTime();
-					if (l == Long.MAX_VALUE)
+					long time = callback.getValue().getValue().getRefex().getTime();
+					if (time == Long.MAX_VALUE)
 					{
 						return new ReadOnlyStringWrapper("-Uncommitted-");
 					}
 					else
 					{
-						return new ReadOnlyStringWrapper(new Date(l).toString());
+						return new ReadOnlyStringWrapper(new Date(time).toString());
 					}
 				});
 				ttStringCol.getColumns().add(nestedCol);
 				
-				TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, Integer> nestedIntCol = new TreeTableColumn<>();
+				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = new TreeTableColumn<>();
 				nestedIntCol.setText("Author");
 				nestedIntCol.setSortable(true);
 				nestedIntCol.setResizable(true);
 				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ComponentDataCell();
+					return new ComponentDataCell((refex) ->
+					{
+						return refex.getAuthorNid();
+					});
 					
 				});
 				nestedIntCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getAuthorNid());
+					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
 				});
 
 				ttStringCol.getColumns().add(nestedIntCol);
@@ -753,12 +815,15 @@ public class DynamicRefexView implements RefexViewI
 				nestedIntCol.setVisible(false);
 				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ComponentDataCell();
+					return new ComponentDataCell((refex) ->
+					{
+						return refex.getModuleNid();
+					});
 					
 				});
 				nestedIntCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getModuleNid());
+					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
 				});
 				ttStringCol.getColumns().add(nestedIntCol);
 				
@@ -769,18 +834,21 @@ public class DynamicRefexView implements RefexViewI
 				nestedIntCol.setVisible(false);
 				nestedIntCol.setCellFactory((colInfo) -> 
 				{
-					return new ComponentDataCell();
+					return new ComponentDataCell((refex) ->
+					{
+						return refex.getPathNid();
+					});
 					
 				});
 				nestedIntCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyObjectWrapper<Integer>(callback.getValue().getValue().getPathNid());
+					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
 				});
 				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
 				{
-					for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> tc : treeColumns)
+					for (TreeTableColumn<RefexDynamicGUI, ?> tc : treeColumns)
 					{
 						ttv_.getColumns().add(tc);
 					}
@@ -796,9 +864,9 @@ public class DynamicRefexView implements RefexViewI
 					//Horrible hack to set a reasonable default size on the columns.
 					//Min width to the width of the header column.
 					Font f = new Font("System Bold", 13.0);
-					for (final TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> col : ttv_.getColumns())
+					for (final TreeTableColumn<RefexDynamicGUI, ?> col : ttv_.getColumns())
 					{
-						for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nCol : col.getColumns())
+						for (TreeTableColumn<RefexDynamicGUI, ?> nCol : col.getColumns())
 						{
 							String text = (nCol.getGraphic() != null && nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() : nCol.getText());
 							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
@@ -809,7 +877,7 @@ public class DynamicRefexView implements RefexViewI
 							FloatBinding binding = new FloatBinding()
 							{
 								{
-									for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nCol : col.getColumns())
+									for (TreeTableColumn<RefexDynamicGUI, ?> nCol : col.getColumns())
 									{
 										bind(nCol.widthProperty());
 										bind(nCol.visibleProperty());
@@ -819,12 +887,18 @@ public class DynamicRefexView implements RefexViewI
 								protected float computeValue()
 								{
 									float temp = 0;
-									for (TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, ?> nCol : col.getColumns())
+									for (TreeTableColumn<RefexDynamicGUI, ?> nCol : col.getColumns())
 									{
 										if (nCol.isVisible())
 										{
 											temp += nCol.getWidth();
 										}
+									}
+									float parentColWidth = Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10;
+									if (temp < parentColWidth)
+									{
+										//bump the size of the first nested column, so the parent doesn't get clipped
+										col.getColumns().get(0).setMinWidth(parentColWidth);
 									}
 									return temp;
 								}
@@ -833,17 +907,26 @@ public class DynamicRefexView implements RefexViewI
 						}
 						else
 						{
-							if (col.getText().equalsIgnoreCase("Assemblage") || col.getText().equalsIgnoreCase("Component"))
+							String text = (col.getGraphic() != null && col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : col.getText());
+							if (text.equalsIgnoreCase("Assemblage") || text.equalsIgnoreCase("Component"))
 							{
 								col.setPrefWidth(250);
 							}
-							col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10);
+							if (text.equalsIgnoreCase("s"))
+							{
+								col.setPrefWidth(32);
+								col.setMinWidth(32);
+							}
+							else
+							{
+								col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+							}
 						}
 					}
 					showStampColumns_.invalidate();
 				});
 
-				ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData;
+				ArrayList<TreeItem<RefexDynamicGUI>> rowData;
 				//Now add the data
 				if (setFromType_.getComponentNid() != null)
 				{
@@ -857,12 +940,13 @@ public class DynamicRefexView implements RefexViewI
 				Platform.runLater(() ->
 				{
 					addButton_.setDisable(false);
-					for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> rd : rowData)
+					for (TreeItem<RefexDynamicGUI> rd : rowData)
 					{
 						treeRoot_.getChildren().add(rd);
 					}
 					checkForUncommittedRefexes(rowData);
 					ttv_.setPlaceholder(placeholderText);
+					ttv_.getSelectionModel().clearAndSelect(0);
 				});
 			}
 			catch (Exception e)
@@ -875,12 +959,9 @@ public class DynamicRefexView implements RefexViewI
 		});
 	}
 	
-	private ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> getDataRows(ComponentChronicleBI<?> component, 
-			TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> nestUnder) 
+	private ArrayList<TreeItem<RefexDynamicGUI>> getDataRows(ComponentChronicleBI<?> component, TreeItem<RefexDynamicGUI> nestUnder) 
 			throws IOException, ContradictionException
 	{
-		ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = new ArrayList<>();
-
 		if (component instanceof ConceptChronicleBI)
 		{
 			component = ((ConceptChronicleBI) component).getConceptAttributes();
@@ -888,44 +969,11 @@ public class DynamicRefexView implements RefexViewI
 		
 		if (component == null)
 		{
-			return (nestUnder == null ? rowData : null);
+			return (nestUnder == null ? new ArrayList<>() : null);
 		}
 
-		for (RefexDynamicChronicleBI<?> refexChronicle : component.getRefexesDynamic())
-		{
-			RefexDynamicVersionBI<?> refexVersionNewest = null;
-			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
-			{
-				if (!showFullHistory_.get())
-				{
-					if (refexVersionNewest == null || refexVersion.getStamp() > refexVersionNewest.getStamp())
-					{
-						refexVersionNewest = refexVersion;
-					}
-				}
-				else
-				{
-					if (showActiveOnly_.get() && !refexVersion.isActive())
-					{
-						continue;
-					}
-					TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
-					ti.setValue(refexVersion);
-					//recurse
-					getDataRows(refexVersion, ti);
-					rowData.add(ti);
-				}
-			}
-			if (!showFullHistory_.get() && refexVersionNewest != null 
-					&& (!showActiveOnly_.get() || (showActiveOnly_.get() && refexVersionNewest.isActive())))
-			{
-				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
-				ti.setValue(refexVersionNewest);
-				//recurse
-				getDataRows(refexVersionNewest, ti);
-				rowData.add(ti);
-			}
-		}
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createVersionFilteredRowData(component.getRefexesDynamic());
+		
 		if (nestUnder != null)
 		{
 			nestUnder.getChildren().addAll(rowData);
@@ -935,6 +983,62 @@ public class DynamicRefexView implements RefexViewI
 		{
 			return rowData;
 		}
+	}
+	
+	private ArrayList<TreeItem<RefexDynamicGUI>> createVersionFilteredRowData(Collection<? extends RefexDynamicChronicleBI<?>> refexChronicles) throws IOException, 
+		ContradictionException
+	{
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = new ArrayList<>();
+		ArrayList<RefexDynamicVersionBI<?>> allVersions = new ArrayList<>();
+		
+		//Since the WB API is horribly undocumented, we have no idea what the behavior of these methods are.  Are chonicles ordered?
+		//Are they guaranteed to remain in order?  What order?  Same question with versions.  Is the order maintained?  What order is it?
+		for (RefexDynamicChronicleBI<?> refexChronicle: refexChronicles)
+		{
+			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
+			{
+				allVersions.add(refexVersion);
+			}
+		}
+		
+		//Sort the newest to the top.
+		Collections.sort(allVersions, new Comparator<RefexDynamicVersionBI<?>>()
+		{
+			@Override
+			public int compare(RefexDynamicVersionBI<?> o1, RefexDynamicVersionBI<?> o2)
+			{
+				if (o1.getPrimordialUuid().equals(o2.getPrimordialUuid()))
+				{
+					return o2.getStamp() - o1.getStamp();
+				}
+				else
+				{
+					return o1.getPrimordialUuid().compareTo(o2.getPrimordialUuid());
+				}
+				
+			}
+		});
+		
+		UUID lastSeenRefex = null;
+		
+		for (RefexDynamicVersionBI<?> r : allVersions)
+		{
+			if (!showFullHistory_.get() && r.getPrimordialUuid().equals(lastSeenRefex))
+			{
+				continue;
+			}
+			if (showActiveOnly_.get() == false || r.isActive())
+			{
+				TreeItem<RefexDynamicGUI> ti = new TreeItem<>();
+				ti.setValue(new RefexDynamicGUI(r, !r.getPrimordialUuid().equals(lastSeenRefex)));  //first one we see with a new UUID is current, others are historical
+				//recurse
+				getDataRows(r, ti);  
+				rowData.add(ti);
+			}
+			lastSeenRefex = r.getPrimordialUuid();
+		}
+
+		return rowData;
 	}
 
 	/**
@@ -1012,7 +1116,7 @@ public class DynamicRefexView implements RefexViewI
 		return columns;
 	}
 	
-	private void checkForUncommittedRefexes(List<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> items)
+	private void checkForUncommittedRefexes(List<TreeItem<RefexDynamicGUI>> items)
 	{
 		if (hasUncommitted_.get())
 		{
@@ -1022,9 +1126,9 @@ public class DynamicRefexView implements RefexViewI
 		{
 			return;
 		}
-		for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> item : items)
+		for (TreeItem<RefexDynamicGUI> item : items)
 		{
-			if (item.getValue() != null && item.getValue().isUncommitted())
+			if (item.getValue() != null && item.getValue().getRefex().isUncommitted())
 			{
 				hasUncommitted_.set(true);
 				return;
@@ -1033,18 +1137,18 @@ public class DynamicRefexView implements RefexViewI
 		}
 	}
 	
-	private HashSet<Integer> getAllAssemblageNids(List<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> items)
+	private HashSet<Integer> getAllAssemblageNids(List<TreeItem<RefexDynamicGUI>> items)
 	{
 		HashSet<Integer> results = new HashSet<Integer>();
 		if (items == null)
 		{
 			return results;
 		}
-		for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> item : items)
+		for (TreeItem<RefexDynamicGUI> item : items)
 		{
 			if (item.getValue() != null)
 			{
-				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue();
+				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue().getRefex();
 				results.add(refex.getAssemblageNid());
 			}
 			results.addAll(getAllAssemblageNids(item.getChildren()));
@@ -1052,18 +1156,18 @@ public class DynamicRefexView implements RefexViewI
 		return results;
 	}
 	
-	private HashSet<Integer> getAllComponentNids(List<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> items)
+	private HashSet<Integer> getAllComponentNids(List<TreeItem<RefexDynamicGUI>> items)
 	{
 		HashSet<Integer> results = new HashSet<Integer>();
 		if (items == null)
 		{
 			return results;
 		}
-		for (TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> item : items)
+		for (TreeItem<RefexDynamicGUI> item : items)
 		{
 			if (item.getValue() != null)
 			{
-				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue();
+				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue().getRefex();
 				results.add(refex.getReferencedComponentNid());
 			}
 			results.addAll(getAllComponentNids(item.getChildren()));
@@ -1073,10 +1177,9 @@ public class DynamicRefexView implements RefexViewI
 	
 
 	@SuppressWarnings("unchecked")
-	private ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> getDataRows(int assemblageNid) 
+	private ArrayList<TreeItem<RefexDynamicGUI>> getDataRows(int assemblageNid) 
 			throws IOException, ContradictionException, InterruptedException, NumberFormatException, ParseException
 	{
-		ArrayList<TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>> rowData = new ArrayList<>();
 		Collection<RefexDynamicChronicleBI<?>> refexMembers;
 		
 		dr_ = null;
@@ -1099,7 +1202,24 @@ public class DynamicRefexView implements RefexViewI
 				});
 				
 				LuceneDynamicRefexIndexer ldri = AppContext.getService(LuceneDynamicRefexIndexer.class);
-				List<SearchResult> results = ldri.queryAssemblageUsage(assemblageConceptFull.getNid(), Integer.MAX_VALUE, null);
+				
+				long waitForLatch = Long.MAX_VALUE;
+				if (newComponentIndexGen_ != null)
+				{
+					try
+					{
+						logger_.debug("waiting for index latch");
+						waitForLatch = newComponentIndexGen_.call();
+					}
+					catch (Exception e)
+					{
+						logger_.error("Unexpected error getting latch");
+					}
+					//We never need to wait for this again.
+					newComponentIndexGen_ = null;
+				}
+				
+				List<SearchResult> results = ldri.queryAssemblageUsage(assemblageConceptFull.getNid(), Integer.MAX_VALUE, waitForLatch);
 				for (SearchResult sr : results)
 				{
 					refexMembers.add((RefexDynamicChronicleBI<?>)ExtendedAppContext.getDataStore().getComponent(sr.getNid()));
@@ -1178,9 +1298,9 @@ public class DynamicRefexView implements RefexViewI
 				else
 				{
 					//add in the newComponentHint - because they said no to the scan, and we have no index
-					if (newComponentHint != null)
+					if (newComponentHint_ != null)
 					{
-						ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint);
+						ConceptChronicleBI c = ExtendedAppContext.getDataStore().getConcept(newComponentHint_);
 						if (c != null)
 						{
 							Collection<RefexDynamicChronicleBI<?>> dynamicAnnotations = (Collection<RefexDynamicChronicleBI<?>>)c.getRefexDynamicAnnotations();
@@ -1197,42 +1317,9 @@ public class DynamicRefexView implements RefexViewI
 				}
 			}
 		}
+		
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createVersionFilteredRowData(refexMembers);
 
-		for (RefexDynamicChronicleBI<?> refexChronicle: refexMembers)
-		{
-			RefexDynamicVersionBI<?> refexVersionNewest = null;
-			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
-			{
-				if (!showFullHistory_.get())
-				{
-					if (refexVersionNewest == null || refexVersion.getStamp() > refexVersionNewest.getStamp())
-					{
-						refexVersionNewest = refexVersion;
-					}
-				}
-				else
-				{
-					if (showActiveOnly_.get() && !refexVersion.isActive())
-					{
-						continue;
-					}
-					TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
-					ti.setValue(refexVersion);
-					//recurse
-					getDataRows(refexVersion, ti);
-					rowData.add(ti);
-				}
-			}
-			if (!showFullHistory_.get() && refexVersionNewest != null 
-					&& (!showActiveOnly_.get() || (showActiveOnly_.get() && refexVersionNewest.isActive())))
-			{
-				TreeItem<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> ti = new TreeItem<>();
-				ti.setValue(refexVersionNewest);
-				//recurse
-				getDataRows(refexVersionNewest, ti);
-				rowData.add(ti);
-			}
-		}
 		if (rowData.size() == 0)
 		{
 			placeholderText.setText("No Dynamic Refexes were found using this Assemblage");

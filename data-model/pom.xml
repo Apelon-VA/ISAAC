@@ -14,5 +14,13 @@
     <description>
         ISAAC Data Model classes
     </description>
+    
+    <dependencies>
+        <dependency>
+            <groupId>gov.va.isaac.modules</groupId>
+            <artifactId>isaac-constants</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>
