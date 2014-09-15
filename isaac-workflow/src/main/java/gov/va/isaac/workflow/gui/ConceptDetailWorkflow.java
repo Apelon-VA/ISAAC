@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link ConceptDetailWorkflow}
  * 
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+ * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 
 @Service

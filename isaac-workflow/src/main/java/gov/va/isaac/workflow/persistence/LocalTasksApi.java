@@ -148,11 +148,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public void setAction(Long taskId, Action action, String actionStatus, Map<String,String> outputVariables) {
+    public void setAction(Long taskId, Action action, TaskActionStatus actionStatus, Map<String,String> outputVariables) {
         try {
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action.name());
-            psUpdateStatus.setString(2, actionStatus);
+            psUpdateStatus.setString(2, actionStatus.name());
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
             psUpdateStatus.executeUpdate();
@@ -179,7 +179,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOwnedTasksByStatus(String owner, String status) {
+    public List<LocalTask> getOwnedTasksByStatus(String owner, Status status) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
@@ -194,7 +194,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
     
     @Override
-    public List<LocalTask> getOwnedTasksByActionStatus(String owner, String actionStatus) {
+    public List<LocalTask> getOwnedTasksByActionStatus(String owner, TaskActionStatus actionStatus) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();

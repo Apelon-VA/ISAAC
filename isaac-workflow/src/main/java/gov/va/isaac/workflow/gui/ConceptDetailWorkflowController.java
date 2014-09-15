@@ -50,6 +50,7 @@ import javafx.scene.layout.Region;
 import javafx.util.Callback;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
@@ -143,7 +144,7 @@ public class ConceptDetailWorkflowController
 		}
 
 		ConceptVersionBI containingConcept = null;
-		ComponentChronicleBI componentChronicle = WBUtility.getComponentChronicle(componentUuid);
+		ComponentChronicleBI<? extends ComponentVersionBI> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
 		if (componentChronicle == null) {
 			logger.warn("Component ID for task " + initialTask.getId() + " retrieved a null componentChronicle");
 
@@ -337,7 +338,7 @@ public class ConceptDetailWorkflowController
 						final LocalTask currentlySelectedTask = taskComboBox.getValue();
 						final Action currentlySelectedAction = actionComboBox.getValue();
 
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending.name(), new HashMap<String, String>());
+						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending, new HashMap<String, String>());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
