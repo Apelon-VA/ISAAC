@@ -179,7 +179,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOwnedTasksByStatus(String owner, String status) {
+    public List<LocalTask> getOwnedTasksByStatus(String owner, Status status) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
@@ -194,7 +194,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
     
     @Override
-    public List<LocalTask> getOwnedTasksByActionStatus(String owner, String actionStatus) {
+    public List<LocalTask> getOwnedTasksByActionStatus(String owner, TaskActionStatus actionStatus) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();

@@ -20,7 +20,6 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.Format;
@@ -32,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -58,7 +56,6 @@ import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -91,11 +88,9 @@ import org.slf4j.LoggerFactory;
  * @author jefron
  */
 public class WBUtility {
-	
-	public static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
+	//TODO we need to look up paths dynamically in the DB, let the user choose - store the setting / default somewhere in the DB (or user profile?)
+	private static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
 
-	public static ConceptSpec ISAAC_ROOT = Taxonomies.ISAAC_ROOT;
-		
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];

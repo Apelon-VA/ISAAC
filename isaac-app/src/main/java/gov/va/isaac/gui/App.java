@@ -125,9 +125,9 @@ public class App extends Application implements ApplicationWindowI{
             String message = "The Snomed Database was not found.";
             LOG.error(message, dataStoreLocationInitException_);
             String details = "Please download the file\n\n"
-                    + "https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/isaac-sct/2014.01.31-build-2/isaac-sct-2014.01.31-build-2.zip"
+                    + "https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-snomed/2014.09.14/solor-snomed-2014.09.14-active-only.bdb.zip"
                     + "\nor"
-                    + "\nhttps://csfe.aceworkspace.net/sf/frs/do/downloadFile/projects.veterans_administration_project/frs.isaac.isaac_databases/frs13977?dl=1"
+                    + "\nhttps://csfe.aceworkspace.net/sf/frs/do/downloadFile/projects.veterans_administration_project/frs.isaac.isaac_databases/frs15559?dl=1"
                     + "\n\nand unzip it into\n\n"
                     + System.getProperty("user.dir")
                     + "\n\nand then restart the editor.";

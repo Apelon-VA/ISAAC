@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
@@ -121,7 +122,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -274,6 +274,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert searchProgress != null : "fx:id=\"searchProgress\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
@@ -1714,105 +1715,111 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			return;
 		}
 
-		searchRunning.set(true);
+		try {
+			searchRunning.set(true);
 
-		searchResultsTable.getItems().clear();
-		refreshTotalResultsDisplayedLabel();
+			searchResultsTable.getItems().clear();
+			refreshTotalResultsDisplayedLabel();
 
-		SearchViewModel model = searchViewModel;
+			SearchViewModel model = searchViewModel;
 
-		if (! validateSearchViewModel(model, "Cannot execute save")) {
-			searchRunning.set(false);
+			if (! validateSearchViewModel(model, "Cannot execute search")) {
+				searchRunning.set(false);
 
-			return;
-		}
-
-		SearchTypeFilter<?> filter = model.getSearchType();
-
-		if (! (filter instanceof LuceneSearchTypeFilter)) {
-			String title = "Search failed";
-
-			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
-
-			searchRunning.set(false);
-			return;
-		}
-
-		LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
-
-		SearchResultsFilter searchResultsFilter = null;
-		if (model.getFilters() != null) {
-			List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
-
-			try {
-				for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
-					SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
-					
-					searchResultsFilters.add(newSearchResultsFilter);
-				}
-				LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
-				searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
-
-				//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
-			} catch (SearchResultsFilterException e) {
-				String title = "Failed creating SearchResultsFilter";
-				String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
-				String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
-				LOG.error(details);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-				ssh.cancel();
-				
 				return;
 			}
-		}
 
-		// "we get called back when the results are ready."
-		switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
-		case CONCEPT:
-		{
-			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
-			builder.setCallback(this);
-			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (searchResultsFilter != null) {
-				builder.setFilter(searchResultsFilter);
+			SearchTypeFilter<?> filter = model.getSearchType();
+
+			if (! (filter instanceof LuceneSearchTypeFilter)) {
+				String title = "Search failed";
+
+				String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				searchRunning.set(false);
+				return;
 			}
-			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-				if (maxResults != null && maxResults > 0) {
-					builder.setSizeLimit(maxResults);
+
+			LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
+
+			SearchResultsFilter searchResultsFilter = null;
+			if (model.getFilters() != null) {
+				List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
+
+				try {
+					for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
+						SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
+
+						searchResultsFilters.add(newSearchResultsFilter);
+					}
+					LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
+					searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
+
+					//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
+				} catch (SearchResultsFilterException e) {
+					String title = "Failed creating SearchResultsFilter";
+					String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
+					String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
+					LOG.error(details);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+					ssh.cancel();
+
+					return;
 				}
 			}
-			builder.setMergeResultsOnConcept(true);
-			ssh = SearchHandler.descriptionSearch(builder);
-			break;
-		}
-		case DESCRIPTION:
-		{
-			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
-			builder.setCallback(this);
-			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (searchResultsFilter != null) {
-				builder.setFilter(searchResultsFilter);
-			}
-			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-				if (maxResults != null && maxResults > 0) {
-					builder.setSizeLimit(maxResults);
-				}
-			}
-			ssh = SearchHandler.descriptionSearch(builder);
-			break;
-		}
-		default:
-			String title = "Unsupported Aggregation Type";
-			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
-			LOG.error(title);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			ssh.cancel();
-			break;
+			// "we get called back when the results are ready."
+			switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
+			case CONCEPT:
+			{
+				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				builder.setCallback(this);
+				builder.setTaskId(Tasks.SEARCH.ordinal());
+				if (searchResultsFilter != null) {
+					builder.setFilter(searchResultsFilter);
+				}
+				if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+					Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+					if (maxResults != null && maxResults > 0) {
+						builder.setSizeLimit(maxResults);
+					}
+				}
+				builder.setMergeResultsOnConcept(true);
+				ssh = SearchHandler.descriptionSearch(builder);
+				break;
+			}
+			case DESCRIPTION:
+			{
+				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				builder.setCallback(this);
+				builder.setTaskId(Tasks.SEARCH.ordinal());
+				if (searchResultsFilter != null) {
+					builder.setFilter(searchResultsFilter);
+				}
+				if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+					Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+					if (maxResults != null && maxResults > 0) {
+						builder.setSizeLimit(maxResults);
+					}
+				}
+				ssh = SearchHandler.descriptionSearch(builder);
+				break;
+			}
+			default:
+				String title = "Unsupported Aggregation Type";
+				String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				ssh.cancel();
+				break;
+			}
+		} catch (Exception e) {
+			LOG.error("Search failed unexpectedly...", e);
+			ssh = null;  //force a null ptr in taskComplete, so an error is displayed.
+			taskComplete(0, null);
 		}
 	}
 

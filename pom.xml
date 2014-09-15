@@ -75,6 +75,36 @@
                 </exclusions>
             </dependency>
             
+            <!-- Make sure sub-projects that only pull in API don't get JavaFX -->
+            <dependency>
+                <groupId>org.ihtsdo.otf</groupId>
+                <artifactId>tcc-api</artifactId>
+                <version>${otf-versioning.version}</version>
+                <type>jar</type>
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
+            <!-- Make sure sub-projects that only pull in mojo don't get JavaFX -->
+            <dependency>
+                <groupId>org.ihtsdo.otf</groupId>
+                <artifactId>tcc-mojo</artifactId>
+                <version>${otf-versioning.version}</version>
+                <type>jar</type>
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>org.ihtsdo.otf</groupId>
                 <artifactId>query-implementation</artifactId>
@@ -88,7 +118,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+            
             <!-- The native logback implementation (note, the logback api comes from parent) -->
             <dependency> 
                 <groupId>ch.qos.logback</groupId>
@@ -270,6 +300,7 @@
         <module>mojos</module>
         <module>refex-view</module>
         <module>concept-wizard-view</module>
+        <module>isaac-constants</module>
     </modules>
 
     <reporting>

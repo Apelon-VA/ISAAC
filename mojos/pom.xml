@@ -25,7 +25,6 @@
 		<dependency>
 			<groupId>org.ihtsdo.otf</groupId>
 			<artifactId>tcc-mojo</artifactId>
-			<version>${otf-versioning.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ihtsdo.otf</groupId>
@@ -34,6 +33,11 @@
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>isaac-app-interfaces</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>isaac-constants</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>

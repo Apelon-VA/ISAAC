@@ -95,7 +95,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             TaskService remoteService = getRemoteTaskService();
             ProcessInstanceServiceBI procApi = getProcessInstanceService();
             int countActions = 0;
-            List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(userId, "pending");
+            List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(userId, TaskActionStatus.Pending);
             for (LocalTask loopTask : actions) {
                 Task remoteTask = remoteService.getTaskById(loopTask.getId());
                 if (remoteTask != null) {

@@ -31,7 +31,8 @@ package gov.va.isaac.interfaces.workflow;
  *
  */
 public enum WorkflowProcess {
-	REVIEW("terminology-authoring.ReviewWorkflow");
+	REVIEW("terminology-authoring.ReviewWorkflow"),
+	DUAL_REVIEW("terminology-authoring.DualReviewWorkflow");
 	
 	private final String text;
 	

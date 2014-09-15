@@ -52,10 +52,6 @@ public class EnhancedSearchView implements EnhancedSearchViewI
 		//created by HK2
 	}
 	
-	protected void setWindow(Window window) {
-		
-	}
-	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
 	 */

@@ -1,83 +1,89 @@
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright 
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
 import java.io.File;
-import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.tcc.api.io.FileIO;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
-import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 
 /**
- * Goal which loads a database from an eConcept file, and generates the indexes.
+ * Goal which shuts down an open data store.
  * 
  * @goal shutdown-terminology-store
  * 
  * @phase process-sources
  */
-public class Shutdown extends AbstractMojo {
+public class Shutdown extends AbstractMojo
+{
 
-  /**
-   * true if the mutable database should replace the read-only database after
-   * load is complete.
-   * 
-   * @parameter default-value=true
-   * @required
-   */
-  private boolean moveToReadOnly = true;
+	/**
+	 * true if the mutable database should replace the read-only database after
+	 * load is complete.
+	 * 
+	 * @parameter default-value=true
+	 * @required
+	 */
+	private boolean moveToReadOnly = true;
 
-  /**
-   * Location of the file.
-   * 
-   * @parameter
-   * @required
-   */
-  private String bdbFolderLocation;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	@Override
+	public void execute() throws MojoExecutionException
+	{
+		try
+		{
+			getLog().info("Shutdown terminology store");
+			// ASSUMES setup has run already
+			TerminologyStoreDI store = AppContext.getService(TerminologyStoreDI.class);
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
-  @Override
-  public void execute() throws MojoExecutionException {
-    try {
-      getLog().info("Shutdown terminology store");
-      // ASSUMES setup has run already
-      TerminologyStoreDI store =
-          AppContext.getService(TerminologyStoreDI.class);
-      List<IndexerBI> indexers =
-          AppContext.getServiceLocator().getAllServices(IndexerBI.class);
+			getLog().info("  Shutting Down");
+			getLog().info("wait so we don't trigger an OTF bug....");
+			//TODO get these silly OTF bugs fixed, so we don't have to arbitrarily wait...
+			Thread.sleep(5000);
+			store.shutdown();
 
-      // Assume this was run with setup and 
-      // the process started with mvn clean
-      for (IndexerBI indexer : indexers) {
-        indexer.setEnabled(true);
-      }
-      getLog().info("  Batch Indexing");
-      store.index();
+			if (moveToReadOnly)
+			{
+				getLog().info("wait so we don't trigger an OTF bug....");
+				Thread.sleep(5000);
+				getLog().info("moving mutable to read-only");
 
-      getLog().info("  Shutting Down");
-      store.shutdown();
-      for (IndexerBI indexer : indexers) {
-        indexer.closeWriter();
-      }
+				String bdbFolderLocation = System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY);
 
-      if (moveToReadOnly) {
-        //TODO Ask Brian why he disabled this - probably on a dev call and ask Keith about it too, since it came from him initially.
-        //TODO OTF Bug - figure out why on earth we need this arbitrary sleep.
-        Thread.sleep(5000);
-        getLog().info("moving mutable to read-only");
-        File readOnlyDir = new File(bdbFolderLocation, "read-only");
-        FileIO.recursiveDelete(readOnlyDir);
-        File mutableDir = new File(bdbFolderLocation, "mutable");
-        mutableDir.renameTo(readOnlyDir);
-      }
-      
-      getLog().info("Done shutting down terminology store");
-    } catch (Exception e) {
-      throw new MojoExecutionException("Database build failure", e);
-    }
-  }
+				File readOnlyDir = new File(bdbFolderLocation, "read-only");
+				FileIO.recursiveDelete(readOnlyDir);
+				File mutableDir = new File(bdbFolderLocation, "mutable");
+				mutableDir.renameTo(readOnlyDir);
+			}
+
+			getLog().info("Done shutting down terminology store");
+		}
+		catch (Exception e)
+		{
+			throw new MojoExecutionException("Database build failure", e);
+		}
+	}
 }
