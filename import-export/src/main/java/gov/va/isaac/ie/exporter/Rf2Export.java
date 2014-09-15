@@ -17,6 +17,7 @@
 package gov.va.isaac.ie.exporter;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
 import gov.va.isaac.util.WBUtility;
 
@@ -96,15 +97,11 @@ public class Rf2Export implements
 
   private String namespace;
 
-  private String module;
-
   private Writer relationshipsWriter;
 
   private Writer relationshipsStatedWriter;
 
   private ReleaseType releaseType;
-
-  private Set<Integer> stampNids;
 
   private ViewCoordinate viewCoordinate;
 
@@ -140,16 +137,13 @@ public class Rf2Export implements
       .fromString("d1871eb3-8a47-11e1-b0c4-0800200c9a66");
    **/
   
-  // TODO: TTN
-  private static UUID SOME = UUID.fromString("TODO: TTN");
-
-  private boolean makePrivateIdFile;
+  private static UUID SOME = UUID.fromString("f9bf3eab-02bb-3d49-b2a2-58ed96fa897f");
 
   private File directory;
 
-  private Set<Integer> sameCycleStampNids;
-
   private Collection<Integer> taxonomyParentNids;
+
+private int pathNid;
 
   private static BdbTerminologyStore dataStore = ExtendedAppContext
       .getDataStore();
@@ -174,11 +168,6 @@ public class Rf2Export implements
    *          release
    * @param viewCoordinate specifying which versions of the concepts to include
    *          in this release. Should not include all status values.
-   * @param excludedRefsetIds the set of nids associated with refexes which
-   *          should not be included in the release (for example, workflow
-   *          refsets)
-   * @param conceptsToProcess the set of nids representing the concepts to be
-   *          included in this release
    * @param makePrivateIdFile set to <code>true</code> to make an auxiliary
    *          identifier file
    * @param refsetParentConceptNid an integer representing the parent concept of
@@ -192,11 +181,8 @@ public class Rf2Export implements
    */
   public Rf2Export(File directory, ReleaseType releaseType,
       LanguageCode language, COUNTRY_CODE country, String namespace,
-      String module, Date effectiveDate,
-      Set<Integer> stampNids, ViewCoordinate viewCoordinate,
-      Set<Integer> excludedRefsetIds, NativeIdSetBI conceptsToProcess,
-      boolean makePrivateIdFile, int refsetParentConceptNid,
-      Date previousReleaseDate, Set<Integer> stampsToRemove,
+      Date effectiveDate,
+      int pathNid, ViewCoordinate viewCoordinate,
       Collection<Integer> taxonomyParentNids) throws IOException, ContradictionException {
     this.directory = directory;
     directory.mkdirs();
@@ -205,161 +191,64 @@ public class Rf2Export implements
     this.language = language;
     this.country = country;
     this.namespace = namespace;
-    this.module = module;
-    this.stampNids = stampNids;
+    this.pathNid = pathNid;
     this.viewCoordinate = viewCoordinate;
-    this.conceptsToProcess = conceptsToProcess;
     this.effectiveDateString =
         TimeHelper.getShortFileDateFormat().format(effectiveDate);
-    this.excludedRefsetIds = excludedRefsetIds;
-    this.makePrivateIdFile = makePrivateIdFile;
-    this.sameCycleStampNids = stampsToRemove;
     this.taxonomyParentNids = taxonomyParentNids;
-    if (releaseType.equals(ReleaseType.DELTA) && previousReleaseDate != null) {
-      for (int stamp : stampNids) {
-        long time = dataStore.getTimeForStamp(stamp);
-        if (time < previousReleaseDate.getTime()) {
-          stampNids.remove(stamp);
-        }
-      }
-    }
-    setup();
-  }
-
-  /**
-   * Instantiates a new rf2 export.
-   *
-   * @param directory specifying where to write the files
-   * @param releaseType the <code>ReleaseType</code> representing the type of
-   *          release
-   * @param language the <code>LanguageCode</code> representing the language of
-   *          the release
-   * @param country the <code>COUNTRY_CODE</code> representing the country
-   *          associated with the release
-   * @param namespace the String representing the namespace associated with the
-   *          released content
-   * @param module the String representing the module associated with the
-   *          released content
-   * @param effectiveDate specifying the official release date
-   * @param stampNids the valid stamp nids associated with content for this
-   *          release
-   * @param viewCoordinate specifying which versions of the concepts to include
-   *          in this release. Should not include all status values.
-   * @param excludedRefsetIds the set of nids associated with refexes which
-   *          should not be included in the release (for example, workflow
-   *          refsets)
-   * @param conceptsToProcess the set of nids representing the concepts to be
-   *          included in this release
-   * @param makePrivateIdFile set to <code>true</code> to make an auxiliary
-   *          identifier file
-   * @param refsetParentConceptNid an integer representing the parent concept of
-   *          simple refsets
-   * @param previousReleaseDate the date of the previous release
-   * @param stampsToRemove stamps to not include in the release
-   * @param taxonomyParentNids an integer representing the parent of taxonomy to
-   *          release
-   * @param conNumRefesetParentConceptNid an integer representing the parent
-   *          concept of number float refsets
-   * @throws IOException signals that an I/O exception has occurred
-   * @throws ContradictionException 
-   */
-  public Rf2Export(File directory, ReleaseType releaseType,
-      LanguageCode language, COUNTRY_CODE country, String namespace,
-      String module, Date effectiveDate,       Set<Integer> stampNids, ViewCoordinate viewCoordinate,
-      Set<Integer> excludedRefsetIds, NativeIdSetBI conceptsToProcess,
-      boolean makePrivateIdFile, int refsetParentConceptNid,
-      Date previousReleaseDate, Set<Integer> stampsToRemove,
-      Collection<Integer> taxonomyParentNids, Integer conNumRefesetParentConceptNid)
-      throws IOException, ContradictionException {
-    this.directory = directory;
-    directory.mkdirs();
-    this.releaseType = releaseType;
-    this.effectiveDate = effectiveDate;
-    this.language = language;
-    this.country = country;
-    this.namespace = namespace;
-    this.module = module;
-    this.stampNids = stampNids;
-    this.viewCoordinate = viewCoordinate;
-    this.conceptsToProcess = conceptsToProcess;
-    this.effectiveDateString =
-        TimeHelper.getShortFileDateFormat().format(effectiveDate);
-    this.excludedRefsetIds = excludedRefsetIds;
-    this.makePrivateIdFile = makePrivateIdFile;
-    this.sameCycleStampNids = stampsToRemove;
-    this.taxonomyParentNids = taxonomyParentNids;
-
-    if (releaseType.equals(ReleaseType.DELTA) && previousReleaseDate != null) {
-      for (int stamp : stampNids) {
-        long time = dataStore.getTimeForStamp(stamp);
-        if (time < previousReleaseDate.getTime()) {
-          stampNids.remove(stamp);
-        }
-      }
-    }
     setup();
   }
 
   private void setup() throws FileNotFoundException,
     UnsupportedEncodingException, IOException, ContradictionException {
+	File terminologyDir = new File(directory, "Terminology");
+	terminologyDir.mkdirs();
     File conceptsFile =
-        new File(directory, "sct2_Concept_UUID_" + releaseType.suffix + "_"
+        new File(terminologyDir, "sct2_Concept_UUID_" + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
     File descriptionsFile =
-        new File(directory, "sct2_Description_UUID_" + releaseType.suffix + "_"
+        new File(terminologyDir, "sct2_Description_UUID_" + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
     File relationshipsFile =
-        new File(directory, "sct2_Relationship_UUID_" + releaseType.suffix
+        new File(terminologyDir, "sct2_Relationship_UUID_" + releaseType.suffix
             + "_" + country.getFormatedCountryCode().toUpperCase() + namespace
             + "_" + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
     File relationshipsStatedFile =
-        new File(directory, "sct2_StatedRelationship_UUID_"
+        new File(terminologyDir, "sct2_StatedRelationship_UUID_"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
-    File privateIdentifiersFile = null;
     File identifiersFile = null;
-    if (makePrivateIdFile) {
-      privateIdentifiersFile =
-          new File(directory, "sct2_IdentifierAuxiliary_UUID_"
-              + releaseType.suffix + "_"
-              + country.getFormatedCountryCode().toUpperCase() + namespace
-              + "_" + TimeHelper.getShortFileDateFormat().format(effectiveDate)
-              + ".txt");
-      identifiersFile =
-          new File(directory, "sct2_Identifier_UUID_" + releaseType.suffix
-              + "_" + country.getFormatedCountryCode().toUpperCase()
-              + namespace + "_"
-              + TimeHelper.getShortFileDateFormat().format(effectiveDate)
-              + ".txt");
-    } else {
-      identifiersFile =
-          new File(directory, "sct2_Identifier_UUID_" + releaseType.suffix
-              + "_" + country.getFormatedCountryCode().toUpperCase()
-              + namespace + "_"
-              + TimeHelper.getShortFileDateFormat().format(effectiveDate)
-              + ".txt");
-    }
-    File associationFile =
-        new File(directory, "der2_cRefset_AssociationReference_UUID"
+	  identifiersFile =
+	      new File(terminologyDir, "sct2_Identifier_UUID_" + releaseType.suffix
+	          + "_" + country.getFormatedCountryCode().toUpperCase()
+	          + namespace + "_"
+	          + TimeHelper.getShortFileDateFormat().format(effectiveDate)
+	          + ".txt");
+	File contentDir = new File(directory, "Refset" + File.separator + "Content");
+    contentDir.mkdirs();
+	File associationFile =
+        new File(contentDir, "der2_cRefset_AssociationReference_UUID"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
     File attributeValueFile =
-        new File(directory, "der2_cRefset_AttributeValue_UUID"
+        new File(contentDir, "der2_cRefset_AttributeValue_UUID"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
+    File languageDir = new File(directory, "Refset" + File.separator + "Language");
+    languageDir.mkdirs();
     File langRefsetsFile =
-        new File(directory, "der2_cRefset_Language_UUID" + releaseType.suffix
+        new File(languageDir, "der2_cRefset_Language_UUID" + releaseType.suffix
             + "-" + LanguageCode.EN.getFormatedLanguageCode() + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
@@ -368,26 +257,28 @@ public class Rf2Export implements
     if (!language.getFormatedLanguageNoDialectCode().equals(
         LanguageCode.EN.getFormatedLanguageCode())) {
       otherLangRefsetsFile =
-          new File(directory, "der2_cRefset_Language_UUID" + releaseType.suffix
+          new File(languageDir, "der2_cRefset_Language_UUID" + releaseType.suffix
               + "-" + language.getFormatedLanguageNoDialectCode() + "_"
               + country.getFormatedCountryCode().toUpperCase() + namespace
               + "_" + TimeHelper.getShortFileDateFormat().format(effectiveDate)
               + ".txt");
     }
+    File metadataDir = new File(directory, "Refset" + File.separator + "Metadata");
+    metadataDir.mkdirs();
     File modDependFile =
-        new File(directory, "der2_ssRefset_ModuleDependency_UUID"
+        new File(metadataDir, "der2_ssRefset_ModuleDependency_UUID"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
     File descTypeFile =
-        new File(directory, "der2_ciRefset_DescriptionType_UUID"
+        new File(metadataDir, "der2_ciRefset_DescriptionType_UUID"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
             + ".txt");
     File refsetDescFile =
-        new File(directory, "der2_cciRefset_RefsetDescriptor_UUID"
+        new File(metadataDir, "der2_cciRefset_RefsetDescriptor_UUID"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
             + TimeHelper.getShortFileDateFormat().format(effectiveDate)
@@ -406,23 +297,10 @@ public class Rf2Export implements
         new FileOutputStream(relationshipsStatedFile);
     relationshipsStatedWriter =
         new BufferedWriter(new OutputStreamWriter(relStatedOs, "UTF8"));
-    if (makePrivateIdFile) {
-      FileOutputStream idOs = new FileOutputStream(identifiersFile);
-      publicIdentifiersWriter =
-          new BufferedWriter(new OutputStreamWriter(idOs, "UTF8"));
-      FileOutputStream privIdOs = new FileOutputStream(privateIdentifiersFile);
-      identifiersWriter =
-          new BufferedWriter(new OutputStreamWriter(privIdOs, "UTF8"));
 
-      for (Rf2File.IdentifiersFileFields field : Rf2File.IdentifiersFileFields
-          .values()) {
-        publicIdentifiersWriter.write(field.headerText + field.seperator);
-      }
-    } else {
-      FileOutputStream pubIdOs = new FileOutputStream(identifiersFile);
-      identifiersWriter =
-          new BufferedWriter(new OutputStreamWriter(pubIdOs, "UTF8"));
-    }
+	  FileOutputStream pubIdOs = new FileOutputStream(identifiersFile);
+	  identifiersWriter =
+	      new BufferedWriter(new OutputStreamWriter(pubIdOs, "UTF8"));
     FileOutputStream associationOs = new FileOutputStream(associationFile);
     associationWriter =
         new BufferedWriter(new OutputStreamWriter(associationOs, "UTF8"));
@@ -527,6 +405,11 @@ public class Rf2Export implements
     for (ConceptVersionBI desc : descs) {
       possibleLangRefexNids.add(desc.getNid());
     }
+    conceptsToProcess = dataStore.getAllConceptNids();
+  }
+  
+  public void export() throws Exception {
+	  dataStore.iterateConceptDataInSequence(this);
   }
 
   // ~--- methods -------------------------------------------------------------
@@ -609,12 +492,8 @@ public class Rf2Export implements
    */
   private void process(ConceptChronicleBI concept) throws Exception {
     boolean write = true;
-    if (sameCycleStampNids.contains(concept.getConceptAttributes()
-        .getPrimordialVersion().getStamp())) {
-      if (!concept.getVersion(viewCoordinate).isActive()) {
-        // concept was created and retired in same cycle, don't write any part
+    if (concept.getVersion(viewCoordinate).getPathNid() != pathNid) {
         write = false;
-      }
     }
     if (write) {
       ConceptAttributeChronicleBI ca = concept.getConceptAttributes();
@@ -649,8 +528,9 @@ public class Rf2Export implements
    * @throws IOException signals that an I/O exception has occurred
    * @throws NoSuchAlgorithmException indicates a no such algorithm exception
    *           has occurred
+ * @throws ContradictionException 
    */
-  public void writeOneTimeFiles() throws IOException, NoSuchAlgorithmException {
+  public void writeOneTimeFiles() throws IOException, NoSuchAlgorithmException, ContradictionException {
     for (Integer refexNid : langRefexNids) {
       processLanguageRefsetDesc(refexNid);
     }
@@ -678,8 +558,7 @@ public class Rf2Export implements
             conceptAttributeChronicle.getVersion(viewCoordinate);
         for (ConceptAttributeVersionBI<?> ca : conceptAttributeChronicle
             .getVersions()) {
-          if (!sameCycleStampNids.contains(ca.getStamp())
-              || (latest != null && ca.getStamp() == latest.getStamp())) {
+          if (ca.getPathNid() == pathNid) {
             versions.add(ca);
           }
         }
@@ -693,16 +572,10 @@ public class Rf2Export implements
       boolean write = true;
 
       for (ConceptAttributeVersionBI<?> car : versions) {
-        if (sameCycleStampNids.contains(primordialVersion.getStamp())
-            && sameCycleStampNids.contains(car.getStamp())) {
-          if (car == null || !car.isActive()) { // concept has been created and
-                                                // inactivated in the same
-                                                // release cycle
+        if (car.getPathNid() != pathNid) {
             write = false;
-          }
         }
         if (write) {
-          if (stampNids.contains(car.getStamp())) {
             for (Rf2File.ConceptsFileFields field : Rf2File.ConceptsFileFields
                 .values()) {
               switch (field) {
@@ -718,29 +591,24 @@ public class Rf2Export implements
                   break;
 
                 case EFFECTIVE_TIME:
-                  if (sameCycleStampNids.contains(car.getStamp())) {
-                    conceptsWriter.write(effectiveDateString + field.seperator);
-                  } else {
                     conceptsWriter.write(TimeHelper.getShortFileDateFormat()
                         .format(car.getTime()) + field.seperator);
-                  }
                   break;
 
                 case ID:
-                  conceptsWriter.write(dataStore.getUuidPrimordialForNid(car
+                  conceptsWriter.write(getSctIdOrUuidForNid(car
                       .getNid()) + field.seperator);
 
                   break;
 
                 case MODULE_ID:
-                  conceptsWriter.write(module + field.seperator);
+                  conceptsWriter.write(ConceptViewerHelper.getSctId(WBUtility.getConceptVersion(car.getModuleNid())) + field.seperator);
 
                   break;
                 default:
                   break;
               }
             }
-          }
         }
       }
     }
@@ -767,8 +635,7 @@ public class Rf2Export implements
         DescriptionVersionBI<?> latest =
             descriptionChronicle.getVersion(viewCoordinate);
         for (DescriptionVersionBI<?> d : descriptionChronicle.getVersions()) {
-          if (!sameCycleStampNids.contains(d.getStamp())
-              || (latest != null && d.getStamp() == latest.getStamp())) {
+          if (d.getPathNid() == pathNid) {
             versions.add(d);
           }
         }
@@ -782,16 +649,10 @@ public class Rf2Export implements
       boolean write = true;
 
       for (DescriptionVersionBI<?> descr : versions) {
-        if (sameCycleStampNids.contains(primordialVersion.getStamp())
-            && sameCycleStampNids.contains(descr.getStamp())) {
-          if (descr == null || !descr.isActive()) { // description has been
-                                                    // created and retired in
-                                                    // the same release cycle
-            write = false;
-          }
+        if (descr.getPathNid() != pathNid) {
+        		write = false;
         }
         if (write) {
-          if (stampNids.contains(descr.getStamp())) {
             for (Rf2File.DescriptionsFileFields field : Rf2File.DescriptionsFileFields
                 .values()) {
               switch (field) {
@@ -802,31 +663,24 @@ public class Rf2Export implements
                   break;
 
                 case EFFECTIVE_TIME:
-                  if (sameCycleStampNids.contains(descr.getStamp())) {
-                    descriptionsWriter.write(effectiveDateString
-                        + field.seperator);
-                  } else {
                     descriptionsWriter.write(TimeHelper
                         .getShortFileDateFormat().format(descr.getTime())
                         + field.seperator);
-                  }
                   break;
 
                 case ID:
-                  descriptionsWriter.write(dataStore
-                      .getUuidPrimordialForNid(descriptionChronicle.getNid())
+                  descriptionsWriter.write(getSctIdOrUuidForNid(descriptionChronicle.getNid())
                       + field.seperator);
 
                   break;
 
                 case MODULE_ID:
-                  descriptionsWriter.write(module + field.seperator);
+                  descriptionsWriter.write(ConceptViewerHelper.getSctId(WBUtility.getConceptVersion(descr.getModuleNid())) + field.seperator);
 
                   break;
 
                 case CONCEPT_ID:
-                  descriptionsWriter.write(dataStore
-                      .getUuidPrimordialForNid(descriptionChronicle
+                  descriptionsWriter.write(getSctIdOrUuidForNid(descriptionChronicle
                           .getConceptNid())
                       + field.seperator);
 
@@ -838,8 +692,7 @@ public class Rf2Export implements
                   break;
 
                 case TYPE_ID:
-                  descriptionsWriter.write(dataStore
-                      .getUuidPrimordialForNid(descr.getTypeNid())
+                  descriptionsWriter.write(getSctIdOrUuidForNid(descr.getTypeNid())
                       + field.seperator);
 
                   break;
@@ -859,12 +712,26 @@ public class Rf2Export implements
               }
             }
           }
-        }
       }
     }
   }
 
-  /**
+  private String getSctIdOrUuidForNid(int typeNid) throws IOException {
+	  String sctId = null;
+		try {
+			ComponentVersionBI componentVersion = dataStore.getComponentVersion(viewCoordinate, typeNid);
+			if(componentVersion != null)
+				sctId = ConceptViewerHelper.getSctId(componentVersion);
+		} catch (ContradictionException e) {
+			e.printStackTrace();
+		}
+	  if(sctId == null || "Unreleased".equals(sctId))
+		  sctId = dataStore
+            .getUuidPrimordialForNid(typeNid).toString();
+	  return sctId;
+  }
+
+/**
    * Determines if a relationship is stated or inferred and processes the
    * relationship accordingly. Only the versions which have a stamp nid in the
    * specified collection of stamp nids will be written.
@@ -883,8 +750,7 @@ public class Rf2Export implements
         RelationshipVersionBI<?> latest =
             relationshipChronicle.getVersion(viewCoordinate);
         for (RelationshipVersionBI<?> r : relationshipChronicle.getVersions()) {
-          if (!sameCycleStampNids.contains(r.getStamp())
-              || (latest != null && r.getStamp() == latest.getStamp())) {
+          if (r.getPathNid() == pathNid) {
             versions.add(r);
           }
         }
@@ -900,15 +766,10 @@ public class Rf2Export implements
       boolean inTaxonomy = false;
       for (RelationshipVersionBI<?> rv : versions) {
         // TODO: need to support refset specs
-        if (sameCycleStampNids.contains(primordialVersion.getStamp())
-            && sameCycleStampNids.contains(rv.getStamp())) {
-          if (!rv.isActive()) { // relationship has been created and retired in
-                                // the same release cycle
+        if (rv.getPathNid() != pathNid) {
             write = false;
-          }
         }
         if (write) {
-          if (stampNids.contains(rv.getStamp())) {
             for (int parentNid : taxonomyParentNids) {
               if (dataStore.isKindOf(rv.getDestinationNid(), parentNid,
                   viewCoordinate)) {
@@ -927,7 +788,6 @@ public class Rf2Export implements
             }
 
           }
-        }
       }
     }
   }
@@ -954,36 +814,29 @@ public class Rf2Export implements
           break;
 
         case EFFECTIVE_TIME:
-          if (sameCycleStampNids.contains(relationshipVersion.getStamp())) {
-            relationshipsWriter.write(effectiveDateString + field.seperator);
-          } else {
             relationshipsWriter.write(TimeHelper.getShortFileDateFormat()
                 .format(relationshipVersion.getTime()) + field.seperator);
-          }
           break;
 
         case ID:
-          relationshipsWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getNid())
+          relationshipsWriter.write(getSctIdOrUuidForNid(relationshipVersion.getNid())
               + field.seperator);
 
           break;
 
         case MODULE_ID:
-          relationshipsWriter.write(module + field.seperator);
+          relationshipsWriter.write(getSctIdOrUuidForNid(relationshipVersion.getModuleNid()) + field.seperator);
 
           break;
 
         case SOURCE_ID:
-          relationshipsWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getConceptNid())
+          relationshipsWriter.write(getSctIdOrUuidForNid(relationshipVersion.getConceptNid())
               + field.seperator);
 
           break;
 
         case DESTINATION_ID:
-          relationshipsWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getDestinationNid())
+          relationshipsWriter.write(getSctIdOrUuidForNid(relationshipVersion.getDestinationNid())
               + field.seperator);
 
           break;
@@ -995,15 +848,13 @@ public class Rf2Export implements
           break;
 
         case TYPE_ID:
-          relationshipsWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getTypeNid())
+          relationshipsWriter.write(getSctIdOrUuidForNid(relationshipVersion.getTypeNid())
               + field.seperator);
 
           break;
 
         case CHARCTERISTIC_ID:
-          relationshipsWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion
+          relationshipsWriter.write(getSctIdOrUuidForNid(relationshipVersion
                   .getCharacteristicNid())
               + field.seperator);
 
@@ -1040,37 +891,29 @@ public class Rf2Export implements
           break;
 
         case EFFECTIVE_TIME:
-          if (sameCycleStampNids.contains(relationshipVersion.getStamp())) {
-            relationshipsStatedWriter.write(effectiveDateString
-                + field.seperator);
-          } else {
             relationshipsStatedWriter.write(TimeHelper.getShortFileDateFormat()
                 .format(relationshipVersion.getTime()) + field.seperator);
-          }
           break;
 
         case ID:
-          relationshipsStatedWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getNid())
+          relationshipsStatedWriter.write(getSctIdOrUuidForNid(relationshipVersion.getNid())
               + field.seperator);
 
           break;
 
         case MODULE_ID:
-          relationshipsStatedWriter.write(module + field.seperator);
+          relationshipsStatedWriter.write(ConceptViewerHelper.getSctId(WBUtility.getConceptVersion(relationshipVersion.getModuleNid())) + field.seperator);
 
           break;
 
         case SOURCE_ID:
-          relationshipsStatedWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getConceptNid())
+          relationshipsStatedWriter.write(getSctIdOrUuidForNid(relationshipVersion.getConceptNid())
               + field.seperator);
 
           break;
 
         case DESTINATION_ID:
-          relationshipsStatedWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getDestinationNid())
+          relationshipsStatedWriter.write(getSctIdOrUuidForNid(relationshipVersion.getDestinationNid())
               + field.seperator);
 
           break;
@@ -1082,15 +925,13 @@ public class Rf2Export implements
           break;
 
         case TYPE_ID:
-          relationshipsStatedWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion.getTypeNid())
+          relationshipsStatedWriter.write(getSctIdOrUuidForNid(relationshipVersion.getTypeNid())
               + field.seperator);
 
           break;
 
         case CHARCTERISTIC_ID:
-          relationshipsStatedWriter.write(dataStore
-              .getUuidPrimordialForNid(relationshipVersion
+          relationshipsStatedWriter.write(getSctIdOrUuidForNid(relationshipVersion
                   .getCharacteristicNid())
               + field.seperator);
 
@@ -1132,8 +973,7 @@ public class Rf2Export implements
                                                                           // viewCoordinate
           for (Object o : refexChronicle.getVersions()) {
             RefexVersionBI<?> r = (RefexVersionBI<?>) o;
-            if (!sameCycleStampNids.contains(r.getStamp())
-                || (latest != null && r.getStamp() == latest.getStamp())) {
+            if (r.getPathNid() == pathNid) {
               versions.add(r);
             }
           }
@@ -1147,7 +987,7 @@ public class Rf2Export implements
         boolean write = true;
         for (RefexVersionBI<?> rv : versions) {
           if (!rv.isActive()) {
-            if (sameCycleStampNids.contains(rv.getStamp())) {
+            if (rv.getPathNid() != pathNid) {
               write = false;
             }
           }
@@ -1161,7 +1001,7 @@ public class Rf2Export implements
               write = false;
             }
           }
-          if (stampNids.contains(rv.getStamp()) && write) {
+          if (write) {
             if (refexChronicle.getNid() == SnomedMetadataRf2.GB_ENGLISH_REFSET_RF2
                 .getNid()) {
               processLang(rv);
@@ -1201,12 +1041,8 @@ public class Rf2Export implements
             break;
 
           case EFFECTIVE_TIME:
-            if (sameCycleStampNids.contains(refexVersion.getStamp())) {
-              langRefsetsWriter.write(effectiveDateString + field.seperator);
-            } else {
               langRefsetsWriter.write(TimeHelper.getShortFileDateFormat()
                   .format(refexVersion.getTime()) + field.seperator);
-            }
             break;
 
           case ACTIVE:
@@ -1216,7 +1052,7 @@ public class Rf2Export implements
             break;
 
           case MODULE_ID:
-            langRefsetsWriter.write(module + field.seperator);
+            langRefsetsWriter.write(ConceptViewerHelper.getSctId(WBUtility.getConceptVersion(refexVersion.getModuleNid())) + field.seperator);
 
             break;
 
@@ -1269,13 +1105,8 @@ public class Rf2Export implements
             break;
 
           case EFFECTIVE_TIME:
-            if (sameCycleStampNids.contains(refexVersion.getStamp())) {
-              otherLangRefsetsWriter.write(effectiveDateString
-                  + field.seperator);
-            } else {
               otherLangRefsetsWriter.write(TimeHelper.getShortFileDateFormat()
                   .format(refexVersion.getTime()) + field.seperator);
-            }
             break;
 
           case ACTIVE:
@@ -1285,7 +1116,7 @@ public class Rf2Export implements
             break;
 
           case MODULE_ID:
-            otherLangRefsetsWriter.write(module + field.seperator);
+            otherLangRefsetsWriter.write(ConceptViewerHelper.getSctId(WBUtility.getConceptVersion(refexVersion.getModuleNid())) + field.seperator);
 
             break;
 
@@ -1325,10 +1156,11 @@ public class Rf2Export implements
    * @throws IOException signals that an I/O exception has occurred
    * @throws NoSuchAlgorithmException indicates that a no such algorithm
    *           exception has occurred
+ * @throws ContradictionException 
    * @see Rf2File.RefsetDescriptorFileFields
    */
   private void processLanguageRefsetDesc(int refexNid) throws IOException,
-    NoSuchAlgorithmException {
+    NoSuchAlgorithmException, ContradictionException {
     ConceptSpec refsetDescriptor =
         new ConceptSpec(
             "Reference set descriptor reference set (foundation metadata concept)",
@@ -1363,7 +1195,7 @@ public class Rf2Export implements
           break;
 
         case MODULE_ID:
-          refsetDescWriter.write(module + field.seperator);
+          refsetDescWriter.write(ConceptViewerHelper.getSctId(WBUtility.getConceptVersion(dataStore.getComponentVersion(viewCoordinate, refexNid).getModuleNid())) + field.seperator);
 
           break;
 
@@ -1374,7 +1206,7 @@ public class Rf2Export implements
           break;
 
         case REFERENCED_COMPONENT_ID:
-          refsetDescWriter.write(dataStore.getUuidPrimordialForNid(refexNid)
+          refsetDescWriter.write(getSctIdOrUuidForNid(refexNid)
               + field.seperator);
 
           break;
