@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.ie;
 
+import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.exporter.EConceptExporter;
 import gov.va.isaac.ie.exporter.Rf2Export;
@@ -25,7 +26,6 @@ import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
 import gov.va.isaac.model.ExportType;
 import gov.va.isaac.models.owl.exporter.OWLExporter;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,9 +37,7 @@ import java.util.Collection;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import javax.validation.ValidationException;
-
 import org.ihtsdo.otf.tcc.api.country.COUNTRY_CODE;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
@@ -115,7 +113,7 @@ public class ExportFileHandler {
         	String namespace = "1000000";
         	ReleaseType releaseType = ReleaseType.SNAPSHOT;
         	Collection<Integer> taxonomyParentNids = new ArrayList<Integer>();
-        	taxonomyParentNids.add(WBUtility.ISAAC_ROOT.getNid());
+        	taxonomyParentNids.add(ISAAC.ISAAC_ROOT.getNid());
         	File releaseFolder = new File(folder, releaseType.suffix);
 			Rf2Export rf2Export = new Rf2Export(releaseFolder, releaseType, LanguageCode.EN_US, COUNTRY_CODE.US, namespace, Calendar.getInstance().getTime(), pathNid, WBUtility.getViewCoordinate(), taxonomyParentNids );
 			rf2Export.export();
