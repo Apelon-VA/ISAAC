@@ -1089,7 +1089,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		initializeWorkflowServices();
 
 		// TODO: eliminate hard-coding of userName
-		final WorkflowProcess process = WorkflowProcess.REVIEW;
+		final WorkflowProcess process = WorkflowProcess.REVIEW3;
 		final String userName = "alejandro";
 		String preferredDescription = null;
 		try {
