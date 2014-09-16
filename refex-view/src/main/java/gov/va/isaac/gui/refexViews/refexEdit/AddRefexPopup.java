@@ -377,6 +377,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				
 				Label l = new Label(ci.getColumnName());
 				l.getStyleClass().add("boldLabel");
+				l.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(l));
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
 				int col = 0;
 				gp.add(l, col++, row);
@@ -465,7 +466,9 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 					gp.add(stackPane, col++, row);
 				}
-				gp.add((polymorphicType == null ? new Label(ci.getColumnDataType().getDisplayName()) : polymorphicType), col++, row++);
+				Label colType = new Label(ci.getColumnDataType().getDisplayName());
+				colType.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(colType));
+				gp.add((polymorphicType == null ? colType : polymorphicType), col++, row++);
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
