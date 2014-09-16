@@ -58,7 +58,7 @@ public class InitiateWorkflowViewController {
 	}
 
 	@FXML private BorderPane mainBorderPane;
-	@FXML private ComboBox<String> workflowProcessesComboBox;
+	@FXML private ComboBox<WorkflowProcess> workflowProcessesComboBox;
 	@FXML private Button cancelButton;
 	@FXML private Button initiateButton;
 
@@ -177,14 +177,14 @@ public class InitiateWorkflowViewController {
 		workflowProcessesComboBox.setEditable(false);
 		workflowProcessesComboBox.getSelectionModel().selectFirst();
 		workflowProcessesComboBox.setCellFactory((p) -> {
-			final ListCell<String> cell = new ListCell<String>() {
+			final ListCell<WorkflowProcess> cell = new ListCell<WorkflowProcess>() {
 				@Override
-				protected void updateItem(String a, boolean bln) {
+				protected void updateItem(WorkflowProcess a, boolean bln) {
 					super.updateItem(a, bln);
 
 					if(a != null){
-						setText(a);
-					}else{
+						setText(a.getText());
+					} else {
 						setText(null);
 					}
 				}
@@ -196,7 +196,7 @@ public class InitiateWorkflowViewController {
 
 	private void loadWorkflowProcessesComboBox() {
 		workflowProcessesComboBox.getItems().clear();
-		workflowProcessesComboBox.getItems().addAll(WorkflowProcess.REVIEW.getText(), WorkflowProcess.DUAL_REVIEW.getText());
+		workflowProcessesComboBox.getItems().addAll(WorkflowProcess.values());
 		workflowProcessesComboBox.getSelectionModel().selectFirst();
 	}
 
@@ -209,10 +209,10 @@ public class InitiateWorkflowViewController {
 
 	private void initiateWorkflow() {
 		String description = componentDescriptionTextField.getText();
-		String process = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
+		WorkflowProcess process = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
 		
 		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + description + "\", conceptUuid=\"" + componentOrConcept.getPrimordialUuid().toString() + "\", user=\"" + getUserName() + "\", processName=\"" + process + "\")");
-		ProcessInstanceCreationRequestI createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), getUserName(), process, new HashMap<String,String>());
+		ProcessInstanceCreationRequestI createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), getUserName(), process.getText(), new HashMap<String,String>());
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 
 		getWorkflowService().synchronizeWithRemote();
