@@ -22,8 +22,10 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
+import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
@@ -142,7 +144,26 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		referencedComponent.getStyleClass().add("boldLabel");
 		gp_.add(referencedComponent, 0, 0);
 
-		unselectableComponentLabel_ = new Label();
+		unselectableComponentLabel_ = new CopyableLabel();
+		unselectableComponentLabel_.setWrapText(true);
+		AppContext.getService(DragRegistry.class).setupDragOnly(unselectableComponentLabel_, () -> 
+		{
+			if (editRefex_ == null)
+			{
+				if (createRefexFocus_.getComponentNid() != null)
+				{
+					return createRefexFocus_.getComponentNid() + "";
+				}
+				else
+				{
+					return createRefexFocus_.getAssemblyNid() + "";
+				}
+			}
+			else
+			{
+				return editRefex_.getRefex().getAssemblageNid() + "";
+			}
+		});
 		//delay adding till we know which row
 
 		Label assemblageConceptLabel = new Label("Assemblage Concept");
@@ -296,7 +317,10 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		//don't actually put this in the view
 		selectableConcept_.set(WBUtility.getConceptVersion(editRefex_.getRefex().getReferencedComponentNid()));
 		
-		gp_.add(new Label(WBUtility.getDescription(editRefex_.getRefex().getReferencedComponentNid())), 1, 0);
+		Label refComp = new CopyableLabel(WBUtility.getDescription(editRefex_.getRefex().getReferencedComponentNid()));
+		refComp.setWrapText(true);
+		AppContext.getService(DragRegistry.class).setupDragOnly(refComp, () -> {return editRefex_.getRefex().getReferencedComponentNid() + "";});
+		gp_.add(refComp, 1, 0);
 		refexDropDownOptions.clear();
 		try
 		{
