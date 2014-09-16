@@ -24,13 +24,16 @@ import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.InitiateWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
@@ -42,6 +45,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -71,6 +75,7 @@ public class CommonMenus
 		SEND_TO("Send To", null),
 			LIST_VIEW("List View", Images.LIST_VIEW),
 			WORKFLOW_VIEW("Workflow View", Images.INBOX),
+			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization View", Images.INBOX),
 		
 		COPY("Copy", null),
 			COPY_TEXT("Copy Text", Images.COPY),
@@ -527,7 +532,7 @@ public class CommonMenus
 		}
 
 		// Menu item to generate New Workflow Instance.
-		MenuItem newWorkflowInstanceItem = createNewMenuItem(
+		MenuItem newWorkflowViewItem = createNewMenuItem(
 				CommonMenuItem.WORKFLOW_VIEW,
 				builder,
 				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
@@ -541,11 +546,36 @@ public class CommonMenus
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
 				}
 				);
-		if (newWorkflowInstanceItem != null)
+		if (newWorkflowViewItem != null)
 		{
-			menuItems.add(newWorkflowInstanceItem);
+			menuItems.add(newWorkflowViewItem);
 		}
 
+		// Menu item to generate New Workflow Instance.
+		MenuItem newWorkflowInstanceInitializationItem = createNewMenuItem(
+				CommonMenuItem.WORKFLOW_INITIALIZATION_VIEW,
+				builder,
+				() -> {
+					return nids.getObservableNidCount().get() == 1;
+					}, // canHandle
+				nids.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> { // onHandlable
+					InitiateWorkflowViewI view = AppContext.getService(InitiateWorkflowViewI.class);
+					if (view == null) {
+						LOG.error("HK2 FAILED to provide requested service: " + InitiateWorkflowViewI.class);
+					}
+					view.setComponent(nids.getNIds().iterator().next());
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				},
+				() -> { // onNotHandlable
+					AppContext.getCommonDialogs().showInformationDialog("Invalid Component or invalid number of Components selected", "Selection must be of exactly one valid Component");
+				}
+				);
+		if (newWorkflowInstanceInitializationItem != null)
+		{
+			menuItems.add(newWorkflowInstanceInitializationItem);
+		}
+				
 		return menuItems;
 	}
 

@@ -239,8 +239,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private TaxonomyViewI taxonomyView = null;
 	private final BooleanProperty taxonomyPanelShouldFilterProperty = new SimpleBooleanProperty(false);
 	private SctTreeItemSearchResultsDisplayPolicies taxonomyDisplayPolicies = null;
+	private Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
 	
 	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
+	
 	private SearchHandle ssh = null;
 
 	private Window windowForTableViewExportDialog;
@@ -311,8 +313,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			@Override
 			public void handle(ActionEvent event) {
 				exportResultsToSearchTaxonomyPanel();
-						}
+			}
 		});
+		//exportResultsToSearchTaxonomyPanelButton.setVisible(false);
 		
 		initializeWorkflowServices();
 
@@ -379,33 +382,101 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
 			searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
 			searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
-			//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
 			LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
 		}
-
-		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
-		taxonomyDisplayPolicies.getSearchResults().clear();
-		for (CompositeSearchResult c : searchResultsTable.getItems()) {
-			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
-
-			Set<ConceptVersionBI> ancestorNids = null;
-			try {
-				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
-
-				for (ConceptVersionBI concept : ancestorNids) {
-					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
-				}
-			} catch (/* IOException | ContradictionException */ Exception e) {
-				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
-				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-				e.printStackTrace();
+		
+		if (configureDisplayPoliciesTask != null) {
+			if (configureDisplayPoliciesTask.isRunning()) {
+				configureDisplayPoliciesTask.cancel();
 			}
 		}
+		configureDisplayPoliciesTask = new Task<SctTreeItemSearchResultsDisplayPolicies>() {
+			boolean cancelled = false;
+			
+			@Override
+			protected SctTreeItemSearchResultsDisplayPolicies call() throws Exception {
+				HashSet<Integer> searchResultAncestors = new HashSet<>();
+				HashSet<Integer> searchResults = new HashSet<>();
 
-		taxonomyView.refresh();
+				for (CompositeSearchResult c : searchResultsTable.getItems()) {
+					if (cancelled) {
+						return taxonomyDisplayPolicies;
+					}
+
+					searchResults.add(c.getContainingConcept().getNid());
+
+					Set<ConceptVersionBI> ancestorNids = null;
+					ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+
+					for (ConceptVersionBI concept : ancestorNids) {
+						searchResultAncestors.add(concept.getNid());
+					}
+
+				}
+				
+				taxonomyDisplayPolicies.setSearchResultAncestors(searchResultAncestors);
+				taxonomyDisplayPolicies.setSearchResults(searchResults);
+				
+				return taxonomyDisplayPolicies;
+			}
+
+			@Override
+			protected void succeeded() {
+				if (! cancelled) {
+					taxonomyView.refresh();
+				}
+			}
+			
+			@Override
+			public boolean cancel(boolean mayInterruptIfRunning) {
+				cancelled = true;
+
+				return super.cancel(mayInterruptIfRunning);
+			}
+
+			@Override
+			protected void failed() {
+				Throwable e = getException();
+				
+				if (e != null) {
+					String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+					String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+					String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+					e.printStackTrace();
+				} else {
+					LOG.error("Task configureDisplayPoliciesTask FAILED without throwing an exception/throwable");
+				}
+			}
+		};
+
+		Utility.execute(configureDisplayPoliciesTask);
+		
+//		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
+//		taxonomyDisplayPolicies.getSearchResults().clear();
+//		
+//		for (CompositeSearchResult c : searchResultsTable.getItems()) {
+//			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
+//
+//			Set<ConceptVersionBI> ancestorNids = null;
+//			try {
+//				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+//
+//				for (ConceptVersionBI concept : ancestorNids) {
+//					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
+//				}
+//			} catch (/* IOException | ContradictionException */ Exception e) {
+//				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+//				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+//				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+//				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+//
+//				e.printStackTrace();
+//			}
+//		}
+//
+//		taxonomyView.refresh();
 	}
 	
 	private void initializeTaxonomyPanel() {
@@ -1185,16 +1256,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										nids.add(r.getContainingConcept().getNid());
+										//nids.add(r.getContainingConcept().getNid());
 										// TODO: modify to send component nid, if possible
-//										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
-//											nids.add(r.getContainingConcept().getNid());
-//										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
-//											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
-//										} else {
-//											LOG.error("Unexpected AggregationType value " + aggregationTypeComboBox.getSelectionModel().getSelectedItem());
-//											nids.add(r.getContainingConcept().getNid());
-//										}
+										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+											nids.add(r.getContainingConcept().getNid());
+										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
+										} else {
+											LOG.error("Unexpected AggregationType value " + aggregationTypeComboBox.getSelectionModel().getSelectedItem());
+											nids.add(r.getContainingConcept().getNid());
+										}
 									}
 
 									// TODO: determine why we are getting here multiple (2 or 3) times for each selection

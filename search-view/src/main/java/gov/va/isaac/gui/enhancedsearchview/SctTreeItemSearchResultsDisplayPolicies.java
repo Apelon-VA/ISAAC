@@ -64,11 +64,17 @@ public class SctTreeItemSearchResultsDisplayPolicies implements SctTreeItemDispl
 	public Set<Integer> getSearchResultAncestors() {
 		return searchResultAncestors;
 	}
+	public void setSearchResultAncestors(Set<Integer> set) {
+		searchResultAncestors = set;
+	}
 
 	public Set<Integer> getSearchResults() {
 		return searchResults;
 	}
-
+	public void setSearchResults(Set<Integer> set) {
+		searchResults = set;
+	}
+	
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies#computeGraphic(gov.va.isaac.interfaces.treeview.SctTreeItemI)
 	 */
