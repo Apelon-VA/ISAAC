@@ -340,7 +340,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
+		
+		// TODO: either fix or remove exportSearchResultsToWorkflow
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
+		exportSearchResultsToWorkflowButton.setVisible(false);
+		
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 
 		saveSearchButton.setOnAction((action) -> {
@@ -452,31 +456,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		};
 
 		Utility.execute(configureDisplayPoliciesTask);
-		
-//		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
-//		taxonomyDisplayPolicies.getSearchResults().clear();
-//		
-//		for (CompositeSearchResult c : searchResultsTable.getItems()) {
-//			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
-//
-//			Set<ConceptVersionBI> ancestorNids = null;
-//			try {
-//				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
-//
-//				for (ConceptVersionBI concept : ancestorNids) {
-//					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
-//				}
-//			} catch (/* IOException | ContradictionException */ Exception e) {
-//				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-//				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
-//				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-//				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-//
-//				e.printStackTrace();
-//			}
-//		}
-//
-//		taxonomyView.refresh();
 	}
 	
 	private void initializeTaxonomyPanel() {
@@ -1777,7 +1756,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 
 		aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
-		aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
+		aggregationTypeComboBox.getSelectionModel().select(AggregationType.DESCRIPTION);
 	}
 
 	private synchronized void search() {
