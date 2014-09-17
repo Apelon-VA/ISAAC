@@ -301,6 +301,7 @@
         <module>refex-view</module>
         <module>concept-wizard-view</module>
         <module>isaac-constants</module>
+        <module>isaac-drools</module>
     </modules>
 
     <reporting>
