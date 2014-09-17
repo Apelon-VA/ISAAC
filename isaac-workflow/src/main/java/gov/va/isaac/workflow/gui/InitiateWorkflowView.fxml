@@ -6,9 +6,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.InitiateWorkflowViewController">
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.InitiateWorkflowViewController">
    <bottom>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <HBox fillHeight="false" BorderPane.alignment="TOP_LEFT">
          <children>
             <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel">
                <HBox.margin>
@@ -49,10 +49,7 @@
       </HBox>
    </top>
    <center>
-      <GridPane fx:id="variablesGridPane" BorderPane.alignment="CENTER">
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
+      <GridPane fx:id="variablesGridPane" BorderPane.alignment="TOP_LEFT">
          <columnConstraints>
             <ColumnConstraints minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints minWidth="10.0" prefWidth="100.0" />

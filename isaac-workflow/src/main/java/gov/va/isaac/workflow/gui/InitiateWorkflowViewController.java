@@ -33,15 +33,13 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.geometry.Insets;
-
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -194,8 +192,10 @@ public class InitiateWorkflowViewController {
 		instructionsTextFieldLabel.setPadding(new Insets(5));
 		instructionsTextField = new TextField();
 		instructionsTextField.setPadding(new Insets(5));
-		variablesGridPane.addRow(row++, instructionsTextFieldLabel, instructionsTextField);
-
+		variablesGridPane.addRow(row, instructionsTextFieldLabel, instructionsTextField);
+		//variablesGridPane.getRowConstraints().get(row).setVgrow(Priority.NEVER);
+		row++;
+		
 		editCoordinateTextFieldLabel = new Label();
 		editCoordinateTextFieldLabel.setText("Edit Coordinate");
 		editCoordinateTextFieldLabel.setPadding(new Insets(5));
@@ -209,6 +209,11 @@ public class InitiateWorkflowViewController {
 		promotionCoordinateTextField = new TextField();
 		promotionCoordinateTextField.setPadding(new Insets(5));
 		variablesGridPane.addRow(row++, promotionCoordinateTextFieldLabel, promotionCoordinateTextField);
+
+		variablesGridPane.getColumnConstraints().get(0).setPercentWidth(30);
+		variablesGridPane.getColumnConstraints().get(0).setFillWidth(true);
+		variablesGridPane.getColumnConstraints().get(1).setPercentWidth(70);
+		variablesGridPane.getColumnConstraints().get(1).setFillWidth(true);
 
 		initializeWorkflowProcessesComboBox();
 	}
