@@ -8,16 +8,13 @@
 
 <BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowTaskViewController">
    <bottom>
-      <HBox fillHeight="false" BorderPane.alignment="TOP_LEFT">
-         <children>
-            <Button fx:id="closeButton" mnemonicParsing="false" text="Close">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </HBox.margin>
-            </Button>
-         </children></HBox>
+      <HBox fillHeight="false" BorderPane.alignment="TOP_LEFT" />
    </bottom>
-   <center>
-      <TableView fx:id="variablesTableView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
-   </center>
+   <top>
+      <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="TOP_RIGHT">
+         <BorderPane.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </BorderPane.margin>
+      </Button>
+   </top>
 </BorderPane>

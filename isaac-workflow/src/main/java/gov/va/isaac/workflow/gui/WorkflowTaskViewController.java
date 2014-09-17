@@ -19,16 +19,31 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-import javafx.beans.property.SimpleStringProperty;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
 import org.slf4j.Logger;
@@ -47,7 +62,7 @@ public class WorkflowTaskViewController {
 	
 	@FXML private Button closeButton;
 	
-	@FXML private TableView<String> variablesTableView;
+	private GridPane variableMapGridPane;
 	
 	private WorkflowTaskView workflowTaskView;
 
@@ -97,73 +112,110 @@ public class WorkflowTaskViewController {
 	public void initialize() {
 		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
+		//assert variableMapGridPane != null : "fx:id=\"variableMapGridPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
 		closeButton.setText("Close");
 		closeButton.setOnAction((e) -> doCancel());
 
-		initializeVariablesTableView();
+		initializeVariableMapGridPane();
+
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setContent(variableMapGridPane);
+		scrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+		scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+		
+		mainBorderPane.setCenter(scrollPane);
 	}
 
-	private void initializeVariablesTableView() {
-		variablesTableView.setTableMenuButtonVisible(true);
+	private void initializeVariableMapGridPane() {
+		variableMapGridPane = new GridPane();
 	}
 
-	private void loadContents() {
-		TableColumn<String, String> col = new TableColumn<>();
-		col.setText("Task Id");
-		col.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(Long.toString(task.getId()));
-		});
-		variablesTableView.getColumns().add(col);
+	private Node configureNode(Node node) {
+		if (node instanceof Label) {
+			Label label = (Label)node;
+			
+			label.setPadding(new Insets(5));
+		} else if (node instanceof TextField) {
+			TextField field = (TextField)node;
+			field.setPadding(new Insets(5));
+			field.setEditable(false);
+			field.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent event) {
+					if (event.getButton() == MouseButton.SECONDARY) {
+						@SuppressWarnings("unchecked")
 
-		col = new TableColumn<>();
-		col.setText("Component Id");
-		col.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(task.getComponentId());
-		});
-		variablesTableView.getColumns().add(col);
+						CommonMenusDataProvider dp = new CommonMenusDataProvider() {
+							@Override
+							public String[] getStrings() {
+								List<String> items = new ArrayList<>();
+								items.add(field.getText());
 
-		col = new TableColumn<>();
-		col.setText("Component");
-		col.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(task.getComponentName());
-		});
-		variablesTableView.getColumns().add(col);
 
-		if (task.getInputVariables() != null) {
-			TableColumn<String, String> inputVariablesColumn = new TableColumn<>();
-			inputVariablesColumn.setText("Input");
+								String[] itemArray = items.toArray(new String[items.size()]);
 
-			for (String key : task.getInputVariables().keySet()) {
-				col = new TableColumn<>();
-				col.setText(key);
-				col.setCellValueFactory((value) -> {
-					return new SimpleStringProperty(task.getInputVariables().get(key));
-				});
-				inputVariablesColumn.getColumns().add(col);
-			}
+								// TODO: determine why we are getting here multiple (2 or 3) times for each selection
+								//System.out.println("Selected strings: " + Arrays.toString(itemArray));
 
-			if (inputVariablesColumn.getColumns().size() > 0) {
-				variablesTableView.getColumns().add(inputVariablesColumn);
-			}
+								return itemArray;
+							}
+						};
+
+						ContextMenu cm = new ContextMenu();
+						CommonMenus.addCommonMenus(cm, dp);
+
+						field.setContextMenu(cm);
+					} 
+					//				else { // for left mouse button clicks
+					//					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+					//
+					//					if (event.getClickCount() == 1) {
+					//						//LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
+					//					} else if (event.getClickCount() > 1) {
+					//						LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
+					//						int cellIndex = c.getIndex();
+					//						LocalTask task = taskTable.getItems().get(cellIndex);
+					//
+					//						ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+					//						view.setInitialTask(task.getId());
+					//						view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+					//					}
+					//				}
+				}
+			});
 		}
 
+		return node;
+	}
+	
+	private void loadContents() {
+		int rowIndex = 0;
+		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new TextField(Long.toString(task.getId())));
+		variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new TextField(task.getComponentId()));
+		variableMapGridPane.addRow(rowIndex++, new Label("Component"), new TextField(task.getComponentName()));
+
+		if (task.getInputVariables() != null) {
+			if (task.getInputVariables().size() > 0) {
+				variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
+				
+				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
+					variableMapGridPane.addRow(rowIndex++, new Label(), new Label(entry.getKey()), new TextField(entry.getValue()));
+				}
+			}
+		}
 		if (task.getOutputVariables() != null) {
-			TableColumn<String, String> outputVariablesColumn = new TableColumn<>();
-			outputVariablesColumn.setText("Output");
-
-			for (String key : task.getOutputVariables().keySet()) {
-				col = new TableColumn<>();
-				col.setText(key);
-				col.setCellValueFactory((value) -> {
-					return new SimpleStringProperty(task.getOutputVariables().get(key));
-				});
-				outputVariablesColumn.getColumns().add(col);
+			if (task.getOutputVariables().size() > 0) {
+				variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
+				
+				for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
+					variableMapGridPane.addRow(rowIndex++, new Label(), new Label(entry.getKey()), new TextField(entry.getValue()));
+				}
 			}
-
-			if (outputVariablesColumn.getColumns().size() > 0) {
-				variablesTableView.getColumns().add(outputVariablesColumn);
-			}
+		}
+		
+		for (Node node : variableMapGridPane.getChildren()) {
+			configureNode(node);
 		}
 	}
 
