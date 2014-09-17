@@ -26,35 +26,34 @@ import javafx.beans.binding.IntegerExpression;
 import javafx.beans.property.SimpleIntegerProperty;
 
 /**
- * {@link CommonMenusNIdProvider}
+ * {@link CommonMenusTaskIdProvider}
  *
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public abstract class CommonMenusNIdProvider
+public abstract class CommonMenusTaskIdProvider
 {
-	private static final CommonMenusNIdProvider emptyCommonMenusNIdProvider =  new CommonMenusNIdProvider() {
-		private final Collection<Integer> collection = Collections.unmodifiableCollection(new HashSet<>());
+	private static final CommonMenusTaskIdProvider emptyCommonMenusTaskIdProvider =  new CommonMenusTaskIdProvider() {
+		private final Collection<Long> collection = Collections.unmodifiableCollection(new HashSet<>());
 		
 		@Override
-		public Collection<Integer> getNIds() {
+		public Collection<Long> getTaskIds() {
 			return collection;
 		}
 	};
-	public static CommonMenusNIdProvider getEmptyCommonMenusNIdProvider() { return emptyCommonMenusNIdProvider; }
+	public static CommonMenusTaskIdProvider getEmptyCommonMenusTaskIdProvider() { return emptyCommonMenusTaskIdProvider; }
 
-	SimpleIntegerProperty nidCount = new SimpleIntegerProperty(0);
+	SimpleIntegerProperty taskIdCount = new SimpleIntegerProperty(0);
 
-	public abstract Collection<Integer> getNIds();
+	public abstract Collection<Long> getTaskIds();
 
-	public IntegerExpression getObservableNidCount()
+	public IntegerExpression getObservableTaskIdCount()
 	{
-		return nidCount;
+		return taskIdCount;
 	}
 
 	public void invalidateAll()
 	{
-		Collection<Integer> nids = getNIds();
-		nidCount.set(nids == null ? 0 : nids.size());
+		Collection<Long> taskIds = getTaskIds();
+		taskIdCount.set(taskIds == null ? 0 : taskIds.size());
 	}
 }

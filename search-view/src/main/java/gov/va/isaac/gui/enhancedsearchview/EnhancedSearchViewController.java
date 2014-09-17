@@ -1025,7 +1025,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// Use HashSet to ensure that only one workflow is created for each concept
 		if (searchResultsTable.getItems().size() > 0) {
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 
 		Map<Integer, ComponentVersionBI> conceptsOrComponents = new HashMap<>();
@@ -1059,7 +1063,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				exportSearchResultToWorkflow(conceptOrComponent);
 			}
 			
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 	}
 
