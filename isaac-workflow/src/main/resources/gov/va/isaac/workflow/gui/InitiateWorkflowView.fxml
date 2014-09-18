@@ -8,7 +8,7 @@
 
 <BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.InitiateWorkflowViewController">
    <bottom>
-      <HBox fillHeight="false" BorderPane.alignment="TOP_LEFT">
+      <HBox alignment="TOP_CENTER" fillHeight="false" BorderPane.alignment="TOP_LEFT">
          <children>
             <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel">
                <HBox.margin>

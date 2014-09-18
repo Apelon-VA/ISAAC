@@ -19,6 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.views.InitiateWorkflowViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
@@ -30,16 +31,16 @@ import java.util.Map;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
-import javafx.geometry.Insets;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -80,14 +81,14 @@ public class InitiateWorkflowViewController {
 	@FXML private TextField componentDescriptionTextField;
 	@FXML private Label componentTypeLabel; // componentOrConcept vs concept
 
-	private TextField instructionsTextField;
-	private Label instructionsTextFieldLabel;
+	private TextArea instructionsTextArea;
+	private Label instructionsTextAreaLabel;
 	
-	private TextField editCoordinateTextField;
-	private Label editCoordinateTextFieldLabel;
+//	private TextField editPathCoordinateTextField;
+//	private Label editPathCoordinateTextFieldLabel;
 	
-	private TextField promotionCoordinateTextField;
-	private Label promotionCoordinateTextFieldLabel;
+	private TextField promotionPathCoordinateTextField;
+	private Label promotionPathCoordinateTextFieldLabel;
 	
 	@FXML private GridPane variablesGridPane;
 
@@ -96,6 +97,11 @@ public class InitiateWorkflowViewController {
 
 	private ComponentVersionBI componentOrConcept;
 
+	// TODO: eliminate hard-coding of promotionPathCoordinateTextField
+	private String getDefaultPromotionPathCoordinateTextFieldContent() {
+		return "ISAAC Release Candidate Path";
+	}
+	
 	private String getUserName() {
 		// TODO: replace hard-coded username
 		return "alejandro";
@@ -187,28 +193,30 @@ public class InitiateWorkflowViewController {
 		variablesGridPane.getChildren().clear();
 		int row = 0;
 		
-		instructionsTextFieldLabel = new Label();
-		instructionsTextFieldLabel.setText("Instructions");
-		instructionsTextFieldLabel.setPadding(new Insets(5));
-		instructionsTextField = new TextField();
-		instructionsTextField.setPadding(new Insets(5));
-		variablesGridPane.addRow(row, instructionsTextFieldLabel, instructionsTextField);
-		//variablesGridPane.getRowConstraints().get(row).setVgrow(Priority.NEVER);
+		instructionsTextAreaLabel = new Label();
+		instructionsTextAreaLabel.setText("Instructions");
+		instructionsTextAreaLabel.setPadding(new Insets(5));
+		instructionsTextArea = new TextArea();
+		instructionsTextArea.setPromptText("Enter instructions");
+		instructionsTextArea.setPadding(new Insets(5));
+		variablesGridPane.addRow(row, instructionsTextAreaLabel, instructionsTextArea);
 		row++;
 		
-		editCoordinateTextFieldLabel = new Label();
-		editCoordinateTextFieldLabel.setText("Edit Coordinate");
-		editCoordinateTextFieldLabel.setPadding(new Insets(5));
-		editCoordinateTextField = new TextField();
-		editCoordinateTextField.setPadding(new Insets(5));
-		variablesGridPane.addRow(row++, editCoordinateTextFieldLabel, editCoordinateTextField);
+		// Removing editPathCoordinateTextField as per conversation with Jesse 20140918
+//		editPathCoordinateTextFieldLabel = new Label();
+//		editPathCoordinateTextFieldLabel.setText("Edit Coordinate");
+//		editPathCoordinateTextFieldLabel.setPadding(new Insets(5));
+//		editPathCoordinateTextField = new TextField();
+//		editPathCoordinateTextField.setPadding(new Insets(5));
+//		variablesGridPane.addRow(row++, editPathCoordinateTextFieldLabel, editPathCoordinateTextField);
 
-		promotionCoordinateTextFieldLabel = new Label();
-		promotionCoordinateTextFieldLabel.setText("Promotion Coordinate");
-		promotionCoordinateTextFieldLabel.setPadding(new Insets(5));
-		promotionCoordinateTextField = new TextField();
-		promotionCoordinateTextField.setPadding(new Insets(5));
-		variablesGridPane.addRow(row++, promotionCoordinateTextFieldLabel, promotionCoordinateTextField);
+		promotionPathCoordinateTextFieldLabel = new Label();
+		promotionPathCoordinateTextFieldLabel.setText("Promotion Path");
+		promotionPathCoordinateTextFieldLabel.setPadding(new Insets(5));
+		promotionPathCoordinateTextField = new TextField();
+		promotionPathCoordinateTextField.setPadding(new Insets(5));
+		promotionPathCoordinateTextField.setText(getDefaultPromotionPathCoordinateTextFieldContent());
+		variablesGridPane.addRow(row++, promotionPathCoordinateTextFieldLabel, promotionPathCoordinateTextField);
 
 		variablesGridPane.getColumnConstraints().get(0).setPercentWidth(30);
 		variablesGridPane.getColumnConstraints().get(0).setFillWidth(true);
@@ -230,7 +238,7 @@ public class InitiateWorkflowViewController {
 		workflowProcessesComboBoxLabel.setPadding(new Insets(5));
 		
 		workflowProcessesComboBox.setEditable(false);
-		workflowProcessesComboBox.getSelectionModel().selectFirst();
+		workflowProcessesComboBox.setPromptText("Select Workflow Process");
 		workflowProcessesComboBox.setCellFactory((p) -> {
 			final ListCell<WorkflowProcess> cell = new ListCell<WorkflowProcess>() {
 				@Override
@@ -263,7 +271,7 @@ public class InitiateWorkflowViewController {
 	}
 
 	private boolean validate(String title) {
-		if (instructionsTextField.getText() == null || instructionsTextField.getText().length() == 0) {
+		if (instructionsTextArea.getText() == null || instructionsTextArea.getText().length() == 0) {
 			String msg = "Instructions text field is empty";
 			String details = "Must enter instructions into instructions text field";
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -271,14 +279,14 @@ public class InitiateWorkflowViewController {
 		}
 
 		if (workflowProcessesComboBox.getSelectionModel().getSelectedItem() == WorkflowProcess.REVIEW3) {
-			if (editCoordinateTextField.getText() == null
-					|| editCoordinateTextField.getText().length() == 0) {
-				String msg = "Edit view coordinate UUID text field is empty";
-				String details = "Must enter edit view coordinate UUID into edit coordinate text field";
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-				return false;
-			}
-			if (promotionCoordinateTextField.getText() == null || promotionCoordinateTextField.getText().length() == 0) {
+//			if (editPathCoordinateTextField.getText() == null
+//					|| editPathCoordinateTextField.getText().length() == 0) {
+//				String msg = "Edit view coordinate UUID text field is empty";
+//				String details = "Must enter edit view coordinate UUID into edit coordinate text field";
+//				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+//				return false;
+//			}
+			if (promotionPathCoordinateTextField.getText() == null || promotionPathCoordinateTextField.getText().length() == 0) {
 				String msg = "Edit view coordinate UUID text field is empty";
 				String details = "Must enter edit view coordinate UUID into edit coordinate text field";
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -304,9 +312,9 @@ public class InitiateWorkflowViewController {
 		
 		Map<String, String> map = new HashMap<>();
 		if (process == WorkflowProcess.REVIEW3) {
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.name(), instructionsTextField.getText());
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), editCoordinateTextField.getText());
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionCoordinateTextField.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.name(), instructionsTextArea.getText());
+			//map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), editPathCoordinateTextField.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionPathCoordinateTextField.getText());
 		} else {
 			// TODO: handle other WorkflowProcess values
 		}
@@ -323,10 +331,15 @@ public class InitiateWorkflowViewController {
 			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId() + ":\n" + createdRequest);	
 
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					getWorkflowService().synchronizeWithRemote();
+				}
+			}).start();
+
 			doCancel();
 		}
-		
-		getWorkflowService().synchronizeWithRemote();
 	}
 
 	private ComponentWorkflowServiceI getWorkflowService() {

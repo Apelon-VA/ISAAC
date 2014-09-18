@@ -47,35 +47,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link ConceptDetailWorkflow}
+ * {@link AdvanceWorkflowView}
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 
 @Service
 @PerLookup
-public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
+public class AdvanceWorkflowView extends Stage implements ConceptWorkflowViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflow.class);
+	private final Logger logger = LoggerFactory.getLogger(AdvanceWorkflowView.class);
 
-	private ConceptDetailWorkflowController controller_;
+	private AdvanceWorkflowViewController controller_;
 
 	private boolean shown = false;
 	
-	private ConceptDetailWorkflow() throws IOException
+	private AdvanceWorkflowView() throws IOException
 	{
 		super();
 
-		URL resource = this.getClass().getResource("ConceptDetailWorkflow.fxml");
+		URL resource = this.getClass().getResource("AdvanceWorkflowView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
-		getScene().getStylesheets().add(ConceptDetailWorkflow.class.getResource("/isaac-shared-styles.css").toString());
+		getScene().getStylesheets().add(AdvanceWorkflowView.class.getResource("/isaac-shared-styles.css").toString());
 		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
 		
-		setTitle("Concept Detail Workflow");
+		setTitle("Advance Workflow");
 		setResizable(true);
 
 		setWidth(600);
