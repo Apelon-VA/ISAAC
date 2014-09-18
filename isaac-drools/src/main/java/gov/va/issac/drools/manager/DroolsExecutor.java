@@ -38,21 +38,22 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.drools.KnowledgeBase;
-import org.drools.KnowledgeBaseConfiguration;
-import org.drools.KnowledgeBaseFactory;
-import org.drools.builder.KnowledgeBuilder;
-import org.drools.builder.KnowledgeBuilderConfiguration;
-import org.drools.builder.KnowledgeBuilderFactory;
-import org.drools.builder.ResourceType;
-import org.drools.builder.conf.EvaluatorOption;
-import org.drools.conf.ConsequenceExceptionHandlerOption;
-import org.drools.definition.KnowledgePackage;
-import org.drools.io.Resource;
-import org.drools.io.ResourceFactory;
-import org.drools.logger.KnowledgeRuntimeLogger;
-import org.drools.logger.KnowledgeRuntimeLoggerFactory;
-import org.drools.runtime.StatefulKnowledgeSession;
+import org.kie.api.KieBaseConfiguration;
+import org.kie.api.io.Resource;
+import org.kie.api.io.ResourceType;
+import org.kie.api.runtime.rule.ConsequenceExceptionHandler;
+import org.kie.internal.KnowledgeBase;
+import org.kie.internal.KnowledgeBaseFactory;
+import org.kie.internal.builder.KnowledgeBuilder;
+import org.kie.internal.builder.KnowledgeBuilderConfiguration;
+import org.kie.internal.builder.KnowledgeBuilderFactory;
+import org.kie.internal.builder.conf.EvaluatorOption;
+import org.kie.internal.conf.ConsequenceExceptionHandlerOption;
+import org.kie.internal.definition.KnowledgePackage;
+import org.kie.internal.io.ResourceFactory;
+import org.kie.internal.logger.KnowledgeRuntimeLogger;
+import org.kie.internal.logger.KnowledgeRuntimeLoggerFactory;
+import org.kie.internal.runtime.StatefulKnowledgeSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@SuppressWarnings("deprecation")
 public class DroolsExecutor
 {
 	public static String drools_dialect_java_compiler = null;  //a mechanism for outside code to specify the compiler dialect that will be used (normally null)
@@ -68,6 +70,7 @@ public class DroolsExecutor
 	private String name_;
 	private long compileTime_;
 
+	//TODO figure out the new APIs to replace this...
 	private KnowledgeBase kbase_;
 	private Collection<KnowledgePackage> knowledgePackages_;
 
@@ -118,9 +121,9 @@ public class DroolsExecutor
 	private void sharedSetup()
 	{
 		logger.debug("Configuring KnowledgeBase Configuration for " + name_);
-		KnowledgeBaseConfiguration kBaseConfig = KnowledgeBaseFactory.newKnowledgeBaseConfiguration();
-
-		ConsequenceExceptionHandlerOption cehOption = ConsequenceExceptionHandlerOption.get(DroolsExceptionHandler.class);
+		KieBaseConfiguration kBaseConfig = KnowledgeBaseFactory.newKnowledgeBaseConfiguration();
+		Class<? extends ConsequenceExceptionHandler> c = DroolsExceptionHandler.class;
+		ConsequenceExceptionHandlerOption cehOption = ConsequenceExceptionHandlerOption.get(c);
 
 		kBaseConfig.setOption(cehOption);
 		if (drools_dialect_java_compiler != null)

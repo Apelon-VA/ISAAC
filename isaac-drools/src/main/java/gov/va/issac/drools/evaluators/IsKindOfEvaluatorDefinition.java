@@ -20,18 +20,10 @@ import gov.va.isaac.AppContext;
 import gov.va.issac.drools.evaluators.facts.ConceptFact;
 import gov.va.issac.drools.evaluators.facts.DescFact;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import org.drools.core.base.BaseEvaluator;
 import org.drools.core.base.ValueType;
+import org.drools.core.base.evaluators.EvaluatorDefinition;
 import org.drools.core.base.evaluators.Operator;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.VariableRestriction.ObjectVariableContextEntry;
-import org.drools.core.rule.VariableRestriction.VariableContextEntry;
-import org.drools.core.spi.FieldValue;
-import org.drools.core.spi.InternalReadAccessor;
-import org.drools.runtime.rule.EvaluatorDefinition;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -51,39 +43,13 @@ import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
  * @author afurber
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class IsKindOfEvaluatorDefinition implements EvaluatorDefinition
+public class IsKindOfEvaluatorDefinition extends IsaacBaseEvaluatorDefinition implements EvaluatorDefinition
 {
-
 	public static Operator IS_KIND_OF = Operator.addOperatorToRegistry("isKindOf", false);
 	public static Operator NOT_IS_KIND_OF = Operator.addOperatorToRegistry(IS_KIND_OF.getOperatorString(), true);
 
-	public static class IsKindOfEvaluator extends BaseEvaluator
+	public static class IsKindOfEvaluator extends IsaacBaseEvaluator
 	{
-		private static final long serialVersionUID = 1L;
-		private static final int dataVersion = 1;
-
-		@Override
-		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-		{
-			super.readExternal(in);
-			int objDataVersion = in.readInt();
-			if (objDataVersion == dataVersion)
-			{
-				// Nothing to do
-			}
-			else
-			{
-				throw new IOException("Can't handle dataversion: " + objDataVersion);
-			}
-		}
-
-		@Override
-		public void writeExternal(ObjectOutput out) throws IOException
-		{
-			super.writeExternal(out);
-			out.writeInt(dataVersion);
-		}
-
 		public IsKindOfEvaluator()
 		{
 			super();
@@ -95,23 +61,9 @@ public class IsKindOfEvaluatorDefinition implements EvaluatorDefinition
 			super(type, isNegated ? IsKindOfEvaluatorDefinition.NOT_IS_KIND_OF : IsKindOfEvaluatorDefinition.IS_KIND_OF);
 		}
 
+		
 		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor extractor, InternalFactHandle factHandle, FieldValue value)
-		{
-			return testKindOf(factHandle, value.getValue());
-		}
-
-		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor leftExtractor, InternalFactHandle left, InternalReadAccessor rightExtractor,
-				InternalFactHandle right)
-		{
-			final Object value1 = leftExtractor.getValue(workingMemory, left);
-			final Object value2 = rightExtractor.getValue(workingMemory, right);
-
-			return testKindOf(value1, value2);
-		}
-
-		private boolean testKindOf(final Object value1, final Object value2)
+		protected boolean test(final Object value1, final Object value2)
 		{
 			try
 			{
@@ -172,21 +124,27 @@ public class IsKindOfEvaluatorDefinition implements EvaluatorDefinition
 		}
 
 		@Override
-		public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle right)
-		{
-			return testKindOf(((ObjectVariableContextEntry) context).left, right);
-		}
-
-		@Override
-		public boolean evaluateCachedRight(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle left)
-		{
-			return testKindOf(left, ((ObjectVariableContextEntry) context).right);
-		}
-
-		@Override
 		public String toString()
 		{
 			return "IsKindOf isKindOf";
 		}
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#getId()
+	 */
+	@Override
+	protected String getId()
+	{
+		return IS_KIND_OF.getOperatorString();
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#buildEvaluator(org.drools.core.base.ValueType, boolean, String)
+	 */
+	@Override
+	protected BaseEvaluator buildEvaluator(ValueType type, boolean isNegated, String parameterText)
+	{
+		return new IsKindOfEvaluator(type, isNegated);
 	}
 }

@@ -17,10 +17,10 @@ package gov.va.issac.drools.manager;
 
 import java.io.PrintStream;
 import java.util.Collection;
-import org.drools.definition.rule.Rule;
-import org.drools.runtime.rule.Activation;
-import org.drools.runtime.rule.FactHandle;
-import org.drools.runtime.rule.WorkingMemory;
+import org.kie.api.definition.rule.Rule;
+import org.kie.api.runtime.rule.FactHandle;
+import org.kie.api.runtime.rule.Match;
+import org.kie.api.runtime.rule.RuleRuntime;
 
 /**
  * 
@@ -35,14 +35,14 @@ import org.drools.runtime.rule.WorkingMemory;
 public class DroolsException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
-	private WorkingMemory workingMemory;
-	private Activation activation;
+	private RuleRuntime workingMemory;
+	private Match activation;
 
-	public DroolsException(Throwable thrwbl, WorkingMemory workingMemory, Activation activation)
+	public DroolsException(Match match, RuleRuntime workingMemory, Exception exception)
 	{
-		super(thrwbl);
+		super(exception);
 		this.workingMemory = workingMemory;
-		this.activation = activation;
+		this.activation = match;
 	}
 
 	@Override

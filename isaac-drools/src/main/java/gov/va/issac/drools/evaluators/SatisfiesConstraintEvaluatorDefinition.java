@@ -25,16 +25,10 @@ import java.io.ObjectOutput;
 import org.drools.core.base.BaseEvaluator;
 import org.drools.core.base.ValueType;
 import org.drools.core.base.evaluators.Operator;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.VariableRestriction.ObjectVariableContextEntry;
-import org.drools.core.rule.VariableRestriction.VariableContextEntry;
-import org.drools.core.spi.FieldValue;
-import org.drools.core.spi.InternalReadAccessor;
-import org.drools.runtime.rule.EvaluatorDefinition;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.constraint.ConstraintBI;
 import org.ihtsdo.otf.tcc.api.constraint.ConstraintCheckType;
+import org.kie.api.runtime.rule.EvaluatorDefinition;
 
 /**
  * 
@@ -44,58 +38,49 @@ import org.ihtsdo.otf.tcc.api.constraint.ConstraintCheckType;
  * @author afurber
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class SatisfiesConstraintEvaluatorDefinition implements EvaluatorDefinition
+public class SatisfiesConstraintEvaluatorDefinition extends IsaacBaseEvaluatorDefinition implements EvaluatorDefinition
 {
 	public static final Operator SATISFIES_CONSTRAINT = Operator.addOperatorToRegistry("satisfiesConstraint", false);
 	public static final Operator NOT_SATISFIES_CONSTRAINT = Operator.addOperatorToRegistry(SATISFIES_CONSTRAINT.getOperatorString(), true);
 
 	private static final String DEFAULT_PARAMETERS = "x,e,e";
 
-	public static class SatisfiesConstraintEvaluator extends BaseEvaluator
+	public static class SatisfiesConstraintEvaluator extends IsaacBaseEvaluator
 	{
-		private static final long serialVersionUID = 1L;
-		private static final int dataVersion = 1;
-
+		private ConstraintCheckType subjectCheck;
+		private ConstraintCheckType propertyCheck;
+		private ConstraintCheckType valueCheck;
+		
 		@Override
 		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
 		{
 			super.readExternal(in);
-			int objDataVersion = in.readInt();
-			if (objDataVersion == dataVersion)
-			{
-				subjectCheck = (ConstraintCheckType) in.readObject();
-				propertyCheck = (ConstraintCheckType) in.readObject();
-				valueCheck = (ConstraintCheckType) in.readObject();
-			}
-			else
-			{
-				throw new IOException("Can't handle dataversion: " + objDataVersion);
-			}
+			subjectCheck = (ConstraintCheckType) in.readObject();
+			propertyCheck = (ConstraintCheckType) in.readObject();
+			valueCheck = (ConstraintCheckType) in.readObject();
 		}
 
 		@Override
 		public void writeExternal(ObjectOutput out) throws IOException
 		{
 			super.writeExternal(out);
-			out.writeInt(dataVersion);
 			out.writeObject(subjectCheck);
 			out.writeObject(propertyCheck);
 			out.writeObject(valueCheck);
 		}
-		private ConstraintCheckType subjectCheck;
-		private ConstraintCheckType propertyCheck;
-		private ConstraintCheckType valueCheck;
 
 		public SatisfiesConstraintEvaluator()
 		{
 			super();
+			dataVersion = 1;
 			// No arg constructor for serialization. 
 		}
 
 		public SatisfiesConstraintEvaluator(final ValueType type, final boolean isNegated, String parameterText)
 		{
 			super(type, isNegated ? IsKindOfEvaluatorDefinition.NOT_IS_KIND_OF : IsKindOfEvaluatorDefinition.IS_KIND_OF);
-			if (parameterText == null)
+			dataVersion = 1;
+			if (parameterText == null || parameterText.length() == 0)
 			{
 				parameterText = DEFAULT_PARAMETERS;
 			}
@@ -106,22 +91,7 @@ public class SatisfiesConstraintEvaluatorDefinition implements EvaluatorDefiniti
 		}
 
 		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor extractor, InternalFactHandle factHandle, FieldValue value)
-		{
-			return testSatisfiesConstraint(factHandle, value.getValue());
-		}
-
-		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor leftExtractor, InternalFactHandle left, InternalReadAccessor rightExtractor,
-				InternalFactHandle right)
-		{
-			final Object value1 = leftExtractor.getValue(workingMemory, left);
-			final Object value2 = rightExtractor.getValue(workingMemory, right);
-
-			return testSatisfiesConstraint(value1, value2);
-		}
-
-		private boolean testSatisfiesConstraint(final Object value1, final Object value2)
+		protected boolean test(final Object value1, final Object value2)
 		{
 			try
 			{
@@ -145,18 +115,6 @@ public class SatisfiesConstraintEvaluatorDefinition implements EvaluatorDefiniti
 			{
 				throw new RuntimeException(e);
 			}
-		}
-
-		@Override
-		public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle right)
-		{
-			return testSatisfiesConstraint(((ObjectVariableContextEntry) context).left, right);
-		}
-
-		@Override
-		public boolean evaluateCachedRight(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle left)
-		{
-			return testSatisfiesConstraint(left, ((ObjectVariableContextEntry) context).right);
 		}
 
 		@Override
@@ -196,4 +154,21 @@ public class SatisfiesConstraintEvaluatorDefinition implements EvaluatorDefiniti
 		}
 	}
 
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#getId()
+	 */
+	@Override
+	protected String getId()
+	{
+		return SATISFIES_CONSTRAINT.getOperatorString();
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#buildEvaluator(org.drools.core.base.ValueType, boolean)
+	 */
+	@Override
+	protected BaseEvaluator buildEvaluator(ValueType type, boolean isNegated, String parameterText)
+	{
+		return new SatisfiesConstraintEvaluator(type, isNegated, parameterText);
+	}
 }

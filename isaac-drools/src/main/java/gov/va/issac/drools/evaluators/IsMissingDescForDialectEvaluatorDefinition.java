@@ -19,25 +19,17 @@ import gov.va.issac.drools.dialect.DialectHelper;
 import gov.va.issac.drools.dialect.UnsupportedDialectOrLanguage;
 import gov.va.issac.drools.evaluators.facts.ConceptFact;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.drools.core.base.BaseEvaluator;
 import org.drools.core.base.ValueType;
 import org.drools.core.base.evaluators.Operator;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.VariableRestriction.ObjectVariableContextEntry;
-import org.drools.core.rule.VariableRestriction.VariableContextEntry;
-import org.drools.core.spi.FieldValue;
-import org.drools.core.spi.InternalReadAccessor;
-import org.drools.runtime.rule.EvaluatorDefinition;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
+import org.kie.api.runtime.rule.EvaluatorDefinition;
 
 /**
  * 
@@ -47,38 +39,13 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  * @author afurber
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class IsMissingDescForDialectEvaluatorDefinition implements EvaluatorDefinition
+public class IsMissingDescForDialectEvaluatorDefinition extends IsaacBaseEvaluatorDefinition implements EvaluatorDefinition
 {
 	public static Operator IS_MISSING_DESC_FOR = Operator.addOperatorToRegistry("isMissingDescFor", false);
 	public static Operator NOT_IS_MISSING_DESC_FOR = Operator.addOperatorToRegistry(IS_MISSING_DESC_FOR.getOperatorString(), true);
 
-	public static class IsMissingDescForEvaluator extends BaseEvaluator
+	public static class IsMissingDescForEvaluator extends IsaacBaseEvaluator
 	{
-		private static final long serialVersionUID = 1L;
-		private static final int dataVersion = 1;
-
-		@Override
-		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-		{
-			super.readExternal(in);
-			int objDataVersion = in.readInt();
-			if (objDataVersion == dataVersion)
-			{
-				// Nothing to do
-			}
-			else
-			{
-				throw new IOException("Can't handle dataversion: " + objDataVersion);
-			}
-		}
-
-		@Override
-		public void writeExternal(ObjectOutput out) throws IOException
-		{
-			super.writeExternal(out);
-			out.writeInt(dataVersion);
-		}
-
 		public IsMissingDescForEvaluator()
 		{
 			super();
@@ -90,29 +57,14 @@ public class IsMissingDescForDialectEvaluatorDefinition implements EvaluatorDefi
 			super(type, isNegated ? IsMissingDescForDialectEvaluatorDefinition.NOT_IS_MISSING_DESC_FOR : IsMissingDescForDialectEvaluatorDefinition.IS_MISSING_DESC_FOR);
 		}
 
-		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor extractor, InternalFactHandle factHandle, FieldValue value)
-		{
-			return testMissingDescForDialect(factHandle, value.getValue());
-		}
-
-		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor leftExtractor, InternalFactHandle left, InternalReadAccessor rightExtractor,
-				InternalFactHandle right)
-		{
-			final Object value1 = leftExtractor.getValue(workingMemory, left);
-			final Object value2 = rightExtractor.getValue(workingMemory, right);
-
-			return testMissingDescForDialect(value1, value2);
-		}
-
 		/**
 		 * 
 		 * @param value1 Concept to test descriptions for dialects
 		 * @param value2 Concept representing the dialect to check
 		 * @return
 		 */
-		private boolean testMissingDescForDialect(final Object value1, final Object value2)
+		@Override
+		protected boolean test(final Object value1, final Object value2)
 		{
 
 			//value1 this could be concept VersionBI or conceptFact
@@ -188,21 +140,27 @@ public class IsMissingDescForDialectEvaluatorDefinition implements EvaluatorDefi
 		}
 
 		@Override
-		public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle right)
-		{
-			return testMissingDescForDialect(((ObjectVariableContextEntry) context).left, right);
-		}
-
-		@Override
-		public boolean evaluateCachedRight(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle left)
-		{
-			return testMissingDescForDialect(left, ((ObjectVariableContextEntry) context).right);
-		}
-
-		@Override
 		public String toString()
 		{
 			return "IsMissingDescForDialect isMissingDescForDialect";
 		}
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#getId()
+	 */
+	@Override
+	protected String getId()
+	{
+		return IS_MISSING_DESC_FOR.getOperatorString();
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#buildEvaluator(org.drools.core.base.ValueType, boolean, String)
+	 */
+	@Override
+	protected BaseEvaluator buildEvaluator(ValueType type, boolean isNegated, String parameterText)
+	{
+		return new IsMissingDescForEvaluator(type, isNegated);
 	}
 }

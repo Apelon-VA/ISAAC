@@ -44,7 +44,7 @@ public class DroolsExecutorsManager
 	
 	private Logger logger = LoggerFactory.getLogger(DroolsExecutorsManager.class);
 	
-	private HashMap<String, DroolsExecutor> loadedExecutors_;
+	private HashMap<String, DroolsExecutor> loadedExecutors_ = new HashMap<>();
 	
 	private CountDownLatch cdl_ = new CountDownLatch(1);
 	
@@ -68,6 +68,8 @@ public class DroolsExecutorsManager
 			//First, load any previously compiled rules
 			compiledRuleDirectory_.mkdirs();
 			
+			logger.debug("Checking for compiled rules in " + compiledRuleDirectory_.getAbsolutePath());
+			
 			if (compiledRuleDirectory_.exists())
 			{
 				for (File f : compiledRuleDirectory_.listFiles())
@@ -90,6 +92,8 @@ public class DroolsExecutorsManager
 					}
 				}
 			}
+			
+			logger.debug("Checking for drools rules in " + droolsRulesFolder_.getAbsolutePath());
 			
 			if (droolsRulesFolder_.exists())
 			{

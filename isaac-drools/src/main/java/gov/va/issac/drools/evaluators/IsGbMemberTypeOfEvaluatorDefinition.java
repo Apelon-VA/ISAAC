@@ -18,19 +18,10 @@ package gov.va.issac.drools.evaluators;
 
 import gov.va.issac.drools.evaluators.facts.DescFact;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Collection;
 import org.drools.core.base.BaseEvaluator;
 import org.drools.core.base.ValueType;
 import org.drools.core.base.evaluators.Operator;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.VariableRestriction.ObjectVariableContextEntry;
-import org.drools.core.rule.VariableRestriction.VariableContextEntry;
-import org.drools.core.spi.FieldValue;
-import org.drools.core.spi.InternalReadAccessor;
-import org.drools.runtime.rule.EvaluatorDefinition;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRfx;
@@ -38,6 +29,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
+import org.kie.api.runtime.rule.EvaluatorDefinition;
 
 /**
  * 
@@ -47,38 +39,13 @@ import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
  * @author afurber
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class IsGbMemberTypeOfEvaluatorDefinition implements EvaluatorDefinition
+public class IsGbMemberTypeOfEvaluatorDefinition extends IsaacBaseEvaluatorDefinition implements EvaluatorDefinition
 {
 	public static Operator IS_GB_MEMBER_TYPE_OF = Operator.addOperatorToRegistry("isGbMemberTypeOf", false);
 	public static Operator NOT_IS_GB_MEMBER_TYPE_OF = Operator.addOperatorToRegistry(IS_GB_MEMBER_TYPE_OF.getOperatorString(), true);
 
-	public static class IsGbMemberTypeOfEvaluator extends BaseEvaluator
+	public static class IsGbMemberTypeOfEvaluator extends IsaacBaseEvaluator
 	{
-		private static final long serialVersionUID = 1L;
-		private static final int dataVersion = 1;
-
-		@Override
-		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-		{
-			super.readExternal(in);
-			int objDataVersion = in.readInt();
-			if (objDataVersion == dataVersion)
-			{
-				// Nothing to do
-			}
-			else
-			{
-				throw new IOException("Can't handle dataversion: " + objDataVersion);
-			}
-		}
-
-		@Override
-		public void writeExternal(ObjectOutput out) throws IOException
-		{
-			super.writeExternal(out);
-			out.writeInt(dataVersion);
-		}
-
 		public IsGbMemberTypeOfEvaluator()
 		{
 			super();
@@ -89,26 +56,10 @@ public class IsGbMemberTypeOfEvaluatorDefinition implements EvaluatorDefinition
 		{
 			super(type, isNegated ? IsGbMemberTypeOfEvaluatorDefinition.NOT_IS_GB_MEMBER_TYPE_OF : IsGbMemberTypeOfEvaluatorDefinition.IS_GB_MEMBER_TYPE_OF);
 		}
-
+		
 		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor extractor, InternalFactHandle factHandle, FieldValue value)
+		protected boolean test(final Object value1, final Object value2)
 		{
-			return testMemberTypeOf(factHandle, value.getValue());
-		}
-
-		@Override
-		public boolean evaluate(InternalWorkingMemory workingMemory, InternalReadAccessor leftExtractor, InternalFactHandle left, InternalReadAccessor rightExtractor,
-				InternalFactHandle right)
-		{
-			final Object value1 = leftExtractor.getValue(workingMemory, left);
-			final Object value2 = rightExtractor.getValue(workingMemory, right);
-
-			return testMemberTypeOf(value1, value2);
-		}
-
-		private boolean testMemberTypeOf(final Object value1, final Object value2)
-		{
-
 			boolean isMemberType = false;
 			DescFact fact;
 			//value1 (concept) must be in form of DescFact
@@ -186,21 +137,27 @@ public class IsGbMemberTypeOfEvaluatorDefinition implements EvaluatorDefinition
 		}
 
 		@Override
-		public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle right)
-		{
-			return testMemberTypeOf(((ObjectVariableContextEntry) context).left, right);
-		}
-
-		@Override
-		public boolean evaluateCachedRight(InternalWorkingMemory workingMemory, VariableContextEntry context, InternalFactHandle left)
-		{
-			return testMemberTypeOf(left, ((ObjectVariableContextEntry) context).right);
-		}
-
-		@Override
 		public String toString()
 		{
 			return "IsGbMemberTypeOf isGbMemberTypeOf";
 		}
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#getId()
+	 */
+	@Override
+	protected String getId()
+	{
+		return IS_GB_MEMBER_TYPE_OF.getOperatorString();
+	}
+
+	/**
+	 * @see gov.va.issac.drools.evaluators.IsaacBaseEvaluatorDefinition#buildEvaluator(org.drools.core.base.ValueType, boolean, String)
+	 */
+	@Override
+	protected BaseEvaluator buildEvaluator(ValueType type, boolean isNegated, String parameterText)
+	{
+		return new IsGbMemberTypeOfEvaluator(type, isNegated);
 	}
 }
