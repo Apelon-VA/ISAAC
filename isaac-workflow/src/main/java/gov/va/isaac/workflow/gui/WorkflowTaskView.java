@@ -72,7 +72,7 @@ public class WorkflowTaskView extends Stage implements WorkflowTaskViewI
 		
 		controller_.setView(this);
 		
-		setTitle("Initiate Workflow");
+		setTitle("Workflow Task Details");
 		setResizable(true);
 
 		setWidth(600);
@@ -91,7 +91,7 @@ public class WorkflowTaskView extends Stage implements WorkflowTaskViewI
 			shown = true;
 
 			initOwner(parent);
-			initModality(Modality.NONE);
+			initModality(Modality.WINDOW_MODAL);
 			initStyle(StageStyle.DECORATED);
 		}
 

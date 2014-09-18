@@ -607,25 +607,25 @@ public class CommonMenus
 			menuItems.add(listViewMenuItem);
 		}
 
-		// Menu item to generate New Workflow Instance.
-		MenuItem newWorkflowViewItem = createNewMenuItem(
-				CommonMenuItem.WORKFLOW_VIEW,
-				builder,
-				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
-				nids.getObservableNidCount().isEqualTo(1),				//make visible
-				() -> { // onHandlable
-					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
-					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-				},
-				() -> { // onNotHandlable
-					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
-				}
-				);
-		if (newWorkflowViewItem != null)
-		{
-			menuItems.add(newWorkflowViewItem);
-		}
+//		// Menu item to generate New Workflow Instance.
+//		MenuItem newWorkflowViewItem = createNewMenuItem(
+//				CommonMenuItem.WORKFLOW_VIEW,
+//				builder,
+//				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
+//				nids.getObservableNidCount().isEqualTo(1),				//make visible
+//				() -> { // onHandlable
+//					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+//					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
+//					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+//				},
+//				() -> { // onNotHandlable
+//					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
+//				}
+//				);
+//		if (newWorkflowViewItem != null)
+//		{
+//			menuItems.add(newWorkflowViewItem);
+//		}
 
 		// Menu item to generate New Workflow Instance.
 		MenuItem newWorkflowInstanceInitializationItem = createNewMenuItem(

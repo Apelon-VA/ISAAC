@@ -35,11 +35,10 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -57,6 +56,40 @@ import org.slf4j.LoggerFactory;
  */
 public class WorkflowTaskViewController {
 	private static final Logger LOG = LoggerFactory.getLogger(WorkflowTaskViewController.class);
+	
+	enum MapVariable {
+		in_instructions("Instructions"),
+		TaskName("Task Name"),
+		NodeName("Node Name"),
+		in_component_name("Component Name"),
+		in_edit_coordinate(null),
+		in_component_id("Component Id"),
+		GroupId("Group Id");
+		
+		private final String displayName;
+		
+		private MapVariable(String dispName) {
+			displayName = dispName;
+		}
+		
+		public String getDisplayName() {
+			return displayName;
+		}
+		
+		public boolean shouldDisplay() {
+			return getDisplayName() != null;
+		}
+		
+		public static boolean shouldDisplay(String str) {
+			try {
+				MapVariable var = MapVariable.valueOf(str);
+				
+				return var.shouldDisplay();
+			} catch (Exception e) {
+				return false;
+			}
+		}
+	}
 	
 	@FXML private BorderPane mainBorderPane;
 	
@@ -112,7 +145,6 @@ public class WorkflowTaskViewController {
 	public void initialize() {
 		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		//assert variableMapGridPane != null : "fx:id=\"variableMapGridPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
 		closeButton.setText("Close");
 		closeButton.setOnAction((e) -> doCancel());
@@ -136,21 +168,21 @@ public class WorkflowTaskViewController {
 			Label label = (Label)node;
 			
 			label.setPadding(new Insets(5));
-		} else if (node instanceof TextField) {
-			TextField field = (TextField)node;
-			field.setPadding(new Insets(5));
-			field.setEditable(false);
-			field.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+			int columnIndex = GridPane.getColumnIndex(label);
+			if (columnIndex == 0) {
+				label.setStyle("-fx-font-weight: bold");
+			}
+			
+			label.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
 					if (event.getButton() == MouseButton.SECONDARY) {
-						@SuppressWarnings("unchecked")
-
 						CommonMenusDataProvider dp = new CommonMenusDataProvider() {
 							@Override
 							public String[] getStrings() {
 								List<String> items = new ArrayList<>();
-								items.add(field.getText());
+								items.add(label.getText());
 
 
 								String[] itemArray = items.toArray(new String[items.size()]);
@@ -165,51 +197,44 @@ public class WorkflowTaskViewController {
 						ContextMenu cm = new ContextMenu();
 						CommonMenus.addCommonMenus(cm, dp);
 
-						field.setContextMenu(cm);
+						label.setContextMenu(cm);
 					} 
-					//				else { // for left mouse button clicks
-					//					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
-					//
-					//					if (event.getClickCount() == 1) {
-					//						//LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
-					//					} else if (event.getClickCount() > 1) {
-					//						LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
-					//						int cellIndex = c.getIndex();
-					//						LocalTask task = taskTable.getItems().get(cellIndex);
-					//
-					//						ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-					//						view.setInitialTask(task.getId());
-					//						view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-					//					}
-					//				}
 				}
 			});
 		}
 
 		return node;
 	}
-	
+
 	private void loadContents() {
 		int rowIndex = 0;
-		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new TextField(Long.toString(task.getId())));
-		variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new TextField(task.getComponentId()));
-		variableMapGridPane.addRow(rowIndex++, new Label("Component"), new TextField(task.getComponentName()));
+		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new Label(Long.toString(task.getId())));
+		variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new Label(task.getComponentId()));
+		variableMapGridPane.addRow(rowIndex++, new Label("Component"), new Label(task.getComponentName()));
 
 		if (task.getInputVariables() != null) {
 			if (task.getInputVariables().size() > 0) {
-				variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
+				//variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
 				
 				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
-					variableMapGridPane.addRow(rowIndex++, new Label(), new Label(entry.getKey()), new TextField(entry.getValue()));
+					if (MapVariable.shouldDisplay(entry.getKey())) {
+						variableMapGridPane.addRow(rowIndex++, new Label(MapVariable.valueOf(entry.getKey()).getDisplayName()), new Label(entry.getValue()));
+					} else {
+						LOG.debug("Not displaying unexpected input variables map entry: {}", entry);
+					}
 				}
 			}
 		}
 		if (task.getOutputVariables() != null) {
 			if (task.getOutputVariables().size() > 0) {
-				variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
+				//variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
 				
 				for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
-					variableMapGridPane.addRow(rowIndex++, new Label(), new Label(entry.getKey()), new TextField(entry.getValue()));
+					if (MapVariable.shouldDisplay(entry.getKey())) {
+						variableMapGridPane.addRow(rowIndex++, new Label(MapVariable.valueOf(entry.getKey()).getDisplayName()), new Label(entry.getValue()));
+					} else {
+						LOG.debug("Not displaying unexpected output variables map entry: {}", entry);
+					}
 				}
 			}
 		}

@@ -11,7 +11,7 @@
       <HBox fillHeight="false" BorderPane.alignment="TOP_LEFT" />
    </bottom>
    <top>
-      <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="TOP_RIGHT">
+      <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="TOP_CENTER">
          <BorderPane.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </BorderPane.margin>

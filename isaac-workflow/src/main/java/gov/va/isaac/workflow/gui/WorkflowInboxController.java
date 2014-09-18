@@ -296,7 +296,6 @@ public class WorkflowInboxController
 		// END concept ID
 		
 		
-		
 		float colWidth = 1.0f / taskTable.getColumns().size();
 		for (TableColumn<LocalTask, ?> col : taskTable.getColumns())
 		{
@@ -318,7 +317,7 @@ public class WorkflowInboxController
 						claimTasksButton.setDisable(false);
 						refreshContent();
 						
-						synchronize();
+						synchronize(false);
 					});
 				}
 				catch (Exception e)
@@ -329,7 +328,7 @@ public class WorkflowInboxController
 		});
 
 		synchronizeButton.setOnAction((action) -> {
-			synchronize();
+			synchronize(true);
 		});
 	}
 
@@ -337,18 +336,26 @@ public class WorkflowInboxController
 		return rootBorderPane;
 	}
 	
-	private void synchronize() {
+	private void synchronize(final boolean displayBusyPopover) {
 		synchronizeButton.setDisable(true);
 
-		final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
+		BusyPopover synchronizePopover = null;
+		
+		if (displayBusyPopover) {
+			synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
+		}
 
+		final BusyPopover finalBusyPopover = synchronizePopover;
+		
 		Utility.execute(() -> {
 			try
 			{
 				getWorkflowEngine().synchronizeWithRemote();
 				Platform.runLater(() -> 
 				{
-					synchronizePopover.hide();
+					if (finalBusyPopover != null) {
+						finalBusyPopover.hide();
+					}
 					synchronizeButton.setDisable(false);
 					refreshContent();
 				});
