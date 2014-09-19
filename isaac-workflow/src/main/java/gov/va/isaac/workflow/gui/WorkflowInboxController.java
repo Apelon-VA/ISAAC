@@ -462,7 +462,7 @@ public class WorkflowInboxController
 							LocalTask task = taskTable.getItems().get(cellIndex);
 
 							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
-							view.setInitialTask(task.getId());
+							view.setTask(task.getId());
 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 						}
 					}

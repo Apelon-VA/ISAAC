@@ -103,11 +103,11 @@ public class WorkflowAdvancementViewController
 		return "alejandro";
 	}
 
-	public LocalTask getInitialTask() {
+	public LocalTask getTask() {
 		return initialTask;
 	}
 
-	public void setInitialTask(long taskId) {
+	public void setTask(long taskId) {
 		if (initialTask != null) {
 			String msg = "Cannot reset initialTask from " + initialTask.getId() + " to " + taskId;
 			logger.error(msg);
@@ -179,26 +179,26 @@ public class WorkflowAdvancementViewController
 	}
 
 	// setConcept() should only be called once
-	public void setConcept(ConceptVersionBI con) {
-		if (conceptVersion != null) {
-			String msg = "Cannot reset conceptVersion from " + new SimpleDisplayConcept(conceptVersion) + " to " + new SimpleDisplayConcept(con);
-			logger.error(msg);
-			throw new RuntimeException(msg);
-		}
-		
-		if (initialTask != null) {
-			String msg = "Cannot set conceptVersion to " + new SimpleDisplayConcept(con) + " when initialTask is already set to " + initialTask.getId();
-			logger.error(msg);
-			throw new RuntimeException(msg);
-		}
-
-		this.conceptVersion = con;
-		
-		// Uncomment following line only if automatically generating workflow on creation of window
-		//startNewWorkflowInstance();
-		
-		loadContent();
-	}
+//	public void setConcept(ConceptVersionBI con) {
+//		if (conceptVersion != null) {
+//			String msg = "Cannot reset conceptVersion from " + new SimpleDisplayConcept(conceptVersion) + " to " + new SimpleDisplayConcept(con);
+//			logger.error(msg);
+//			throw new RuntimeException(msg);
+//		}
+//		
+//		if (initialTask != null) {
+//			String msg = "Cannot set conceptVersion to " + new SimpleDisplayConcept(con) + " when initialTask is already set to " + initialTask.getId();
+//			logger.error(msg);
+//			throw new RuntimeException(msg);
+//		}
+//
+//		this.conceptVersion = con;
+//		
+//		// Uncomment following line only if automatically generating workflow on creation of window
+//		//startNewWorkflowInstance();
+//		
+//		loadContent();
+//	}
 	
 	ConceptVersionBI getConcept() {
 		return conceptVersion;

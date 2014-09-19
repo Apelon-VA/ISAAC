@@ -101,35 +101,35 @@ public class WorkflowAdvancementView extends Stage implements WorkflowAdvancemen
 		show();
 	}
 
-	public void setConcept(ConceptVersionBI concept) {
-		// Make sure in application thread.
-		FxUtils.checkFxUserThread();
-		controller_.setConcept(concept);
-	}
+//	public void setConcept(ConceptVersionBI concept) {
+//		// Make sure in application thread.
+//		FxUtils.checkFxUserThread();
+//		controller_.setConcept(concept);
+//	}
 	
-	@Override
-	public void setConcept(UUID conceptUUID) {
-		try {
-			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
-		} catch (IOException e) {
-			String title = "Unexpected error loading concept with UUID " + conceptUUID;
-			String msg = e.getClass().getName();
-			logger.error(title, e);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-		}
-	}
-
-	@Override
-	public void setConcept(int conceptNid) {
-		try {
-			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
-		} catch (IOException e) {
-			String title = "Unexpected error loading concept with Nid " + conceptNid;
-			String msg = e.getClass().getName();
-			logger.error(title, e);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-		}
-	}
+//	@Override
+//	public void setConcept(UUID conceptUUID) {
+//		try {
+//			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
+//		} catch (IOException e) {
+//			String title = "Unexpected error loading concept with UUID " + conceptUUID;
+//			String msg = e.getClass().getName();
+//			logger.error(title, e);
+//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+//		}
+//	}
+//
+//	@Override
+//	public void setConcept(int conceptNid) {
+//		try {
+//			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
+//		} catch (IOException e) {
+//			String title = "Unexpected error loading concept with Nid " + conceptNid;
+//			String msg = e.getClass().getName();
+//			logger.error(title, e);
+//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+//		}
+//	}
 
 	@Override
 	public Region getView() {
@@ -160,15 +160,17 @@ public class WorkflowAdvancementView extends Stage implements WorkflowAdvancemen
 	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#setInitialTask(long)
 	 */
 	@Override
-	public void setInitialTask(long taskId) {
-		controller_.setInitialTask(taskId);
+	public void setTask(long taskId) {
+		FxUtils.checkFxUserThread();
+
+		controller_.setTask(taskId);
 	}
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#getInitialTask()
 	 */
 	@Override
-	public Long getInitialTask() {
-		return controller_.getInitialTask() != null ? controller_.getInitialTask().getId() : null;
+	public Long getTask() {
+		return controller_.getTask() != null ? controller_.getTask().getId() : null;
 	}
 }

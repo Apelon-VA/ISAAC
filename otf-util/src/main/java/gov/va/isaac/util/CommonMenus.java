@@ -611,7 +611,7 @@ public class CommonMenus
 				taskIds.getObservableTaskIdCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
 					WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
-					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
+					view.setTask(taskIds.getTaskIds().iterator().next());
 					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 				},
 				() -> { // onNotHandlable

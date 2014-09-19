@@ -18,16 +18,40 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
+import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link WorkflowAdvancementViewI}
+ * {@link PopupTaskWithConceptViewI}
  * 
  * An interface that requests a pop up window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface WorkflowAdvancementViewI extends PopupTaskWithConceptViewI
-{
+public interface PopupTaskWithConceptViewI extends TaskWithConceptViewI, PopupViewI
+{   
+	/**
+	 * Update the view to get the selected concept as UUID.
+	 * @param conceptUuid
+	 */
+	public UUID getConceptUuid();
+	
+	/**
+	 * Update the view to get the selected concept as int.
+	 * @param conceptUuid
+	 */
+	public int getConceptNid();
+
+	/**
+	 * Update the view to show the selected concept.
+	 * @param conceptUuid
+	 */
+	public void setViewMode(ConceptViewMode mode);
+
+	/**
+	 * Update the view to show the selected concept.
+	 * @param conceptUuid
+	 */
+	public ConceptViewMode getViewMode();
 }
