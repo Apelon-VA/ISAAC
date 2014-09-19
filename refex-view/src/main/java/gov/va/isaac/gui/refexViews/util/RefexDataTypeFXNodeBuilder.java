@@ -24,6 +24,8 @@ import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import gov.va.issac.drools.refexUtils.RefexDroolsValidator;
+import gov.va.issac.drools.refexUtils.RefexDroolsValidatorImplInfo;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.nio.file.Files;
@@ -733,7 +735,8 @@ public class RefexDataTypeFXNodeBuilder
 				{
 					tip = tip + "\n";
 				}
-				tip += "The validator type for this field is '" + validatorType.get().getDisplayName() + "'";
+				tip += "The validator type for this field is '" + 
+						(validatorType.get() == RefexDynamicValidatorType.EXTERNAL ? "Drools" : validatorType.get().getDisplayName()) + "'";
 				if (validatorData != null && validatorData.get() != null)
 				{
 					String temp = null;
@@ -747,7 +750,23 @@ public class RefexDataTypeFXNodeBuilder
 					}
 					if (temp == null)
 					{
-						validatorData.get().getDataObject().toString();
+						if (validatorType.get() == RefexDynamicValidatorType.EXTERNAL)
+						{
+							RefexDroolsValidatorImplInfo rdvii = RefexDroolsValidator.readFromData(validatorData.get());
+							if (rdvii != null)
+							{
+								temp = rdvii.getDisplayName();
+							}
+							else
+							{
+								//should be impossible
+								temp = "!ERROR!";
+							}
+						}
+						else
+						{
+							temp = validatorData.get().getDataObject().toString();
+						}
 					}
 					
 					tip += "\nThe validation data for this field is '" + temp + "'";
