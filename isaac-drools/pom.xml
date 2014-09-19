@@ -15,10 +15,6 @@
 	<name>ISAAC Extensions for DROOLS</name>
 	<url>http://maven.apache.org</url>
 
-	<properties>
-		<drools.version>6.1.0.Final</drools.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
@@ -35,14 +31,19 @@
 			<artifactId>tcc-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.ihtsdo.otf</groupId>
+			<artifactId>tcc-model-impl</artifactId>
+			<version>${otf-versioning.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.kie</groupId>
 			<artifactId>kie-api</artifactId>
-			<version>${drools.version}</version>
+			<version>${kie.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.drools</groupId>
 			<artifactId>drools-compiler</artifactId>
-			<version>${drools.version}</version>
+			<version>${kie.version}</version>
 		</dependency>
 		
 	</dependencies>
