@@ -28,12 +28,11 @@ import java.util.UUID;
  * @author afurber
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class ResultsItem
+public abstract class ResultsItem
 {
-
 	private int errorCode;
 	private String message;
-	private String severity;
+	private Severity severity;
 	private String ruleUuid;
 
 	public enum Severity
@@ -63,19 +62,13 @@ public class ResultsItem
 
 	}
 
-	public ResultsItem()
+	protected ResultsItem(Severity severity)
 	{
 		super();
+		this.severity = severity;
 	}
 
-	public ResultsItem(int errorCode, String message)
-	{
-		super();
-		this.errorCode = errorCode;
-		this.message = message;
-	}
-
-	public ResultsItem(int errorCode, String message, String severity, String ruleUuid)
+	protected ResultsItem(int errorCode, String message, Severity severity, String ruleUuid)
 	{
 		super();
 		this.errorCode = errorCode;
@@ -104,12 +97,12 @@ public class ResultsItem
 		this.message = message;
 	}
 
-	public String getSeverity()
+	public Severity getSeverity()
 	{
 		return severity;
 	}
 
-	public void setSeverity(String severity)
+	public void setSeverity(Severity severity)
 	{
 		this.severity = severity;
 	}
