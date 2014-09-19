@@ -18,9 +18,19 @@
  */
 
 import gov.va.isaac.AppContext;
+import gov.va.issac.drools.helper.ResultsCollector;
+import gov.va.issac.drools.helper.ResultsItem;
+import gov.va.issac.drools.helper.templates.AbstractTemplate;
+import gov.va.issac.drools.helper.templates.DescriptionTemplate;
+import gov.va.issac.drools.manager.DroolsExecutor;
 import gov.va.issac.drools.manager.DroolsExecutorsManager;
+import gov.va.issac.drools.testmodel.DrDescription;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
@@ -35,14 +45,61 @@ public class DroolsTestRunner
 			IllegalAccessException, InterruptedException
 	{
 		AppContext.setup();
-		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
 		Field f = Hk2Looker.class.getDeclaredField("looker");
 		f.setAccessible(true);
 		f.set(null, AppContext.getServiceLocator());
 
 		DroolsExecutorsManager dem = AppContext.getService(DroolsExecutorsManager.class);
+		
+		for (String s : dem.getLoadedExecutors())
+		{
+			System.out.println(s);
+			DroolsExecutor de = dem.getDroolsExecutor(s);
 
-		Thread.sleep(60000);
+			ArrayList<Object> facts = new ArrayList<>();
+			
+			DrDescription d = new DrDescription();
+			d.setLang("en");
+			d.setStatusUuid(SnomedMetadataRf2.ACTIVE_VALUE_RF2.getUuids()[0].toString());
+			d.setText("a test    value");
+			
+			facts.add(d);
+			
+			Map<String, Object> globals = new HashMap<>();
+			
+			ResultsCollector rc = new ResultsCollector();
+			
+			globals.put("resultsCollector", rc);
+			
+			int fireCount = de.fireAllRules(globals, facts);
+			
+			System.out.println("Fire count was " + fireCount);
+			
+			if (rc.getResultsItems().size() > 0)
+			{
+				System.out.println("Failed test info:");
+				for (ResultsItem r : rc.getResultsItems())
+				{
+					System.out.println("resultsItem: ");
+					System.out.println(r.getMessage());
+					System.out.println(r.getSeverity());
+					System.out.println(r.getRuleUuid());
+					System.out.println(r.getErrorCode());
+				}
+				
+				for (AbstractTemplate  t :rc.getTemplates())
+				{
+					
+					if (t instanceof DescriptionTemplate)
+					{
+						System.out.println("Suggested fix: '" + ((DescriptionTemplate)t).getText() + "'");
+					}
+					else
+					{
+						System.out.println(t.toString());
+					}
+				}
+			}
+		}
 	}
-
 }
