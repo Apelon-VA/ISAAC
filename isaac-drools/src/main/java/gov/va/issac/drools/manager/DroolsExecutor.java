@@ -52,7 +52,6 @@ import org.kie.internal.conf.ConsequenceExceptionHandlerOption;
 import org.kie.internal.definition.KnowledgePackage;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.logger.KnowledgeRuntimeLogger;
-import org.kie.internal.logger.KnowledgeRuntimeLoggerFactory;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,11 @@ public class DroolsExecutor
 	private String name_;
 	private long compileTime_;
 
-	//TODO figure out the new APIs to replace this...
+	//TODO figure out the new APIs to replace this...  I tried to follow the doc for using KIEService, etc...
+	//But the doc is incomplete, and doesn't show how to register custom evaluators.  Nor does it show how to load rules - 
+	//though I found this:  http://stackoverflow.com/questions/23784652/drools-knowledgebase-deprecated  but 
+	//still couldn't find any details on how to register the custom evaluators - the Options types don't match up.  The API
+	//seems to be unfinished here... 
 	private KnowledgeBase kbase_;
 	private Collection<KnowledgePackage> knowledgePackages_;
 
@@ -235,7 +238,11 @@ public class DroolsExecutor
 		return knowledgePackages_;
 	}
 
-	public void fireAllRules(Map<String, Object> globals, Collection<Object> facts) throws DroolsException, IOException
+	/**
+	 * Opens a session, runs rules, closes the session again.
+	 * @return the number of rules fired
+	 */
+	public int fireAllRules(Map<String, Object> globals, Collection<Object> facts) throws DroolsException, IOException
 	{
 		KnowledgeRuntimeLogger logger = null;
 		StatefulKnowledgeSession ksession = null;
@@ -244,8 +251,7 @@ public class DroolsExecutor
 			ksession = kbase_.newStatefulKnowledgeSession();
 
 			//enable this for debug...
-			//TODO disable
-			logger = KnowledgeRuntimeLoggerFactory.newConsoleLogger(ksession);
+			//logger = KnowledgeRuntimeLoggerFactory.newConsoleLogger(ksession);
 
 			for (Map.Entry<String, Object> e : globals.entrySet())
 			{
@@ -255,7 +261,8 @@ public class DroolsExecutor
 			{
 				ksession.insert(fact);
 			}
-			ksession.fireAllRules();
+
+			return ksession.fireAllRules();
 		}
 		catch (Exception e)
 		{
@@ -276,5 +283,16 @@ public class DroolsExecutor
 				logger.close();
 			}
 		}
+	}
+	
+	/**
+	 * Open a new stateful session - return it to the user to do with as they please.
+	 * 
+	 * Useful for the rules that insert their results into the session as facts, instead of into a global results collector.
+	 * @return
+	 */
+	public StatefulKnowledgeSession getStatefulKnowledgeSession()
+	{
+		return kbase_.newStatefulKnowledgeSession();
 	}
 }
