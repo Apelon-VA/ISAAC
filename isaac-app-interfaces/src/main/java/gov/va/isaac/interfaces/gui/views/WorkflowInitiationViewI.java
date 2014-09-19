@@ -18,7 +18,7 @@
  */
 
 /**
- * InitiateWorkflowViewI
+ * WorkflowInitiationViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -29,13 +29,13 @@ import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * InitiateWorkflowViewI
+ * WorkflowInitiationViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
 @Contract
-public interface InitiateWorkflowViewI extends PopupViewI {
+public interface WorkflowInitiationViewI extends PopupViewI {
 	public void setComponent(UUID uuid);
 	public UUID getComponentUuid();
 

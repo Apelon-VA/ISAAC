@@ -23,17 +23,14 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
-import gov.va.isaac.interfaces.gui.views.InitiateWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -74,13 +71,13 @@ public class CommonMenus
 		// including across non-CommonMenu items that may exist on any passed ContextMenu
 		CONCEPT_VIEW("View Concept", Images.CONCEPT_VIEW),
 		CONCEPT_VIEW_LEGACY("View Concept 2", Images.CONCEPT_VIEW),
-		TAXONOMY_VIEW("Find in Taxonomy View", Images.ROOT),
-		WORKFLOW_TASK_VIEW("Workflow Task View", Images.INBOX),
+		TAXONOMY_VIEW("Find in Taxonomy", Images.ROOT),
+		WORKFLOW_TASK_DETAILS_VIEW("Workflow Task Details", Images.INBOX),
 		
 		SEND_TO("Send To", null),
 			LIST_VIEW("List View", Images.LIST_VIEW),
-			WORKFLOW_VIEW("Workflow View", Images.INBOX),
-			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization View", Images.INBOX),
+			WORKFLOW_ADVANCEMENT_VIEW("Workflow Advancement", Images.INBOX), // Only accessible from inbox
+			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization", Images.INBOX),
 		
 		COPY("Copy", null),
 			COPY_TEXT("Copy Text", Images.COPY),
@@ -472,7 +469,7 @@ public class CommonMenus
 
 		// Menu item to find concept in tree.
 		MenuItem openTaskViewMenuItem = createNewMenuItem(
-				CommonMenuItem.WORKFLOW_TASK_VIEW,
+				CommonMenuItem.WORKFLOW_TASK_DETAILS_VIEW,
 				builder,
 				() -> {
 					return taskIdProvider.getObservableTaskIdCount().get() == 1;
@@ -499,7 +496,7 @@ public class CommonMenus
 			
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getSendToMenuItems(builder, dataProvider, commonMenusNIdProvider);
+				items = getSendToMenuItems(builder, dataProvider, commonMenusNIdProvider, taskIdProvider);
 
 				return items;
 			}
@@ -572,7 +569,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, CommonMenusDataProvider dataProvider, CommonMenusNIdProvider nids) {
+	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, CommonMenusDataProvider dataProvider, CommonMenusNIdProvider nids, CommonMenusTaskIdProvider taskIds) {
 		// The following code is for the "Send To" submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -607,25 +604,24 @@ public class CommonMenus
 			menuItems.add(listViewMenuItem);
 		}
 
-//		// Menu item to generate New Workflow Instance.
-//		MenuItem newWorkflowViewItem = createNewMenuItem(
-//				CommonMenuItem.WORKFLOW_VIEW,
-//				builder,
-//				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
-//				nids.getObservableNidCount().isEqualTo(1),				//make visible
-//				() -> { // onHandlable
-//					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-//					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
-//					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-//				},
-//				() -> { // onNotHandlable
-//					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
-//				}
-//				);
-//		if (newWorkflowViewItem != null)
-//		{
-//			menuItems.add(newWorkflowViewItem);
-//		}
+		MenuItem existingWorkflowInstanceAdvancementMenuItem = createNewMenuItem(
+				CommonMenuItem.WORKFLOW_ADVANCEMENT_VIEW,
+				builder,
+				() -> {return taskIds.getObservableTaskIdCount().get() == 1;}, // canHandle
+				taskIds.getObservableTaskIdCount().isEqualTo(1),				//make visible
+				() -> { // onHandlable
+					WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				},
+				() -> { // onNotHandlable
+					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
+				}
+				);
+		if (existingWorkflowInstanceAdvancementMenuItem != null)
+		{
+			menuItems.add(existingWorkflowInstanceAdvancementMenuItem);
+		}
 
 		// Menu item to generate New Workflow Instance.
 		MenuItem newWorkflowInstanceInitializationItem = createNewMenuItem(
@@ -636,9 +632,9 @@ public class CommonMenus
 					}, // canHandle
 				nids.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
-					InitiateWorkflowViewI view = AppContext.getService(InitiateWorkflowViewI.class);
+					WorkflowInitiationViewI view = AppContext.getService(WorkflowInitiationViewI.class);
 					if (view == null) {
-						LOG.error("HK2 FAILED to provide requested service: " + InitiateWorkflowViewI.class);
+						LOG.error("HK2 FAILED to provide requested service: " + WorkflowInitiationViewI.class);
 					}
 					view.setComponent(nids.getNIds().iterator().next());
 					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());

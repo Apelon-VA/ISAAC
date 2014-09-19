@@ -21,14 +21,14 @@ package gov.va.isaac.interfaces.gui.views;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link ConceptWorkflowViewI}
+ * {@link WorkflowAdvancementViewI}
  * 
  * An interface that requests a pop up window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ConceptWorkflowViewI extends PopupConceptViewI
+public interface WorkflowAdvancementViewI extends PopupConceptViewI
 {
 	public void setInitialTask(long taskId);
 	public Long getInitialTask();

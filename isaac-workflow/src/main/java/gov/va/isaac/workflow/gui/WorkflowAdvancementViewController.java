@@ -58,13 +58,13 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * {@link AdvanceWorkflowViewController}
+ * {@link WorkflowAdvancementViewController}
  *
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-public class AdvanceWorkflowViewController
+public class WorkflowAdvancementViewController
 {	
-	private final static Logger logger = LoggerFactory.getLogger(AdvanceWorkflowViewController.class);
+	private final static Logger logger = LoggerFactory.getLogger(WorkflowAdvancementViewController.class);
 	
 	
 	// Underlying concept for loading detail pane
@@ -216,10 +216,10 @@ public class AdvanceWorkflowViewController
 	@FXML
 	void initialize()
 	{
-		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'AdvanceWorkflowView.fxml'.";
-		//assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'AdvanceWorkflowView.fxml'.";
-		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'AdvanceWorkflowView.fxml'.";
-		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'AdvanceWorkflowView.fxml'.";
+		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		//assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 
 		initializeWorkflowEngine();
 		initializeTaskService();

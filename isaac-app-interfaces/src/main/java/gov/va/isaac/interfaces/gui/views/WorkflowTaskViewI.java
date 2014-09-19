@@ -18,18 +18,16 @@
  */
 
 /**
- * InitiateWorkflowViewI
+ * WorkflowInitiationViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * InitiateWorkflowViewI
+ * WorkflowTaskViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *

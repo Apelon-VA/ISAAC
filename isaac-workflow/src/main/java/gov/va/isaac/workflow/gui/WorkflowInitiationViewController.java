@@ -19,7 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.InitiateWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
@@ -51,12 +51,12 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Controller class for {@link InitiateWorkflowViewI}
+ * Controller class for {@link WorkflowInitiationViewI}
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-public class InitiateWorkflowViewController {
-	private static final Logger LOG = LoggerFactory.getLogger(InitiateWorkflowViewController.class);
+public class WorkflowInitiationViewController {
+	private static final Logger LOG = LoggerFactory.getLogger(WorkflowInitiationViewController.class);
 	
 	enum WorkflowProcessREVIEW3InputVariablesMapValue {
 		//component_id, // Passed through API
@@ -93,7 +93,7 @@ public class InitiateWorkflowViewController {
 	
 	@FXML private GridPane variablesGridPane;
 
-	private InitiateWorkflowView initiateWorkflowView;
+	private WorkflowInitiationView workflowInitiationView;
 	private ComponentWorkflowServiceI workflowService;
 
 	private ComponentVersionBI componentOrConcept;
@@ -151,8 +151,8 @@ public class InitiateWorkflowViewController {
 		}
 	}
 
-	void setView(InitiateWorkflowView initiateWorkflowView) {
-		this.initiateWorkflowView = initiateWorkflowView;
+	void setView(WorkflowInitiationView workflowInitiationView) {
+		this.workflowInitiationView = workflowInitiationView;
 	}
 
 	public void setComponent(ComponentVersionBI passedComponentOrConcept) {
@@ -315,7 +315,7 @@ public class InitiateWorkflowViewController {
 	 * Handler for cancel button.
 	 */
 	public void doCancel() {
-		initiateWorkflowView.close();
+		workflowInitiationView.close();
 	}
 
 	private boolean validate(String title) {

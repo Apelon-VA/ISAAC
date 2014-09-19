@@ -21,7 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.InitiateWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -43,36 +43,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link InitiateWorkflowViewI} which can be used to initiate a new workflow instance
+ * A {@link WorkflowInitiationViewI} which can be used to initiate a new workflow instance
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 @Service
 @PerLookup
-public class InitiateWorkflowView extends Stage implements InitiateWorkflowViewI
+public class WorkflowInitiationView extends Stage implements WorkflowInitiationViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(InitiateWorkflowView.class);
+	private final Logger logger = LoggerFactory.getLogger(WorkflowInitiationView.class);
 
-	private InitiateWorkflowViewController controller_;
+	private WorkflowInitiationViewController controller_;
 
 	private boolean shown = false;
 	
-	private InitiateWorkflowView() throws IOException
+	private WorkflowInitiationView() throws IOException
 	{
 		super();
 
-		URL resource = this.getClass().getResource("InitiateWorkflowView.fxml");
+		URL resource = this.getClass().getResource("WorkflowInitiationView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
-		getScene().getStylesheets().add(InitiateWorkflowView.class.getResource("/isaac-shared-styles.css").toString());
+		getScene().getStylesheets().add(WorkflowInitiationView.class.getResource("/isaac-shared-styles.css").toString());
 		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
 		
 		controller_.setView(this);
 		
-		setTitle("Initiate Workflow");
+		setTitle("Workflow Initiation");
 		setResizable(true);
 
 		setWidth(600);

@@ -12,7 +12,7 @@ import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 
 import java.io.IOException;
@@ -276,7 +276,7 @@ public class EnhancedConceptBuilder {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+				WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
 
 				view.setConcept(con.getNid());
 				view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());

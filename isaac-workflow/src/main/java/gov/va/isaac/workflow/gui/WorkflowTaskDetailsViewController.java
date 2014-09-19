@@ -54,8 +54,8 @@ import org.slf4j.LoggerFactory;
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-public class WorkflowTaskViewController {
-	private static final Logger LOG = LoggerFactory.getLogger(WorkflowTaskViewController.class);
+public class WorkflowTaskDetailsViewController {
+	private static final Logger LOG = LoggerFactory.getLogger(WorkflowTaskDetailsViewController.class);
 	
 	enum MapVariable {
 		in_instructions("Instructions"),
@@ -97,7 +97,7 @@ public class WorkflowTaskViewController {
 	
 	private GridPane variableMapGridPane;
 	
-	private WorkflowTaskView workflowTaskView;
+	private WorkflowTaskDetailsView workflowTaskDetailsView;
 
 	private LocalTask task;
 	
@@ -137,8 +137,8 @@ public class WorkflowTaskViewController {
 		setTask(retrievedTask);
 	}
 	
-	void setView(WorkflowTaskView workflowTaskView) {
-		this.workflowTaskView = workflowTaskView;
+	void setView(WorkflowTaskDetailsView workflowTaskDetailsView) {
+		this.workflowTaskDetailsView = workflowTaskDetailsView;
 	}
 
 	@FXML
@@ -248,7 +248,7 @@ public class WorkflowTaskViewController {
 	 * Handler for cancel button.
 	 */
 	public void doCancel() {
-		workflowTaskView.close();
+		workflowTaskDetailsView.close();
 	}
 
 	private LocalTasksServiceBI getLocalTasksService() {

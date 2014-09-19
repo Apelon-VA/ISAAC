@@ -24,7 +24,7 @@ import gov.va.isaac.gui.util.FxUtils;
 //import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -47,35 +47,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link AdvanceWorkflowView}
+ * {@link WorkflowAdvancementView}
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 
 @Service
 @PerLookup
-public class AdvanceWorkflowView extends Stage implements ConceptWorkflowViewI
+public class WorkflowAdvancementView extends Stage implements WorkflowAdvancementViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(AdvanceWorkflowView.class);
+	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
 
-	private AdvanceWorkflowViewController controller_;
+	private WorkflowAdvancementViewController controller_;
 
 	private boolean shown = false;
 	
-	private AdvanceWorkflowView() throws IOException
+	private WorkflowAdvancementView() throws IOException
 	{
 		super();
 
-		URL resource = this.getClass().getResource("AdvanceWorkflowView.fxml");
+		URL resource = this.getClass().getResource("WorkflowAdvancementView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
-		getScene().getStylesheets().add(AdvanceWorkflowView.class.getResource("/isaac-shared-styles.css").toString());
+		getScene().getStylesheets().add(WorkflowAdvancementView.class.getResource("/isaac-shared-styles.css").toString());
 		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
 		
-		setTitle("Advance Workflow");
+		setTitle("Workflow Advancement");
 		setResizable(true);
 
 		setWidth(600);
@@ -157,7 +157,7 @@ public class AdvanceWorkflowView extends Stage implements ConceptWorkflowViewI
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI#setInitialTask(long)
+	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#setInitialTask(long)
 	 */
 	@Override
 	public void setInitialTask(long taskId) {
@@ -165,7 +165,7 @@ public class AdvanceWorkflowView extends Stage implements ConceptWorkflowViewI
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI#getInitialTask()
+	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#getInitialTask()
 	 */
 	@Override
 	public Long getInitialTask() {

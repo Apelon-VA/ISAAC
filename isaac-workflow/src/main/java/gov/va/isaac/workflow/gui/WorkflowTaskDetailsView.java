@@ -22,11 +22,9 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.UUID;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -37,7 +35,6 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 import org.glassfish.hk2.api.PerLookup;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,23 +46,23 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @PerLookup
-public class WorkflowTaskView extends Stage implements WorkflowTaskViewI
+public class WorkflowTaskDetailsView extends Stage implements WorkflowTaskViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(WorkflowTaskView.class);
+	private final Logger logger = LoggerFactory.getLogger(WorkflowTaskDetailsView.class);
 
-	private WorkflowTaskViewController controller_;
+	private WorkflowTaskDetailsViewController controller_;
 
 	private boolean shown = false;
 	
-	private WorkflowTaskView() throws IOException
+	private WorkflowTaskDetailsView() throws IOException
 	{
 		super();
 
-		URL resource = this.getClass().getResource("WorkflowTaskView.fxml");
+		URL resource = this.getClass().getResource("WorkflowTaskDetailsView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
-		getScene().getStylesheets().add(WorkflowTaskView.class.getResource("/isaac-shared-styles.css").toString());
+		getScene().getStylesheets().add(WorkflowTaskDetailsView.class.getResource("/isaac-shared-styles.css").toString());
 		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
