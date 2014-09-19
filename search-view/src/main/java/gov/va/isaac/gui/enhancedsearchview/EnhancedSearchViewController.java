@@ -1081,7 +1081,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		String preferredDescription = null;
 		try {
 			if (componentOrConceptVersion instanceof ConceptVersionBI) {
-				DescriptionVersionBI desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
+				DescriptionVersionBI<?> desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
 				preferredDescription = desc.getText();
 			} else {
 				preferredDescription = componentOrConceptVersion.toUserString();
@@ -1139,7 +1139,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				public void run() {
 					try {
 						if (! ssh.isCancelled()) {
-							searchResultsTable.getItems().addAll(ssh.getResults());
+							searchResultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
 							
 							refreshTotalResultsDisplayedLabel();
 							
@@ -1153,7 +1153,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						AppContext.getCommonDialogs().showErrorDialog(title,
 								"There was an unexpected error running the search",
 								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
-						searchResultsTable.getItems().clear();
+						//searchResultsTable.getItems().clear();
 						refreshTotalResultsDisplayedLabel();
 					} finally {
 						searchRunning.set(false);
@@ -1243,8 +1243,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										//nids.add(r.getContainingConcept().getNid());
-										// TODO: modify to send component nid, if possible
 										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
 											nids.add(r.getContainingConcept().getNid());
 										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
