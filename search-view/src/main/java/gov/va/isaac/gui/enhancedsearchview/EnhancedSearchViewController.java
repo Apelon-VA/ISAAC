@@ -1140,7 +1140,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 					try {
 						if (! ssh.isCancelled()) {
 							searchResultsTable.getItems().addAll(ssh.getResults());
-
+							
 							refreshTotalResultsDisplayedLabel();
 							
 							if (searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {

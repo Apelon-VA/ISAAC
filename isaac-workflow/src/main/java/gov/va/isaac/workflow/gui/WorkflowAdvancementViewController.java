@@ -23,6 +23,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.Action;
@@ -79,9 +80,16 @@ public class WorkflowAdvancementViewController
 
 	@FXML private ComboBox<LocalTask> taskComboBox;
 	@FXML private ComboBox<Action> actionComboBox;
+	
+	@FXML private Button viewTaskDetailsButton;
+	
 	//@FXML private Button newWorkflowInstanceButton;
 	
 	private LocalTask initialTask = null;
+
+	// Workflow Engine and Task Service
+	private LocalWorkflowRuntimeEngineBI wfEngine_;
+	private LocalTasksServiceBI taskService_;
 
 	// handler to disable/enable saveActionButton based on validity of required data
 	// This method is used, but currently referenced only in FXML
@@ -93,10 +101,6 @@ public class WorkflowAdvancementViewController
 			saveActionButton.setDisable(true);
 		}
 	}
-
-	// Workflow Engine and Task Service
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	private LocalTasksServiceBI taskService_;
 
 	// TODO: This should be replaced by call to framework
 	private final String getUserName() {
@@ -212,6 +216,10 @@ public class WorkflowAdvancementViewController
 		return selectedTask != null && selectedAction != null;
 	}
 
+	private boolean isDataRequiredToViewTaskDetails() {
+		return taskComboBox.getSelectionModel().getSelectedItem() != null;
+	}
+	
 	// Initialize GUI (invoked by FXML)
 	@FXML
 	void initialize()
@@ -226,7 +234,13 @@ public class WorkflowAdvancementViewController
 		
 		// Disabling saveActionButton until dependencies met 
 		saveActionButton.setDisable(true);
-		
+		viewTaskDetailsButton.setDisable(true);
+		viewTaskDetailsButton.setOnAction((e) -> {
+			WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+			view.setTask(taskComboBox.getSelectionModel().getSelectedItem().getId());
+			view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+		});
+
 		// This code only for embedded concept detail view
 		// Use H2K to find and initialize conceptView as a ConceptView
 		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
@@ -297,13 +311,18 @@ public class WorkflowAdvancementViewController
                 super.updateItem(t, bln); 
                 if (bln) {
                     setText("");
+                    viewTaskDetailsButton.setDisable(true);
                 } else {
                     setText(t.getId() + ": " + t.getComponentName() + ": " + t.getName());
+                    viewTaskDetailsButton.setDisable(false);
                 }
 
             }
 		});
-
+		taskComboBox.setOnAction((event) -> {
+			viewTaskDetailsButton.setDisable(! isDataRequiredToViewTaskDetails());
+		});
+		
 		// Activation of save depends on isDataRequiredForSaveOk()
 		saveActionButton.setOnAction((action) -> {
 			if (isDataRequiredForSaveOk()) {

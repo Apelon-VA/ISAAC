@@ -61,9 +61,19 @@ public class WorkflowInitiationViewController {
 	enum WorkflowProcessREVIEW3InputVariablesMapValue {
 		//component_id, // Passed through API
 		//component_name, // Passed through API
-		instructions,
-		edit_coordinate,
-		edit_coordinate_promotion
+		instructions("Instructions"),
+		//edit_coordinate, // don't display
+		edit_coordinate_promotion("Promotion Path");
+		
+		private final String displayName;
+		
+		private WorkflowProcessREVIEW3InputVariablesMapValue(String displayName) {
+			this.displayName = displayName;
+		}
+		
+		public String getDisplayName() {
+			return displayName;
+		}
 	}
 
 	enum ComponentType {
@@ -360,9 +370,9 @@ public class WorkflowInitiationViewController {
 		
 		Map<String, String> map = new HashMap<>();
 		if (process == WorkflowProcess.REVIEW3) {
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.name(), instructionsTextArea.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.getDisplayName(), instructionsTextArea.getText());
 			//map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), editPathCoordinateTextField.getText());
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionPathCoordinateTextField.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.getDisplayName(), promotionPathCoordinateTextField.getText());
 		} else {
 			// TODO: handle other WorkflowProcess values
 		}

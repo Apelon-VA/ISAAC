@@ -62,12 +62,16 @@ public class WorkflowTaskDetailsViewController {
 		TaskName("Task Name"),
 		NodeName("Node Name"),
 		in_component_name("Component Name"),
-		in_edit_coordinate(null),
+		in_edit_coordinate(), // Don't display
 		in_component_id("Component Id"),
-		GroupId("Group Id");
+		GroupId(); // Don't display
 		
 		private final String displayName;
 		
+		private MapVariable() {
+			this(null);
+		}
+
 		private MapVariable(String dispName) {
 			displayName = dispName;
 		}
