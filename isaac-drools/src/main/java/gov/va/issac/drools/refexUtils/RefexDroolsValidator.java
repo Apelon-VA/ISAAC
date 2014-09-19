@@ -23,11 +23,19 @@ import gov.va.issac.drools.helper.ResultsCollector;
 import gov.va.issac.drools.helper.ResultsItem;
 import gov.va.issac.drools.manager.DroolsExecutor;
 import gov.va.issac.drools.manager.DroolsExecutorsManager;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.ExternalValidatorBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +45,10 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 
-public class RefexDroolsValidator
+@Service
+@Singleton
+@Named("RefexDroolsValidator")
+public class RefexDroolsValidator implements ExternalValidatorBI
 {
 	private static Logger logger = LoggerFactory.getLogger(RefexDroolsValidator.class);
 
@@ -64,15 +75,7 @@ public class RefexDroolsValidator
 
 			ArrayList<Object> facts = new ArrayList<>();
 
-			if (dataToValidate instanceof RefexDynamicStringBI)
-			{
-				RefexDynamicStringBI stringValue = (RefexDynamicStringBI) dataToValidate;
-				facts.add(stringValue);
-			}
-			else
-			{
-				throw new RuntimeException("No implementation exists for validating the datatype " + dataToValidate.getClass().getName());
-			}
+			facts.add(dataToValidate);
 
 			Map<String, Object> globals = new HashMap<>();
 
@@ -115,5 +118,80 @@ public class RefexDroolsValidator
 			throw new RuntimeException("Unexpected error validating with drools");
 		}
 		return true;
+	}
+
+	public static RefexDynamicStringBI createValidatorDefinitionData(RefexDroolsValidatorImplInfo rdvii)
+	{
+		try
+		{
+			return new RefexDynamicString("RefexDroolsValidator|" + rdvii.name());
+		}
+		catch (PropertyVetoException e)
+		{
+			//not possible
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * In our implementation - the validatorDefinitionData contains two things - the first - is the @name of this implementation of an
+	 * {@link ExternalValidatorBI} - for example "RefexDroolsValidator" - the rest is corresponding name from the 
+	 * {@link RefexDroolsValidatorImplInfo} enum (separated by a |) - so it would look like "RefexDroolsValidator|REFEX_STRING_RULES"
+	 * 
+	 * @param validatorDefinitionData
+	 * @throws RuntimeException if the input data can't be parsed as expected.
+	 * @return - null, if input is null, or no drools impl is mapped to the 2nd part of the data. 
+	 */
+	public static RefexDroolsValidatorImplInfo readFromData(RefexDynamicDataBI validatorDefinitionData) throws RuntimeException
+	{
+		try
+		{
+			if (validatorDefinitionData == null)
+			{
+				return null;
+			}
+			String temp = validatorDefinitionData.getDataObject().toString();
+			String[] parts = temp.split("\\|");
+			if (parts[0].equals("RefexDroolsValidator"))
+			{
+				return RefexDroolsValidatorImplInfo.valueOf(parts[1]);
+			}
+			else
+			{
+				throw new RuntimeException("The name mapping for the validator does not match this class!");
+			}
+		}
+		catch (IndexOutOfBoundsException e)
+		{
+			throw new RuntimeException("The incoming value (" + validatorDefinitionData.getDataObject().toString() + " doesn't match the expected format");
+		}
+		catch (RuntimeException e)
+		{
+			throw e;
+		}
+	}
+
+	/**
+	 * @see org.ihtsdo.otf.tcc.api.refexDynamic.data.ExternalValidatorBI#validate(org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI,
+	 * org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI, org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate)
+	 */
+	@Override
+	public boolean validate(RefexDynamicDataBI userData, RefexDynamicStringBI validatorDefinitionData, ViewCoordinate vc) throws RuntimeException
+	{
+		RefexDroolsValidatorImplInfo rdvi = readFromData(validatorDefinitionData);
+		if (rdvi == null)
+		{
+			throw new RuntimeException("The specified validator is not mapped - cannot validate");
+		}
+
+		for (RefexDynamicDataType rddt : rdvi.getApplicableDataTypes())
+		{
+			if (userData.getRefexDataType() == rddt)
+			{
+				return RefexDroolsValidator.validate(rdvi.getDroolsPackageName(), userData);
+			}
+		}
+
+		throw new RuntimeException("The selected drools validator doesn't apply to the datatype '" + userData.getRefexDataType().getDisplayName() + "'");
 	}
 }
