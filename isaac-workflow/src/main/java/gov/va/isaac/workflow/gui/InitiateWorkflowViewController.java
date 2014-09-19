@@ -33,11 +33,12 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.InputEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -105,6 +106,25 @@ public class InitiateWorkflowViewController {
 	private String getUserName() {
 		// TODO: replace hard-coded username
 		return "alejandro";
+	}
+
+	// Private helper method to test validity of data required for save
+	private boolean isDataRequiredForInitiateOk() {
+		WorkflowProcess selectedProcess = null;
+		if (workflowProcessesComboBox != null) {
+			selectedProcess = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
+		}
+
+		String instructions = null;
+		if (instructionsTextArea != null) {
+			instructions = instructionsTextArea.getText();
+		}
+		
+		if (selectedProcess != null && instructions != null && instructions.length() > 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public Pane getRoot() {
@@ -178,16 +198,10 @@ public class InitiateWorkflowViewController {
 		assert componentDescriptionTextField != null : "fx:id=\"componentDescriptionTextField\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert componentTypeLabel != null : "fx:id=\"componentTypeLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
+		initializeWorkflowProcessesComboBox();
+
 		cancelButton.setText("Cancel");
 		cancelButton.setOnAction((e) -> doCancel());
-
-		initiateButton.setText("Initiate");
-		initiateButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				initiateWorkflow();
-			}
-		});
 
 		// TODO: must move to model to handle other WorkflowProcess types
 		variablesGridPane.getChildren().clear();
@@ -199,6 +213,14 @@ public class InitiateWorkflowViewController {
 		instructionsTextArea = new TextArea();
 		instructionsTextArea.setPromptText("Enter instructions");
 		instructionsTextArea.setPadding(new Insets(5));
+		instructionsTextArea.setOnKeyTyped((e) -> initiateButton.setDisable(! isDataRequiredForInitiateOk()));
+		instructionsTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
+			@Override
+			public void handle(InputEvent event) {
+				initiateButton.setDisable(! isDataRequiredForInitiateOk());
+			}
+		});
+
 		variablesGridPane.addRow(row, instructionsTextAreaLabel, instructionsTextArea);
 		row++;
 		
@@ -223,7 +245,14 @@ public class InitiateWorkflowViewController {
 		variablesGridPane.getColumnConstraints().get(1).setPercentWidth(70);
 		variablesGridPane.getColumnConstraints().get(1).setFillWidth(true);
 
-		initializeWorkflowProcessesComboBox();
+		initiateButton.setText("Initiate");
+		initiateButton.setDisable(! isDataRequiredForInitiateOk());
+		initiateButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				initiateWorkflow();
+			}
+		});
 	}
 
 	private void loadContents() {
@@ -254,6 +283,25 @@ public class InitiateWorkflowViewController {
 			};
 
 			return cell;
+		});
+		
+
+		workflowProcessesComboBox.setButtonCell(new ListCell<WorkflowProcess>() {
+			@Override
+			protected void updateItem(WorkflowProcess t, boolean bln) {
+				super.updateItem(t, bln); 
+				if (bln) {
+					setText("");
+				} else {
+					setText(t.getText());
+					initiateButton.setDisable(! isDataRequiredForInitiateOk());
+				}
+			}
+		});
+		workflowProcessesComboBox.setOnAction((event) -> {
+			LOG.trace("workflowProcessesComboBox event (selected: " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			initiateButton.setDisable(! isDataRequiredForInitiateOk());
 		});
 	}
 

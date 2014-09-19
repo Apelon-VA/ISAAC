@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.InitiateWorkflowViewController">
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.InitiateWorkflowViewController">
    <bottom>
       <HBox alignment="TOP_CENTER" fillHeight="false" BorderPane.alignment="TOP_LEFT">
          <children>
@@ -22,32 +22,6 @@
             </Button>
          </children></HBox>
    </bottom>
-   <top>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label fx:id="componentTypeLabel" text="Component Type">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </HBox.margin>
-            </Label>
-            <TextField fx:id="componentDescriptionTextField">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </HBox.margin>
-            </TextField>
-            <Label fx:id="workflowProcessesComboBoxLabel" text="Workflow Process">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </HBox.margin>
-            </Label>
-            <ComboBox fx:id="workflowProcessesComboBox" prefWidth="150.0">
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </HBox.margin>
-            </ComboBox>
-         </children>
-      </HBox>
-   </top>
    <center>
       <GridPane fx:id="variablesGridPane" BorderPane.alignment="TOP_LEFT">
          <columnConstraints>
@@ -56,4 +30,38 @@
          </columnConstraints>
       </GridPane>
    </center>
+   <top>
+      <VBox BorderPane.alignment="CENTER_LEFT">
+         <children>
+            <HBox>
+               <children>
+                  <Label fx:id="componentTypeLabel" text="Component Type">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="componentDescriptionTextField">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <Label fx:id="workflowProcessesComboBoxLabel" text="Workflow Process">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <ComboBox fx:id="workflowProcessesComboBox" minWidth="-Infinity" prefWidth="300.0">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </ComboBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
 </BorderPane>

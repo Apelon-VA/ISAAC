@@ -211,28 +211,6 @@ public class AdvanceWorkflowViewController
 
 		return selectedTask != null && selectedAction != null;
 	}
-	
-	// Method for starting new workflow instance
-	// TODO: need working test case and data for startNewWorkflowInstance().  Current behavior untested.
-//	private void startNewWorkflowInstance() {
-//		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
-//		final String processName = WorkflowProcess.REVIEW.getName();
-//		String preferredDescription = null;
-//		try {
-//			preferredDescription = conceptVersion.getPreferredDescription().getText();
-//		} catch (IOException | ContradictionException e1) {
-//			String title = "Failed starting new workflow instance";
-//			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion: caught " + e1.getClass().getName();
-//			logger.error(title, e1);
-//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
-//			e1.printStackTrace();
-//		}
-//		
-//		// TODO: determine how creation of request should be reflected in GUI
-//		logger.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
-//		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName(), new HashMap<String,String>());
-//		logger.debug("Created ProcessInstanceCreationRequest: " + createdRequest);
-//	}
 
 	// Initialize GUI (invoked by FXML)
 	@FXML
@@ -361,32 +339,6 @@ public class AdvanceWorkflowViewController
 				logger.error("Error saving task: fields not set: task=" + selectedTask + ", action=" + selectedAction);
 			}
 		});
-		
-		
-		// This code only for newWorkflowInstanceButton
-//		newWorkflowInstanceButton.setOnAction((action) -> {
-//			newWorkflowInstanceButton.setDisable(true);
-//			final BusyPopover createNewWorkflowInstancePopover = BusyPopover.createBusyPopover("Creating new workflow instance...", newWorkflowInstanceButton);
-//
-//			Utility.execute(() -> {
-//				try
-//				{
-//					startNewWorkflowInstance();
-//
-//					Platform.runLater(() -> 
-//					{
-//						createNewWorkflowInstancePopover.hide();
-//						newWorkflowInstanceButton.setDisable(false);
-//						refreshContent();
-//					});
-//				}
-//				catch (Exception e)
-//				{
-//					createNewWorkflowInstancePopover.hide();
-//					logger.error("Error creating new workflow instance: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-//				}
-//			});
-//		});
 	}
 
 	private void initializeServices() {
