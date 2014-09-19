@@ -33,12 +33,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.kie.api.KieBaseConfiguration;
+import org.kie.api.definition.rule.Rule;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.rule.ConsequenceExceptionHandler;
@@ -294,5 +297,23 @@ public class DroolsExecutor
 	public StatefulKnowledgeSession getStatefulKnowledgeSession()
 	{
 		return kbase_.newStatefulKnowledgeSession();
+	}
+	
+	/**
+	 * Get all of the rule names present in this executor (rule names come from the compiled .drl file)
+	 */
+	public List<String> getAllRuleNames()
+	{
+		ArrayList<String> results = new ArrayList<>();
+		
+		for (KnowledgePackage kp : getKnowledgePackages())
+		{
+			for (Rule r : kp.getRules())
+			{
+				results.add(r.getName());
+			}
+		}
+		
+		return results;
 	}
 }
