@@ -294,9 +294,9 @@ public class DroolsExecutorsManager
 		logger.debug("Scanning classpath for .drl files");
 		try
 		{
-			//only copy stuff from the package "package-rules" - though note - this code has a bug, and only filters 
+			//only copy stuff from the package "builtin" - though note - this code has a bug, and only filters 
 			//packages from inside jar files it won't filter from the file-based classpath (which is ok, 99.9% of the time)
-			ClassPathScanner cps = new ClassPathScanner(new String[] {"package-rules"}, ".drl");
+			ClassPathScanner cps = new ClassPathScanner(new String[] {"builtin"}, ".drl");
 			InputStream is = cps.next();
 			while (is != null)
 			{
