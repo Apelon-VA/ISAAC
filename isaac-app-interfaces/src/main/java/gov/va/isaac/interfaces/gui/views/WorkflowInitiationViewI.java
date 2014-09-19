@@ -41,4 +41,6 @@ public interface WorkflowInitiationViewI extends PopupViewI {
 
 	public void setComponent(int nid);
 	public int getComponentNid();
+	
+	public Long getInitiatedTaskId();
 }

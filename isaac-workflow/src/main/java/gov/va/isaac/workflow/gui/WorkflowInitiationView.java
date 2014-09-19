@@ -140,4 +140,13 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 	public int getComponentNid() {
 		return controller_.getComponent().getNid();
 	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI#getInitiatedTaskId()
+	 */
+	@Override
+	public Long getInitiatedTaskId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

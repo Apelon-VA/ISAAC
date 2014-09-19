@@ -24,6 +24,10 @@ import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -107,7 +111,11 @@ public class WorkflowInitiationViewController {
 	private ComponentWorkflowServiceI workflowService;
 
 	private ComponentVersionBI componentOrConcept;
+	private Long initiatedTaskId;
 
+	private LocalTasksServiceBI taskService_;
+	private LocalWorkflowRuntimeEngineBI wfEngine_;
+	
 	// TODO: eliminate hard-coding of promotionPathCoordinateTextField
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
 		return "ISAAC Release Candidate Path";
@@ -332,7 +340,7 @@ public class WorkflowInitiationViewController {
 		if (instructionsTextArea.getText() == null || instructionsTextArea.getText().length() == 0) {
 			String msg = "Instructions text field is empty";
 			String details = "Must enter instructions into instructions text field";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 			return false;
 		}
 
@@ -347,13 +355,13 @@ public class WorkflowInitiationViewController {
 			if (promotionPathCoordinateTextField.getText() == null || promotionPathCoordinateTextField.getText().length() == 0) {
 				String msg = "Edit view coordinate UUID text field is empty";
 				String details = "Must enter edit view coordinate UUID into edit coordinate text field";
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 				return false;
 			}
 		} else {
 			String msg = "Unsupported WorkflowProcess: " + workflowProcessesComboBox.getSelectionModel().getSelectedItem();
 			String details = "Only WorkflowProcess." + WorkflowProcess.REVIEW3 + " currently supported";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 			return false;
 		}
 		
@@ -384,10 +392,13 @@ public class WorkflowInitiationViewController {
 			String title = "Workflow Initiation Failed";
 			String msg = "Failed creating WorkflowProcess " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " (service call returned null)";
 			String details = "Component: " + description + "\n" + map;
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 		} else {
 			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
-			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId() + ":\n" + createdRequest);	
+			
+			initiatedTaskId = createdRequest.getWfId();
+			
+			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId() + ":\n" + createdRequest, workflowInitiationView);	
 
 			new Thread(new Runnable() {
 				@Override
