@@ -18,6 +18,7 @@
  */
 package gov.va.issac.drools.helper;
 
+import gov.va.isaac.util.WBUtility;
 import gov.va.issac.drools.testmodel.DrComponent;
 import gov.va.issac.drools.testmodel.DrConcept;
 import gov.va.issac.drools.testmodel.DrDescription;
@@ -26,6 +27,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Hashtable;
+import java.util.UUID;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 
 /**
  * 
@@ -519,5 +523,63 @@ public class TerminologyHelperDrools
 		MatchParen mp = new MatchParen();
 		mp.add(text);
 		return mp.isMatching();
+	}
+
+	public boolean isMemberOf(String conceptUUID, String refsetUUID) throws Exception
+	{
+		ConceptVersionBI concept = WBUtility.getConceptVersion(UUID.fromString(conceptUUID));
+		if (concept == null)
+		{
+			return false;
+		}
+
+		ConceptVersionBI refset = WBUtility.getConceptVersion(UUID.fromString(refsetUUID));
+		if (refset == null)
+		{
+			return false;
+		}
+		
+		if (refset.isAnnotationStyleRefex())
+		{
+			for (RefexVersionBI<?> r : concept.getAnnotationsActive(WBUtility.getViewCoordinate()))
+			{
+				if (r.getAssemblageNid() == refset.getNid())
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			for (RefexVersionBI<?> r : refset.getRefsetMembersActive())
+			{
+				if (r.getReferencedComponentNid() == concept.getNid())
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean isParentOf(String parentUUID, String subtypeUUID) throws Exception
+	{
+		ConceptVersionBI parentConcept = WBUtility.getConceptVersion(UUID.fromString(parentUUID));
+		if (parentConcept == null)
+		{
+			return false;
+		}
+
+		ConceptVersionBI subtypeConcept = WBUtility.getConceptVersion(UUID.fromString(subtypeUUID));
+		if (subtypeConcept == null)
+		{
+			return false;
+		}
+		return subtypeConcept.isKindOf(parentConcept);
+	}
+
+	public boolean isParentOfOrEqualTo(String parent, String subtype) throws Exception
+	{
+		return subtype.equals(parent) || isParentOf(parent, subtype);
 	}
 }
