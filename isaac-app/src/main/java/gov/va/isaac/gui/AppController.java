@@ -25,6 +25,7 @@ import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
+import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import javafx.beans.InvalidationListener;
@@ -70,6 +71,8 @@ public class AppController {
     private IterableProvider<IsaacViewWithMenusI> moduleViews_;
     @Inject
     private IterableProvider<DockedViewI> dockedViews_;
+    @Inject
+    private IterableProvider<ServicesToPreloadI> preloadRequested_;
 
     //Just a hashed view of all of the menus (including nested menus)
     private final Hashtable<String, Menu> allMenus_ = new Hashtable<>();
@@ -221,9 +224,14 @@ public class AppController {
         {
             menu.setDisable(false);
         }
+        
+        //Kick off other preloads
+        for (ServicesToPreloadI service : preloadRequested_)
+        {
+            LOG.debug("Preloading {}", service);
+            service.loadRequested();
+        }
     }
-
-
 
     private BorderPane buildPanelForView(DockedViewI dockedView)
     {
