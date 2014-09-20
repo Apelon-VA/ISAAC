@@ -24,6 +24,7 @@ import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import gov.va.issac.drools.manager.DroolsExecutorsManager;
 import gov.va.issac.drools.refexUtils.RefexDroolsValidator;
 import gov.va.issac.drools.refexUtils.RefexDroolsValidatorImplInfo;
 import java.beans.PropertyVetoException;
@@ -67,6 +68,8 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicLong;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link RefexDataTypeFXNodeBuilder}
@@ -75,6 +78,8 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
  */
 public class RefexDataTypeFXNodeBuilder
 {
+	private static Logger logger = LoggerFactory.getLogger(RefexDataTypeFXNodeBuilder.class);
+	
 	/**
 	 * @param dt - The datatype of the node to be built
 	 * @param defaultValue - The default value for the node (null allowed)
@@ -755,21 +760,33 @@ public class RefexDataTypeFXNodeBuilder
 							RefexDroolsValidatorImplInfo rdvii = RefexDroolsValidator.readFromData(validatorData.get());
 							if (rdvii != null)
 							{
-								temp = rdvii.getDisplayName();
+								temp = "'" + rdvii.getDisplayName() + "'";
+								try
+								{
+									for (String s : AppContext.getService(DroolsExecutorsManager.class).getDroolsExecutor(rdvii.getDroolsPackageName()).getAllRuleNames())
+									{
+										temp += "\n  " + s;
+									}
+								}
+								catch (Exception e)
+								{
+									logger.error("Error reading drools rule definitions", e);
+								}
 							}
 							else
 							{
 								//should be impossible
+								logger.error("Failed to parse the Drools info from " + validatorData.get());
 								temp = "!ERROR!";
 							}
 						}
 						else
 						{
-							temp = validatorData.get().getDataObject().toString();
+							temp = "'" + validatorData.get().getDataObject().toString() + "'";
 						}
 					}
 					
-					tip += "\nThe validation data for this field is '" + temp + "'";
+					tip += "\nThe validation data for this field is " + temp;
 				}
 			}
 			defaultValueAndValidatorTooltip.set(tip);
