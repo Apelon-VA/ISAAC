@@ -20,10 +20,32 @@
             <artifactId>gui-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!-- KIE seems to have messed up their dependency tree, and included the wrong version of httpclient / core. 
+        https://developer.jboss.org/thread/243425-->
         <dependency>
             <groupId>org.kie.remote</groupId>
             <artifactId>kie-services-client</artifactId>
             <version>${kie.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpccore</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.derby</groupId>
