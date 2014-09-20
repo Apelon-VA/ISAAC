@@ -16,6 +16,7 @@
 package gov.va.issac.drools.manager;
 
 import eu.infomas.annotation.ClassPathScanner;
+import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,7 +66,7 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @Singleton
-public class DroolsExecutorsManager
+public class DroolsExecutorsManager implements ServicesToPreloadI
 {
 	private final File droolsRulesFolder_ = new File("drools-rules");
 	private final File compiledRuleDirectory_ = new File(droolsRulesFolder_, "compiled-drools-rules");
@@ -336,5 +337,14 @@ public class DroolsExecutorsManager
 		{
 			logger.error("Unexpected error during classpath scanning", e);
 		}
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
+	 */
+	@Override
+	public void loadRequested()
+	{
+		// nothing to do, we already kick off init in the constructor.
 	}
 }
