@@ -24,7 +24,7 @@ import gov.va.isaac.gui.util.FxUtils;
 //import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -47,35 +47,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link ConceptDetailWorkflow}
+ * {@link WorkflowAdvancementView}
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 
 @Service
 @PerLookup
-public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
+public class WorkflowAdvancementView extends Stage implements WorkflowAdvancementViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflow.class);
+	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
 
-	private ConceptDetailWorkflowController controller_;
+	private WorkflowAdvancementViewController controller_;
 
 	private boolean shown = false;
 	
-	private ConceptDetailWorkflow() throws IOException
+	private WorkflowAdvancementView() throws IOException
 	{
 		super();
 
-		URL resource = this.getClass().getResource("ConceptDetailWorkflow.fxml");
+		URL resource = this.getClass().getResource("WorkflowAdvancementView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
-		getScene().getStylesheets().add(ConceptDetailWorkflow.class.getResource("/isaac-shared-styles.css").toString());
+		getScene().getStylesheets().add(WorkflowAdvancementView.class.getResource("/isaac-shared-styles.css").toString());
 		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
 		
-		setTitle("Concept Detail Workflow");
+		setTitle("Workflow Advancement");
 		setResizable(true);
 
 		setWidth(600);
@@ -101,35 +101,35 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 		show();
 	}
 
-	public void setConcept(ConceptVersionBI concept) {
-		// Make sure in application thread.
-		FxUtils.checkFxUserThread();
-		controller_.setConcept(concept);
-	}
+//	public void setConcept(ConceptVersionBI concept) {
+//		// Make sure in application thread.
+//		FxUtils.checkFxUserThread();
+//		controller_.setConcept(concept);
+//	}
 	
-	@Override
-	public void setConcept(UUID conceptUUID) {
-		try {
-			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
-		} catch (IOException e) {
-			String title = "Unexpected error loading concept with UUID " + conceptUUID;
-			String msg = e.getClass().getName();
-			logger.error(title, e);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-		}
-	}
-
-	@Override
-	public void setConcept(int conceptNid) {
-		try {
-			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
-		} catch (IOException e) {
-			String title = "Unexpected error loading concept with Nid " + conceptNid;
-			String msg = e.getClass().getName();
-			logger.error(title, e);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-		}
-	}
+//	@Override
+//	public void setConcept(UUID conceptUUID) {
+//		try {
+//			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
+//		} catch (IOException e) {
+//			String title = "Unexpected error loading concept with UUID " + conceptUUID;
+//			String msg = e.getClass().getName();
+//			logger.error(title, e);
+//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+//		}
+//	}
+//
+//	@Override
+//	public void setConcept(int conceptNid) {
+//		try {
+//			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
+//		} catch (IOException e) {
+//			String title = "Unexpected error loading concept with Nid " + conceptNid;
+//			String msg = e.getClass().getName();
+//			logger.error(title, e);
+//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
+//		}
+//	}
 
 	@Override
 	public Region getView() {
@@ -157,18 +157,20 @@ public class ConceptDetailWorkflow extends Stage implements ConceptWorkflowViewI
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI#setInitialTask(long)
+	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#setInitialTask(long)
 	 */
 	@Override
-	public void setInitialTask(long taskId) {
-		controller_.setInitialTask(taskId);
+	public void setTask(long taskId) {
+		FxUtils.checkFxUserThread();
+
+		controller_.setTask(taskId);
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI#getInitialTask()
+	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#getInitialTask()
 	 */
 	@Override
-	public Long getInitialTask() {
-		return controller_.getInitialTask() != null ? controller_.getInitialTask().getId() : null;
+	public Long getTask() {
+		return controller_.getTask() != null ? controller_.getTask().getId() : null;
 	}
 }

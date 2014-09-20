@@ -234,9 +234,10 @@ public class LocalTask {
 
 	@Override
 	public String toString() {
-		return "LocalTask [id=" + id + ", name=" + name + ", componentId="
-				+ componentId + ", componentName=" + componentName
-				+ ", status=" + status + ", owner=" + owner + ", action="
-				+ action + ", actionStatus=" + actionStatus + "]";
+		return "LocalTask [id=" + id + ", name=" + name + ", componentName="
+				+ componentName + ", componentId=" + componentId + ", status="
+				+ status + ", owner=" + owner + ", action=" + action
+				+ ", actionStatus=" + actionStatus + ", inputVariables="
+				+ inputVariables.entrySet() + ", outputVariables=" + outputVariables.entrySet() + "]";
 	}
 }

@@ -48,7 +48,7 @@ public class ReviewWorkflowTest {
 
         // Create Instance
         Map<String,String> variables = new HashMap<String, String>();
-        processService.createRequest(WorkflowProcess.REVIEW.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
+        processService.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         wfEngine.synchronizeWithRemote();
 
         // Claim a task

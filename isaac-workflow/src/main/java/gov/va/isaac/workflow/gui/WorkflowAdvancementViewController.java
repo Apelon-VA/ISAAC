@@ -23,6 +23,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.Action;
@@ -58,13 +59,13 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * {@link ConceptDetailWorkflowController}
+ * {@link WorkflowAdvancementViewController}
  *
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-public class ConceptDetailWorkflowController
+public class WorkflowAdvancementViewController
 {	
-	private final static Logger logger = LoggerFactory.getLogger(ConceptDetailWorkflowController.class);
+	private final static Logger logger = LoggerFactory.getLogger(WorkflowAdvancementViewController.class);
 	
 	
 	// Underlying concept for loading detail pane
@@ -79,9 +80,16 @@ public class ConceptDetailWorkflowController
 
 	@FXML private ComboBox<LocalTask> taskComboBox;
 	@FXML private ComboBox<Action> actionComboBox;
+	
+	@FXML private Button viewTaskDetailsButton;
+	
 	//@FXML private Button newWorkflowInstanceButton;
 	
 	private LocalTask initialTask = null;
+
+	// Workflow Engine and Task Service
+	private LocalWorkflowRuntimeEngineBI wfEngine_;
+	private LocalTasksServiceBI taskService_;
 
 	// handler to disable/enable saveActionButton based on validity of required data
 	// This method is used, but currently referenced only in FXML
@@ -94,20 +102,16 @@ public class ConceptDetailWorkflowController
 		}
 	}
 
-	// Workflow Engine and Task Service
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	private LocalTasksServiceBI taskService_;
-
 	// TODO: This should be replaced by call to framework
 	private final String getUserName() {
 		return "alejandro";
 	}
 
-	public LocalTask getInitialTask() {
+	public LocalTask getTask() {
 		return initialTask;
 	}
 
-	public void setInitialTask(long taskId) {
+	public void setTask(long taskId) {
 		if (initialTask != null) {
 			String msg = "Cannot reset initialTask from " + initialTask.getId() + " to " + taskId;
 			logger.error(msg);
@@ -179,26 +183,26 @@ public class ConceptDetailWorkflowController
 	}
 
 	// setConcept() should only be called once
-	public void setConcept(ConceptVersionBI con) {
-		if (conceptVersion != null) {
-			String msg = "Cannot reset conceptVersion from " + new SimpleDisplayConcept(conceptVersion) + " to " + new SimpleDisplayConcept(con);
-			logger.error(msg);
-			throw new RuntimeException(msg);
-		}
-		
-		if (initialTask != null) {
-			String msg = "Cannot set conceptVersion to " + new SimpleDisplayConcept(con) + " when initialTask is already set to " + initialTask.getId();
-			logger.error(msg);
-			throw new RuntimeException(msg);
-		}
-
-		this.conceptVersion = con;
-		
-		// Uncomment following line only if automatically generating workflow on creation of window
-		//startNewWorkflowInstance();
-		
-		loadContent();
-	}
+//	public void setConcept(ConceptVersionBI con) {
+//		if (conceptVersion != null) {
+//			String msg = "Cannot reset conceptVersion from " + new SimpleDisplayConcept(conceptVersion) + " to " + new SimpleDisplayConcept(con);
+//			logger.error(msg);
+//			throw new RuntimeException(msg);
+//		}
+//		
+//		if (initialTask != null) {
+//			String msg = "Cannot set conceptVersion to " + new SimpleDisplayConcept(con) + " when initialTask is already set to " + initialTask.getId();
+//			logger.error(msg);
+//			throw new RuntimeException(msg);
+//		}
+//
+//		this.conceptVersion = con;
+//		
+//		// Uncomment following line only if automatically generating workflow on creation of window
+//		//startNewWorkflowInstance();
+//		
+//		loadContent();
+//	}
 	
 	ConceptVersionBI getConcept() {
 		return conceptVersion;
@@ -211,44 +215,32 @@ public class ConceptDetailWorkflowController
 
 		return selectedTask != null && selectedAction != null;
 	}
-	
-	// Method for starting new workflow instance
-	// TODO: need working test case and data for startNewWorkflowInstance().  Current behavior untested.
-//	private void startNewWorkflowInstance() {
-//		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
-//		final String processName = WorkflowProcess.REVIEW.getName();
-//		String preferredDescription = null;
-//		try {
-//			preferredDescription = conceptVersion.getPreferredDescription().getText();
-//		} catch (IOException | ContradictionException e1) {
-//			String title = "Failed starting new workflow instance";
-//			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion: caught " + e1.getClass().getName();
-//			logger.error(title, e1);
-//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
-//			e1.printStackTrace();
-//		}
-//		
-//		// TODO: determine how creation of request should be reflected in GUI
-//		logger.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + getUserName() + "\")");
-//		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, conceptVersion.getPrimordialUuid().toString(), preferredDescription, getUserName(), new HashMap<String,String>());
-//		logger.debug("Created ProcessInstanceCreationRequest: " + createdRequest);
-//	}
 
+	private boolean isDataRequiredToViewTaskDetails() {
+		return taskComboBox.getSelectionModel().getSelectedItem() != null;
+	}
+	
 	// Initialize GUI (invoked by FXML)
 	@FXML
 	void initialize()
 	{
-		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
-		//assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
-		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
-		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'ConceptDetailWorkflow.fxml'.";
+		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		//assert newWorkflowInstanceButton != null : "fx:id=\"newWorkflowInstanceButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 
 		initializeWorkflowEngine();
 		initializeTaskService();
 		
 		// Disabling saveActionButton until dependencies met 
 		saveActionButton.setDisable(true);
-		
+		viewTaskDetailsButton.setDisable(true);
+		viewTaskDetailsButton.setOnAction((e) -> {
+			WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+			view.setTask(taskComboBox.getSelectionModel().getSelectedItem().getId());
+			view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+		});
+
 		// This code only for embedded concept detail view
 		// Use H2K to find and initialize conceptView as a ConceptView
 		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
@@ -319,13 +311,18 @@ public class ConceptDetailWorkflowController
                 super.updateItem(t, bln); 
                 if (bln) {
                     setText("");
+                    viewTaskDetailsButton.setDisable(true);
                 } else {
                     setText(t.getId() + ": " + t.getComponentName() + ": " + t.getName());
+                    viewTaskDetailsButton.setDisable(false);
                 }
 
             }
 		});
-
+		taskComboBox.setOnAction((event) -> {
+			viewTaskDetailsButton.setDisable(! isDataRequiredToViewTaskDetails());
+		});
+		
 		// Activation of save depends on isDataRequiredForSaveOk()
 		saveActionButton.setOnAction((action) -> {
 			if (isDataRequiredForSaveOk()) {
@@ -361,32 +358,6 @@ public class ConceptDetailWorkflowController
 				logger.error("Error saving task: fields not set: task=" + selectedTask + ", action=" + selectedAction);
 			}
 		});
-		
-		
-		// This code only for newWorkflowInstanceButton
-//		newWorkflowInstanceButton.setOnAction((action) -> {
-//			newWorkflowInstanceButton.setDisable(true);
-//			final BusyPopover createNewWorkflowInstancePopover = BusyPopover.createBusyPopover("Creating new workflow instance...", newWorkflowInstanceButton);
-//
-//			Utility.execute(() -> {
-//				try
-//				{
-//					startNewWorkflowInstance();
-//
-//					Platform.runLater(() -> 
-//					{
-//						createNewWorkflowInstancePopover.hide();
-//						newWorkflowInstanceButton.setDisable(false);
-//						refreshContent();
-//					});
-//				}
-//				catch (Exception e)
-//				{
-//					createNewWorkflowInstancePopover.hide();
-//					logger.error("Error creating new workflow instance: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-//				}
-//			});
-//		});
 	}
 
 	private void initializeServices() {

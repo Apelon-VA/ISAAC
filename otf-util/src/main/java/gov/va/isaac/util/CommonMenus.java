@@ -23,14 +23,18 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
@@ -42,6 +46,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -66,11 +71,13 @@ public class CommonMenus
 		// including across non-CommonMenu items that may exist on any passed ContextMenu
 		CONCEPT_VIEW("View Concept", Images.CONCEPT_VIEW),
 		CONCEPT_VIEW_LEGACY("View Concept 2", Images.CONCEPT_VIEW),
-		TAXONOMY_VIEW("Find in Taxonomy View", Images.ROOT),
+		TAXONOMY_VIEW("Find in Taxonomy", Images.ROOT),
+		WORKFLOW_TASK_DETAILS_VIEW("Workflow Task Details", Images.INBOX),
 		
 		SEND_TO("Send To", null),
 			LIST_VIEW("List View", Images.LIST_VIEW),
-			WORKFLOW_VIEW("Workflow View", Images.INBOX),
+			WORKFLOW_ADVANCEMENT_VIEW("Workflow Advancement", Images.INBOX), // Only accessible from inbox
+			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization", Images.INBOX),
 		
 		COPY("Copy", null),
 			COPY_TEXT("Copy Text", Images.COPY),
@@ -207,29 +214,54 @@ public class CommonMenus
 			return false;
 		}
 	}
-	
+
 	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusDataProvider data) {
-		addCommonMenus(existingMenu, null, data, null);
+		addCommonMenus(existingMenu, (CommonMenuBuilderI)null, data, (CommonMenusNIdProvider)null, (CommonMenusTaskIdProvider)null);
+	}
+	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusDataProvider data, final CommonMenusTaskIdProvider taskIds) {
+		addCommonMenus(existingMenu, (CommonMenuBuilderI)null, data, (CommonMenusNIdProvider)null, taskIds);
 	}
 	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final CommonMenusDataProvider data) {
-		addCommonMenus(existingMenu, builder, data, null);
+		addCommonMenus(existingMenu, builder, data, (CommonMenusNIdProvider)null, (CommonMenusTaskIdProvider)null);
+	}
+	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final CommonMenusDataProvider data, final CommonMenusTaskIdProvider taskIds) {
+		addCommonMenus(existingMenu, builder, data, (CommonMenusNIdProvider)null, taskIds);
 	}
 
 	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusNIdProvider nids) {
-		addCommonMenus(existingMenu, null, null, nids);
+		addCommonMenus(existingMenu, (CommonMenuBuilderI)null, null, nids, (CommonMenusTaskIdProvider)null);
 	}
+	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusNIdProvider nids, final CommonMenusTaskIdProvider taskIds) {
+		addCommonMenus(existingMenu, (CommonMenuBuilderI)null, null, nids, taskIds);
+	}
+
 	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final CommonMenusNIdProvider nids) {
-		addCommonMenus(existingMenu, builder, null, nids);
+		addCommonMenus(existingMenu, builder, null, nids, (CommonMenusTaskIdProvider)null);
+	}
+	public static void addCommonMenus(ContextMenu existingMenu, CommonMenuBuilderI builder, final CommonMenusNIdProvider nids, final CommonMenusTaskIdProvider taskIds) {
+		addCommonMenus(existingMenu, builder, null, nids, taskIds);
 	}
 
 	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusDataProvider dataProvider, final CommonMenusNIdProvider nids) {
-		addCommonMenus(existingMenu, null, dataProvider, nids);
+		addCommonMenus(existingMenu, dataProvider, nids, (CommonMenusTaskIdProvider)null);
+	}
+	public static void addCommonMenus(ContextMenu existingMenu, final CommonMenusDataProvider dataProvider, final CommonMenusNIdProvider nids, final CommonMenusTaskIdProvider taskIds) {
+		addCommonMenus(existingMenu, (CommonMenuBuilderI)null, dataProvider, nids, taskIds);
+	}
+	
+	public static void addCommonMenus(
+			ContextMenu existingMenu, 
+			CommonMenuBuilderI passedBuilder, 
+			CommonMenusDataProvider dataProvider, 
+			CommonMenusNIdProvider nids) {
+		addCommonMenus(existingMenu, passedBuilder, dataProvider, nids, (CommonMenusTaskIdProvider)null);
 	}
 	public static void addCommonMenus(
 			ContextMenu existingMenu, 
 			CommonMenuBuilderI passedBuilder, 
 			CommonMenusDataProvider dataProvider, 
-			CommonMenusNIdProvider nids)
+			CommonMenusNIdProvider tmpNids,
+			CommonMenusTaskIdProvider tmpTaskIds)
 	{
 		CommonMenuBuilder builder = null;
 		if (passedBuilder == null) {
@@ -241,16 +273,27 @@ public class CommonMenus
 		}
 		CommonMenusDataProvider dataProviderLocal = (dataProvider == null ? new CommonMenusDataProvider() {} : dataProvider);
 		
+		if (tmpNids == null) {
+			tmpNids = CommonMenusNIdProvider.getEmptyCommonMenusNIdProvider();
+		}
+		CommonMenusNIdProvider nids = tmpNids;
+		
+		if (tmpTaskIds == null) {
+			tmpTaskIds = CommonMenusTaskIdProvider.getEmptyCommonMenusTaskIdProvider();
+		}
+		CommonMenusTaskIdProvider taskIds = tmpTaskIds;
+		
 		//Check the nid provider just before each display of the menu - and see if we have a nid or not.
 		//If we don't have a nid, set the observable flag to false, so all of the menus that care, go invisible.
 		//else, set to true, to menus that care about nids will be visible.
 		existingMenu.setOnShowing((windowEvent) ->
 		{
+			taskIds.invalidateAll();
 			nids.invalidateAll();
 			dataProviderLocal.invalidateAll();
 		});
 		
-		List<MenuItem> menuItems = getCommonMenus(builder, dataProviderLocal, nids);
+		List<MenuItem> menuItems = getCommonMenus(builder, dataProviderLocal, nids, taskIds);
 
 		if (menuItems.size() > 0) {
 			for (MenuItem newItem : menuItems) {
@@ -335,7 +378,10 @@ public class CommonMenus
 		return menuItem;
 	}
 	
-	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final CommonMenusDataProvider dataProvider, final CommonMenusNIdProvider CommonMenusNIdProvider)
+	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final CommonMenusDataProvider dataProvider, final CommonMenusNIdProvider commonMenusNIdProvider) {
+		return getCommonMenus(passedBuilder, dataProvider, commonMenusNIdProvider, (CommonMenusTaskIdProvider)null);
+	}
+	public static List<MenuItem> getCommonMenus(CommonMenuBuilderI passedBuilder, final CommonMenusDataProvider dataProvider, CommonMenusNIdProvider tmpCommonMenusNIdProvider, CommonMenusTaskIdProvider tmpTaskIdProvider)
 	{
 		List<MenuItem> menuItems = new ArrayList<>();
 		
@@ -349,18 +395,29 @@ public class CommonMenus
 		}
 		final CommonMenuBuilder builder = tmpBuilder;
 
+		// Replace null with empty to avoid requiring null checks
+		if (tmpTaskIdProvider == null) {
+			tmpTaskIdProvider = CommonMenusTaskIdProvider.getEmptyCommonMenusTaskIdProvider();
+		}
+		final CommonMenusTaskIdProvider taskIdProvider = tmpTaskIdProvider;
+		
+		if (tmpCommonMenusNIdProvider == null) {
+			tmpCommonMenusNIdProvider = CommonMenusNIdProvider.getEmptyCommonMenusNIdProvider();
+		}
+		final CommonMenusNIdProvider commonMenusNIdProvider = tmpCommonMenusNIdProvider;
+		
 		// Menu item to show concept details.
 		MenuItem enhancedConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW,
 				builder, 
-				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
-				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return commonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
+				commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" 
-							+ getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()) + "\"");
+							+ getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()) + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
-					cv.setConcept(getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()));
+					cv.setConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()));
 					cv.showView(null);
 				},
 				() -> { // onNotHandlable
@@ -375,14 +432,14 @@ public class CommonMenus
 		MenuItem legacyConceptViewMenuItem = createNewMenuItem(
 				CommonMenuItem.CONCEPT_VIEW_LEGACY,
 				builder,
-				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
-				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return commonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
+				commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				() -> {
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" 
-							+ getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()) + "\"");
+							+ getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()) + "\"");
 
 					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "LegacyStyle");
-					cv.setConcept(getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()));
+					cv.setConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()));
 
 					cv.showView(null);
 				},
@@ -399,10 +456,10 @@ public class CommonMenus
 		MenuItem findInTaxonomyViewMenuItem = createNewMenuItem(
 				CommonMenuItem.TAXONOMY_VIEW,
 				builder,
-				() -> {return CommonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
-				CommonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return commonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
+				commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				// onHandlable
-				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(getComponentParentConceptNid(CommonMenusNIdProvider.getNIds().iterator().next()), null); },
+				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()), null); },
 				// onNotHandlable
 				() -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");});
 		if (findInTaxonomyViewMenuItem != null)
@@ -410,6 +467,27 @@ public class CommonMenus
 			menuItems.add(findInTaxonomyViewMenuItem);
 		}
 
+		// Menu item to find concept in tree.
+		MenuItem openTaskViewMenuItem = createNewMenuItem(
+				CommonMenuItem.WORKFLOW_TASK_DETAILS_VIEW,
+				builder,
+				() -> {
+					return taskIdProvider.getObservableTaskIdCount().get() == 1;
+					}, // canHandle
+					taskIdProvider.getObservableTaskIdCount().isEqualTo(1),				//make visible
+				// onHandlable
+				() -> {
+					WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+					view.setTask(taskIdProvider.getTaskIds().iterator().next());
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				},
+				// onNotHandlable
+				() -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Task", "Can't locate an invalid task");});
+		if (openTaskViewMenuItem != null)
+		{
+			menuItems.add(openTaskViewMenuItem);
+		}
+		
 		// get Send-To menu items
 		Menu sendToMenu = new Menu(CommonMenuItem.SEND_TO.getText());
 		sendToMenu.setVisible(false);
@@ -418,7 +496,7 @@ public class CommonMenus
 			
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getSendToMenuItems(builder, dataProvider, CommonMenusNIdProvider);
+				items = getSendToMenuItems(builder, dataProvider, commonMenusNIdProvider, taskIdProvider);
 
 				return items;
 			}
@@ -458,7 +536,7 @@ public class CommonMenus
 
 			@Override
 			protected List<MenuItem> call() throws Exception {
-				items = getCopyMenuItems(builder, dataProvider, CommonMenusNIdProvider);
+				items = getCopyMenuItems(builder, dataProvider, commonMenusNIdProvider);
 				
 				return items;
 			}
@@ -491,7 +569,7 @@ public class CommonMenus
 		return menuItems;
 	}
 
-	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, CommonMenusDataProvider dataProvider, CommonMenusNIdProvider nids) {
+	private static List<MenuItem> getSendToMenuItems(CommonMenuBuilder builder, CommonMenusDataProvider dataProvider, CommonMenusNIdProvider nids, CommonMenusTaskIdProvider taskIds) {
 		// The following code is for the "Send To" submenu
 
 		List<MenuItem> menuItems = new ArrayList<>();
@@ -526,24 +604,48 @@ public class CommonMenus
 			menuItems.add(listViewMenuItem);
 		}
 
-		// Menu item to generate New Workflow Instance.
-		MenuItem newWorkflowInstanceItem = createNewMenuItem(
-				CommonMenuItem.WORKFLOW_VIEW,
+		MenuItem existingWorkflowInstanceAdvancementMenuItem = createNewMenuItem(
+				CommonMenuItem.WORKFLOW_ADVANCEMENT_VIEW,
 				builder,
-				() -> {return nids.getObservableNidCount().get() == 1;}, // canHandle
-				nids.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> {return taskIds.getObservableTaskIdCount().get() == 1;}, // canHandle
+				taskIds.getObservableTaskIdCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
-					ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-					view.setConcept(getComponentParentConceptNid(nids.getNIds().iterator().next()));
+					WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+					view.setTask(taskIds.getTaskIds().iterator().next());
 					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 				},
 				() -> { // onNotHandlable
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
 				}
 				);
-		if (newWorkflowInstanceItem != null)
+		if (existingWorkflowInstanceAdvancementMenuItem != null)
 		{
-			menuItems.add(newWorkflowInstanceItem);
+			menuItems.add(existingWorkflowInstanceAdvancementMenuItem);
+		}
+
+		// Menu item to generate New Workflow Instance.
+		MenuItem newWorkflowInstanceInitializationItem = createNewMenuItem(
+				CommonMenuItem.WORKFLOW_INITIALIZATION_VIEW,
+				builder,
+				() -> {
+					return nids.getObservableNidCount().get() == 1;
+					}, // canHandle
+				nids.getObservableNidCount().isEqualTo(1),				//make visible
+				() -> { // onHandlable
+					WorkflowInitiationViewI view = AppContext.getService(WorkflowInitiationViewI.class);
+					if (view == null) {
+						LOG.error("HK2 FAILED to provide requested service: " + WorkflowInitiationViewI.class);
+					}
+					view.setComponent(nids.getNIds().iterator().next());
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				},
+				() -> { // onNotHandlable
+					AppContext.getCommonDialogs().showInformationDialog("Invalid Component or invalid number of Components selected", "Selection must be of exactly one valid Component");
+				}
+				);
+		if (newWorkflowInstanceInitializationItem != null)
+		{
+			menuItems.add(newWorkflowInstanceInitializationItem);
 		}
 
 		return menuItems;

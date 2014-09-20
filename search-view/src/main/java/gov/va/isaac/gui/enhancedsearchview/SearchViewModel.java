@@ -54,7 +54,7 @@ public class SearchViewModel {
 	private SearchTypeFilter searchTypeFilter;
 	private final ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> filters = FXCollections.observableArrayList();
 	private ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
-	private IntegerProperty maxResults = new SimpleIntegerProperty(0);
+	private IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private StringProperty droolsExpr = new SimpleStringProperty();
 	
 	public SearchViewModel() {

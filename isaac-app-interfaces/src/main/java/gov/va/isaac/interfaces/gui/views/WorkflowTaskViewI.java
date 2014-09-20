@@ -18,44 +18,22 @@
  */
 
 /**
- * WorkflowProcess
+ * WorkflowInitiationViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.workflow;
+package gov.va.isaac.interfaces.gui.views;
+
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * WorkflowProcess
+ * WorkflowTaskViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public enum WorkflowProcess {
-	//REVIEW("terminology-authoring.ReviewWorkflow"),
-	REVIEW3("terminology-authoring.ReviewWorkflow3"),
-	DUAL_REVIEW("terminology-authoring.DualReviewWorkflow");
-	
-	private final String text;
-	
-	private WorkflowProcess(String text) {
-		this.text = text;
-	}
-	
-	public String getText() {
-		return text;
-	}
-	
-	public static WorkflowProcess valueOfText(String str) {
-		if (str == null)
-			throw new NullPointerException("String value for WorkflowProcess is null");
-
-		for (WorkflowProcess value : values()) {
-			if (str.equals(value.getText())) {
-				return value;
-			}
-		}
-
-		throw new IllegalArgumentException(
-				"No WorkflowProcess constant with text=\"" + str + "\"");
-	}
+@Contract
+public interface WorkflowTaskViewI extends PopupViewI {
+	public void setTask(long taskId);
+	public Long getTask();
 }
