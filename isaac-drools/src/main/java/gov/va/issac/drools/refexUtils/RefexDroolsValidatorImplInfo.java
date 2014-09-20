@@ -31,7 +31,8 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
  */
 public enum RefexDroolsValidatorImplInfo
 {
-	REFEX_STRING_RULES("builtin.refex-string-rules", "Drools Rules for String values", RefexDynamicDataType.STRING);
+	REFEX_STRING_RULES("builtin.refex-string-rules", "Drools Rules for String values", RefexDynamicDataType.STRING),
+	REFEX_CONCEPT_RULES("builtin.refex-concept-rules", "Drools Rules for Concept values", RefexDynamicDataType.UUID, RefexDynamicDataType.NID);
 	
 	private String droolsPackageName_, displayName_;
 	private RefexDynamicDataType[] applicableDataTypes_;

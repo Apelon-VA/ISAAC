@@ -19,22 +19,28 @@
 package gov.va.issac.drools.refexUtils;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.issac.drools.helper.ResultsCollector;
 import gov.va.issac.drools.helper.ResultsItem;
+import gov.va.issac.drools.helper.TerminologyHelperDrools;
 import gov.va.issac.drools.manager.DroolsExecutor;
 import gov.va.issac.drools.manager.DroolsExecutorsManager;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.ExternalValidatorBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,13 +81,23 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 
 			ArrayList<Object> facts = new ArrayList<>();
 
-			facts.add(dataToValidate);
+			if (dataToValidate.getRefexDataType() == RefexDynamicDataType.NID)
+			{
+				//switch it to a UUID, for drools purposes.
+				UUID temp = ExtendedAppContext.getDataStore().getUuidsForNid(((RefexDynamicNidBI)dataToValidate).getDataNid()).get(0);
+				facts.add(new RefexDynamicUUID(temp));
+			}
+			else
+			{
+				facts.add(dataToValidate);
+			}
 
 			Map<String, Object> globals = new HashMap<>();
 
 			ResultsCollector rc = new ResultsCollector();
 
 			globals.put("resultsCollector", rc);
+			globals.put("terminologyHelper", new TerminologyHelperDrools());
 
 			int fireCount = de.fireAllRules(globals, facts);
 
@@ -115,6 +131,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 		}
 		catch (Exception e)
 		{
+			logger.error("Unexpected error validating with drools", e);
 			throw new RuntimeException("Unexpected error validating with drools");
 		}
 		return true;
@@ -129,6 +146,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 		catch (PropertyVetoException e)
 		{
 			//not possible
+			logger.error("oops");
 			throw new RuntimeException(e);
 		}
 	}

@@ -1,0 +1,28 @@
+package gov.va.isaac.drools.rules
+
+import gov.va.issac.drools.testmodel.DrDescription
+import gov.va.issac.drools.helper.templates.DescriptionTemplate
+import gov.va.issac.drools.helper.ResultsItemError
+import gov.va.issac.drools.helper.TerminologyHelperDrools
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI
+import java .util.UUID
+
+global gov.va.issac.drools.helper.ResultsCollector resultsCollector
+global gov.va.issac.drools.helper.TerminologyHelperDrools terminologyHelper
+
+rule "If LOINC concept ref, must be a member of 'CURATED_RANGE_AND_UNITS'"
+	@UUID(dfe4ea80-cc22-11df-bd3b-0800200c9a70)
+	@DESCRIPTION(If LOINC concept ref, must be a member of 'CURATED_RANGE_AND_UNITS')
+	@RULE_CODE(108)
+	dialect "mvel"
+	when
+		$c : RefexDynamicUUIDBI( )
+		eval(terminologyHelper.isParentOf( "3958d043-9e8c-508e-bf6d-fd9c83a856da", $c.dataUUID.toString))
+		eval(!terminologyHelper.isMemberOf( $c.dataUUID.toString, "b856b9e8-8d7f-5a08-b59e-7786ee05920e"))
+	then
+		ResultsItemError fact1 = new ResultsItemError();
+		fact1.setErrorCode( 108 );
+		fact1.setMessage( "LOINC concept must have a 'CURATED_RANGE_AND_UNITS' reference" );
+		fact1.setRuleUuid( "dfe4ea80-cc22-11df-bd3b-0800200c9a70" );
+		resultsCollector.addResultsItem( fact1 );
+end
