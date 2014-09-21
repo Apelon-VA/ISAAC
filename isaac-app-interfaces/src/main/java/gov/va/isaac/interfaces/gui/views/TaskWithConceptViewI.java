@@ -25,37 +25,47 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * {@link TaskWithConceptViewI}
  * 
- * An interface that requests a pop up window that displays the details of a concept.
- *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ * An interface that allows the creation of an TaskWithConceptViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link ViewI}.
+ * This panel is intended to allow display and manipulation of
+ * a specified existing workflow task, which itself contains a displayable concept
+
+ * @author <a href="mailto:jkniaz@apelon.com">Joel Kniaz</a> 
  */
 @Contract
 public interface TaskWithConceptViewI extends ViewI
 {   
+	/**
+	 * @param taskId the long id of the workflow task to display 
+	 */
 	public void setTask(long taskId);
+	
+	/**
+	 * @return the long id of the workflow displayed task
+	 */
 	public Long getTask();
 
 	/**
-	 * Update the view to get the selected concept as UUID.
-	 * @param conceptUuid
+	 * Get the selected concept as UUID.
+	 * @return conceptUuid the selected concept as UUID
 	 */
 	public UUID getConceptUuid();
 	
 	/**
-	 * Update the view to get the selected concept as int.
-	 * @param conceptUuid
+	 * Get the selected concept as int.
+	 * @return conceptUuid the selected concept as int
 	 */
 	public int getConceptNid();
 
 	/**
-	 * Update the view to show the selected concept.
-	 * @param conceptUuid
+	 * Update the view to show the selected concept in the specified ConceptViewMode
+	 * @param conceptUuid the ConceptViewMode used to display the selected concept
 	 */
 	public void setViewMode(ConceptViewMode mode);
 
 	/**
-	 * Update the view to show the selected concept.
-	 * @param conceptUuid
+	 * Get the ConceptViewMode used to display the selected concept.
+	 * @param conceptUuid the ConceptViewMode used to display the selected concept
 	 */
 	public ConceptViewMode getViewMode();
 }

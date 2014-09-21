@@ -26,15 +26,30 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 
+
 import java.util.List;
 
 /**
- * @author joel
+ * {@link ListBatchViewI}
+ * 
+ * An interface that allows the creation of an ListBatchViewI implementation, which 
+ * will be a JavaFX component that extends {@link DockedViewI}.  The docked ISAAC panel
+ * is intended to allow importation into, display and manipulation of concepts to and
+ * from other ISAAC panels
  *
+ * @author <a href="jkniaz@apelon.com">Joel Kniaz</a>
  */
 @Contract
 public interface ListBatchViewI extends DockedViewI {
+	/**
+	 * Update the view to show the specified concepts
+	 * @param List<Integer> the list of specified concepts as int NID
+	 */
+	public void addConcepts(List<Integer> nids);
 
-	public abstract void addConcepts(List<Integer> nids);
-	public abstract void addConcept(int nid);
+	/**
+	 * Update the view to show the specified concept
+	 * @param int the specified concept as int NID
+	 */
+	public void addConcept(int nid);
 }

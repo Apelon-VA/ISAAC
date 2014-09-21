@@ -31,16 +31,42 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * WorkflowInitiationViewI
  * 
+ * An interface that allows the creation of an WorkflowInitiationViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link PopupViewI}.
+ * This popup panel is intended to allow initiation of a new workflow instance
+ * associated with a specified existing component
+ 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
 @Contract
 public interface WorkflowInitiationViewI extends PopupViewI {
+	/**
+	 * @param uuid the UUID of the existing component or concept
+	 * associated with the new task to be created
+	 */
 	public void setComponent(UUID uuid);
+	/**
+	 * @return UUID the uuid of the existing component or concept
+	 * associated with the new task created or to be created
+	 */
 	public UUID getComponentUuid();
 
+	/**
+	 * @param nid the int NID of the existing component or concept
+	 * associated with the new task to be created
+	 */
 	public void setComponent(int nid);
+	/**
+	 * @return the int NID of the existing component or concept
+	 * associated with the new task created or to be created
+	 */
 	public int getComponentNid();
 	
+	/**
+	 * @return Long the Long workflow task id of the new task
+	 * created by the user of the view.  Will be null if task not yet created
+	 * or if task instantiation failed.
+	 */
 	public Long getInitiatedTaskId();
 }

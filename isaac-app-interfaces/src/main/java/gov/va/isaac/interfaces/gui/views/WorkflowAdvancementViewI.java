@@ -23,9 +23,12 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * {@link WorkflowAdvancementViewI}
  * 
- * An interface that requests a pop up window that displays the details of a concept.
+ * An interface that allows the creation of an WorkflowAdvancementViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link PopupTaskWithConceptViewI}.
+ * This popup panel is intended to allow display and manipulation of
+ * a specified existing workflow task, which itself contains a displayable concept
  *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ * @author <a href="mailto:jkniaz@gmail.com">Joel Kniaz</a> 
  */
 @Contract
 public interface WorkflowAdvancementViewI extends PopupTaskWithConceptViewI

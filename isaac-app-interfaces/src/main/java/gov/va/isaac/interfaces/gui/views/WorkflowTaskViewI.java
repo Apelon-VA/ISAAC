@@ -31,9 +31,22 @@ import org.jvnet.hk2.annotations.Contract;
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
+ * An interface that allows the creation of an WorkflowTaskViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link PopupViewI}.
+ * This popup panel is intended to allow display of characteristics and details
+ * of a specified existing workflow task
+ * 
  */
 @Contract
 public interface WorkflowTaskViewI extends PopupViewI {
+	/**
+	 * @param taskId the long workflow task id of the task,
+	 * the details of which are to be displayed
+	 */
 	public void setTask(long taskId);
+	/**
+	 * @return Long workflow task id of the task,
+	 * the details of which are displayed
+	 */
 	public Long getTask();
 }
