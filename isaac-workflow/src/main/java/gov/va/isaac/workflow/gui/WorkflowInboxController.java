@@ -375,7 +375,7 @@ public class WorkflowInboxController
 	private void refreshContent()
 	{
 		taskTable.getItems().clear();
-		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks("alejandro"));
+		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks());
 	}
 
 	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
@@ -437,7 +437,7 @@ public class WorkflowInboxController
 							CommonMenusTaskIdProvider taskIdProvider = new CommonMenusTaskIdProvider() {
 								@Override
 								public Set<Long> getTaskIds() {
-									Set<Long> taskIds = new HashSet<>();
+									Set<Long> taskIds = new HashSet<Long>();
 									for (LocalTask r : (ObservableList<LocalTask>)c.getTableView().getSelectionModel().getSelectedItems()) {
 										taskIds.add(r.getId());
 									}

@@ -440,7 +440,7 @@ public class WorkflowAdvancementViewController
 		if (initialTask != null) {
 			taskComboBox.getItems().add(initialTask);
 		} else {
-			List<LocalTask> tasks = taskService_.getOpenOwnedTasksByComponentId(getUserName(), conceptVersion.getPrimordialUuid().toString());
+			List<LocalTask> tasks = taskService_.getOpenOwnedTasksByComponentId(conceptVersion.getPrimordialUuid().toString());
 			Collections.sort(tasks, LocalTask.ID_COMPARATOR);
 			taskComboBox.getItems().addAll(tasks);
 		}
