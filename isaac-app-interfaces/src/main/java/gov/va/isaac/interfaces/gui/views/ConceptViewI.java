@@ -24,7 +24,7 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * {@link ConceptViewI}
  * 
- * An interface that requests a pop up window that displays the details of a concept.
+ * An interface that requests a window that displays the details of a concept.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
@@ -33,37 +33,37 @@ public interface ConceptViewI extends ViewI
 {   
 	/**
 	 * Update the view to show the selected concept.
-	 * @param conceptUuid
+	 * @param conceptUuid the selected concept as UUID
 	 */
 	public void setConcept(UUID conceptUUID);
 	
 	/**
 	 * Update the view to show the selected concept.
-	 * @param conceptUuid
+	 * @param conceptNid the selected concept as int NID
 	 */
 	public void setConcept(int conceptNid);
 	
 	/**
-	 * Update the view to get the selected concept as UUID.
-	 * @param conceptUuid
+	 * Get the selected concept as UUID.
+	 * @return conceptUuid the selected concept as UUID
 	 */
 	public UUID getConceptUuid();
 	
 	/**
-	 * Update the view to get the selected concept as int.
-	 * @param conceptUuid
+	 * Get the selected concept as int.
+	 * @return conceptNid the selected concept as int NID
 	 */
 	public int getConceptNid();
 
 	/**
-	 * Update the view to show the selected concept.
-	 * @param conceptUuid
+	 * Update the view to show the selected concept using the specified ConceptViewMode.
+	 * @param conceptUuid the ConceptViewMode used to show the selected concept
 	 */
 	public void setViewMode(ConceptViewMode mode);
 
 	/**
-	 * Update the view to show the selected concept.
-	 * @param conceptUuid
+	 * Get the ConceptViewMode used to display the selected concept.
+	 * @return conceptUuid the ConceptViewMode used to display the selected concept
 	 */
 	public ConceptViewMode getViewMode();
 }
