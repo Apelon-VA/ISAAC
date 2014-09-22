@@ -56,7 +56,7 @@ public class ReviewWorkflowTest {
         wfEngine.synchronizeWithRemote();
 
         //Get 1st task
-        Long taskId = localTasksService.getOpenOwnedTasks(userid).iterator().next().getId();
+        Long taskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 1st task
         HashMap<String, String> v1 = new HashMap<String, String>();
@@ -67,7 +67,7 @@ public class ReviewWorkflowTest {
         // Claim next task
         wfEngine.claim(1, userid);
         wfEngine.synchronizeWithRemote();
-        Long secondTaskId = localTasksService.getOpenOwnedTasks(userid).iterator().next().getId();
+        Long secondTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 2nd task
         HashMap<String, String> v2 = new HashMap<String, String>();
@@ -79,7 +79,7 @@ public class ReviewWorkflowTest {
         // Claim next task
         wfEngine.claim(1, userid);
         wfEngine.synchronizeWithRemote();
-        Long thirdTaskId = localTasksService.getOpenOwnedTasks(userid).iterator().next().getId();
+        Long thirdTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 2nd task
         HashMap<String, String> v3 = new HashMap<String, String>();

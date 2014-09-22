@@ -49,9 +49,12 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
     private Connection conn;
     private static final Logger log = LoggerFactory.getLogger(LocalTasksApi.class);
+    private String userId;
 
-    public LocalTasksApi() {
+    public LocalTasksApi(String userId) {
+
         conn = ConnectionManager.getConn();
+        this.userId = userId;
     }
 
     @Override
@@ -164,11 +167,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOpenOwnedTasks(String owner) {
+    public List<LocalTask> getOpenOwnedTasks() {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and (status = 'Reserved' or status = 'InProgress')");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -179,11 +182,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOwnedTasksByStatus(String owner, Status status) {
+    public List<LocalTask> getOwnedTasksByStatus(Status status) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and status = '" + status + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and status = '" + status + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -194,11 +197,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
     
     @Override
-    public List<LocalTask> getOwnedTasksByActionStatus(String owner, TaskActionStatus actionStatus) {
+    public List<LocalTask> getOwnedTasksByActionStatus(TaskActionStatus actionStatus) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and actionStatus = '" + actionStatus + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and actionStatus = '" + actionStatus + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -209,11 +212,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId) {
+    public List<LocalTask> getOpenOwnedTasksByComponentId(String componentId) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
