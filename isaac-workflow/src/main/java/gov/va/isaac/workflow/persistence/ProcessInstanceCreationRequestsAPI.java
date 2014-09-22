@@ -108,7 +108,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             psUpdateRequest.setString(1, syncMessage);
             psUpdateRequest.setString(2, status.name());
             psUpdateRequest.setInt(3, Integer.parseInt(wfId.toString()));
-            psUpdateRequest.setInt(4, id);
+            psUpdateRequest.setInt(4, wfId.intValue());
             psUpdateRequest.executeUpdate();
             psUpdateRequest.closeOnCompletion();
             conn.commit();
