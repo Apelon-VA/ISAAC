@@ -162,7 +162,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             params.putAll(instanceRequest.getParams());
         }
         ProcessInstance newInstance = session.startProcess(instanceRequest.getProcessName(), params);
-        processRequestsApi.updateRequestStatus(instanceRequest.getId(),
+        processRequestsApi.updateRequestStatus(Integer.parseInt(String.valueOf(newInstance.getId())),
                 ProcessInstanceCreationRequestI.RequestStatus.CREATED,
                 "Instance created on KIE Server: " + getUrl().toString(), newInstance.getId());
     }
