@@ -37,7 +37,7 @@ import org.kie.api.task.model.Status;
 public class FetchTest {
     
     public static void main(String[] args) {
-        LocalTasksApi tapi = new LocalTasksApi();
+        LocalTasksApi tapi = new LocalTasksApi("alejandro");
         tapi.dropSchema();
         tapi.createSchema();
         String userId = "alejandro";
@@ -60,13 +60,13 @@ public class FetchTest {
             for (LocalTask lt : openTasks1) {
                 System.out.println("Local: " + lt.getId() + " - " + lt.getName() + " - " + lt.getStatus() + " - " + lt.getOwner() + " - " + lt.getComponentId()+ " - " + lt.getComponentName());
             }
-            List<LocalTask> openOwnedTasks = tapi.getOpenOwnedTasks(userId);
+            List<LocalTask> openOwnedTasks = tapi.getOpenOwnedTasks();
             System.out.println("Testing getOpenOwnedTasks (" + userId + "): " + openOwnedTasks.size());
             
-            List<LocalTask> ownedTasksForAsthma = tapi.getOpenOwnedTasksByComponentId(userId, "0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
+            List<LocalTask> ownedTasksForAsthma = tapi.getOpenOwnedTasksByComponentId("0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
             System.out.println("Testing getOpenOwnedTasksByComponentId (Asthma, " + userId + "): " + ownedTasksForAsthma.size());
             
-            List<LocalTask> ownedTasksByStatus = tapi.getOwnedTasksByStatus(userId, Status.Reserved);
+            List<LocalTask> ownedTasksByStatus = tapi.getOwnedTasksByStatus(Status.Reserved);
             System.out.println("Testing ownedTasksByStatus (" + userId + ", Reserved): " + ownedTasksByStatus.size());
             
         } catch (Exception ex) {

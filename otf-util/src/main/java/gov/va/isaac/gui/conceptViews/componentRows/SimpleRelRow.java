@@ -11,6 +11,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class SimpleRelRow extends RelRow {
@@ -27,10 +28,18 @@ public class SimpleRelRow extends RelRow {
 			Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
 			
 			if (rel.isUncommitted()) {
-				relLabel.setUnderline(true);
-				relTypeLabel.setUnderline(true);
-			}
+				ComponentChronicleBI<?> chronicle = rel.getChronicle();
+				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
 
+				if (!relLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
+					relLabel.setUnderline(true);
+				}
+				
+				if (!relTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+					relTypeLabel.setUnderline(true);
+				}
+			}
+			
 			//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 			//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
 			GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);

@@ -35,7 +35,9 @@ import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -101,16 +103,23 @@ public class RelationshipModelingPopup extends ModelingPopup
 		row = 0;
 
 		try {
+			ComponentChronicleBI<?> chronicle = rel.getChronicle();
+			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
+
+			if (chronicle.isUncommitted()) {
+				displayVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+			}
+
 			// TODO: Needs to reference previous commit, not component as-is before panel opened
 			if (isDestination) {
-				createOriginalLabel(WBUtility.getConceptVersion(rel.getOriginNid()).getPreferredDescription().getText());
+				createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getOriginNid()).getPreferredDescription().getText());
 			} else {
-				createOriginalLabel(WBUtility.getConceptVersion(rel.getDestinationNid()).getPreferredDescription().getText());
+				createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getDestinationNid()).getPreferredDescription().getText());
 			}
-			createOriginalLabel(WBUtility.getConceptVersion(rel.getTypeNid()).getPreferredDescription().getText());
-			createOriginalLabel(WBUtility.getConceptVersion(rel.getRefinabilityNid()).getPreferredDescription().getText());
-			createOriginalLabel(WBUtility.getConceptVersion(rel.getCharacteristicNid()).getPreferredDescription().getText());
-			createOriginalLabel(String.valueOf(rel.getGroup()));
+			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getRefinabilityNid()).getPreferredDescription().getText());
+			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getCharacteristicNid()).getPreferredDescription().getText());
+			createOriginalLabel(String.valueOf(displayVersion.getGroup()));
 		} catch (Exception e) {
 			Log.error("Cannot access Pref Term for attributes of relationship: "  + rel.getPrimordialUuid(), e);
 		}
