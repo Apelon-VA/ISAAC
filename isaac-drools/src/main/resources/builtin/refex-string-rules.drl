@@ -7,6 +7,7 @@ import gov.va.issac.drools.helper.ResultsItemError
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI
 
 global gov.va.issac.drools.helper.ResultsCollector resultsCollector
+global gov.va.issac.drools.helper.TerminologyHelperDrools terminologyHelper
 
 rule "Text in description should not have double spaces"
 	@UUID(dfe4ea80-cc22-11df-bd3b-0800200c9a66)

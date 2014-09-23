@@ -5,7 +5,7 @@ import gov.va.issac.drools.helper.templates.DescriptionTemplate
 import gov.va.issac.drools.helper.ResultsItemError
 import gov.va.issac.drools.helper.TerminologyHelperDrools
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI
-import java .util.UUID
+import java.util.UUID
 
 global gov.va.issac.drools.helper.ResultsCollector resultsCollector
 global gov.va.issac.drools.helper.TerminologyHelperDrools terminologyHelper
