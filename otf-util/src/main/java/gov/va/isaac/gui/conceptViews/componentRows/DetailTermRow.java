@@ -11,8 +11,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 
 public class DetailTermRow extends TermRow {
 
@@ -37,10 +37,23 @@ public class DetailTermRow extends TermRow {
 		Label descLangLabel = labelHelper.createLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, 0);
 		
 		if (desc.isUncommitted()) {
-			descLabel.setUnderline(true);
-			descTypeLabel.setUnderline(true);
-			descCaseLabel.setUnderline(true);
-			descLangLabel.setUnderline(true);
+			ComponentChronicleBI<?> chronicle = desc.getChronicle();
+			DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+
+			if (!descLabel.getText().equals(origVersion.getText())) {
+				descLabel.setUnderline(true);
+			}
+			if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+				descTypeLabel.setUnderline(true);
+			}
+
+			if (!descCaseLabel.getText().equals(getBooleanValue(origVersion.isInitialCaseSignificant()))) {
+				descCaseLabel.setUnderline(true);
+			}
+			
+			if (!descLangLabel.getText().equals(origVersion.getLang())) {
+				descLangLabel.setUnderline(true);
+			}
 		}
 		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 

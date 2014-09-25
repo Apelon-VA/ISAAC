@@ -21,7 +21,10 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.CommonMenusTaskIdProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
@@ -31,24 +34,31 @@ import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.UUID;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
-import javafx.util.Callback;
-import javafx.event.EventHandler;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
+import javafx.util.Callback;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -286,7 +296,6 @@ public class WorkflowInboxController
 		// END concept ID
 		
 		
-		
 		float colWidth = 1.0f / taskTable.getColumns().size();
 		for (TableColumn<LocalTask, ?> col : taskTable.getColumns())
 		{
@@ -308,7 +317,7 @@ public class WorkflowInboxController
 						claimTasksButton.setDisable(false);
 						refreshContent();
 						
-						synchronize();
+						synchronize(false);
 					});
 				}
 				catch (Exception e)
@@ -319,7 +328,7 @@ public class WorkflowInboxController
 		});
 
 		synchronizeButton.setOnAction((action) -> {
-			synchronize();
+			synchronize(true);
 		});
 	}
 
@@ -327,18 +336,26 @@ public class WorkflowInboxController
 		return rootBorderPane;
 	}
 	
-	private void synchronize() {
+	private void synchronize(final boolean displayBusyPopover) {
 		synchronizeButton.setDisable(true);
 
-		final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
+		BusyPopover synchronizePopover = null;
+		
+		if (displayBusyPopover) {
+			synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
+		}
 
+		final BusyPopover finalBusyPopover = synchronizePopover;
+		
 		Utility.execute(() -> {
 			try
 			{
 				getWorkflowEngine().synchronizeWithRemote();
 				Platform.runLater(() -> 
 				{
-					synchronizePopover.hide();
+					if (finalBusyPopover != null) {
+						finalBusyPopover.hide();
+					}
 					synchronizeButton.setDisable(false);
 					refreshContent();
 				});
@@ -358,7 +375,7 @@ public class WorkflowInboxController
 	private void refreshContent()
 	{
 		taskTable.getItems().clear();
-		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks("alejandro"));
+		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks());
 	}
 
 	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
@@ -396,18 +413,58 @@ public class WorkflowInboxController
 			newCell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
-					TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+					if (event.getButton() == MouseButton.SECONDARY) {
+						@SuppressWarnings("unchecked")
+						TableCell<LocalTask, T> c = (TableCell<LocalTask, T>) event.getSource();
 
-					if (event.getClickCount() == 1) {
-						//LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
-					} else if (event.getClickCount() > 1) {
-						LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
-						int cellIndex = c.getIndex();
-						LocalTask task = taskTable.getItems().get(cellIndex);
-						
-						ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
-						view.setInitialTask(task.getId());
-						view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+						if (c != null && c.getIndex() < c.getTableView().getItems().size()) {
+							CommonMenusDataProvider dp = new CommonMenusDataProvider() {
+								@Override
+								public String[] getStrings() {
+									List<String> items = new ArrayList<>();
+									for (Integer index : c.getTableView().getSelectionModel().getSelectedIndices()) {
+										items.add(c.getTableColumn().getCellData(index).toString());
+									}
+
+									String[] itemArray = items.toArray(new String[items.size()]);
+
+									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
+									//System.out.println("Selected strings: " + Arrays.toString(itemArray));
+
+									return itemArray;
+								}
+							};
+							CommonMenusTaskIdProvider taskIdProvider = new CommonMenusTaskIdProvider() {
+								@Override
+								public Set<Long> getTaskIds() {
+									Set<Long> taskIds = new HashSet<Long>();
+									for (LocalTask r : (ObservableList<LocalTask>)c.getTableView().getSelectionModel().getSelectedItems()) {
+										taskIds.add(r.getId());
+									}
+
+									return taskIds;
+								}
+							};
+
+							ContextMenu cm = new ContextMenu();
+							CommonMenus.addCommonMenus(cm, dp, taskIdProvider);
+
+							c.setContextMenu(cm);
+						}
+					} else {
+						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+
+						if (event.getClickCount() == 1) {
+							//LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());
+						} else if (event.getClickCount() > 1) {
+							LOG.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
+							int cellIndex = c.getIndex();
+							LocalTask task = taskTable.getItems().get(cellIndex);
+
+							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+							view.setTask(task.getId());
+							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+						}
 					}
 				}
 			});

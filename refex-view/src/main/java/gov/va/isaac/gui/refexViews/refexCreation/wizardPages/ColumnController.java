@@ -342,6 +342,10 @@ public class ColumnController implements PanelControllersI {
 				{
 					return "No Validator";
 				}
+				if (object == RefexDynamicValidatorType.EXTERNAL)
+				{
+					return "Drools";
+				}
 				else
 				{
 					return object.getDisplayName();
@@ -367,7 +371,8 @@ public class ColumnController implements PanelControllersI {
 			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
 			{
 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_));
+						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(),
+						typeOption.valueProperty(), allValid_));
 				validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
 				HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
 			}
@@ -391,11 +396,6 @@ public class ColumnController implements PanelControllersI {
 		
 		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values())
 		{
-			if (type == RefexDynamicValidatorType.DROOLS)
-			{
-				//not yet supported
-				continue;
-			}
 			validatorType.getItems().add(type);
 		}
 		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
@@ -487,7 +487,8 @@ public class ColumnController implements PanelControllersI {
 		if (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
 		{
 			validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), allValid_));
+					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), 
+					typeOption.valueProperty(), allValid_));
 			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
 			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
 		}

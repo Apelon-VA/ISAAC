@@ -33,7 +33,7 @@ import java.util.Map;
 public class LocalTasksApiDemo {
     
     public static void main(String[] args) {
-        LocalTasksApi tapi = new LocalTasksApi();
+        LocalTasksApi tapi = new LocalTasksApi("alejandro");
         tapi.dropSchema();
         System.out.print("Creting Schema...  ");
         tapi.createSchema();
@@ -69,8 +69,8 @@ public class LocalTasksApiDemo {
                 retrievedTask.getComponentName() + " action: " + retrievedTask.getAction() + " Status: " + retrievedTask.getActionStatus());
         System.out.println("Variable in outputmap: " + retrievedTask.getOutputVariables().get("assessment"));
         
-        System.out.println("Count of action status = pending: " + tapi.getOwnedTasksByActionStatus("alejandro", TaskActionStatus.Pending).size());
-        System.out.println("Count of action status = done: " + tapi.getOwnedTasksByActionStatus("alejandro", TaskActionStatus.Complete).size());
+        System.out.println("Count of action status = pending: " + tapi.getOwnedTasksByActionStatus(TaskActionStatus.Pending).size());
+        System.out.println("Count of action status = done: " + tapi.getOwnedTasksByActionStatus(TaskActionStatus.Complete).size());
 
         
         

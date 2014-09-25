@@ -29,10 +29,10 @@ import org.kie.api.task.model.Status;
  */
 public interface LocalTasksServiceBI {
     
-    List<LocalTask> getOpenOwnedTasks(String owner);
-    List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId);
-    List<LocalTask> getOwnedTasksByStatus(String owner, Status status);
-    List<LocalTask> getOwnedTasksByActionStatus(String owner, TaskActionStatus actionStatus);
+    List<LocalTask> getOpenOwnedTasks();
+    List<LocalTask> getOpenOwnedTasksByComponentId(String componentId);
+    List<LocalTask> getOwnedTasksByStatus(Status status);
+    List<LocalTask> getOwnedTasksByActionStatus(TaskActionStatus actionStatus);
     LocalTask getTask(Long id);
     List<LocalTask> getTasks();
     List<LocalTask> getTasksByComponentId(String componentId);

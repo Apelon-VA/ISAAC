@@ -340,7 +340,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
+		
+		// TODO: either fix or remove exportSearchResultsToWorkflow
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
+		exportSearchResultsToWorkflowButton.setVisible(false);
+		
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 
 		saveSearchButton.setOnAction((action) -> {
@@ -452,31 +456,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		};
 
 		Utility.execute(configureDisplayPoliciesTask);
-		
-//		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
-//		taxonomyDisplayPolicies.getSearchResults().clear();
-//		
-//		for (CompositeSearchResult c : searchResultsTable.getItems()) {
-//			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
-//
-//			Set<ConceptVersionBI> ancestorNids = null;
-//			try {
-//				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
-//
-//				for (ConceptVersionBI concept : ancestorNids) {
-//					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
-//				}
-//			} catch (/* IOException | ContradictionException */ Exception e) {
-//				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-//				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
-//				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-//				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-//
-//				e.printStackTrace();
-//			}
-//		}
-//
-//		taxonomyView.refresh();
 	}
 	
 	private void initializeTaxonomyPanel() {
@@ -1046,7 +1025,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// Use HashSet to ensure that only one workflow is created for each concept
 		if (searchResultsTable.getItems().size() > 0) {
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 
 		Map<Integer, ComponentVersionBI> conceptsOrComponents = new HashMap<>();
@@ -1080,7 +1063,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				exportSearchResultToWorkflow(conceptOrComponent);
 			}
 			
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 	}
 
@@ -1094,7 +1081,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		String preferredDescription = null;
 		try {
 			if (componentOrConceptVersion instanceof ConceptVersionBI) {
-				DescriptionVersionBI desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
+				DescriptionVersionBI<?> desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
 				preferredDescription = desc.getText();
 			} else {
 				preferredDescription = componentOrConceptVersion.toUserString();
@@ -1152,8 +1139,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				public void run() {
 					try {
 						if (! ssh.isCancelled()) {
-							searchResultsTable.getItems().addAll(ssh.getResults());
-
+							searchResultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
+							
 							refreshTotalResultsDisplayedLabel();
 							
 							if (searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
@@ -1166,7 +1153,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						AppContext.getCommonDialogs().showErrorDialog(title,
 								"There was an unexpected error running the search",
 								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
-						searchResultsTable.getItems().clear();
+						//searchResultsTable.getItems().clear();
 						refreshTotalResultsDisplayedLabel();
 					} finally {
 						searchRunning.set(false);
@@ -1256,8 +1243,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										//nids.add(r.getContainingConcept().getNid());
-										// TODO: modify to send component nid, if possible
 										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
 											nids.add(r.getContainingConcept().getNid());
 										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
@@ -1777,7 +1762,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 
 		aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
-		aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
+		aggregationTypeComboBox.getSelectionModel().select(AggregationType.DESCRIPTION);
 	}
 
 	private synchronized void search() {
