@@ -56,6 +56,10 @@ public class CEMInformationModel extends DefaultInformationModel {
    * @param dataType the data type
    */
   public void setDataType(String dataType) {
+    // Remove any "data" properties
+    removePropertiesByLabel("data");
+
+    // Add new one
     InformationModelProperty dataTypeProperty =
         new DefaultInformationModelProperty();
     dataTypeProperty.setLabel("data");
@@ -69,12 +73,7 @@ public class CEMInformationModel extends DefaultInformationModel {
    * @return the data type
    */
   public String getDataType() {
-    for (InformationModelProperty property : properties) {
-      if (property.getLabel().equals("data")) {
-        return property.getType();
-      }
-    }
-    return null;
+    return getPropertyByLabel("data").getType();
   }
 
   /**

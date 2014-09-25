@@ -24,11 +24,14 @@ import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
+import gov.va.isaac.models.hed.HeDModelReference;
 import gov.va.isaac.models.hed.HeDXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -91,10 +94,9 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
     HeDInformationModel infoModel = createInformationModel(domRoot);
 
     // Save the information model
-    if (service.exists(infoModel)) {
-      throw new IOException(
-          "Model already imported.");
-    }
+//    if (service.exists(infoModel)) {
+//      throw new IOException("Model already imported.");
+//    }
     service.saveInformationModel(infoModel);
 
     LOG.info("Ending import of HeD model from: " + file.getName());
@@ -125,9 +127,22 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
       switch (loopNode.getNodeName()) {
         case METADATA:
           String key = getIdentifier(loopNode);
+          LOG.debug("      key = " + key);
           infoModel.setKey(key);
           String name = getName(loopNode);
+          LOG.debug("      name = " + name);
           infoModel.setName(name);
+          String artifactType = getArtifactType(loopNode);
+          LOG.debug("      artifactType = " + artifactType);
+          if (artifactType != null)
+            infoModel.setArtifactType(artifactType);
+
+          List<HeDModelReference> dataModels = getDataModels(loopNode);
+          LOG.debug("      dataModels.ct = " + dataModels.size());
+          if (dataModels.size() > 0) {
+            infoModel.setDataModels(dataModels);
+          }
+          
           break;
 
         default:
@@ -163,6 +178,43 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
   }
 
   /**
+   * Returns the artifact type.
+   *
+   * @param metadataNode the metadata node
+   * @return the artifact type
+   */
+  private String getArtifactType(Node metadataNode) {
+    Node titleNode = getChildNodeByName(ARTIFACT_TYPE, metadataNode);
+    return titleNode == null ? null : titleNode.getAttributes()
+        .getNamedItem(VALUE).getTextContent();
+  }
+
+  
+  /**
+   * Returns the data models.
+   *
+   * @param metadataNode the metadata node
+   * @return the data models
+   */
+  private List<HeDModelReference> getDataModels(Node metadataNode) {
+    List<HeDModelReference> dataModels = new ArrayList<>();
+    Node dataModelNodes = getChildNodeByName(DATA_MODELS, metadataNode);
+    for (Node modelRefNode : getChildNodes(dataModelNodes)) {
+      if (modelRefNode.getNodeName().equals(MODEL_REFERENCE)) {
+        HeDModelReference ref = new HeDModelReference();
+        Node description = getChildNodeByName(DESCRIPTION, modelRefNode);
+        Node referencedModel = getChildNodeByName(REFERENCED_MODEL, modelRefNode);
+        ref.setDescription(description.getAttributes().getNamedItem(VALUE).getTextContent());
+        ref.setReferencedModel(referencedModel.getAttributes().getNamedItem(VALUE).getTextContent());
+        dataModels.add(ref);
+      }
+      
+    }
+    return dataModels;
+
+  }  
+
+  /**
    * Returns the child node by name.
    *
    * @param name the name
@@ -180,7 +232,22 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
     }
     throw new IllegalArgumentException("No child node exists with name " + name);
   }
-
+  
+  /**
+   * Returns the child nodes as an iterable.
+   *
+   * @param node the node
+   * @return the child nodes
+   */
+  private List<Node> getChildNodes(Node node) {
+    List<Node> nodes = new ArrayList<>();
+    NodeList childNodes = node.getChildNodes();
+    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
+      Node loopNode = childNodes.item(nodeCount);
+      nodes.add(loopNode);
+    }
+    return nodes;
+  }  
   /**
    * Load model from XML file into a {@link Node}.
    *

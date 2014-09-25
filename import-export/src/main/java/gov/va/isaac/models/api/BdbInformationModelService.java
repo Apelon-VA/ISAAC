@@ -265,11 +265,7 @@ public class BdbInformationModelService implements InformationModelService {
     }
     LOG.info("Save information model: " + model.getType().getDisplayName()
         + ", " + model.getKey());
-    ConceptChronicleBI modelConcept = syncInformationModelConcept(model);
-    LOG.debug("  add uncommitted");
-    WBUtility.addUncommitted(modelConcept);
-    LOG.debug("  commit");
-    WBUtility.commit();
+    syncInformationModelConcept(model);
   }
 
   /**
@@ -347,10 +343,11 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("  property refset = " + propertyRefset.getRefexName());
     for (RefexDynamicChronicleBI<?> refex : modelConcept
         .getRefexDynamicAnnotations()) {
-      RefexDynamicVersionBI<?> refexVersion =
+      RefexDynamicVersionBI<?> refexVersion = 
           refex.getVersion(WBUtility.getViewCoordinate());
+      LOG.debug("  refex = " + refex.toUserString());
       // Look for matching refex id and "active" flag
-      if (refex.getAssemblageNid() == propertyRefset
+      if (refexVersion != null && refex.getAssemblageNid() == propertyRefset
           .getRefexUsageDescriptorNid() && refexVersion.isActive()) {
         // Create properties for each annotation
         InformationModelProperty property =
@@ -484,17 +481,19 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("  FN = " + model.getKey());
     LOG.debug("  PT = " + model.getName());
     ConceptCB modelConceptCB = null;
+    ConceptChronicleBI modelConcept = null;
     // handle case where model concept exists already
-    if (model.getUuid() != null) {
-      ConceptVersionBI modelConcept =
-          WBUtility.getConceptVersion(model.getUuid());
-      if (modelConcept == null) {
-        throw new IOException(
-            "Model UUID unexpectedly does not exist as a concept "
-                + model.getUuid());
-      }
+    if (exists(model)) {
+      // Obtain the UUID
+      UUID modelUuid =
+          this.getInformationModel(model.getType(), model.getKey()).getUuid();
+      LOG.debug("  Model exists already, UUID = " + modelUuid);
+      // Look it up by UUID0
+      modelConcept = dataStore.getConcept(modelUuid);
+      ConceptVersionBI modelConceptVersion =
+          modelConcept.getVersion(WBUtility.getViewCoordinate());
       modelConceptCB =
-          modelConcept.makeBlueprint(WBUtility.getViewCoordinate(),
+          modelConceptVersion.makeBlueprint(WBUtility.getViewCoordinate(),
               IdDirective.PRESERVE, RefexDirective.EXCLUDE);
       // synchronize descriptions (in case name or key changed)
       syncDescriptions(modelConceptCB, model);
@@ -508,18 +507,22 @@ public class BdbInformationModelService implements InformationModelService {
     }
     // handle case where model concept does not exist
     else {
+      LOG.debug("  Model concept does not exist yet, create it");
       modelConceptCB =
           createNewConceptBlueprint(parent, model.getKey(), model.getName());
       // Apply concept changes
-      ConceptChronicleBI modelConcept =
-          WBUtility.getBuilder().construct(modelConceptCB);
+      modelConcept = WBUtility.getBuilder().construct(modelConceptCB);
       model.setUuid(modelConcept.getPrimordialUuid());
-      LOG.debug("  UUID = " + modelConcept.getPrimordialUuid());
+      LOG.debug("    UUID = " + modelConcept.getPrimordialUuid());
     }
 
-    // Apply refex changes
-    ConceptChronicleBI modelConcept = dataStore.getConcept(model.getUuid());
+    // Apply refex changes - modelConcept has been set above
     syncRefexes(modelConcept, model);
+
+    LOG.debug("  add uncommitted");
+    WBUtility.addUncommitted(modelConcept);
+    LOG.debug("  commit");
+    WBUtility.commit();
 
     return modelConcept;
   }
@@ -744,12 +747,14 @@ public class BdbInformationModelService implements InformationModelService {
         .getRefexDynamicAnnotations()) {
       RefexDynamicVersionBI<?> refexVersion =
           refex.getVersion(WBUtility.getViewCoordinate());
-      if (!refexUuids.contains(refex.getPrimordialUuid())) {
+      if (refexVersion != null && !refexUuids.contains(refex.getPrimordialUuid())) {
         RefexDynamicCAB refexBlueprint =
             refexVersion.makeBlueprint(WBUtility.getViewCoordinate(),
                 IdDirective.PRESERVE, RefexDirective.EXCLUDE);
         refexBlueprint.setRetired();
-        WBUtility.getBuilder().construct(refexBlueprint);
+        RefexDynamicChronicleBI<?> refex2 =
+            WBUtility.getBuilder().construct(refexBlueprint);
+        LOG.debug("  Retire refex UUID = " + refex2.getPrimordialUuid());
       }
     }
   }

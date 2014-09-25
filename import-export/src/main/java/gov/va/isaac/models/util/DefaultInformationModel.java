@@ -23,7 +23,9 @@ import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.InformationModelProperty;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -58,9 +60,9 @@ public class DefaultInformationModel implements InformationModel {
   /** The associated concept uuids */
   protected Set<UUID> associatedConceptUuids = new HashSet<>();
 
-  /**  The super model. */
+  /** The super model. */
   private UUID superModelUuid = null;
-  
+
   /**
    * Instantiates an empty {@link DefaultInformationModel}.
    */
@@ -377,7 +379,9 @@ public class DefaultInformationModel implements InformationModel {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see gov.va.isaac.models.InformationModel#hasSuperModelUuid()
    */
   @Override
@@ -385,7 +389,9 @@ public class DefaultInformationModel implements InformationModel {
     return superModelUuid != null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see gov.va.isaac.models.InformationModel#getSuperModelUuid()
    */
   @Override
@@ -393,7 +399,9 @@ public class DefaultInformationModel implements InformationModel {
     return superModelUuid;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see gov.va.isaac.models.InformationModel#setSuperModelUuid(java.util.UUID)
    */
   @Override
@@ -401,4 +409,51 @@ public class DefaultInformationModel implements InformationModel {
     this.superModelUuid = uuid;
   }
 
+  /**
+   * Removes the properties by label.
+   *
+   * @param label the label
+   */
+  protected void removePropertiesByLabel(String label) {
+    // Remove any "data" properties
+    Set<InformationModelProperty> properties = new HashSet<>(getProperties());
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(label)) {
+        removeProperty(property);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Returns the property by label.
+   *
+   * @param label the label
+   * @return the property by label
+   */
+  protected InformationModelProperty getPropertyByLabel(String label) {
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(label)) {
+        return property;
+      }
+    }
+    return null;
+  }
+
+ 
+  /**
+   * Returns the properties by label.
+   *
+   * @param label the label
+   * @return the properties by label
+   */
+  protected List<InformationModelProperty> getPropertiesByLabel(String label) {
+    List<InformationModelProperty> propsByLabel = new ArrayList<>();
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(label)) {
+        propsByLabel.add(property);
+      }
+    }
+    return propsByLabel;
+  }
 }
