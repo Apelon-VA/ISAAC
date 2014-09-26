@@ -52,8 +52,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.6</otf-query.version>
-        <otf-versioning.version>1.1-va-1.6</otf-versioning.version>
+        <otf-query.version>1.1-va-1.7-SNAPSHOT</otf-query.version>
+        <otf-versioning.version>1.1-va-1.7-SNAPSHOT</otf-versioning.version>
         <kie.version>6.0.1.Final</kie.version>  <!-- Workflow, drools, etc -->
     </properties>
     
