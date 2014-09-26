@@ -31,7 +31,6 @@ import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -48,19 +47,19 @@ class IsDescendantOfSearchResultsFilter implements SearchResultsFilter {
 	}
 	
 	@Override
-	public Collection<CompositeSearchResult> filter(Collection<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
 		final ConceptVersionBI possibleAscendantConcept = WBUtility.getConceptVersion(filter.getNid());
 
 		CompositeSearchResult currentResult = null;
-        try {
+		try {
 			LOG.debug("Applying " + (filter.getInvert() ? "! isKindOf() " : "isKindOf() ") + filter + " to " + results.size() + " results");
-	        List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
-	        
-	        for (CompositeSearchResult result : results) {
-	        	currentResult = result;
-				if (result.getConcept().isKindOf(possibleAscendantConcept) && ! filter.getInvert()) {
+			List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
+			
+			for (CompositeSearchResult result : results) {
+				currentResult = result;
+				if (result.getContainingConcept().isKindOf(possibleAscendantConcept) && ! filter.getInvert()) {
 					filteredResults.add(result);
-				} else if (! result.getConcept().isKindOf(possibleAscendantConcept) && filter.getInvert()) {
+				} else if (! result.getContainingConcept().isKindOf(possibleAscendantConcept) && filter.getInvert()) {
 					filteredResults.add(result);
 				}
 			}
@@ -68,8 +67,8 @@ class IsDescendantOfSearchResultsFilter implements SearchResultsFilter {
 			LOG.debug(filteredResults.size() + " results remained after filtering a total of " + results.size() + " results");
 			
 			return filteredResults;
-        } catch (Exception e) {
-			throw new SearchResultsFilterException(this, "Failed calling (" + WBUtility.getDescription(currentResult.getConcept()) + " (nid=" + currentResult.getConceptNid() + ")).isKindOf(" + WBUtility.getDescription(possibleAscendantConcept) + " (nid=" + possibleAscendantConcept.getConceptNid() + "))", e);
+		} catch (Exception e) {
+			throw new SearchResultsFilterException(this, "Failed calling (" + WBUtility.getDescription(currentResult.getContainingConcept()) + " (nid=" + currentResult.getContainingConcept().getNid() + ")).isKindOf(" + WBUtility.getDescription(possibleAscendantConcept) + " (nid=" + possibleAscendantConcept.getConceptNid() + "))", e);
 		}
 	}
 

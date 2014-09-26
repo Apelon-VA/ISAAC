@@ -11,6 +11,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 
 public class DetailTermRow extends TermRow {
@@ -20,19 +21,39 @@ public class DetailTermRow extends TermRow {
 	}
 
 	@Override
-	public void addTermRow(DescriptionVersionBI<?> desc) {
+	public void addTermRow(DescriptionVersionBI<?> desc, boolean isPrefTerm) {
 		Rectangle rec = createAnnotRectangle(desc);
 		
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
-		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		Label descTypeLabel = null;
+		
+		if (isPrefTerm) {
+			descTypeLabel = labelHelper.createLabel(desc, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
+		} else {
+			descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		}
+		
 		Label descCaseLabel = labelHelper.createLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, 0);
 		Label descLangLabel = labelHelper.createLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, 0);
 		
 		if (desc.isUncommitted()) {
-			descLabel.setUnderline(true);
-			descTypeLabel.setUnderline(true);
-			descCaseLabel.setUnderline(true);
-			descLangLabel.setUnderline(true);
+			ComponentChronicleBI<?> chronicle = desc.getChronicle();
+			DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+
+			if (!descLabel.getText().equals(origVersion.getText())) {
+				descLabel.setUnderline(true);
+			}
+			if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+				descTypeLabel.setUnderline(true);
+			}
+
+			if (!descCaseLabel.getText().equals(getBooleanValue(origVersion.isInitialCaseSignificant()))) {
+				descCaseLabel.setUnderline(true);
+			}
+			
+			if (!descLangLabel.getText().equals(origVersion.getLang())) {
+				descLangLabel.setUnderline(true);
+			}
 		}
 		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 

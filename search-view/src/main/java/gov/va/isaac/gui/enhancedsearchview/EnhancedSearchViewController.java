@@ -19,20 +19,26 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
+import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
+import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.interfaces.workflow.ConceptWorkflowServiceI;
+import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
@@ -61,11 +67,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -85,6 +87,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.SplitPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -113,10 +117,11 @@ import javafx.stage.Window;
 import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,6 +169,34 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		public String toString() { return display; }
 	}
 
+	enum TaxonomyViewMode {
+		FILTERED,
+		UNFILTERED
+	}
+	
+	enum FilterType {
+		IS_DESCENDANT_OF(IsDescendantOfFilter.class),
+		IS_A(IsAFilter.class);
+		
+		private final Class<? extends NonSearchTypeFilter<?>> clazz;
+		
+		private FilterType(Class<? extends NonSearchTypeFilter<?>> aClazz) {
+			clazz = aClazz;
+		}
+		
+		public Class<? extends NonSearchTypeFilter<?>> getClazz() { return clazz; }
+		
+		public static FilterType valueOf(Class<? extends NonSearchTypeFilter> filterType) {
+			for (FilterType type : values()) {
+				if (type.getClazz() == filterType) {
+					return type;
+				}
+			}
+			
+			return null;
+		}
+	}
+
 	@FXML private HBox maxResultsHBox;
 	@FXML private Label maxResultsCustomTextFieldLabel;
 	private IntegerField maxResultsCustomTextField;
@@ -173,7 +206,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button searchButton;
 
 	@FXML private Label totalResultsDisplayedLabel;
-	@FXML private Pane pane;
+	//@FXML private Pane pane;
 	@FXML private ComboBox<AggregationType> aggregationTypeComboBox;
 	@FXML private TableView<CompositeSearchResult> searchResultsTable;
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
@@ -182,7 +215,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private ProgressIndicator searchProgress;
 	@FXML private Label totalResultsSelectedLabel;
 	@FXML private Button resetDefaultsButton;
-	@FXML private Button addIsDescdantOfFilterButton;
+	private Button addIsDescendantOfFilterButton;
+	
+	@FXML private SplitPane searchResultsAndTaxonomySplitPane;
+	private BorderPane taxonomyPanelBorderPane;
+	private ComboBox<TaxonomyViewMode> taxonomyPanelViewModeComboBox;
+	private Button taxonomyPanelCloseButton;
+	
+	@FXML private Button exportResultsToSearchTaxonomyPanelButton;
 
 	@FXML private HBox searchTypeControlsHbox;
 	@FXML private ComboBox<SearchType> searchTypeComboBox;
@@ -196,12 +236,18 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	final private SearchViewModel searchViewModel = new SearchViewModel();
 
+	private TaxonomyViewI taxonomyView = null;
+	private final BooleanProperty taxonomyPanelShouldFilterProperty = new SimpleBooleanProperty(false);
+	private SctTreeItemSearchResultsDisplayPolicies taxonomyDisplayPolicies = null;
+	private Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
+	
 	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
+	
 	private SearchHandle ssh = null;
 
 	private Window windowForTableViewExportDialog;
 
-	ConceptWorkflowServiceI conceptWorkflowService;
+	ComponentWorkflowServiceI conceptWorkflowService;
 
 	public static EnhancedSearchViewController init() throws IOException {
 		// Load FXML
@@ -216,7 +262,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	public void initialize() {
 		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		//assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert pane != null : "fx:id=\"pane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToListBatchViewButton != null : "fx:id=\"exportSearchResultsToListBatchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportSearchResultsToWorkflowButton != null : "fx:id=\"exportSearchResultsToWorkflowButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert totalResultsSelectedLabel != null : "fx:id=\"totalResultsSelectedLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
@@ -225,16 +270,21 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert maxResultsCustomTextFieldLabel != null : "fx:id=\"maxResultsCustomTextFieldLabel\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert saveSearchButton != null : "fx:id=\"saveSearchButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert savedSearchesComboBox != null : "fx:id=\"savedSearchesComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert addIsDescdantOfFilterButton != null : "fx:id=\"addIsDescdantOfFilterButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		//assert addIsDescendantOfFilterButton != null : "fx:id=\"addIsDescendantOfFilterButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchFilterGridPane != null : "fx:id=\"searchFilterGridPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchTypeComboBox != null : "fx:id=\"searchTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert searchProgress != null : "fx:id=\"searchProgress\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
-		if (! pane.getStylesheets().contains(styleSheet)) {
-			pane.getStylesheets().add(styleSheet);
+		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
+			searchResultsAndTaxonomySplitPane.getStylesheets().add(styleSheet);
 		}
-
+		
+		initializeTaxonomyPanel();
+		
 		if (searchSaveNameTextField == null) {
 			searchSaveNameTextField = new TextField();
 		}
@@ -247,7 +297,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		initializeSearchTypeComboBox();
 
-		addIsDescdantOfFilterButton.setOnAction(new EventHandler<ActionEvent>() {
+		if (addIsDescendantOfFilterButton == null) {
+			addIsDescendantOfFilterButton = new Button("Add Filter");
+		}
+		addIsDescendantOfFilterButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
@@ -255,7 +308,15 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				searchViewModel.getFilters().add(newFilter);
 			}
 		});
-
+		
+		exportResultsToSearchTaxonomyPanelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				exportResultsToSearchTaxonomyPanel();
+			}
+		});
+		//exportResultsToSearchTaxonomyPanelButton.setVisible(false);
+		
 		initializeWorkflowServices();
 
 		//final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
@@ -279,7 +340,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
+		
+		// TODO: either fix or remove exportSearchResultsToWorkflow
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
+		exportSearchResultsToWorkflowButton.setVisible(false);
+		
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 
 		saveSearchButton.setOnAction((action) -> {
@@ -306,6 +371,173 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 	}
 
+	private void exportResultsToSearchTaxonomyPanel() {
+		if (taxonomyView == null) {
+			taxonomyView = AppContext.getService(TaxonomyViewI.class);
+
+			taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
+			taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);
+
+			taxonomyView.setDisplayPolicies(taxonomyDisplayPolicies);
+
+			taxonomyPanelBorderPane.setCenter(taxonomyView.getView());
+		}
+
+		if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+			searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
+			searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
+			LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
+		}
+		
+		if (configureDisplayPoliciesTask != null) {
+			if (configureDisplayPoliciesTask.isRunning()) {
+				configureDisplayPoliciesTask.cancel();
+			}
+		}
+		configureDisplayPoliciesTask = new Task<SctTreeItemSearchResultsDisplayPolicies>() {
+			boolean cancelled = false;
+			
+			@Override
+			protected SctTreeItemSearchResultsDisplayPolicies call() throws Exception {
+				HashSet<Integer> searchResultAncestors = new HashSet<>();
+				HashSet<Integer> searchResults = new HashSet<>();
+
+				for (CompositeSearchResult c : searchResultsTable.getItems()) {
+					if (cancelled) {
+						return taxonomyDisplayPolicies;
+					}
+
+					searchResults.add(c.getContainingConcept().getNid());
+
+					Set<ConceptVersionBI> ancestorNids = null;
+					ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+
+					for (ConceptVersionBI concept : ancestorNids) {
+						searchResultAncestors.add(concept.getNid());
+					}
+
+				}
+				
+				taxonomyDisplayPolicies.setSearchResultAncestors(searchResultAncestors);
+				taxonomyDisplayPolicies.setSearchResults(searchResults);
+				
+				return taxonomyDisplayPolicies;
+			}
+
+			@Override
+			protected void succeeded() {
+				if (! cancelled) {
+					taxonomyView.refresh();
+				}
+			}
+			
+			@Override
+			public boolean cancel(boolean mayInterruptIfRunning) {
+				cancelled = true;
+
+				return super.cancel(mayInterruptIfRunning);
+			}
+
+			@Override
+			protected void failed() {
+				Throwable e = getException();
+				
+				if (e != null) {
+					String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+					String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+					String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+					e.printStackTrace();
+				} else {
+					LOG.error("Task configureDisplayPoliciesTask FAILED without throwing an exception/throwable");
+				}
+			}
+		};
+
+		Utility.execute(configureDisplayPoliciesTask);
+	}
+	
+	private void initializeTaxonomyPanel() {
+		initializeTaxonomyViewModeComboBox();
+		
+		taxonomyPanelBorderPane = new BorderPane();
+		taxonomyPanelBorderPane.setTop(taxonomyPanelViewModeComboBox);
+		taxonomyPanelCloseButton = new Button("Close");
+		taxonomyPanelCloseButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				searchResultsAndTaxonomySplitPane.getItems().remove(taxonomyPanelBorderPane);
+				LOG.debug("Removed taxonomyPanelBorderPane from searchResultsAndTaxonomySplitPane");
+			}
+		});
+		taxonomyPanelBorderPane.setBottom(taxonomyPanelCloseButton);
+	}
+	
+	private void initializeTaxonomyViewModeComboBox() {
+		taxonomyPanelViewModeComboBox = new ComboBox<>();
+
+		// Force single selection
+		taxonomyPanelViewModeComboBox.getSelectionModel().selectFirst();
+		taxonomyPanelViewModeComboBox.setCellFactory((p) -> {
+			final ListCell<TaxonomyViewMode> cell = new ListCell<TaxonomyViewMode>() {
+				@Override
+				protected void updateItem(TaxonomyViewMode a, boolean bln) {
+					super.updateItem(a, bln);
+
+					if(a != null){
+						setText(a.toString() + " view mode");
+					}else{
+						setText(null);
+					}
+				}
+			};
+
+			return cell;
+		});
+		taxonomyPanelViewModeComboBox.setButtonCell(new ListCell<TaxonomyViewMode>() {
+			@Override
+			protected void updateItem(TaxonomyViewMode t, boolean bln) {
+				super.updateItem(t, bln); 
+				if (bln) {
+					setText("");
+				} else {
+					setText(t.toString() + " view mode");
+				}
+			}
+		});
+		taxonomyPanelViewModeComboBox.setOnAction((event) -> {
+			LOG.trace("taxonomyPanelViewModeComboBox event (selected: " + taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			boolean statusChanged = false;
+			
+			switch (taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem()) {
+			case FILTERED:
+				if (! taxonomyPanelShouldFilterProperty.get()) {
+					statusChanged = true;
+				}
+				taxonomyPanelShouldFilterProperty.set(true);
+				break;
+			case UNFILTERED:
+				if (taxonomyPanelShouldFilterProperty.get()) {
+					statusChanged = true;
+				}
+				taxonomyPanelShouldFilterProperty.set(false);
+				break;
+
+				default:
+					throw new RuntimeException("Unsupported TaxonomyViewMode value \"" + taxonomyPanelViewModeComboBox.getSelectionModel().getSelectedItem() + "\"");
+			}
+			
+			if (statusChanged) {
+				taxonomyView.refresh();
+			}
+		});
+
+		taxonomyPanelViewModeComboBox.setItems(FXCollections.observableArrayList(TaxonomyViewMode.values()));
+		taxonomyPanelViewModeComboBox.getSelectionModel().select(TaxonomyViewMode.UNFILTERED);
+	}
+	
 	private void initializeSearchViewModel() {
 		searchViewModel.setViewCoordinate(WBUtility.getViewCoordinate());
 
@@ -330,14 +562,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	 * 
 	 */
 	private void addSearchFilter(final NonSearchTypeFilter<?> filter) {
-		int index = searchFilterGridPane.getChildren().size();
+		final int index = searchFilterGridPane.getChildren().size();
 
 		HBox row = new HBox();
 		HBox.setMargin(row, new Insets(5, 5, 5, 5));
 		row.setUserData(filter);
-//		if (! searchViewModel.getFilters().contains(filter)) {
-//			searchViewModel.getFilters().add(filter);
-//		}
 
 		// TODO: add binding to disable deletion of first filter in list containing other filter
 		Button removeFilterButton = new Button("Remove");
@@ -378,7 +607,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		if (filter instanceof IsDescendantOfFilter) {
 			IsDescendantOfFilter displayableIsDescendantOfFilter = (IsDescendantOfFilter)filter;
 
-			Label searchParamLabel = new Label("Ascendant");
+			Label searchParamLabel = new Label("Ancestor");
 			searchParamLabel.setPadding(new Insets(5.0));
 			searchParamLabel.setMinWidth(70);
 
@@ -401,7 +630,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			//HBox.setMargin(cn.getNode(), new Insets(5, 5, 5, 5));
 
 			cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
-					{
+			{
 				@Override
 				public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
 				{
@@ -411,19 +640,115 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						LOG.debug("isDescendantFilter should now contain concept with NID " + displayableIsDescendantOfFilter.getNid() + ": " + Arrays.toString(searchViewModel.getFilters().toArray()));
 					}
 				}
-					});
+			});
+			
+			
 			if (filter.isValid()) {
 				cn.set(WBUtility.getConceptVersion(((IsDescendantOfFilter) filter).getNid()));
 			}
 
 			row.getChildren().addAll(searchParamLabel, cn.getNode(), excludeMatchesCheckBox);
-		} 
+		} else if (filter instanceof IsAFilter) {
+			IsAFilter displayableIsAFilter = (IsAFilter)filter;
+
+			Label searchParamLabel = new Label("Match");
+			searchParamLabel.setPadding(new Insets(5.0));
+			searchParamLabel.setMinWidth(70);
+
+			CheckBox excludeMatchesCheckBox = new CheckBox("Exclude Matches");
+			excludeMatchesCheckBox.setPadding(new Insets(5.0));
+			excludeMatchesCheckBox.setMinWidth(150);
+			excludeMatchesCheckBox.setSelected(((IsAFilter) filter).getInvert());
+			excludeMatchesCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends Boolean> observable,
+						Boolean oldValue,
+						Boolean newValue) {
+					((IsAFilter) filter).setInvert(newValue);
+				}});
+
+			final ConceptNode cn = new ConceptNode(null, false);
+			cn.setPromptText("Type, drop or select a concept to add");
+			//HBox.setHgrow(cn.getNode(), Priority.SOMETIMES);
+			//HBox.setMargin(cn.getNode(), new Insets(5, 5, 5, 5));
+
+			cn.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>()
+			{
+				@Override
+				public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
+				{
+					if (newValue != null)
+					{
+						displayableIsAFilter.setNid(newValue.getConceptNid());
+						LOG.debug("isAFilter should now contain concept with NID " + displayableIsAFilter.getNid() + ": " + Arrays.toString(searchViewModel.getFilters().toArray()));
+					}
+				}
+			});
+			
+			
+			if (filter.isValid()) {
+				cn.set(WBUtility.getConceptVersion(((IsAFilter) filter).getNid()));
+			}
+
+			row.getChildren().addAll(searchParamLabel, cn.getNode(), excludeMatchesCheckBox);
+		}
 		else {
 			String msg = "Failed creating DisplayableFilter GridPane cell for filter of unsupported type " + filter.getClass().getName();
 			LOG.error(msg);
 			throw new RuntimeException(msg);
 		}
 
+		ComboBox<FilterType> filterTypeComboBox = new ComboBox<>();
+		filterTypeComboBox.setEditable(false);
+		filterTypeComboBox.setItems(FXCollections.observableArrayList(FilterType.values()));
+		filterTypeComboBox.getSelectionModel().select(FilterType.valueOf(filter.getClass()));
+
+		filterTypeComboBox.setOnAction((event) -> {
+			LOG.trace("filterTypeComboBox event (selected: " + filterTypeComboBox.getSelectionModel().getSelectedItem() + ")");
+
+			if (searchViewModel.getFilters().size() >= (index + 1)) {
+				// Model already has filter at this index
+				if (FilterType.valueOf(searchViewModel.getFilters().get(index).getClass()) == filterTypeComboBox.getSelectionModel().getSelectedItem()) {
+					// Same type as existing filter.  Do nothing.
+				} else {
+					try {
+						NonSearchTypeFilter<?> newFilter = filterTypeComboBox.getSelectionModel().getSelectedItem().getClazz().newInstance();
+						NonSearchTypeFilter<?> existingFilter = searchViewModel.getFilters().get(index);
+
+						// Attempt to retain existing filter parameters, if possible
+						if ((existingFilter instanceof Invertable) && (newFilter instanceof Invertable)) {
+							((Invertable)newFilter).setInvert(((Invertable)existingFilter).getInvert());
+						}
+						if ((existingFilter instanceof SingleNidFilter) && (newFilter instanceof SingleNidFilter)) {
+							((SingleNidFilter)newFilter).setNid(((SingleNidFilter)existingFilter).getNid());
+						}
+						
+						searchViewModel.getFilters().set(index, newFilter);
+					
+						// Remove all nodes from searchFilterGridPane
+						searchFilterGridPane.getChildren().clear();
+
+						// Recreate and add each node to searchFilterGridPane
+						for (NonSearchTypeFilter<?> f : searchViewModel.getFilters()) {
+							addSearchFilter(f);
+						}
+					} catch (Exception e) {
+						String msg = "Failed creating new " + filterTypeComboBox.getSelectionModel().getSelectedItem() + " filter at index " + index;
+
+						String details = msg + ". Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"";
+
+						String title = "Failed creating new filter";
+						AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+						e.printStackTrace();
+					}
+				}
+			}
+		});		
+		
+		row.getChildren().add(filterTypeComboBox);
+		
 		searchFilterGridPane.addRow(index, row);
 		RowConstraints rowConstraints = new RowConstraints();
 		rowConstraints.setVgrow(Priority.NEVER);
@@ -700,44 +1025,79 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// Use HashSet to ensure that only one workflow is created for each concept
 		if (searchResultsTable.getItems().size() > 0) {
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 
-		Set<Integer> concepts = new HashSet<>();
-		for (CompositeSearchResult result : searchResultsTable.getItems()) {
-			if (! concepts.contains(result.getConceptNid())) {
-				concepts.add(result.getConceptNid());
-
-				exportSearchResultToWorkflow(result.getConcept());
+		Map<Integer, ComponentVersionBI> conceptsOrComponents = new HashMap<>();
+		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+			for (CompositeSearchResult result : searchResultsTable.getItems()) {
+				ConceptVersionBI conceptVersion = result.getContainingConcept();
+				int nid = conceptVersion.getNid();
+				
+				if (! conceptsOrComponents.containsKey(nid)) {
+					conceptsOrComponents.put(nid, conceptVersion);
+				}
 			}
+		} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+			for (CompositeSearchResult result : searchResultsTable.getItems()) {
+				ComponentVersionBI componentVersion = result.getMatchingComponents().iterator().next();
+				int nid = componentVersion.getNid();
+				
+				if (! conceptsOrComponents.containsKey(nid)) {
+					conceptsOrComponents.put(nid, componentVersion);
+				}
+			}
+		} else {
+			String title = "Failed exporting search results to workflow";
+			String msg = "Unsupported AggregationType " + aggregationTypeComboBox.getSelectionModel().getSelectedItem();
+			LOG.error(title + ". " + msg);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, title + ". " + msg, AppContext.getMainApplicationWindow().getPrimaryStage());
 		}
 
-		if (searchResultsTable.getItems().size() > 0) {
-			conceptWorkflowService.synchronizeWithRemote();
+		if (conceptsOrComponents.size() > 0) {
+			for (ComponentVersionBI conceptOrComponent : conceptsOrComponents.values()) {
+				exportSearchResultToWorkflow(conceptOrComponent);
+			}
+			
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 	}
 
 	// TODO: this should be invoked by context menu
-	private void exportSearchResultToWorkflow(ConceptVersionBI conceptVersion) {
+	private void exportSearchResultToWorkflow(ComponentVersionBI componentOrConceptVersion) {
 		initializeWorkflowServices();
 
-		// TODO: eliminate hard-coding of processName "terminology-authoring.test1"
-		final String processName = "terminology-authoring.test1";
 		// TODO: eliminate hard-coding of userName
+		final WorkflowProcess process = WorkflowProcess.REVIEW3;
 		final String userName = "alejandro";
 		String preferredDescription = null;
 		try {
-			preferredDescription = conceptVersion.getPreferredDescription().getText();
-		} catch (IOException | ContradictionException e1) {
+			if (componentOrConceptVersion instanceof ConceptVersionBI) {
+				DescriptionVersionBI<?> desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
+				preferredDescription = desc.getText();
+			} else {
+				preferredDescription = componentOrConceptVersion.toUserString();
+			}
+		} catch (Exception e1) {
 			String title = "Failed creating new concept workflow";
-			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion (nid=" + conceptVersion.getConceptNid() + ", uuid=" + conceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName();
-			LOG.error(title, e1);
+			String msg = title + ". Unexpected error getting description for componentVersion (nid=" + componentOrConceptVersion.getNid() + ", uuid=" + componentOrConceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
+			LOG.error(msg, e1);
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
 			e1.printStackTrace();
+			
+			return;
 		}
 
-		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + conceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + processName + "\")");
-		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewConceptWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName);
+		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + componentOrConceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + process.getText() + "\")");
+		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewComponentWorkflowRequest(preferredDescription, componentOrConceptVersion.getPrimordialUuid(), userName, process.getText(), new HashMap<String,String>());
 		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 	}
 
@@ -748,8 +1108,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		List<Integer> nids = new ArrayList<>();
 		for (CompositeSearchResult result : searchResultsTable.getItems()) {
-			if (! nids.contains(result.getConceptNid())) {
-				nids.add(result.getConceptNid());
+			if (! nids.contains(result.getContainingConcept().getNid())) {
+				nids.add(result.getContainingConcept().getNid());
 			}
 		}
 
@@ -779,9 +1139,13 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				public void run() {
 					try {
 						if (! ssh.isCancelled()) {
-							searchResultsTable.getItems().addAll(ssh.getResults());
-
+							searchResultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
+							
 							refreshTotalResultsDisplayedLabel();
+							
+							if (searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
+								exportResultsToSearchTaxonomyPanel();
+							}
 						}
 					} catch (Exception ex) {
 						String title = "Unexpected Search Error";
@@ -789,7 +1153,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						AppContext.getCommonDialogs().showErrorDialog(title,
 								"There was an unexpected error running the search",
 								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
-						searchResultsTable.getItems().clear();
+						//searchResultsTable.getItems().clear();
 						refreshTotalResultsDisplayedLabel();
 					} finally {
 						searchRunning.set(false);
@@ -878,9 +1242,15 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								@Override
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
-
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										nids.add(r.getConceptNid());
+										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+											nids.add(r.getContainingConcept().getNid());
+										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
+										} else {
+											LOG.error("Unexpected AggregationType value " + aggregationTypeComboBox.getSelectionModel().getSelectedItem());
+											nids.add(r.getContainingConcept().getNid());
+										}
 									}
 
 									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
@@ -982,7 +1352,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// Active status
 		TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
-		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getStatus().toString().trim()));
+		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getStatus().toString().trim()));
 		statusCol.setCellFactory(new MyTableCellCallback<String>());
 
 		// numMatchesCol only meaningful for AggregationType CONCEPT
@@ -1003,7 +1373,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							StringBuilder buffer = new StringBuilder();
 							String fsn = null;
 							try {
-								fsn = result.getConcept().getFullySpecifiedDescription().getText().trim();
+								fsn = result.getContainingConcept().getFullySpecifiedDescription().getText().trim();
 							} catch (IOException | ContradictionException e) {
 								String title = "Failed getting FSN";
 								String msg = "Failed getting fully specified description";
@@ -1034,7 +1404,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		preferredTermCol.setCellFactory(new MyTableCellCallback<String>());
 		preferredTermCol.setCellValueFactory((param) -> {
 			try {
-				return new SimpleStringProperty(param.getValue().getConcept().getPreferredDescription().getText().trim());
+				return new SimpleStringProperty(param.getValue().getContainingConcept().getPreferredDescription().getText().trim());
 			} catch (IOException | ContradictionException e) {
 				String title = "Failed getting preferred description";
 				String msg = "Failed getting preferred description";
@@ -1050,7 +1420,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		fsnCol.setCellFactory(new MyTableCellCallback<String>());
 		fsnCol.setCellValueFactory((param) -> {
 			try {
-				return new SimpleStringProperty(param.getValue().getConcept().getFullySpecifiedDescription().getText().trim());
+				return new SimpleStringProperty(param.getValue().getContainingConcept().getFullySpecifiedDescription().getText().trim());
 			} catch (IOException | ContradictionException e) {
 				String title = "Failed getting FSN";
 				String msg = "Failed getting fully specified description";
@@ -1064,7 +1434,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// Matching description text.
 		// If AggregationType is CONCEPT then arbitrarily picks first matching description
 		TableColumn<CompositeSearchResult, String> matchingTextCol = new TableColumn<>("Text");
-		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchStrings().iterator().next().trim()));
+		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchingStrings().iterator().next().trim()));
 		matchingTextCol.setCellFactory(new MyTableCellCallback<String>());
 
 		// matchingDescTypeCol is string value type of matching description term displayed
@@ -1080,19 +1450,19 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// NID set to invisible because largely for debugging purposes only
 		TableColumn<CompositeSearchResult, Number> nidCol = new TableColumn<>("NID");
-		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getConcept().getNid()));
+		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getContainingConcept().getNid()));
 		nidCol.setCellFactory(new MyTableCellCallback<Number>());
 		nidCol.setVisible(false);
 
 		// UUID set to invisible because largely for debugging purposes only
 		TableColumn<CompositeSearchResult, String> uuIdCol = new TableColumn<>("UUID");
-		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getConcept().getPrimordialUuid().toString().trim()));
+		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getPrimordialUuid().toString().trim()));
 		uuIdCol.setVisible(false);
 		uuIdCol.setCellFactory(new MyTableCellCallback<String>());
 
 		// Optional SCT ID
 		TableColumn<CompositeSearchResult, String> sctIdCol = new TableColumn<>("SCTID");
-		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getConcept())).trim()));
+		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getContainingConcept())).trim()));
 		sctIdCol.setCellFactory(new MyTableCellCallback<String>());
 
 		searchResultsTable.getColumns().clear();
@@ -1120,8 +1490,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				CompositeSearchResult dragItem = searchResultsTable.getSelectionModel().getSelectedItem();
 				if (dragItem != null)
 				{
-					LOG.debug("Dragging concept id " + dragItem.getConceptNid());
-					return dragItem.getConceptNid() + "";
+					LOG.debug("Dragging concept id " + dragItem.getContainingConcept().getNid());
+					return dragItem.getContainingConcept().getNid() + "";
 				}
 				return null;
 			}
@@ -1135,7 +1505,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 	private void initializeWorkflowServices() {
 		if (conceptWorkflowService == null) {
-			conceptWorkflowService = AppContext.getService(ConceptWorkflowServiceI.class);
+			conceptWorkflowService = AppContext.getService(ComponentWorkflowServiceI.class);
 		}
 
 		assert conceptWorkflowService != null;
@@ -1284,6 +1654,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 					SearchTypeFilter<?> filter = null;
 
+					searchTypeControlsHbox.getChildren().add(addIsDescendantOfFilterButton);
 					if (searchType == SearchType.LUCENE) {
 						LuceneSearchTypeFilter displayableLuceneFilter = (passedSearchTypeFilter != null && passedSearchTypeFilter instanceof LuceneSearchTypeFilter) ? (LuceneSearchTypeFilter)passedSearchTypeFilter : new LuceneSearchTypeFilter();
 						filter = displayableLuceneFilter;
@@ -1391,7 +1762,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 
 		aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
-		aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
+		aggregationTypeComboBox.getSelectionModel().select(AggregationType.DESCRIPTION);
 	}
 
 	private synchronized void search() {
@@ -1400,109 +1771,116 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			return;
 		}
 
-		searchRunning.set(true);
+		try {
+			searchRunning.set(true);
 
-		searchResultsTable.getItems().clear();
-		refreshTotalResultsDisplayedLabel();
+			searchResultsTable.getItems().clear();
+			refreshTotalResultsDisplayedLabel();
 
-		SearchViewModel model = searchViewModel;
+			SearchViewModel model = searchViewModel;
 
-		if (! validateSearchViewModel(model, "Cannot execute save")) {
-			searchRunning.set(false);
+			if (! validateSearchViewModel(model, "Cannot execute search")) {
+				searchRunning.set(false);
 
-			return;
-		}
-
-		SearchTypeFilter<?> filter = model.getSearchType();
-
-		if (! (filter instanceof LuceneSearchTypeFilter)) {
-			String title = "Search failed";
-
-			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
-
-			searchRunning.set(false);
-			return;
-		}
-
-		LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
-
-		SearchResultsFilter searchResultsFilter = null;
-		if (model.getFilters() != null) {
-			List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
-
-			try {
-				for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
-					SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
-					
-					searchResultsFilters.add(newSearchResultsFilter);
-				}
-				LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
-				searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
-
-				//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
-			} catch (SearchResultsFilterException e) {
-				String title = "Failed creating SearchResultsFilter";
-				String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
-				String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
-				LOG.error(details);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-				ssh.cancel();
-				
 				return;
 			}
-		}
 
-		// "we get called back when the results are ready."
-		switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
-		case  CONCEPT:
-		{
-			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
-			builder.setCallback(this);
-			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (searchResultsFilter != null) {
-				builder.setFilter(searchResultsFilter);
+			SearchTypeFilter<?> filter = model.getSearchType();
+
+			if (! (filter instanceof LuceneSearchTypeFilter)) {
+				String title = "Search failed";
+
+				String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				searchRunning.set(false);
+				return;
 			}
-			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-				if (maxResults != null && maxResults > 0) {
-					builder.setSizeLimit(maxResults);
+
+			LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
+
+			SearchResultsFilter searchResultsFilter = null;
+			if (model.getFilters() != null) {
+				List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
+
+				try {
+					for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
+						SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
+
+						searchResultsFilters.add(newSearchResultsFilter);
+					}
+					LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
+					searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
+
+					//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
+				} catch (SearchResultsFilterException e) {
+					String title = "Failed creating SearchResultsFilter";
+					String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
+					String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
+					LOG.error(details);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+					ssh.cancel();
+
+					return;
 				}
 			}
-			ssh = SearchHandler.doConceptSearch(builder);
-			break;
-		}
-		case DESCRIPTION:
-		{
-			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
-			builder.setCallback(this);
-			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (searchResultsFilter != null) {
-				builder.setFilter(searchResultsFilter);
-			}
-			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-				if (maxResults != null && maxResults > 0) {
-					builder.setSizeLimit(maxResults);
-				}
-			}
-			ssh = SearchHandler.doDescriptionSearch(builder);
-			break;
-		}
-		default:
-			String title = "Unsupported Aggregation Type";
-			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
-			LOG.error(title);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			ssh.cancel();
-			break;
+			// "we get called back when the results are ready."
+			switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
+			case CONCEPT:
+			{
+				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				builder.setCallback(this);
+				builder.setTaskId(Tasks.SEARCH.ordinal());
+				if (searchResultsFilter != null) {
+					builder.setFilter(searchResultsFilter);
+				}
+				if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+					Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+					if (maxResults != null && maxResults > 0) {
+						builder.setSizeLimit(maxResults);
+					}
+				}
+				builder.setMergeResultsOnConcept(true);
+				ssh = SearchHandler.descriptionSearch(builder);
+				break;
+			}
+			case DESCRIPTION:
+			{
+				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				builder.setCallback(this);
+				builder.setTaskId(Tasks.SEARCH.ordinal());
+				if (searchResultsFilter != null) {
+					builder.setFilter(searchResultsFilter);
+				}
+				if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+					Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+					if (maxResults != null && maxResults > 0) {
+						builder.setSizeLimit(maxResults);
+					}
+				}
+				ssh = SearchHandler.descriptionSearch(builder);
+				break;
+			}
+			default:
+				String title = "Unsupported Aggregation Type";
+				String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				ssh.cancel();
+				break;
+			}
+		} catch (Exception e) {
+			LOG.error("Search failed unexpectedly...", e);
+			ssh = null;  //force a null ptr in taskComplete, so an error is displayed.
+			taskComplete(0, null);
 		}
 	}
 
-	public Pane getRoot() {
-		return pane;
+	public SplitPane getRoot() {
+		return searchResultsAndTaxonomySplitPane;
 	}
 
 	interface ColumnValueExtractor {

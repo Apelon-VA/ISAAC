@@ -33,6 +33,7 @@ public class SearchBuilder {
 	Integer sizeLimit = Integer.MAX_VALUE;
 	Integer taskId;
 	boolean prefixSearch;
+	boolean mergeResultsOnConcept = false;
 	SearchResultsFilter filter = null;
 	
 	Comparator<CompositeSearchResult> comparator;
@@ -132,7 +133,21 @@ public class SearchBuilder {
 	public void setPrefixSearch(boolean prefixSearch) {
 		this.prefixSearch = prefixSearch;
 	}
-
+	
+	/**
+	 * @return the mergeResultsOnConcept
+	 */
+	public boolean getMergeResultsOnConcept()
+	{
+		return mergeResultsOnConcept;
+	}
+	/**
+	 * @param mergeResultsOnConcept the mergeResultsOnConcept to set
+	 */
+	public void setMergeResultsOnConcept(boolean mergeResultsOnConcept)
+	{
+		this.mergeResultsOnConcept = mergeResultsOnConcept;
+	}
 	/**
 	 * @return the filter
 	 */

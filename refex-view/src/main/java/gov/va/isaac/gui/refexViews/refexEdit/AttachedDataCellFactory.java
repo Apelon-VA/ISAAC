@@ -21,20 +21,17 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.util.Callback;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 
 /**
  * {@link AttachedDataCellFactory}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class AttachedDataCellFactory implements Callback
-	<TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>, 
-			TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>,RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>>
+public class AttachedDataCellFactory implements Callback <TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>, TreeTableCell<RefexDynamicGUI,RefexDynamicGUI>>
 {
 	private Hashtable<UUID, List<RefexDynamicColumnInfo>> colInfo_;
 	private int listPosition_;
@@ -49,8 +46,7 @@ public class AttachedDataCellFactory implements Callback
 	 * @see javafx.util.Callback#call(java.lang.Object)
 	 */
 	@Override
-	public TreeTableCell<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>,RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>>
-				call(TreeTableColumn<RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>, RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>>> param)
+	public TreeTableCell<RefexDynamicGUI, RefexDynamicGUI> call(TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> param)
 	{
 		return new AttachedDataCell(colInfo_, listPosition_);
 	}

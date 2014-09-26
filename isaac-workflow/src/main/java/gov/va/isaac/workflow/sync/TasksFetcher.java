@@ -22,6 +22,8 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import java.util.ArrayList;
 import java.util.List;
+
+import gov.va.isaac.workflow.TaskActionStatus;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.TaskSummary;
@@ -77,7 +79,7 @@ public class TasksFetcher {
                 log.debug("Task: " + loopTask.getId() + " No changes");
             }
         }
-        List<LocalTask> openOwnedTasks = persistenceApi.getOpenOwnedTasks(userId);
+        List<LocalTask> openOwnedTasks = persistenceApi.getOpenOwnedTasks();
         log.debug("Looking for missing tasks. LocalCount = " + openOwnedTasks.size() + ", FetchCount = " + tasksSummaries.size());
         for (LocalTask loopLocalTask : openOwnedTasks) {
             boolean isInFetchCursor = false;
@@ -88,8 +90,8 @@ public class TasksFetcher {
             }
             if (!isInFetchCursor) {
                 log.info("Missing task: " + loopLocalTask.getId());
-                loopLocalTask.setStatus("released");
-                loopLocalTask.setActionStatus("done");
+                loopLocalTask.setStatus(Status.Obsolete);
+                loopLocalTask.setActionStatus(TaskActionStatus.Canceled);
                 persistenceApi.saveTask(loopLocalTask);
                 countRemoved++;
             }

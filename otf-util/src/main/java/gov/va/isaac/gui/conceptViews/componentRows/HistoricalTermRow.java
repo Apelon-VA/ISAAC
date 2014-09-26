@@ -23,7 +23,7 @@ public class HistoricalTermRow extends TermRow {
 	}
 
 	@Override
-	public void addTermRow(DescriptionVersionBI<?> desc) {
+	public void addTermRow(DescriptionVersionBI<?> desc, boolean isPrefTerm) {
 		GridPane termGP = new GridPane();
 		termGP.setHgap(3);
 		
@@ -33,12 +33,18 @@ public class HistoricalTermRow extends TermRow {
 		Collection<? extends DescriptionVersionBI> versions = desc.getVersions();
 		for (DescriptionVersionBI<?> dv : versions) {
 			Label descLabel = labelHelper.createLabel(dv, dv.getText(), ComponentType.DESCRIPTION, 0);
-			Label descTypeLabel = labelHelper.createLabel(dv, WBUtility.getConPrefTerm(dv.getTypeNid()), ComponentType.DESCRIPTION, dv.getTypeNid());
+			Label descTypeLabel = null;
+
+			if (isPrefTerm) {
+				descTypeLabel = labelHelper.createLabel(dv, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
+			} else {
+				descTypeLabel = labelHelper.createLabel(dv, WBUtility.getConPrefTerm(dv.getTypeNid()), ComponentType.DESCRIPTION, dv.getTypeNid());
+			}
 			Label descCaseLabel = labelHelper.createLabel(dv, getBooleanValue(dv.isInitialCaseSignificant()), ComponentType.DESCRIPTION, 0);
 			Label descLangLabel = labelHelper.createLabel(dv, dv.getLang(), ComponentType.DESCRIPTION, 0);
 
 			Label descStatusLabel = labelHelper.createLabel(dv, WBUtility.getStatusString(dv), ComponentType.DESCRIPTION, 0);
-			Label descTimeLabel = labelHelper.createLabel(dv, WBUtility.getTimeString(dv), ComponentType.DESCRIPTION, dv.getTypeNid());
+			Label descTimeLabel = labelHelper.createLabel(dv, WBUtility.getTimeString(dv), ComponentType.DESCRIPTION, 0);
 			Label descAuthorLabel = labelHelper.createLabel(dv, WBUtility.getAuthorString(dv), ComponentType.DESCRIPTION, 0);
 			Label descPathLabel = labelHelper.createLabel(dv, WBUtility.getPathString(dv), ComponentType.DESCRIPTION, 0);
 			

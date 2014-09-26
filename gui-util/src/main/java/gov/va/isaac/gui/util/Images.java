@@ -40,6 +40,8 @@ public enum Images {
     DEFINED_MULTI_PARENT_OPEN(setupImage("/icons/fugue/16x16/icons-shadowless/navigation-045.png")), 
     TAXONOMY_OPEN(setupImage("/icons/fugue/16x16/icons-shadowless/plus-small.png")), 
     TAXONOMY_CLOSE(setupImage("/icons/fugue/16x16/icons-shadowless/minus-small.png")),
+    TAXONOMY_SEARCH_RESULT(setupImage("/icons/fugue/16x16/icons-shadowless/application-search-result-hand.png")),
+    TAXONOMY_SEARCH_RESULT_ANCESTOR(setupImage("/icons/fugue/16x16/icons-shadowless/search-result-ancestor.png")),
     
     //Other GUI Icons
     LEGO_ADD(setupImage("/icons/silk/16x16/brick_add.png")),
@@ -71,7 +73,12 @@ public enum Images {
     ATTACH(setupImage("icons/silk/16x16/attach.png")),
     HISTORY(setupImage("/icons/fugue/16x16/icons-shadowless/clock.png")),
     FILTER_16(setupImage("icons/misc/16x16/filter.png")),
-    FILTER_32(setupImage("icons/misc/32x32/filter.png"));
+    FILTER_32(setupImage("icons/misc/32x32/filter.png")),
+    CONFIGURE(setupImage("/icons/fugue/16x16/icons-shadowless/ui-check-boxes-series.png")),
+    HISTORICAL(setupImage("/icons/fugue/16x16/icons-shadowless/clock-history.png")),
+    BLACK_DOT(setupImage("/icons/diagona/16x16/158.png")),
+    GREY_DOT(setupImage("/icons/diagona/16x16/158.png")),
+    YELLOW_DOT(setupImage("/icons/diagona/16x16/154.png"));
 
     private final Image image;
 

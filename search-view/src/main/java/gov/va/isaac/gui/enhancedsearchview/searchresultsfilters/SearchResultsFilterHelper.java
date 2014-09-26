@@ -27,11 +27,11 @@ package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
-import gov.va.isaac.search.SearchResultsIntersectionFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,18 +59,24 @@ public class SearchResultsFilterHelper {
 	public static SearchResultsFilter createSearchResultsFilter(NonSearchTypeFilter<?>...filters) throws SearchResultsFilterException {
 		validateFilters(filters);
 
-		SearchResultsIntersectionFilter intersectionFilter = new SearchResultsIntersectionFilter();
-		for (NonSearchTypeFilter<?> filter : filters) {
-			if (filter instanceof IsDescendantOfFilter) {
-				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
+		return new QueryBasedSearchResultsIntersectionFilter(filters);
 
-				intersectionFilter.getFilters().add(new IsDescendantOfSearchResultsFilter((IsDescendantOfFilter)filter));
-			}
+//		SearchResultsIntersectionFilter intersectionFilter = new SearchResultsIntersectionFilter();
+//		for (NonSearchTypeFilter<?> filter : filters) {
+//			if (filter instanceof IsDescendantOfFilter) {
+//				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
+//
+//				intersectionFilter.getFilters().add(new IsDescendantOfSearchResultsFilter((IsDescendantOfFilter)filter));
+//			} else if (filter instanceof IsAFilter) {
+//				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
+//
+//				intersectionFilter.getFilters().add(new IsASearchResultsFilter((IsAFilter)filter));
+//			}
+//		}
+//		
+//        return intersectionFilter;
 		}
 		
-        return intersectionFilter;
-	}
-
 	static void validateFilters(NonSearchTypeFilter<?>...passedFilters) throws SearchResultsFilterException {
 		if (passedFilters != null) {
 			if (passedFilters.length == 0) {
@@ -80,7 +86,13 @@ public class SearchResultsFilterHelper {
 					// Ensure only supported NonSearchTypeFilter types handled
 					if (filter instanceof IsDescendantOfFilter) {
 						// ok
-					} else {
+					} else if (filter instanceof IsAFilter) {
+						// ok
+					}
+//					else if (filter instanceof IsRefsetMemberFilter) {
+//						// ok
+//					}
+					else {
 						String msg = "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter supported";
 						LOG.error(msg);
 						throw new SearchResultsFilterException(null, msg);

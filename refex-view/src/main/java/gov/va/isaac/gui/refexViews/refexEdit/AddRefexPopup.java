@@ -22,8 +22,10 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeNodeDetails;
+import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
@@ -67,19 +69,22 @@ import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.runlevel.RunLevelException;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.index.service.IndexedGenerationCallable;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +102,8 @@ import com.sun.javafx.collections.ObservableListWrapper;
 public class AddRefexPopup extends Stage implements PopupViewI
 {
 	private DynamicRefexView callingView_;
-	private InputType inputType_;
+	private InputType createRefexFocus_;
+	private RefexDynamicGUI editRefex_;
 	private Label unselectableComponentLabel_;;
 	private ScrollPane sp_;
 	private ConceptNode selectableConcept_;
@@ -110,9 +116,9 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private ArrayList<RefexDataTypeNodeDetails> currentDataFields_ = new ArrayList<>();
 	private ObservableList<SimpleDisplayConcept> refexDropDownOptions = FXCollections.observableArrayList();
 	private GridPane gp_;
+	private Label title_;
 
 	//TODO use the word Sememe
-	
 	private AddRefexPopup()
 	{
 		super();
@@ -121,12 +127,12 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		VBox topItems = new VBox();
 		topItems.setFillWidth(true);
 
-		Label title = new Label("Create new refex instance");
-		title.getStyleClass().add("titleLabel");
-		title.setAlignment(Pos.CENTER);
-		title.prefWidthProperty().bind(topItems.widthProperty());
-		topItems.getChildren().add(title);
-		VBox.setMargin(title, new Insets(10, 10, 10, 10));
+		title_ = new Label("Create new refex instance");
+		title_.getStyleClass().add("titleLabel");
+		title_.setAlignment(Pos.CENTER);
+		title_.prefWidthProperty().bind(topItems.widthProperty());
+		topItems.getChildren().add(title_);
+		VBox.setMargin(title_, new Insets(10, 10, 10, 10));
 
 		gp_ = new GridPane();
 		gp_.setHgap(10.0);
@@ -138,7 +144,26 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		referencedComponent.getStyleClass().add("boldLabel");
 		gp_.add(referencedComponent, 0, 0);
 
-		unselectableComponentLabel_ = new Label();
+		unselectableComponentLabel_ = new CopyableLabel();
+		unselectableComponentLabel_.setWrapText(true);
+		AppContext.getService(DragRegistry.class).setupDragOnly(unselectableComponentLabel_, () -> 
+		{
+			if (editRefex_ == null)
+			{
+				if (createRefexFocus_.getComponentNid() != null)
+				{
+					return createRefexFocus_.getComponentNid() + "";
+				}
+				else
+				{
+					return createRefexFocus_.getAssemblyNid() + "";
+				}
+			}
+			else
+			{
+				return editRefex_.getRefex().getAssemblageNid() + "";
+			}
+		});
 		//delay adding till we know which row
 
 		Label assemblageConceptLabel = new Label("Assemblage Concept");
@@ -152,7 +177,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue)
 			{
-				if (inputType_.getComponentNid() != null)
+				if (createRefexFocus_ != null && createRefexFocus_.getComponentNid() != null)
 				{
 					if (selectableConcept_.isValid().get())
 					{
@@ -277,67 +302,72 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		scene.getStylesheets().add(AddRefexPopup.class.getResource("/isaac-shared-styles.css").toString());
 		setScene(scene);
 	}
-
-	public void finishInit(RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex, DynamicRefexView viewToRefresh)
+	
+	public void finishInit(RefexDynamicGUI refexToEdit, DynamicRefexView viewToRefresh)
 	{
-		finishInit(new InputType(refex), viewToRefresh);
+		callingView_ = viewToRefresh;
+		createRefexFocus_ = null;
+		editRefex_ = refexToEdit;
+		
+		title_.setText("Edit existing refex instance");
+		
+		gp_.add(unselectableComponentLabel_, 1, 1);
+		unselectableComponentLabel_.setText(WBUtility.getDescription(editRefex_.getRefex().getAssemblageNid()));
+		
+		//don't actually put this in the view
+		selectableConcept_.set(WBUtility.getConceptVersion(editRefex_.getRefex().getReferencedComponentNid()));
+		
+		Label refComp = new CopyableLabel(WBUtility.getDescription(editRefex_.getRefex().getReferencedComponentNid()));
+		refComp.setWrapText(true);
+		AppContext.getService(DragRegistry.class).setupDragOnly(refComp, () -> {return editRefex_.getRefex().getReferencedComponentNid() + "";});
+		gp_.add(refComp, 1, 0);
+		refexDropDownOptions.clear();
+		try
+		{
+			assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(editRefex_.getRefex().getAssemblageNid());
+			assemblageIsValid_.set(true);
+			buildDataFields(true, editRefex_.getRefex().getData());
+		}
+		catch (Exception e)
+		{
+			logger_.error("Unexpected", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected Error reading Assembly concept", e);
+		}
 	}
 
 	public void finishInit(InputType setFromType, DynamicRefexView viewToRefresh)
 	{
 		callingView_ = viewToRefresh;
-		inputType_ = setFromType;
+		createRefexFocus_ = setFromType;
+		editRefex_ = null;
 		
-		if (inputType_.getRefex() != null)
+		title_.setText("Create new refex instance");
+
+		if (createRefexFocus_.getComponentNid() != null)
+		{
+			gp_.add(unselectableComponentLabel_, 1, 0);
+			unselectableComponentLabel_.setText(WBUtility.getDescription(createRefexFocus_.getComponentNid()));
+			gp_.add(selectableConcept_.getNode(), 1, 1);
+			refexDropDownOptions.clear();
+			refexDropDownOptions.addAll(buildAssemblageConceptList());
+		}
+		else
 		{
 			gp_.add(unselectableComponentLabel_, 1, 1);
-			unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getRefex().getAssemblageNid()));
-			
-			//don't actually put this in the view
-			selectableConcept_.set(WBUtility.getConceptVersion(inputType_.getRefex().getReferencedComponentNid()));
-			
-			gp_.add(new Label(WBUtility.getDescription(inputType_.getRefex().getReferencedComponentNid())), 1, 0);
+			unselectableComponentLabel_.setText(WBUtility.getDescription(createRefexFocus_.getAssemblyNid()));
+			gp_.add(selectableConcept_.getNode(), 1, 0);
 			refexDropDownOptions.clear();
+			refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
 			try
 			{
-				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(inputType_.getRefex().getAssemblageNid());
+				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(createRefexFocus_.getAssemblyNid());
 				assemblageIsValid_.set(true);
-				buildDataFields(true, inputType_.getRefex().getData());
+				buildDataFields(true, null);
 			}
 			catch (Exception e)
 			{
 				logger_.error("Unexpected", e);
 				AppContext.getCommonDialogs().showErrorDialog("Unexpected Error reading Assembly concept", e);
-			}
-		}
-		else
-		{
-			if (inputType_.getComponentNid() != null)
-			{
-				gp_.add(unselectableComponentLabel_, 1, 0);
-				unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getComponentNid()));
-				gp_.add(selectableConcept_.getNode(), 1, 1);
-				refexDropDownOptions.clear();
-				refexDropDownOptions.addAll(buildAssemblageConceptList());
-			}
-			else
-			{
-				gp_.add(unselectableComponentLabel_, 1, 1);
-				unselectableComponentLabel_.setText(WBUtility.getDescription(inputType_.getAssemblyNid()));
-				gp_.add(selectableConcept_.getNode(), 1, 0);
-				refexDropDownOptions.clear();
-				refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
-				try
-				{
-					assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(inputType_.getAssemblyNid());
-					assemblageIsValid_.set(true);
-					buildDataFields(true, null);
-				}
-				catch (Exception e)
-				{
-					logger_.error("Unexpected", e);
-					AppContext.getCommonDialogs().showErrorDialog("Unexpected Error reading Assembly concept", e);
-				}
 			}
 		}
 	}
@@ -371,6 +401,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				
 				Label l = new Label(ci.getColumnName());
 				l.getStyleClass().add("boldLabel");
+				l.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(l));
 				Tooltip.install(l, new Tooltip(ci.getColumnDescription()));
 				int col = 0;
 				gp.add(l, col++, row);
@@ -459,7 +490,9 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 					gp.add(stackPane, col++, row);
 				}
-				gp.add((polymorphicType == null ? new Label(ci.getColumnDataType().getDisplayName()) : polymorphicType), col++, row++);
+				Label colType = new Label(ci.getColumnDataType().getDisplayName());
+				colType.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(colType));
+				gp.add((polymorphicType == null ? colType : polymorphicType), col++, row++);
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
@@ -510,47 +543,52 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			
 			int componentNid;
 			int assemblageNid;
-			if (inputType_.getRefex() == null)
+			RefexDynamicCAB cab;
+			if (createRefexFocus_ != null)
 			{
-				if (inputType_.getComponentNid() == null)
+				if (createRefexFocus_.getComponentNid() == null)
 				{
 					componentNid = selectableConcept_.getConcept().getNid();
-					assemblageNid = inputType_.getAssemblyNid();
+					assemblageNid = createRefexFocus_.getAssemblyNid();
 				}
 				else
 				{
-					componentNid = inputType_.getComponentNid();
+					componentNid = createRefexFocus_.getComponentNid();
 					assemblageNid =  selectableConcept_.getConcept().getNid();
 				}
-			}
-			else
-			{
-				componentNid = inputType_.getRefex().getReferencedComponentNid();
-				assemblageNid = inputType_.getRefex().getAssemblageNid();
-			}
-			
-			RefexDynamicCAB cab;
-			if (inputType_.getRefex() == null)
-			{
 				cab = new RefexDynamicCAB(componentNid, assemblageNid);
 			}
 			else
 			{
-				cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				componentNid = editRefex_.getRefex().getReferencedComponentNid();
+				assemblageNid = editRefex_.getRefex().getAssemblageNid();
+				cab = editRefex_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				//If they are editing, we assume that they want it back active, if it is retired.
+				cab.setStatus(Status.ACTIVE);
 			}
+			
 			cab.setData(data, WBUtility.getViewCoordinate());
 			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
-			builder.construct(cab);
+			RefexDynamicChronicleBI<?> rdc = builder.construct(cab);
 			
-			ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(componentNid));
-			if (!WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex())
+			boolean isAnnotationStyle = WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex();
+			IndexedGenerationCallable indexGen = null;
+			
+			//In order to make sure we can wait for the index to have this entry, we need a latch...
+			if (isAnnotationStyle)
+			{
+				indexGen = AppContext.getService(LuceneDynamicRefexIndexer.class).getIndexedGenerationCallable(rdc.getNid());
+			}
+			
+			ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(componentNid));
+			if (!isAnnotationStyle)
 			{
 				ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(assemblageNid));
 			}
 			if (callingView_ != null)
 			{
 				ExtendedAppContext.getDataStore().waitTillWritesFinished();
-				callingView_.setNewComponentHint(componentNid);
+				callingView_.setNewComponentHint(componentNid, indexGen);
 				callingView_.refresh();
 			}
 			close();
@@ -570,7 +608,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	@Override
 	public void showView(Window parent)
 	{
-		if (inputType_ == null)
+		if (createRefexFocus_ == null && editRefex_ == null)
 		{
 			throw new RunLevelException("referenced component nid must be set first");
 		}

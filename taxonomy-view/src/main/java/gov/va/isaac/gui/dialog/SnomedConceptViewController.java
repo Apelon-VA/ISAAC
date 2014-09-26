@@ -167,7 +167,7 @@ public class SnomedConceptViewController {
             @Override
             public void handle(ActionEvent event) {
                 treeViewSearchRunning.set(true);
-                sctTree.showConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
+                sctTree.locateConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
             }
         });
 
@@ -294,12 +294,12 @@ public class SnomedConceptViewController {
         // Load the inner tree view.
         try {
             sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
-            sctTree.init(WBUtility.ISAAC_ROOT.getUuids()[0]);
+            sctTree.init();
             Region r = sctTree.getView();
             splitRight.getChildren().add(r);
             VBox.setVgrow(r, Priority.ALWAYS);
             treeViewSearchRunning.set(true);
-            sctTree.showConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
+            sctTree.locateConcept(concept.getPrimordialUuid(), treeViewSearchRunning);
         } catch (Exception ex) {
             LOG.error("Error creating tree view", ex);
             splitRight.getChildren().add(new Label("Unexpected error building tree"));

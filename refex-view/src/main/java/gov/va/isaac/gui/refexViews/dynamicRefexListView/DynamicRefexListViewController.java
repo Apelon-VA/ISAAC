@@ -23,6 +23,7 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
+import gov.va.isaac.gui.refexViews.refexEdit.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
@@ -203,6 +204,18 @@ public class DynamicRefexListViewController
 			}
 		});
 		mi.setGraphic(Images.SEARCH.createImageView());
+		refexDefinitionsContextMenu_.getItems().add(mi);
+		
+		mi = new MenuItem("Configure Refex Indexing");
+		mi.setOnAction((action) ->
+		{
+			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
+			if (sdc != null)
+			{
+				new ConfigureDynamicRefexIndexingView(WBUtility.getConceptVersion(sdc.getNid())).showView(null);
+			}
+		});
+		mi.setGraphic(Images.CONFIGURE.createImageView());
 		refexDefinitionsContextMenu_.getItems().add(mi);
 		
 		CommonMenus.addCommonMenus(refexDefinitionsContextMenu_, new CommonMenusNIdProvider()

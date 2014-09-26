@@ -37,7 +37,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfFilter>, Invertable {
+public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfFilter>, Invertable, SingleNidFilter {
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 	private BooleanProperty invert = new SimpleBooleanProperty(false);
 	private IntegerProperty nid = new SimpleIntegerProperty(0);
@@ -55,6 +55,8 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 			}});
 	}
 
+	public IsDescendantOfFilter() {}
+	
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValidProperty()
 	 */
@@ -73,9 +75,17 @@ public class IsDescendantOfFilter implements NonSearchTypeFilter<IsDescendantOfF
 	public IntegerProperty getNidProperty() {
 		return nid;
 	}
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter#getNid()
+	 */
+	@Override
 	public int getNid() {
 		return nid.get();
 	}
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter#setNid(int)
+	 */
+	@Override
 	public void setNid(int nid) {
 		this.nid.set(nid);
 	}

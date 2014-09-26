@@ -9,6 +9,7 @@ import java.util.Set;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.id.IdBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
@@ -35,7 +36,7 @@ public class ConceptViewerHelper {
 			}
 			
 			return "";
-	    }
+		}
 	}
 	
 	private ConceptViewerHelper()
@@ -55,16 +56,31 @@ public class ConceptViewerHelper {
 		String sctidString = "Unreleased";
 		// Official approach found int AlternativeIdResource.class
 		
+		boolean found = false;
 		try {
 			for (RefexChronicleBI<?> annotation : attr.getAnnotations()) {
 				if (annotation.getAssemblageNid() == getSnomedAssemblageNid()) {
 					RefexLongVersionBI<?> sctid = (RefexLongVersionBI<?>) annotation.getPrimordialVersion();
 					sctidString = Long.toString(sctid.getLong1());
+					found = true;
 				}
 			}
+
+			if (!found) {
+				// legacy representation of SCTID for use with older econcepts files
+				for (IdBI id : attr.getAllIds()) {
+					// Identify "SCT" identifiers
+					if (id.getAuthorityNid() == TermAux.SNOMED_IDENTIFIER.getLenient().getNid()) {
+						// Found SCTID, return it
+						sctidString = id.getDenotation().toString();
+					}
+				}
+			}
+
 		} catch (Exception e) {
 			LOG.error("Could not access annotations for: " + attr.getPrimordialUuid());
 		}
+		
 		return sctidString;
 	}
 

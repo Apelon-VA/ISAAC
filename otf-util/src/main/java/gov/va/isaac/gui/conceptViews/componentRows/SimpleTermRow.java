@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 
 public class SimpleTermRow extends TermRow  {
@@ -18,14 +19,27 @@ public class SimpleTermRow extends TermRow  {
 	}
 	
 	@Override
-	public void addTermRow(DescriptionVersionBI<?> desc) {
+	public void addTermRow(DescriptionVersionBI<?> desc, boolean isPrefTerm) {
 		Rectangle rec = createAnnotRectangle(desc);
 		Label descLabel = labelHelper.createLabel(desc, desc.getText(), ComponentType.DESCRIPTION, 0);
-		Label descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		Label descTypeLabel = null;
+
+		if (isPrefTerm) {
+			descTypeLabel = labelHelper.createLabel(desc, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
+		} else {
+			descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+		}
 		
 		if (desc.isUncommitted()) {
-			descLabel.setUnderline(true);
-			descTypeLabel.setUnderline(true);
+			ComponentChronicleBI<?> chronicle = desc.getChronicle();
+			DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+
+			if (!descLabel.getText().equals(origVersion.getText())) {
+				descLabel.setUnderline(true);
+			}
+			if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+				descTypeLabel.setUnderline(true);
+			}
 		}
 
 		

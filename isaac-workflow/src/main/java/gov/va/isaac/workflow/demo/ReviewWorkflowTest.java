@@ -18,12 +18,14 @@ package gov.va.isaac.workflow.demo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.interfaces.workflow.WorkflowProcess;
+import gov.va.isaac.workflow.*;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 import java.util.HashMap;
+import java.util.Map;
+
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *
@@ -45,7 +47,8 @@ public class ReviewWorkflowTest {
         processService.createSchema();
 
         // Create Instance
-        processService.createRequest("terminology-authoring.ReviewWorkflow", "56968009", "Nocturnal intermittent asthma (disorder)", "alejandro");
+        Map<String,String> variables = new HashMap<String, String>();
+        processService.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         wfEngine.synchronizeWithRemote();
 
         // Claim a task
@@ -53,36 +56,36 @@ public class ReviewWorkflowTest {
         wfEngine.synchronizeWithRemote();
 
         //Get 1st task
-        Long taskId = localTasksService.getOpenOwnedTasks(userid).iterator().next().getId();
+        Long taskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 1st task
         HashMap<String, String> v1 = new HashMap<String, String>();
         v1.put("out_comment", "Edit is finished");
-        localTasksService.setAction(taskId, "COMPLETE", "pending", v1);
+        localTasksService.setAction(taskId, Action.COMPLETE, TaskActionStatus.Pending, v1);
         wfEngine.synchronizeWithRemote();
 
         // Claim next task
         wfEngine.claim(1, userid);
         wfEngine.synchronizeWithRemote();
-        Long secondTaskId = localTasksService.getOpenOwnedTasks(userid).iterator().next().getId();
+        Long secondTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 2nd task
         HashMap<String, String> v2 = new HashMap<String, String>();
         v2.put("out_comment", "The edit looks OK");
         v2.put("out_response", "approve");
-        localTasksService.setAction(secondTaskId, "COMPLETE", "pending", v2);
+        localTasksService.setAction(secondTaskId, Action.COMPLETE, TaskActionStatus.Pending, v2);
         wfEngine.synchronizeWithRemote();
 
         // Claim next task
         wfEngine.claim(1, userid);
         wfEngine.synchronizeWithRemote();
-        Long thirdTaskId = localTasksService.getOpenOwnedTasks(userid).iterator().next().getId();
+        Long thirdTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 2nd task
         HashMap<String, String> v3 = new HashMap<String, String>();
         v3.put("out_comment", "Ready to be published");
         v3.put("out_response", "approve");
-        localTasksService.setAction(thirdTaskId, "COMPLETE", "pending", v3);
+        localTasksService.setAction(thirdTaskId, Action.COMPLETE, TaskActionStatus.Pending, v3);
         wfEngine.synchronizeWithRemote();
 
 

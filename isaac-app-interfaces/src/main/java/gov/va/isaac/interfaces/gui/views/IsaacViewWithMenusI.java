@@ -35,6 +35,8 @@ public abstract interface IsaacViewWithMenusI extends IsaacViewI
 	/**
 	 * Provides the specs of all of the menus required by this view which will be shown in the top level of the application  
 	 * May return an empty list, will not return null.
+	 *
+	 * @return List<MenuItemI> the menu bar menus
 	 */
 	public List<MenuItemI> getMenuBarMenus();
 	

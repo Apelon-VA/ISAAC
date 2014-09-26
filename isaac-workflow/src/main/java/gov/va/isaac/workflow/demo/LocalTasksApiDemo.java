@@ -18,7 +18,9 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 
 import java.util.HashMap;
@@ -31,7 +33,7 @@ import java.util.Map;
 public class LocalTasksApiDemo {
     
     public static void main(String[] args) {
-        LocalTasksApi tapi = new LocalTasksApi();
+        LocalTasksApi tapi = new LocalTasksApi("alejandro");
         tapi.dropSchema();
         System.out.print("Creting Schema...  ");
         tapi.createSchema();
@@ -60,15 +62,15 @@ public class LocalTasksApiDemo {
 
         Map<String, String> outputVariables = new HashMap<String, String>();
         outputVariables.put("assessment", "correct");
-        tapi.setAction(retrievedTask.getId(), "COMPLETE", "pending", outputVariables);
+        tapi.setAction(retrievedTask.getId(), Action.COMPLETE, TaskActionStatus.Pending, outputVariables);
         
         retrievedTask = tapi.getTask(70L);
         System.out.println("Done after action, Name: " + retrievedTask.getName() + " cid: " + retrievedTask.getComponentId() + " cname: " + 
                 retrievedTask.getComponentName() + " action: " + retrievedTask.getAction() + " Status: " + retrievedTask.getActionStatus());
         System.out.println("Variable in outputmap: " + retrievedTask.getOutputVariables().get("assessment"));
         
-        System.out.println("Count of action status = pending: " + tapi.getOwnedTasksByActionStatus("alo", "pending").size());
-        System.out.println("Count of action status = done: " + tapi.getOwnedTasksByActionStatus("alo", "done").size());
+        System.out.println("Count of action status = pending: " + tapi.getOwnedTasksByActionStatus(TaskActionStatus.Pending).size());
+        System.out.println("Count of action status = done: " + tapi.getOwnedTasksByActionStatus(TaskActionStatus.Complete).size());
 
         
         
