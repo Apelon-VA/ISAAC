@@ -27,18 +27,15 @@ import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.InformationModelProperty;
 import gov.va.isaac.models.util.DefaultInformationModel;
 import gov.va.isaac.util.WBUtility;
-
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
@@ -52,14 +49,11 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
-import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
@@ -705,84 +699,4 @@ public class BdbInformationModelService implements InformationModelService {
     parentUUIDs[0] = parent.getPrimordialUuid();
     return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
   }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * gov.va.isaac.models.api.InformationModelService#createMetadataConcepts()
-   */
-  @Override
-  public void createMetadataConcepts() throws IOException, InvalidCAB,
-    ContradictionException, PropertyVetoException {
-    LOG.info("Create information models metadata concepts");
-
-    // Create columns for dynamic refsets
-    String[] columnNames =
-        new String[] {
-            "info model property label", "info model property type",
-            "info model property name", "info model property default value",
-            "info model property value", "info model property cardinality min",
-            "info model property cardinality max",
-            "info model property visibility"
-        };
-    String[] columnDescriptions =
-        new String[] {
-            "Used to capture the label for a property as used by the native information model type, e.g. 'qual' in CEM",
-            "Used to capture the property type as expressed in the model, e.g. 'MethodDevice' in CEM",
-            "Used to capture the property name as expressed in the model",
-            "Used to capture any default value the property has in the model",
-            "Used to capture any actual value the property has (for demo purposes)",
-            "Used to capture the cardinality lower limit in the model",
-            "Used to capture the cardinality upper limit in the model",
-            "Used to capture the property visibility in the model"
-        };
-    List<RefexDynamicColumnInfo> columns = new ArrayList<>();
-    for (int i = 0; i < columnNames.length; i++) {
-      LOG.debug("  Attempting to create COLUMN " + columnNames[i]);
-      ConceptChronicleBI columnConcept =
-          RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(
-              columnNames[i], columnDescriptions[i]);
-      LOG.debug("    PT = " + WBUtility.getConPrefTerm(columnConcept.getNid()));
-      LOG.debug("    UUID = " + columnConcept.getPrimordialUuid());
-      RefexDynamicColumnInfo column =
-          new RefexDynamicColumnInfo(i, columnConcept.getPrimordialUuid(),
-              RefexDynamicDataType.STRING, null, false, null, null);
-      columns.add(column);
-    }
-
-    // Create dynamic refset for information model properties
-    RefexDynamicColumnInfo[] columnArray =
-        columns.toArray(new RefexDynamicColumnInfo[] {});
-    LOG.debug("  Attempting to create info model property refset");
-    RefexDynamicUsageDescription refex =
-        RefexDynamicUsageDescriptionBuilder
-            .createNewRefexDynamicUsageDescriptionConcept(
-                "Information model property refset",
-                "Information model property refset",
-                "Used to capture information about information model properties",
-                columnArray, RefexDynamic.REFEX_DYNAMIC_IDENTITY.getLenient()
-                    .getPrimordialUuid(), true);
-    ConceptVersionBI refexConcept =
-        WBUtility.getConceptVersion(refex.getRefexUsageDescriptorNid());
-    LOG.debug("    PT = " + refexConcept.getPreferredDescription().getText());
-    LOG.debug("    UUID = " + refexConcept.getPrimordialUuid());
-
-    // Create relationship type metadata for connecting
-    // info models to terminology - this is to avoid having
-    // a dependency on a SNOMED relationship - though there is
-    // now a dependency on term aux.
-    LOG.debug("  Create rel type concept");
-    UUID parentUuid = UUID.fromString("4c3152a8-c927-330f-868d-b065a3362558");
-    ConceptChronicleBI parent = WBUtility.getConceptVersion(parentUuid);
-    ConceptChronicleBI relTypeConcept =
-        createNewConcept(parent, "Has terminology concept",
-            "Has terminology concept");
-    LOG.debug("    PT = " + WBUtility.getConPrefTerm(relTypeConcept.getNid()));
-    LOG.debug("    UUID = " + relTypeConcept.getPrimordialUuid());
-    dataStore.addUncommitted(relTypeConcept);
-    dataStore.commit(relTypeConcept);
-
-  }
-
 }

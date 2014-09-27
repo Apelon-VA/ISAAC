@@ -103,19 +103,4 @@ public interface InformationModelService {
    */
   public void saveInformationModel(InformationModel model) throws IOException,
     InvalidCAB, ContradictionException, NoSuchAlgorithmException, PropertyVetoException;
-
-  /**
-   * Creates the metadata concepts. This creates needed metadata to support all
-   * information models. TODO: this functionality should be moved to a mojo and
-   * databases should be automatically loaded with needed metadata and the
-   * "Create Metadata" actions menu item should be removed
-   * @throws ContradictionException 
-   * @throws InvalidCAB 
-   * @throws IOException 
-   * @throws PropertyVetoException 
-   */
-  public void createMetadataConcepts() throws IOException, InvalidCAB, ContradictionException, PropertyVetoException;
-
-
-
 }
