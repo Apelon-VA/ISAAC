@@ -23,7 +23,6 @@ import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.Task;
@@ -34,7 +33,6 @@ import org.kie.api.task.model.TaskSummary;
  * @author alo
  */
 public class LocalTask {
-	
 	public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
 	public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
 
@@ -164,12 +162,6 @@ public class LocalTask {
         this.owner = owner;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        return hash;
-    }
-
     public Action getAction() {
         return action;
     }
@@ -200,36 +192,6 @@ public class LocalTask {
 
     public void setOutputVariables(Map<String, String> outputVariables) {
         this.outputVariables = outputVariables;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final LocalTask other = (LocalTask) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.componentId, other.componentId)) {
-            return false;
-        }
-        if (!Objects.equals(this.componentName, other.componentName)) {
-            return false;
-        }
-        if (!Objects.equals(this.status, other.status)) {
-            return false;
-        }
-        if (!Objects.equals(this.owner, other.owner)) {
-            return false;
-        }
-        return true;
     }
 
 	@Override
