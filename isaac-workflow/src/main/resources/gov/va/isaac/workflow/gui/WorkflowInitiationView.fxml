@@ -33,23 +33,9 @@
    <top>
       <VBox BorderPane.alignment="CENTER_LEFT">
          <children>
-            <HBox>
-               <children>
-                  <Label fx:id="componentTypeLabel" text="Component Type">
-                     <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </HBox.margin>
-                  </Label>
-                  <Label fx:id="passedComponentDescriptionLabel" text="passedComponentDescription">
-                     <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </HBox.margin>
-                  </Label>
-               </children>
-            </HBox>
             <HBox VBox.vgrow="NEVER">
                <children>
-                  <Label fx:id="generatedComponentDescriptionLabel" text="GeneratedComponentDescription">
+                  <Label fx:id="generatedComponentDescriptionLabel" text="GeneratedComponentDescription" wrapText="true">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>

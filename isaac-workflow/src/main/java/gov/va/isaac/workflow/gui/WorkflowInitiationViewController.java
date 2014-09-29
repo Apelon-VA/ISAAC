@@ -95,8 +95,8 @@ public class WorkflowInitiationViewController {
 	@FXML private Button cancelButton;
 	@FXML private Button initiateButton;
 
-	@FXML private Label passedComponentDescriptionLabel;
-	@FXML private Label componentTypeLabel; // componentOrConcept vs concept
+	//@FXML private Label passedComponentDescriptionLabel;
+	//@FXML private Label componentTypeLabel; // componentOrConcept vs concept
 	@FXML private Label generatedComponentDescriptionLabel;
 
 
@@ -126,8 +126,6 @@ public class WorkflowInitiationViewController {
 		assert initiateButton != null : "fx:id=\"initiateButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert workflowProcessesComboBoxLabel != null : "fx:id=\"workflowProcessesComboBoxLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert workflowProcessesComboBox != null : "fx:id=\"workflowProcessesComboBox\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert passedComponentDescriptionLabel != null : "fx:id=\"passedComponentDescriptionLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert componentTypeLabel != null : "fx:id=\"componentTypeLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
 		initializeWorkflowProcessesComboBox();
 
@@ -278,17 +276,17 @@ public class WorkflowInitiationViewController {
 	private void loadContents() {
 		loadWorkflowProcessesComboBox();
 
-		componentTypeLabel.setText(getComponentType().name());
-		passedComponentDescriptionLabel.setText(getComponentDescription(componentOrConcept));
+		//componentTypeLabel.setText(getComponentType().name());
+		//passedComponentDescriptionLabel.setText(getComponentDescription(componentOrConcept));
 		generatedComponentDescriptionLabel.setText(ComponentDescriptionHelper.getComponentDescription(componentOrConcept));
 	}
 
 	private void initializeWorkflowProcessesComboBox() {
-		workflowProcessesComboBoxLabel.setText("Workflow ProcessI");
+		workflowProcessesComboBoxLabel.setText("Workflow Process");
 		workflowProcessesComboBoxLabel.setPadding(new Insets(5));
 		
 		workflowProcessesComboBox.setEditable(false);
-		workflowProcessesComboBox.setPromptText("Select Workflow ProcessI");
+		workflowProcessesComboBox.setPromptText("Select Workflow Process");
 		workflowProcessesComboBox.setCellFactory((p) -> {
 			final ListCell<WorkflowProcess> cell = new ListCell<WorkflowProcess>() {
 				@Override
@@ -376,7 +374,7 @@ public class WorkflowInitiationViewController {
 			return;
 		}
 
-		String description = passedComponentDescriptionLabel.getText();
+		String description = generatedComponentDescriptionLabel.getText();
 		WorkflowProcess process = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
 		
 		Map<String, String> map = new HashMap<>();

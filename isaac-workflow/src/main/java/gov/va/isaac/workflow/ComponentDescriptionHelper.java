@@ -53,9 +53,9 @@ public class ComponentDescriptionHelper {
 	}
 	public static String getComponentDescription(ComponentVersionBI component) {
 		ComponentType type = ComponentTypeHelper.getComponentType(component);
-		
+
 		String description = null;
-		
+
 		switch(type) {
 		case Concept: {
 			ConceptChronicleBI concept = null;
@@ -68,23 +68,25 @@ public class ComponentDescriptionHelper {
 			String fsn = WBUtility.getFullySpecifiedName(concept);
 			UUID uuid = concept.getPrimordialUuid();
 
-			description = ComponentType.Concept.name() + " \"" + fsn + "\" with UUID " + uuid;
+			// Concept with FSN: <FSN> with UUID: <Concept UUID>
+			description = ComponentType.Concept.name() + " \"" + fsn + "\" with UUID: " + uuid;
 			break;
 
 		}
-			
+
 		case Description: {
 			DescriptionVersionBI<?> descriptionVersion = (DescriptionVersionBI<?>)component;
 			String typeName = WBUtility.getConPrefTerm(descriptionVersion.getTypeNid());
-			String text = descriptionVersion.getText();
+			String term = descriptionVersion.getText();
 			ConceptVersionBI containingConcept = WBUtility.getConceptVersion(descriptionVersion.getConceptNid());
 			String containingConceptFSN = WBUtility.getFullySpecifiedName(containingConcept);
 			UUID containingConceptUuid = containingConcept.getPrimordialUuid();
-			
-			description = ComponentType.Description.name() + " " + typeName + " \"" + text + "\" in concept " + containingConceptFSN + " with UUID " + containingConceptUuid;
+
+			// The <TYPE> term type with text: <TERM> in Concept with FSN: <FSN> with UUID: <Description UUID>
+			description = typeName + " \"" + term + "\" in concept with FSN \"" + containingConceptFSN + "\" with UUID: " + containingConceptUuid;
 			break;
 		}
-			
+
 		case Refex:
 			//The refex member with Referenced Component UUID: <REF_COMP_UUID> in Refex: <REFEX_UUID> having with UUID: <Refex MEMEBER UUID>
 			RefexVersionBI<?> refexVersion = (RefexVersionBI<?>)component;
@@ -94,7 +96,7 @@ public class ComponentDescriptionHelper {
 			UUID assemblageUuid = assemblageComponentVersion.getPrimordialUuid();
 			description = ComponentType.Refex.name() + " member " + refexVersion.getPrimordialUuid() + " with referenced component " + referencedComponent + " in refex " + assemblageUuid;
 			break;
-			
+
 		case Relationship: {
 			RelationshipVersionBI<?> relationshipVersion = (RelationshipVersionBI<?>)component;
 			UUID relationshipUuid = relationshipVersion.getPrimordialUuid();
@@ -104,15 +106,15 @@ public class ComponentDescriptionHelper {
 			ConceptVersionBI destinationConcept = WBUtility.getConceptVersion(relationshipVersion.getDestinationNid());
 			String destinationConceptFSN = WBUtility.getFullySpecifiedName(destinationConcept);
 
-			//The <TYPE> relationship type with source FSN: <SOURCE_FSN> and destination FSN: <DESTINATION_FSN> with UUID: <Relationship UUID>
-			description = ComponentType.Relationship.name() + " " + typeName + " with source FSN \"" + sourceConceptFSN + "\" and destination FSN \"" + destinationConceptFSN + "\" with relationship " + relationshipUuid;
+			// The <TYPE> relationship type with source FSN: <SOURCE_FSN> and destination FSN: <DESTINATION_FSN> with UUID: <Relationship UUID>
+			description = ComponentType.Relationship.name() + " type \"" + typeName + "\" with source FSN: \"" + sourceConceptFSN + "\" and destination FSN: \"" + destinationConceptFSN + "\" with UUID: " + relationshipUuid;
 			break;
 		}
-			
-			default:
-				throw new IllegalArgumentException("Unsupported ComponentVersionBI: " + component.getClass().getName());
+
+		default:
+			throw new IllegalArgumentException("Unsupported ComponentVersionBI: " + component.getClass().getName());
 		}
-		
+
 		return description;
 	}
 }
