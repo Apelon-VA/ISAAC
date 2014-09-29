@@ -11,7 +11,7 @@
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <center>
-      <ScrollPane fx:id="conceptScrollPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER" />
+      <TabPane fx:id="centralTabPane" />
    </center>
    <top>
       <GridPane maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">

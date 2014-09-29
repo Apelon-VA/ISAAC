@@ -21,6 +21,8 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
@@ -29,6 +31,7 @@ import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -42,6 +45,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
@@ -60,7 +64,7 @@ public class WorkflowTaskDetailsViewController {
 	enum MapVariable {
 		in_instructions("Instructions"),
 		TaskName("Task Name"),
-		NodeName("Node Name"),
+		NodeName("Workflow Process Node Name"),
 		in_component_name("Component Name"),
 		in_edit_coordinate(), // Don't display
 		in_component_id("Component Id"),
@@ -96,9 +100,9 @@ public class WorkflowTaskDetailsViewController {
 	}
 	
 	@FXML private BorderPane mainBorderPane;
-	
 	@FXML private Button closeButton;
-	
+
+	private Label componentDescriptionLabel;
 	private GridPane variableMapGridPane;
 	
 	private WorkflowTaskDetailsView workflowTaskDetailsView;
@@ -155,8 +159,14 @@ public class WorkflowTaskDetailsViewController {
 
 		initializeVariableMapGridPane();
 
+		componentDescriptionLabel = new Label();
+		componentDescriptionLabel.setPadding(new Insets(5));
+
 		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setContent(variableMapGridPane);
+		VBox centerVBox = new VBox();
+		centerVBox.getChildren().add(componentDescriptionLabel);
+		centerVBox.getChildren().add(variableMapGridPane);
+		scrollPane.setContent(centerVBox);
 		scrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
 		scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		
@@ -211,10 +221,13 @@ public class WorkflowTaskDetailsViewController {
 	}
 
 	private void loadContents() {
+		componentDescriptionLabel.setText(ComponentDescriptionHelper.getComponentDescription(UUID.fromString(task.getComponentId())));
+
 		int rowIndex = 0;
+
 		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new Label(Long.toString(task.getId())));
-		variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new Label(task.getComponentId()));
-		variableMapGridPane.addRow(rowIndex++, new Label("Component"), new Label(task.getComponentName()));
+		//variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new Label(task.getComponentId()));
+		//variableMapGridPane.addRow(rowIndex++, new Label("Component"), new Label(task.getComponentName()));
 
 		if (task.getInputVariables() != null) {
 			if (task.getInputVariables().size() > 0) {
@@ -267,12 +280,12 @@ public class WorkflowTaskDetailsViewController {
 		if (workflowEngine == null) {
 			workflowEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
 
-			new Thread(new Runnable() {
+			Utility.submit(new Runnable() {
 				@Override
 				public void run() {
 					workflowEngine.synchronizeWithRemote();
 				}
-			}).start();
+			});
 		}
 
 		return workflowEngine;

@@ -27,7 +27,9 @@ import gov.va.isaac.models.fhim.converter.UML2ModelConverter;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.EList;
@@ -66,7 +68,43 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
    */
   @Override
   public InformationModel importModel(File file) throws Exception {
-    LOG.info("Preparing to import FHIM model from: " + file.getName());
+    FileInputStream in = null;
+    try {
+      LOG.info("Preparing to import FHIM model from: " + file.getName());
+      in = new FileInputStream(file);
+      LOG.info("Ending import of FHIM model from: " + file.getName());
+      InformationModel model = importModel(in, 
+          URI.createFileURI(file.getAbsolutePath()));
+      in.close();
+      return model;
+    } catch (Exception e) {
+      in.close();
+      throw e;
+    }
+
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.ie.ImportHandler#importModel(java.io.InputStream)
+   */
+  @Override
+  public InformationModel importModel(InputStream in) throws Exception {
+
+    URI fileURI = URI.createFileURI("file://LoadedFromInputStream");
+    return importModel(in, fileURI);
+  }
+
+  /**
+   * Import model.
+   *
+   * @param in the in
+   * @param fileURI the file uri
+   * @return the information model
+   * @throws Exception the exception
+   */
+  private InformationModel importModel(InputStream in, URI fileURI)
+    throws Exception {
+    LOG.info("Starting import of FHIM model from stream");
 
     // Make sure in background thread.
     FxUtils.checkBackgroundThread();
@@ -93,7 +131,7 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
      **/
     // Load UML model from file.
     String packageName = "VitalSigns";
-    Package umlModel = loadModel(file, packageName);
+    Package umlModel = loadModel(in, fileURI, packageName);
 
     // Abort if not available.
     if (umlModel == null) {
@@ -120,22 +158,23 @@ public class FHIMImporter extends ImporterBase implements ImportHandler {
     }
     service.saveInformationModel(infoModel);
 
-    LOG.info("Ending import of FHIM model from: " + file.getName());
+    LOG.info("Ending import of FHIM model from stream");
 
     return infoModel;
   }
 
+
   /**
-   * Load model from XMI.
+   * Load model.
    *
-   * @param file the file
+   * @param in the in
+   * @param fileURI the file uri
    * @param packageName the package name
    * @return the package
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private Package loadModel(File file, String packageName) throws IOException {
-
-    URI fileURI = URI.createFileURI(file.getAbsolutePath());
+  private Package loadModel(InputStream in, URI fileURI, String packageName)
+    throws IOException {
 
     // Create a resource-set to contain the resource(s) that we are saving
     ResourceSet resourceSet = new ResourceSetImpl();

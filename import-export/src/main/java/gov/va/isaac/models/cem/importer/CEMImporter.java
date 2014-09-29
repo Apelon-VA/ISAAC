@@ -31,7 +31,9 @@ import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -74,8 +76,23 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
    */
   @Override
   public InformationModel importModel(File file) throws Exception {
-    LOG.info("Preparing to import CEM model from: " + file.getName());
+    FileInputStream in = null;
+    try {
+      LOG.info("Preparing to import CEM model from: " + file.getName());
+      in = new FileInputStream(file);
+      LOG.info("Ending import of CEM model from: " + file.getName());
+      InformationModel model = importModel(in);
+      in.close();
+      return model;
+    } catch (Exception e) {
+      in.close();
+      throw e;
+    }
+  }
 
+  @Override
+  public InformationModel importModel(InputStream in) throws Exception {
+    LOG.info("Preparing to import CEM model from stream");
     // Make sure in background thread.
     FxUtils.checkBackgroundThread();
 
@@ -83,7 +100,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
     InformationModelService service = getInformationModelService();
 
     // Load DOM tree from file.
-    Node domRoot = loadModel(file);
+    Node domRoot = loadModel(in);
 
     // Parse into CEM model.
     CEMInformationModel infoModel = createInformationModel(domRoot);
@@ -93,16 +110,14 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
     // This is to retain functionality from before
     UUID conceptUuid = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
     infoModel.addAssociatedConceptUuid(conceptUuid);
-    
+
     // Save the information model
-//    if (service.exists(infoModel)) {
-//      throw new IOException(
-//          "Model already imported");
-//    }
+    // if (service.exists(infoModel)) {
+    // throw new IOException(
+    // "Model already imported");
+    // }
     service.saveInformationModel(infoModel);
-
-    LOG.info("Ending import of CEM model from: " + file.getName());
-
+    LOG.info("Ending import of CEM model from stream");
     return infoModel;
   }
 
@@ -274,21 +289,20 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
    * @throws SAXException the SAX exception
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private Node loadModel(File file) throws ParserConfigurationException,
+  private Node loadModel(InputStream in) throws ParserConfigurationException,
     SAXException, IOException {
     // Parse XML file.
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder db = dbf.newDocumentBuilder();
-    Document document = db.parse(file);
+    Document document = db.parse(in);
 
     Node rootNode = document.getFirstChild();
     LOG.info("rootNode: " + rootNode.getNodeName());
 
     // Sanity check.
     Preconditions.checkState(rootNode.getNodeName().toLowerCase().equals(CEML),
-        "No CEML root node in XML file! " + file.getName());
+        "No CEML root node");
 
-    LOG.info("File OK: " + file.getName());
     return rootNode;
   }
 }

@@ -28,6 +28,7 @@ import gov.va.isaac.gui.conceptViews.modeling.RelationshipModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.util.WBUtility;
 //import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
 import javafx.collections.ObservableList;
@@ -149,6 +150,31 @@ public class ConceptViewerLabelHelper {
 			copytoClipboardItem.getItems().add(copyIdMenu);
 		}
 
+		if (comp != null) {
+			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow");
+			initiateWorkflowItem.setGraphic(Images.INBOX.createImageView());
+			initiateWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					WorkflowInitiationViewI view = AppContext.getService(WorkflowInitiationViewI.class);
+					if (view == null) {
+						LOG.error("HK2 FAILED to provide requested service: " + WorkflowInitiationViewI.class);
+					}
+					if (type == ComponentType.CONCEPT) {
+						view.setComponent(comp.getConceptNid());
+					} else {
+						view.setComponent(comp.getNid());
+					}
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				}
+			});
+			
+			rtClickMenu.getItems().add(0, initiateWorkflowItem);
+		}
+		
+		
 		// Enable changing concept to Reference Concept
 		if (refConNid != 0) {
 			assert(comp != null);

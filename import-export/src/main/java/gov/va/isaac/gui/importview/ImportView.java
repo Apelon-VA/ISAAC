@@ -29,12 +29,18 @@ import gov.va.isaac.models.fhim.importer.FHIMImporter;
 import gov.va.isaac.models.hed.importer.HeDImporter;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -55,16 +61,22 @@ import com.google.common.base.Preconditions;
 @SuppressWarnings("restriction")
 public class ImportView extends GridPane {
 
-  /**  The Constant LOG. */
+  /** The Constant LOG. */
   static final Logger LOG = LoggerFactory.getLogger(ImportView.class);
 
-  /**  The model type label. */
+  /** The model type label. */
   private final Label modelTypeLabel = new Label();
 
-  /**  The file name label. */
+  /** The file name label. */
   private final Label fileNameLabel = new Label();
 
-  /**  The result label. */
+  /** The progress bar. */
+  final javafx.scene.control.ProgressBar progressBar = new ProgressBar(0);
+
+  /** The status label. */
+  final Label statusLabel = new Label();
+
+  /** The result label. */
   final Label resultLabel = new Label();
 
   /**
@@ -77,12 +89,15 @@ public class ImportView extends GridPane {
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Information Model: ", modelTypeLabel);
     builder.addRow("File Name: ", fileNameLabel);
+    builder.addRow("Progress: ", progressBar);
+    progressBar.setMinWidth(400);
+    builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
 
     setConstraints();
 
     // Set minimum dimensions.
-    setMinHeight(200);
+    setMinHeight(100);
     setMinWidth(600);
   }
 
@@ -167,10 +182,10 @@ public class ImportView extends GridPane {
    */
   class ImporterTask extends Task<InformationModel> {
 
-    /**  The file name. */
+    /** The file name. */
     private final String fileName;
 
-    /**  The import handler. */
+    /** The import handler. */
     private final ImportHandler importHandler;
 
     /**
@@ -184,17 +199,54 @@ public class ImportView extends GridPane {
       this.importHandler = importHandler;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javafx.concurrent.Task#call()
      */
     @Override
     protected InformationModel call() throws Exception {
+      InformationModel returnValue = null;
+      // Do work - loop if .zip file case
+      if (this.fileName.endsWith(".zip")) {
+        ZipFile zipFile = new ZipFile(new File(this.fileName));
+        int progress = 0;
+        int maxProgress = Collections.list(zipFile.entries()).size();
+        for (ZipEntry entry : Collections.list(zipFile.entries())) {
+          Platform.runLater(() -> {
+            statusLabel.setText("Processing " + entry.getName());
+          });
+          final int progressFinal = progress;
+          Platform.runLater(() -> {
+            LOG.info("PROGRESS: " + progressFinal);
+            progressBar.setProgress(progressFinal / maxProgress);
+          });
+          // Process each .zip or .uml file
+          if (entry.getName().endsWith(".xml")
+              || entry.getName().endsWith(".uml")) {
+            InputStream stream = zipFile.getInputStream(entry);
+            returnValue = importHandler.importModel(stream);
+            stream.close();
+          } else {
+            Platform.runLater(() -> {
+              statusLabel.setText("Skipping" + entry.getName() + ", "
+                  + " wrong file type");
+            });
+          }
+          progress++;
+        }
+        zipFile.close();
 
-      // Do work.
-      return importHandler.importModel(new File(fileName));
+      } else {
+        returnValue = importHandler.importModel(new File(fileName));
+      }
+      // return value
+      return returnValue;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javafx.concurrent.Task#succeeded()
      */
     @Override
@@ -202,10 +254,14 @@ public class ImportView extends GridPane {
       InformationModel result = this.getValue();
 
       // Update UI.
+      progressBar.setProgress(100);
+      statusLabel.setText("");
       resultLabel.setText("Successfully imported model: " + result.toString());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javafx.concurrent.Task#failed()
      */
     @Override
@@ -213,6 +269,8 @@ public class ImportView extends GridPane {
       Throwable ex = getException();
 
       // Update UI.
+      progressBar.setProgress(100);
+      statusLabel.setText("");
       resultLabel.setText("Failed to import model: " + ex.getMessage());
 
       // Show dialog.

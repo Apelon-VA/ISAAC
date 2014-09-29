@@ -33,20 +33,14 @@
    <top>
       <VBox BorderPane.alignment="CENTER_LEFT">
          <children>
-            <HBox>
+            <HBox VBox.vgrow="NEVER">
                <children>
-                  <Label fx:id="componentTypeLabel" text="Component Type">
+                  <Label fx:id="generatedComponentDescriptionLabel" text="GeneratedComponentDescription" wrapText="true">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
                   </Label>
-                  <TextField fx:id="componentDescriptionTextField">
-                     <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </HBox.margin>
-                  </TextField>
-               </children>
-            </HBox>
+               </children></HBox>
             <HBox>
                <children>
                   <Label fx:id="workflowProcessesComboBoxLabel" text="Workflow Process">
