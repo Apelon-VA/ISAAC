@@ -73,10 +73,6 @@ public class WorkflowAdvancementViewController
 {	
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowAdvancementViewController.class);
 	
-	enum ActionOutputVariables {
-		out_comment
-	}
-
 	// Underlying concept for loading detail pane
 	private ConceptVersionBI conceptVersion;
 
@@ -98,7 +94,6 @@ public class WorkflowAdvancementViewController
 	
 	private ScrollPane conceptScrollPane;
 
-	private LocalTask initialTask = null;
 	private TaskModel taskModel = null;
 	
 	// Workflow Engine and Task Service
@@ -135,7 +130,7 @@ public class WorkflowAdvancementViewController
 
 		viewTaskDetailsButton.setOnAction((e) -> {
 			WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-			view.setTask(initialTask.getId());
+			view.setTask(taskModel.getTask().getId());
 			view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 		});
 
@@ -145,30 +140,6 @@ public class WorkflowAdvancementViewController
 
 		// Force single selection
 		actionComboBox.getSelectionModel().selectFirst();
-		// Use setCellFactory() and setButtonCell() of ComboBox to customize list entry display
-		// TODO: possibly remove: these calls to setCellFactory() and setButtonCell() are only necessary if WorkflowAction().toString() is not appropriate for this display
-		actionComboBox.setCellFactory(new Callback<ListView<Action>,ListCell<Action>>(){
-			@Override
-			public ListCell<Action> call(ListView<Action> p) {
-
-				final ListCell<Action> cell = new ListCell<Action>(){
-
-					@Override
-					protected void updateItem(Action a, boolean bln) {
-						super.updateItem(a, bln);
-
-						if(a != null){
-							setText(a.toString());
-						}else{
-							setText(null);
-						}
-					}
-
-				};
-
-				return cell;
-			}
-		});
 		actionComboBox.setButtonCell(new ListCell<Action>() {
 			@Override
 			protected void updateItem(Action t, boolean bln) {
@@ -179,7 +150,6 @@ public class WorkflowAdvancementViewController
 					setText(t.toString());
 					taskModel.setAction(t);
 				}
-
 			}
 		});
 
@@ -196,7 +166,7 @@ public class WorkflowAdvancementViewController
 				Utility.execute(() -> {
 					try
 					{
-						final LocalTask currentlySelectedTask = initialTask;
+						final LocalTask currentlySelectedTask = taskModel.getTask();
 						final Action currentlySelectedAction = actionComboBox.getValue();
 
 						Map<String, String> variableMap = new HashMap<>();
@@ -208,7 +178,7 @@ public class WorkflowAdvancementViewController
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
-							refreshContent();
+							refreshSaveActionButtonBinding();
 
 							if (stage != null) {
 								stage.close();
@@ -224,7 +194,7 @@ public class WorkflowAdvancementViewController
 			} else { // ! this.taskModel.isSavable()
 				// This should never happen, if saveActionButton.setDisable(true) used in proper places
 				Action selectedAction = actionComboBox.getSelectionModel().getSelectedItem();
-				logger.error("Error saving task: fields not set: task=" + initialTask + ", action=" + selectedAction);
+				logger.error("Error saving task: fields not set: task=" + taskModel.getTask() + ", action=" + selectedAction);
 			}
 		});
 	}
@@ -234,29 +204,16 @@ public class WorkflowAdvancementViewController
 	}
 	
 	private void loadTaskLabel() {
-		taskLabel.setText(initialTask.getId() + ": " + initialTask.getComponentName() + ": " + initialTask.getName());
+		taskLabel.setText(taskModel.getTask().getId() + ": " + taskModel.getTask().getComponentName() + ": " + taskModel.getTask().getName());
 	}
 
-//	private Node configureNode(Node node) {
-//		if (node instanceof Label) {
-//			Label label = (Label)node;
-//			label.setPadding(new Insets(5));
-//			label.setStyle("-fx-font-weight: bold");
-//		} else if (node instanceof TextArea) {
-//			TextArea textArea = (TextArea)node;
-//			textArea.setPadding(new Insets(5));
-//		}
-//		
-//		return node;
-//	}
-
 	public LocalTask getTask() {
-		return initialTask;
+		return taskModel.getTask();
 	}
 
 	public void setTask(long taskId) {
-		if (initialTask != null) {
-			String msg = "Cannot reset initialTask from " + initialTask.getId() + " to " + taskId;
+		if (taskModel != null) {
+			String msg = "Cannot reset initialTask from " + taskModel.getTask().getId() + " to " + taskId;
 			logger.error(msg);
 			throw new RuntimeException(msg);
 		}
@@ -269,7 +226,7 @@ public class WorkflowAdvancementViewController
 				
 		initializeServices();
 		
-		initialTask = taskService_.getTask(taskId);
+		LocalTask initialTask = taskService_.getTask(taskId);
 
 		if (initialTask == null) {
 			logger.error("Task retrieved by id {} is null", taskId);
@@ -323,7 +280,7 @@ public class WorkflowAdvancementViewController
 		conceptVersion = containingConcept;
 		
 		taskModel = TaskModelFactory.newTaskModel(initialTask);
-				
+		
 		loadContent();
 	}
 
@@ -343,11 +300,9 @@ public class WorkflowAdvancementViewController
 	}
 	
 	private void initializeWorkflowEngine() {
-		// TODO: determine if LocalWorkflowRuntimeEngineBI wfEngine_ should be static
 		if (wfEngine_ == null)
 		{
 			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-			// TODO: determine if wfEngine_.synchronizeWithRemote() needs to be called more than once
 			
 			Utility.submit(() -> wfEngine_.synchronizeWithRemote());
 		}
@@ -364,7 +319,7 @@ public class WorkflowAdvancementViewController
 		
 		int rowIndex = 0;
 		for (String outputVariable : taskModel.getOutputVariables().keySet()) {
-			this.inputTabGridPane.addRow(rowIndex, new Label(taskModel.getLabelName(outputVariable)), taskModel.createOutputNode(outputVariable));
+			this.inputTabGridPane.addRow(rowIndex++, new Label(taskModel.getLabelName(outputVariable)), taskModel.createOutputNode(outputVariable));
 		}
 		
 		for (Node child : inputTabGridPane.getChildren()) {
@@ -385,7 +340,7 @@ public class WorkflowAdvancementViewController
 		
 		loadActions();
 		
-		refreshContent();
+		refreshSaveActionButtonBinding();
 	}
 
 	private void loadConcept() {
@@ -394,8 +349,7 @@ public class WorkflowAdvancementViewController
 		conceptScrollPane.setContent(conceptView.getView());
 	}
 	
-	// Refresh all content
-	private void refreshContent()
+	private void refreshSaveActionButtonBinding()
 	{
 		unbindSaveActionButtonFromModelIsSavableProperty();
 		bindSaveActionButtonToModelIsSavableProperty();

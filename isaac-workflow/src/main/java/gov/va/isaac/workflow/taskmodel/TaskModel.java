@@ -24,18 +24,17 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
+import gov.va.isaac.workflow.Action;
+import gov.va.isaac.workflow.LocalTask;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import gov.va.isaac.workflow.Action;
-import gov.va.isaac.workflow.LocalTask;
-import gov.va.isaac.workflow.taskmodel.EditContentTaskModel.OutputVariable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
@@ -48,13 +47,13 @@ import javafx.scene.Node;
  */
 public abstract class TaskModel {
 
-	protected final LocalTask task;
+	private final LocalTask task;
 	
-	protected ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>();
+	private ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>();
 	
-	protected Map<String, StringProperty> outputVariables = new HashMap<>();
+	private Map<String, StringProperty> outputVariables = new HashMap<>();
 	
-	protected BooleanProperty isSavableProperty = new SimpleBooleanProperty(false);
+	private BooleanProperty isSavableProperty = new SimpleBooleanProperty(false);
 	
 	protected ChangeListener<? super Action> getDefaultListenerToSetIsSavableProperty() {
 		return new ChangeListener<Action>() {
@@ -76,7 +75,11 @@ public abstract class TaskModel {
 		getActionProperty().addListener(getDefaultListenerToSetIsSavableProperty());
 	}
 
+	public LocalTask getTask() { return task; }
+	
 	public BooleanProperty getIsSavableProperty() { return isSavableProperty; }
+	public boolean getIsSavable() { return getIsSavableProperty().get(); }
+	public void setIsSavable(boolean isSavable) { getIsSavableProperty().set(isSavable); }
 	
 	public ObjectProperty<Action> getActionProperty() { return actionProperty; }
 	public Action getAction() { return getActionProperty().get(); }

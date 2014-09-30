@@ -25,8 +25,11 @@
 package gov.va.isaac.workflow.taskmodel;
 
 import javafx.scene.Node;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
+import javafx.scene.control.ComboBox;
+import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -38,12 +41,16 @@ import javafx.event.EventHandler;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class EditContentTaskModel extends TaskModel {
+public class ReviewContentTaskModel extends TaskModel {
+	public enum Response {
+		approve,
+		reject,
+		cancel
+	}
 	public enum InputVariable {
 		component_id("Component Id"),
 		component_name("Component Name"),
-		instructions("Instructions"),
-		edit_coordinate("Edit Coordinate");
+		instructions("Instructions");
 		
 		private final String labelName;
 		private InputVariable(String labelName) {
@@ -62,6 +69,7 @@ public class EditContentTaskModel extends TaskModel {
 	}
 	
 	public enum OutputVariable {
+		out_response("Response"),
 		out_comment("Comment");
 
 		private final String labelName;
@@ -83,9 +91,10 @@ public class EditContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	EditContentTaskModel(LocalTask inputTask) {
+	ReviewContentTaskModel(LocalTask inputTask) {
 		super(inputTask);
 
+		getOutputVariables().put(OutputVariable.out_response.name(), new SimpleStringProperty());
 		getOutputVariables().put(OutputVariable.out_comment.name(), new SimpleStringProperty());
 	}
 
@@ -127,6 +136,30 @@ public class EditContentTaskModel extends TaskModel {
 			});
 			
 			return commentTextArea;
+		}
+		case out_response: {
+			ComboBox<Response> responseComboBox = new ComboBox<>();
+			
+			StringProperty responseProperty = getOutputVariables().get(OutputVariable.out_response.name());
+			
+			responseComboBox.setButtonCell(new ListCell<Response>() {
+				@Override
+				protected void updateItem(Response t, boolean bln) {
+					super.updateItem(t, bln); 
+					if (bln) {
+						setText("");
+						getIsSavableProperty().set(isSavable());
+					} else {
+						setText(t.toString());
+						responseProperty.set(t.toString());
+						getIsSavableProperty().set(isSavable());
+					}
+				}
+			});
+			
+			responseComboBox.getItems().addAll(Response.values());
+			
+			return responseComboBox;
 		}
 		
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);

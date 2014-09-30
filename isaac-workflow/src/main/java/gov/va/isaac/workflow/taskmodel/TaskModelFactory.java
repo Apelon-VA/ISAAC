@@ -41,6 +41,8 @@ public class TaskModelFactory {
 		switch(taskName) {
 		case edit_content:
 			return new EditContentTaskModel(task);
+		case review_content:
+			return new ReviewContentTaskModel(task);
 
 		default: throw new IllegalArgumentException("Unsupported TaskName " + taskName);
 		}
