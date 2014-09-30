@@ -59,8 +59,8 @@ public class ExportView extends GridPane {
   /** The model type label. */
   private final Label exportTypeLabel = new Label();
 
-  /** The file name label. */
-  private final Label fileNameLabel = new Label();
+  /** The folder name label. */
+  private final Label folderNameLabel = new Label();
 
   /** The progress bar. */
   final javafx.scene.control.ProgressBar progressBar = new ProgressBar(0);
@@ -80,7 +80,7 @@ public class ExportView extends GridPane {
     // GUI placeholders.
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Export Type: ", exportTypeLabel);
-    builder.addRow("File Name: ", fileNameLabel);
+    builder.addRow("Folder Name: ", folderNameLabel);
     builder.addRow("Progress: ", progressBar);
     progressBar.setMinWidth(400);
     builder.addRow("Status: ", statusLabel);
@@ -111,7 +111,7 @@ public class ExportView extends GridPane {
 
     // Update UI.
     exportTypeLabel.setText(exportType.getDisplayName());
-    fileNameLabel.setText(folderName);
+    folderNameLabel.setText(folderName);
 
     File folder = new File(folderName);
     // Inject into an ExportFileHandler.
@@ -178,10 +178,6 @@ public class ExportView extends GridPane {
     @Override
     protected Boolean call() throws Exception {
 
-      Platform.runLater(() -> {
-        progressBar.setProgress(0);
-        statusLabel.setText("Starting...");
-      });
       ProgressListener listener = new ProgressListener() {
         @Override
         public void updateProgress(ProgressEvent pe) {
@@ -191,10 +187,11 @@ public class ExportView extends GridPane {
           });
         }
       };
-      exportFileHandler.doExport(listener);
       Platform.runLater(() -> {
+        statusLabel.setText("Starting...");
         progressBar.setProgress(1);
       });
+      exportFileHandler.doExport(listener);
       return true;
 
     }
