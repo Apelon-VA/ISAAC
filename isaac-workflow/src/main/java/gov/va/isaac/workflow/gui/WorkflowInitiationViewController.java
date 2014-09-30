@@ -33,21 +33,17 @@ import java.util.Map;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,59 +85,30 @@ public class WorkflowInitiationViewController {
 
 	@FXML private BorderPane mainBorderPane;
 	
-	@FXML private Label workflowProcessesComboBoxLabel;
-	@FXML private ComboBox<WorkflowProcess> workflowProcessesComboBox;
-	
 	@FXML private Button cancelButton;
 	@FXML private Button initiateButton;
 
-	//@FXML private Label passedComponentDescriptionLabel;
-	//@FXML private Label componentTypeLabel; // componentOrConcept vs concept
 	@FXML private Label generatedComponentDescriptionLabel;
+	@FXML private Label promotionPathCoordinateLabel;
+	
+	@FXML private ComboBox<WorkflowProcess> workflowProcessesComboBox;
+	@FXML private TextArea instructionsTextArea;
 
-
-	private TextArea instructionsTextArea;
-	private Label instructionsTextAreaLabel;
-	
-//	private TextField editPathCoordinateTextField;
-//	private Label editPathCoordinateTextFieldLabel;
-	
-	private TextField promotionPathCoordinateTextField;
-	private Label promotionPathCoordinateTextFieldLabel;
-	
-	@FXML private GridPane variablesGridPane;
 
 	private WorkflowInitiationView workflowInitiationView;
 	private ComponentWorkflowServiceI workflowService;
-
 	private ComponentVersionBI componentOrConcept;
-
-//	private LocalTasksServiceBI taskService_;
-//	private LocalWorkflowRuntimeEngineBI wfEngine_;
 
 	@FXML
 	public void initialize() {
-		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert initiateButton != null : "fx:id=\"initiateButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert workflowProcessesComboBoxLabel != null : "fx:id=\"workflowProcessesComboBoxLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert workflowProcessesComboBox != null : "fx:id=\"workflowProcessesComboBox\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-
 		initializeWorkflowProcessesComboBox();
 
-		cancelButton.setText("Cancel");
-		cancelButton.setOnAction((e) -> doCancel());
-
 		// TODO: must move to model to handle other WorkflowProcessModel types
-		variablesGridPane.getChildren().clear();
-		int row = 0;
+		instructionsTextArea.clear();
+		promotionPathCoordinateLabel.setText("");
 
-		instructionsTextAreaLabel = new Label();
-		instructionsTextAreaLabel.setText("Instructions");
-		instructionsTextAreaLabel.setPadding(new Insets(5));
-		instructionsTextArea = new TextArea();
-		instructionsTextArea.setPromptText("Enter instructions");
-		instructionsTextArea.setPadding(new Insets(5));
+		promotionPathCoordinateLabel.setText(getDefaultPromotionPathCoordinateTextFieldContent());
+		
 		instructionsTextArea.setOnKeyTyped((e) -> initiateButton.setDisable(! isDataRequiredForInitiateOk()));
 		instructionsTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
 			@Override
@@ -150,30 +117,8 @@ public class WorkflowInitiationViewController {
 			}
 		});
 
-		variablesGridPane.addRow(row++, instructionsTextAreaLabel, instructionsTextArea);
+		cancelButton.setOnAction((e) -> doCancel());
 		
-		// Removing editPathCoordinateTextField as per conversation with Jesse 20140918
-//		editPathCoordinateTextFieldLabel = new Label();
-//		editPathCoordinateTextFieldLabel.setText("Edit Coordinate");
-//		editPathCoordinateTextFieldLabel.setPadding(new Insets(5));
-//		editPathCoordinateTextField = new TextField();
-//		editPathCoordinateTextField.setPadding(new Insets(5));
-//		variablesGridPane.addRow(row++, editPathCoordinateTextFieldLabel, editPathCoordinateTextField);
-
-		promotionPathCoordinateTextFieldLabel = new Label();
-		promotionPathCoordinateTextFieldLabel.setText("Promotion Path");
-		promotionPathCoordinateTextFieldLabel.setPadding(new Insets(5));
-		promotionPathCoordinateTextField = new TextField();
-		promotionPathCoordinateTextField.setPadding(new Insets(5));
-		promotionPathCoordinateTextField.setText(getDefaultPromotionPathCoordinateTextFieldContent());
-		variablesGridPane.addRow(row++, promotionPathCoordinateTextFieldLabel, promotionPathCoordinateTextField);
-
-		variablesGridPane.getColumnConstraints().get(0).setPercentWidth(30);
-		variablesGridPane.getColumnConstraints().get(0).setFillWidth(true);
-		variablesGridPane.getColumnConstraints().get(1).setPercentWidth(70);
-		variablesGridPane.getColumnConstraints().get(1).setFillWidth(true);
-
-		initiateButton.setText("Initiate");
 		initiateButton.setDisable(! isDataRequiredForInitiateOk());
 		initiateButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -196,8 +141,10 @@ public class WorkflowInitiationViewController {
 	// Private helper method to test validity of data required for save
 	private boolean isDataRequiredForInitiateOk() {
 		WorkflowProcess selectedProcess = null;
+		int selectedIndex = -1;
 		if (workflowProcessesComboBox != null) {
 			selectedProcess = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
+			selectedIndex = workflowProcessesComboBox.getSelectionModel().getSelectedIndex();
 		}
 
 		String instructions = null;
@@ -205,7 +152,7 @@ public class WorkflowInitiationViewController {
 			instructions = instructionsTextArea.getText();
 		}
 		
-		if (selectedProcess != null && instructions != null && instructions.length() > 0) {
+		if (selectedProcess != null && selectedIndex > 0 && instructions != null && instructions.length() > 0) {
 			return true;
 		} else {
 			return false;
@@ -264,9 +211,6 @@ public class WorkflowInitiationViewController {
 	}
 
 	private void initializeWorkflowProcessesComboBox() {
-		workflowProcessesComboBoxLabel.setText("Workflow Process");
-		workflowProcessesComboBoxLabel.setPadding(new Insets(5));
-		
 		workflowProcessesComboBox.setEditable(false);
 		workflowProcessesComboBox.setPromptText("Select Workflow Process");
 		workflowProcessesComboBox.setCellFactory((p) -> {
@@ -308,7 +252,8 @@ public class WorkflowInitiationViewController {
 
 	private void loadWorkflowProcessesComboBox() {
 		workflowProcessesComboBox.getItems().clear();
-		workflowProcessesComboBox.getItems().addAll(WorkflowProcess.REVIEW3);
+		workflowProcessesComboBox.getItems().add(WorkflowProcess.PROMPT);
+		workflowProcessesComboBox.getItems().add(WorkflowProcess.REVIEW3);
 		workflowProcessesComboBox.getSelectionModel().selectFirst();
 	}
 
@@ -335,7 +280,7 @@ public class WorkflowInitiationViewController {
 //				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 //				return false;
 //			}
-			if (promotionPathCoordinateTextField.getText() == null || promotionPathCoordinateTextField.getText().length() == 0) {
+			if (promotionPathCoordinateLabel.getText() == null || promotionPathCoordinateLabel.getText().length() == 0) {
 				String msg = "Edit view coordinate UUID text field is empty";
 				String details = "Must enter edit view coordinate UUID into edit coordinate text field";
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
@@ -362,8 +307,8 @@ public class WorkflowInitiationViewController {
 		Map<String, String> map = new HashMap<>();
 		if (process == WorkflowProcess.REVIEW3) {
 			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.name(), instructionsTextArea.getText());
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), "a generated edit path coordinate goes here");
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionPathCoordinateTextField.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), "");
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionPathCoordinateLabel.getText());
 		} else {
 			// TODO: handle other WorkflowProcessModel values
 		}
@@ -379,7 +324,7 @@ public class WorkflowInitiationViewController {
 		} else {
 			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 			
-			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId() + ":\n" + createdRequest, workflowInitiationView);	
+			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId());	
 
 			Utility.submit(() -> getWorkflowService().synchronizeWithRemote());
 
