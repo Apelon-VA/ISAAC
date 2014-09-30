@@ -18,44 +18,31 @@
  */
 
 /**
- * WorkflowProcessModel
+ * TaskModelFactory
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.workflow;
+package gov.va.isaac.workflow.taskmodel;
+
+import gov.va.isaac.workflow.LocalTask;
 
 /**
- * WorkflowProcess
+ * TaskModelFactory
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public enum WorkflowProcess {
-	//REVIEW("terminology-authoring.ReviewWorkflow"),
-	REVIEW3("terminology-authoring.ReviewWorkflow3"),
-	DUAL_REVIEW("terminology-authoring.DualReviewWorkflow");
+public class TaskModelFactory {
+	private TaskModelFactory() {}
 	
-	private final String text;
-	
-	private WorkflowProcess(String text) {
-		this.text = text;
-	}
-	
-	public String getText() {
-		return text;
-	}
-	
-	public static WorkflowProcess valueOfText(String str) {
-		if (str == null)
-			throw new NullPointerException("String value for WorkflowProcess is null");
+	public static TaskModel newTaskModel(LocalTask task) {
+		TaskName taskName = TaskName.valueOfNodeName(task.getName());
 
-		for (WorkflowProcess value : values()) {
-			if (str.equals(value.getText())) {
-				return value;
-			}
+		switch(taskName) {
+		case edit_content:
+			return new EditContentTaskModel(task);
+
+		default: throw new IllegalArgumentException("Unsupported TaskName " + taskName);
 		}
-
-		throw new IllegalArgumentException(
-				"No WorkflowProcess constant with text=\"" + str + "\"");
 	}
 }

@@ -32,30 +32,26 @@ import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
+import gov.va.isaac.workflow.taskmodel.TaskModel;
+import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.scene.control.Button;
 import javafx.scene.Node;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.Label;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.input.InputEvent;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -64,7 +60,6 @@ import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,20 +87,19 @@ public class WorkflowAdvancementViewController
 	@FXML private TabPane centralTabPane;
 	@FXML private Button saveActionButton;
 
-	@FXML private ComboBox<LocalTask> taskComboBox;
+	@FXML private Label taskLabel;
 	@FXML private ComboBox<Action> actionComboBox;
 	
 	@FXML private Button viewTaskDetailsButton;
+	
+	private WorkflowAdvancementView stage;
 
 	private GridPane inputTabGridPane;
 	
-	//private WorkflowProcessNode currentWorkflowProcessNode;
-	
-	private TextArea outCommentTextArea;
-
 	private ScrollPane conceptScrollPane;
 
 	private LocalTask initialTask = null;
+	private TaskModel taskModel = null;
 	
 	// Workflow Engine and Task Service
 	private LocalWorkflowRuntimeEngineBI wfEngine_;
@@ -117,7 +111,7 @@ public class WorkflowAdvancementViewController
 	{
 		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert taskComboBox != null : "fx:id=\"taskComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert taskLabel != null : "fx:id=\"taskLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 
 		initializeWorkflowEngine();
@@ -133,26 +127,15 @@ public class WorkflowAdvancementViewController
 		
 		Tab inputTab = new Tab("Input");
 		inputTabGridPane = new GridPane();
-		Label outCommentTextAreaLabel = new Label("Comment");
-		configureNode(outCommentTextAreaLabel);
-		outCommentTextArea = new TextArea();
-		outCommentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
-			@Override
-			public void handle(InputEvent event) {
-				saveActionButton.setDisable(! isDataRequiredForSaveOk());
-			}
-		});
-		configureNode(outCommentTextArea);
-		inputTabGridPane.addRow(0, outCommentTextAreaLabel, outCommentTextArea);
 		inputTab.setContent(inputTabGridPane);
 		centralTabPane.getTabs().add(inputTab);
 		
 		// Disabling saveActionButton until dependencies met 
 		saveActionButton.setDisable(true);
-		viewTaskDetailsButton.setDisable(true);
+
 		viewTaskDetailsButton.setOnAction((e) -> {
 			WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-			view.setTask(taskComboBox.getSelectionModel().getSelectedItem().getId());
+			view.setTask(initialTask.getId());
 			view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 		});
 
@@ -194,72 +177,41 @@ public class WorkflowAdvancementViewController
 					setText("");
 				} else {
 					setText(t.toString());
+					taskModel.setAction(t);
 				}
 
 			}
 		});
 
-		// Force single selection
-		taskComboBox.getSelectionModel().selectFirst();
-		// Use setCellFactory() and setButtonCell() of ComboBox to customize list entry display
-		taskComboBox.setCellFactory(new Callback<ListView<LocalTask>, ListCell<LocalTask>>(){
-			@Override
-			public ListCell<LocalTask> call(ListView<LocalTask> p) {
-				final ListCell<LocalTask> cell = new ListCell<LocalTask>(){
-					@Override
-					protected void updateItem(LocalTask t, boolean bln) {
-						super.updateItem(t, bln);
-						if(t != null){
-							setText(t.getId() + ": " + t.getComponentName() + ": " + t.getName());
-						}else{
-							setText(null);
-						}
-					}
-				};
-
-				return cell;
-			}
-		});
-		taskComboBox.setButtonCell(new ListCell<LocalTask>() {
-			@Override
-			protected void updateItem(LocalTask t, boolean bln) {
-				super.updateItem(t, bln); 
-				if (bln) {
-					setText("");
-					viewTaskDetailsButton.setDisable(true);
-				} else {
-					setText(t.getId() + ": " + t.getComponentName() + ": " + t.getName());
-					viewTaskDetailsButton.setDisable(false);
-				}
-
-			}
-		});
-		taskComboBox.setOnAction((event) -> {
-			viewTaskDetailsButton.setDisable(! isDataRequiredToViewTaskDetails());
-		});
-
-		// Activation of save depends on isDataRequiredForSaveOk()
+		// Activation of save depends on taskModel.isSavable()
 		saveActionButton.setOnAction((action) -> {
-			if (isDataRequiredForSaveOk()) {
-				saveActionButton.setDisable(true);
+			if (taskModel.isSavable()) {
+				Platform.runLater(() -> 
+				{
+					unbindSaveActionButtonFromModelIsSavableProperty();
+					saveActionButton.setDisable(true);
+				});
 				final BusyPopover claimPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
 
 				Utility.execute(() -> {
 					try
 					{
-						final LocalTask currentlySelectedTask = taskComboBox.getValue();
+						final LocalTask currentlySelectedTask = initialTask;
 						final Action currentlySelectedAction = actionComboBox.getValue();
-						final String outComment = outCommentTextArea.getText();
 
 						Map<String, String> variableMap = new HashMap<>();
-						variableMap.put(ActionOutputVariables.out_comment.name(), outComment);
+						for (Map.Entry<String, StringProperty> entry : taskModel.getOutputVariables().entrySet()) {
+							variableMap.put(entry.getKey(), entry.getValue().get());
+						}
+						
 						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending, variableMap);
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
 							refreshContent();
-							if (this.isDataRequiredForSaveOk()) {
-								saveActionButton.setDisable(false);
+
+							if (stage != null) {
+								stage.close();
 							}
 						});
 					}
@@ -269,43 +221,34 @@ public class WorkflowAdvancementViewController
 						logger.error("Error saving task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
 					}
 				});
-			} else { // ! this.isDataRequiredForSaveOk()
+			} else { // ! this.taskModel.isSavable()
 				// This should never happen, if saveActionButton.setDisable(true) used in proper places
-				LocalTask selectedTask = taskComboBox.getSelectionModel().getSelectedItem();
 				Action selectedAction = actionComboBox.getSelectionModel().getSelectedItem();
-				logger.error("Error saving task: fields not set: task=" + selectedTask + ", action=" + selectedAction);
+				logger.error("Error saving task: fields not set: task=" + initialTask + ", action=" + selectedAction);
 			}
 		});
 	}
 	
-	private Node configureNode(Node node) {
-		if (node instanceof Label) {
-			Label label = (Label)node;
-			label.setPadding(new Insets(5));
-			label.setStyle("-fx-font-weight: bold");
-		} else if (node instanceof TextArea) {
-			TextArea textArea = (TextArea)node;
-			textArea.setPadding(new Insets(5));
-		}
-		
-		return node;
+	void setStage(WorkflowAdvancementView stage) {
+		this.stage = stage;
 	}
 	
-	// handler to disable/enable saveActionButton based on validity of required data
-	// This method is used, but currently referenced only in FXML
-	@FXML 
-	private void handleChangeInDataRequiredForSaveAction() {
-		if (isDataRequiredForSaveOk()) {
-			saveActionButton.setDisable(false);
-		} else {
-			saveActionButton.setDisable(true);
-		}
+	private void loadTaskLabel() {
+		taskLabel.setText(initialTask.getId() + ": " + initialTask.getComponentName() + ": " + initialTask.getName());
 	}
 
-	// TODO: This should be replaced by call to framework
-	private final String getUserName() {
-		return "alejandro";
-	}
+//	private Node configureNode(Node node) {
+//		if (node instanceof Label) {
+//			Label label = (Label)node;
+//			label.setPadding(new Insets(5));
+//			label.setStyle("-fx-font-weight: bold");
+//		} else if (node instanceof TextArea) {
+//			TextArea textArea = (TextArea)node;
+//			textArea.setPadding(new Insets(5));
+//		}
+//		
+//		return node;
+//	}
 
 	public LocalTask getTask() {
 		return initialTask;
@@ -379,10 +322,8 @@ public class WorkflowAdvancementViewController
 		
 		conceptVersion = containingConcept;
 		
-		//NodeType nodeType = NodeType.valueOf(initialTask.getName());
-		
-		//currentWorkflowProcessNode = WorkflowProcessNodeFactory.newWorkflowProcessNode(nodeType);
-		
+		taskModel = TaskModelFactory.newTaskModel(initialTask);
+				
 		loadContent();
 	}
 
@@ -390,19 +331,6 @@ public class WorkflowAdvancementViewController
 		return conceptVersion;
 	}
 	
-	// Private helper method to test validity of data required for save
-	private boolean isDataRequiredForSaveOk() {
-		LocalTask selectedTask = taskComboBox.getSelectionModel().getSelectedItem();
-		Action selectedAction = actionComboBox.getSelectionModel().getSelectedItem();
-		String outComment = outCommentTextArea.getText();
-
-		return selectedTask != null && selectedAction != null && outComment != null && outComment.length() > 0;
-	}
-
-	private boolean isDataRequiredToViewTaskDetails() {
-		return taskComboBox.getSelectionModel().getSelectedItem() != null;
-	}
-
 	private void initializeServices() {
 		initializeWorkflowEngine();
 		initializeTaskService();
@@ -425,32 +353,43 @@ public class WorkflowAdvancementViewController
 		}
 	}
 	
+	private void bindSaveActionButtonToModelIsSavableProperty() {
+		saveActionButton.disableProperty().bind(taskModel.getIsSavableProperty().not());
+	}
+	private void unbindSaveActionButtonFromModelIsSavableProperty() {
+		saveActionButton.disableProperty().unbind();
+	}
+	
+	private void loadTaskModel() {
+		
+		int rowIndex = 0;
+		for (String outputVariable : taskModel.getOutputVariables().keySet()) {
+			this.inputTabGridPane.addRow(rowIndex, new Label(taskModel.getLabelName(outputVariable)), taskModel.createOutputNode(outputVariable));
+		}
+		
+		for (Node child : inputTabGridPane.getChildren()) {
+			VariableGridPaneNodeConfigurationHelper.configureNode(child);
+		}
+	}
+
 	// Load data into GUI components
 	protected void loadContent()
 	{
+		loadTaskLabel();
+		
 		initializeServices();
+		
+		loadTaskModel();
+		
+		loadConcept();
+		
+		loadActions();
 		
 		refreshContent();
 	}
 
 	private void loadConcept() {
-		// The following is example code for testing
-		//		int nid = 0;
-//		// This code is a hack to populate the conceptView with a test concept
-//		if (concept == null) {
-//			try {
-//				nid = Snomed.ORGANISM.getNid();
-//				setConcept(ExtendedAppContext.getDataStore().getConcept(nid));
-//			} catch (ValidationException e1) {
-//				logger.error("Error: getting Nid from concept " + Snomed.ORGANISM + ": caught " + e1.getClass().getName() + " \"" + e1.getLocalizedMessage() + "\"");
-//				e1.printStackTrace();
-//			} catch (IOException e1) {
-//				logger.error("Error: getting Nid from concept " + Snomed.ORGANISM + ": caught " + e1.getClass().getName() + " \"" + e1.getLocalizedMessage() + "\"");
-//				e1.printStackTrace();
-//			}
-//		}
-			
-		// loadConcept() must not be called before setConcept().  conceptVersion must not be null  
+		// loadConcept() must not be called before setTask()
 		conceptView.setConcept(conceptVersion.getNid());
 		conceptScrollPane.setContent(conceptView.getView());
 	}
@@ -458,50 +397,12 @@ public class WorkflowAdvancementViewController
 	// Refresh all content
 	private void refreshContent()
 	{
-		refreshTasks();
-		refreshActions();
-		loadConcept();
-		
-		// Ensure that saveActionButton is properly disabled/enabled based on dependencies
-		if (this.isDataRequiredForSaveOk()) {
-			saveActionButton.setDisable(false);
-		} else {
-			saveActionButton.setDisable(true);
-		}
-	}
-
-	// helper to refresh task list in taskComboBox
-	private void refreshTasks() {
-		/// Example tasks
-//		LocalTask [id=38, name=Step 2, componentId=56968009, componentName=Guillermo 2 Wood asthma (disorder), status=Reserved, owner=alejandro, action=NONE, actionStatus=]
-//		LocalTask [id=37, name=Step 2, componentId=56968009, componentName=Guillermo Wood asthma (disorder), status=Reserved, owner=alejandro, action=NONE, actionStatus=]
-//		LocalTask [id=36, name=Step 2, componentId=56968009, componentName=Guillermo 2 Wood asthma (disorder), status=Reserved, owner=alejandro, action=NONE, actionStatus=]
-//		LocalTask [id=34, name=Step 1, componentId=56968009, componentName=Guillermo Wood asthma (disorder), status=Reserved, owner=alejandro, action=NONE, actionStatus=]
-//		LocalTask [id=30, name=Step 1, componentId=56968009, componentName=Guillermo Wood asthma (disorder), status=Reserved, owner=alejandro, action=NONE, actionStatus=]
-//		LocalTask [id=1, name=Step 1, componentId=12314442, componentName=Component 1, status=Reserved, owner=alejandro, action=NONE, actionStatus=]
-		
-		taskComboBox.getItems().clear();
-		if (initialTask != null) {
-			taskComboBox.getItems().add(initialTask);
-		} else {
-			List<LocalTask> tasks = taskService_.getOpenOwnedTasksByComponentId(conceptVersion.getPrimordialUuid().toString());
-			Collections.sort(tasks, LocalTask.ID_COMPARATOR);
-			taskComboBox.getItems().addAll(tasks);
-		}
-		
-		try {
-			logger.debug("DEBUG: Loaded " + taskComboBox.getItems().size() + " open tasks for user \"" + getUserName() + "\" for concept UUID \"" + conceptVersion.getPrimordialUuid() + "\" (" + conceptVersion.getPreferredDescription().getText() + ")");
-		} catch (IOException | ContradictionException e1) {
-			String title = "Failed getting preferred description";
-			String msg = "Unexpected error calling getPreferredDescription() of conceptVersion: caught " + e1.getClass().getName();
-			logger.error(title, e1);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage());
-			e1.printStackTrace();
-		}
+		unbindSaveActionButtonFromModelIsSavableProperty();
+		bindSaveActionButtonToModelIsSavableProperty();
 	}
 	
 	// Helper to refresh action list in actionComboBox
-	private void refreshActions() {
+	private void loadActions() {
 		actionComboBox.getItems().clear();
 		
 		for (Action action : Action.values()) {

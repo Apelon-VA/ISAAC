@@ -220,22 +220,6 @@ public class WorkflowInitiationViewController {
 		return componentOrConcept;
 	}
 
-	private ComponentType getComponentType() {
-		return componentOrConcept instanceof ConceptVersionBI ? ComponentType.Concept : ComponentType.Component;
-	}
-
-	private static String getComponentDescription(ComponentVersionBI componentOrConceptVersion) {
-		if (componentOrConceptVersion instanceof ConceptVersionBI) {
-			return WBUtility.getDescription(componentOrConceptVersion.getNid());
-		} else {
-			if (componentOrConceptVersion instanceof DescriptionVersionBI) {
-				return ((DescriptionVersionBI<?>)componentOrConceptVersion).getText();
-			} else {
-				return componentOrConceptVersion.toUserString();
-			}
-		}
-	}
-
 	void setView(WorkflowInitiationView workflowInitiationView) {
 		this.workflowInitiationView = workflowInitiationView;
 	}
@@ -276,8 +260,6 @@ public class WorkflowInitiationViewController {
 	private void loadContents() {
 		loadWorkflowProcessesComboBox();
 
-		//componentTypeLabel.setText(getComponentType().name());
-		//passedComponentDescriptionLabel.setText(getComponentDescription(componentOrConcept));
 		generatedComponentDescriptionLabel.setText(ComponentDescriptionHelper.getComponentDescription(componentOrConcept));
 	}
 
