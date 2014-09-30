@@ -19,8 +19,6 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
@@ -28,26 +26,20 @@ import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,12 +81,22 @@ public class WorkflowTaskDetailsViewController {
 		}
 		
 		public static boolean shouldDisplay(String str) {
+			MapVariable var = valueOfIfExists(str);
+			
+			if (var != null) {
+				return var.shouldDisplay();
+			} else {
+				return true;
+			}
+		}
+		
+		public static MapVariable valueOfIfExists(String str) {
 			try {
 				MapVariable var = MapVariable.valueOf(str);
 				
-				return var.shouldDisplay();
-			} catch (Exception e) {
-				return false;
+				return var;
+			} catch (Throwable e) {
+				return null;
 			}
 		}
 	}
@@ -177,49 +179,6 @@ public class WorkflowTaskDetailsViewController {
 		variableMapGridPane = new GridPane();
 	}
 
-	private Node configureNode(Node node) {
-		if (node instanceof Label) {
-			Label label = (Label)node;
-			
-			label.setPadding(new Insets(5));
-
-			int columnIndex = GridPane.getColumnIndex(label);
-			if (columnIndex == 0) {
-				label.setStyle("-fx-font-weight: bold");
-			}
-			
-			label.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent event) {
-					if (event.getButton() == MouseButton.SECONDARY) {
-						CommonMenusDataProvider dp = new CommonMenusDataProvider() {
-							@Override
-							public String[] getStrings() {
-								List<String> items = new ArrayList<>();
-								items.add(label.getText());
-
-
-								String[] itemArray = items.toArray(new String[items.size()]);
-
-								// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-								//System.out.println("Selected strings: " + Arrays.toString(itemArray));
-
-								return itemArray;
-							}
-						};
-
-						ContextMenu cm = new ContextMenu();
-						CommonMenus.addCommonMenus(cm, dp);
-
-						label.setContextMenu(cm);
-					} 
-				}
-			});
-		}
-
-		return node;
-	}
-
 	private void loadContents() {
 		componentDescriptionLabel.setText(ComponentDescriptionHelper.getComponentDescription(UUID.fromString(task.getComponentId())));
 
@@ -234,10 +193,13 @@ public class WorkflowTaskDetailsViewController {
 				//variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
 				
 				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
+					MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
+					
 					if (MapVariable.shouldDisplay(entry.getKey())) {
-						variableMapGridPane.addRow(rowIndex++, new Label(MapVariable.valueOf(entry.getKey()).getDisplayName()), new Label(entry.getValue()));
+						String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
+						variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
 					} else {
-						LOG.debug("Not displaying unexpected input variables map entry: {}", entry);
+						LOG.debug("Not displaying excluded input variables map entry: {}", entry);
 					}
 				}
 			}
@@ -247,17 +209,20 @@ public class WorkflowTaskDetailsViewController {
 				//variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
 				
 				for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
+					MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
+					
 					if (MapVariable.shouldDisplay(entry.getKey())) {
-						variableMapGridPane.addRow(rowIndex++, new Label(MapVariable.valueOf(entry.getKey()).getDisplayName()), new Label(entry.getValue()));
+						String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
+						variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
 					} else {
-						LOG.debug("Not displaying unexpected output variables map entry: {}", entry);
+						LOG.debug("Not displaying excluded output variables map entry: {}", entry);
 					}
 				}
 			}
 		}
 		
 		for (Node node : variableMapGridPane.getChildren()) {
-			configureNode(node);
+			VariableGridPaneNodeConfigurationHelper.configureNode(node);
 		}
 	}
 
