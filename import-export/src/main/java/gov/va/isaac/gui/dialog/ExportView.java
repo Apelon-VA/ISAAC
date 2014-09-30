@@ -178,6 +178,10 @@ public class ExportView extends GridPane {
     @Override
     protected Boolean call() throws Exception {
 
+      Platform.runLater(() -> {
+        progressBar.setProgress(0);
+        statusLabel.setText("Starting...");
+      });
       ProgressListener listener = new ProgressListener() {
         @Override
         public void updateProgress(ProgressEvent pe) {

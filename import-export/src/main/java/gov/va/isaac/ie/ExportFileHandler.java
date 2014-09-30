@@ -108,6 +108,7 @@ public class ExportFileHandler {
     if (exportType == ExportType.ECONCEPT) {
       String fileName = "eConcepts.jbin";
       File file = new File(folder, fileName);
+      checkExists(file);
 
       OutputStream outputStream = null;
       if (zip) {
@@ -138,6 +139,7 @@ public class ExportFileHandler {
       }
       String fileName = "snomed.owl";
       File file = new File(folder, fileName);
+      checkExists(file);
       OutputStream outputStream = null;
       if (zip) {
         ZipOutputStream zos =
@@ -168,6 +170,7 @@ public class ExportFileHandler {
       Collection<Integer> taxonomyParentNids = new ArrayList<>();
       taxonomyParentNids.add(Taxonomies.SNOMED.getLenient().getNid());
       File releaseFolder = new File(folder, releaseType.suffix);
+      checkExists(releaseFolder);
       Rf2Export rf2Export =
           new Rf2Export(releaseFolder, releaseType, LanguageCode.EN_US,
               COUNTRY_CODE.US, namespace, Calendar.getInstance().getTime(),
@@ -217,6 +220,20 @@ public class ExportFileHandler {
     }
   }
 
+  /**
+   * Check exists.
+   *
+   * @param file the file
+   * @throws Exception the exception if it exists.
+   */
+  private void checkExists(File file) throws Exception {
+    if (file.exists()) {
+      throw new IOException("Output already exists, clean up first. "
+          + file);
+    }
+  }
+
+  
   /**
    * Adds the to zip.
    *

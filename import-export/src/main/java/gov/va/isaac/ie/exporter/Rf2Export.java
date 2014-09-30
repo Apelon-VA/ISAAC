@@ -47,6 +47,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionManagerPolicy;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.country.COUNTRY_CODE;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
@@ -68,8 +69,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Class Rf2Export generates a Release Format 2 style release files for a
- * specified set of concepts in the database. This class implements
+ * Generates a Release Format 2 style release files for a specified set of
+ * concepts in the database. This class implements
  * <code>ProcessUnfetchedConceptDataBI</code> and can be "run" using the
  * terminology store method iterateConceptDataInParallel.
  *
@@ -80,7 +81,6 @@ public class Rf2Export extends AbstractProgressReporter implements
     org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI {
 
   /** The Constant LOG. */
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(OWLExporter.class);
 
   /**
@@ -100,6 +100,8 @@ public class Rf2Export extends AbstractProgressReporter implements
   /** The descriptions writer. */
   private Writer descriptionsWriter;
 
+  /** The text definition writer. */
+  private Writer textDefinitionsWriter;
 
   /** The identifiers writer. */
   private Writer identifiersWriter;
@@ -239,7 +241,7 @@ public class Rf2Export extends AbstractProgressReporter implements
   }
 
   /**
-   * Setup.
+   * Setup. Opens files, etc.
    *
    * @throws FileNotFoundException the file not found exception
    * @throws UnsupportedEncodingException the unsupported encoding exception
@@ -249,90 +251,83 @@ public class Rf2Export extends AbstractProgressReporter implements
   private void setup() throws FileNotFoundException,
     UnsupportedEncodingException, IOException, ContradictionException {
     File terminologyDir = new File(directory, "Terminology");
+
     terminologyDir.mkdirs();
     File conceptsFile =
-        new File(terminologyDir, "sct2_Concept_UUID_" + releaseType.suffix
-            + "_" + country.getFormatedCountryCode().toUpperCase() + namespace
-            + "_" + effectiveDateString
-            + ".txt");
+        new File(terminologyDir, "sct2_Concept_" + releaseType.suffix + "_"
+            + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
+            + effectiveDateString + ".txt");
     File descriptionsFile =
-        new File(terminologyDir, "sct2_Description_UUID_" + releaseType.suffix
-            + "_" + country.getFormatedCountryCode().toUpperCase() + namespace
-            + "_" + effectiveDateString
-            + ".txt");
+        new File(terminologyDir, "sct2_Description_" + releaseType.suffix + "-"
+            + language.getFormatedLanguageCode() + "_"
+            + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
+            + effectiveDateString + ".txt");
+    File textDefinitionsFile =
+        new File(terminologyDir, "sct2_TextDefinition_" + releaseType.suffix
+            + "-" + language.getFormatedLanguageCode() + "_"
+            + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
+            + effectiveDateString + ".txt");
     File relationshipsFile =
-        new File(terminologyDir, "sct2_Relationship_UUID_" + releaseType.suffix
+        new File(terminologyDir, "sct2_Relationship_" + releaseType.suffix
             + "_" + country.getFormatedCountryCode().toUpperCase() + namespace
-            + "_" + effectiveDateString
-            + ".txt");
+            + "_" + effectiveDateString + ".txt");
     File relationshipsStatedFile =
-        new File(terminologyDir, "sct2_StatedRelationship_UUID_"
+        new File(terminologyDir, "sct2_StatedRelationship_"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+            + effectiveDateString + ".txt");
     File identifiersFile = null;
     identifiersFile =
-        new File(terminologyDir, "sct2_Identifier_UUID_" + releaseType.suffix
-            + "_" + country.getFormatedCountryCode().toUpperCase() + namespace
-            + effectiveDateString
-            + ".txt");
+        new File(terminologyDir, "sct2_Identifier_" + releaseType.suffix + "_"
+            + country.getFormatedCountryCode().toUpperCase() + namespace
+            + effectiveDateString + ".txt");
     File contentDir =
         new File(directory, "Refset" + File.separator + "Content");
     contentDir.mkdirs();
     File associationFile =
-        new File(contentDir, "der2_cRefset_AssociationReference_UUID"
+        new File(contentDir, "der2_cRefset_AssociationReference"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+            + effectiveDateString + ".txt");
     File attributeValueFile =
-        new File(contentDir, "der2_cRefset_AttributeValue_UUID"
-            + releaseType.suffix + "_"
-            + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+        new File(contentDir, "der2_cRefset_AttributeValue" + releaseType.suffix
+            + "_" + country.getFormatedCountryCode().toUpperCase() + namespace
+            + "_" + effectiveDateString + ".txt");
     File languageDir =
         new File(directory, "Refset" + File.separator + "Language");
     languageDir.mkdirs();
     File langRefsetsFile =
-        new File(languageDir, "der2_cRefset_Language_UUID" + releaseType.suffix
-            + "-" + LanguageCode.EN.getFormatedLanguageCode() + "_"
+        new File(languageDir, "der2_cRefset_Language" + releaseType.suffix
+            + "-" + language.getFormatedLanguageCode() + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+            + effectiveDateString + ".txt");
     File otherLangRefsetsFile = null;
     if (!language.getFormatedLanguageNoDialectCode().equals(
         LanguageCode.EN.getFormatedLanguageCode())) {
       otherLangRefsetsFile =
-          new File(languageDir, "der2_cRefset_Language_UUID"
-              + releaseType.suffix + "-"
-              + language.getFormatedLanguageNoDialectCode() + "_"
+          new File(languageDir, "der2_cRefset_Language" + releaseType.suffix
+              + "-" + language.getFormatedLanguageNoDialectCode() + "_"
               + country.getFormatedCountryCode().toUpperCase() + namespace
-              + effectiveDateString
-              + ".txt");
+              + effectiveDateString + ".txt");
     }
     File metadataDir =
         new File(directory, "Refset" + File.separator + "Metadata");
     metadataDir.mkdirs();
     File modDependFile =
-        new File(metadataDir, "der2_ssRefset_ModuleDependency_UUID"
+        new File(metadataDir, "der2_ssRefset_ModuleDependency"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+            + effectiveDateString + ".txt");
     File descTypeFile =
-        new File(metadataDir, "der2_ciRefset_DescriptionType_UUID"
+        new File(metadataDir, "der2_ciRefset_DescriptionType"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+            + effectiveDateString + ".txt");
     File refsetDescFile =
-        new File(metadataDir, "der2_cciRefset_RefsetDescriptor_UUID"
+        new File(metadataDir, "der2_cciRefset_RefsetDescriptor"
             + releaseType.suffix + "_"
             + country.getFormatedCountryCode().toUpperCase() + namespace + "_"
-            + effectiveDateString
-            + ".txt");
+            + effectiveDateString + ".txt");
 
     FileOutputStream conceptOs = new FileOutputStream(conceptsFile);
     conceptsWriter =
@@ -340,6 +335,10 @@ public class Rf2Export extends AbstractProgressReporter implements
     FileOutputStream descriptionOs = new FileOutputStream(descriptionsFile);
     descriptionsWriter =
         new BufferedWriter(new OutputStreamWriter(descriptionOs, "UTF8"));
+    FileOutputStream textDefinitionOs =
+        new FileOutputStream(textDefinitionsFile);
+    textDefinitionsWriter =
+        new BufferedWriter(new OutputStreamWriter(textDefinitionOs, "UTF8"));
     FileOutputStream relOs = new FileOutputStream(relationshipsFile);
     relationshipsWriter =
         new BufferedWriter(new OutputStreamWriter(relOs, "UTF8"));
@@ -383,6 +382,12 @@ public class Rf2Export extends AbstractProgressReporter implements
     for (Rf2File.DescriptionsFileFields field : Rf2File.DescriptionsFileFields
         .values()) {
       descriptionsWriter.write(field.headerText + field.seperator);
+    }
+
+    // TextDefinition has same format as descriptions
+    for (Rf2File.DescriptionsFileFields field : Rf2File.DescriptionsFileFields
+        .values()) {
+      textDefinitionsWriter.write(field.headerText + field.seperator);
     }
 
     for (Rf2File.RelationshipsFileFields field : Rf2File.RelationshipsFileFields
@@ -496,6 +501,10 @@ public class Rf2Export extends AbstractProgressReporter implements
       descriptionsWriter.close();
     }
 
+    if (textDefinitionsWriter != null) {
+      textDefinitionsWriter.close();
+    }
+
     if (relationshipsWriter != null) {
       relationshipsWriter.close();
     }
@@ -570,6 +579,7 @@ public class Rf2Export extends AbstractProgressReporter implements
       processConceptAttribute(ca);
       if (concept.getDescriptions() != null) {
         for (DescriptionChronicleBI d : concept.getDescriptions()) {
+          // also processes text definitions
           processDescription(d);
           if (d.getAnnotations() != null) {
             for (RefexChronicleBI<?> annot : d.getAnnotations()) {
@@ -672,8 +682,8 @@ public class Rf2Export extends AbstractProgressReporter implements
                 break;
 
               case MODULE_ID:
-                conceptsWriter.write(ConceptViewerHelper.getSctId(WBUtility
-                    .getConceptVersion(car.getModuleNid())) + field.seperator);
+                conceptsWriter.write(getSctIdOrUuidForNid(car.getModuleNid())
+                    + field.seperator);
 
                 break;
               default:
@@ -720,61 +730,66 @@ public class Rf2Export extends AbstractProgressReporter implements
           write = false;
         }
         if (write) {
+          // Determine whether description or definition data
+          Writer writer = descriptionsWriter;
+          if (descr.getTypeNid() != SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2
+              .getLenient().getNid()
+              && descr.getTypeNid() != SnomedMetadataRf2.SYNONYM_RF2
+                  .getLenient().getNid()) {
+            writer = textDefinitionsWriter;
+          }
           for (Rf2File.DescriptionsFileFields field : Rf2File.DescriptionsFileFields
               .values()) {
             switch (field) {
               case ACTIVE:
-                descriptionsWriter.write((descr.isActive() ? "1" : "0")
-                    + field.seperator);
+                writer.write((descr.isActive() ? "1" : "0") + field.seperator);
 
                 break;
 
               case EFFECTIVE_TIME:
-                descriptionsWriter.write(TimeHelper.getShortFileDateFormat()
-                    .format(descr.getTime()) + field.seperator);
+                writer.write(TimeHelper.getShortFileDateFormat().format(
+                    descr.getTime())
+                    + field.seperator);
                 break;
 
               case ID:
-                descriptionsWriter
+                writer
                     .write(getSctIdOrUuidForNid(descriptionChronicle.getNid())
                         + field.seperator);
 
                 break;
 
               case MODULE_ID:
-                descriptionsWriter
-                    .write(ConceptViewerHelper.getSctId(WBUtility
-                        .getConceptVersion(descr.getModuleNid()))
-                        + field.seperator);
+                writer.write(getSctIdOrUuidForNid(descr.getModuleNid())
+                    + field.seperator);
 
                 break;
 
               case CONCEPT_ID:
-                descriptionsWriter
-                    .write(getSctIdOrUuidForNid(descriptionChronicle
-                        .getConceptNid()) + field.seperator);
+                writer.write(getSctIdOrUuidForNid(descriptionChronicle
+                    .getConceptNid()) + field.seperator);
 
                 break;
 
               case LANGUAGE_CODE:
-                descriptionsWriter.write(descr.getLang() + field.seperator);
+                writer.write(descr.getLang() + field.seperator);
 
                 break;
 
               case TYPE_ID:
-                descriptionsWriter.write(getSctIdOrUuidForNid(descr
-                    .getTypeNid()) + field.seperator);
+                writer.write(getSctIdOrUuidForNid(descr.getTypeNid())
+                    + field.seperator);
 
                 break;
 
               case TERM:
-                descriptionsWriter.write(descr.getText() + field.seperator);
+                writer.write(descr.getText() + field.seperator);
 
                 break;
 
               case CASE_SIGNIFICANCE_ID:
-                descriptionsWriter.write(descr.isInitialCaseSignificant()
-                    + field.seperator);
+                writer
+                    .write(descr.isInitialCaseSignificant() + field.seperator);
 
                 break;
               default:
@@ -796,15 +811,23 @@ public class Rf2Export extends AbstractProgressReporter implements
   private String getSctIdOrUuidForNid(int typeNid) throws IOException {
     String sctId = null;
     try {
+      viewCoordinate
+          .setContradictionManagerPolicy(ContradictionManagerPolicy.LAST_COMMIT_WINS);
       ComponentVersionBI componentVersion =
           dataStore.getComponentVersion(viewCoordinate, typeNid);
-      if (componentVersion != null)
+      if (componentVersion != null) {
         sctId = ConceptViewerHelper.getSctId(componentVersion);
+      }
     } catch (ContradictionException e) {
-      e.printStackTrace();
+      throw new IOException("Unable to get SCTID for " + typeNid, e);
     }
-    if (sctId == null || "Unreleased".equals(sctId))
+
+    if (sctId == null || "Unreleased".equals(sctId)) {
       sctId = dataStore.getUuidPrimordialForNid(typeNid).toString();
+    }
+    if ("Unreleased".equals(sctId)) {
+      LOG.info("Unreleased SCTID for " + sctId);
+    }
     return sctId;
   }
 
@@ -978,10 +1001,9 @@ public class Rf2Export extends AbstractProgressReporter implements
           break;
 
         case MODULE_ID:
-          relationshipsStatedWriter.write(ConceptViewerHelper
-              .getSctId(WBUtility.getConceptVersion(relationshipVersion
-                  .getModuleNid()))
-              + field.seperator);
+          relationshipsStatedWriter
+              .write(getSctIdOrUuidForNid(relationshipVersion.getModuleNid())
+                  + field.seperator);
 
           break;
 
@@ -1125,9 +1147,8 @@ public class Rf2Export extends AbstractProgressReporter implements
             break;
 
           case MODULE_ID:
-            langRefsetsWriter.write(ConceptViewerHelper.getSctId(WBUtility
-                .getConceptVersion(refexVersion.getModuleNid()))
-                + field.seperator);
+            langRefsetsWriter.write(getSctIdOrUuidForNid(refexVersion
+                .getModuleNid()) + field.seperator);
 
             break;
 
@@ -1193,9 +1214,8 @@ public class Rf2Export extends AbstractProgressReporter implements
             break;
 
           case MODULE_ID:
-            otherLangRefsetsWriter.write(ConceptViewerHelper.getSctId(WBUtility
-                .getConceptVersion(refexVersion.getModuleNid()))
-                + field.seperator);
+            otherLangRefsetsWriter.write(getSctIdOrUuidForNid(refexVersion
+                .getModuleNid()) + field.seperator);
 
             break;
 
@@ -1274,9 +1294,8 @@ public class Rf2Export extends AbstractProgressReporter implements
           break;
 
         case MODULE_ID:
-          refsetDescWriter.write(ConceptViewerHelper.getSctId(WBUtility
-              .getConceptVersion(dataStore.getComponentVersion(viewCoordinate,
-                  refexNid).getModuleNid()))
+          refsetDescWriter.write(getSctIdOrUuidForNid((dataStore
+              .getComponentVersion(viewCoordinate, refexNid).getModuleNid()))
               + field.seperator);
 
           break;
@@ -1329,13 +1348,15 @@ public class Rf2Export extends AbstractProgressReporter implements
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
     if (conceptsToProcess.isMember(cNid)) {
-      count ++;
-      process(fetcher.fetch());
+      count++;
+      ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+      LOG.debug("Process concept " + concept.getPrimordialUuid());
+      process(concept);
     }
     allCount++;
     // Handle progress monitor
-    if ((int) ( (allCount*100) / progressMax) > progress) {
-      progress = (allCount*100) / progressMax;
+    if ((int) ((allCount * 100) / progressMax) > progress) {
+      progress = (allCount * 100) / progressMax;
       fireProgressEvent(progress, progress + " % finished");
     }
   }
@@ -1375,4 +1396,5 @@ public class Rf2Export extends AbstractProgressReporter implements
     // TODO Auto-generated method stub
     return null;
   }
+
 }

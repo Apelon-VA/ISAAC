@@ -128,9 +128,17 @@ public class OWLExporter extends CommonBase implements
   private static String snomedEnUsPreferredAnnotation =
       "http://snomed.info/field/sctp:en-us.preferred";
 
+  /** The snomed en us synonym annotation. */
+  private static String snomedEnUsSynonymAnnotation =
+      "http://snomed.info/field/sctp:en-us.synonym";
+
   /** The snomed text definition annotation. */
   private static String snomedTextDefinitionAnnotation =
       "http://snomed.info/field/sctf:TextDefinition.term";
+
+  /** The top of the concept model attributs tree */
+  /** do not render as a property or with sub properties */
+  private static String snomedConceptAttributeModelConcept = "410662002";
 
   /** the count so far */
   private int progress = 0;
@@ -152,47 +160,43 @@ public class OWLExporter extends CommonBase implements
    * Instantiates a {@link OWLExporter} from the specified parameters.
    *
    * @param fileOutputStream the file output stream
+   * @throws Exception if something goes wrong in constructor
    */
-  public OWLExporter(OutputStream fileOutputStream) {
+  public OWLExporter(OutputStream fileOutputStream) throws Exception {
     dos = new DataOutputStream(new BufferedOutputStream(fileOutputStream));
+    if (snomed == null) {
+      // Create a new ontology
+      snomed =
+          manager
+              .createOntology(new OWLOntologyID(snomedIRI, snomedVersionIRI));
+      format.setParameter("xml:base", snomedNamespace);
 
-    try {
-      if (snomed == null) {
-        // Create a new ontology
-        snomed =
-            manager.createOntology(new OWLOntologyID(snomedIRI,
-                snomedVersionIRI));
-        format.setParameter("xml:base", snomedNamespace);
+      // Obtain SNOMED root concept
+      // TODO: this needs to be generalized
+      UUID snomedRootUUID = Taxonomies.SNOMED.getUuids()[0];
+      ConceptVersionBI snomedRootConcept =
+          WBUtility.getConceptVersion(snomedRootUUID);
 
-        // Obtain SNOMED root concept
-        // TODO: this needs to be generalized
-        UUID snomedRootUUID = Taxonomies.SNOMED.getUuids()[0];
-        ConceptVersionBI snomedRootConcept =
-            WBUtility.getConceptVersion(snomedRootUUID);
-
-        // Add annotation based on root concept
-        for (DescriptionVersionBI<?> desc : snomedRootConcept
-            .getDescriptionsActive()) {
-          if (desc.getText().contains("Release")) {
-            manager.applyChange(new AddOntologyAnnotation(snomed, factory
-                .getOWLAnnotation(factory
-                    .getOWLAnnotationProperty(OWLRDFVocabulary.OWL_VERSION_INFO
-                        .getIRI()), factory.getOWLLiteral(desc.getText()))));
-          }
-          if (desc.getText().contains("IHTSDO")) {
-            manager.applyChange(new AddOntologyAnnotation(snomed, factory
-                .getOWLAnnotation(factory
-                    .getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_COMMENT
-                        .getIRI()), factory.getOWLLiteral(desc.getText()))));
-          }
+      // Add annotation based on root concept
+      for (DescriptionVersionBI<?> desc : snomedRootConcept
+          .getDescriptionsActive()) {
+        if (desc.getText().contains("Release")) {
+          manager.applyChange(new AddOntologyAnnotation(snomed, factory
+              .getOWLAnnotation(factory
+                  .getOWLAnnotationProperty(OWLRDFVocabulary.OWL_VERSION_INFO
+                      .getIRI()), factory.getOWLLiteral(desc.getText()))));
         }
-        manager.applyChange(new AddOntologyAnnotation(snomed, factory
-            .getOWLAnnotation(
-                factory.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL
-                    .getIRI()), factory.getOWLLiteral(snomedOntologyName))));
+        if (desc.getText().contains("IHTSDO")) {
+          manager.applyChange(new AddOntologyAnnotation(snomed, factory
+              .getOWLAnnotation(factory
+                  .getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_COMMENT
+                      .getIRI()), factory.getOWLLiteral(desc.getText()))));
+        }
       }
-    } catch (Exception e) {
-      LOG.debug(e.toString());
+      manager.applyChange(new AddOntologyAnnotation(snomed, factory
+          .getOWLAnnotation(factory
+              .getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL.getIRI()),
+              factory.getOWLLiteral(snomedOntologyName))));
     }
   }
 
@@ -245,14 +249,15 @@ public class OWLExporter extends CommonBase implements
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+    LOG.debug("Process concept " + concept.getPrimordialUuid());
     allCount++;
     if (concept.getPathNid() == pathNid) {
       count++;
       convertToOWLObjects(concept);
     }
     // Handle progress monitor
-    if ((int) ( (allCount*100) / progressMax) > progress) {
-      progress = (allCount*100) / progressMax;
+    if ((int) ((allCount * 100) / progressMax) > progress) {
+      progress = (allCount * 100) / progressMax;
       fireProgressEvent(progress, progress + " % finished");
     }
   }
@@ -306,7 +311,7 @@ public class OWLExporter extends CommonBase implements
           && isUSLanguageRefex(desc)) {
         OWLAnnotation synonymsTerm =
             factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI
-                .create(snomedEnUsPreferredAnnotation)), factory.getOWLLiteral(
+                .create(snomedEnUsSynonymAnnotation)), factory.getOWLLiteral(
                 desc.getText(), desc.getLang()));
         setOfAxioms.add(factory.getOWLAnnotationAssertionAxiom(
             currentConceptClass.getIRI(), synonymsTerm));
@@ -497,13 +502,16 @@ public class OWLExporter extends CommonBase implements
     // <http://snomed.info/id/363701004>)
     for (RelationshipVersionBI<?> rel : conceptVersionBI
         .getRelationshipsOutgoingActiveIsa()) {
-      OWLObjectProperty parent =
-          factory.getOWLObjectProperty(
-              ":"
-                  + getSnomedConceptID(WBUtility.getConceptVersion(rel
-                      .getDestinationNid())), pm);
-      setOfAxioms.add(factory.getOWLSubObjectPropertyOfAxiom(owlPropertyClass,
-          parent));
+      String sctid =
+          getSnomedConceptID(WBUtility.getConceptVersion(rel
+              .getDestinationNid()));
+      // Skip the root of the attributes tree
+      if (!sctid.equals(snomedConceptAttributeModelConcept)) {
+        OWLObjectProperty parent =
+            factory.getOWLObjectProperty(":" + sctid, pm);
+        setOfAxioms.add(factory.getOWLSubObjectPropertyOfAxiom(
+            owlPropertyClass, parent));
+      }
     }
 
     return owlPropertyClass;
@@ -539,6 +547,8 @@ public class OWLExporter extends CommonBase implements
     String id = ConceptViewerHelper.getSctId(conceptVersionBI).trim();
     if ("Unreleased".equalsIgnoreCase(id)) {
       return conceptVersionBI.getPrimordialUuid().toString();
+    } else {
+      // do nothing
     }
     return id;
   }
