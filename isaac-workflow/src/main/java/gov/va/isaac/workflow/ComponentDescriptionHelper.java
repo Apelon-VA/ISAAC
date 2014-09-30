@@ -69,7 +69,7 @@ public class ComponentDescriptionHelper {
 			UUID uuid = concept.getPrimordialUuid();
 
 			// Concept with FSN: <FSN> with UUID: <Concept UUID>
-			description = ComponentType.Concept.name() + " \"" + fsn + "\" with UUID: " + uuid;
+			description = ComponentType.Concept.name() + " \"" + fsn + "\" \nwith UUID: " + uuid;
 			break;
 
 		}
@@ -83,7 +83,7 @@ public class ComponentDescriptionHelper {
 			UUID containingConceptUuid = containingConcept.getPrimordialUuid();
 
 			// The <TYPE> term type with text: <TERM> in Concept with FSN: <FSN> with UUID: <Description UUID>
-			description = typeName + " \"" + term + "\" in concept with FSN \"" + containingConceptFSN + "\" with UUID: " + containingConceptUuid;
+			description = typeName + " \"" + term + "\" \nin concept with FSN \"" + containingConceptFSN + "\" \nwith UUID: " + containingConceptUuid;
 			break;
 		}
 
@@ -94,7 +94,7 @@ public class ComponentDescriptionHelper {
 			int assemblageNid = refexVersion.getAssemblageNid();
 			ComponentVersionBI assemblageComponentVersion = WBUtility.getComponentVersion(assemblageNid);
 			UUID assemblageUuid = assemblageComponentVersion.getPrimordialUuid();
-			description = ComponentType.Refex.name() + " member " + refexVersion.getPrimordialUuid() + " with referenced component " + referencedComponent + " in refex " + assemblageUuid;
+			description = ComponentType.Refex.name() + " member " + refexVersion.getPrimordialUuid() + " \nwith referenced component " + referencedComponent + " \nin refex " + assemblageUuid;
 			break;
 
 		case Relationship: {
@@ -107,7 +107,7 @@ public class ComponentDescriptionHelper {
 			String destinationConceptFSN = WBUtility.getFullySpecifiedName(destinationConcept);
 
 			// The <TYPE> relationship type with source FSN: <SOURCE_FSN> and destination FSN: <DESTINATION_FSN> with UUID: <Relationship UUID>
-			description = ComponentType.Relationship.name() + " type \"" + typeName + "\" with source FSN: \"" + sourceConceptFSN + "\" and destination FSN: \"" + destinationConceptFSN + "\" with UUID: " + relationshipUuid;
+			description = ComponentType.Relationship.name() + " type \"" + typeName + "\" \nwith source FSN: \"" + sourceConceptFSN + "\" \nand destination FSN: \"" + destinationConceptFSN + "\" \nwith UUID: " + relationshipUuid;
 			break;
 		}
 

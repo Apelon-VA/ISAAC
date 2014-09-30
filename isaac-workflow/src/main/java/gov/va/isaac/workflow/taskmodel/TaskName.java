@@ -18,45 +18,38 @@
  */
 
 /**
- * WorkflowProcessModel
+ * TaskName
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.workflow;
+package gov.va.isaac.workflow.taskmodel;
 
 /**
- * WorkflowProcess
+ * TaskName
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public enum WorkflowProcess {
-	//REVIEW("terminology-authoring.ReviewWorkflow"),
-	PROMPT("Choose Workflow Process Definition"),
-	REVIEW3("terminology-authoring.ReviewWorkflow3"),
-	DUAL_REVIEW("terminology-authoring.DualReviewWorkflow");
+public enum TaskName {
+	edit_content("Edit content"),
+	review_content("Review content");
 	
-	private final String text;
-	
-	private WorkflowProcess(String text) {
-		this.text = text;
+	private final String nodeName;
+	private TaskName(String nodeName) {
+		this.nodeName = nodeName;
 	}
 	
-	public String getText() {
-		return text;
+	public String getNodeName() {
+		return nodeName;
 	}
 	
-	public static WorkflowProcess valueOfText(String str) {
-		if (str == null)
-			throw new NullPointerException("String value for WorkflowProcess is null");
-
-		for (WorkflowProcess value : values()) {
-			if (str.equals(value.getText())) {
-				return value;
+	public static TaskName valueOfNodeName(String str) {
+		for (TaskName taskName : TaskName.values()) {
+			if (taskName.getNodeName().equals(str)) {
+				return taskName;
 			}
 		}
-
-		throw new IllegalArgumentException(
-				"No WorkflowProcess constant with text=\"" + str + "\"");
+		
+		throw new IllegalArgumentException("Invalid TaskName value \"" + str + "\"");
 	}
 }

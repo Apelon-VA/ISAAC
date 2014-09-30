@@ -74,6 +74,7 @@ public class WorkflowAdvancementView extends Stage implements WorkflowAdvancemen
 		getIcons().add(Images.INBOX.getImage());
 
 		controller_ = loader.getController();
+		controller_.setStage(this);
 		
 		setTitle("Workflow Advancement");
 		setResizable(true);
