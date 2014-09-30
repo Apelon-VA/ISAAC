@@ -131,37 +131,36 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
   private CEMInformationModel createInformationModel(Node rootNode)
     throws IOException {
 
-    // Look for CETYPE child node.
-    Node cetypeNode = null;
+    // Look for CEM child node.
+    Node cemNode = null;
     NodeList childNodes = rootNode.getChildNodes();
     for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
       Node childNode = childNodes.item(nodeCount);
       LOG.debug("childNode : " + nodeCount + " - " + childNode.getNodeName());
 
-      if (childNode.getNodeName().equals(CETYPE)) {
-        cetypeNode = childNode;
+      if (childNode.getNodeName().equals(CEM)) {
+        cemNode = childNode;
         break;
       }
     }
 
     // Sanity check.
-    Preconditions.checkNotNull(cetypeNode, "No CETYPE child node in XML file!");
-    LOG.debug("cetype: " + cetypeNode.getNodeName());
+    Preconditions.checkNotNull(cemNode, "No CEM child node in XML file!");
+    LOG.debug("cem: " + cemNode.getNodeName());
 
     // Create the model
     CEMInformationModel infoModel = new CEMInformationModel();
     infoModel.setType(InformationModelType.CEM);
 
-    // Parse CETYPE node attributes.
-    String name =
-        cetypeNode.getAttributes().getNamedItem(NAME).getTextContent();
+    // Parse CEM node attributes.
+    String name = cemNode.getAttributes().getNamedItem(NAME).getTextContent();
     infoModel.setName(name);
     LOG.info("name: " + name);
 
-    // Iterate through CETYPE node children and process.
-    NodeList cetypeChildren = cetypeNode.getChildNodes();
-    for (int nodeCount = 0; nodeCount < cetypeChildren.getLength(); nodeCount++) {
-      Node loopNode = cetypeChildren.item(nodeCount);
+    // Iterate through CEM node children and process.
+    NodeList cemChildren = cemNode.getChildNodes();
+    for (int nodeCount = 0; nodeCount < cemChildren.getLength(); nodeCount++) {
+      Node loopNode = cemChildren.item(nodeCount);
       LOG.debug("loopNode : " + nodeCount + " - " + loopNode.getNodeName());
 
       switch (loopNode.getNodeName()) {
@@ -181,7 +180,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
 
         case QUAL:
           String qualName =
-              loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+              loopNode.getAttributes().getNamedItem(ID).getTextContent();
           String qualType =
               loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
           String qualCard =
@@ -207,7 +206,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
 
         case MOD:
           String modName =
-              loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+              loopNode.getAttributes().getNamedItem(ID).getTextContent();
           String modType =
               loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
           String modCard =
@@ -233,7 +232,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
 
         case ATT:
           String attName =
-              loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+              loopNode.getAttributes().getNamedItem(ID).getTextContent();
           String attType =
               loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
           String attCard =
@@ -274,6 +273,26 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
         default:
 
           break;
+      }
+    }
+
+    LOG.info("CHECK FOR INFO");
+    // Handle the definition
+    childNodes = rootNode.getChildNodes();
+    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
+      Node childNode = childNodes.item(nodeCount);
+      if (childNode.getNodeName().equals(INFO)) {
+        LOG.info("FOUND info");
+        NodeList infoChildren = childNode.getChildNodes();
+        for (int chdNodeCount = 0; chdNodeCount < infoChildren.getLength(); chdNodeCount++) {
+          Node defNode = infoChildren.item(chdNodeCount);
+          if (defNode.getNodeName().equals(DEFINITION)) {
+            String definition = defNode.getTextContent();
+            LOG.info("definition - " + definition);
+            infoModel.setDefinition(definition);
+          }
+        }
+        break;
       }
     }
 

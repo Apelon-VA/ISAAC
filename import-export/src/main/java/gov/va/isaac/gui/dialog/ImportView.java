@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.importview;
+package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
@@ -212,13 +212,13 @@ public class ImportView extends GridPane {
         ZipFile zipFile = new ZipFile(new File(this.fileName));
         int progress = 0;
         int maxProgress = Collections.list(zipFile.entries()).size();
-        for (ZipEntry entry : Collections.list(zipFile.entries())) {
+        for (final ZipEntry entry : Collections.list(zipFile.entries())) {
           Platform.runLater(() -> {
             statusLabel.setText("Processing " + entry.getName());
           });
           final int progressFinal = progress;
           Platform.runLater(() -> {
-            LOG.info("PROGRESS: " + progressFinal);
+            LOG.info("PROGRESS: " + progressFinal + "/" + maxProgress);
             progressBar.setProgress(progressFinal / maxProgress);
           });
           // Process each .zip or .uml file
@@ -238,8 +238,21 @@ public class ImportView extends GridPane {
         zipFile.close();
 
       } else {
+        Platform.runLater(() -> {
+          statusLabel.setText("Processing " + fileName);
+        });
+        Platform.runLater(() -> {
+          progressBar.setProgress(.5);
+        });
         returnValue = importHandler.importModel(new File(fileName));
       }
+      Platform.runLater(() -> {
+        statusLabel.setText("done");
+      });
+      Platform.runLater(() -> {
+        progressBar.setProgress(1);
+      });
+
       // return value
       return returnValue;
     }

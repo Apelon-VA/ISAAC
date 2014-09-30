@@ -3,13 +3,18 @@ package gov.va.isaac.models.owl.exporter;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.models.util.CommonBase;
+import gov.va.isaac.util.ProgressEvent;
+import gov.va.isaac.util.ProgressListener;
+import gov.va.isaac.util.ProgressReporter;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -47,13 +52,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handler for exporting SNOMED to Owl.
- * NOTE: this only works presently for SNOMED and US English.
+ * Handler for exporting SNOMED to Owl. NOTE: this only works presently for
+ * SNOMED and US English.
  *
  * @author Tim Kao
  */
 public class OWLExporter extends CommonBase implements
-    ProcessUnfetchedConceptDataBI {
+    ProcessUnfetchedConceptDataBI, ProgressReporter {
+
+  /** Listeners */
+  private List<ProgressListener> listeners = new ArrayList<>();
 
   /** The Constant LOG. */
   private static final Logger LOG = LoggerFactory.getLogger(OWLExporter.class);
@@ -67,6 +75,9 @@ public class OWLExporter extends CommonBase implements
 
   /** The count. */
   private int count = 0;
+
+  /** The all concepts count. */
+  private int allCount = 0;
 
   /** The path nid. */
   private int pathNid;
@@ -113,11 +124,19 @@ public class OWLExporter extends CommonBase implements
   /** The snomed role group concept id. */
   private static String snomedRoleGroupConceptId = "69096000";
 
-  /**  The snomed en us preferred annotation. */
-  private static String snomedEnUsPreferredAnnotation = "http://snomed.info/field/sctp:en-us.preferred";
-  
-  /**  The snomed text definition annotation. */
-  private static String snomedTextDefinitionAnnotation = "http://snomed.info/field/sctf:TextDefinition.term";
+  /** The snomed en us preferred annotation. */
+  private static String snomedEnUsPreferredAnnotation =
+      "http://snomed.info/field/sctp:en-us.preferred";
+
+  /** The snomed text definition annotation. */
+  private static String snomedTextDefinitionAnnotation =
+      "http://snomed.info/field/sctf:TextDefinition.term";
+
+  /** the count so far */
+  private int progress = 0;
+
+  /** the toal */
+  private int progressMax = 0;
 
   /**
    * Returns the logger.
@@ -221,13 +240,20 @@ public class OWLExporter extends CommonBase implements
    * processUnfetchedConceptData(int,
    * org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI)
    */
+  @SuppressWarnings("cast")
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+    allCount++;
     if (concept.getPathNid() == pathNid) {
       count++;
       convertToOWLObjects(concept);
+    }
+    // Handle progress monitor
+    if ((int) ( (allCount*100) / progressMax) > progress) {
+      progress = (allCount*100) / progressMax;
+      fireProgressEvent(progress, progress + " % finished");
     }
   }
 
@@ -280,8 +306,8 @@ public class OWLExporter extends CommonBase implements
           && isUSLanguageRefex(desc)) {
         OWLAnnotation synonymsTerm =
             factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI
-                .create(snomedEnUsPreferredAnnotation)),
-                factory.getOWLLiteral(desc.getText(), desc.getLang()));
+                .create(snomedEnUsPreferredAnnotation)), factory.getOWLLiteral(
+                desc.getText(), desc.getLang()));
         setOfAxioms.add(factory.getOWLAnnotationAssertionAxiom(
             currentConceptClass.getIRI(), synonymsTerm));
       } else if (desc.getTypeNid() == Snomed.DEFINITION_DESCRIPTION_TYPE
@@ -289,8 +315,8 @@ public class OWLExporter extends CommonBase implements
         // TextDefinitions
         OWLAnnotation textDefinition =
             factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI
-                .create(snomedTextDefinitionAnnotation)),
-                factory.getOWLLiteral(desc.getText(), desc.getLang()));
+                .create(snomedTextDefinitionAnnotation)), factory
+                .getOWLLiteral(desc.getText(), desc.getLang()));
         setOfAxioms.add(factory.getOWLAnnotationAssertionAxiom(
             currentConceptClass.getIRI(), textDefinition));
       }
@@ -412,10 +438,9 @@ public class OWLExporter extends CommonBase implements
     // Preferred name
     OWLAnnotation preferredTerm =
         factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI
-            .create(snomedEnUsPreferredAnnotation)), factory
-            .getOWLLiteral(
-                conceptVersionBI.getPreferredDescription().getText(),
-                conceptVersionBI.getPreferredDescription().getLang()));
+            .create(snomedEnUsPreferredAnnotation)), factory.getOWLLiteral(
+            conceptVersionBI.getPreferredDescription().getText(),
+            conceptVersionBI.getPreferredDescription().getLang()));
     OWLAxiom preferredTermAx =
         factory
             .getOWLAnnotationAssertionAxiom(owlClass.getIRI(), preferredTerm);
@@ -458,10 +483,9 @@ public class OWLExporter extends CommonBase implements
     // Preferred name
     OWLAnnotation preferredTerm =
         factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI
-            .create(snomedEnUsPreferredAnnotation)), factory
-            .getOWLLiteral(
-                conceptVersionBI.getPreferredDescription().getText(),
-                conceptVersionBI.getPreferredDescription().getLang()));
+            .create(snomedEnUsPreferredAnnotation)), factory.getOWLLiteral(
+            conceptVersionBI.getPreferredDescription().getText(),
+            conceptVersionBI.getPreferredDescription().getLang()));
     OWLAxiom preferredTermAx =
         factory.getOWLAnnotationAssertionAxiom(owlPropertyClass.getIRI(),
             preferredTerm);
@@ -519,4 +543,39 @@ public class OWLExporter extends CommonBase implements
     return id;
   }
 
+  /**
+   * Fires a {@link ProgressEvent}.
+   * @param pct percent done
+   * @param note progress note
+   */
+  public void fireProgressEvent(int pct, String note) {
+    ProgressEvent pe = new ProgressEvent(this, pct, pct, note);
+    for (int i = 0; i < listeners.size(); i++) {
+      listeners.get(i).updateProgress(pe);
+    }
+  }
+
+  /**
+   * Adds a {@link ProgressListener}.
+   * @param l thef{@link ProgressListener}
+   */
+  @Override
+  public void addProgressListener(ProgressListener l) {
+    listeners.add(l);
+    progress = 0;
+    try {
+      progressMax = dataStore.getConceptCount();
+    } catch (IOException e) {
+      throw new IllegalStateException("This should never happen");
+    }
+  }
+
+  /**
+   * Removes a {@link ProgressListener}.
+   * @param l thef{@link ProgressListener}
+   */
+  @Override
+  public void removeProgressListener(ProgressListener l) {
+    listeners.remove(l);
+  }
 }
