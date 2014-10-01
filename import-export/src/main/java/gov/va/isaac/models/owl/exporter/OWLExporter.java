@@ -344,6 +344,7 @@ public class OWLExporter extends CommonBase implements
     // relationships
     SortedMap<Integer, Set<OWLClassExpression>> relationshipGroups =
         new TreeMap<>();
+    Set<OWLClassExpression> neverGroupedRelationships = new HashSet<>();
     for (RelationshipVersionBI<?> rel : currentConcept
         .getRelationshipsOutgoingActive()) {
       // Skip the is a relationship, these are taken care of in the parents
@@ -364,6 +365,10 @@ public class OWLExporter extends CommonBase implements
       OWLClassExpression owlRel =
           factory.getOWLObjectSomeValuesFrom(relationshipTypeProperty,
               destinationClass);
+      if (rel.getTypeNid() == Snomed.LATERALITY.getNid() || rel.getTypeNid() == Snomed.PART_OF.getNid()
+        || rel.getTypeNid() == Snomed.HAS_ACTIVE_INGREDIENT.getNid() || rel.getTypeNid() == Snomed.HAS_DOSE_FORM.getNid()) {
+          neverGroupedRelationships.add(owlRel);
+      }
       if (relationshipGroups.containsKey(rel.getGroup())) {
         relationshipGroups.get(rel.getGroup()).add(owlRel);
       } else {
@@ -383,15 +388,34 @@ public class OWLExporter extends CommonBase implements
       Set<OWLClassExpression> owlInnerRelationships = new HashSet<>();
       owlInnerRelationships.addAll(parentClasses);
       for (int group : relationshipGroups.keySet()) {
-        OWLClassExpression innerRelationship;
+        OWLClassExpression innerRelationship = null;
         if (relationshipGroups.get(group).size() > 1) {
-          innerRelationship =
-              factory.getOWLObjectIntersectionOf(relationshipGroups.get(group));
+          //Separate into two sets, the nevergrouped and the normally grouped
+          Set<OWLClassExpression> groupedRels = new HashSet<>();
+          for(OWLClassExpression rel : relationshipGroups.get(group)) {
+              if (neverGroupedRelationships.contains(rel)) {
+                  owlInnerRelationships.add(rel);
+              } else {
+                groupedRels.add(rel);
+              }
+          }
+          if (!groupedRels.isEmpty()) {
+              innerRelationship =
+                      factory.getOWLObjectIntersectionOf(groupedRels);
+          }
         } else {
-          innerRelationship = relationshipGroups.get(group).iterator().next();
+          OWLClassExpression singleRelationship = relationshipGroups.get(group).iterator().next();
+          if (neverGroupedRelationships.contains(singleRelationship)) {
+            owlInnerRelationships.add(singleRelationship);
+          } else {
+            innerRelationship = singleRelationship;
+          }
         }
-        owlInnerRelationships.add(factory.getOWLObjectSomeValuesFrom(groupPart,
-            innerRelationship));
+
+        if (innerRelationship != null) {
+            owlInnerRelationships.add(factory.getOWLObjectSomeValuesFrom(groupPart,
+                    innerRelationship));
+        }
       }
       owlRelationships =
           factory.getOWLObjectIntersectionOf(owlInnerRelationships);
