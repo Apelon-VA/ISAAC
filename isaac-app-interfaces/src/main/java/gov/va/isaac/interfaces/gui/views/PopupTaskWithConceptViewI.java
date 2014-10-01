@@ -35,30 +35,4 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface PopupTaskWithConceptViewI extends TaskWithConceptViewI, PopupViewI
 {   
-	/**
-	 * Get the specified workflow task's concept as UUID
-	 * 
-	 * @return UUID the UUID of the displayed concept
-	 */
-	public UUID getConceptUuid();
-	
-	/**
-	 * Get the specified workflow task's concept as int NID
-	 * 
-	 * @return int the int NID of the displayed concept
-	 */
-	public int getConceptNid();
-
-	/**
-	 * Update the view to show the selected concept.
-	 * @param ConceptViewMode the desired {@link ConceptViewMode} to display concept
-	 */
-	public void setViewMode(ConceptViewMode mode);
-
-	/**
-	 * Get the concept view mode used to show the selected concept.
-	 * 
-	 * @return ConceptViewMode the {@link ConceptViewMode} for displayed concept
-	 */
-	public ConceptViewMode getViewMode();
 }
