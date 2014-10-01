@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.0"
+	elementFormDefault="qualified">
+	
+
+<!-- Version 2014/09/30 -->
+<!-- 
+	Changelog:
+	
+	2014/09/30	- Initial version
+ -->
+
+	<!-- Note that JAXB is broken (has been forever) and doesn't properly create javadocs from <documentation> tags like it should for elements...
+	the only real workaround is to duplicate all the doc... which is stupid... but what can you do. -->
+
+	<xs:element name="isaacAppConfig">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="applicationTitle" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The text string that is displayed in the ISAAC title bar, about box, and other typical locations.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The text string that is displayed in the ISAAC title bar, about box, and other typical locations.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="userRepositoryPath" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
