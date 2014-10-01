@@ -26,14 +26,19 @@ package gov.va.isaac.workflow.taskmodel;
 
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.gui.WorkflowAdvancementViewController;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -46,15 +51,27 @@ import javafx.scene.Node;
  *
  */
 public abstract class TaskModel {
+	private final static Logger LOGGER = LoggerFactory.getLogger(TaskModel.class);
 
 	private final LocalTask task;
+
+	private final ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>();
+
+	private final Map<String, StringProperty> outputVariables = new HashMap<>();
 	
-	private ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>();
-	
-	private Map<String, StringProperty> outputVariables = new HashMap<>();
-	
-	private BooleanProperty isSavableProperty = new SimpleBooleanProperty(false);
-	
+	private final Map<String, BooleanProperty> outputVariableStatuses = new HashMap<>();
+
+	private final BooleanProperty isSavableProperty = new SimpleBooleanProperty(false);
+
+	/**
+	 * 
+	 */
+	protected TaskModel(LocalTask inputTask) {
+		task = inputTask;
+
+		getActionProperty().addListener(getDefaultListenerToSetIsSavableProperty());
+	}
+
 	protected ChangeListener<? super Action> getDefaultListenerToSetIsSavableProperty() {
 		return new ChangeListener<Action>() {
 			@Override
@@ -66,28 +83,34 @@ public abstract class TaskModel {
 			}};
 	}
 
-	/**
-	 * 
-	 */
-	protected TaskModel(LocalTask inputTask) {
-		task = inputTask;
-		
-		getActionProperty().addListener(getDefaultListenerToSetIsSavableProperty());
-	}
-
 	public LocalTask getTask() { return task; }
-	
+
 	public BooleanProperty getIsSavableProperty() { return isSavableProperty; }
 	public boolean getIsSavable() { return getIsSavableProperty().get(); }
 	public void setIsSavable(boolean isSavable) { getIsSavableProperty().set(isSavable); }
-	
+
 	public ObjectProperty<Action> getActionProperty() { return actionProperty; }
 	public Action getAction() { return getActionProperty().get(); }
 	public void setAction(Action action) { getActionProperty().set(action); }
 
 	public Map<String, String> getInputVariables() { return task.getInputVariables(); }
 	public Map<String, StringProperty> getOutputVariables() { return outputVariables; }
+	public Map<String, BooleanProperty> getOutputVariableStatuses() { return outputVariableStatuses; }
+
+	public void addOutputVariable(String variableName) {
+		getOutputVariables().put(variableName, new SimpleStringProperty());
+
+		getOutputVariableStatuses().put(variableName, new SimpleBooleanProperty(false));
+	}
 	
+	/**
+	 * @return boolean indicating whether or not this TaskModel is savable
+	 * 
+	 * For this default implementation to work it is important that all validations
+	 * other than string size > 0 be applied on the respective input nodes before
+	 * setting the validated value in the outputVariables map
+	 * 
+	 */
 	public boolean isSavable() {
 		if (actionProperty.get() != null && actionProperty.get() == Action.RELEASE) {
 			return true;
@@ -95,18 +118,28 @@ public abstract class TaskModel {
 			if (actionProperty.get() == null || actionProperty.get() == Action.NONE) {
 				return false;
 			}
-			
-			for (Map.Entry<String, StringProperty> entry : this.outputVariables.entrySet()) {
-				if (entry.getValue().get() == null || entry.getValue().get().length() < 1) {
+
+			// Validation should be performed by adding handliers/listeners
+			// to individual properties in createOutputNode()
+//			for (Map.Entry<String, StringProperty> entry : this.outputVariables.entrySet()) {
+//				if (entry.getValue().get() == null || entry.getValue().get().length() < 1) {
+//					return false;
+//				}
+//			}
+
+			for (Map.Entry<String, BooleanProperty> entry : this.outputVariableStatuses.entrySet()) {
+				if (! entry.getValue().get()) {
+					LOGGER.debug("Validation failed on variable {} with value {}", entry.getKey(), getOutputVariables().get(entry.getKey()).get());
 					return false;
 				}
 			}
-			
+
 			return true;
 		}
 	}
-	
-	public abstract String getLabelName(String variableName);
-	
+
+	// Default implementation
+	public String getLabelName(String variableName) { return variableName; }
+
 	public abstract Node createOutputNode(String variableName);
 }

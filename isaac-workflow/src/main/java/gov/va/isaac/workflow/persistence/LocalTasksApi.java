@@ -95,13 +95,13 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             log.debug("Task {} saved", task.getId());
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("23505")) {
-                log.warn("Task " + task.getId() + " already exists");
+                log.info("Task {} already exists", task.getId());
                 LocalTask taskInDb = getTask(task.getId());
                 if (task.equals(taskInDb)) {
                     log.debug(" No changes.");
                 } else {
                     if (!task.getOwner().equals(taskInDb.getOwner())) {
-                        log.warn(" User has changed from " + taskInDb.getOwner() + " to " + task.getOwner() + ".");
+                        log.warn(" User has changed from {} to {}.", taskInDb.getOwner(), task.getOwner());
                         try {
                             PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
                             psUpdateUser.setString(1, task.getOwner());
@@ -114,7 +114,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                         }
                     }
                     if (!task.getStatus().equals(taskInDb.getStatus())) {
-                        log.warn(" Status has changed from " + taskInDb.getStatus() + " to " + task.getStatus() + ".");
+                        log.warn(" Status has changed from {} to {}.", taskInDb.getStatus(), task.getStatus());
                         try {
                             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
                             psUpdateStatus.setString(1, task.getStatus().name());
@@ -129,7 +129,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                     //log.error("-Unknown?-");
                 };
             } else {
-                log.error("Unexpected SQL Error", ex);
+                log.error("Unexpected SQL Exception", ex);
             }
         }
     }

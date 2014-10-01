@@ -18,8 +18,6 @@
  */
 package gov.va.isaac.workflow.gui;
 
-import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
@@ -32,11 +30,16 @@ import java.util.Map;
 import java.util.UUID;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,23 +102,15 @@ public class WorkflowTaskDetailsViewController {
 	}
 	
 	@FXML private BorderPane mainBorderPane;
-
 	@FXML private Button closeButton;
-	@FXML private Button releaseTaskButton;
-	@FXML private Button advanceWfButton;
 
-    @FXML private Label generatedComponentSummary;
-
-    @FXML private Label taskIdLabel;
-    @FXML private Label statusLabel;
-    @FXML private Label componentLabel;	
-    @FXML private Label componentIdLabel;
-    
-    @FXML private TextArea instructionsTextArea;
-    @FXML private TextArea commentsTextArea;
-
+	private Label componentDescriptionLabel;
+	private GridPane variableMapGridPane;
+	
 	private WorkflowTaskDetailsView workflowTaskDetailsView;
-	private LocalTask task;	
+
+	private LocalTask task;
+	
 	private LocalWorkflowRuntimeEngineBI workflowEngine;
 	private LocalTasksServiceBI localTasksService;
 	
@@ -160,90 +155,75 @@ public class WorkflowTaskDetailsViewController {
 	public void initialize() {
 		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		
+
+		closeButton.setText("Close");
 		closeButton.setOnAction((e) -> doCancel());
-		advanceWfButton.setOnAction((e) -> doAdvanceWorkflow());
-		releaseTaskButton.setOnAction((e) -> doReleaseTask());
+
+		initializeVariableMapGridPane();
+
+		componentDescriptionLabel = new Label();
+		componentDescriptionLabel.setPadding(new Insets(5));
+
+		ScrollPane scrollPane = new ScrollPane();
+		VBox centerVBox = new VBox();
+		centerVBox.getChildren().add(componentDescriptionLabel);
+		centerVBox.getChildren().add(variableMapGridPane);
+		scrollPane.setContent(centerVBox);
+		scrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+		scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+		
+		mainBorderPane.setCenter(scrollPane);
+	}
+
+	private void initializeVariableMapGridPane() {
+		variableMapGridPane = new GridPane();
 	}
 
 	private void loadContents() {
-		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(UUID.fromString(task.getComponentId())));
+		componentDescriptionLabel.setText(ComponentDescriptionHelper.getComponentDescription(UUID.fromString(task.getComponentId())));
 
-		taskIdLabel.setText(Long.toString(task.getId()));
+		int rowIndex = 0;
 
-		if (task.getInputVariables() != null) {
-			if (task.getInputVariables().size() > 0) {
-				String[] editorComments = null;
-				String[] reviewComments = null;
-				String[] approveComments = null;
-				
-				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
-					
-					if (MapVariable.shouldDisplay(entry.getKey())) {
-						if (entry.getKey().equals("NodeName")) {
-							statusLabel.setText(entry.getValue());
-						} else if (entry.getKey().equals("in_component_id")) {
-							componentIdLabel.setText(entry.getValue());
-						} else if (entry.getKey().equals("in_instructions")) {
-							instructionsTextArea.setText(entry.getValue());
-						} else if (entry.getKey().equals("editor_comment") && entry.getValue().trim().length() > 0) {
-							editorComments = entry.getValue().split(";");
-						} else if (entry.getKey().equals("review_comment") && entry.getValue().trim().length() > 0) {
-							reviewComments = entry.getValue().split(";");
-						} else if (entry.getKey().equals("approval_comment") && entry.getValue().trim().length() > 0) {
-							approveComments = entry.getValue().split(";");
-						}
-					} else {
-						LOG.debug("Not displaying excluded input variables map entry: {}", entry);
-					}
-				}
-				
-				if (editorComments != null) {
-					StringBuffer str = new StringBuffer();
-					for (int i = 0; i < editorComments.length; i++) {
-						if (i == 0) {
-							str.append(editorComments[0]);
-						} else {
-							str.append("\r\n");
-							str.append(reviewComments[i]);
-						}
+		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new Label(Long.toString(task.getId())));
 
-						
-						if (reviewComments != null && reviewComments.length < i) {
-							str.append("\r\n");
-							str.append(reviewComments[i]);
-						}
+		if (task.getInputVariables() != null && task.getInputVariables().size() > 0) {
+			//variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
 
-						if (approveComments != null && approveComments.length < i) {
-							str.append("\r\n");
-							str.append(approveComments[i]);
-						}
-					}
-					
-					commentsTextArea.setText(str.toString());
+			for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
+				MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
+
+				if (MapVariable.shouldDisplay(entry.getKey())) {
+					String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
+					variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
+				} else {
+					LOG.debug("Not displaying excluded input variables map entry: {}", entry);
 				}
 			}
 		}
+		if (task.getOutputVariables() != null && task.getOutputVariables().size() > 0) {
+			//variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
+
+			for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
+				MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
+
+				if (MapVariable.shouldDisplay(entry.getKey())) {
+					String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
+					variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
+				} else {
+					LOG.debug("Not displaying excluded output variables map entry: {}", entry);
+				}
+			}
+		}
+		
+		for (Node node : variableMapGridPane.getChildren()) {
+			VariableGridPaneNodeConfigurationHelper.configureNode(node);
+		}
 	}
 
-	public void doReleaseTask(long taskId) {
-		LocalWorkflowRuntimeEngineFactory.getRuntimeEngine().release(taskId);
-	}
-	
-	private void doCancel() {
-		workflowTaskDetailsView.close();
-	}
-	
-	private void doAdvanceWorkflow() {
-		WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
-		view.setTask(task.getId());
-		view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-
-		workflowTaskDetailsView.close();
-	}
-	
-	private void doReleaseTask() {
-		LocalWorkflowRuntimeEngineFactory.getRuntimeEngine().release(task.getId());
+	/**
+	 * Handler for cancel button.
+	 */
+	public void doCancel() {
 		workflowTaskDetailsView.close();
 	}
 

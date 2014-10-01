@@ -31,8 +31,8 @@ import javafx.scene.input.InputEvent;
 import javafx.scene.control.ComboBox;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
 
 /**
@@ -45,7 +45,15 @@ public class ReviewContentTaskModel extends TaskModel {
 	public enum Response {
 		approve,
 		reject,
-		cancel
+		cancel;
+		
+		public static Response valueOfIfExists(String str) {
+			try {
+				return valueOf(str);
+			} catch (Throwable t) {
+				return null;
+			}
+		}
 	}
 	public enum InputVariable {
 		component_id("Component Id"),
@@ -94,8 +102,8 @@ public class ReviewContentTaskModel extends TaskModel {
 	ReviewContentTaskModel(LocalTask inputTask) {
 		super(inputTask);
 
-		getOutputVariables().put(OutputVariable.out_response.name(), new SimpleStringProperty());
-		getOutputVariables().put(OutputVariable.out_comment.name(), new SimpleStringProperty());
+		addOutputVariable(OutputVariable.out_response.name());
+		addOutputVariable(OutputVariable.out_comment.name());
 	}
 
 	/* (non-Javadoc)
@@ -126,11 +134,13 @@ public class ReviewContentTaskModel extends TaskModel {
 			TextArea commentTextArea = new TextArea();
 			
 			StringProperty commentProperty = getOutputVariables().get(OutputVariable.out_comment.name());
+			BooleanProperty commentPropertyStatus = getOutputVariableStatuses().get(OutputVariable.out_comment.name());
 			
 			commentProperty.bind(commentTextArea.textProperty());
 			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
 				@Override
 				public void handle(InputEvent event) {
+					commentPropertyStatus.set(commentTextArea.getText().length() > 0);
 					getIsSavableProperty().set(isSavable());
 				}
 			});
@@ -141,19 +151,23 @@ public class ReviewContentTaskModel extends TaskModel {
 			ComboBox<Response> responseComboBox = new ComboBox<>();
 			
 			StringProperty responseProperty = getOutputVariables().get(OutputVariable.out_response.name());
-			
+			BooleanProperty responsePropertyStatus = getOutputVariableStatuses().get(OutputVariable.out_response.name());
+
 			responseComboBox.setButtonCell(new ListCell<Response>() {
 				@Override
 				protected void updateItem(Response t, boolean bln) {
 					super.updateItem(t, bln); 
 					if (bln) {
 						setText("");
-						getIsSavableProperty().set(isSavable());
 					} else {
 						setText(t.toString());
-						responseProperty.set(t.toString());
-						getIsSavableProperty().set(isSavable());
 					}
+
+					responseProperty.set(getText());
+
+					responsePropertyStatus.set(Response.valueOfIfExists(responseProperty.get()) != null);
+				
+					getIsSavableProperty().set(isSavable());
 				}
 			});
 			
