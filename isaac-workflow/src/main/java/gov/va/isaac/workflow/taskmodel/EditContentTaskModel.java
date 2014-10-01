@@ -94,7 +94,7 @@ public class EditContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#getLabelName(java.lang.String)
 	 */
 	@Override
-	public String getLabelName(String variableName) {
+	protected String getOutputVariableInputNodeLabelName(String variableName) {
 		if (InputVariable.fromString(variableName) != null) {
 			return InputVariable.fromString(variableName).getLabelName();
 		}
@@ -110,15 +110,15 @@ public class EditContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	public Node createOutputNode(String variableName) {
+	public Node createOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {
 		case out_comment: {
 			TextArea commentTextArea = new TextArea();
 			
-			StringProperty commentProperty = getOutputVariables().get(OutputVariable.out_comment.name());
-			BooleanProperty commentPropertyStatus = getOutputVariableStatuses().get(OutputVariable.out_comment.name());
+			StringProperty commentProperty = getOutputVariableValueProperty(OutputVariable.out_comment.name());
+			BooleanProperty commentPropertyStatus = getOutputVariableStatusProperty(OutputVariable.out_comment.name());
 			
 			commentProperty.bind(commentTextArea.textProperty());
 			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {

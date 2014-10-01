@@ -101,7 +101,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                     log.debug(" No changes.");
                 } else {
                     if (!task.getOwner().equals(taskInDb.getOwner())) {
-                        log.warn(" User has changed from {} to {}.", taskInDb.getOwner(), task.getOwner());
+                        log.info(" User has changed from {} to {}.", taskInDb.getOwner(), task.getOwner());
                         try {
                             PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
                             psUpdateUser.setString(1, task.getOwner());
@@ -114,7 +114,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                         }
                     }
                     if (!task.getStatus().equals(taskInDb.getStatus())) {
-                        log.warn(" Status has changed from {} to {}.", taskInDb.getStatus(), task.getStatus());
+                        log.info(" Status has changed from {} to {}.", taskInDb.getStatus(), task.getStatus());
                         try {
                             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
                             psUpdateStatus.setString(1, task.getStatus().name());
