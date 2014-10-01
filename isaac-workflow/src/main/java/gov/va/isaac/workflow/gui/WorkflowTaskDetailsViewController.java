@@ -185,38 +185,32 @@ public class WorkflowTaskDetailsViewController {
 		int rowIndex = 0;
 
 		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new Label(Long.toString(task.getId())));
-		//variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new Label(task.getComponentId()));
-		//variableMapGridPane.addRow(rowIndex++, new Label("Component"), new Label(task.getComponentName()));
 
-		if (task.getInputVariables() != null) {
-			if (task.getInputVariables().size() > 0) {
-				//variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
-				
-				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
-					MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
-					
-					if (MapVariable.shouldDisplay(entry.getKey())) {
-						String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
-						variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
-					} else {
-						LOG.debug("Not displaying excluded input variables map entry: {}", entry);
-					}
+		if (task.getInputVariables() != null && task.getInputVariables().size() > 0) {
+			//variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
+
+			for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
+				MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
+
+				if (MapVariable.shouldDisplay(entry.getKey())) {
+					String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
+					variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
+				} else {
+					LOG.debug("Not displaying excluded input variables map entry: {}", entry);
 				}
 			}
 		}
-		if (task.getOutputVariables() != null) {
-			if (task.getOutputVariables().size() > 0) {
-				//variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
-				
-				for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
-					MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
-					
-					if (MapVariable.shouldDisplay(entry.getKey())) {
-						String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
-						variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
-					} else {
-						LOG.debug("Not displaying excluded output variables map entry: {}", entry);
-					}
+		if (task.getOutputVariables() != null && task.getOutputVariables().size() > 0) {
+			//variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
+
+			for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
+				MapVariable mappedVariable = MapVariable.valueOfIfExists(entry.getKey());
+
+				if (MapVariable.shouldDisplay(entry.getKey())) {
+					String text = mappedVariable != null ? MapVariable.valueOf(entry.getKey()).getDisplayName() : entry.getKey();
+					variableMapGridPane.addRow(rowIndex++, new Label(text), new Label(entry.getValue()));
+				} else {
+					LOG.debug("Not displaying excluded output variables map entry: {}", entry);
 				}
 			}
 		}

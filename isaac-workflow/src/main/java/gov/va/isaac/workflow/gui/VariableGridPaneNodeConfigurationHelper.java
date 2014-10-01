@@ -70,11 +70,7 @@ class VariableGridPaneNodeConfigurationHelper {
 								List<String> items = new ArrayList<>();
 								items.add(label.getText());
 
-
 								String[] itemArray = items.toArray(new String[items.size()]);
-
-								// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-								//System.out.println("Selected strings: " + Arrays.toString(itemArray));
 
 								return itemArray;
 							}
@@ -107,11 +103,7 @@ class VariableGridPaneNodeConfigurationHelper {
 								List<String> items = new ArrayList<>();
 								items.add(textInputControl.getText());
 
-
 								String[] itemArray = items.toArray(new String[items.size()]);
-
-								// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-								//System.out.println("Selected strings: " + Arrays.toString(itemArray));
 
 								return itemArray;
 							}
