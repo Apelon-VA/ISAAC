@@ -24,14 +24,13 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
-import javafx.scene.Node;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.InputEvent;
 import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.control.TextArea;
+import javafx.scene.input.InputEvent;
 
 /**
  * EditContentTaskModel
@@ -85,9 +84,7 @@ public class EditContentTaskModel extends TaskModel {
 	 * @param inputTask
 	 */
 	EditContentTaskModel(LocalTask inputTask) {
-		super(inputTask);
-
-		addOutputVariable(OutputVariable.out_comment.name());
+		super(inputTask, OutputVariable.values());
 	}
 
 	/* (non-Javadoc)
@@ -110,7 +107,7 @@ public class EditContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	public Node createOutputVariableInputNode(String variableName) {
+	protected Node createOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {

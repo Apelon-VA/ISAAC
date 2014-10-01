@@ -111,6 +111,13 @@ public abstract class TaskModel {
 
 		getActionProperty().addListener(getDefaultListenerToSetIsSavableProperty());
 	}
+	protected TaskModel(LocalTask inputTask, Enum<? extends Enum<?>>[] enumValues) {
+		this(inputTask);
+		
+		for (Enum<?> en : enumValues) {
+			addOutputVariable(en.name());
+		}
+	}
 
 	protected ChangeListener<? super Action> getDefaultListenerToSetIsSavableProperty() {
 		return new ChangeListener<Action>() {
@@ -144,7 +151,21 @@ public abstract class TaskModel {
 		return currentOutputVariables;
 	}
 
-	protected void addOutputVariable(String variableName) {
+	/**
+	 * @param variableName
+	 * 
+	 * Creates ComponentsForOutputVariable entry for specified variableName
+	 * by invoking overridable methods and overridden abstract method createOutputVariableInputNode().
+	 * 
+	 * Note that while implementations of createOutputVariableInputNode() may include references to
+	 * the Label and other properties, createOutputVariableInputNodeLabel() may not refer to
+	 * any of these, as they will not exist until the Label has already been created
+	 * and the respective ComponentsForOutputVariable has been put into the componentsForOutputVariables map
+	 * 
+	 * This method is final because the order of its operations is significant
+	 * 
+	 */
+	protected final void addOutputVariable(String variableName) {
 		Label newLabel = createOutputVariableInputNodeLabel(variableName);
 		ComponentsForOutputVariable newLabelAndNode = new ComponentsForOutputVariable(variableName, newLabel);
 		componentsForOutputVariables.put(variableName, newLabelAndNode);
@@ -204,15 +225,39 @@ public abstract class TaskModel {
 		return componentsForOutputVariables.get(variableName).getValueProperty();
 	}
 
-	// Default implementation
+	/**
+	 * @param variableName
+	 * @return the displayable Label name for the specified variableName
+	 * 
+	 * This default implementation is overridable
+	 */
 	protected String getOutputVariableInputNodeLabelName(String variableName) { return variableName; }
-	
-	// Default implementation
+
+	/**
+	 * @param variableName
+	 * @return the Label corresponding to the variableName and its respective properties and input node
+	 * 
+	 * Note that while implementations of createOutputVariableInputNode() may include references to
+	 * the Label and other properties, createOutputVariableInputNodeLabel() may not refer to
+	 * any of these, as they will not exist until the Label has already been created
+	 * and the respective ComponentsForOutputVariable has been put into the componentsForOutputVariables map
+	 * 
+	 */
 	protected Label createOutputVariableInputNodeLabel(String variableName) {
 		Label newLabel = new Label(getOutputVariableInputNodeLabelName(variableName));
 		
 		return newLabel;
 	}
 
+	/**
+	 * @param variableName
+	 * @return the input node associated with the specified variableName
+	 * 
+	 * Note that while implementations of createOutputVariableInputNode() may include references to
+	 * the Label and other properties, createOutputVariableInputNodeLabel() may not refer to
+	 * any of these, as they will not exist until the Label has already been created
+	 * and the respective ComponentsForOutputVariable has been put into the componentsForOutputVariables map
+	 * 
+	 */
 	protected abstract Node createOutputVariableInputNode(String variableName);
 }

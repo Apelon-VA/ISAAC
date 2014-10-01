@@ -99,10 +99,7 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @param inputTask
 	 */
 	ReviewContentTaskModel(LocalTask inputTask) {
-		super(inputTask);
-
-		addOutputVariable(OutputVariable.out_response.name());
-		addOutputVariable(OutputVariable.out_comment.name());
+		super(inputTask, OutputVariable.values());
 	}
 
 	/* (non-Javadoc)
@@ -125,7 +122,7 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	public Node createOutputVariableInputNode(String variableName) {
+	protected Node createOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {

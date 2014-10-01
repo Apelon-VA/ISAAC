@@ -143,6 +143,7 @@ public class WorkflowAdvancementViewController
 				super.updateItem(t, bln); 
 				if (bln) {
 					setText("");
+					taskModel.setAction(Action.NONE);
 				} else {
 					setText(t.toString());
 					taskModel.setAction(t);
@@ -163,15 +164,7 @@ public class WorkflowAdvancementViewController
 				Utility.execute(() -> {
 					try
 					{
-						final LocalTask currentlySelectedTask = taskModel.getTask();
-						final Action currentlySelectedAction = actionComboBox.getValue();
-
-						Map<String, String> variableMap = new HashMap<>();
-						for (String variableName : taskModel.getOutputVariableNames()) {
-							variableMap.put(variableName, taskModel.getOutputVariableValueProperty(variableName).get());
-						}
-						
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending, variableMap);
+						taskService_.setAction(taskModel.getTask().getId(), actionComboBox.getValue(), TaskActionStatus.Pending, taskModel.getCurrentOutputVariables());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
