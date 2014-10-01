@@ -213,27 +213,7 @@ public class WorkflowInboxController
 		conceptIdCol.setVisible(false);
 		taskTable.getColumns().add(conceptIdCol);
 		// END concept ID
-		
-		// BEGIN WorkflowAction
-		tCol = new TableColumn<>();
-		tCol.setText("Action");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getAction().toString());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END WorkflowAction
 
-		// BEGIN TaskActionStatus
-		tCol = new TableColumn<>();
-		tCol.setText("Action Status");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getActionStatus().name());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END TaskActionStatus
-		
 		float colWidth = 1.0f / taskTable.getColumns().size();
 		for (TableColumn<LocalTask, ?> col : taskTable.getColumns())
 		{
