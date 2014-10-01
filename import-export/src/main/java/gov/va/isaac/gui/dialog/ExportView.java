@@ -189,11 +189,14 @@ public class ExportView extends GridPane {
       };
       Platform.runLater(() -> {
         statusLabel.setText("Starting...");
-        progressBar.setProgress(1);
+        progressBar.setProgress(0);
       });
       exportFileHandler.doExport(listener);
+      Platform.runLater(() -> {
+        statusLabel.setText("Finished");
+        progressBar.setProgress(1);
+      });
       return true;
-
     }
 
     /*

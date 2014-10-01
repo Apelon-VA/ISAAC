@@ -19,6 +19,7 @@
 package gov.va.isaac.models.util;
 
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.DefaultInformationModelProperty;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.InformationModelProperty;
@@ -440,7 +441,6 @@ public class DefaultInformationModel implements InformationModel {
     return null;
   }
 
- 
   /**
    * Returns the properties by label.
    *
@@ -455,5 +455,57 @@ public class DefaultInformationModel implements InformationModel {
       }
     }
     return propsByLabel;
+  }
+
+  /**
+   * Sets the description
+   *
+   * @param description the description
+   */
+  public void setDescription(String description) {
+    // Remove any "data" properties
+    removePropertiesByLabel("description");
+
+    // Add new one
+    InformationModelProperty descriptionProperty =
+        new DefaultInformationModelProperty();
+    descriptionProperty.setLabel("description");
+    descriptionProperty.setType(description);
+    addProperty(descriptionProperty);
+  }
+
+  /**
+   * Returns the description.
+   *
+   * @return the description
+   */
+  public String getDescription() {
+    return getPropertyByLabel("description").getType();
+  }
+
+  /**
+   * Sets the status
+   *
+   * @param status the status
+   */
+  public void setStatus(String status) {
+    // Remove any "data" properties
+    removePropertiesByLabel("status");
+
+    // Add new one
+    InformationModelProperty statusProperty =
+        new DefaultInformationModelProperty();
+    statusProperty.setLabel("status");
+    statusProperty.setType(status);
+    addProperty(statusProperty);
+  }
+
+  /**
+   * Returns the status.
+   *
+   * @return the status
+   */
+  public String getStatus() {
+    return getPropertyByLabel("status").getType();
   }
 }

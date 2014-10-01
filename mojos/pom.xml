@@ -35,10 +35,10 @@
 			<artifactId>isaac-app-interfaces</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>gov.va.isaac.modules</groupId>
-			<artifactId>isaac-constants</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
+        <dependency>
+          <groupId>gov.va.isaac.modules</groupId>
+          <artifactId>import-export</artifactId>
+          <version>${project.parent.version}</version>
+        </dependency>
 	</dependencies>
 </project>

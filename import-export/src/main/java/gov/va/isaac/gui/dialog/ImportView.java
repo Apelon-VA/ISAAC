@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.xml.transform.TransformerConfigurationException;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -106,8 +108,9 @@ public class ImportView extends GridPane {
    *
    * @param modelType the model type
    * @param fileName the file name
+   * @throws TransformerConfigurationException 
    */
-  public void doImport(InformationModelType modelType, final String fileName) {
+  public void doImport(InformationModelType modelType, final String fileName) throws TransformerConfigurationException {
     Preconditions.checkNotNull(modelType);
     Preconditions.checkNotNull(fileName);
 
@@ -269,7 +272,7 @@ public class ImportView extends GridPane {
       // Update UI.
       progressBar.setProgress(100);
       statusLabel.setText("");
-      resultLabel.setText("Successfully imported model: " + result.toString());
+      resultLabel.setText("Successfully imported model.");
     }
 
     /*
@@ -284,7 +287,7 @@ public class ImportView extends GridPane {
       // Update UI.
       progressBar.setProgress(100);
       statusLabel.setText("");
-      resultLabel.setText("Failed to import model: " + ex.getMessage());
+      resultLabel.setText("Failed to import model.");
 
       // Show dialog.
       String title = ex.getClass().getName();
