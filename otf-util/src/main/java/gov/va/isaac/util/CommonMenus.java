@@ -23,11 +23,11 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,8 +76,9 @@ public class CommonMenus
 		
 		SEND_TO("Send To", null),
 			LIST_VIEW("List View", Images.LIST_VIEW),
-			WORKFLOW_ADVANCEMENT_VIEW("Workflow Advancement", Images.INBOX), // Only accessible from inbox
+			WORKFLOW_ADVANCEMENT_VIEW("Advance Workflow", Images.INBOX), // Only accessible from inbox
 			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization", Images.INBOX),
+			RELEASE_WORKFLOW_TASK("Release Workflow Task", Images.INBOX),
 		
 		COPY("Copy", null),
 			COPY_TEXT("Copy Text", Images.COPY),
@@ -488,6 +489,47 @@ public class CommonMenus
 			menuItems.add(openTaskViewMenuItem);
 		}
 		
+		MenuItem existingWorkflowInstanceAdvancementMenuItem = createNewMenuItem(
+				CommonMenuItem.WORKFLOW_ADVANCEMENT_VIEW,
+				builder,
+				() -> {
+					return taskIdProvider.getObservableTaskIdCount().get() == 1;
+					}, // canHandle
+					taskIdProvider.getObservableTaskIdCount().isEqualTo(1),				//make visible
+				() -> { // onHandlable
+					WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+					view.setTask(taskIdProvider.getTaskIds().iterator().next());
+					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				},
+				() -> { // onNotHandlable
+					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
+				}
+				);
+		if (existingWorkflowInstanceAdvancementMenuItem != null)
+		{
+			menuItems.add(existingWorkflowInstanceAdvancementMenuItem);
+		}
+
+		MenuItem newReleaseWorkflowTaskItem = createNewMenuItem(
+				CommonMenuItem.RELEASE_WORKFLOW_TASK,
+				builder,
+				() -> {
+					return taskIdProvider.getObservableTaskIdCount().get() == 1;
+					}, // canHandle
+					taskIdProvider.getObservableTaskIdCount().isEqualTo(1),				//make visible
+				() -> { // onHandlable
+					WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+					view.releaseTask(taskIdProvider.getTaskIds().iterator().next());
+				},
+				() -> { // onNotHandlable
+					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
+				}
+				);
+		if (newReleaseWorkflowTaskItem != null)
+		{
+			menuItems.add(newReleaseWorkflowTaskItem);
+		}
+
 		// get Send-To menu items
 		Menu sendToMenu = new Menu(CommonMenuItem.SEND_TO.getText());
 		sendToMenu.setVisible(false);
@@ -602,25 +644,6 @@ public class CommonMenus
 		if (listViewMenuItem != null)
 		{
 			menuItems.add(listViewMenuItem);
-		}
-
-		MenuItem existingWorkflowInstanceAdvancementMenuItem = createNewMenuItem(
-				CommonMenuItem.WORKFLOW_ADVANCEMENT_VIEW,
-				builder,
-				() -> {return taskIds.getObservableTaskIdCount().get() == 1;}, // canHandle
-				taskIds.getObservableTaskIdCount().isEqualTo(1),				//make visible
-				() -> { // onHandlable
-					WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
-					view.setTask(taskIds.getTaskIds().iterator().next());
-					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-				},
-				() -> { // onNotHandlable
-					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
-				}
-				);
-		if (existingWorkflowInstanceAdvancementMenuItem != null)
-		{
-			menuItems.add(existingWorkflowInstanceAdvancementMenuItem);
 		}
 
 		// Menu item to generate New Workflow Instance.

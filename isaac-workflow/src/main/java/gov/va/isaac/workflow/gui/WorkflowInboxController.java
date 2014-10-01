@@ -21,6 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
@@ -113,7 +114,7 @@ public class WorkflowInboxController
 
 		// BEGIN Task name
 		TableColumn<LocalTask, String> tCol = new TableColumn<>();
-		tCol.setText("Task");
+		tCol.setText("Status");
 		tCol.setCellValueFactory((value) -> {
 			return new SimpleStringProperty(value.getValue().getName());
 		});
@@ -129,6 +130,15 @@ public class WorkflowInboxController
 		taskTable.getColumns().add(tCol);
 		// END Task id
 		
+		// BEGIN Component Type
+		tCol = new TableColumn<>();
+		tCol.setText("Component Type");
+		tCol.setCellValueFactory((value) -> {
+			return new SimpleStringProperty(getCompType(value.getValue().getComponentName()));
+		});
+		taskTable.getColumns().add(tCol);
+		// END Component name
+
 		// BEGIN Component name
 		tCol = new TableColumn<>();
 		tCol.setText("Component");
@@ -138,46 +148,6 @@ public class WorkflowInboxController
 		taskTable.getColumns().add(tCol);
 		// END Component name
 
-		// BEGIN WorkflowAction
-		tCol = new TableColumn<>();
-		tCol.setText("Action");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getAction().toString());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END WorkflowAction
-
-		// BEGIN TaskActionStatus
-		tCol = new TableColumn<>();
-		tCol.setText("Action Status");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getActionStatus().name());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END TaskActionStatus
-		
-		// BEGIN Owner
-		tCol = new TableColumn<>();
-		tCol.setText("Owner");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getOwner());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END Owner
-
-		// BEGIN Status
-		tCol = new TableColumn<>();
-		tCol.setText("Status");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getStatus().name());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END Status
-		
 		// BEGIN Component id (hidden)
 		tCol = new TableColumn<>();
 		tCol.setText("Component Id");
@@ -188,58 +158,7 @@ public class WorkflowInboxController
 		taskTable.getColumns().add(tCol);
 		// END Component id (hidden)
 				
-		// BEGIN Concept
-		TableColumn<LocalTask, SimpleDisplayConcept> conceptCol = new TableColumn<>();
-		conceptCol.setText("Concept");
-		conceptCol.setCellValueFactory((value) -> {
-			if (value.getValue().getComponentId() == null) {
-				LOG.error("Component ID for task {} is null", value.getValue().getId());
 
-				return new SimpleObjectProperty<SimpleDisplayConcept>();
-			}
-			UUID componentUuid = null;
-			try {
-				componentUuid = UUID.fromString(value.getValue().getComponentId());
-			} catch (IllegalArgumentException e) {
-				LOG.error("Component ID for task {} is not a valid UUID", value.getValue().getId());
-
-				return new SimpleObjectProperty<SimpleDisplayConcept>();
-			}
-
-			ConceptVersionBI containingConcept = null;
-			ComponentChronicleBI<?> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
-			if (componentChronicle == null) {
-				LOG.warn("Component ID for task " + value.getValue().getId() + " retrieved a null componentChronicle");
-
-				containingConcept = WBUtility.getConceptVersion(componentUuid);
-				if (containingConcept == null) {
-					LOG.error("Component ID for task " + value.getValue().getId() + " retrieved a null concept");
-
-					return new SimpleObjectProperty<SimpleDisplayConcept>();
-				}
-			} else {
-				try {
-					containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
-				} catch (Exception e) {
-					LOG.error("Failed getting version from ComponentChronicleBI task " + value.getValue().getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-					e.printStackTrace();
-				}
-				if (containingConcept == null) {
-					LOG.error("ComponentChronicleBI task " + value.getValue().getId() + " contained a null enclosing concept");
-
-					return new SimpleObjectProperty<SimpleDisplayConcept>();
-				}
-			}
-
-			if (componentChronicle == null) {
-				LOG.warn("Component id " + componentUuid + " for task " + value.getValue().getId() + " is a concept, not just a component.");
-			}
-			SimpleDisplayConcept displayConcept = new SimpleDisplayConcept(containingConcept);
-			return new SimpleObjectProperty<SimpleDisplayConcept>(displayConcept);
-		});
-		taskTable.getColumns().add(conceptCol);
-		// END concept
-		
 		// BEGIN Concept
 		TableColumn<LocalTask, String> conceptIdCol = new TableColumn<>();
 		conceptIdCol.setText("Concept Id");
@@ -295,6 +214,25 @@ public class WorkflowInboxController
 		taskTable.getColumns().add(conceptIdCol);
 		// END concept ID
 		
+		// BEGIN WorkflowAction
+		tCol = new TableColumn<>();
+		tCol.setText("Action");
+		tCol.setCellValueFactory((value) -> {
+			return new SimpleStringProperty(value.getValue().getAction().toString());
+		});
+		tCol.setVisible(false);
+		taskTable.getColumns().add(tCol);
+		// END WorkflowAction
+
+		// BEGIN TaskActionStatus
+		tCol = new TableColumn<>();
+		tCol.setText("Action Status");
+		tCol.setCellValueFactory((value) -> {
+			return new SimpleStringProperty(value.getValue().getActionStatus().name());
+		});
+		tCol.setVisible(false);
+		taskTable.getColumns().add(tCol);
+		// END TaskActionStatus
 		
 		float colWidth = 1.0f / taskTable.getColumns().size();
 		for (TableColumn<LocalTask, ?> col : taskTable.getColumns())
@@ -330,6 +268,11 @@ public class WorkflowInboxController
 		synchronizeButton.setOnAction((action) -> {
 			synchronize(true);
 		});
+	}
+
+	private String getCompType(String componentName) {
+		String[] s = componentName.split(" ");
+		return s[0];
 	}
 
 	public Region getView() {
