@@ -21,6 +21,7 @@ package gov.va.isaac.ie;
 import gov.va.isaac.models.InformationModel;
 
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * Interface for handling the ISAAC import functionality.
@@ -38,4 +39,13 @@ public interface ImportHandler {
    * @throws Exception if anything goes wrong
    */
   public InformationModel importModel(File file) throws Exception;
+
+  /**
+   * Method called by the ISAAC application to perform the import. Will be
+   * invoked on a background thread.
+   * @param in the input stream
+   * @return the information model
+   * @throws Exception if anything goes wrong
+   */
+  public InformationModel importModel(InputStream in) throws Exception;
 }

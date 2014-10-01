@@ -30,12 +30,15 @@ public interface CEMXmlConstants {
     /**  The Constant CEML. */
     public static final String CEML = "ceml";
     
-    /**  The Constant CETYPE. */
-    public static final String CETYPE = "cetype";
+    /**  The Constant CEM. */
+    public static final String CEM = "cem";
     
     /**  The Constant NAME. */
     public static final String NAME = "name";
-    
+
+    /**  The Constant ID. */
+    public static final String ID = "id";
+
     /**  The Constant KEY. */
     public static final String KEY = "key";
     
@@ -77,4 +80,11 @@ public interface CEMXmlConstants {
     
     /**  The Constant VALUE. */
     public static final String VALUE = "value";
+
+    /**  The Constant INFO. */
+    public static final String INFO = "info";
+
+    /**  The Constant DEFINITION. */
+    public static final String DEFINITION = "definition";
+
 }

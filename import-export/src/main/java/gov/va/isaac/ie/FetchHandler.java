@@ -30,7 +30,6 @@ import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.validation.ValidationException;
 
@@ -127,7 +126,8 @@ public class FetchHandler extends ExporterBase {
         WBUtility.getConceptVersion(InformationModelType.HeD.getUuid());
     for (ConceptVersionBI hedModel : WBUtility.getAllChildrenOfConcept(
         hedConcept.getNid(), true)) {
-      models.add(service.getInformationModel(hedModel.getPrimordialUuid()));
+      models.add(new HeDInformationModel(service.getInformationModel(hedModel
+          .getPrimordialUuid())));
     }
     return models;
 

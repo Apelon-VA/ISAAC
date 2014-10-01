@@ -16,25 +16,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.importview;
+package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.GridPaneBuilder;
-import gov.va.isaac.ie.ImportHandler;
-import gov.va.isaac.model.InformationModelType;
-import gov.va.isaac.models.InformationModel;
-import gov.va.isaac.models.cem.importer.CEMImporter;
-import gov.va.isaac.models.fhim.importer.FHIMImporter;
-import gov.va.isaac.models.hed.importer.HeDImporter;
+import gov.va.isaac.ie.ExportFileHandler;
+import gov.va.isaac.model.ExportType;
+import gov.va.isaac.util.ProgressEvent;
+import gov.va.isaac.util.ProgressListener;
 
 import java.io.File;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -46,82 +46,80 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 /**
- * A GUI for handling imports.
+ * A GUI for handling exports.
  *
- * @author ocarlsen
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @author bcarlsenca
  */
 @SuppressWarnings("restriction")
-public class ImportView extends GridPane {
+public class ExportView extends GridPane {
 
-  /**  The Constant LOG. */
-  static final Logger LOG = LoggerFactory.getLogger(ImportView.class);
+  /** The Constant LOG. */
+  static final Logger LOG = LoggerFactory.getLogger(ExportView.class);
 
-  /**  The model type label. */
-  private final Label modelTypeLabel = new Label();
+  /** The model type label. */
+  private final Label exportTypeLabel = new Label();
 
-  /**  The file name label. */
-  private final Label fileNameLabel = new Label();
+  /** The folder name label. */
+  private final Label folderNameLabel = new Label();
 
-  /**  The result label. */
+  /** The progress bar. */
+  final javafx.scene.control.ProgressBar progressBar = new ProgressBar(0);
+
+  /** The status label. */
+  final Label statusLabel = new Label();
+
+  /** The result label. */
   final Label resultLabel = new Label();
 
   /**
-   * Instantiates an empty {@link ImportView}.
+   * Instantiates an empty {@link ExportView}.
    */
-  public ImportView() {
+  public ExportView() {
     super();
 
     // GUI placeholders.
     GridPaneBuilder builder = new GridPaneBuilder(this);
-    builder.addRow("Information Model: ", modelTypeLabel);
-    builder.addRow("File Name: ", fileNameLabel);
+    builder.addRow("Export Type: ", exportTypeLabel);
+    builder.addRow("Folder Name: ", folderNameLabel);
+    builder.addRow("Progress: ", progressBar);
+    progressBar.setMinWidth(400);
+    builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
 
     setConstraints();
 
     // Set minimum dimensions.
-    setMinHeight(200);
+    setMinHeight(100);
     setMinWidth(600);
   }
 
   /**
-   * Do import for the specified type and file name.
+   * Perform an export according the specifed parameters.
    *
-   * @param modelType the model type
-   * @param fileName the file name
+   * @param exportType the export type 
+   * @param pathNid the path nid to export
+   * @param folderName the file name
+   * @param zipChecked the flag indicating whether to compress output
    */
-  public void doImport(InformationModelType modelType, final String fileName) {
-    Preconditions.checkNotNull(modelType);
-    Preconditions.checkNotNull(fileName);
+  public void doExport(ExportType exportType, int pathNid,
+    final String folderName, boolean zipChecked) {
+    Preconditions.checkNotNull(exportType);
+    Preconditions.checkNotNull(folderName);
 
     // Make sure in application thread.
     FxUtils.checkFxUserThread();
 
     // Update UI.
-    modelTypeLabel.setText(modelType.getDisplayName());
-    fileNameLabel.setText(fileName);
+    exportTypeLabel.setText(exportType.getDisplayName());
+    folderNameLabel.setText(folderName);
 
-    // Instantiate appropriate importer class.
-    ImportHandler importHandler = null;
-    switch (modelType) {
-      case CEM:
-        importHandler = new CEMImporter();
-        break;
-      case HeD:
-        importHandler = new HeDImporter();
-        break;
-      case FHIM:
-        importHandler = new FHIMImporter();
-        break;
-      default:
-        throw new UnsupportedOperationException(modelType.getDisplayName()
-            + " import not yet supported in ISAAC.");
-    }
+    File folder = new File(folderName);
+    // Inject into an ExportFileHandler.
+    ExportFileHandler exportFileHandler =
+        new ExportFileHandler(pathNid, exportType, folder, zipChecked);
 
     // Do work in background.
-    Task<InformationModel> task = new ImporterTask(fileName, importHandler);
+    Task<Boolean> task = new ExporterTask(exportFileHandler);
 
     // Bind cursor to task state.
     ObjectBinding<Cursor> cursorBinding =
@@ -129,9 +127,10 @@ public class ImportView extends GridPane {
             .otherwise(Cursor.DEFAULT);
     this.getScene().cursorProperty().bind(cursorBinding);
 
-    Thread t = new Thread(task, "Importer_" + modelType);
+    Thread t = new Thread(task, "Exporter_" + exportType);
     t.setDaemon(true);
     t.start();
+
   }
 
   /**
@@ -160,66 +159,72 @@ public class ImportView extends GridPane {
   }
 
   /**
-   * Concrete {@link Task} for executing the import.
-   *
-   * @author ocarlsen
-   * @author bcarlsenca
+   * Inner class to handle the export task.
    */
-  class ImporterTask extends Task<InformationModel> {
+  class ExporterTask extends Task<Boolean> {
 
-    /**  The file name. */
-    private final String fileName;
+    /** The import handler. */
+    private final ExportFileHandler exportFileHandler;
 
-    /**  The import handler. */
-    private final ImportHandler importHandler;
-
-    /**
-     * Instantiates a {@link ImporterTask} from the specified parameters.
-     *
-     * @param fileName the file name
-     * @param importHandler the import handler
-     */
-    ImporterTask(String fileName, ImportHandler importHandler) {
-      this.fileName = fileName;
-      this.importHandler = importHandler;
+    ExporterTask(ExportFileHandler exportFileHandler) {
+      this.exportFileHandler = exportFileHandler;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javafx.concurrent.Task#call()
      */
     @Override
-    protected InformationModel call() throws Exception {
+    protected Boolean call() throws Exception {
 
-      // Do work.
-      return importHandler.importModel(new File(fileName));
+      ProgressListener listener = new ProgressListener() {
+        @Override
+        public void updateProgress(ProgressEvent pe) {
+          Platform.runLater(() -> {
+            progressBar.setProgress( ((double)pe.getProgress())/100);
+            statusLabel.setText(pe.getNote());
+          });
+        }
+      };
+      Platform.runLater(() -> {
+        statusLabel.setText("Starting...");
+        progressBar.setProgress(1);
+      });
+      exportFileHandler.doExport(listener);
+      return true;
+
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javafx.concurrent.Task#succeeded()
      */
     @Override
     protected void succeeded() {
-      InformationModel result = this.getValue();
-
       // Update UI.
-      resultLabel.setText("Successfully imported model: " + result.toString());
+      progressBar.setProgress(100);
+      statusLabel.setText("");
+      resultLabel.setText("Successfully exported data");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see javafx.concurrent.Task#failed()
      */
     @Override
     protected void failed() {
       Throwable ex = getException();
+      progressBar.setProgress(100);
+      statusLabel.setText("");
+      resultLabel.setText("Failed to export data");
 
-      // Update UI.
-      resultLabel.setText("Failed to import model: " + ex.getMessage());
-
-      // Show dialog.
       String title = ex.getClass().getName();
       String msg =
           String
-              .format("Unexpected error importing from file \"%s\"", fileName);
+              .format("Unexpected error exporting to file");
       LOG.error(msg, ex);
       AppContext.getCommonDialogs()
           .showErrorDialog(title, msg, ex.getMessage());

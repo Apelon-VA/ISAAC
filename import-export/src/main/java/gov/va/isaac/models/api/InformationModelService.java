@@ -103,4 +103,15 @@ public interface InformationModelService {
    */
   public void saveInformationModel(InformationModel model) throws IOException,
     InvalidCAB, ContradictionException, NoSuchAlgorithmException, PropertyVetoException;
+
+  /**
+   * Creates the metadata concepts.
+   *
+   * @throws IOException Signals that an I/O exception has occurred.
+   * @throws InvalidCAB the invalid cab
+   * @throws ContradictionException the contradiction exception
+   * @throws PropertyVetoException the property veto exception
+   */
+  void createMetadataConcepts() throws IOException, InvalidCAB,
+    ContradictionException, PropertyVetoException;
 }

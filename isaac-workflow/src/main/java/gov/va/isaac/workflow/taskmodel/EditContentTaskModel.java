@@ -28,7 +28,6 @@ import javafx.scene.Node;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
 import gov.va.isaac.workflow.LocalTask;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
@@ -87,7 +86,7 @@ public class EditContentTaskModel extends TaskModel {
 	EditContentTaskModel(LocalTask inputTask) {
 		super(inputTask);
 
-		outputVariables.put(OutputVariable.out_comment.name(), new SimpleStringProperty());
+		getOutputVariables().put(OutputVariable.out_comment.name(), new SimpleStringProperty());
 	}
 
 	/* (non-Javadoc)
@@ -117,18 +116,13 @@ public class EditContentTaskModel extends TaskModel {
 		case out_comment: {
 			TextArea commentTextArea = new TextArea();
 			
-			StringProperty commentProperty = outputVariables.get(OutputVariable.out_comment.name());
+			StringProperty commentProperty = getOutputVariables().get(OutputVariable.out_comment.name());
 			
+			commentProperty.bind(commentTextArea.textProperty());
 			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
 				@Override
 				public void handle(InputEvent event) {
-					if (commentTextArea.getText() != null) {
-						commentProperty.set(commentTextArea.getText());
-					} else {
-						commentProperty.set("");
-					}
-					
-					isSavableProperty.set(isSavable());
+					getIsSavableProperty().set(isSavable());
 				}
 			});
 			

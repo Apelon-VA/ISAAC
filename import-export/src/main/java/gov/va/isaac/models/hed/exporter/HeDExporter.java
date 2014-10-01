@@ -20,17 +20,15 @@ package gov.va.isaac.models.hed.exporter;
 
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.api.InformationModelService;
-import gov.va.isaac.models.cem.CEMComponent;
-import gov.va.isaac.models.cem.CEMConstraint;
-import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.hed.HeDInformationModel;
+import gov.va.isaac.models.hed.HeDModelReference;
 import gov.va.isaac.models.hed.HeDXmlConstants;
 import gov.va.isaac.models.util.ExporterBase;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -154,9 +152,10 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     namespace.setNodeValue("http://www.w3.org/2001/XMLSchema-instance");
     root.setAttributeNode(namespace);
     namespace = document.createAttribute(XSI_SCHEMA_LOCATION);
-    namespace.setNodeValue("urn:hl7-org:knowledgeartifact:r1 ../schema/knowledgeartifact/knowledgedocument.xsd ");
+    namespace
+        .setNodeValue("urn:hl7-org:knowledgeartifact:r1 ../schema/knowledgeartifact/knowledgedocument.xsd ");
     root.setAttributeNode(namespace);
-    
+
     // CETYPE element.
     Element metadata = buildMetadataElement(infoModel);
     root.appendChild(metadata);
@@ -184,16 +183,37 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     Element identifiers = buildIdentifiers(key);
     metadata.appendChild(identifiers);
 
-    // name
-    String name = infoModel.getKey();
-    LOG.debug("      name = " + key);
+    // artifactType
+    String artifactType = infoModel.getArtifactType();
+    LOG.debug("      artifactType = " + artifactType);
+    if (artifactType != null) {
+      Element atElement = buildArtifactType(artifactType);
+      metadata.appendChild(atElement);
+    }
+
+    // schema identifier
+    LOG.debug("      schemaIdentifier = " + artifactType);
+    Element schemaIdentifier = buildSchemaIdentifier();
+    metadata.appendChild(schemaIdentifier);
+
+    // data models
+    List<HeDModelReference> dataModels = infoModel.getDataModels();
+    LOG.debug("      dataModels");
+    Element dataModelElement = buildDataModels(dataModels);
+    if (dataModelElement.getChildNodes().getLength() > 0) {
+      metadata.appendChild(dataModelElement);
+    }
+    
+    
+    // titles
+    String name = infoModel.getName();
+    LOG.debug("      name = " + name);
     Element title = buildTitle(name);
     metadata.appendChild(title);
 
     return metadata;
   }
 
-  
   /**
    * Builds the identifiers.
    *
@@ -213,8 +233,69 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     Attr versionAttr = document.createAttribute(VERSION);
     versionAttr.setNodeValue("1.0");
     identifier.setAttributeNode(versionAttr);
-    
+
     return identifiers;
+  }
+
+  /**
+   * Builds the artifact type.
+   *
+   * @param artifactType the artifact Type
+   * @return the element
+   */
+  private Element buildArtifactType(String artifactType) {
+    Element title = document.createElement(ARTIFACT_TYPE);
+
+    Attr valueAttr = document.createAttribute(VALUE);
+    valueAttr.setNodeValue(artifactType);
+    title.setAttributeNode(valueAttr);
+
+    return title;
+  }
+  
+  /**
+   * Builds the data models.
+   *
+   * @param dataModels the data models
+   * @return the element
+   */
+  private Element buildDataModels(List<HeDModelReference> dataModels) {
+    Element dataModelElement = document.createElement(DATA_MODELS);
+
+    for (HeDModelReference ref : dataModels) {
+      Element modelReference = document.createElement(MODEL_REFERENCE);
+      Element description = document.createElement(DESCRIPTION);
+      Attr def = document.createAttribute(VALUE);
+      def.setNodeValue(ref.getDescription());
+      description.setAttributeNode(def);
+      Element referencedModel = document.createElement(REFERENCED_MODEL);
+      Attr refMod = document.createAttribute(VALUE);
+      refMod.setNodeValue(ref.getReferencedModel());
+      referencedModel.setAttributeNode(refMod);
+      modelReference.appendChild(description);
+      modelReference.appendChild(referencedModel);
+      dataModelElement.appendChild(modelReference);
+    }
+    return dataModelElement;
+  }  
+
+  /**
+   * Builds the schema identifier.
+   *
+   * @return the element
+   */
+  private Element buildSchemaIdentifier() {
+    Element schemaIdentifier = document.createElement(SCHEMA_IDENTIFIER);
+
+    Attr rootAttr = document.createAttribute(ROOT);
+    rootAttr.setNodeValue(SCHEMA_IDENTIFIER_ROOT);
+    schemaIdentifier.setAttributeNode(rootAttr);
+
+    Attr versionAttr = document.createAttribute(VERSION);
+    versionAttr.setNodeValue(SCHEMA_IDENTIFIER_VERSION);
+    schemaIdentifier.setAttributeNode(versionAttr);
+
+    return schemaIdentifier;
   }
 
   /**

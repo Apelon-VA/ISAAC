@@ -155,8 +155,8 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
    */
   private Element buildCetypeElement(CEMInformationModel infoModel)
     throws ValidationException, IOException, ContradictionException {
-    LOG.debug("    Handle " + CETYPE);
-    Element cetype = document.createElement(CETYPE);
+    LOG.debug("    Handle " + CEM);
+    Element cetype = document.createElement(CEM);
 
     // Name attribute (1).
     String name = infoModel.getName();
@@ -261,7 +261,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
     e.setAttributeNode(typeAttr);
 
     // Name attribute.
-    Attr nameAttr = document.createAttribute(NAME);
+    Attr nameAttr = document.createAttribute(ID);
     String name = decapitalize(type);
     nameAttr.setNodeValue(name);
     e.setAttributeNode(nameAttr);
@@ -325,7 +325,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
    * @return the attr
    */
   private Attr buildNameAttr(String name) {
-    Attr nameAttr = document.createAttribute(NAME);
+    Attr nameAttr = document.createAttribute(ID);
 
     nameAttr.setNodeValue(name);
 

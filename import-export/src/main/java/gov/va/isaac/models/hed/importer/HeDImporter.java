@@ -24,11 +24,16 @@ import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
+import gov.va.isaac.models.hed.HeDModelReference;
 import gov.va.isaac.models.hed.HeDXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -68,7 +73,29 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
    */
   @Override
   public InformationModel importModel(File file) throws Exception {
-    LOG.info("Preparing to import HeD model from: " + file.getName());
+    FileInputStream in = null;
+    try {
+      LOG.info("Preparing to import CEM model from: " + file.getName());
+      in = new FileInputStream(file);
+      LOG.info("Ending import of CEM model from: " + file.getName());
+      InformationModel model = importModel(in);
+      in.close();
+      return model;
+    } catch (Exception e) {
+      in.close();
+      throw e;
+    }
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.ie.ImportHandler#importModel(java.io.InputStream)
+   */
+  @Override
+  public InformationModel importModel(InputStream in) throws Exception {
+    LOG.info("Preparing to import HeD model from stream");
 
     // Make sure in background thread.
     FxUtils.checkBackgroundThread();
@@ -85,15 +112,18 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
     // LOG.info("focusConcept: " + focusConcept.toString());
 
     // Load DOM tree from file.
-    Node domRoot = loadModel(file);
+    Node domRoot = loadModel(in);
 
     // Parse into HeD model.
     HeDInformationModel infoModel = createInformationModel(domRoot);
 
     // Save the information model
+    // if (service.exists(infoModel)) {
+    // throw new IOException("Model already imported.");
+    // }
     service.saveInformationModel(infoModel);
 
-    LOG.info("Ending import of HeD model from: " + file.getName());
+    LOG.info("Ending import of HeD model from stream");
 
     return infoModel;
   }
@@ -121,9 +151,22 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
       switch (loopNode.getNodeName()) {
         case METADATA:
           String key = getIdentifier(loopNode);
+          LOG.debug("      key = " + key);
           infoModel.setKey(key);
           String name = getName(loopNode);
+          LOG.debug("      name = " + name);
           infoModel.setName(name);
+          String artifactType = getArtifactType(loopNode);
+          LOG.debug("      artifactType = " + artifactType);
+          if (artifactType != null)
+            infoModel.setArtifactType(artifactType);
+
+          List<HeDModelReference> dataModels = getDataModels(loopNode);
+          LOG.debug("      dataModels.ct = " + dataModels.size());
+          if (dataModels.size() > 0) {
+            infoModel.setDataModels(dataModels);
+          }
+
           break;
 
         default:
@@ -159,6 +202,45 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
   }
 
   /**
+   * Returns the artifact type.
+   *
+   * @param metadataNode the metadata node
+   * @return the artifact type
+   */
+  private String getArtifactType(Node metadataNode) {
+    Node titleNode = getChildNodeByName(ARTIFACT_TYPE, metadataNode);
+    return titleNode == null ? null : titleNode.getAttributes()
+        .getNamedItem(VALUE).getTextContent();
+  }
+
+  /**
+   * Returns the data models.
+   *
+   * @param metadataNode the metadata node
+   * @return the data models
+   */
+  private List<HeDModelReference> getDataModels(Node metadataNode) {
+    List<HeDModelReference> dataModels = new ArrayList<>();
+    Node dataModelNodes = getChildNodeByName(DATA_MODELS, metadataNode);
+    for (Node modelRefNode : getChildNodes(dataModelNodes)) {
+      if (modelRefNode.getNodeName().equals(MODEL_REFERENCE)) {
+        HeDModelReference ref = new HeDModelReference();
+        Node description = getChildNodeByName(DESCRIPTION, modelRefNode);
+        Node referencedModel =
+            getChildNodeByName(REFERENCED_MODEL, modelRefNode);
+        ref.setDescription(description.getAttributes().getNamedItem(VALUE)
+            .getTextContent());
+        ref.setReferencedModel(referencedModel.getAttributes()
+            .getNamedItem(VALUE).getTextContent());
+        dataModels.add(ref);
+      }
+
+    }
+    return dataModels;
+
+  }
+
+  /**
    * Returns the child node by name.
    *
    * @param name the name
@@ -178,20 +260,36 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
   }
 
   /**
+   * Returns the child nodes as an iterable.
+   *
+   * @param node the node
+   * @return the child nodes
+   */
+  private List<Node> getChildNodes(Node node) {
+    List<Node> nodes = new ArrayList<>();
+    NodeList childNodes = node.getChildNodes();
+    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
+      Node loopNode = childNodes.item(nodeCount);
+      nodes.add(loopNode);
+    }
+    return nodes;
+  }
+
+  /**
    * Load model from XML file into a {@link Node}.
    *
-   * @param file the file
+   * @param in the input stream
    * @return the node
    * @throws ParserConfigurationException the parser configuration exception
    * @throws SAXException the SAX exception
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private Node loadModel(File file) throws ParserConfigurationException,
+  private Node loadModel(InputStream in) throws ParserConfigurationException,
     SAXException, IOException {
     // Parse XML file.
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder db = dbf.newDocumentBuilder();
-    Document document = db.parse(file);
+    Document document = db.parse(in);
 
     NodeList childNodes = document.getChildNodes();
     Node rootNode = null;
@@ -207,9 +305,8 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
 
     // Sanity check.
     Preconditions.checkState(rootNode != null, "No " + KNOWLEDGE_DOCUMENT
-        + " root node in XML file! " + file.getName());
+        + " root node in XML");
 
-    LOG.info("File OK: " + file.getName());
     return rootNode;
   }
 }

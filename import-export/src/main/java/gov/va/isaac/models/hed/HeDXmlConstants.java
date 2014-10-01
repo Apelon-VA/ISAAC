@@ -18,7 +18,6 @@
  */
 package gov.va.isaac.models.hed;
 
-// TODO: Auto-generated Javadoc
 /**
  * Utility interface providing {@link String} constants for importing/exporting
  * HeD models from/to XML.
@@ -27,6 +26,17 @@ package gov.va.isaac.models.hed;
  */
 public interface HeDXmlConstants {
 
+  // version stuff
+  /**  The Constant SCHEMA_IDENTIFIER. */
+  public static final String SCHEMA_IDENTIFIER = "schemaIdentifier";
+  
+  /**  The Constant SCHEMA_IDENTIFIER_ROOT. */
+  public static final String SCHEMA_IDENTIFIER_ROOT = "urn:hl7-org:knowledgeartifact:r1";
+  
+  /**  The Constant SCHEMA_IDENTIFIER_VERSION. */
+  public static final String SCHEMA_IDENTIFIER_VERSION = "1.0";
+  
+  // tags
   /** The Constant KNOWLEDGE_DOCUMENT. */
   public static final String KNOWLEDGE_DOCUMENT = "knowledgeDocument";
 
@@ -81,4 +91,19 @@ public interface HeDXmlConstants {
   /** The Constant ACTION_GROUP. */
   public static final String ACTION_GROUP = "actionGroup";
 
+  /**  The Constant ARTIFACT_TYPE. */
+  public static final String ARTIFACT_TYPE = "artifactType";
+
+  /**  The Constant DATA_MODELS. */
+  public static final String DATA_MODELS = "dataModels";
+  
+  /**  The Constant MODEL_REFERENCE. */
+  public static final String MODEL_REFERENCE = "modelReference";
+  
+  /**  The Constant DESCRIPTION. */
+  public static final String DESCRIPTION = "description";
+  
+  /**  The Constant REFERENCED_MODEL. */
+  public static final String REFERENCED_MODEL = "referencedModel";
+  
 }
