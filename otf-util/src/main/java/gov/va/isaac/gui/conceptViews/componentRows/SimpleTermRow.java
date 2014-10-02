@@ -31,15 +31,8 @@ public class SimpleTermRow extends TermRow  {
 		}
 		
 		if (desc.isUncommitted()) {
-			ComponentChronicleBI<?> chronicle = desc.getChronicle();
-			DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
-
-			if (!descLabel.getText().equals(origVersion.getText())) {
-				descLabel.setUnderline(true);
-			}
-			if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
-				descTypeLabel.setUnderline(true);
-			}
+			descLabel.setUnderline(true);
+			descTypeLabel.setUnderline(true);
 		}
 
 		

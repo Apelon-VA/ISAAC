@@ -28,16 +28,8 @@ public class SimpleRelRow extends RelRow {
 			Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
 			
 			if (rel.isUncommitted()) {
-				ComponentChronicleBI<?> chronicle = rel.getChronicle();
-				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
-
-				if (!relLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
-					relLabel.setUnderline(true);
-				}
-				
-				if (!relTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
-					relTypeLabel.setUnderline(true);
-				}
+				relLabel.setUnderline(true);
+				relTypeLabel.setUnderline(true);
 			}
 			
 			//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
