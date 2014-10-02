@@ -9,6 +9,8 @@ import javafx.geometry.VPos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
@@ -31,10 +33,17 @@ public class SimpleTermRow extends TermRow  {
 		}
 		
 		if (desc.isUncommitted()) {
-			descLabel.setUnderline(true);
-			descTypeLabel.setUnderline(true);
+			if (desc.getVersions().size() == 1) {
+				Font f = descLabel.getFont();
+				descLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+	
+				f = descTypeLabel.getFont();
+				descTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+			} else {
+				descLabel.setUnderline(true);
+				descTypeLabel.setUnderline(true);
+			}
 		}
-
 		
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)

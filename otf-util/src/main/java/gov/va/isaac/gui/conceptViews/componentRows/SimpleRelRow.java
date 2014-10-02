@@ -10,8 +10,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class SimpleRelRow extends RelRow {
@@ -28,8 +29,16 @@ public class SimpleRelRow extends RelRow {
 			Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
 			
 			if (rel.isUncommitted()) {
-				relLabel.setUnderline(true);
-				relTypeLabel.setUnderline(true);
+				if (rel.getVersions().size() == 1) {
+					Font f = relLabel.getFont();
+					relLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+					f = relTypeLabel.getFont();
+					relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+				} else {
+					relLabel.setUnderline(true);
+					relTypeLabel.setUnderline(true);
+				}
 			}
 			
 			//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
