@@ -76,9 +76,9 @@ public class CommonMenus
 		
 		SEND_TO("Send To", null),
 			LIST_VIEW("List View", Images.LIST_VIEW),
-			WORKFLOW_ADVANCEMENT_VIEW("Advance Workflow", Images.INBOX), // Only accessible from inbox
-			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization", Images.INBOX),
-			RELEASE_WORKFLOW_TASK("Release Workflow Task", Images.INBOX),
+			WORKFLOW_ADVANCEMENT_VIEW("Advance Workflow", Images.CONCEPT_VIEW), // Only accessible from inbox
+			WORKFLOW_INITIALIZATION_VIEW("Workflow Initialization", Images.COMMIT),
+			RELEASE_WORKFLOW_TASK("Release Workflow Task", Images.CANCEL),
 		
 		COPY("Copy", null),
 			COPY_TEXT("Copy Text", Images.COPY),
