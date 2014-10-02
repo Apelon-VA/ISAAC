@@ -24,16 +24,15 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
+import gov.va.isaac.workflow.LocalTask;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
-import javafx.scene.control.ComboBox;
-import gov.va.isaac.workflow.Action;
-import gov.va.isaac.workflow.LocalTask;
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.event.EventHandler;
 
 /**
  * EditContentTaskModel
@@ -45,7 +44,15 @@ public class ReviewContentTaskModel extends TaskModel {
 	public enum Response {
 		approve,
 		reject,
-		cancel
+		cancel;
+		
+		public static Response valueOfIfExists(String str) {
+			try {
+				return valueOf(str);
+			} catch (Throwable t) {
+				return null;
+			}
+		}
 	}
 	public enum InputVariable {
 		component_id("Component Id"),
@@ -92,17 +99,14 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @param inputTask
 	 */
 	ReviewContentTaskModel(LocalTask inputTask) {
-		super(inputTask);
-
-		getOutputVariables().put(OutputVariable.out_response.name(), new SimpleStringProperty());
-		getOutputVariables().put(OutputVariable.out_comment.name(), new SimpleStringProperty());
+		super(inputTask, OutputVariable.values());
 	}
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#getLabelName(java.lang.String)
 	 */
 	@Override
-	public String getLabelName(String variableName) {
+	protected String getOutputVariableInputNodeLabelName(String variableName) {
 		if (InputVariable.fromString(variableName) != null) {
 			return InputVariable.fromString(variableName).getLabelName();
 		}
@@ -118,19 +122,21 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	public Node createOutputNode(String variableName) {
+	protected Node createOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {
 		case out_comment: {
 			TextArea commentTextArea = new TextArea();
 			
-			StringProperty commentProperty = getOutputVariables().get(OutputVariable.out_comment.name());
+			StringProperty commentProperty = getOutputVariableValueProperty(OutputVariable.out_comment.name());
+			BooleanProperty commentPropertyStatus = getOutputVariableStatusProperty(OutputVariable.out_comment.name());
 			
 			commentProperty.bind(commentTextArea.textProperty());
 			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
 				@Override
 				public void handle(InputEvent event) {
+					commentPropertyStatus.set(commentTextArea.getText().length() > 0);
 					getIsSavableProperty().set(isSavable());
 				}
 			});
@@ -140,20 +146,24 @@ public class ReviewContentTaskModel extends TaskModel {
 		case out_response: {
 			ComboBox<Response> responseComboBox = new ComboBox<>();
 			
-			StringProperty responseProperty = getOutputVariables().get(OutputVariable.out_response.name());
-			
+			StringProperty responseProperty = getOutputVariableValueProperty(OutputVariable.out_response.name());
+			BooleanProperty responsePropertyStatus = getOutputVariableStatusProperty(OutputVariable.out_response.name());
+
 			responseComboBox.setButtonCell(new ListCell<Response>() {
 				@Override
 				protected void updateItem(Response t, boolean bln) {
 					super.updateItem(t, bln); 
 					if (bln) {
 						setText("");
-						getIsSavableProperty().set(isSavable());
 					} else {
 						setText(t.toString());
-						responseProperty.set(t.toString());
-						getIsSavableProperty().set(isSavable());
 					}
+
+					responseProperty.set(getText());
+
+					responsePropertyStatus.set(Response.valueOfIfExists(responseProperty.get()) != null);
+				
+					getIsSavableProperty().set(isSavable());
 				}
 			});
 			

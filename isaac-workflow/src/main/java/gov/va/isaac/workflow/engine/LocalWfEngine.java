@@ -19,14 +19,21 @@
 package gov.va.isaac.workflow.engine;
 
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-import gov.va.isaac.workflow.*;
+import gov.va.isaac.workflow.Action;
+import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.persistence.LocalTasksApi;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 import gov.va.isaac.workflow.sync.TasksFetcher;
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
@@ -209,6 +216,12 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             LocalWfEngine.processRequestsApi = new ProcessInstanceCreationRequestsAPI();
             return LocalWfEngine.processRequestsApi;
         }
+    }
+
+    @Override
+    public void release(Long taskId) {
+		Map<String, String> variableMap = new HashMap<>();
+		getLocalTaskService().setAction(taskId, Action.RELEASE, TaskActionStatus.Pending, variableMap);
     }
 
     @Override

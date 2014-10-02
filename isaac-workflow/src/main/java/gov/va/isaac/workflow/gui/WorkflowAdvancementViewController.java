@@ -40,14 +40,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import javafx.application.Platform;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tab;
@@ -55,7 +53,6 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.util.Callback;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
@@ -146,6 +143,7 @@ public class WorkflowAdvancementViewController
 				super.updateItem(t, bln); 
 				if (bln) {
 					setText("");
+					taskModel.setAction(Action.NONE);
 				} else {
 					setText(t.toString());
 					taskModel.setAction(t);
@@ -166,15 +164,7 @@ public class WorkflowAdvancementViewController
 				Utility.execute(() -> {
 					try
 					{
-						final LocalTask currentlySelectedTask = taskModel.getTask();
-						final Action currentlySelectedAction = actionComboBox.getValue();
-
-						Map<String, String> variableMap = new HashMap<>();
-						for (Map.Entry<String, StringProperty> entry : taskModel.getOutputVariables().entrySet()) {
-							variableMap.put(entry.getKey(), entry.getValue().get());
-						}
-						
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending, variableMap);
+						taskService_.setAction(taskModel.getTask().getId(), actionComboBox.getValue(), TaskActionStatus.Pending, taskModel.getCurrentOutputVariables());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
@@ -318,8 +308,8 @@ public class WorkflowAdvancementViewController
 	private void loadTaskModel() {
 		
 		int rowIndex = 0;
-		for (String outputVariable : taskModel.getOutputVariables().keySet()) {
-			this.inputTabGridPane.addRow(rowIndex++, new Label(taskModel.getLabelName(outputVariable)), taskModel.createOutputNode(outputVariable));
+		for (String outputVariable : taskModel.getOutputVariableNames()) {
+			this.inputTabGridPane.addRow(rowIndex++, taskModel.getOutputVariableInputNodeLabel(outputVariable), taskModel.getOutputVariableInputNode(outputVariable));
 		}
 		
 		for (Node child : inputTabGridPane.getChildren()) {
