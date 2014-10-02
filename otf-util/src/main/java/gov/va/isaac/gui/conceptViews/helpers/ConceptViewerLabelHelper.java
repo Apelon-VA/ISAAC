@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
@@ -288,6 +289,10 @@ public class ConceptViewerLabelHelper {
 			}
 		});
 
+		if (comp.isUncommitted() && comp.getChronicle().getVersions().size() == 1) {
+			retireComponentMenu.setDisable(true);
+		}
+		
 		undoComponentMenu.setGraphic(Images.CANCEL.createImageView());
 		undoComponentMenu.setOnAction(new EventHandler<ActionEvent>()
 		{
