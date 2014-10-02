@@ -11,8 +11,10 @@ package org.hl7.knowledgeartifact.r1;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+
 import org.hl7.cdsdt.r2.II;
 import org.hl7.cdsdt.r2.ST;
 import org.hl7.cdsdt.r2.TEL;
@@ -308,6 +310,7 @@ public class KnowledgeResource {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "templateId"

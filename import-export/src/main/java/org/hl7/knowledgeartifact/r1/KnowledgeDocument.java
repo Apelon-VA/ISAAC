@@ -280,6 +280,7 @@ public class KnowledgeDocument {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "def"

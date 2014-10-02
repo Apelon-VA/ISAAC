@@ -27,7 +27,6 @@ package gov.va.isaac.models.hed;
  */
 public interface HeDXmlConstants {
 
-  // version stuff
   /** The Constant SCHEMA_IDENTIFIER. */
   public static final String SCHEMA_IDENTIFIER = "schemaIdentifier";
 
@@ -72,6 +71,9 @@ public interface HeDXmlConstants {
   /** The Constant IDENTIFIERS. */
   public static final String IDENTIFIERS = "identifiers";
 
+  /**  The Constant TEMPLATE_IDS. */
+  public static final String TEMPLATE_IDS = "templateIds";
+
   /** The Constant ROOT. */
   public static final String ROOT = "root";
 
@@ -87,6 +89,12 @@ public interface HeDXmlConstants {
   /** The Constant EXTERNAL_DATA. */
   public static final String EXTERNAL_DATA = "externalData";
 
+  /**  The Constant EXPRESSIONS. */
+  public static final String EXPRESSIONS = "expresions";
+
+  /**  The Constant TRIGGERS. */
+  public static final String TRIGGERS = "triggers";
+
   /** The Constant CONDITIONS. */
   public static final String CONDITIONS = "conditions";
 
@@ -98,6 +106,9 @@ public interface HeDXmlConstants {
 
   /** The Constant DATA_MODELS. */
   public static final String DATA_MODELS = "dataModels";
+
+  /**  The Constant LIBRARIES. */
+  public static final String LIBRARIES = "libraries";
 
   /**  The Constant EVENT_HISTORY. */
   public static final String EVENT_HISTORY = "eventHistory";
@@ -119,6 +130,21 @@ public interface HeDXmlConstants {
 
   /** The Constant DESCRIPTION. */
   public static final String DESCRIPTION = "description";
+
+  /**  The Constant DOCUMENTATION. */
+  public static final String DOCUMENTATION = "description";
+
+  /**  The Constant RELATED_RESOURCES. */
+  public static final String RELATED_RESOURCES = "relatedResources";
+
+  /**  The Constant SUPPORTING_EVIDENCE. */
+  public static final String SUPPORTING_EVIDENCE = "supportingEvidence";
+
+  /**  The Constant APPLICABILITY. */
+  public static final String APPLICABILITY = "applicability";
+
+  /**  The Constant CATEGORIES. */
+  public static final String CATEGORIES = "categories";
 
   /** The Constant REFERENCED_MODEL. */
   public static final String REFERENCED_MODEL = "referencedModel";

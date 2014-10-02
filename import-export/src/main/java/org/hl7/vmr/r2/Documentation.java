@@ -10,7 +10,9 @@ package org.hl7.vmr.r2;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+
 import org.hl7.cdsdt.r2.CD;
 import org.hl7.cdsdt.r2.ED;
 

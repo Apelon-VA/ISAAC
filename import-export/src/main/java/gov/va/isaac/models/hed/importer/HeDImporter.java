@@ -29,6 +29,9 @@ import gov.va.isaac.models.util.ImporterBase;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,13 +43,21 @@ import javax.xml.transform.TransformerException;
 import org.hl7.cdsdt.r2.CD;
 import org.hl7.knowledgeartifact.r1.ActionGroup;
 import org.hl7.knowledgeartifact.r1.Conditions;
+import org.hl7.knowledgeartifact.r1.InlineResource;
 import org.hl7.knowledgeartifact.r1.KnowledgeDocument;
 import org.hl7.knowledgeartifact.r1.KnowledgeDocument.ExternalData;
+import org.hl7.knowledgeartifact.r1.Metadata.Applicability;
+import org.hl7.knowledgeartifact.r1.Metadata.Categories;
 import org.hl7.knowledgeartifact.r1.Metadata.Contributions;
 import org.hl7.knowledgeartifact.r1.Metadata.DataModels;
 import org.hl7.knowledgeartifact.r1.Metadata.EventHistory;
+import org.hl7.knowledgeartifact.r1.Metadata.Identifiers;
+import org.hl7.knowledgeartifact.r1.Metadata.Libraries;
 import org.hl7.knowledgeartifact.r1.Metadata.Publishers;
+import org.hl7.knowledgeartifact.r1.Metadata.RelatedResources;
+import org.hl7.knowledgeartifact.r1.Metadata.TemplateIds;
 import org.hl7.knowledgeartifact.r1.Metadata.UsageTerms;
+import org.hl7.knowledgeartifact.r1.SupportingEvidence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -131,11 +142,13 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
    * @throws IOException
    * @throws JAXBException
    * @throws TransformerConfigurationException
+   * @throws UnsupportedEncodingException
    * @throws ParserConfigurationException
    * @throws TransformerException
    */
   private HeDInformationModel createInformationModel(KnowledgeDocument kd)
-    throws JAXBException, TransformerConfigurationException {
+    throws JAXBException, TransformerConfigurationException,
+    UnsupportedEncodingException {
 
     // Create the model
     HeDInformationModel infoModel = new HeDInformationModel();
@@ -144,7 +157,12 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
     String key =
         kd.getMetadata().getIdentifiers().getIdentifier().get(0).getRoot();
     LOG.debug("      key = " + key);
-    infoModel.setKey(key);
+    // Key may contain things indexer can't handle, URL encode
+    infoModel.setKey(URLEncoder.encode(key, StandardCharsets.UTF_8.name()));
+
+    Identifiers identifiers = kd.getMetadata().getIdentifiers();
+    LOG.debug("      identifiers = " + identifiers);
+    infoModel.setIdentifiers(identifiers);
 
     String name = kd.getMetadata().getTitle().getValue();
     LOG.debug("      name = " + name);
@@ -157,28 +175,61 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 
     String schemaIdentifier = kd.getMetadata().getSchemaIdentifier().getRoot();
     LOG.debug("      schemaIdentifier = " + schemaIdentifier);
-    infoModel.setschemaIdentifier(schemaIdentifier);
+    infoModel.setSchemaIdentifier(schemaIdentifier);
+
+    TemplateIds templateIds = kd.getMetadata().getTemplateIds();
+    LOG.debug("      templateIds = " + templateIds);
+    infoModel.setTemplateIds(templateIds);
 
     DataModels dataModels = kd.getMetadata().getDataModels();
     LOG.debug("      dataModels.ct = " + dataModels.getModelReference().size());
     infoModel.setDataModels(dataModels);
 
-    String description = kd.getMetadata().getDescription().getValue();
-    LOG.debug("      description = " + description);
-    infoModel.setDescription(description);
+    Libraries libraries = kd.getMetadata().getLibraries();
+    LOG.debug("      libraries = " + libraries);
+    infoModel.setLibraries(libraries);
+
+    if (kd.getMetadata().getDescription() != null) {
+      String description = kd.getMetadata().getDescription().getValue();
+      LOG.debug("      description = " + description);
+      infoModel.setDescription(description);
+    }
 
     List<String> keyTerms = new ArrayList<>();
-    for (CD keyTerm : kd.getMetadata().getKeyTerms().getTerm()) {
-      keyTerms.add(keyTerm.getOriginalText().getValue());
-    }
-    LOG.debug("      keyTerms.ct = " + keyTerms.size());
-    if (keyTerms.size() > 0) {
-      infoModel.setKeyTerms(keyTerms);
+    if (kd.getMetadata().getKeyTerms() != null) {
+      for (CD keyTerm : kd.getMetadata().getKeyTerms().getTerm()) {
+        keyTerms.add(keyTerm.getOriginalText().getValue());
+      }
+      LOG.debug("      keyTerms.ct = " + keyTerms.size());
+      if (keyTerms.size() > 0) {
+        infoModel.setKeyTerms(keyTerms);
+      }
     }
 
     String status = kd.getMetadata().getStatus().getValue().toString();
     LOG.debug("      status = " + status);
     infoModel.setStatus(status);
+
+    InlineResource documentation = kd.getMetadata().getDocumentation();
+    LOG.debug("      documentation = " + documentation);
+    infoModel.setDocumentation(documentation);
+
+    RelatedResources relatedResources = kd.getMetadata().getRelatedResources();
+    LOG.debug("      relatedResources = " + relatedResources);
+    infoModel.setRelatedResources(relatedResources);
+
+    SupportingEvidence supportingEvidence =
+        kd.getMetadata().getSupportingEvidence();
+    LOG.debug("      supportingEvidence = " + supportingEvidence);
+    infoModel.setSupportingEvidence(supportingEvidence);
+
+    Applicability applicability = kd.getMetadata().getApplicability();
+    LOG.debug("      applicability = " + applicability);
+    infoModel.setApplicability(applicability);
+
+    Categories categories = kd.getMetadata().getCategories();
+    LOG.debug("      categories = " + categories);
+    infoModel.setCategories(categories);
 
     EventHistory eventHistory = kd.getMetadata().getEventHistory();
     LOG.debug("      event history = " + eventHistory);
@@ -197,7 +248,7 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
     infoModel.setUsageTerms(usageTerms);
 
     // Content
-    
+
     ExternalData externalData = kd.getExternalData();
     LOG.debug("      externalData = " + externalData);
     infoModel.setExternalData(externalData);
@@ -210,8 +261,6 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
     LOG.debug("      actionGroup = " + actionGroup);
     infoModel.setActionGroup(actionGroup);
 
-    
-    
     return infoModel;
   }
 }

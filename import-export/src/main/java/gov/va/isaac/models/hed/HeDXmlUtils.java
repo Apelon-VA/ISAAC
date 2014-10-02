@@ -37,6 +37,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -100,11 +101,12 @@ public class HeDXmlUtils {
    * @throws JAXBException the JAXB exception
    */
   @SuppressWarnings("resource")
-  public Object getGraphForFile(File file, Class<?> graphClass) throws FileNotFoundException, JAXBException {
-    return getGraphForString(new Scanner( file, "UTF-8" ).useDelimiter("\\A").next(), graphClass);
+  public Object getGraphForFile(File file, Class<?> graphClass)
+    throws FileNotFoundException, JAXBException {
+    return getGraphForString(new Scanner(file, "UTF-8").useDelimiter("\\A")
+        .next(), graphClass);
   }
 
-  
   /**
    * Returns the graph for stream.
    *
@@ -115,9 +117,12 @@ public class HeDXmlUtils {
    * @throws JAXBException the JAXB exception
    */
   @SuppressWarnings("resource")
-  public Object getGraphForStream(InputStream in, Class<?> graphClass) throws FileNotFoundException, JAXBException {
-    return getGraphForString(new Scanner( in, "UTF-8" ).useDelimiter("\\A").next(), graphClass);
-  }  
+  public Object getGraphForStream(InputStream in, Class<?> graphClass)
+    throws FileNotFoundException, JAXBException {
+    return getGraphForString(new Scanner(in, "UTF-8").useDelimiter("\\A")
+        .next(), graphClass);
+  }
+
   /**
    * Returns the XML string for for graph object.
    *
@@ -132,7 +137,7 @@ public class HeDXmlUtils {
     jaxbContext = JAXBContext.newInstance(object.getClass());
     Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
     jaxbMarshaller.marshal(object, writer);
-    return writer.toString(); 
+    return writer.toString();
   }
 
   /**
@@ -188,18 +193,19 @@ public class HeDXmlUtils {
    * @throws TransformerException the transformer exception
    * @throws ParserConfigurationException the parser configuration exception
    */
-  public String getStringForNode(Node root) throws TransformerException, ParserConfigurationException {
+  public String getStringForNode(Node root) throws TransformerException,
+    ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder = factory.newDocumentBuilder();
     Document document = builder.newDocument();
-    document.appendChild(document.importNode(root,true));
+    document.appendChild(document.importNode(root, true));
     DOMSource source = new DOMSource(document);
     StringWriter out = new StringWriter();
     StreamResult result = new StreamResult(out);
     transformer.transform(source, result);
     return out.toString();
   }
-  
+
   /**
    * Returns the graph for node.
    *
@@ -210,10 +216,11 @@ public class HeDXmlUtils {
    * @throws TransformerException the transformer exception
    * @throws ParserConfigurationException the parser configuration exception
    */
-  public Object getGraphForNode(Node node, Class<?> graphClass) throws JAXBException, TransformerException, ParserConfigurationException {
-     return getGraphForString(getStringForNode(node), graphClass);
+  public Object getGraphForNode(Node node, Class<?> graphClass)
+    throws JAXBException, TransformerException, ParserConfigurationException {
+    return getGraphForString(getStringForNode(node), graphClass);
   }
-  
+
   /**
    * Returns the node for graph.
    *
@@ -224,8 +231,34 @@ public class HeDXmlUtils {
    * @throws IOException Signals that an I/O exception has occurred.
    * @throws JAXBException the JAXB exception
    */
-  public Node getNodeForGraph(Object object) throws ParserConfigurationException, SAXException, IOException, JAXBException {
+  public Node getNodeForGraph(Object object)
+    throws ParserConfigurationException, SAXException, IOException,
+    JAXBException {
     return getNodeForString(getStringForGraph(object));
   }
 
+  /**
+   * Pretty format.
+   *
+   * @param input the input
+   * @param indent the indent
+   * @return the string
+   */
+  @SuppressWarnings("static-method")
+  public String prettyFormat(String input, int indent) {
+    try {
+      Source xmlInput = new StreamSource(new StringReader(input));
+      StringWriter stringWriter = new StringWriter();
+      StreamResult xmlOutput = new StreamResult(stringWriter);
+      TransformerFactory transformerFactory = TransformerFactory.newInstance();
+      transformerFactory.setAttribute("indent-number", indent);
+      Transformer transformer = transformerFactory.newTransformer();
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+      transformer.transform(xmlInput, xmlOutput);
+      return xmlOutput.getWriter().toString();
+    } catch (Exception e) {
+      throw new RuntimeException(e); // simple exception handling, please review
+                                     // it
+    }
+  }
 }

@@ -59,7 +59,7 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
   /** The output stream. */
   private final OutputStream outputStream;
 
-  /** The utils. */
+  /** The a. */
   private HeDXmlUtils utils;
 
   /**
@@ -98,8 +98,8 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
 
     // Build a DOM tree in the style of HeD.
     KnowledgeDocument kd = buildKnowledgeDocument(infoModel);
-    outputStream.write(utils.getStringForGraph(kd).getBytes(
-        StandardCharsets.UTF_8));
+    outputStream.write(utils.prettyFormat(utils.getStringForGraph(kd), 2)
+        .getBytes(StandardCharsets.UTF_8));
     outputStream.flush();
 
     LOG.info("Ending export of HeD model");
@@ -121,7 +121,7 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
    * @param infoModel the info model
    * @return the knowledge document
    * @throws JAXBException
-   * @throws TransformerConfigurationException 
+   * @throws TransformerConfigurationException
    */
   private KnowledgeDocument buildKnowledgeDocument(HeDInformationModel infoModel)
     throws JAXBException, TransformerConfigurationException {
@@ -131,17 +131,20 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     Metadata metadata = buildMetadata(infoModel);
     kd.setMetadata(metadata);
 
-    if (infoModel.getExternalData() != null) {
+    if (infoModel.getExternalData() != null)
       kd.setExternalData(infoModel.getExternalData());
-    }
 
-    if (infoModel.getConditions() != null) {
+    if (infoModel.getExpressions() != null)
+      kd.setExpressions(infoModel.getExpressions());
+
+    if (infoModel.getExpressions() != null)
+      kd.setExpressions(infoModel.getExpressions());
+
+    if (infoModel.getConditions() != null)
       kd.setConditions(infoModel.getConditions());
-    }
 
-    if (infoModel.getActionGroup() != null) {
+    if (infoModel.getActionGroup() != null)
       kd.setActionGroup(infoModel.getActionGroup());
-    }
 
     return kd;
   }
@@ -152,18 +155,14 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
    * @param infoModel the info model
    * @return the metadata
    * @throws JAXBException
-   * @throws TransformerConfigurationException 
+   * @throws TransformerConfigurationException
    */
   private Metadata buildMetadata(HeDInformationModel infoModel)
     throws JAXBException, TransformerConfigurationException {
     Metadata metadata = new Metadata();
 
     // key
-    Identifiers ids = new Identifiers();
-    VersionedIdentifier id = new VersionedIdentifier();
-    id.setRoot(infoModel.getKey());
-    id.setVersion("1.0");
-    ids.getIdentifier().add(id);
+    Identifiers ids = infoModel.getIdentifiers();
     metadata.setIdentifiers(ids);
 
     // artifact type
@@ -181,6 +180,9 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     if (infoModel.getDataModels() != null) {
       metadata.setDataModels(infoModel.getDataModels());
     }
+
+    if (infoModel.getLibraries() != null)
+      metadata.setLibraries(infoModel.getLibraries());
 
     // title
     ST title = new ST();
@@ -207,14 +209,37 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     Status status = new Status();
     status.setValue(ArtifactStatusType.valueOf(infoModel.getStatus()));
 
+    // documentation
+    if (infoModel.getDocumentation() != null)
+      metadata.setDocumentation(infoModel.getDocumentation());
+
+    // related resources
+    if (infoModel.getRelatedResources() != null)
+      metadata.setRelatedResources(infoModel.getRelatedResources());
+
+    // supporting evidence
+    if (infoModel.getSupportingEvidence() != null)
+      metadata.setSupportingEvidence(infoModel.getSupportingEvidence());
+
+    // applicability
+    if (infoModel.getApplicability() != null)
+      metadata.setApplicability(infoModel.getApplicability());
+
+    // categories
+    if (infoModel.getCategories() != null)
+      metadata.setCategories(infoModel.getCategories());
+
     // event history
-    metadata.setEventHistory(infoModel.getEventHistory());
+    if (infoModel.getEventHistory() != null)
+      metadata.setEventHistory(infoModel.getEventHistory());
 
     // contributions
-    metadata.setContributions(infoModel.getContributions());
+    if (infoModel.getContributions() != null)
+      metadata.setContributions(infoModel.getContributions());
 
     // publishers
-    metadata.setPublishers(infoModel.getPublishers());
+    if (infoModel.getPublishers() != null)
+      metadata.setPublishers(infoModel.getPublishers());
 
     return metadata;
   }

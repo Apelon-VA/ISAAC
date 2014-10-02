@@ -753,6 +753,7 @@ public class Metadata {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "coverage"
@@ -864,6 +865,7 @@ public class Metadata {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "category"
@@ -1107,6 +1109,7 @@ public class Metadata {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "identifier"
@@ -1227,6 +1230,7 @@ public class Metadata {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "libraryReference"
@@ -1348,6 +1352,7 @@ public class Metadata {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "relatedResource"
@@ -1459,6 +1464,7 @@ public class Metadata {
      * 
      * 
      */
+    @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "templateId"

@@ -480,7 +480,9 @@ public class DefaultInformationModel implements InformationModel {
    * @return the description
    */
   public String getDescription() {
-    return getPropertyByLabel("description").getType();
+    InformationModelProperty property = getPropertyByLabel("description");
+    if (property == null) return null;
+    return property.getType();
   }
 
   /**
@@ -507,5 +509,13 @@ public class DefaultInformationModel implements InformationModel {
    */
   public String getStatus() {
     return getPropertyByLabel("status").getType();
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   */
+  @Override
+  public int compareTo(InformationModel o) {
+    return getName().compareTo(o.getName());
   }
 }
