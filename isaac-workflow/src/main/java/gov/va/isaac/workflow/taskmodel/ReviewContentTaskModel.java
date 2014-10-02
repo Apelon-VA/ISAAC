@@ -24,7 +24,6 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
-import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
@@ -45,9 +44,16 @@ import javafx.scene.input.InputEvent;
  */
 public class ReviewContentTaskModel extends TaskModel {
 	public enum Response {
-		approve,
-		reject,
-		cancel;
+		approve("Send for approval"),
+		reject("Reject"),
+		cancel("Cancel");
+		
+		private final String displayText;
+		private Response(String displayTxt) {
+			displayText = displayTxt;
+		}
+		
+		public String getDisplayText() { return displayText; }
 		
 		public static Response valueOfIfExists(String str) {
 			try {
@@ -155,17 +161,25 @@ public class ReviewContentTaskModel extends TaskModel {
 			StringProperty responseProperty = getOutputVariableValueProperty(OutputVariable.out_response.name());
 			BooleanProperty responsePropertyStatus = getOutputVariableStatusProperty(OutputVariable.out_response.name());
 
+			responseComboBox.valueProperty().addListener(new ChangeListener<Response>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends Response> observable,
+					Response oldValue,
+					Response newValue) {
+				responsePropertyStatus.set(Response.valueOfIfExists(responseProperty.get()) != null);
+			}});
 			responseComboBox.setButtonCell(new ListCell<Response>() {
 				@Override
 				protected void updateItem(Response t, boolean bln) {
 					super.updateItem(t, bln); 
 					if (bln) {
 						setText("");
+						responseProperty.set("");
 					} else {
-						setText(t.toString());
+						setText(t.displayText);
+						responseProperty.set(t.name());
 					}
-
-					responseProperty.set(getText());
 
 					responsePropertyStatus.set(Response.valueOfIfExists(responseProperty.get()) != null);
 				
@@ -173,9 +187,26 @@ public class ReviewContentTaskModel extends TaskModel {
 				}
 			});
 
+			responseComboBox.setCellFactory((p) -> {
+				final ListCell<Response> cell = new ListCell<Response>() {
+					@Override
+					protected void updateItem(Response c, boolean emptyRow) {
+						super.updateItem(c, emptyRow);
+
+						if(c == null || emptyRow) {
+							setText(null);
+						} else {
+							setText(c.displayText);
+						}
+					}
+				};
+
+				return cell;
+			});
+
 			// Initialize state of input control, triggering handlers/listeners
-			responseComboBox.getSelectionModel().select(null);
 			responseComboBox.getItems().addAll(Response.values());
+			responseComboBox.getSelectionModel().select(null);
 			
 			return responseComboBox;
 		}
