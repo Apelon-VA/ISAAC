@@ -102,6 +102,8 @@ public abstract class TaskModel {
 	private final Map<String, ComponentsForOutputVariable> componentsForOutputVariables = new HashMap<>();
 
 	private final BooleanProperty isSavableProperty = new SimpleBooleanProperty(false);
+	
+	private final BooleanProperty outputVariablesSavableProperty = new SimpleBooleanProperty(false);
 
 	/**
 	 * 
@@ -110,6 +112,14 @@ public abstract class TaskModel {
 		task = inputTask;
 
 		getActionProperty().addListener(getDefaultListenerToSetIsSavableProperty());
+		getOutputVariablesSavableProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends Boolean> observable,
+					Boolean oldValue,
+					Boolean newValue) {
+				isSavableProperty.set(isSavable());
+			}});
 	}
 	protected TaskModel(LocalTask inputTask, Enum<? extends Enum<?>>[] enumValues) {
 		this(inputTask);
@@ -132,6 +142,8 @@ public abstract class TaskModel {
 
 	public LocalTask getTask() { return task; }
 
+	public BooleanProperty getOutputVariablesSavableProperty() { return outputVariablesSavableProperty; }
+	
 	public BooleanProperty getIsSavableProperty() { return isSavableProperty; }
 	public boolean getIsSavable() { return getIsSavableProperty().get(); }
 	public void setIsSavable(boolean isSavable) { getIsSavableProperty().set(isSavable); }
@@ -167,11 +179,34 @@ public abstract class TaskModel {
 	 */
 	protected final void addOutputVariable(String variableName) {
 		Label newLabel = createOutputVariableInputNodeLabel(variableName);
-		ComponentsForOutputVariable newLabelAndNode = new ComponentsForOutputVariable(variableName, newLabel);
-		componentsForOutputVariables.put(variableName, newLabelAndNode);
+		ComponentsForOutputVariable componentsForOutputVariable = new ComponentsForOutputVariable(variableName, newLabel);
+		componentsForOutputVariables.put(variableName, componentsForOutputVariable);
+
+		BooleanProperty variableStatusProperty = getOutputVariableStatusProperty(variableName);
+		variableStatusProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends Boolean> observable,
+					Boolean oldValue,
+					Boolean newValue) {
+				if (newValue) {
+					newLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
+					if (areOutputVariablesSavable()) {
+						getOutputVariablesSavableProperty().set(true);
+					}
+					if (isSavable()) {
+						getIsSavableProperty().set(true);
+					}
+				} else {
+					newLabel.setStyle("-fx-text-fill: red;");
+					getOutputVariablesSavableProperty().set(false);
+					getIsSavableProperty().set(false);
+				}
+			}});
+
 		
 		Node newNode = createOutputVariableInputNode(variableName);
-		newLabelAndNode.setInputNode(newNode);
+		componentsForOutputVariable.setInputNode(newNode);
 	}
 	
 	/**
@@ -198,17 +233,21 @@ public abstract class TaskModel {
 //				}
 //			}
 
-			for (Map.Entry<String, ComponentsForOutputVariable> entry : componentsForOutputVariables.entrySet()) {
-				if (! entry.getValue().getStatusProperty().get()) {
-					LOGGER.debug("Validation failed on variable {} with value {}", entry.getKey(), entry.getValue().getValueProperty().get());
-					return false;
-				}
-			}
-
-			return true;
+			return areOutputVariablesSavable();
 		}
 	}
 
+	public boolean areOutputVariablesSavable() {
+		for (Map.Entry<String, ComponentsForOutputVariable> entry : componentsForOutputVariables.entrySet()) {
+			if (! entry.getValue().getStatusProperty().get()) {
+				LOGGER.debug("Validation failed on variable {} with value {}", entry.getKey(), entry.getValue().getValueProperty().get());
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	public Set<String> getOutputVariableNames() {
 		return Collections.unmodifiableSet(componentsForOutputVariables.keySet());
 	}

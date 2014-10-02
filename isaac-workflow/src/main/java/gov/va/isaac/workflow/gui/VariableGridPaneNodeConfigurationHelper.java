@@ -55,10 +55,10 @@ class VariableGridPaneNodeConfigurationHelper {
 			
 			label.setPadding(new Insets(5));
 
-			int columnIndex = GridPane.getColumnIndex(label);
-			if (columnIndex == 0) {
-				label.setStyle("-fx-font-weight: bold");
-			}
+//			int columnIndex = GridPane.getColumnIndex(label);
+//			if (columnIndex == 0) {
+//				label.setStyle("-fx-font-weight: bold");
+//			}
 			
 			label.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
@@ -88,10 +88,10 @@ class VariableGridPaneNodeConfigurationHelper {
 			
 			textInputControl.setPadding(new Insets(5));
 
-			int columnIndex = GridPane.getColumnIndex(textInputControl);
-			if (columnIndex == 0) {
-				textInputControl.setStyle("-fx-font-weight: bold");
-			}
+//			int columnIndex = GridPane.getColumnIndex(textInputControl);
+//			if (columnIndex == 0) {
+//				textInputControl.setStyle("-fx-font-weight: bold");
+//			}
 			
 			textInputControl.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 				@Override
