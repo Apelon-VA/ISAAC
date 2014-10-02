@@ -168,35 +168,37 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 			@Override
 			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
-				int newGroup = 0; 
+				// Test new or different value
 				if (rel != null) {
-					if (newVal.trim().length() > 0) {
-						groupNewSelected.set(true);
-					} else {
-						groupNewSelected.set(false);
-					}
-					
-					if (modificationMade.get() || groupNewSelected.get()) {
-						try {
-							newGroup = Integer.parseInt(newVal);
-							if (newGroup < 0) {
-								reasonSaveDisabled_.set("Group must be 0 or greater");
-							
-								if (!passesQA()) {
-									reasonSaveDisabled_.set("Failed QA");
-								}
-							}
-						} catch (NumberFormatException e) {
-							reasonSaveDisabled_.set("Must select an integer");
-						} 
-					}
-
-					if (rel.getGroup() != newGroup) {
+					if (!Integer.toString(rel.getGroup()).equals(newVal)) {
 						modificationMade.set(true);
 					} else {
 						modificationMade.set(false);
 						reasonSaveDisabled_.set("Cannot save unless original content changed");
 					}
+				} else {
+					if (newVal.trim().length() > 0) {
+						groupNewSelected.set(true);
+					} else {
+						groupNewSelected.set(false);
+					}
+				}
+				
+				// Test valid value
+				int newGroup = 0; 
+				if (modificationMade.get() || groupNewSelected.get()) {
+					try {
+						newGroup = Integer.parseInt(newVal);
+						if (newGroup < 0) {
+							reasonSaveDisabled_.set("Group must be 0 or greater");
+						
+							if (!passesQA()) {
+								reasonSaveDisabled_.set("Failed QA");
+							}
+						}
+					} catch (NumberFormatException e) {
+						reasonSaveDisabled_.set("Must select an integer");
+					} 
 				}
 			}
 		});
