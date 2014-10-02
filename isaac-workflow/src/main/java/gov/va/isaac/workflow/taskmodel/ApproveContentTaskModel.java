@@ -142,13 +142,6 @@ public class ApproveContentTaskModel extends TaskModel {
 			TextArea commentTextArea = new TextArea();
 			
 			StringProperty commentProperty = getOutputVariableValueProperty(variableName);
-			
-			setOutputVariableValidator(variableName, new Validator() {
-				@Override
-				public boolean isValid() {
-					return commentProperty != null && commentProperty.get() != null && commentProperty.get().length() > 0;
-				}
-			});
 
 			commentProperty.bind(commentTextArea.textProperty());
 			
@@ -216,13 +209,6 @@ public class ApproveContentTaskModel extends TaskModel {
 			TextArea submitListTextArea = new TextArea();
 			
 			StringProperty submitListProperty = getOutputVariableValueProperty(variableName);
-			
-			setOutputVariableValidator(variableName, new Validator() {
-				@Override
-				public boolean isValid() {
-					return submitListProperty != null && submitListProperty.get() != null && submitListProperty.get().length() > 0;
-				}
-			});
 
 			submitListProperty.bind(submitListTextArea.textProperty());
 			

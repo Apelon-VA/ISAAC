@@ -138,13 +138,6 @@ public class ReviewContentTaskModel extends TaskModel {
 			TextArea commentTextArea = new TextArea();
 			
 			StringProperty commentProperty = getOutputVariableValueProperty(variableName);
-			
-			setOutputVariableValidator(variableName, new Validator() {
-				@Override
-				public boolean isValid() {
-					return commentProperty != null && commentProperty.get() != null && commentProperty.get().length() > 0;
-				}
-			});
 
 			commentProperty.bind(commentTextArea.textProperty());
 			

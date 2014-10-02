@@ -114,7 +114,7 @@ public class WorkflowInboxController
 
 		// BEGIN Task name
 		TableColumn<LocalTask, String> tCol = new TableColumn<>();
-		tCol.setText("Status");
+		tCol.setText("Name");
 		tCol.setCellValueFactory((value) -> {
 			return new SimpleStringProperty(value.getValue().getName());
 		});
@@ -123,7 +123,7 @@ public class WorkflowInboxController
 
 		// BEGIN Task id
 		tCol = new TableColumn<>();
-		tCol.setText("id");
+		tCol.setText("Id");
 		tCol.setCellValueFactory((value) -> {
 			return new SimpleStringProperty(value.getValue().getId() + "");
 		});

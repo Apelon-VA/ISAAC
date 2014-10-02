@@ -115,6 +115,16 @@ public abstract class TaskModel {
 			this.label = label;
 			this.inputNode = inputNode;
 			this.validator = validator;
+			
+			// Add default validator
+			if (validator == null) {
+				setValidator(new Validator() {
+					@Override
+					public boolean isValid() {
+						return valueProperty != null && valueProperty.get() != null && valueProperty.get().length() > 0;
+					}	
+				});
+			}
 		}
 	}
 
