@@ -972,31 +972,36 @@ public class WBUtility {
 	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
 		DescriptionCAB newDesc = new DescriptionCAB(conNid, typeNid, lang, term, isInitial, IdDirective.GENERATE_HASH); 
 
-		WBUtility.getBuilder().construct(newDesc);
+		getBuilder().construct(newDesc);
+		addUncommitted(conNid);
 	}
 
 	public static void createNewRelationship(int conNid, int typeNid, int targetNid, int group, RelationshipType type) throws IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, group, type, IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newRel);
+		getBuilder().construct(newRel);
+		addUncommitted(conNid);
 	}
 		
 	public static void createNewDescription(int conNid, String term) throws IOException, InvalidCAB, ContradictionException {
 		DescriptionCAB newDesc = new DescriptionCAB(conNid, SnomedMetadataRf2.SYNONYM_RF2.getNid(), LanguageCode.EN_US, term, false, IdDirective.GENERATE_HASH); 
 
-		WBUtility.getBuilder().construct(newDesc);
+		getBuilder().construct(newDesc);
+		addUncommitted(conNid);
 	}
 
 	public static void createNewRole(int conNid, int typeNid, int targetNid) throws IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, 0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newRel);
+		getBuilder().construct(newRel);
+		addUncommitted(conNid);
 	}
 
 	public static void createNewParent(int conNid, int targetNid) throws ValidationException, IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, SnomedRelType.IS_A.getNid(), targetNid, 0, RelationshipType.STATED_HIERARCHY, IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newRel);		
+		getBuilder().construct(newRel);
+		addUncommitted(conNid);
 	}
 
 	public static void addUncommittedNoChecks(ConceptChronicleBI con) {
