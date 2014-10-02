@@ -25,6 +25,9 @@
 package gov.va.isaac.workflow.taskmodel;
 
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.taskmodel.ReviewContentTaskModel.OutputVariable;
+import gov.va.isaac.workflow.taskmodel.ReviewContentTaskModel.Response;
+import gov.va.isaac.workflow.taskmodel.TaskModel.Validator;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
@@ -115,17 +118,16 @@ public class EditContentTaskModel extends TaskModel {
 			TextArea commentTextArea = new TextArea();
 			
 			StringProperty commentProperty = getOutputVariableValueProperty(OutputVariable.out_comment.name());
-			BooleanProperty commentPropertyStatus = getOutputVariableStatusProperty(OutputVariable.out_comment.name());
 			
-			commentProperty.bind(commentTextArea.textProperty());
-			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
+			setOutputVariableValidator(OutputVariable.out_comment.name(), new Validator() {
 				@Override
-				public void handle(InputEvent event) {
-					commentPropertyStatus.set(commentTextArea.getText().length() > 0);
-
-					getIsSavableProperty().set(isSavable());
+				public boolean isValid() {
+					return commentProperty != null && commentProperty.get() != null && commentProperty.get().length() > 0;
 				}
 			});
+			
+			commentProperty.bind(commentTextArea.textProperty());
+			commentTextArea.setText("");
 			
 			return commentTextArea;
 		}
