@@ -324,7 +324,7 @@ public class WorkflowInitiationViewController {
 		} else {
 			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 			
-			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId());	
+			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + "\nFor componentId " + componentOrConcept.getPrimordialUuid());	
 
 			Utility.submit(() -> getWorkflowService().synchronizeWithRemote());
 
