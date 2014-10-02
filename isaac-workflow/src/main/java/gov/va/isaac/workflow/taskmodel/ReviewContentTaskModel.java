@@ -24,9 +24,12 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
+import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
@@ -136,10 +139,13 @@ public class ReviewContentTaskModel extends TaskModel {
 			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
 				@Override
 				public void handle(InputEvent event) {
-					commentPropertyStatus.set(commentTextArea.getText().length() > 0);
+					commentPropertyStatus.set(commentTextArea.getText() != null && commentTextArea.getText().length() > 0);
 					getIsSavableProperty().set(isSavable());
 				}
 			});
+			
+			// Initialize state of input control, triggering handlers/listeners
+			commentTextArea.setText(null);
 			
 			return commentTextArea;
 		}
@@ -166,7 +172,9 @@ public class ReviewContentTaskModel extends TaskModel {
 					getIsSavableProperty().set(isSavable());
 				}
 			});
-			
+
+			// Initialize state of input control, triggering handlers/listeners
+			responseComboBox.getSelectionModel().select(null);
 			responseComboBox.getItems().addAll(Response.values());
 			
 			return responseComboBox;

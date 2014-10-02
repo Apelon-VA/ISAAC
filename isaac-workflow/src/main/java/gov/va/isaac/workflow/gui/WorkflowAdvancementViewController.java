@@ -39,7 +39,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -53,6 +56,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
@@ -84,11 +88,13 @@ public class WorkflowAdvancementViewController
 	@FXML private ComboBox<Action> actionComboBox;
 	
 	@FXML private Button viewTaskDetailsButton;
+	@FXML private Label actionComboBoxLabel;
 	
 	private WorkflowAdvancementView stage;
 
 	private GridPane inputTabGridPane;
-	
+	private Tab inputTab;
+	private Label inputTabLabel;
 	private ScrollPane conceptScrollPane;
 
 	private TaskModel taskModel = null;
@@ -103,6 +109,7 @@ public class WorkflowAdvancementViewController
 	{
 		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert actionComboBoxLabel != null : "fx:id=\"actionComboBoxLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert taskLabel != null : "fx:id=\"taskLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 
@@ -117,7 +124,10 @@ public class WorkflowAdvancementViewController
 		conceptTab.setClosable(false);
 		centralTabPane.getTabs().add(conceptTab);
 		
-		Tab inputTab = new Tab("Input");
+		inputTabLabel = new Label("Input");
+		inputTab = new Tab();
+		inputTab.setGraphic(inputTabLabel);
+		
 		inputTabGridPane = new GridPane();
 		inputTab.setContent(inputTabGridPane);
 		centralTabPane.getTabs().add(inputTab);
@@ -270,8 +280,44 @@ public class WorkflowAdvancementViewController
 		conceptVersion = containingConcept;
 		
 		taskModel = TaskModelFactory.newTaskModel(initialTask);
+
+		taskModel.getActionProperty().addListener(new ChangeListener<Action>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends Action> observable,
+					Action oldValue,
+					Action newValue) {
+				setActionComboBoxLabelColorBasedOnTaskModelActionProperty();
+			}});
+		setActionComboBoxLabelColorBasedOnTaskModelActionProperty();
+
+		taskModel.getOutputVariablesSavableProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends Boolean> observable,
+					Boolean oldValue,
+					Boolean newValue) {
+				setInputTabColorBasedOnTaskModelOutputVariables();
+			}});
+		setInputTabColorBasedOnTaskModelOutputVariables();
 		
 		loadContent();
+	}
+
+	private void setInputTabColorBasedOnTaskModelOutputVariables() {
+		if (taskModel.getOutputVariablesSavableProperty().get()) {
+			inputTabLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
+		} else {
+			inputTabLabel.setStyle("-fx-text-fill: red;");
+		}
+	}
+	private void setActionComboBoxLabelColorBasedOnTaskModelActionProperty() {
+		ObjectProperty<Action> actionProperty = taskModel.getActionProperty();
+		if (actionProperty.get() != null && actionProperty.get() != Action.NONE) {
+			actionComboBoxLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
+		} else {
+			actionComboBoxLabel.setStyle("-fx-text-fill: red;");
+		}
 	}
 
 	ConceptVersionBI getConcept() {

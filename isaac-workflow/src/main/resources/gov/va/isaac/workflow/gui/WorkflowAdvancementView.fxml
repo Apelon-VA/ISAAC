@@ -37,7 +37,7 @@
                   <Insets right="10.0" />
                </GridPane.margin>
             </Label>
-            <Label text="Action" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            <Label fx:id="actionComboBoxLabel" text="Action" GridPane.columnIndex="2" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="10.0" />
                </GridPane.margin>
