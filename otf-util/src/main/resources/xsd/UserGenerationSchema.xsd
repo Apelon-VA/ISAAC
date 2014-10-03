@@ -17,6 +17,7 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element ref="user" maxOccurs="unbounded" minOccurs="0" />
+				<xs:element ref="newUserDefaults" maxOccurs="1" minOccurs="0"/>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -28,13 +29,25 @@
 					<xs:annotation>
 						<xs:appinfo>
 							<jxb:property>
-								<jxb:javadoc>The Unique Full Name of the user (typically "FirstName LastName")</jxb:javadoc>
+								<jxb:javadoc>The Unique Full Name of the user (typically "FirstName LastName [uniqueBit]")</jxb:javadoc>
 							</jxb:property>
 						</xs:appinfo>
-						<xs:documentation>The Unique Full Name of the user (typically "FirstName LastName")</xs:documentation>
+						<xs:documentation>The Unique Full Name of the user (typically "FirstName LastName [uniqueBit]")</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="uniqueUserName" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:element name="fullName" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The Preferred Full Name of the user.  May duplicate another user with the same Full Name.  Useful if 
+								the uniqueFullName property had to be modified to make it unique, due to user name collisions.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The Preferred Full Name of the user.  May duplicate another user with the same Full Name.  Useful if 
+							the uniqueFullName property had to be modified to make it unique, due to user name collisions.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="uniqueLogonName" type="xs:string" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
 							<jxb:property>
@@ -54,7 +67,7 @@
 						<xs:documentation>The initial password. If unspecified, will be set to the uniqueUserName</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="uuid" type="UUID" minOccurs="0" maxOccurs="1">
+				<xs:element name="UUID" type="UUID" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
 							<jxb:property>
@@ -64,6 +77,70 @@
 						</xs:appinfo>
 						<xs:documentation>The UUID for the user concept to be generated. If unspecified, will be generated based on the uniqueUserName
 						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="newUserDefaults">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="statedInferredPolicy" type="statedInferredOptions" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>Display policy for the taxonomy.  Defaults to inferredThenStated if not provided.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>Display policy for the taxonomy.  Defaults to inferredThenStated if not provided.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="displayFSN" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>When displaying a single description for a concept - use the FSN (when true) or the preferred term
+								for the default language (when false).  Defaults to true, if not provided.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>When displaying a single description for a concept - use the FSN (when true) or the preferred term
+								for the default language (when false).  Defaults to true, if not provided.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="statedInferredOptions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="stated" />
+			<xs:enumeration value="inferred" />
+			<xs:enumeration value="inferredThenStated" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:element name="conceptSpec">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="FSN" type="xs:string" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The FSN for the concept</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The FSN for the concept</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="UUID" type="UUID" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The UUID for the concept</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The UUID for the concept</xs:documentation>
 					</xs:annotation>
 				</xs:element>
 			</xs:sequence>
