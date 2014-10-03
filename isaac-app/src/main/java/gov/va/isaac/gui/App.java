@@ -55,8 +55,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
  */
 public class App extends Application implements ApplicationWindowI{
 
-    public static final String TITLE_PROPERTY = "gov.va.isaac.gui.App.title";
-
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
     private AppController controller;
@@ -76,7 +74,7 @@ public class App extends Application implements ApplicationWindowI{
         this.controller = new AppController();
 
         primaryStage.getIcons().add(new Image("/icons/16x16/application-block.png"));
-        String title = AppContext.getAppProperties().getProperty(TITLE_PROPERTY);
+        String title = AppContext.getAppConfiguration().getApplicationTitle();
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(controller.getRoot()));
         primaryStage.getScene().getStylesheets().add(App.class.getResource("/isaac-shared-styles.css").toString());
