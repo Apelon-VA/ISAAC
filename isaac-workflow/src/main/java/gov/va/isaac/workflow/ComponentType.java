@@ -31,5 +31,5 @@ package gov.va.isaac.workflow;
  *
  */
 public enum ComponentType {
-	Concept, Description, Relationship, Refex
+	Concept, Description, Relationship, Refex, RefexDynamic
 }

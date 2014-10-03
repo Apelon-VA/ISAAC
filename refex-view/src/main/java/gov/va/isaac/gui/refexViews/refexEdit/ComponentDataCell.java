@@ -225,7 +225,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 							@Override
 							public Collection<Integer> getNIds()
 							{
-								return Arrays.asList(new Integer[] {nid});
+								return Arrays.asList(new Integer[] {item.getRefex().getNid()});
 							}
 						});
 						text = WBUtility.getDescription(c);

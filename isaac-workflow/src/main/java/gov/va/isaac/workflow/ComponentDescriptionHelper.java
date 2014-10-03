@@ -34,6 +34,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 /**
@@ -95,6 +96,25 @@ public class ComponentDescriptionHelper {
 			ComponentVersionBI assemblageComponentVersion = WBUtility.getComponentVersion(assemblageNid);
 			UUID assemblageUuid = assemblageComponentVersion.getPrimordialUuid();
 			description = ComponentType.Refex.name() + " member " + refexVersion.getPrimordialUuid() + " \nwith referenced component " + referencedComponent + " \nin refex " + assemblageUuid;
+			break;
+
+		case RefexDynamic:
+			//The refex Dynamic member with Referenced Component UUID: <REF_COMP_UUID> in Refex: <REFEX_UUID> having with UUID: <Refex MEMEBER UUID>
+			RefexDynamicVersionBI<?> refexDynamicVersion = (RefexDynamicVersionBI<?>)component;
+			UUID dynamicReferencedComponent = WBUtility.getComponentVersion(refexDynamicVersion.getReferencedComponentNid()).getPrimordialUuid();
+			int assemblageDynamicNid = refexDynamicVersion.getAssemblageNid();
+			ConceptVersionBI assemblageDynamicComponentVersion = WBUtility.getConceptVersion(assemblageDynamicNid);
+			UUID assemblageDynamicUuid = assemblageDynamicComponentVersion.getPrimordialUuid();
+			String refexType = "";
+			try {
+				if (assemblageDynamicComponentVersion.isAnnotationStyleRefex()) {
+					description = ComponentType.RefexDynamic.name() + " annotated member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+				} else {
+					description = ComponentType.RefexDynamic.name() + " regular member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+				}
+			} catch (Exception e) {
+				description = "Error accessing Refex Annotation type\n" + ComponentType.RefexDynamic.name() + " member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+			}
 			break;
 
 		case Relationship: {
