@@ -29,6 +29,7 @@ import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +51,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -806,9 +808,24 @@ public class CommonMenus
 		//that in the background... but not sure how to restructure this class just now to properly handle other 
 		//types of nids...
 		ComponentChronicleBI<?> cc = WBUtility.getComponentChronicle(nid);
-		if (cc != null)
-		{
-			return cc.getConceptNid();
+		
+		if (cc != null) {
+			if (cc instanceof RefexDynamicChronicleBI) {
+				RefexDynamicChronicleBI refexChron = (RefexDynamicChronicleBI)cc;
+				
+				try {
+					if (WBUtility.getConceptVersion(refexChron.getAssemblageNid()).isAnnotationStyleRefex()) {
+						return refexChron.getAssemblageNid();
+					} else {
+						return refexChron.getReferencedComponentNid();
+					}
+				} catch (IOException e) {
+					LOG.error("Unexpected - couldn't get RefexDynamicChronicleBI information for nid{}", nid);
+					return nid;
+				}
+			} else 	{
+				return cc.getConceptNid();
+			}
 		}
 		else
 		{
