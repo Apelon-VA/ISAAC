@@ -28,12 +28,10 @@ import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.InputEvent;
 
 /**
  * EditContentTaskModel
@@ -41,18 +39,23 @@ import javafx.scene.input.InputEvent;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class ReviewContentTaskModel extends TaskModel {
+public class ApproveContentTaskModel extends TaskModel {
 	public enum Response {
-		approve("Send for approval"),
-		reject("Reject"),
-		cancel("Cancel");
+		approve("approve", "Approve"),
+		reject_edit("reject", "Reject edit"),
+		reject_review("reject-review", "Reject review"),
+		cancel("cancel", "Cancel");
 		
 		private final String displayText;
-		private Response(String displayTxt) {
-			displayText = displayTxt;
+		private final String outputText;
+		
+		private Response(String outputText, String displayText) {
+			this.displayText = displayText;
+			this.outputText = outputText;
 		}
 		
 		public String getDisplayText() { return displayText; }
+		public String getOutputText() { return outputText; }
 		
 		public static Response valueOfIfExists(String str) {
 			try {
@@ -85,7 +88,8 @@ public class ReviewContentTaskModel extends TaskModel {
 	
 	public enum OutputVariable {
 		out_response("Response"),
-		out_comment("Comment");
+		out_comment("Comment"),
+		out_submit_list("Submission List");
 
 		private final String labelName;
 		private OutputVariable(String labelName) {
@@ -106,7 +110,7 @@ public class ReviewContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	ReviewContentTaskModel(LocalTask inputTask) {
+	ApproveContentTaskModel(LocalTask inputTask) {
 		super(inputTask, OutputVariable.values());
 	}
 
@@ -164,7 +168,7 @@ public class ReviewContentTaskModel extends TaskModel {
 						ObservableValue<? extends Response> observable,
 						Response oldValue,
 						Response newValue) {
-					responseProperty.set(newValue != null ? newValue.name() : null);
+					responseProperty.set(newValue != null ? newValue.getOutputText() : null);
 				}});
 			responseComboBox.setButtonCell(new ListCell<Response>() {
 				@Override
@@ -200,6 +204,18 @@ public class ReviewContentTaskModel extends TaskModel {
 			responseComboBox.getSelectionModel().select(null);
 			
 			return responseComboBox;
+		}
+		case out_submit_list: {
+			TextArea submitListTextArea = new TextArea();
+			
+			StringProperty submitListProperty = getOutputVariableValueProperty(variableName);
+
+			submitListProperty.bind(submitListTextArea.textProperty());
+			
+			// Initialize state of input control, triggering handlers/listeners
+			submitListTextArea.setText("");
+			
+			return submitListTextArea;
 		}
 		
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);

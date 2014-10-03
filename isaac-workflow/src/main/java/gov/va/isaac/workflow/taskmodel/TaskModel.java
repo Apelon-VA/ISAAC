@@ -54,6 +54,10 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class TaskModel {
 	private final static Logger LOGGER = LoggerFactory.getLogger(TaskModel.class);
+
+	interface Validator {
+		boolean isValid();
+	}
 	
 	private static class ComponentsForOutputVariable {
 		private final String variableName;
@@ -61,7 +65,9 @@ public abstract class TaskModel {
 		private Node inputNode = null;
 		private final StringProperty valueProperty = new SimpleStringProperty();
 		private final BooleanProperty statusProperty = new SimpleBooleanProperty(false);
-
+		private Validator validator;
+		private ChangeListener<String> valuePropertyListener;
+		
 		String getVariableName() {
 			return variableName;
 		}
@@ -80,18 +86,45 @@ public abstract class TaskModel {
 		BooleanProperty getStatusProperty() {
 			return statusProperty;
 		}
+		Validator getValidator() { return validator; }
+		void setValidator(Validator v) {
+			if (valuePropertyListener != null) {
+				valueProperty.removeListener(valuePropertyListener);
+			}
+			validator = v;
+			
+			if (validator != null) {
+				valueProperty.addListener(new ChangeListener<String>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends String> observable,
+							String oldValue,
+							String newValue) {
+						statusProperty.set(validator.isValid());
+					}});
+				statusProperty.set(validator.isValid());
+			}
+		}
 
 		private ComponentsForOutputVariable(String variableName, Label label) {
-			super();
-			this.variableName = variableName;
-			this.label = label;
-			this.inputNode = null;
+			this(variableName, label, (Node)null, (Validator)null);
 		}
-		private ComponentsForOutputVariable(String variableName, Label label, Node inputNode) {
+		private ComponentsForOutputVariable(String variableName, Label label, Node inputNode, Validator validator) {
 			super();
 			this.variableName = variableName;
 			this.label = label;
 			this.inputNode = inputNode;
+			this.validator = validator;
+			
+			// Add default validator
+			if (validator == null) {
+				setValidator(new Validator() {
+					@Override
+					public boolean isValid() {
+						return valueProperty != null && valueProperty.get() != null && valueProperty.get().length() > 0;
+					}	
+				});
+			}
 		}
 	}
 
@@ -163,6 +196,10 @@ public abstract class TaskModel {
 		return currentOutputVariables;
 	}
 
+	protected void setOutputVariableValidator(String variableName, Validator validator) {
+		componentsForOutputVariables.get(variableName).setValidator(validator);
+	}
+
 	/**
 	 * @param variableName
 	 * 
@@ -189,7 +226,7 @@ public abstract class TaskModel {
 					ObservableValue<? extends Boolean> observable,
 					Boolean oldValue,
 					Boolean newValue) {
-				if (newValue) {
+				if (newValue != null && newValue) {
 					newLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
 					if (areOutputVariablesSavable()) {
 						getOutputVariablesSavableProperty().set(true);

@@ -128,8 +128,12 @@ public class WorkflowAdvancementViewController
 		inputTab = new Tab();
 		inputTab.setGraphic(inputTabLabel);
 		
+		ScrollPane inputTabScrollPane = new ScrollPane();
+		inputTabScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+		inputTabScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		inputTabGridPane = new GridPane();
-		inputTab.setContent(inputTabGridPane);
+		inputTabScrollPane.setContent(inputTabGridPane);
+		inputTab.setContent(inputTabScrollPane);
 		centralTabPane.getTabs().add(inputTab);
 		
 		// Disabling saveActionButton until dependencies met 
