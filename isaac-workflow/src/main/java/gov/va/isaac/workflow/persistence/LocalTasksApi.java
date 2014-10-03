@@ -165,6 +165,16 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             log.error("Unexpected SQL Error", ex1);
         }
     }
+    
+    @Override
+    public void completeTask(Long taskId, Map<String, String> outputVariablesMap) {
+    	setAction(taskId, Action.COMPLETE, outputVariablesMap);
+    }
+
+    @Override
+    public void releaseTask(Long taskId) {
+    	setAction(taskId, Action.RELEASE, new HashMap<String, String>());
+    }
 
     @Override
     public List<LocalTask> getOpenOwnedTasks() {
