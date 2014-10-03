@@ -19,8 +19,6 @@
 package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.interfaces.utility.UserPreferencesI;
-import java.io.File;
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -38,8 +36,6 @@ import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
-import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
-import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
@@ -64,7 +60,6 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
-import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
 import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
@@ -103,16 +98,13 @@ public class WBUtility {
 
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 	private static TerminologyBuilderBI dataBuilder;
-	private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
-	private static String useFSN = "useFSN";
 
 	private static EditCoordinate editCoord = null;
 	private static ViewCoordinate vc = null;
-	private static boolean changeSetCreated;
 
-    static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+	static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
 
-    public static TerminologyBuilderBI getBuilder() {
+	public static TerminologyBuilderBI getBuilder() {
 		if (dataBuilder == null) {
 			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
 		}
@@ -197,7 +189,7 @@ public class WBUtility {
 
 					if (descVer.getTypeNid() == getFSNTypeNid()) {
 						if (descVer.getStatus() == Status.ACTIVE) {
-							if (userPrefs.getBoolean(useFSN, true)) {
+							if (ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
 								return descVer.getText();
 							} else {
 								fsn = descVer.getText();
@@ -208,7 +200,7 @@ public class WBUtility {
 						}
 					} else if (descVer.getTypeNid() == getSynonymTypeNid() && isPreferred(descVer.getAnnotations())) {
 						if (descVer.getStatus() == Status.ACTIVE) {
-							if (! userPrefs.getBoolean(useFSN, true)) {
+							if (!ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
 								return descVer.getText();
 							} else {
 								preferred = descVer.getText();
@@ -318,7 +310,7 @@ public class WBUtility {
 			DescriptionVersionDdo dv = d.getVersions().get(d.getVersions().size() - 1);
 			if (dv.getTypeReference().getUuid().equals(FSN_UUID)) {
 				if (dv.getStatus() == Status.ACTIVE) {
-					if (userPrefs.getBoolean(useFSN, true)) {
+					if (ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
 						return dv.getText();
 					} else {
 						fsn = dv.getText();
@@ -328,7 +320,7 @@ public class WBUtility {
 				}
 			} else if (dv.getTypeReference().getUuid().equals(SYNONYM_UUID)) {
 				if ((dv.getStatus() == Status.ACTIVE) && isPreferred(dv.getAnnotations())) {
-					if (! userPrefs.getBoolean(useFSN, true)) {
+					if (!ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
 						return dv.getText();
 					} else {
 						preferred = dv.getText();
@@ -696,77 +688,30 @@ public class WBUtility {
 		return dataStore.getUncommittedConcepts().contains(con.getChronicle());
 	}
 	
-	public static void commit(ConceptVersionBI con) {
-		try {
-			dataStore.commit(con);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("commit failure", e);
-		}
+	public static void commit(ConceptVersionBI con) throws IOException {
+		dataStore.commit(con);
 	}
 
-	public static void commit() {
-		try {
-			
-			if (!changeSetCreated) {
-				TerminologySnapshotDI ts = dataStore.getSnapshot(getViewCoordinate());
-				
-				String name = "user#1#" + UUID.randomUUID();
-				String tmpName = "user#0#" + UUID.randomUUID();
-				//TODO fix OTF https://jira.ihtsdotools.org/browse/OTFISSUE-15
-				File mainFile = new File(name + ".eccs").getCanonicalFile();// new File("C:\\Users\\yishai\\Desktop\\ISAAC\\" + name + ".eccs");
-				File tempFile = new File(tmpName + ".eccs").getCanonicalFile(); //new File("C:\\Users\\yishai\\Desktop\\ISAAC\\" + tmpName + ".eccs");
-				System.out.println(mainFile.getAbsolutePath());
-				System.out.println(tempFile.getAbsolutePath());
-				ChangeSetGeneratorBI csFile = ts.createDtoChangeSetGenerator(mainFile, tempFile, ChangeSetGenerationPolicy.MUTABLE_ONLY);
-				ts.addChangeSetGenerator("OnlyOne", csFile);
-			
-				changeSetCreated = true;
-			}
-			
-			dataStore.commit();
-		} catch (Exception e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("commit failure", e);
-		}
+	public static void commit() throws IOException {
+		dataStore.commit();
 	}
 
-	public static void addUncommitted(ConceptChronicleBI newCon) {
-		try {
-			dataStore.addUncommitted(newCon);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("addUncommitted failure", e);
-		}
+	public static void addUncommitted(ConceptChronicleBI newCon) throws IOException {
+		dataStore.addUncommitted(newCon);
 	}
 
-	public static void addUncommitted(ConceptVersionBI newCon) {
-		try {
-			dataStore.addUncommitted(newCon);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("addUncommitted failure", e);
-		}
+	public static void addUncommitted(ConceptVersionBI newCon) throws IOException {
+		dataStore.addUncommitted(newCon);
 	}
 
-	public static void addUncommitted(int nid) {
-		try {
-			ConceptVersionBI con = getConceptVersion(nid);
-			dataStore.addUncommitted(con);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("addUncommitted failure", e);
-		}
+	public static void addUncommitted(int nid) throws IOException {
+		ConceptVersionBI con = getConceptVersion(nid);
+		dataStore.addUncommitted(con);
 	}
 
-	public static void addUncommitted(UUID uuid) {
-		try {
-			ConceptVersionBI con = getConceptVersion(uuid);
-			dataStore.addUncommitted(con);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("addUncommitted failure", e);
-		}
+	public static void addUncommitted(UUID uuid) throws IOException {
+		ConceptVersionBI con = getConceptVersion(uuid);
+		dataStore.addUncommitted(con);
 	}
 	
 	/**
@@ -820,38 +765,38 @@ public class WBUtility {
 		return results;
 	}
 
-    public static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
-            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
-        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+	public static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
+			String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+		ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
 
-        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+		ConceptChronicleBI newCon = getBuilder().construct(newConCB);
 
-        return newCon;
-    }
-    
-    public static ConceptChronicleBI createAndCommitNewConcept(ConceptChronicleBI parent, String fsn,
-            String prefTerm) throws IOException, InvalidCAB, ContradictionException {
-        ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
+		return newCon;
+	}
+	
+	public static ConceptChronicleBI createAndCommitNewConcept(ConceptChronicleBI parent, String fsn,
+			String prefTerm) throws IOException, InvalidCAB, ContradictionException {
+		ConceptCB newConCB = createNewConceptBlueprint(parent, fsn, prefTerm);
 
-        ConceptChronicleBI newCon = getBuilder().construct(newConCB);
+		ConceptChronicleBI newCon = getBuilder().construct(newConCB);
 
-        addUncommitted(newCon);
-        commit();
+		addUncommitted(newCon);
+		commit();
 
-        return newCon;
-    }
-    
-    public static ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm) throws ValidationException, IOException, InvalidCAB, ContradictionException {
-        LanguageCode lc = LanguageCode.EN_US;
-        UUID isA = Snomed.IS_A.getUuids()[0];
-        IdDirective idDir = IdDirective.GENERATE_HASH;
-        UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
-        UUID parentUUIDs[] = new UUID[1];
-        parentUUIDs[0] = parent.getPrimordialUuid();
-        return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
-    }
+		return newCon;
+	}
+	
+	public static ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent, String fsn, String prefTerm) throws ValidationException, IOException, InvalidCAB, ContradictionException {
+		LanguageCode lc = LanguageCode.EN_US;
+		UUID isA = Snomed.IS_A.getUuids()[0];
+		IdDirective idDir = IdDirective.GENERATE_HASH;
+		UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
+		UUID parentUUIDs[] = new UUID[1];
+		parentUUIDs[0] = parent.getPrimordialUuid();
+		return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
+	}
 
-	public static void commit(int nid) {
+	public static void commit(int nid) throws IOException {
 		ConceptVersionBI con = getConceptVersion(nid);
 		commit(con);
 	}
@@ -900,9 +845,9 @@ public class WBUtility {
 
 	public static String getTimeString(ComponentVersionBI comp) {
 		if (comp.getTime() != Long.MAX_VALUE) {
-		    Date date = new Date(comp.getTime());
+			Date date = new Date(comp.getTime());
 	
-		    return format.format(date);		
+			return format.format(date);		
 		} else {
 			return "Uncommitted";
 		}
@@ -938,25 +883,20 @@ public class WBUtility {
 		WBUtility.getBuilder().construct(newRel);		
 	}
 
-	public static void addUncommittedNoChecks(ConceptChronicleBI con) {
-		try {
-			dataStore.addUncommittedNoChecks(con);
-		} catch (IOException e) {
-			// TODO this should be a thrown exception, knowing the commit failed is slightly important...
-			LOG.error("addUncommitted failure", e);
-		}
+	public static void addUncommittedNoChecks(ConceptChronicleBI con) throws IOException {
+		dataStore.addUncommittedNoChecks(con);
 	}
 	
 	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException  {
 		ConceptChronicleBI pathRefset =
-		        dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
-		    Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
-		    List<ConceptChronicleBI> pathConcepts = new ArrayList<>();
-		    for (RefexChronicleBI<?> member : members) {
-		        int memberNid = ((NidMember)member).getC1Nid();
-		        ConceptChronicleBI pathConcept = dataStore.getConcept(memberNid);
-		        pathConcepts.add(pathConcept);
-		     }
-		    return pathConcepts;
+				dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
+			Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
+			List<ConceptChronicleBI> pathConcepts = new ArrayList<>();
+			for (RefexChronicleBI<?> member : members) {
+				int memberNid = ((NidMember)member).getC1Nid();
+				ConceptChronicleBI pathConcept = dataStore.getConcept(memberNid);
+				pathConcepts.add(pathConcept);
+			}
+			return pathConcepts;
 	}
 }
