@@ -534,7 +534,7 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
-		LOG.debug("Get concept by nid: '{}'", nid);
+		LOG.info("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
