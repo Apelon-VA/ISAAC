@@ -363,8 +363,16 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.commit(row.getItem().getNid());
-						updateTableItem(row.getItem(), false);
+						try
+						{
+							WBUtility.commit(row.getItem().getNid());
+							updateTableItem(row.getItem(), false);
+						}
+						catch (IOException ex)
+						{
+							logger_.error("Unexpected error during commit", ex);
+							AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+						}
 					}
 				});
 
@@ -456,8 +464,16 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WBUtility.commit();
-				uncommitAllTableItems();
+				try
+				{
+					WBUtility.commit();
+					uncommitAllTableItems();
+				}
+				catch (IOException ex)
+				{
+					logger_.error("Unexpected error during commit", ex);
+					AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+				}
 			}
 		});
 
@@ -993,11 +1009,19 @@ public class ListBatchViewController
 		}
 		
 		if (isUncommitted) {
-			WBUtility.addUncommitted(con);
-			newCon.setUncommitted(true);
-			
-			if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
-				uncommittedCount++;
+			try
+			{
+				WBUtility.addUncommitted(con);
+				newCon.setUncommitted(true);
+				
+				if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
+					uncommittedCount++;
+				}
+			}
+			catch (IOException ex)
+			{
+				logger_.error("Unexpected error during add uncommited", ex);
+				AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
 			}
 		} else {
 			WBUtility.forget(con);
