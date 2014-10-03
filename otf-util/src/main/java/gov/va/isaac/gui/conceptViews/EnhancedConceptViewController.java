@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.conceptViews;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
@@ -19,7 +20,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -139,11 +139,16 @@ public class EnhancedConceptViewController {
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				WBUtility.forget(concept);
-				clearContents();
-				commitButton.setDisable(true);
-				cancelButton.setDisable(true);
-				creator.setConceptValues(concept, currentMode);
+				try {
+					ExtendedAppContext.getDataStore().forget(concept);
+
+					clearContents();
+					commitButton.setDisable(true);
+					cancelButton.setDisable(true);
+					creator.setConceptValues(concept, currentMode);
+				} catch (Exception e) {
+					LOG.error("Unable to cancel concept: " + concept.getNid(), e);
+				}
 			}
 		});
 		

@@ -108,7 +108,8 @@ public class RelationshipModelingPopup extends ModelingPopup
 			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
 
 			if (chronicle.isUncommitted()) {
-				displayVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+				displayVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+
 			}
 
 			// TODO: Needs to reference previous commit, not component as-is before panel opened

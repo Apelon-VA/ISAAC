@@ -20,6 +20,7 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.UserPreferencesI;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.Format;
@@ -31,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -905,35 +907,6 @@ public class WBUtility {
 		dataStore.cancel();
 	}
 
-	public static void forget(int nid) {
-		ConceptVersionBI con = getConceptVersion(nid);
-		forget(con);
-	}
-
-	public static void forget(ConceptVersionBI con) {
-		try {
-			dataStore.forget(con.getChronicle());
-		} catch (IOException e) {
-			LOG.error("Unable to forget change to con: " + con.getPrimordialUuid(), e);
-		}
-	}
-	
-	public static void forget(RelationshipVersionBI<?> rel) {
-		try {
-			dataStore.forget(rel);
-		} catch (IOException e) {
-			LOG.error("Unable to forget change to rel: " + rel.getPrimordialUuid(), e);
-		}
-	}
-	
-	public static void forget(DescriptionVersionBI<?> desc) {
-		try {
-			dataStore.forget(desc);
-		} catch (IOException e) {
-			LOG.error("Unable to forget change to desc: " + desc.getPrimordialUuid(), e);
-		}
-	}
-
 	public static String getConPrefTerm(int nid) {
 		try {
 			return WBUtility.getConceptVersion(nid).getPreferredDescription().getText();
@@ -1024,5 +997,19 @@ public class WBUtility {
 		        pathConcepts.add(pathConcept);
 		     }
 		    return pathConcepts;
+	}
+
+	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
+		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
+		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
+		
+		ComponentVersionBI latestVersion = null;
+		for (ComponentVersionBI v : versions) {
+			if ((v.getTime() != Long.MAX_VALUE) && 
+			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
+				latestVersion = v;
+			}
+		}
+		return latestVersion;
 	}
 }

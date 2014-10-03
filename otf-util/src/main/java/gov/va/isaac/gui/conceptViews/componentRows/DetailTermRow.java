@@ -15,6 +15,7 @@ import javafx.scene.text.FontPosture;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class DetailTermRow extends TermRow {
 
@@ -53,7 +54,7 @@ public class DetailTermRow extends TermRow {
 				descLangLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 			} else {
 				ComponentChronicleBI<?> chronicle = desc.getChronicle();
-				DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+				DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
 	
 				if (!descLabel.getText().equals(origVersion.getText())) {
 					descLabel.setUnderline(true);

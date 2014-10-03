@@ -99,7 +99,7 @@ public class DescriptionModelingPopup extends ModelingPopup
 			DescriptionVersionBI<?> displayVersion = (DescriptionVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
 
 			if (chronicle.isUncommitted()) {
-				displayVersion = (DescriptionVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+				displayVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
 			}
 
 			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());

@@ -14,6 +14,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class DetailRelRow extends RelRow {
@@ -54,7 +55,8 @@ public class DetailRelRow extends RelRow {
 				relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 			} else {
 				ComponentChronicleBI<?> chronicle = rel.getChronicle();
-				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+;
 	
 				if (!relLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
 					relLabel.setUnderline(true);
