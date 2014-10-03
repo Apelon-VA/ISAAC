@@ -18,6 +18,8 @@
  */
 package gov.va.isaac;
 
+import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 
 /**
@@ -35,5 +37,10 @@ public class ExtendedAppContext extends AppContext
 	public static BdbTerminologyStore getDataStore()
 	{
 		return getService(BdbTerminologyStore.class);
+	}
+	
+	public static UserProfile getCurrentlyLoggedInUser()
+	{
+		return getService(UserProfileManager.class).getCurrentlyLoggedInUser();
 	}
 }
