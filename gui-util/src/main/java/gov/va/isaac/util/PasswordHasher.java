@@ -18,17 +18,22 @@
  */
 package gov.va.isaac.util;
 
+import java.security.SecureRandom;
+import java.util.Base64;
+import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.security.SecureRandom;
-import java.util.Base64;
+import javax.crypto.spec.PBEParameterSpec;
 
 /**
  * {@link PasswordHasher}
  * 
  * A safe, modern way to 1-way hash user passwords.  
- * Adapted from http://stackoverflow.com/a/11038230/2163960
+ * Adapted and enhanced from http://stackoverflow.com/a/11038230/2163960 
+ * 
+ * Later, added the ability to encrypt and decrypt arbitrary data - using many of the same 
+ * techniques.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
@@ -39,6 +44,9 @@ public class PasswordHasher
 	private static final int iterations = 10 * 1024;
 	private static final int saltLen = 32;
 	private static final int desiredKeyLen = 256;
+	private static final String keyFactoryAlgorithm = "PBKDF2WithHmacSHA1";
+	private static final String cipherAlgorithm = "PBEWithSHA1AndDESede";
+	private static final String secureRandomAlgorithm = "SHA1PRNG";
 	
 	static
 	{
@@ -59,9 +67,9 @@ public class PasswordHasher
 	 */
 	public static String getSaltedHash(String password) throws Exception
 	{
-		byte[] salt = SecureRandom.getInstance("SHA1PRNG").generateSeed(saltLen);
+		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
 		// store the salt with the password
-		return Base64.getEncoder().encodeToString(salt) + "$" + hash(password, salt);
+		return Base64.getEncoder().encodeToString(salt) + "$$$" + hash(password, salt);
 	}
 
 	/**
@@ -69,7 +77,7 @@ public class PasswordHasher
 	 */
 	public static boolean check(String password, String stored) throws Exception
 	{
-		String[] saltAndPass = stored.split("\\$");
+		String[] saltAndPass = stored.split("\\$\\$\\$");
 		if (saltAndPass.length != 2)
 		{
 			return false;
@@ -89,8 +97,60 @@ public class PasswordHasher
 		{
 			throw new IllegalArgumentException("Empty passwords are not supported.");
 		}
-		SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		SecretKeyFactory f = SecretKeyFactory.getInstance(keyFactoryAlgorithm);
 		SecretKey key = f.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
 		return Base64.getEncoder().encodeToString(key.getEncoded());
+	}
+	
+	public static String encrypt(String password, String data) throws Exception
+	{
+		return encrypt(password, data.getBytes("UTF-8"));
+	}
+	
+	public static String encrypt(String password, byte[] data) throws Exception
+	{
+		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
+		// store the salt with the password
+		return Base64.getEncoder().encodeToString(salt) + "$$$" + encrypt(password, salt, data);
+	}
+	
+	private static String encrypt(String password, byte[] salt, byte[] data) throws Exception
+	{
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(keyFactoryAlgorithm);
+		SecretKey key = keyFactory.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
+		Cipher pbeCipher = Cipher.getInstance(cipherAlgorithm);
+		pbeCipher.init(Cipher.ENCRYPT_MODE, key, new PBEParameterSpec(salt, iterations));
+		return Base64.getEncoder().encodeToString(pbeCipher.doFinal(data));
+	}
+	
+	public static String decryptToString(String password, String encryptedData) throws Exception
+	{
+		return new String(decrypt(password, encryptedData), "UTF-8");
+	}
+	
+	public static byte[] decrypt(String password, String encryptedData) throws Exception
+	{
+		String[] saltAndPass = encryptedData.split("\\$\\$\\$");
+		if (saltAndPass.length != 2)
+		{
+			throw new Exception("Invalid encrypted data, can't find salt");
+		}
+		return decrypt(password, Base64.getDecoder().decode(saltAndPass[0]), saltAndPass[1]);
+	}
+
+	private static byte[] decrypt(String password, byte[] salt, String data) throws Exception
+	{
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(keyFactoryAlgorithm);
+		SecretKey key = keyFactory.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
+		Cipher pbeCipher = Cipher.getInstance(cipherAlgorithm);
+		pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(salt, iterations));
+		try
+		{
+			return pbeCipher.doFinal(Base64.getDecoder().decode(data));
+		}
+		catch (Exception e)
+		{
+			throw new Exception("Invalid decryption password");
+		}
 	}
 }
