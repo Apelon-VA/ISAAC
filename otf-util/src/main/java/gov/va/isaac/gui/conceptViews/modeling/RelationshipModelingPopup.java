@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -392,7 +393,11 @@ public class RelationshipModelingPopup extends ModelingPopup
 				}
 			} else {
 				RelationshipCAB dcab;
-				
+
+				if (rel.isUncommitted()) {
+					ExtendedAppContext.getDataStore().forget(rel);
+				}
+			
 				if (!isDestination) {
 					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				} else {

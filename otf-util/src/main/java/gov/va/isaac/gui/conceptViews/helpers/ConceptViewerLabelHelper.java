@@ -49,6 +49,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
@@ -301,17 +302,12 @@ public class ConceptViewerLabelHelper {
 			{
 				try {
 					if (type == ComponentType.CONCEPT) {
-						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
-//						ExtendedAppContext.getDataStore().forget((ConceptAttributeVersionBI)comp);
+						ExtendedAppContext.getDataStore().forget((ConceptAttributeVersionBI<?>)comp);
 					} else if (type == ComponentType.DESCRIPTION) {
-						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
-//						ExtendedAppContext.getDataStore().forget((DescriptionVersionBI)comp);
+						ExtendedAppContext.getDataStore().forget((DescriptionVersionBI<?>)comp);
 					} else if (type == ComponentType.RELATIONSHIP) {
-						// TODO: Have a bug in OTF casting ConceptAttributes$Version cannot be cast to ConceptAttributes
-//						ExtendedAppContext.getDataStore().forget((RelationshipVersionBI)comp);
+						ExtendedAppContext.getDataStore().forget((RelationshipVersionBI<?>)comp);
 					}
-					// TODO: Until above TODOs are handled, leave Undo on entire concept
-					WBUtility.forget(comp.getConceptNid());
 					conceptView.setConcept(comp.getConceptNid());
 				} catch (Exception e) {
 					LOG.error("Unable to cancel comp: " + comp.getNid(), e);

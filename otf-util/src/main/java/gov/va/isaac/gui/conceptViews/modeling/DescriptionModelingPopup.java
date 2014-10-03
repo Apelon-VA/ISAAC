@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 
@@ -328,6 +329,9 @@ public class DescriptionModelingPopup extends ModelingPopup
 			if (desc == null) {
 				WBUtility.createNewDescription((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap);
 			} else {
+				if (desc.isUncommitted()) {
+					ExtendedAppContext.getDataStore().forget(desc);
+				}
 				DescriptionCAB dcab = new DescriptionCAB((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap, desc, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 	
 				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
