@@ -19,9 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
@@ -43,7 +41,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -86,7 +83,7 @@ public class WorkflowInboxController
 
 	private LocalWorkflowRuntimeEngineBI wfEngine_;
 	private LocalTasksServiceBI taskService_;
-	private final Logger logger = LoggerFactory.getLogger(WorkflowInboxController.class);
+	private final static Logger logger = LoggerFactory.getLogger(WorkflowInboxController.class);
 	//TODO figure out how we handle usernames
 	private String user = "alejandro";
 	

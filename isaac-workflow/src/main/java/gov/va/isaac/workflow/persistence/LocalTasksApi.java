@@ -139,7 +139,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action.name());
-            psUpdateStatus.setString(2, "pending");
+            psUpdateStatus.setString(2, TaskActionStatus.Pending.name());
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
             psUpdateStatus.executeUpdate();
