@@ -130,7 +130,7 @@ public abstract class TaskModel {
 
 	private final LocalTask task;
 
-	private final ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>();
+	private final ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>(Action.COMPLETE);
 
 	private final Map<String, ComponentsForOutputVariable> componentsForOutputVariables = new HashMap<>();
 
