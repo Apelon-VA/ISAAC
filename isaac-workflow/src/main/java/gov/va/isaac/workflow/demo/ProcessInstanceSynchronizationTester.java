@@ -44,7 +44,7 @@ public class ProcessInstanceSynchronizationTester {
         Map<String,String> variables = new HashMap<String, String>();
         variables.put("coordinateId", "16e04a1e-32a6-11e4-99ba-164230d1df67");
         variables.put("lastCommitTimeStamp", "1409665029");
-        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest(WorkflowProcess.REVIEW.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
+        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         System.out.println("New instance: " + newInstance.getId());
         
         List<ProcessInstanceCreationRequestI> pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);

@@ -49,9 +49,12 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
     private Connection conn;
     private static final Logger log = LoggerFactory.getLogger(LocalTasksApi.class);
+    private String userId;
 
-    public LocalTasksApi() {
+    public LocalTasksApi(String userId) {
+
         conn = ConnectionManager.getConn();
+        this.userId = userId;
     }
 
     @Override
@@ -92,13 +95,13 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             log.debug("Task {} saved", task.getId());
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("23505")) {
-                log.error("Task " + task.getId() + " already exists!");
+                log.info("Task {} already exists", task.getId());
                 LocalTask taskInDb = getTask(task.getId());
                 if (task.equals(taskInDb)) {
-                    log.error(" No changes.");
+                    log.debug(" No changes.");
                 } else {
                     if (!task.getOwner().equals(taskInDb.getOwner())) {
-                        log.error(" User has changed from " + taskInDb.getOwner() + " to " + task.getOwner() + ".");
+                        log.info(" User has changed from {} to {}.", taskInDb.getOwner(), task.getOwner());
                         try {
                             PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
                             psUpdateUser.setString(1, task.getOwner());
@@ -111,7 +114,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                         }
                     }
                     if (!task.getStatus().equals(taskInDb.getStatus())) {
-                        log.error(" Status has changed from " + taskInDb.getStatus() + " to " + task.getStatus() + ".");
+                        log.info(" Status has changed from {} to {}.", taskInDb.getStatus(), task.getStatus());
                         try {
                             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
                             psUpdateStatus.setString(1, task.getStatus().name());
@@ -123,10 +126,10 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                             log.error("Unexpected SQL Error", ex1);
                         }
                     }
-                    log.error("-Unknown?-");
+                    //log.error("-Unknown?-");
                 };
             } else {
-                log.error("Unexpected SQL Error", ex);
+                log.error("Unexpected SQL Exception", ex);
             }
         }
     }
@@ -136,7 +139,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action.name());
-            psUpdateStatus.setString(2, "pending");
+            psUpdateStatus.setString(2, TaskActionStatus.Pending.name());
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
             psUpdateStatus.executeUpdate();
@@ -162,13 +165,23 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             log.error("Unexpected SQL Error", ex1);
         }
     }
+    
+    @Override
+    public void completeTask(Long taskId, Map<String, String> outputVariablesMap) {
+    	setAction(taskId, Action.COMPLETE, outputVariablesMap);
+    }
 
     @Override
-    public List<LocalTask> getOpenOwnedTasks(String owner) {
+    public void releaseTask(Long taskId) {
+    	setAction(taskId, Action.RELEASE, new HashMap<String, String>());
+    }
+
+    @Override
+    public List<LocalTask> getOpenOwnedTasks() {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and (status = 'Reserved' or status = 'InProgress')");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -179,11 +192,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOwnedTasksByStatus(String owner, Status status) {
+    public List<LocalTask> getOwnedTasksByStatus(Status status) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and status = '" + status + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and status = '" + status + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -194,11 +207,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
     
     @Override
-    public List<LocalTask> getOwnedTasksByActionStatus(String owner, TaskActionStatus actionStatus) {
+    public List<LocalTask> getOwnedTasksByActionStatus(TaskActionStatus actionStatus) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and actionStatus = '" + actionStatus + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and actionStatus = '" + actionStatus + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -209,11 +222,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOpenOwnedTasksByComponentId(String owner, String componentId) {
+    public List<LocalTask> getOpenOwnedTasksByComponentId(String componentId) {
         List<LocalTask> tasks = new ArrayList<>();
         try {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + owner + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + userId + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }

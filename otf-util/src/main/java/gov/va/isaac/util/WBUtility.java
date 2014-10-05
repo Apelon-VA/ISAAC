@@ -56,9 +56,9 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf1;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedRelType;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
@@ -91,21 +91,25 @@ import org.slf4j.LoggerFactory;
  * @author jefron
  */
 public class WBUtility {
-	
-	public static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
+	//TODO we need to look up paths dynamically in the DB, let the user choose - store the setting / default somewhere in the DB (or user profile?)
+	private static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
 
-	public static ConceptSpec ISAAC_ROOT = Taxonomies.ISAAC_ROOT;
-		
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
 	private static final UUID PREFERRED_UUID = SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0];
 	private static final UUID SYNONYM_UUID = SnomedMetadataRf2.SYNONYM_RF2.getUuids()[0];
+	private static final UUID FSN_RF1_UUID = SnomedMetadataRf1.FULLY_SPECIFIED_DESCRIPTION_TYPE.getUuids()[0];
+	private static final UUID PREFERRED_RF1_UUID = SnomedMetadataRf1.PREFERRED_TERM_DESCRIPTION_TYPE_RF1.getUuids()[0];
+	private static final UUID SYNONYM_RF1_UUID = SnomedMetadataRf1.SYNOMYM_DESCRIPTION_TYPE_RF1.getUuids()[0];
 
-	private static Integer fsnTypeNid = null;
+	private static Integer fsnNid = null;
 	private static Integer preferredNid = null;
 	private static Integer synonymNid = null;
-
+	private static Integer fsnRf1Nid = null;
+	private static Integer preferredRf1Nid = null;
+	private static Integer synonymRf1Nid = null;
+	
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 	private static TerminologyBuilderBI dataBuilder;
 	private static UserPreferencesI userPrefs = ExtendedAppContext.getService(UserPreferencesI.class);
@@ -200,7 +204,7 @@ public class WBUtility {
 					DescriptionVersionBI<?> descVer = desc.getVersions()
 							.toArray(new DescriptionVersionBI[versionCount])[versionCount - 1];
 
-					if (descVer.getTypeNid() == getFSNTypeNid()) {
+					if (descVer.getTypeNid() == getFSNNid() || descVer.getTypeNid() == getFsnRf1Nid()) {
 						if (descVer.getStatus() == Status.ACTIVE) {
 							if (userPrefs.getBoolean(useFSN, true)) {
 								return descVer.getText();
@@ -211,7 +215,8 @@ public class WBUtility {
 						} else {
 							bestFound = descVer.getText();
 						}
-					} else if (descVer.getTypeNid() == getSynonymTypeNid() && isPreferred(descVer.getAnnotations())) {
+					} else if ((descVer.getTypeNid() == getSynonymTypeNid() || descVer.getTypeNid() == getSynonymRf1TypeNid()) && 
+							   isPreferred(descVer.getAnnotations())) {
 						if (descVer.getStatus() == Status.ACTIVE) {
 							if (! userPrefs.getBoolean(useFSN, true)) {
 								return descVer.getText();
@@ -240,7 +245,7 @@ public class WBUtility {
 					DescriptionVersionBI<?> descVer = desc.getVersions()
 							.toArray(new DescriptionVersionBI[versionCount])[versionCount - 1];
 
-					if (descVer.getTypeNid() == getFSNTypeNid()) {
+					if (descVer.getTypeNid() == getFSNNid() || descVer.getTypeNid() == getFsnRf1Nid()) {
 						if (descVer.getStatus() == Status.ACTIVE) {
 								return descVer.getText();
 						}
@@ -254,16 +259,28 @@ public class WBUtility {
 		return null;
 	}
 	
-	private static int getFSNTypeNid() {
-		if (fsnTypeNid == null) {
+	private static int getFSNNid() {
+		if (fsnNid == null) {
 			try {
-				fsnTypeNid = dataStore.getNidForUuids(FSN_UUID);
+				fsnNid = dataStore.getNidForUuids(FSN_UUID);
 			} catch (IOException ex) {
 				LOG.error("Could not find nid for FSN UUID: " + FSN_UUID, ex);
-				fsnTypeNid = -1;
+				fsnNid = -1;
 			}
 		}
-		return fsnTypeNid;
+		return fsnNid;
+	}
+
+	private static int getFsnRf1Nid() {
+		if (fsnRf1Nid == null) {
+			try {
+				fsnRf1Nid = dataStore.getNidForUuids(FSN_RF1_UUID);
+			} catch (IOException ex) {
+				LOG.error("Could not find nid for RF1 FSN UUID: " + FSN_RF1_UUID, ex);
+				fsnRf1Nid = -1;
+			}
+		}
+		return fsnRf1Nid;
 	}
 
 	private static int getSynonymTypeNid() {
@@ -279,6 +296,19 @@ public class WBUtility {
 		return synonymNid;
 	}
 
+	private static int getSynonymRf1TypeNid() {
+		// Lazily load.
+		if (synonymRf1Nid == null) {
+			try {
+				synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
+			} catch (IOException ex) {
+				LOG.error("Could not find nid for Rf1 synonymNid UUID: " + SYNONYM_RF1_UUID, ex);
+				synonymRf1Nid = -1;
+			}
+		}
+		return synonymRf1Nid;
+	}
+
 	private static int getPreferredTypeNid() {
 		// Lazily load.
 		if (preferredNid == null) {
@@ -292,12 +322,24 @@ public class WBUtility {
 		return preferredNid;
 	}
 
+	private static int getPreferredRf1TypeNid() {
+		// Lazily load.
+		if (preferredRf1Nid == null) {
+			try {
+				preferredRf1Nid = dataStore.getNidForUuids(PREFERRED_RF1_UUID);
+			} catch (IOException ex) {
+				LOG.error("Could not find nid for Rf1 Preferred UUID: " + PREFERRED_RF1_UUID, ex);
+				preferredRf1Nid = -1;
+			}
+		}
+		return preferredRf1Nid;
+	}
 
 	private static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
 		for (RefexChronicleBI<?> rc : collection) {
 			if (rc.getRefexType() == RefexType.CID) {
 				int nid1 = ((NidMember) rc).getNid1();  // RefexType.CID means NidMember.
-				if (nid1 == getPreferredTypeNid()) {
+				if (nid1 == getPreferredTypeNid() || nid1 == getPreferredRf1TypeNid()) {
 					return true;
 				}
 			}
@@ -321,7 +363,7 @@ public class WBUtility {
 		String bestFound = null;
 		for (DescriptionChronicleDdo d : concept.getDescriptions()) {
 			DescriptionVersionDdo dv = d.getVersions().get(d.getVersions().size() - 1);
-			if (dv.getTypeReference().getUuid().equals(FSN_UUID)) {
+			if (dv.getTypeReference().getUuid().equals(FSN_UUID) || dv.getTypeReference().getUuid().equals(FSN_RF1_UUID)) {
 				if (dv.getStatus() == Status.ACTIVE) {
 					if (userPrefs.getBoolean(useFSN, true)) {
 						return dv.getText();
@@ -331,7 +373,7 @@ public class WBUtility {
 				} else {
 					bestFound = dv.getText();
 				}
-			} else if (dv.getTypeReference().getUuid().equals(SYNONYM_UUID)) {
+			} else if (dv.getTypeReference().getUuid().equals(SYNONYM_UUID) || dv.getTypeReference().getUuid().equals(SYNONYM_RF1_UUID)) {
 				if ((dv.getStatus() == Status.ACTIVE) && isPreferred(dv.getAnnotations())) {
 					if (! userPrefs.getBoolean(useFSN, true)) {
 						return dv.getText();
@@ -355,7 +397,7 @@ public class WBUtility {
 			for (Object version : frc.getVersions()) {
 				if (version instanceof RefexCompVersionDdo) {
 					UUID uuid = ((RefexCompVersionDdo<?, ?>) version).getComp1Ref().getUuid();
-					return uuid.equals(PREFERRED_UUID);
+					return uuid.equals(PREFERRED_UUID) || uuid.equals(PREFERRED_RF1_UUID);
 				}
 			}
 		}
@@ -494,7 +536,7 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
-		LOG.debug("Get concept by nid: '{}'", nid);
+		LOG.info("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
@@ -865,19 +907,6 @@ public class WBUtility {
 		dataStore.cancel();
 	}
 
-	public static void forget(int nid) {
-		ConceptVersionBI con = getConceptVersion(nid);
-		forget(con);
-	}
-
-	public static void forget(ConceptVersionBI con) {
-		try {
-			dataStore.forget(con.getChronicle());
-		} catch (IOException e) {
-			LOG.error("Unable to forget change to con: " + con.getPrimordialUuid(), e);
-		}
-	}
-
 	public static String getConPrefTerm(int nid) {
 		try {
 			return WBUtility.getConceptVersion(nid).getPreferredDescription().getText();
@@ -916,31 +945,36 @@ public class WBUtility {
 	public static void createNewDescription(int conNid, int typeNid, LanguageCode lang, String term, boolean isInitial) throws IOException, InvalidCAB, ContradictionException {
 		DescriptionCAB newDesc = new DescriptionCAB(conNid, typeNid, lang, term, isInitial, IdDirective.GENERATE_HASH); 
 
-		WBUtility.getBuilder().construct(newDesc);
+		getBuilder().construct(newDesc);
+		addUncommitted(conNid);
 	}
 
 	public static void createNewRelationship(int conNid, int typeNid, int targetNid, int group, RelationshipType type) throws IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, group, type, IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newRel);
+		getBuilder().construct(newRel);
+		addUncommitted(conNid);
 	}
 		
 	public static void createNewDescription(int conNid, String term) throws IOException, InvalidCAB, ContradictionException {
 		DescriptionCAB newDesc = new DescriptionCAB(conNid, SnomedMetadataRf2.SYNONYM_RF2.getNid(), LanguageCode.EN_US, term, false, IdDirective.GENERATE_HASH); 
 
-		WBUtility.getBuilder().construct(newDesc);
+		getBuilder().construct(newDesc);
+		addUncommitted(conNid);
 	}
 
 	public static void createNewRole(int conNid, int typeNid, int targetNid) throws IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, typeNid, targetNid, 0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newRel);
+		getBuilder().construct(newRel);
+		addUncommitted(conNid);
 	}
 
 	public static void createNewParent(int conNid, int targetNid) throws ValidationException, IOException, InvalidCAB, ContradictionException {
 		RelationshipCAB newRel = new RelationshipCAB(conNid, SnomedRelType.IS_A.getNid(), targetNid, 0, RelationshipType.STATED_HIERARCHY, IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newRel);		
+		getBuilder().construct(newRel);
+		addUncommitted(conNid);
 	}
 
 	public static void addUncommittedNoChecks(ConceptChronicleBI con) {
@@ -963,5 +997,19 @@ public class WBUtility {
 		        pathConcepts.add(pathConcept);
 		     }
 		    return pathConcepts;
+	}
+
+	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
+		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
+		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
+		
+		ComponentVersionBI latestVersion = null;
+		for (ComponentVersionBI v : versions) {
+			if ((v.getTime() != Long.MAX_VALUE) && 
+			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
+				latestVersion = v;
+			}
+		}
+		return latestVersion;
 	}
 }

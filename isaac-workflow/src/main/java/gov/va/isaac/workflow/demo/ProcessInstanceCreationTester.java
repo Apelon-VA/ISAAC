@@ -40,7 +40,7 @@ public class ProcessInstanceCreationTester {
         Map<String,String> variables = new HashMap<String, String>();
         variables.put("key 1", "value 1");
         variables.put("key 2", "value 2");
-        papi.createRequest(WorkflowProcess.REVIEW.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
+        papi.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         for (ProcessInstanceCreationRequestI loopR : papi.getRequests()) {
             System.out.println("id: " + loopR.getId() + " - pname: "  + loopR.getProcessName() + " - cid: " + loopR.getComponentId() + " - cname: " + loopR.getComponentName() + " - rtime: "  + loopR.getRequestTime() + " - status: "  + loopR.getStatus() + " - userId: "  + loopR.getUserId());
         }

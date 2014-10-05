@@ -19,6 +19,9 @@
 package gov.va.isaac.util;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+
 import javafx.beans.binding.IntegerExpression;
 import javafx.beans.property.SimpleIntegerProperty;
 
@@ -30,6 +33,16 @@ import javafx.beans.property.SimpleIntegerProperty;
  */
 public abstract class CommonMenusNIdProvider
 {
+	private static final CommonMenusNIdProvider emptyCommonMenusNIdProvider =  new CommonMenusNIdProvider() {
+		private final Collection<Integer> collection = Collections.unmodifiableCollection(new HashSet<>());
+		
+		@Override
+		public Collection<Integer> getNIds() {
+			return collection;
+		}
+	};
+	public static CommonMenusNIdProvider getEmptyCommonMenusNIdProvider() { return emptyCommonMenusNIdProvider; }
+
 	SimpleIntegerProperty nidCount = new SimpleIntegerProperty(0);
 
 	public abstract Collection<Integer> getNIds();

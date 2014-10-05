@@ -30,9 +30,9 @@ import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.validation.ValidationException;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -117,9 +117,10 @@ public class FetchHandler extends ExporterBase {
    * @return the list
    * @throws IOException
    * @throws ContradictionException
+   * @throws TransformerConfigurationException 
    */
   private List<InformationModel> fetchHeDModels() throws IOException,
-    ContradictionException {
+    ContradictionException, TransformerConfigurationException {
 
     List<InformationModel> models = Lists.newArrayList();
     InformationModelService service = getInformationModelService();
@@ -127,7 +128,8 @@ public class FetchHandler extends ExporterBase {
         WBUtility.getConceptVersion(InformationModelType.HeD.getUuid());
     for (ConceptVersionBI hedModel : WBUtility.getAllChildrenOfConcept(
         hedConcept.getNid(), true)) {
-      models.add(service.getInformationModel(hedModel.getPrimordialUuid()));
+      models.add(new HeDInformationModel(service.getInformationModel(hedModel
+          .getPrimordialUuid())));
     }
     return models;
 

@@ -19,6 +19,8 @@
 package gov.va.isaac.gui.refexViews.util;
 
 import gov.va.isaac.util.WBUtility;
+import gov.va.issac.drools.refexUtils.RefexDroolsValidator;
+import gov.va.issac.drools.refexUtils.RefexDroolsValidatorImplInfo;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -31,6 +33,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
@@ -132,37 +135,53 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 			gp.add(wrapAndStyle(defaultValue, row), 1, row++);
 
 			gp.add(wrapAndStyle(makeBoldLabel("Validator"), row), 0, row);
-			gp.add(wrapAndStyle(new Label(item.getValidator() == null ? "" : item.getValidator().getDisplayName()), row), 1, row++);
+			gp.add(wrapAndStyle(new Label(item.getValidator() == null ? "" : 
+				(item.getValidator() == RefexDynamicValidatorType.EXTERNAL ? "Drools" : item.getValidator().getDisplayName())),
+				row), 1, row++);
 
 			if (item.getValidator() != null)
 			{
 				gp.add(wrapAndStyle(makeBoldLabel("Validator Data"), row), 0, row);
-				String valdiatorData = "";
+				String validiatorData = "";
 				if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.BYTEARRAY)
 				{
-					valdiatorData = "Byte array of size " + ((RefexDynamicByteArray) item.getValidatorData()).getDataByteArray().length;
+					validiatorData = "Byte array of size " + ((RefexDynamicByteArray) item.getValidatorData()).getDataByteArray().length;
 				}
 				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.NID)
 				{
-					valdiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
-					if (valdiatorData == null)
+					validiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
+					if (validiatorData == null)
 					{
-						valdiatorData = "NID: " + item.getValidatorData().getDataObject().toString();
+						validiatorData = "NID: " + item.getValidatorData().getDataObject().toString();
 					}
 				}
 				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.UUID)
 				{
-					valdiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
-					if (valdiatorData == null)
+					validiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
+					if (validiatorData == null)
 					{
-						valdiatorData = "UUID: " + item.getValidatorData().getDataObject().toString();
+						validiatorData = "UUID: " + item.getValidatorData().getDataObject().toString();
 					}
 				}
+				else if (item.getValidator() == RefexDynamicValidatorType.EXTERNAL)
+				{
+					RefexDroolsValidatorImplInfo rdvi = RefexDroolsValidator.readFromData(item.getValidatorData());
+					if (rdvi == null)
+					{
+						//this should be impossible....
+						validiatorData = "!ERROR!";
+					}
+					else
+					{
+						validiatorData = rdvi.getDisplayName();
+					}
+				}
+						
 				else
 				{
-					valdiatorData = item.getValidatorData().getDataObject().toString();
+					validiatorData = item.getValidatorData().getDataObject().toString();
 				}
-				Label valData = new Label(valdiatorData);
+				Label valData = new Label(validiatorData);
 				valData.setWrapText(true);
 				valData.maxWidthProperty().bind(this.widthProperty().subtract(210));
 				gp.add(wrapAndStyle(valData, row), 1, row++);

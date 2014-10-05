@@ -18,22 +18,35 @@
  */
 package gov.va.isaac.gui.refexViews.util;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
+import gov.va.issac.drools.manager.DroolsExecutor;
+import gov.va.issac.drools.manager.DroolsExecutorsManager;
+import gov.va.issac.drools.refexUtils.RefexDroolsValidator;
+import gov.va.issac.drools.refexUtils.RefexDroolsValidatorImplInfo;
+import java.util.ArrayList;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import javafx.util.StringConverter;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicInteger;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link RefexValidatorTypeFXNodeBuilder}
@@ -42,7 +55,10 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicStrin
  */
 public class RefexValidatorTypeFXNodeBuilder
 {
-	public static RefexValidatorTypeNodeDetails buildNodeForType(RefexDynamicValidatorType dt, RefexDynamicDataBI currentValue, UpdateableBooleanBinding allValid)
+	private static Logger logger = LoggerFactory.getLogger(RefexValidatorTypeFXNodeBuilder.class);
+	
+	public static RefexValidatorTypeNodeDetails buildNodeForType(RefexDynamicValidatorType dt, RefexDynamicDataBI currentValue, 
+			ObjectProperty<RefexDynamicDataType> refexDataType, UpdateableBooleanBinding allValid)
 	{
 		RefexValidatorTypeNodeDetails returnValue = new RefexValidatorTypeNodeDetails();
 		if (RefexDynamicValidatorType.GREATER_THAN == dt || RefexDynamicValidatorType.GREATER_THAN_OR_EQUAL == dt || RefexDynamicValidatorType.INTERVAL == dt
@@ -160,9 +176,133 @@ public class RefexValidatorTypeFXNodeBuilder
 				}
 			});
 		}
-		else if (RefexDynamicValidatorType.DROOLS == dt)
+		else if (RefexDynamicValidatorType.EXTERNAL == dt)
 		{
-			throw new RuntimeException("Not yet implemented");
+			ChoiceBox<RefexDroolsValidatorImplInfo> cb = new ChoiceBox<>();
+			cb.setMaxWidth(Double.MAX_VALUE);
+			cb.setConverter(new StringConverter<RefexDroolsValidatorImplInfo>()
+			{
+				@Override
+				public String toString(RefexDroolsValidatorImplInfo object)
+				{
+					return object.getDisplayName();
+				}
+
+				@Override
+				public RefexDroolsValidatorImplInfo fromString(String string)
+				{
+					//not needed
+					return null;
+				}
+			});
+			
+			SimpleStringProperty valueInvalidReason = new SimpleStringProperty("");
+			returnValue.boundToAllValid.add(valueInvalidReason);
+			allValid.addBinding(valueInvalidReason);
+			
+			Node n = ErrorMarkerUtils.setupErrorMarker(cb, valueInvalidReason);
+			
+			ArrayList<String> longDescriptions = new ArrayList<>();
+			
+			try
+			{
+				DroolsExecutorsManager dem = AppContext.getService(DroolsExecutorsManager.class);
+				
+				for (RefexDroolsValidatorImplInfo rdvii : RefexDroolsValidatorImplInfo.values())
+				{
+					cb.getItems().add(rdvii);
+					StringBuilder temp = new StringBuilder();
+					DroolsExecutor de = dem.getDroolsExecutor(rdvii.getDroolsPackageName());
+					if (de == null)
+					{
+						logger.error("Unexpected - couldn't locate a DroolsExecutor for " + rdvii.getDroolsPackageName());
+					}
+					else
+					{
+						for (String ruleNames : de.getAllRuleNames())
+						{
+							temp.append(ruleNames + "\r");
+						}
+					}
+					if (temp.length() > 1)
+					{
+						temp.setLength(temp.length() - 1);
+					}
+					longDescriptions.add(temp.toString());
+				}
+				
+				Tooltip tt = new Tooltip("");
+				tt.setWrapText(true);
+				tt.setMaxWidth(400);
+				cb.setTooltip(tt);
+				
+				refexDataType.addListener((change) ->
+				{
+					boolean matched = false;
+					for (RefexDynamicDataType rddt : cb.getValue().getApplicableDataTypes())
+					{
+						if (rddt == refexDataType.get())
+						{
+							matched = true;
+							break;
+						}
+					}
+					if (!matched)
+					{
+						valueInvalidReason.set("The selected validator is not appliable to the selected data type");
+					}
+					else
+					{
+						valueInvalidReason.set("");
+					}
+				});
+				
+				cb.valueProperty().addListener((change) ->
+				{
+					try
+					{
+						boolean matched = false;
+						for (RefexDynamicDataType rddt : cb.getValue().getApplicableDataTypes())
+						{
+							if (rddt == refexDataType.get())
+							{
+								matched = true;
+								break;
+							}
+						}
+						if (!matched)
+						{
+							valueInvalidReason.set("The selected validator is not appliable to the selected data type");
+						}
+						else
+						{
+							valueInvalidReason.set("");
+						}
+						returnValue.validatorData.set(RefexDroolsValidator.createValidatorDefinitionData(cb.getValue()));
+						tt.setText(longDescriptions.get(cb.getSelectionModel().getSelectedIndex()));
+					}
+					catch (Exception e)
+					{
+						logger.error("Unexpected!", e);
+					}
+				});
+				
+				RefexDroolsValidatorImplInfo rdvii = RefexDroolsValidator.readFromData(currentValue);
+				
+				if (rdvii != null)
+				{
+					cb.getSelectionModel().select(rdvii);
+				}
+				else
+				{
+					cb.getSelectionModel().select(0);
+				}
+				returnValue.nodeForDisplay = n;
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException("Unexpected", e);
+			}
 		}
 		else
 		{

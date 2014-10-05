@@ -53,7 +53,7 @@ public class FullSyncTest {
         //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
 
        Long lastTaskId = null;
-        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks(userid)) {
+        for (LocalTask loopTask : localTasksService.getOpenOwnedTasks()) {
             System.out.println("TaskId: " + loopTask.getId() + " " + loopTask.getName());
             System.out.println("Component: " + loopTask.getComponentId() + " " + loopTask.getComponentName());
             lastTaskId = loopTask.getId();

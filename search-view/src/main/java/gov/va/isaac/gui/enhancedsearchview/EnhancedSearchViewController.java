@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
@@ -121,7 +122,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,8 +239,10 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private TaxonomyViewI taxonomyView = null;
 	private final BooleanProperty taxonomyPanelShouldFilterProperty = new SimpleBooleanProperty(false);
 	private SctTreeItemSearchResultsDisplayPolicies taxonomyDisplayPolicies = null;
+	private Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
 	
 	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
+	
 	private SearchHandle ssh = null;
 
 	private Window windowForTableViewExportDialog;
@@ -274,6 +276,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert searchProgress != null : "fx:id=\"searchProgress\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
@@ -310,8 +313,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			@Override
 			public void handle(ActionEvent event) {
 				exportResultsToSearchTaxonomyPanel();
-						}
+			}
 		});
+		//exportResultsToSearchTaxonomyPanelButton.setVisible(false);
 		
 		initializeWorkflowServices();
 
@@ -336,7 +340,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		exportSearchResultsAsTabDelimitedValuesButton.setOnAction((e) -> exportSearchResultsAsTabDelimitedValues());
 		exportSearchResultsToListBatchViewButton.setOnAction((e) -> exportSearchResultsToListBatchView());
+		
+		// TODO: either fix or remove exportSearchResultsToWorkflow
 		exportSearchResultsToWorkflowButton.setOnAction((e) -> exportSearchResultsToWorkflow());
+		exportSearchResultsToWorkflowButton.setVisible(false);
+		
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 
 		saveSearchButton.setOnAction((action) -> {
@@ -378,33 +386,76 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		if (! searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
 			searchResultsAndTaxonomySplitPane.getItems().add(taxonomyPanelBorderPane);
 			searchResultsAndTaxonomySplitPane.setDividerPositions(0.6);
-			//searchResultsAndTaxonomySplitPane.setPrefSize(400, 400);
 			LOG.debug("Added taxonomyPanelBorderPane to searchResultsAndTaxonomySplitPane");
 		}
-
-		taxonomyDisplayPolicies.getSearchResultAncestors().clear();
-		taxonomyDisplayPolicies.getSearchResults().clear();
-		for (CompositeSearchResult c : searchResultsTable.getItems()) {
-			taxonomyDisplayPolicies.getSearchResults().add(c.getContainingConcept().getNid());
-
-			Set<ConceptVersionBI> ancestorNids = null;
-			try {
-				ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
-
-				for (ConceptVersionBI concept : ancestorNids) {
-					taxonomyDisplayPolicies.getSearchResultAncestors().add(concept.getNid());
-				}
-			} catch (/* IOException | ContradictionException */ Exception e) {
-				String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-				String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
-				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-				e.printStackTrace();
+		
+		if (configureDisplayPoliciesTask != null) {
+			if (configureDisplayPoliciesTask.isRunning()) {
+				configureDisplayPoliciesTask.cancel();
 			}
 		}
+		configureDisplayPoliciesTask = new Task<SctTreeItemSearchResultsDisplayPolicies>() {
+			boolean cancelled = false;
+			
+			@Override
+			protected SctTreeItemSearchResultsDisplayPolicies call() throws Exception {
+				HashSet<Integer> searchResultAncestors = new HashSet<>();
+				HashSet<Integer> searchResults = new HashSet<>();
 
-		taxonomyView.refresh();
+				for (CompositeSearchResult c : searchResultsTable.getItems()) {
+					if (cancelled) {
+						return taxonomyDisplayPolicies;
+					}
+
+					searchResults.add(c.getContainingConcept().getNid());
+
+					Set<ConceptVersionBI> ancestorNids = null;
+					ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+
+					for (ConceptVersionBI concept : ancestorNids) {
+						searchResultAncestors.add(concept.getNid());
+					}
+
+				}
+				
+				taxonomyDisplayPolicies.setSearchResultAncestors(searchResultAncestors);
+				taxonomyDisplayPolicies.setSearchResults(searchResults);
+				
+				return taxonomyDisplayPolicies;
+			}
+
+			@Override
+			protected void succeeded() {
+				if (! cancelled) {
+					taxonomyView.refresh();
+				}
+			}
+			
+			@Override
+			public boolean cancel(boolean mayInterruptIfRunning) {
+				cancelled = true;
+
+				return super.cancel(mayInterruptIfRunning);
+			}
+
+			@Override
+			protected void failed() {
+				Throwable e = getException();
+				
+				if (e != null) {
+					String title = "Failed sending search results to SearchResultsTaxonomy Panel";
+					String msg = "Failed sending " + searchResultsTable.getItems().size() + " search results to SearchResultsTaxonomy Panel";
+					String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+					e.printStackTrace();
+				} else {
+					LOG.error("Task configureDisplayPoliciesTask FAILED without throwing an exception/throwable");
+				}
+			}
+		};
+
+		Utility.execute(configureDisplayPoliciesTask);
 	}
 	
 	private void initializeTaxonomyPanel() {
@@ -974,7 +1025,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 		// Use HashSet to ensure that only one workflow is created for each concept
 		if (searchResultsTable.getItems().size() > 0) {
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 
 		Map<Integer, ComponentVersionBI> conceptsOrComponents = new HashMap<>();
@@ -1008,7 +1063,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				exportSearchResultToWorkflow(conceptOrComponent);
 			}
 			
-			conceptWorkflowService.synchronizeWithRemote();
+			new Thread(new Runnable() {
+				public void run() {
+					conceptWorkflowService.synchronizeWithRemote();
+				}
+			}).start();
 		}
 	}
 
@@ -1017,12 +1076,12 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		initializeWorkflowServices();
 
 		// TODO: eliminate hard-coding of userName
-		final WorkflowProcess process = WorkflowProcess.REVIEW;
+		final WorkflowProcess process = WorkflowProcess.REVIEW3;
 		final String userName = "alejandro";
 		String preferredDescription = null;
 		try {
 			if (componentOrConceptVersion instanceof ConceptVersionBI) {
-				DescriptionVersionBI desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
+				DescriptionVersionBI<?> desc = ((ConceptVersionBI)componentOrConceptVersion).getPreferredDescription();
 				preferredDescription = desc.getText();
 			} else {
 				preferredDescription = componentOrConceptVersion.toUserString();
@@ -1080,8 +1139,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				public void run() {
 					try {
 						if (! ssh.isCancelled()) {
-							searchResultsTable.getItems().addAll(ssh.getResults());
-
+							searchResultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
+							
 							refreshTotalResultsDisplayedLabel();
 							
 							if (searchResultsAndTaxonomySplitPane.getItems().contains(taxonomyPanelBorderPane)) {
@@ -1094,7 +1153,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						AppContext.getCommonDialogs().showErrorDialog(title,
 								"There was an unexpected error running the search",
 								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
-						searchResultsTable.getItems().clear();
+						//searchResultsTable.getItems().clear();
 						refreshTotalResultsDisplayedLabel();
 					} finally {
 						searchRunning.set(false);
@@ -1184,16 +1243,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										nids.add(r.getContainingConcept().getNid());
-										// TODO: modify to send component nid, if possible
-//										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
-//											nids.add(r.getContainingConcept().getNid());
-//										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
-//											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
-//										} else {
-//											LOG.error("Unexpected AggregationType value " + aggregationTypeComboBox.getSelectionModel().getSelectedItem());
-//											nids.add(r.getContainingConcept().getNid());
-//										}
+										if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
+											nids.add(r.getContainingConcept().getNid());
+										} else if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.DESCRIPTION) {
+											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
+										} else {
+											LOG.error("Unexpected AggregationType value " + aggregationTypeComboBox.getSelectionModel().getSelectedItem());
+											nids.add(r.getContainingConcept().getNid());
+										}
 									}
 
 									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
@@ -1705,7 +1762,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 
 		aggregationTypeComboBox.setItems(FXCollections.observableArrayList(AggregationType.values()));
-		aggregationTypeComboBox.getSelectionModel().select(AggregationType.CONCEPT);
+		aggregationTypeComboBox.getSelectionModel().select(AggregationType.DESCRIPTION);
 	}
 
 	private synchronized void search() {
@@ -1714,105 +1771,111 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			return;
 		}
 
-		searchRunning.set(true);
+		try {
+			searchRunning.set(true);
 
-		searchResultsTable.getItems().clear();
-		refreshTotalResultsDisplayedLabel();
+			searchResultsTable.getItems().clear();
+			refreshTotalResultsDisplayedLabel();
 
-		SearchViewModel model = searchViewModel;
+			SearchViewModel model = searchViewModel;
 
-		if (! validateSearchViewModel(model, "Cannot execute save")) {
-			searchRunning.set(false);
+			if (! validateSearchViewModel(model, "Cannot execute search")) {
+				searchRunning.set(false);
 
-			return;
-		}
-
-		SearchTypeFilter<?> filter = model.getSearchType();
-
-		if (! (filter instanceof LuceneSearchTypeFilter)) {
-			String title = "Search failed";
-
-			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
-
-			searchRunning.set(false);
-			return;
-		}
-
-		LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
-
-		SearchResultsFilter searchResultsFilter = null;
-		if (model.getFilters() != null) {
-			List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
-
-			try {
-				for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
-					SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
-					
-					searchResultsFilters.add(newSearchResultsFilter);
-				}
-				LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
-				searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
-
-				//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
-			} catch (SearchResultsFilterException e) {
-				String title = "Failed creating SearchResultsFilter";
-				String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
-				String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
-				LOG.error(details);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-
-				ssh.cancel();
-				
 				return;
 			}
-		}
 
-		// "we get called back when the results are ready."
-		switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
-		case CONCEPT:
-		{
-			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
-			builder.setCallback(this);
-			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (searchResultsFilter != null) {
-				builder.setFilter(searchResultsFilter);
+			SearchTypeFilter<?> filter = model.getSearchType();
+
+			if (! (filter instanceof LuceneSearchTypeFilter)) {
+				String title = "Search failed";
+
+				String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				searchRunning.set(false);
+				return;
 			}
-			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-				if (maxResults != null && maxResults > 0) {
-					builder.setSizeLimit(maxResults);
+
+			LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
+
+			SearchResultsFilter searchResultsFilter = null;
+			if (model.getFilters() != null) {
+				List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
+
+				try {
+					for (NonSearchTypeFilter<?> nonSearchTypeFilter : model.getFilters()) {
+						SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
+
+						searchResultsFilters.add(newSearchResultsFilter);
+					}
+					LOG.debug("Constructing a new SearchResultsIntersectionFilter with " + searchResultsFilters.size() + " SearchResultsFilter instances: " + Arrays.toString(searchResultsFilters.toArray()));
+					searchResultsFilter = new SearchResultsIntersectionFilter(searchResultsFilters);
+
+					//searchResultsFilter = SearchResultsFilterHelper.createNonSearchTypeFilterSearchResultsIntersectionFilter(model.getFilters().toArray(new NonSearchTypeFilter[model.getFilters().size()]));
+				} catch (SearchResultsFilterException e) {
+					String title = "Failed creating SearchResultsFilter";
+					String msg = title + ". Encountered " + e.getClass().getName() + " " + e.getLocalizedMessage();
+					String details =  msg + " applying " + model.getFilters().size() + " NonSearchResultFilter filters: " + Arrays.toString(model.getFilters().toArray());
+					LOG.error(details);
+					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+					ssh.cancel();
+
+					return;
 				}
 			}
-			builder.setMergeResultsOnConcept(true);
-			ssh = SearchHandler.descriptionSearch(builder);
-			break;
-		}
-		case DESCRIPTION:
-		{
-			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
-			builder.setCallback(this);
-			builder.setTaskId(Tasks.SEARCH.ordinal());
-			if (searchResultsFilter != null) {
-				builder.setFilter(searchResultsFilter);
-			}
-			if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
-				Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
-				if (maxResults != null && maxResults > 0) {
-					builder.setSizeLimit(maxResults);
-				}
-			}
-			ssh = SearchHandler.descriptionSearch(builder);
-			break;
-		}
-		default:
-			String title = "Unsupported Aggregation Type";
-			String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
-			LOG.error(title);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			ssh.cancel();
-			break;
+			// "we get called back when the results are ready."
+			switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
+			case CONCEPT:
+			{
+				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				builder.setCallback(this);
+				builder.setTaskId(Tasks.SEARCH.ordinal());
+				if (searchResultsFilter != null) {
+					builder.setFilter(searchResultsFilter);
+				}
+				if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+					Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+					if (maxResults != null && maxResults > 0) {
+						builder.setSizeLimit(maxResults);
+					}
+				}
+				builder.setMergeResultsOnConcept(true);
+				ssh = SearchHandler.descriptionSearch(builder);
+				break;
+			}
+			case DESCRIPTION:
+			{
+				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				builder.setCallback(this);
+				builder.setTaskId(Tasks.SEARCH.ordinal());
+				if (searchResultsFilter != null) {
+					builder.setFilter(searchResultsFilter);
+				}
+				if (maxResultsCustomTextField.getText() != null && maxResultsCustomTextField.getText().length() > 0) {
+					Integer maxResults = Integer.valueOf(maxResultsCustomTextField.getText());
+					if (maxResults != null && maxResults > 0) {
+						builder.setSizeLimit(maxResults);
+					}
+				}
+				ssh = SearchHandler.descriptionSearch(builder);
+				break;
+			}
+			default:
+				String title = "Unsupported Aggregation Type";
+				String msg = "Aggregation Type " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + " not supported";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(aggregationTypeComboBox.getItems().toArray()), AppContext.getMainApplicationWindow().getPrimaryStage());
+
+				ssh.cancel();
+				break;
+			}
+		} catch (Exception e) {
+			LOG.error("Search failed unexpectedly...", e);
+			ssh = null;  //force a null ptr in taskComplete, so an error is displayed.
+			taskComplete(0, null);
 		}
 	}
 

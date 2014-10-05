@@ -10,9 +10,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class DetailTermRow extends TermRow {
 
@@ -37,12 +40,39 @@ public class DetailTermRow extends TermRow {
 		Label descLangLabel = labelHelper.createLabel(desc, desc.getLang(), ComponentType.DESCRIPTION, 0);
 		
 		if (desc.isUncommitted()) {
-			descLabel.setUnderline(true);
-			descTypeLabel.setUnderline(true);
-			descCaseLabel.setUnderline(true);
-			descLangLabel.setUnderline(true);
+			if (desc.getVersions().size() == 1) {
+				Font f = descLabel.getFont();
+				descLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+				f = descTypeLabel.getFont();
+				descTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+				f = descCaseLabel.getFont();
+				descCaseLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+				f = descLangLabel.getFont();
+				descLangLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+			} else {
+				ComponentChronicleBI<?> chronicle = desc.getChronicle();
+				DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+	
+				if (!descLabel.getText().equals(origVersion.getText())) {
+					descLabel.setUnderline(true);
+				}
+				if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+					descTypeLabel.setUnderline(true);
+				}
+	
+				if (!descCaseLabel.getText().equals(getBooleanValue(origVersion.isInitialCaseSignificant()))) {
+					descCaseLabel.setUnderline(true);
+				}
+				
+				if (!descLangLabel.getText().equals(origVersion.getLang())) {
+					descLangLabel.setUnderline(true);
+				}
+			}
 		}
-		
+	
 		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
 		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
 		GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);

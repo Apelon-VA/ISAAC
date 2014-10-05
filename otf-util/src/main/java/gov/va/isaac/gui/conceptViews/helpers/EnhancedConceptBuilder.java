@@ -12,8 +12,8 @@ import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.ConceptWorkflowViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,6 +119,8 @@ public class EnhancedConceptBuilder {
 			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr));
 			if (attr.isUncommitted()) {
 				isPrimLabel.setUnderline(true);
+			} else {
+				isPrimLabel.setUnderline(false);
 			}
 
 			// Concept ContextMenu
@@ -262,23 +264,19 @@ public class EnhancedConceptBuilder {
 		}
 	}
 
-	
-	
-	
-	
 	// Concept Conctext Menu Method
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Instance");
+		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Initiation");
 		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ConceptWorkflowViewI view = AppContext.getService(ConceptWorkflowViewI.class);
+				WorkflowInitiationViewI view = AppContext.getService(WorkflowInitiationViewI.class);
 
-				view.setConcept(con.getNid());
+				view.setComponent(con.getNid());
 				view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 			}
 		});

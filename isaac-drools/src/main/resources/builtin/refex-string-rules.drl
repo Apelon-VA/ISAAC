@@ -1,0 +1,45 @@
+package gov.va.isaac.drools.rules
+
+import gov.va.issac.drools.testmodel.DrDescription
+import gov.va.issac.drools.helper.templates.DescriptionTemplate
+import gov.va.issac.drools.helper.ResultsItemError
+
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI
+
+global gov.va.issac.drools.helper.ResultsCollector resultsCollector
+global gov.va.issac.drools.helper.TerminologyHelperDrools terminologyHelper
+
+rule "Text in description should not have double spaces"
+	@UUID(dfe4ea80-cc22-11df-bd3b-0800200c9a66)
+	@DESCRIPTION(Text in description should not have double spaces)
+	@RULE_CODE(107)
+	dialect "mvel"
+	when
+		description : DrDescription( text matches ".*\\s\\s+.*" , statusUuid == "d12702ee-c37f-385f-a070-61d56d4d0f1f" )
+	then
+		DescriptionTemplate fact0 = new DescriptionTemplate();
+		fact0.setComponentUuid( description.primordialUuid );
+		fact0.setText( description.text.replaceAll("\\s+"," ") );
+		resultsCollector.addTemplate( fact0 );
+		ResultsItemError fact1 = new ResultsItemError();
+		fact1.setErrorCode( 108 );
+		fact1.setMessage( "Text in description should not have double spaces" );
+		fact1.setRuleUuid( "dfe4ea80-cc22-11df-bd3b-0800200c9a66" );
+		resultsCollector.addResultsItem( fact1 );
+end
+
+
+rule "Text should not have double spaces"
+	@UUID(dfe4ea80-cc22-11df-bd3b-0800200c9a69)
+	@DESCRIPTION(Text should not have double spaces)
+	@RULE_CODE(107)
+	dialect "mvel"
+	when
+		text : RefexDynamicStringBI( dataString matches ".*\\s\\s+.*" )
+	then
+		ResultsItemError fact1 = new ResultsItemError();
+		fact1.setErrorCode( 108 );
+		fact1.setMessage( "Text should not have double spaces" );
+		fact1.setRuleUuid( "dfe4ea80-cc22-11df-bd3b-0800200c9a69" );
+		resultsCollector.addResultsItem( fact1 );
+end

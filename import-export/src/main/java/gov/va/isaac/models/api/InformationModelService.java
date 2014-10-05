@@ -105,17 +105,13 @@ public interface InformationModelService {
     InvalidCAB, ContradictionException, NoSuchAlgorithmException, PropertyVetoException;
 
   /**
-   * Creates the metadata concepts. This creates needed metadata to support all
-   * information models. TODO: this functionality should be moved to a mojo and
-   * databases should be automatically loaded with needed metadata and the
-   * "Create Metadata" actions menu item should be removed
-   * @throws ContradictionException 
-   * @throws InvalidCAB 
-   * @throws IOException 
-   * @throws PropertyVetoException 
+   * Creates the metadata concepts.
+   *
+   * @throws IOException Signals that an I/O exception has occurred.
+   * @throws InvalidCAB the invalid cab
+   * @throws ContradictionException the contradiction exception
+   * @throws PropertyVetoException the property veto exception
    */
-  public void createMetadataConcepts() throws IOException, InvalidCAB, ContradictionException, PropertyVetoException;
-
-
-
+  void createMetadataConcepts() throws IOException, InvalidCAB,
+    ContradictionException, PropertyVetoException;
 }

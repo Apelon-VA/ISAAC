@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.importview.ImportView;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.util.InformationModelTypeStringConverter;
@@ -92,8 +91,8 @@ public class ImportSettingsDialogController {
         FileChooser fileChooser = new FileChooser();
 
         // Set extension filter.
-        FileChooser.ExtensionFilter xmlFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
-        FileChooser.ExtensionFilter umlFilter = new FileChooser.ExtensionFilter("UML files (*.uml)", "*.uml");
+        FileChooser.ExtensionFilter xmlFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml", "*.zip");
+        FileChooser.ExtensionFilter umlFilter = new FileChooser.ExtensionFilter("UML files (*.uml)", "*.uml", "*.zip");
         FileChooser.ExtensionFilter allFilter = new FileChooser.ExtensionFilter("All files (*.*)", "*.*");
         fileChooser.getExtensionFilters().addAll(xmlFilter, umlFilter, allFilter);
 

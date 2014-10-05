@@ -19,11 +19,14 @@
 package gov.va.isaac.models.util;
 
 import gov.va.isaac.model.InformationModelType;
+import gov.va.isaac.models.DefaultInformationModelProperty;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.InformationModelProperty;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -58,9 +61,9 @@ public class DefaultInformationModel implements InformationModel {
   /** The associated concept uuids */
   protected Set<UUID> associatedConceptUuids = new HashSet<>();
 
-  /**  The super model. */
+  /** The super model. */
   private UUID superModelUuid = null;
-  
+
   /**
    * Instantiates an empty {@link DefaultInformationModel}.
    */
@@ -377,7 +380,9 @@ public class DefaultInformationModel implements InformationModel {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see gov.va.isaac.models.InformationModel#hasSuperModelUuid()
    */
   @Override
@@ -385,7 +390,9 @@ public class DefaultInformationModel implements InformationModel {
     return superModelUuid != null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see gov.va.isaac.models.InformationModel#getSuperModelUuid()
    */
   @Override
@@ -393,7 +400,9 @@ public class DefaultInformationModel implements InformationModel {
     return superModelUuid;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see gov.va.isaac.models.InformationModel#setSuperModelUuid(java.util.UUID)
    */
   @Override
@@ -401,4 +410,112 @@ public class DefaultInformationModel implements InformationModel {
     this.superModelUuid = uuid;
   }
 
+  /**
+   * Removes the properties by label.
+   *
+   * @param label the label
+   */
+  protected void removePropertiesByLabel(String label) {
+    // Remove any "data" properties
+    Set<InformationModelProperty> properties = new HashSet<>(getProperties());
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(label)) {
+        removeProperty(property);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Returns the property by label.
+   *
+   * @param label the label
+   * @return the property by label
+   */
+  protected InformationModelProperty getPropertyByLabel(String label) {
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(label)) {
+        return property;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the properties by label.
+   *
+   * @param label the label
+   * @return the properties by label
+   */
+  protected List<InformationModelProperty> getPropertiesByLabel(String label) {
+    List<InformationModelProperty> propsByLabel = new ArrayList<>();
+    for (InformationModelProperty property : properties) {
+      if (property.getLabel().equals(label)) {
+        propsByLabel.add(property);
+      }
+    }
+    return propsByLabel;
+  }
+
+  /**
+   * Sets the description
+   *
+   * @param description the description
+   */
+  public void setDescription(String description) {
+    // Remove any "data" properties
+    removePropertiesByLabel("description");
+
+    // Add new one
+    InformationModelProperty descriptionProperty =
+        new DefaultInformationModelProperty();
+    descriptionProperty.setLabel("description");
+    descriptionProperty.setType(description);
+    addProperty(descriptionProperty);
+  }
+
+  /**
+   * Returns the description.
+   *
+   * @return the description
+   */
+  public String getDescription() {
+    InformationModelProperty property = getPropertyByLabel("description");
+    if (property == null) return null;
+    return property.getType();
+  }
+
+  /**
+   * Sets the status
+   *
+   * @param status the status
+   */
+  public void setStatus(String status) {
+    // Remove any "data" properties
+    removePropertiesByLabel("status");
+
+    // Add new one
+    InformationModelProperty statusProperty =
+        new DefaultInformationModelProperty();
+    statusProperty.setLabel("status");
+    statusProperty.setType(status);
+    addProperty(statusProperty);
+  }
+
+  /**
+   * Returns the status.
+   *
+   * @return the status
+   */
+  public String getStatus() {
+    return getPropertyByLabel("status").getType();
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   */
+  @Override
+  public int compareTo(InformationModel o) {
+    return getName().compareTo(o.getName());
+  }
 }

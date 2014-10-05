@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>1.0-Sprint_13-SNAPSHOT</version>
+		<version>1.0-Sprint_14-SNAPSHOT</version>
 	</parent>
 
 	<groupId>gov.va.isaac.modules</groupId>
@@ -25,7 +25,6 @@
 		<dependency>
 			<groupId>org.ihtsdo.otf</groupId>
 			<artifactId>tcc-mojo</artifactId>
-			<version>${otf-versioning.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ihtsdo.otf</groupId>
@@ -36,5 +35,10 @@
 			<artifactId>isaac-app-interfaces</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+        <dependency>
+          <groupId>gov.va.isaac.modules</groupId>
+          <artifactId>import-export</artifactId>
+          <version>${project.parent.version}</version>
+        </dependency>
 	</dependencies>
 </project>

@@ -362,7 +362,7 @@ public class DynamicRefexView implements RefexViewI
 				try
 				{
 					ExtendedAppContext.getDataStore().cancel();
-					
+					//TODO Cancel isn't working properly on annotation-style refexes - works on member style.
 					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
 					for (Integer i : componentNids)
 					{

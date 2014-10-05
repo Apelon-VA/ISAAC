@@ -126,7 +126,8 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	@Override
 	public void showView(Window parent)
 	{
-		setTitle(popupTitle);
+		String stageTitle = popupTitle.replace("Modify", "Modeling");
+		setTitle(stageTitle);
 		setResizable(true);
 
 		initOwner(parent);
@@ -214,6 +215,9 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	{
 		this.conceptNid = conceptNid;
 		callingView_ = callingView;
+		
+		String newTitle = popupTitle.replace("Modify", "New");
+		title.setText(newTitle);		
 		
 		setupValidations();
 		saveButton.disableProperty().bind(allValid_.not());

@@ -27,7 +27,9 @@ import gov.va.isaac.models.fhim.converter.UML2ModelConverter;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.EList;
@@ -49,117 +51,162 @@ import org.slf4j.LoggerFactory;
  */
 public class FHIMImporter extends ImporterBase implements ImportHandler {
 
-    /**  The Constant LOG. */
-    private static final Logger LOG = LoggerFactory.getLogger(FHIMImporter.class);
+  /** The Constant LOG. */
+  private static final Logger LOG = LoggerFactory.getLogger(FHIMImporter.class);
+
+  /**
+   * Instantiates an empty {@link FHIMImporter}.
+   */
+  public FHIMImporter() {
+    super();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.ie.ImportHandler#importModel(java.io.File)
+   */
+  @Override
+  public InformationModel importModel(File file) throws Exception {
+    FileInputStream in = null;
+    try {
+      LOG.info("Preparing to import FHIM model from: " + file.getName());
+      in = new FileInputStream(file);
+      LOG.info("Ending import of FHIM model from: " + file.getName());
+      InformationModel model = importModel(in, 
+          URI.createFileURI(file.getAbsolutePath()));
+      in.close();
+      return model;
+    } catch (Exception e) {
+      in.close();
+      throw e;
+    }
+
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.ie.ImportHandler#importModel(java.io.InputStream)
+   */
+  @Override
+  public InformationModel importModel(InputStream in) throws Exception {
+
+    URI fileURI = URI.createFileURI("file://LoadedFromInputStream");
+    return importModel(in, fileURI);
+  }
+
+  /**
+   * Import model.
+   *
+   * @param in the in
+   * @param fileURI the file uri
+   * @return the information model
+   * @throws Exception the exception
+   */
+  private InformationModel importModel(InputStream in, URI fileURI)
+    throws Exception {
+    LOG.info("Starting import of FHIM model from stream");
+
+    // Make sure in background thread.
+    FxUtils.checkBackgroundThread();
+
+    InformationModelService service = getInformationModelService();
 
     /**
-     * Instantiates an empty {@link FHIMImporter}.
-     */
-    public FHIMImporter() {
-        super();
+     * // Get focus concept. String focusConceptUuid =
+     * "215fd598-e21d-3e27-a0a2-8e23b1b36dfc"; ConceptChronicleBI focusConcept =
+     * getDataStore().getConcept(UUID.fromString(focusConceptUuid));
+     * LOG.info("focusConcept: " + focusConcept.toString());
+     * 
+     * // Throw exception if import already performed. ConceptChronicleBI
+     * modelsRefsetConcept =
+     * getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET
+     * .getNid()); Collection<? extends RefexChronicleBI<?>> modelsRefsetMembers
+     * = modelsRefsetConcept.getRefsetMembers(); if (!
+     * modelsRefsetMembers.isEmpty()) { int focusConceptNid =
+     * focusConcept.getNid(); for (RefexChronicleBI<?> modelsRefsetMember :
+     * modelsRefsetMembers) {
+     * Preconditions.checkState(modelsRefsetMember.getReferencedComponentNid()
+     * != focusConceptNid, "FHIM import has already been performed on " +
+     * focusConceptUuid); } }
+     **/
+    // Load UML model from file.
+    String packageName = "VitalSigns";
+    Package umlModel = loadModel(in, fileURI, packageName);
+
+    // Abort if not available.
+    if (umlModel == null) {
+      throw new IllegalStateException("No UML Package found: " + packageName);
     }
 
-    /* (non-Javadoc)
-     * @see gov.va.isaac.ie.ImportHandler#importModel(java.io.File)
-     */
-    @Override
-    public InformationModel importModel(File file) throws Exception {
-        LOG.info("Preparing to import FHIM model from: " + file.getName());
+    // Locate "BloodPressure" package.
+    packageName = "BloodPressure";
+    Package bloodPressurePackage = umlModel.getNestedPackage(packageName);
 
-        // Make sure in background thread.
-        FxUtils.checkBackgroundThread();
-
-        InformationModelService service = getInformationModelService();
-
-        /**
-        // Get focus concept.
-        String focusConceptUuid = "215fd598-e21d-3e27-a0a2-8e23b1b36dfc";
-        ConceptChronicleBI focusConcept = getDataStore().getConcept(UUID.fromString(focusConceptUuid));
-        LOG.info("focusConcept: " + focusConcept.toString());
-
-        // Throw exception if import already performed.
-        ConceptChronicleBI modelsRefsetConcept = getDataStore().getConcept(FHIMMetadataBinding.FHIM_MODELS_REFSET.getNid());
-        Collection<? extends RefexChronicleBI<?>> modelsRefsetMembers = modelsRefsetConcept.getRefsetMembers();
-        if (! modelsRefsetMembers.isEmpty()) {
-            int focusConceptNid = focusConcept.getNid();
-            for (RefexChronicleBI<?> modelsRefsetMember : modelsRefsetMembers) {
-                Preconditions.checkState(modelsRefsetMember.getReferencedComponentNid() != focusConceptNid,
-                        "FHIM import has already been performed on " + focusConceptUuid);
-            }
-        }
-         **/
-        // Load UML model from file.
-        String packageName = "VitalSigns";
-        Package umlModel = loadModel(file, packageName);
-
-        // Abort if not available.
-        if (umlModel == null) {
-            throw new IllegalStateException("No UML Package found: " + packageName);
-        }
-
-        // Locate "BloodPressure" package.
-        packageName = "BloodPressure";
-        Package bloodPressurePackage = umlModel.getNestedPackage(packageName);
-
-        // Abort if not available.
-        if (bloodPressurePackage == null) {
-            throw new IllegalStateException("No UML Package found: " + packageName);
-        }
-
-        // Parse into FHIM model.
-        UML2ModelConverter converter = new UML2ModelConverter();
-        FHIMInformationModel infoModel = converter.createInformationModel(bloodPressurePackage);
-
-        service.saveInformationModel(infoModel);
-
-        LOG.info("Ending import of FHIM model from: " + file.getName());
-
-        return infoModel;
+    // Abort if not available.
+    if (bloodPressurePackage == null) {
+      throw new IllegalStateException("No UML Package found: " + packageName);
     }
 
+    // Parse into FHIM model.
+    UML2ModelConverter converter = new UML2ModelConverter();
+    FHIMInformationModel infoModel =
+        converter.createInformationModel(bloodPressurePackage);
 
-    /**
-     * Load model from XMI.
-     *
-     * @param file the file
-     * @param packageName the package name
-     * @return the package
-     * @throws IOException Signals that an I/O exception has occurred.
-     */
-    private Package loadModel(File file, String packageName) throws IOException {
-
-        URI fileURI = URI.createFileURI(file.getAbsolutePath());
-
-        // Create a resource-set to contain the resource(s) that we are saving
-        ResourceSet resourceSet = new ResourceSetImpl();
-
-        // Initialize registrations of resource factories, library models,
-        // profiles, Ecore metadata, and other dependencies required for
-        // serializing and working with UML resources. This is only necessary in
-        // applications that are not hosted in the Eclipse platform run-time, in
-        // which case these registrations are discovered automatically from
-        // Eclipse extension points.
-        UMLResourcesUtil.init(resourceSet);
-
-        Resource resource = resourceSet.createResource(fileURI);
-
-        // And load.
-        Map<?, ?> options = null;   // No load options needed.
-        resource.load(options);
-
-        // Look for Package with specified name.
-        EList<EObject> contents = resource.getContents();
-        for (EObject content : contents) {
-            if (content instanceof Package) {
-                Package model = (Package) content;
-                if (model.getName().equals(packageName)) {
-                    LOG.info("Loaded '" + model.getQualifiedName() + "' from '" + fileURI + "'.");
-                    return model;
-                }
-            }
-        }
-
-        return null;
+    // Save the information model
+    if (service.exists(infoModel)) {
+      throw new IOException("Model already imported.");
     }
+    service.saveInformationModel(infoModel);
+
+    LOG.info("Ending import of FHIM model from stream");
+
+    return infoModel;
+  }
+
+
+  /**
+   * Load model.
+   *
+   * @param in the in
+   * @param fileURI the file uri
+   * @param packageName the package name
+   * @return the package
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  private Package loadModel(InputStream in, URI fileURI, String packageName)
+    throws IOException {
+
+    // Create a resource-set to contain the resource(s) that we are saving
+    ResourceSet resourceSet = new ResourceSetImpl();
+
+    // Initialize registrations of resource factories, library models,
+    // profiles, Ecore metadata, and other dependencies required for
+    // serializing and working with UML resources. This is only necessary in
+    // applications that are not hosted in the Eclipse platform run-time, in
+    // which case these registrations are discovered automatically from
+    // Eclipse extension points.
+    UMLResourcesUtil.init(resourceSet);
+
+    Resource resource = resourceSet.createResource(fileURI);
+
+    // And load.
+    Map<?, ?> options = null; // No load options needed.
+    resource.load(options);
+
+    // Look for Package with specified name.
+    EList<EObject> contents = resource.getContents();
+    for (EObject content : contents) {
+      if (content instanceof Package) {
+        Package model = (Package) content;
+        if (model.getName().equals(packageName)) {
+          LOG.info("Loaded '" + model.getQualifiedName() + "' from '" + fileURI
+              + "'.");
+          return model;
+        }
+      }
+    }
+
+    return null;
+  }
 
 }

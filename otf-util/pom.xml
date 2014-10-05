@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>1.0-Sprint_13-SNAPSHOT</version>
+		<version>1.0-Sprint_14-SNAPSHOT</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>otf-util</artifactId>
@@ -16,6 +16,11 @@
 	</description>
 
 	<dependencies>
+        <dependency>
+           <groupId>au.csiro</groupId>
+           <artifactId>snorocket-core</artifactId>
+           <version>2.5.3</version>
+        </dependency>
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>isaac-app-interfaces</artifactId>
@@ -24,6 +29,11 @@
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>gui-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>isaac-constants</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>

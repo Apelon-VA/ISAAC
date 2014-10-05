@@ -79,7 +79,7 @@ public class TasksFetcher {
                 log.debug("Task: " + loopTask.getId() + " No changes");
             }
         }
-        List<LocalTask> openOwnedTasks = persistenceApi.getOpenOwnedTasks(userId);
+        List<LocalTask> openOwnedTasks = persistenceApi.getOpenOwnedTasks();
         log.debug("Looking for missing tasks. LocalCount = " + openOwnedTasks.size() + ", FetchCount = " + tasksSummaries.size());
         for (LocalTask loopLocalTask : openOwnedTasks) {
             boolean isInFetchCursor = false;

@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 
@@ -37,6 +38,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
@@ -93,11 +95,17 @@ public class DescriptionModelingPopup extends ModelingPopup
 		row = 0;
 		
 		try {
-			// TODO: Needs to reference previous commit, not component as-is before panel opened
-			createOriginalLabel(WBUtility.getConceptVersion(desc.getTypeNid()).getPreferredDescription().getText());
-			createOriginalLabel(desc.getText());
-			createOriginalLabel(desc.getLang());
-			createOriginalLabel((desc.isInitialCaseSignificant()) ? "True" : "False");
+			ComponentChronicleBI<?> chronicle = desc.getChronicle();
+			DescriptionVersionBI<?> displayVersion = (DescriptionVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
+
+			if (chronicle.isUncommitted()) {
+				displayVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+			}
+
+			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(displayVersion.getText());
+			createOriginalLabel(displayVersion.getLang());
+			createOriginalLabel((displayVersion.isInitialCaseSignificant()) ? "True" : "False");
 		} catch (Exception e) {
 			Log.error("Cannot access Pref Term for attributes of relationship: "  + desc.getPrimordialUuid(), e);
 		}
@@ -316,11 +324,14 @@ public class DescriptionModelingPopup extends ModelingPopup
 			String langCode = languageCodeCb.getSelectionModel().getSelectedItem();
 			
 			String term = termTf.getText(); 
-			boolean isInitCap = (isCapCb.getSelectionModel().getSelectedIndex() == 0); 
+			boolean isInitCap = (isCapCb.getSelectionModel().getSelectedItem().equalsIgnoreCase("True")); 
 
 			if (desc == null) {
 				WBUtility.createNewDescription((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap);
 			} else {
+				if (desc.isUncommitted()) {
+					ExtendedAppContext.getDataStore().forget(desc);
+				}
 				DescriptionCAB dcab = new DescriptionCAB((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap, desc, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 	
 				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
@@ -342,9 +353,9 @@ public class DescriptionModelingPopup extends ModelingPopup
 
 	private int getSelectedType() {
 		try {
-			if (typeCb.getSelectionModel().getSelectedIndex() == 0) {
+			if (typeCb.getSelectionModel().getSelectedItem().equalsIgnoreCase("Synonym")) {
 				return SnomedMetadataRf2.SYNONYM_RF2.getNid();
-			} else if (typeCb.getSelectionModel().getSelectedIndex() == 1) {
+			} else if (typeCb.getSelectionModel().getSelectedItem().equalsIgnoreCase("Definition")) {
 				return Snomed.DEFINITION_DESCRIPTION_TYPE.getNid();
 			}
 		} catch (IOException e) {
