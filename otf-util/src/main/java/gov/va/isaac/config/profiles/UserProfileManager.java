@@ -26,9 +26,15 @@ import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -50,7 +56,7 @@ public class UserProfileManager implements ServicesToPreloadI
 
 	private CountDownLatch cdl = new CountDownLatch(2);
 
-	private HashSet<String> userNamesWithProfiles_ = new HashSet<>();
+	private ObservableList<String> userNamesWithProfiles_ = FXCollections.observableList(new ArrayList<>());
 	private UserProfile loggedInUser_;
 
 	private UserProfileManager()
@@ -77,6 +83,23 @@ public class UserProfileManager implements ServicesToPreloadI
 		loggedInUser_ = temp;
 	}
 
+	public boolean authenticateBoolean(String userLogonName, String password)
+	{
+		try
+		{
+			authenticate(userLogonName, password);
+			return true;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
+	
+	/**
+	 * Throws an exception if authentication fails, otherwise, logs in the user.
+	 * @throws InvalidUserException
+	 */
 	public void authenticate(String userLogonName, String password) throws InvalidUserException
 	{
 		checkInit();
@@ -100,6 +123,8 @@ public class UserProfileManager implements ServicesToPreloadI
 				else
 				{
 					loggedInUser_ = up;
+					Files.write(new File(profilesFolder_, "lastUser.txt").toPath(), userLogonName.getBytes(), 
+							StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 					ChangesetConfiguration.configureChangeSetWriter();
 				}
 			}
@@ -136,7 +161,25 @@ public class UserProfileManager implements ServicesToPreloadI
 		{
 			up.setDisplayFSN(defaults.isDisplayFSN().booleanValue());
 		}
+		up.setConceptUUID(UUID.fromString(user.getUUID()));
+		
+		String temp = (user.getSyncUserName() != null && user.getSyncUserName().length() > 0 ? user.getSyncUserName() : user.getUniqueLogonName());
+		
+		up.setSyncUsername(temp);
+		up.setSyncPassword(temp);  //Just a guess
+		
+		temp = (user.getWorkflowUserName() != null && user.getWorkflowUserName().length() > 0 ? user.getWorkflowUserName() : user.getUniqueLogonName()); 
+		
+		up.setWorkflowUsername(temp);
+		up.setWorkflowPassword(temp);  //Just a guess
+		
 		up.store(prefFile);
+		Platform.runLater(() ->
+		{
+			userNamesWithProfiles_.add(user.getUniqueLogonName());
+			FXCollections.sort(userNamesWithProfiles_);
+		});
+		
 	}
 
 	public boolean doesProfileExist(String userLogonName)
@@ -193,9 +236,45 @@ public class UserProfileManager implements ServicesToPreloadI
 					}
 				}
 			}
+			FXCollections.sort(userNamesWithProfiles_);
 
 			cdl.countDown();  //0 tells us init is complete
 		});
 	}
-
+	
+	/**
+	 * Returns a sorted list of all user names that could potentially log on, based on 
+	 * the existence of their profiles directory.
+	 */
+	public ObservableList<String> getUsersWithProfiles()
+	{
+		checkInit();
+		return FXCollections.unmodifiableObservableList(userNamesWithProfiles_);
+	}
+	
+	/**
+	 * Returns null, if the last logged in user isn't known.
+	 * @return
+	 */
+	public String getLastLoggedInUser()
+	{
+		checkInit();
+		try
+		{
+			File temp = new File(profilesFolder_, "lastUser.txt");
+			if (temp.exists())
+			{
+				String u = new String(Files.readAllBytes(temp.toPath()));
+				if (userNamesWithProfiles_.contains(u))
+				{
+					return u;
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			// noop
+		}
+		return null;
+	}
 }

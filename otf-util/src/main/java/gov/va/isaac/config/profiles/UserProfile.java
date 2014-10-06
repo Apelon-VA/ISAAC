@@ -18,11 +18,11 @@
  */
 package gov.va.isaac.config.profiles;
 
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.util.PasswordHasher;
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -54,6 +54,9 @@ public class UserProfile
 
 	@XmlElement 
 	private String userLogonName;
+	
+	@XmlElement
+	private UUID conceptUUID;
 
 	@XmlElement 
 	private StatedInferredOptions statedInferredPolicy = StatedInferredOptions.INFERRED_THEN_STATED;
@@ -74,39 +77,31 @@ public class UserProfile
 	//This field will be encrypted using the clearTextPassword
 	@XmlElement 
 	private String syncPasswordEncrypted = null;
+	
+	/*
+	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
+	 */
 
 	/**
 	 * do not use - only for jaxb
 	 */
-	protected UserProfile()
+	private UserProfile()
 	{
-		//for jaxb
+		//for jaxb and clone
 	}
 
 	protected UserProfile(String userLogonName, String password)
 	{
 		this.userLogonName = userLogonName;
-		this.clearTextPassword = password.toCharArray();
-		setPassword(password, password);
-	}
-
-	/**
-	 * Returns a cached copy of the clear text password which was most recently passed into {@link #isCorrectPassword(String)} which returned 'true'.
-	 * 
-	 * Or, it returns the most recent value that was passed into {@link #setPassword(String)} - whichever was most recent.
-	 * 
-	 * This value is transient - never written as part of save. The API here is provided for purposes
-	 * such as getting the password to hand off to workflow, or svn - for example.
-	 */
-	public char[] getClearTextPassword()
-	{
-		if (ExtendedAppContext.getCurrentlyLoggedInUser().getUserLogonName().equals(this.userLogonName))
+		try
 		{
-			return clearTextPassword;
+			this.hashedPassword = PasswordHasher.getSaltedHash(password);
+			this.clearTextPassword = password.toCharArray();
 		}
-		else
+		catch (Exception e)
 		{
-			throw new RuntimeException("Just what are you trying to do?");
+			logger.error("Unexpected error hashing password", e);
+			this.hashedPassword = "foo";
 		}
 	}
 
@@ -285,6 +280,23 @@ public class UserProfile
 			throw new InvalidPasswordException("Invalid password for decrypting the sync password");
 		}
 	}
+	
+
+	/**
+	 * The UUID of the concept in the DB that represents this user.
+	 */
+	public UUID getConceptUUID()
+	{
+		return conceptUUID;
+	}
+
+	/**
+	 * The UUID of the concept in the DB that represents this user.
+	 */
+	protected void setConceptUUID(UUID conceptUUID)
+	{
+		this.conceptUUID = conceptUUID;
+	}
 
 	protected void store(File fileToWrite) throws IOException
 	{
@@ -320,7 +332,7 @@ public class UserProfile
 		}
 	}
 
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws Exception
 	{
 		UserProfile f = new UserProfile("cc", "ba");
 		f.setPassword("ba", "b");
@@ -334,7 +346,9 @@ public class UserProfile
 	@Override
 	protected UserProfile clone()
 	{
-		UserProfile clone = new UserProfile(this.userLogonName, new String(this.clearTextPassword));
+		UserProfile clone = new UserProfile();
+		clone.userLogonName = this.userLogonName;
+		clone.clearTextPassword = this.clearTextPassword;
 		clone.hashedPassword = this.hashedPassword;
 		clone.statedInferredPolicy = this.statedInferredPolicy;
 		clone.displayFSN = this.displayFSN;
@@ -342,6 +356,7 @@ public class UserProfile
 		clone.syncUsername = this.syncUsername;
 		clone.workflowPasswordEncrypted = this.workflowPasswordEncrypted;
 		clone.workflowUsername = this.workflowUsername;
+		clone.conceptUUID = this.conceptUUID;
 		
 		return clone;
 	}
