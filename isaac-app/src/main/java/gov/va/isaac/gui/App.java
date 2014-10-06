@@ -223,9 +223,13 @@ public class App extends Application implements ApplicationWindowI{
         }
     }
 
-    private void shutdown() {
+    protected void shutdown() {
         LOG.info("Shutting down");
         shutdown = true;
+        if (primaryStage_.isShowing())
+        {
+            primaryStage_.hide();
+        }
         try {
             Utility.shutdownThreadPools();
             //TODO OTF fix note - the current BDB access model gives me no way to know if I should call shutdown, as I don't know if it was started.
@@ -289,6 +293,15 @@ public class App extends Application implements ApplicationWindowI{
         f.set(null, AppContext.getServiceLocator());
         //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
         //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
+        
+        //This is a hack to make SecureRandom not block while waiting for entropy on Linux system. 
+        //This needs to be done early... otherwise, something else in the dependency chain inits the security system before 
+        //the static call in PasswordHasher.java can... and we get stuck waiting for entropy, which prevents user profiles from geing generated.
+        if (System.getProperty("os.name").equals("Linux"))
+        {
+            System.setProperty("java.security.egd", "file:/dev/./urandom");
+        }
+        
         try
         {
             configDataStorePaths(new File("berkeley-db"));
