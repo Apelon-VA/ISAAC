@@ -120,6 +120,12 @@
                 </exclusions>
             </dependency>
             
+            <dependency>
+                <groupId>org.controlsfx</groupId>
+                <artifactId>controlsfx</artifactId>
+                <version>8.20.7</version>
+            </dependency>
+            
             <!-- The native logback implementation (note, the logback api comes from parent) -->
             <dependency> 
                 <groupId>ch.qos.logback</groupId>
