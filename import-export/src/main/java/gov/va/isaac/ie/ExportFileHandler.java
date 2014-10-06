@@ -164,7 +164,9 @@ public class ExportFileHandler {
     else if (exportType == ExportType.RF2) {
 
       // Settings for RF2 Export
-      // TODO: can get these from app.properties in the future
+      // TODO: can get these from AppContext.getAppConfiguration() in the future
+      // adding new properties involves tweaking AppConfigSchema.xsd in isaac-app, and then 
+      // following the changes through the implementation... IsaacAppConfigWrapper and IsaacAppConfigI
       String namespace = "1000000";
       ReleaseType releaseType = ReleaseType.SNAPSHOT;
       Collection<Integer> taxonomyParentNids = new ArrayList<>();
