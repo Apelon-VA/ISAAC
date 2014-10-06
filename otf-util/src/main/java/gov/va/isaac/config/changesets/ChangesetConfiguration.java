@@ -89,7 +89,7 @@ public class ChangesetConfiguration
 			logger.info("ChangeSet writer will be configured for " + changeSetFile.getAbsolutePath());
 			
 			ChangeSetGeneratorBI csEccs = ExtendedAppContext.getDataStore().createDtoChangeSetGenerator(
-					changeSetFile, new File(changeSetRoot, "." + changeSetFileName), ChangeSetGenerationPolicy.COMPREHENSIVE);  //TODO what should this be?
+					changeSetFile, new File(changeSetRoot, "." + changeSetFileName), ChangeSetGenerationPolicy.COMPREHENSIVE);  //TODO Keith question - what should this be?
 			ChangeSetWriterHandler.addWriter(userName + ".eccs", csEccs);
 			
 			ChangeSetLogWriter cslw = new ChangeSetLogWriter(new File(changeSetRoot, "commitLog.tsv"), new File(changeSetRoot, "." + "commitLog.xls"));
