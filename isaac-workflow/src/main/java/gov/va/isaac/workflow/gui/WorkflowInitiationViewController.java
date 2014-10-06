@@ -19,6 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -133,11 +134,6 @@ public class WorkflowInitiationViewController {
 		return "ISAAC Release Candidate Path";
 	}
 	
-	private String getUserName() {
-		// TODO: replace hard-coded username
-		return "alejandro";
-	}
-
 	// Private helper method to test validity of data required for save
 	private boolean isDataRequiredForInitiateOk() {
 		WorkflowProcess selectedProcess = null;
@@ -180,9 +176,11 @@ public class WorkflowInitiationViewController {
 
 		componentOrConcept = passedComponentOrConcept;
 		if (componentOrConcept instanceof ConceptVersionBI) {
-			LOG.debug("Set concept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" + passedComponentOrConcept.toUserString());
+			LOG.debug("Set concept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" 
+					+ passedComponentOrConcept.toUserString());
 		} else {
-			LOG.debug("Set componentOrConcept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" + WBUtility.getDescription(passedComponentOrConcept.getNid()));
+			LOG.debug("Set componentOrConcept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" 
+					+ WBUtility.getDescription(passedComponentOrConcept.getNid()));
 		}
 		
 		loadContents();
@@ -313,8 +311,12 @@ public class WorkflowInitiationViewController {
 			// TODO: handle other WorkflowProcessModel values
 		}
 
-		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + description + "\", conceptUuid=\"" + componentOrConcept.getPrimordialUuid().toString() + "\", user=\"" + getUserName() + "\", processName=\"" + process + "\")");
-		ProcessInstanceCreationRequestI createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), getUserName(), process.getText(), map);
+		String username = ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername();
+		
+		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + description + "\", conceptUuid=\"" 
+		+ componentOrConcept.getPrimordialUuid().toString() + "\", user=\"" + username + "\", processName=\"" + process + "\")");
+		ProcessInstanceCreationRequestI createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), 
+				username, process.getText(), map);
 		
 		if (createdRequest == null) {
 			String title = "Workflow Initiation Failed";
@@ -324,7 +326,8 @@ public class WorkflowInitiationViewController {
 		} else {
 			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 			
-			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + "\nFor componentId " + componentOrConcept.getPrimordialUuid());	
+			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() 
+					+ "\nFor componentId " + componentOrConcept.getPrimordialUuid());	
 
 			Utility.submit(() -> getWorkflowService().synchronizeWithRemote());
 

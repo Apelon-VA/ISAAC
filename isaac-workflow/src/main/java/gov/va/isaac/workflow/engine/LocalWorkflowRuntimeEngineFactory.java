@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.workflow.engine;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWfEngine;
 import java.net.MalformedURLException;
@@ -34,15 +35,17 @@ public class LocalWorkflowRuntimeEngineFactory {
 
     private static LocalWorkflowRuntimeEngineBI lwf;
 
-    //TODO this needs to be converted to HK2.  And I assume we only want one existing in the runtime at once... this shouldn't create a new 
+    //TODO DAN this needs to be converted to HK2.  And I assume we only want one existing in the runtime at once... this shouldn't create a new 
     //one with each call.
 
+    //TODO DAN this needs to prompt the user for the credentials if the built in ones fail...
     public static LocalWorkflowRuntimeEngineBI getRuntimeEngine() {
         if (lwf == null) {
             try {
                 // TODO: implement, create engine based on app configuration
                 lwf = new LocalWfEngine(new URL("http://162.243.255.43:8080/kie-wb/"),
-                        "alejandro", "alejandro", "gov.va.isaac.demo:terminology-authoring:1.3");
+                        ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername(), ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowPassword(),
+                        "gov.va.isaac.demo:terminology-authoring:1.3");
                 lwf.getLocalTaskService().createSchema();
                 lwf.getProcessInstanceService().createSchema();
             } catch (MalformedURLException ex) {

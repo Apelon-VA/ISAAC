@@ -19,6 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.util.CommonMenus;
@@ -84,8 +85,7 @@ public class WorkflowInboxController
 	private LocalWorkflowRuntimeEngineBI wfEngine_;
 	private LocalTasksServiceBI taskService_;
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowInboxController.class);
-	//TODO figure out how we handle usernames
-	private String user = "alejandro";
+	private String user = ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername();
 	
 	public static WorkflowInboxController init() throws IOException {
 		// Load FXML

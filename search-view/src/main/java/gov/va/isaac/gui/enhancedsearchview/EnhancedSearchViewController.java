@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
@@ -54,7 +55,6 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -68,7 +68,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -115,7 +114,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Callback;
-
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -1075,9 +1073,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private void exportSearchResultToWorkflow(ComponentVersionBI componentOrConceptVersion) {
 		initializeWorkflowServices();
 
-		// TODO: eliminate hard-coding of userName
 		final WorkflowProcess process = WorkflowProcess.REVIEW3;
-		final String userName = "alejandro";
+		final String userName = ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername();
 		String preferredDescription = null;
 		try {
 			if (componentOrConceptVersion instanceof ConceptVersionBI) {
