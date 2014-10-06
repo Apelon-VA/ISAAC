@@ -19,6 +19,7 @@
 package gov.va.isaac.config.changesets;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.util.UUID;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
@@ -39,55 +40,61 @@ public class ChangesetConfiguration
 	
 	/**
 	 * Typically called immediately after a user logs in, in order to configure the changeset writers for the user.
+	 * Also, horribly slow - so it runs in a background thread.
 	 */
 	public static void configureChangeSetWriter()
 	{
-		String userName = ExtendedAppContext.getCurrentlyLoggedInUser().getUserLogonName();
-		File changeSetRoot = new File(new File(new File("profiles"), userName), "changesets");
-		
-		changeSetRoot.mkdirs();
-		
-		if (!changeSetRoot.exists() || !changeSetRoot.isDirectory())
+		Utility.execute(() ->
 		{
-			throw new RuntimeException("Could not create the change set root directory " + changeSetRoot.getAbsolutePath());
-		}
-		
-		int fileIncrement = -1;
-		
-		for (File f : changeSetRoot.listFiles())
-		{
-			if (f.isFile() && f.getName().endsWith(".eccs"))
+			String userName = ExtendedAppContext.getCurrentlyLoggedInUser().getUserLogonName();
+			logger.info("Configuring changset writer for {}", userName);
+			File changeSetRoot = new File(new File(new File("profiles"), userName), "changesets");
+			
+			changeSetRoot.mkdirs();
+			
+			if (!changeSetRoot.exists() || !changeSetRoot.isDirectory())
 			{
-				String[] temp = f.getName().split("#");
-				if (temp.length >= 2)
+				throw new RuntimeException("Could not create the change set root directory " + changeSetRoot.getAbsolutePath());
+			}
+			
+			int fileIncrement = -1;
+			
+			for (File f : changeSetRoot.listFiles())
+			{
+				if (f.isFile() && f.getName().endsWith(".eccs"))
 				{
-					try 
+					String[] temp = f.getName().split("#");
+					if (temp.length >= 2)
 					{
-						int i = Integer.parseInt(temp[1]);
-						if (i > fileIncrement)
+						try 
 						{
-							fileIncrement = i;
+							int i = Integer.parseInt(temp[1]);
+							if (i > fileIncrement)
+							{
+								fileIncrement = i;
+							}
 						}
-					}
-					catch (NumberFormatException e)
-					{
-						//noop
+						catch (NumberFormatException e)
+						{
+							//noop
+						}
 					}
 				}
 			}
-		}
-		fileIncrement++;
-		
-		String changeSetFileName = userName + '#' + fileIncrement + "#" + UUID.randomUUID() + ".eccs";
-		File changeSetFile = new File(changeSetRoot, changeSetFileName);
-		
-		logger.info("ChangeSet writer will be configured for " + changeSetFile.getAbsolutePath());
-		
-		ChangeSetGeneratorBI csEccs = ExtendedAppContext.getDataStore().createDtoChangeSetGenerator(
-				changeSetFile, new File(changeSetRoot, "." + changeSetFileName), ChangeSetGenerationPolicy.INCREMENTAL);
-		ChangeSetWriterHandler.addWriter(userName + ".eccs", csEccs);
-		
-		ChangeSetLogWriter cslw = new ChangeSetLogWriter(new File(changeSetRoot, "commitLog.tsv"), new File(changeSetRoot, "." + "commitLog.xls"));
-		ChangeSetWriterHandler.addWriter(userName + ".commitLog.tsv", cslw);
+			fileIncrement++;
+			
+			String changeSetFileName = userName + '#' + fileIncrement + "#" + UUID.randomUUID() + ".eccs";
+			File changeSetFile = new File(changeSetRoot, changeSetFileName);
+			
+			logger.info("ChangeSet writer will be configured for " + changeSetFile.getAbsolutePath());
+			
+			ChangeSetGeneratorBI csEccs = ExtendedAppContext.getDataStore().createDtoChangeSetGenerator(
+					changeSetFile, new File(changeSetRoot, "." + changeSetFileName), ChangeSetGenerationPolicy.COMPREHENSIVE);  //TODO what should this be?
+			ChangeSetWriterHandler.addWriter(userName + ".eccs", csEccs);
+			
+			ChangeSetLogWriter cslw = new ChangeSetLogWriter(new File(changeSetRoot, "commitLog.tsv"), new File(changeSetRoot, "." + "commitLog.xls"));
+			ChangeSetWriterHandler.addWriter(userName + ".commitLog.tsv", cslw);
+			logger.info("Finished configuring changset writer for {}", userName);
+		});
 	}
 }
