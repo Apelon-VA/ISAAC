@@ -137,7 +137,7 @@ public class EnhancedConceptViewController {
 				catch (IOException e)
 				{
 					LOG.error("Unexpected error during commit", e);
-					AppContext.getCommonDialogs().showErrorDialog("Error committing concept", e);
+					ExtendedAppContext.getCommonDialogs().showErrorDialog("Error committing concept", e);
 				}
 			}
 		});
