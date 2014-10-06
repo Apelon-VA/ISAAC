@@ -107,6 +107,17 @@
 					</xs:annotation>
 				</xs:element>
 				
+				<xs:element name="roles" type="roleOption" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>Additional roles (beyond the default role of user) to grant to this user</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>Additional roles (beyond the default role of user) to grant to this user</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -124,6 +135,7 @@
 						<xs:documentation>Display policy for the taxonomy.  Defaults to inferredThenStated if not provided.</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
 				<xs:element name="displayFSN" type="xs:boolean" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -145,6 +157,13 @@
 			<xs:enumeration value="stated" />
 			<xs:enumeration value="inferred" />
 			<xs:enumeration value="inferredThenStated" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="roleOption">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="admin" />
+			<xs:enumeration value="user" />
 		</xs:restriction>
 	</xs:simpleType>
 	

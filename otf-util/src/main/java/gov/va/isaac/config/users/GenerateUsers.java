@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 import java.util.UUID;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -108,11 +109,35 @@ public class GenerateUsers
 		try
 		{
 			UserProfileManager upm = AppContext.getService(UserProfileManager.class);
+			
+			//This bit of hashing is to ensure that they didn't repeat any userLogin names (which can't be duplicated
+			//for obvious reasons) and to make sure that the UniqueFullName is unique, which is used as the FSN, and as 
+			//the basis for the computed UUID for the user concept (if they don't provide their own UUID)
+			HashSet<String> uniqueFullNames = new HashSet<>();
+			HashSet<String> uniqueLogonNames = new HashSet<>();
+			HashSet<String> usersToSkip = new HashSet<>();
+			for (User user : iuc.getUser())
+			{
+				if (!uniqueFullNames.add(user.getUniqueFullName()))
+				{
+					usersToSkip.add(user.getUniqueLogonName());
+				}
+				if (!uniqueLogonNames.add(user.getUniqueLogonName()))
+				{
+					usersToSkip.add(user.getUniqueLogonName());
+				}
+			}
 
-			BdbTerminologyStore ts = ExtendedAppContext.getDataStore();
 			for (User user : iuc.getUser())
 			{
 				logger.debug("Checking user " + toString(user));
+				
+				if (usersToSkip.contains(user.getUniqueLogonName()))
+				{
+					logger.error("Skipping the user {} because the uniqueLogonName and/or the uniqueFullName is duplicated within the users file.", toString(user));
+					continue;
+				}
+				
 				//This also validates other rules about the incoming user, to make sure it can be created - throws an exception, if the user 
 				//is invalid for whatever reason.  This also populates the UUID field (if necessary)
 				if (alreadyExists(user))
@@ -121,39 +146,7 @@ public class GenerateUsers
 				}
 				else
 				{
-					logger.info("Creating user " + toString(user) + " in DB");
-					String fsn = user.getUniqueFullName();
-					String preferredName = user.getFullName();
-					String logonName = user.getUniqueLogonName();
-					UUID userUUID = UUID.fromString(user.getUUID());
-
-					LanguageCode lc = LanguageCode.EN_US;
-					UUID isA = Snomed.IS_A.getUuids()[0];
-					IdDirective idDir = IdDirective.PRESERVE_CONCEPT_REST_HASH;
-					UUID module = TermAux.TERM_AUX_MODULE.getUuids()[0];
-					UUID parents[] = new UUID[] { TermAux.USER.getUuids()[0] };
-
-					ConceptCB cab = new ConceptCB(fsn, preferredName, lc, isA, idDir, module, userUUID, parents);
-
-					DescriptionCAB dCab = new DescriptionCAB(cab.getComponentUuid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getUuids()[0], lc, logonName, true,
-							IdDirective.GENERATE_HASH);
-					dCab.getProperties().put(ComponentProperty.MODULE_ID, module);
-
-					//Mark it as acceptable
-					RefexCAB rCabAcceptable = new RefexCAB(RefexType.CID, dCab.getComponentUuid(), Snomed.US_LANGUAGE_REFEX.getUuids()[0], IdDirective.GENERATE_HASH,
-							RefexDirective.EXCLUDE);
-					rCabAcceptable.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, SnomedMetadataRf2.ACCEPTABLE_RF2.getUuids()[0]);
-					rCabAcceptable.getProperties().put(ComponentProperty.MODULE_ID, module);
-					dCab.addAnnotationBlueprint(rCabAcceptable);
-
-					cab.addDescriptionCAB(dCab);
-
-					//Build this on the lowest level path, otherwise, other code that references this will fail (as it doesn't know about custom paths)
-					ConceptChronicleBI newCon = ts.getTerminologyBuilder(
-							new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.TERM_AUX_MODULE.getLenient().getNid(), TermAux.WB_AUX_PATH.getLenient()
-									.getConceptNid()), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
-					ts.addUncommitted(newCon);
-					ts.commit(newCon);
+					createUserConcept(user);
 				}
 
 				if (!upm.doesProfileExist(user.getUniqueLogonName()))
@@ -177,6 +170,49 @@ public class GenerateUsers
 			throw e;
 		}
 	}
+	
+	/**
+	 * Create a concept in the DB, for the specified user.  Only call this if {@link #alreadyExists(User)) return false
+	 */
+	public static void createUserConcept(User user) throws IOException, InvalidCAB, ContradictionException
+	{
+		logger.info("Creating user " + toString(user) + " in DB");
+		BdbTerminologyStore ts = ExtendedAppContext.getDataStore();
+		String fsn = user.getUniqueFullName();
+		String preferredName = user.getFullName();
+		String logonName = user.getUniqueLogonName();
+		UUID userUUID = UUID.fromString(user.getUUID());
+
+		LanguageCode lc = LanguageCode.EN_US;
+		UUID isA = Snomed.IS_A.getUuids()[0];
+		IdDirective idDir = IdDirective.PRESERVE_CONCEPT_REST_HASH;
+		UUID module = TermAux.TERM_AUX_MODULE.getUuids()[0];
+		UUID parents[] = new UUID[] { TermAux.USER.getUuids()[0] };
+
+		ConceptCB cab = new ConceptCB(fsn, preferredName, lc, isA, idDir, module, userUUID, parents);
+
+		DescriptionCAB dCab = new DescriptionCAB(cab.getComponentUuid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getUuids()[0], lc, logonName, true,
+				IdDirective.GENERATE_HASH);
+		dCab.getProperties().put(ComponentProperty.MODULE_ID, module);
+
+		//Mark it as acceptable
+		RefexCAB rCabAcceptable = new RefexCAB(RefexType.CID, dCab.getComponentUuid(), Snomed.US_LANGUAGE_REFEX.getUuids()[0], IdDirective.GENERATE_HASH,
+				RefexDirective.EXCLUDE);
+		rCabAcceptable.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, SnomedMetadataRf2.ACCEPTABLE_RF2.getUuids()[0]);
+		rCabAcceptable.getProperties().put(ComponentProperty.MODULE_ID, module);
+		dCab.addAnnotationBlueprint(rCabAcceptable);
+
+		cab.addDescriptionCAB(dCab);
+		
+		//TODO store roles on the concept
+
+		//Build this on the lowest level path, otherwise, other code that references this will fail (as it doesn't know about custom paths)
+		ConceptChronicleBI newCon = ts.getTerminologyBuilder(
+				new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.TERM_AUX_MODULE.getLenient().getNid(), TermAux.WB_AUX_PATH.getLenient()
+						.getConceptNid()), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
+		ts.addUncommitted(newCon);
+		ts.commit(newCon);
+	}
 
 	/**
 	 * Check if the user already exists in the DB (return false) and if not, validate the incoming parameters, throwing an exception
@@ -188,7 +224,7 @@ public class GenerateUsers
 	 * 
 	 * @throws InvalidUserException for any issues with the values provided within the user
 	 */
-	private static boolean alreadyExists(User user) throws InvalidUserException
+	public static boolean alreadyExists(User user) throws InvalidUserException
 	{
 
 		if (user.getUniqueFullName() == null || user.getUniqueFullName().length() == 0)
@@ -200,8 +236,6 @@ public class GenerateUsers
 		{
 			throw new InvalidUserException("The uniqueLogonName value is required.", user);
 		}
-
-		//TODO enforce uniqueness of logon name / FSN (how?)
 
 		UUID uuid;
 

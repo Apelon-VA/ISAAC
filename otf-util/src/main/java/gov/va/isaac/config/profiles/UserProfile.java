@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.config.profiles;
 
+import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.util.PasswordHasher;
 import java.io.File;
@@ -288,6 +289,16 @@ public class UserProfile
 	public UUID getConceptUUID()
 	{
 		return conceptUUID;
+	}
+	
+	public boolean hasRole(RoleOption role)
+	{
+		if (role == null)
+		{
+			return false;
+		}
+		//TODO implement role checking - probably store these on the user concept in a refex?
+		return true;
 	}
 
 	/**

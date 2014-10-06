@@ -20,7 +20,9 @@ package gov.va.isaac.config.profiles;
 
 import gov.va.isaac.config.changesets.ChangesetConfiguration;
 import gov.va.isaac.config.generated.NewUserDefaults;
+import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.User;
+import gov.va.isaac.config.users.GenerateUsers;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
@@ -136,6 +138,10 @@ public class UserProfileManager implements ServicesToPreloadI
 		}
 	}
 
+	/**
+	 * The defaults parameter is optional - if not present, uses hardcoded defaults in {@link UserProfile} for fields that 
+	 * don't come from the {@link User} object.
+	 */
 	public void createUserProfile(User user, NewUserDefaults defaults) throws IOException
 	{
 		logger.info("Creating user profile for " + user.getUniqueLogonName());
@@ -153,13 +159,16 @@ public class UserProfileManager implements ServicesToPreloadI
 		File prefFile = new File(profileFolder, prefsFileName_);
 
 		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword());
-		if (defaults.getStatedInferredPolicy() != null)
+		if (defaults != null)
 		{
-			up.setStatedInferredPolicy(defaults.getStatedInferredPolicy());
-		}
-		if (defaults.isDisplayFSN() != null)
-		{
-			up.setDisplayFSN(defaults.isDisplayFSN().booleanValue());
+			if (defaults.getStatedInferredPolicy() != null)
+			{
+				up.setStatedInferredPolicy(defaults.getStatedInferredPolicy());
+			}
+			if (defaults.isDisplayFSN() != null)
+			{
+				up.setDisplayFSN(defaults.isDisplayFSN().booleanValue());
+			}
 		}
 		up.setConceptUUID(UUID.fromString(user.getUUID()));
 		
@@ -276,5 +285,43 @@ public class UserProfileManager implements ServicesToPreloadI
 			// noop
 		}
 		return null;
+	}
+	
+	/**
+	 * A convenience method for GUI use which will create an entirely new user, which wasn't declared as part of the 
+	 * initial users set.  Only callable by users with admin permissions.
+	 * 
+	 * This method will fail with an exception if either the {@link User#getUniqueFullName()} or the {@link User#getUniqueLogonName()} are 
+	 * in fact, not unique.
+	 */
+	public User createNewUser(User user) throws InvalidUserException, IOException
+	{
+		if (!getCurrentlyLoggedInUser().hasRole(RoleOption.ADMIN))
+		{
+			throw new IOException("You do not have the necessary permissions to create new users");
+		}
+		//fill in any missing fields in the user object, check if the concept exists in the DB
+		if (!GenerateUsers.alreadyExists(user))
+		{
+			if (doesProfileExist(user.getUniqueLogonName()))
+			{
+				throw new IOException("A user with that logon name already exists");
+			}
+			try
+			{
+				GenerateUsers.createUserConcept(user);
+			}
+			catch (Exception e)
+			{
+				logger.error("Unexpeted error creating user concept", e);
+				throw new IOException("Unexpected error creating user concept", e);
+			}
+			createUserProfile(user, null);
+		}
+		else
+		{
+			throw new IOException("That user concept already exists");
+		}
+		return user;
 	}
 }
