@@ -25,6 +25,7 @@
 	<xs:element name="user">
 		<xs:complexType>
 			<xs:sequence>
+			
 				<xs:element name="uniqueFullName" type="xs:string" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -35,6 +36,7 @@
 						<xs:documentation>The Unique Full Name of the user (typically "FirstName LastName [uniqueBit]")</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
 				<xs:element name="fullName" type="xs:string" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -47,6 +49,7 @@
 							the uniqueFullName property had to be modified to make it unique, due to user name collisions.</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
 				<xs:element name="uniqueLogonName" type="xs:string" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -57,6 +60,7 @@
 						<xs:documentation>The Unique username for the user - this will be the logon identifier</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
 				<xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -67,6 +71,7 @@
 						<xs:documentation>The initial password. If unspecified, will be set to the uniqueUserName</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
 				<xs:element name="UUID" type="UUID" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -79,6 +84,29 @@
 						</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
+				<xs:element name="workflowUserName" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The initial username to suggest to the user for workflow remote access (sync)</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The initial username to suggest to the user for workflow remote access (sync)</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="syncUserName" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The initial username to suggest to the user for database sync (git/svn)</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The initial username to suggest to the user for database sync (git/svn)</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
