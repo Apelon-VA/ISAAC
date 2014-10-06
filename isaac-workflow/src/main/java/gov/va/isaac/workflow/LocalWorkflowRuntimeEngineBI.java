@@ -49,5 +49,8 @@ public interface LocalWorkflowRuntimeEngineBI {
     
     //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
     public void claim(Integer count, String userId);
+
+    //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
+    public void release(Long taskId);
     
 }

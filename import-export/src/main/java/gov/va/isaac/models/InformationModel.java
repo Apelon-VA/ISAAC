@@ -29,7 +29,7 @@ import java.util.UUID;
  * @author ocarlsen
  * @author bcarlsenca
  */
-public interface InformationModel {
+public interface InformationModel extends Comparable<InformationModel> {
 
   /**
    * Returns the key identifying this model.

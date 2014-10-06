@@ -119,4 +119,9 @@ public class WorkflowTaskDetailsView extends Stage implements WorkflowTaskViewI
 	public Long getTask() {
 		return controller_.getTask() != null ? controller_.getTask().getId() : null;
 	}
+
+	@Override
+	public void releaseTask(long taskId) {
+		controller_.doReleaseTask(taskId);
+	}
 }

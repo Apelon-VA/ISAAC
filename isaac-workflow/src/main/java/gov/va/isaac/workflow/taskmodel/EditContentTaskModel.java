@@ -24,13 +24,16 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
+import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.taskmodel.ReviewContentTaskModel.OutputVariable;
+import gov.va.isaac.workflow.taskmodel.ReviewContentTaskModel.Response;
+import gov.va.isaac.workflow.taskmodel.TaskModel.Validator;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
-import gov.va.isaac.workflow.LocalTask;
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.event.EventHandler;
 
 /**
  * EditContentTaskModel
@@ -84,16 +87,14 @@ public class EditContentTaskModel extends TaskModel {
 	 * @param inputTask
 	 */
 	EditContentTaskModel(LocalTask inputTask) {
-		super(inputTask);
-
-		getOutputVariables().put(OutputVariable.out_comment.name(), new SimpleStringProperty());
+		super(inputTask, OutputVariable.values());
 	}
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#getLabelName(java.lang.String)
 	 */
 	@Override
-	public String getLabelName(String variableName) {
+	protected String getOutputVariableInputNodeLabelName(String variableName) {
 		if (InputVariable.fromString(variableName) != null) {
 			return InputVariable.fromString(variableName).getLabelName();
 		}
@@ -109,22 +110,17 @@ public class EditContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	public Node createOutputNode(String variableName) {
+	protected Node createOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {
 		case out_comment: {
 			TextArea commentTextArea = new TextArea();
 			
-			StringProperty commentProperty = getOutputVariables().get(OutputVariable.out_comment.name());
-			
+			StringProperty commentProperty = getOutputVariableValueProperty(OutputVariable.out_comment.name());
+
 			commentProperty.bind(commentTextArea.textProperty());
-			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
-				@Override
-				public void handle(InputEvent event) {
-					getIsSavableProperty().set(isSavable());
-				}
-			});
+			commentTextArea.setText("");
 			
 			return commentTextArea;
 		}

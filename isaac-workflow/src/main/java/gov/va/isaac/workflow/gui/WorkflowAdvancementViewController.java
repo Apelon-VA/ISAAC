@@ -26,28 +26,22 @@ import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import gov.va.isaac.workflow.taskmodel.TaskModel;
 import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javafx.application.Platform;
-import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Tab;
@@ -55,7 +49,6 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.util.Callback;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
@@ -84,14 +77,16 @@ public class WorkflowAdvancementViewController
 	@FXML private Button saveActionButton;
 
 	@FXML private Label taskLabel;
-	@FXML private ComboBox<Action> actionComboBox;
+	@FXML private Button releaseTaskActionButton;
+	//@FXML private ComboBox<Action> actionComboBox;
 	
 	@FXML private Button viewTaskDetailsButton;
 	
 	private WorkflowAdvancementView stage;
 
 	private GridPane inputTabGridPane;
-	
+	private Tab inputTab;
+	private Label inputTabLabel;
 	private ScrollPane conceptScrollPane;
 
 	private TaskModel taskModel = null;
@@ -105,7 +100,7 @@ public class WorkflowAdvancementViewController
 	void initialize()
 	{
 		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert actionComboBox != null : "fx:id=\"actionComboBox\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		assert releaseTaskActionButton != null : "fx:id=\"releaseTaskActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert taskLabel != null : "fx:id=\"taskLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 
@@ -120,9 +115,16 @@ public class WorkflowAdvancementViewController
 		conceptTab.setClosable(false);
 		centralTabPane.getTabs().add(conceptTab);
 		
-		Tab inputTab = new Tab("Input");
+		inputTabLabel = new Label("Input");
+		inputTab = new Tab();
+		inputTab.setGraphic(inputTabLabel);
+		
+		ScrollPane inputTabScrollPane = new ScrollPane();
+		inputTabScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
+		inputTabScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		inputTabGridPane = new GridPane();
-		inputTab.setContent(inputTabGridPane);
+		inputTabScrollPane.setContent(inputTabGridPane);
+		inputTab.setContent(inputTabScrollPane);
 		centralTabPane.getTabs().add(inputTab);
 		
 		// Disabling saveActionButton until dependencies met 
@@ -138,21 +140,6 @@ public class WorkflowAdvancementViewController
 		// Use H2K to find and initialize conceptView as a ConceptView
 		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
 
-		// Force single selection
-		actionComboBox.getSelectionModel().selectFirst();
-		actionComboBox.setButtonCell(new ListCell<Action>() {
-			@Override
-			protected void updateItem(Action t, boolean bln) {
-				super.updateItem(t, bln); 
-				if (bln) {
-					setText("");
-				} else {
-					setText(t.toString());
-					taskModel.setAction(t);
-				}
-			}
-		});
-
 		// Activation of save depends on taskModel.isSavable()
 		saveActionButton.setOnAction((action) -> {
 			if (taskModel.isSavable()) {
@@ -166,15 +153,7 @@ public class WorkflowAdvancementViewController
 				Utility.execute(() -> {
 					try
 					{
-						final LocalTask currentlySelectedTask = taskModel.getTask();
-						final Action currentlySelectedAction = actionComboBox.getValue();
-
-						Map<String, String> variableMap = new HashMap<>();
-						for (Map.Entry<String, StringProperty> entry : taskModel.getOutputVariables().entrySet()) {
-							variableMap.put(entry.getKey(), entry.getValue().get());
-						}
-						
-						taskService_.setAction(currentlySelectedTask.getId(), currentlySelectedAction, TaskActionStatus.Pending, variableMap);
+						taskService_.completeTask(taskModel.getTask().getId(), taskModel.getCurrentOutputVariables());
 						Platform.runLater(() -> 
 						{
 							claimPopover.hide();
@@ -193,18 +172,50 @@ public class WorkflowAdvancementViewController
 				});
 			} else { // ! this.taskModel.isSavable()
 				// This should never happen, if saveActionButton.setDisable(true) used in proper places
-				Action selectedAction = actionComboBox.getSelectionModel().getSelectedItem();
-				logger.error("Error saving task: fields not set: task=" + taskModel.getTask() + ", action=" + selectedAction);
+				logger.error("Error completing task: fields not set: task={}", taskModel.getTask());
 			}
 		});
+
+		// Activation of release
+		releaseTaskActionButton.setOnAction((action) -> {
+			Platform.runLater(() -> 
+			{
+				unbindSaveActionButtonFromModelIsSavableProperty();
+				saveActionButton.setDisable(true);
+				releaseTaskActionButton.setDisable(true);
+			});
+			final BusyPopover claimPopover = BusyPopover.createBusyPopover("Releasing action...", releaseTaskActionButton);
+
+			Utility.execute(() -> {
+				try
+				{
+					taskService_.releaseTask(taskModel.getTask().getId());
+					Platform.runLater(() -> 
+					{
+						claimPopover.hide();
+						refreshSaveActionButtonBinding();
+						releaseTaskActionButton.setDisable(false);
+
+						if (stage != null) {
+							stage.close();
+						}
+					});
+				}
+				catch (Exception e)
+				{
+					claimPopover.hide();
+					logger.error("Error releasing task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+				}
+			});
+		});
 	}
-	
+
 	void setStage(WorkflowAdvancementView stage) {
 		this.stage = stage;
 	}
-	
+
 	private void loadTaskLabel() {
-		taskLabel.setText(taskModel.getTask().getId() + ": " + taskModel.getTask().getComponentName() + ": " + taskModel.getTask().getName());
+		taskLabel.setText("#" + taskModel.getTask().getId() + ": " + taskModel.getTask().getComponentName() + ": " + taskModel.getTask().getName());
 	}
 
 	public LocalTask getTask() {
@@ -280,8 +291,26 @@ public class WorkflowAdvancementViewController
 		conceptVersion = containingConcept;
 		
 		taskModel = TaskModelFactory.newTaskModel(initialTask);
+
+		taskModel.getOutputVariablesSavableProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends Boolean> observable,
+					Boolean oldValue,
+					Boolean newValue) {
+				setInputTabColorBasedOnTaskModelOutputVariables();
+			}});
+		setInputTabColorBasedOnTaskModelOutputVariables();
 		
 		loadContent();
+	}
+
+	private void setInputTabColorBasedOnTaskModelOutputVariables() {
+		if (taskModel.getOutputVariablesSavableProperty().get()) {
+			inputTabLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
+		} else {
+			inputTabLabel.setStyle("-fx-text-fill: red;");
+		}
 	}
 
 	ConceptVersionBI getConcept() {
@@ -318,8 +347,8 @@ public class WorkflowAdvancementViewController
 	private void loadTaskModel() {
 		
 		int rowIndex = 0;
-		for (String outputVariable : taskModel.getOutputVariables().keySet()) {
-			this.inputTabGridPane.addRow(rowIndex++, new Label(taskModel.getLabelName(outputVariable)), taskModel.createOutputNode(outputVariable));
+		for (String outputVariable : taskModel.getOutputVariableNames()) {
+			this.inputTabGridPane.addRow(rowIndex++, taskModel.getOutputVariableInputNodeLabel(outputVariable), taskModel.getOutputVariableInputNode(outputVariable));
 		}
 		
 		for (Node child : inputTabGridPane.getChildren()) {
@@ -338,8 +367,6 @@ public class WorkflowAdvancementViewController
 		
 		loadConcept();
 		
-		loadActions();
-		
 		refreshSaveActionButtonBinding();
 	}
 
@@ -353,17 +380,6 @@ public class WorkflowAdvancementViewController
 	{
 		unbindSaveActionButtonFromModelIsSavableProperty();
 		bindSaveActionButtonToModelIsSavableProperty();
-	}
-	
-	// Helper to refresh action list in actionComboBox
-	private void loadActions() {
-		actionComboBox.getItems().clear();
-		
-		for (Action action : Action.values()) {
-			if (action != Action.NONE) {
-				actionComboBox.getItems().add(action);
-			}
-		}
 	}
 	
 	public Region getRootNode() {

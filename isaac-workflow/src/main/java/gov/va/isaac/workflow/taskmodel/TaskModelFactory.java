@@ -33,18 +33,43 @@ import gov.va.isaac.workflow.LocalTask;
  *
  */
 public class TaskModelFactory {
-	private TaskModelFactory() {}
-	
-	public static TaskModel newTaskModel(LocalTask task) {
-		TaskName taskName = TaskName.valueOfNodeName(task.getName());
+	enum TaskType {
+		edit_content("Edit content"),
+		review_content("Review content"),
+		approve_content("Approve content");
 
-		switch(taskName) {
+		private final String nodeName;
+		private TaskType(String nodeName) {
+			this.nodeName = nodeName;
+		}
+
+		public String getNodeName() {
+			return nodeName;
+		}
+
+		public static TaskType valueOfNodeName(String str) {
+			for (TaskType taskType : TaskType.values()) {
+				if (taskType.getNodeName().equals(str)) {
+					return taskType;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid TaskType value \"" + str + "\"");
+		}
+	};
+
+	public static TaskModel newTaskModel(LocalTask task) {
+		TaskType taskType = TaskType.valueOfNodeName(task.getName());
+
+		switch(taskType) {
 		case edit_content:
 			return new EditContentTaskModel(task);
 		case review_content:
 			return new ReviewContentTaskModel(task);
+		case approve_content:
+			return new ApproveContentTaskModel(task);
 
-		default: throw new IllegalArgumentException("Unsupported TaskName " + taskName);
+		default: throw new IllegalArgumentException("Unsupported TaskType " + taskType);
 		}
 	}
 }

@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.xml.transform.TransformerConfigurationException;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -106,8 +108,9 @@ public class ImportView extends GridPane {
    *
    * @param modelType the model type
    * @param fileName the file name
+   * @throws TransformerConfigurationException 
    */
-  public void doImport(InformationModelType modelType, final String fileName) {
+  public void doImport(InformationModelType modelType, final String fileName) throws TransformerConfigurationException {
     Preconditions.checkNotNull(modelType);
     Preconditions.checkNotNull(fileName);
 
@@ -218,8 +221,7 @@ public class ImportView extends GridPane {
           });
           final int progressFinal = progress;
           Platform.runLater(() -> {
-            LOG.info("PROGRESS: " + progressFinal + "/" + maxProgress);
-            progressBar.setProgress(progressFinal / maxProgress);
+            progressBar.setProgress((progressFinal*1.0) / maxProgress);
           });
           // Process each .zip or .uml file
           if (entry.getName().endsWith(".xml")
@@ -242,7 +244,7 @@ public class ImportView extends GridPane {
           statusLabel.setText("Processing " + fileName);
         });
         Platform.runLater(() -> {
-          progressBar.setProgress(.5);
+          progressBar.setProgress(.3);
         });
         returnValue = importHandler.importModel(new File(fileName));
       }
@@ -267,9 +269,9 @@ public class ImportView extends GridPane {
       InformationModel result = this.getValue();
 
       // Update UI.
-      progressBar.setProgress(100);
+      progressBar.setProgress(1);
       statusLabel.setText("");
-      resultLabel.setText("Successfully imported model: " + result.toString());
+      resultLabel.setText("Successfully imported model.");
     }
 
     /*
@@ -282,9 +284,9 @@ public class ImportView extends GridPane {
       Throwable ex = getException();
 
       // Update UI.
-      progressBar.setProgress(100);
+      progressBar.setProgress(1);
       statusLabel.setText("");
-      resultLabel.setText("Failed to import model: " + ex.getMessage());
+      resultLabel.setText("Failed to import model.");
 
       // Show dialog.
       String title = ex.getClass().getName();

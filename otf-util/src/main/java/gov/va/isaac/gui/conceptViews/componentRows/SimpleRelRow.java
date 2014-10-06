@@ -10,8 +10,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class SimpleRelRow extends RelRow {
@@ -28,14 +29,14 @@ public class SimpleRelRow extends RelRow {
 			Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
 			
 			if (rel.isUncommitted()) {
-				ComponentChronicleBI<?> chronicle = rel.getChronicle();
-				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+				if (rel.getVersions().size() == 1) {
+					Font f = relLabel.getFont();
+					relLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 
-				if (!relLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
+					f = relTypeLabel.getFont();
+					relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+				} else {
 					relLabel.setUnderline(true);
-				}
-				
-				if (!relTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
 					relTypeLabel.setUnderline(true);
 				}
 			}

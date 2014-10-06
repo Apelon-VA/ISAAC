@@ -383,8 +383,12 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.forget(row.getItem().getNid());
-						updateTableItem(row.getItem(), false);
+						try {
+							ExtendedAppContext.getDataStore().forget(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), row.getItem().getNid()));
+							updateTableItem(row.getItem(), false);
+						} catch (IOException e) {
+							logger_.error("Unable to cancel comp: " + row.getItem().getNid(), e);
+						}
 					}
 				});
 				
@@ -1024,11 +1028,15 @@ public class ListBatchViewController
 				AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
 			}
 		} else {
-			WBUtility.forget(con);
-			newCon.setUncommitted(false);
+			try {
+				ExtendedAppContext.getDataStore().forget(con);
+				newCon.setUncommitted(false);
 
-			if (!isUncommitted && oldCon.isUncommitted()) {
-				uncommittedCount--;
+				if (!isUncommitted && oldCon.isUncommitted()) {
+					uncommittedCount--;
+				}
+			} catch (IOException e) {
+				logger_.error("Unable to cancel concept: " + con.getNid(), e);
 			}
 		}
 

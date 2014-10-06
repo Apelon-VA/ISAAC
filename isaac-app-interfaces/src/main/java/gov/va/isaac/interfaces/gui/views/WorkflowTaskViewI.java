@@ -49,4 +49,6 @@ public interface WorkflowTaskViewI extends PopupViewI {
 	 * the details of which are displayed
 	 */
 	public Long getTask();
+	
+	public void releaseTask(long taskId);
 }

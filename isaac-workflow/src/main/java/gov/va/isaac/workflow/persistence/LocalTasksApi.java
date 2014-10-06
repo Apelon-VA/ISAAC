@@ -95,13 +95,13 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             log.debug("Task {} saved", task.getId());
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("23505")) {
-                log.warn("Task " + task.getId() + " already exists");
+                log.info("Task {} already exists", task.getId());
                 LocalTask taskInDb = getTask(task.getId());
                 if (task.equals(taskInDb)) {
                     log.debug(" No changes.");
                 } else {
                     if (!task.getOwner().equals(taskInDb.getOwner())) {
-                        log.warn(" User has changed from " + taskInDb.getOwner() + " to " + task.getOwner() + ".");
+                        log.info(" User has changed from {} to {}.", taskInDb.getOwner(), task.getOwner());
                         try {
                             PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
                             psUpdateUser.setString(1, task.getOwner());
@@ -114,7 +114,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                         }
                     }
                     if (!task.getStatus().equals(taskInDb.getStatus())) {
-                        log.warn(" Status has changed from " + taskInDb.getStatus() + " to " + task.getStatus() + ".");
+                        log.info(" Status has changed from {} to {}.", taskInDb.getStatus(), task.getStatus());
                         try {
                             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
                             psUpdateStatus.setString(1, task.getStatus().name());
@@ -129,7 +129,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                     //log.error("-Unknown?-");
                 };
             } else {
-                log.error("Unexpected SQL Error", ex);
+                log.error("Unexpected SQL Exception", ex);
             }
         }
     }
@@ -139,7 +139,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action.name());
-            psUpdateStatus.setString(2, "pending");
+            psUpdateStatus.setString(2, TaskActionStatus.Pending.name());
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
             psUpdateStatus.executeUpdate();
@@ -164,6 +164,16 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         } catch (SQLException ex1) {
             log.error("Unexpected SQL Error", ex1);
         }
+    }
+    
+    @Override
+    public void completeTask(Long taskId, Map<String, String> outputVariablesMap) {
+    	setAction(taskId, Action.COMPLETE, outputVariablesMap);
+    }
+
+    @Override
+    public void releaseTask(Long taskId) {
+    	setAction(taskId, Action.RELEASE, new HashMap<String, String>());
     }
 
     @Override

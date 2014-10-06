@@ -1,6 +1,6 @@
 package gov.va.isaac.gui.conceptViews;
 
-import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
@@ -145,11 +145,16 @@ public class EnhancedConceptViewController {
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				WBUtility.forget(concept);
-				clearContents();
-				commitButton.setDisable(true);
-				cancelButton.setDisable(true);
-				creator.setConceptValues(concept, currentMode);
+				try {
+					ExtendedAppContext.getDataStore().forget(concept);
+
+					clearContents();
+					commitButton.setDisable(true);
+					cancelButton.setDisable(true);
+					creator.setConceptValues(concept, currentMode);
+				} catch (Exception e) {
+					LOG.error("Unable to cancel concept: " + concept.getNid(), e);
+				}
 			}
 		});
 		

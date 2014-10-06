@@ -24,16 +24,16 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
+import gov.va.isaac.workflow.LocalTask;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
-import javafx.scene.control.ComboBox;
-import gov.va.isaac.workflow.Action;
-import gov.va.isaac.workflow.LocalTask;
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.event.EventHandler;
 
 /**
  * EditContentTaskModel
@@ -43,9 +43,24 @@ import javafx.event.EventHandler;
  */
 public class ReviewContentTaskModel extends TaskModel {
 	public enum Response {
-		approve,
-		reject,
-		cancel
+		approve("Send for approval"),
+		reject("Reject"),
+		cancel("Cancel");
+		
+		private final String displayText;
+		private Response(String displayTxt) {
+			displayText = displayTxt;
+		}
+		
+		public String getDisplayText() { return displayText; }
+		
+		public static Response valueOfIfExists(String str) {
+			try {
+				return valueOf(str);
+			} catch (Throwable t) {
+				return null;
+			}
+		}
 	}
 	public enum InputVariable {
 		component_id("Component Id"),
@@ -92,17 +107,14 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @param inputTask
 	 */
 	ReviewContentTaskModel(LocalTask inputTask) {
-		super(inputTask);
-
-		getOutputVariables().put(OutputVariable.out_response.name(), new SimpleStringProperty());
-		getOutputVariables().put(OutputVariable.out_comment.name(), new SimpleStringProperty());
+		super(inputTask, OutputVariable.values());
 	}
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#getLabelName(java.lang.String)
 	 */
 	@Override
-	public String getLabelName(String variableName) {
+	protected String getOutputVariableInputNodeLabelName(String variableName) {
 		if (InputVariable.fromString(variableName) != null) {
 			return InputVariable.fromString(variableName).getLabelName();
 		}
@@ -118,46 +130,74 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	public Node createOutputNode(String variableName) {
+	protected Node createOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {
 		case out_comment: {
 			TextArea commentTextArea = new TextArea();
 			
-			StringProperty commentProperty = getOutputVariables().get(OutputVariable.out_comment.name());
-			
+			StringProperty commentProperty = getOutputVariableValueProperty(variableName);
+
 			commentProperty.bind(commentTextArea.textProperty());
-			commentTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
-				@Override
-				public void handle(InputEvent event) {
-					getIsSavableProperty().set(isSavable());
-				}
-			});
+			
+			// Initialize state of input control, triggering handlers/listeners
+			commentTextArea.setText("");
 			
 			return commentTextArea;
 		}
 		case out_response: {
 			ComboBox<Response> responseComboBox = new ComboBox<>();
 			
-			StringProperty responseProperty = getOutputVariables().get(OutputVariable.out_response.name());
-			
+			StringProperty responseProperty = getOutputVariableValueProperty(OutputVariable.out_response.name());
+
+			setOutputVariableValidator(OutputVariable.out_response.name(), new Validator() {
+				@Override
+				public boolean isValid() {
+					return responseProperty != null && Response.valueOfIfExists(responseProperty.get()) != null;
+				}
+			});
+
+			responseComboBox.valueProperty().addListener(new ChangeListener<Response>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends Response> observable,
+						Response oldValue,
+						Response newValue) {
+					responseProperty.set(newValue != null ? newValue.name() : null);
+				}});
 			responseComboBox.setButtonCell(new ListCell<Response>() {
 				@Override
 				protected void updateItem(Response t, boolean bln) {
 					super.updateItem(t, bln); 
 					if (bln) {
 						setText("");
-						getIsSavableProperty().set(isSavable());
 					} else {
-						setText(t.toString());
-						responseProperty.set(t.toString());
-						getIsSavableProperty().set(isSavable());
+						setText(t.displayText);
 					}
 				}
 			});
-			
+
+			responseComboBox.setCellFactory((p) -> {
+				final ListCell<Response> cell = new ListCell<Response>() {
+					@Override
+					protected void updateItem(Response c, boolean emptyRow) {
+						super.updateItem(c, emptyRow);
+
+						if(c == null || emptyRow) {
+							setText(null);
+						} else {
+							setText(c.displayText);
+						}
+					}
+				};
+
+				return cell;
+			});
+
+			// Initialize state of input control, triggering handlers/listeners
 			responseComboBox.getItems().addAll(Response.values());
+			responseComboBox.getSelectionModel().select(null);
 			
 			return responseComboBox;
 		}

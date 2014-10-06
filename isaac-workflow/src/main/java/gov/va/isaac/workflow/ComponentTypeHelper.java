@@ -52,6 +52,8 @@ public class ComponentTypeHelper {
 			return ComponentType.Concept;
 		} else if (component instanceof RefexVersionBI) {
 			return ComponentType.Refex;
+		} else if (component instanceof RefexDynamicVersionBI) {
+			return ComponentType.RefexDynamic;
 		} else if  (component instanceof RelationshipVersionBI) {
 			return ComponentType.Relationship;
 		} else {

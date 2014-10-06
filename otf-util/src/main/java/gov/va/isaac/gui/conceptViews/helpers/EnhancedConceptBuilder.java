@@ -119,6 +119,8 @@ public class EnhancedConceptBuilder {
 			labelHelper.initializeLabel(isPrimLabel, attr, ComponentType.CONCEPT, ConceptViewerHelper.getPrimDef(attr), ConceptViewerHelper.getPrimDefNid(attr));
 			if (attr.isUncommitted()) {
 				isPrimLabel.setUnderline(true);
+			} else {
+				isPrimLabel.setUnderline(false);
 			}
 
 			// Concept ContextMenu

@@ -21,32 +21,30 @@ package gov.va.isaac.models.hed.exporter;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
-import gov.va.isaac.models.hed.HeDModelReference;
 import gov.va.isaac.models.hed.HeDXmlConstants;
+import gov.va.isaac.models.hed.HeDXmlUtils;
 import gov.va.isaac.models.util.ExporterBase;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.TransformerConfigurationException;
 
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
+import org.hl7.cdsdt.r2.CD;
+import org.hl7.cdsdt.r2.ST;
+import org.hl7.knowledgeartifact.r1.ArtifactStatusType;
+import org.hl7.knowledgeartifact.r1.ArtifactType;
+import org.hl7.knowledgeartifact.r1.KnowledgeDocument;
+import org.hl7.knowledgeartifact.r1.Metadata;
+import org.hl7.knowledgeartifact.r1.Metadata.Identifiers;
+import org.hl7.knowledgeartifact.r1.Metadata.KeyTerms;
+import org.hl7.knowledgeartifact.r1.Metadata.Status;
+import org.hl7.knowledgeartifact.r1.VersionedIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * HAndler for exporting an HeD model to an XML {@link File}.
@@ -61,17 +59,20 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
   /** The output stream. */
   private final OutputStream outputStream;
 
-  /** The document. */
-  private Document document;
+  /** The a. */
+  private HeDXmlUtils utils;
 
   /**
    * Instantiates a {@link HeDExporter} from the specified parameters.
    *
    * @param outputStream the output stream
+   * @throws TransformerConfigurationException
    */
-  public HeDExporter(OutputStream outputStream) {
+  public HeDExporter(OutputStream outputStream)
+      throws TransformerConfigurationException {
     super();
     this.outputStream = outputStream;
+    utils = new HeDXmlUtils();
   }
 
   /**
@@ -96,15 +97,10 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
     HeDInformationModel infoModel = new HeDInformationModel(model);
 
     // Build a DOM tree in the style of HeD.
-    this.document = buildDom();
-    Element root = buildHedTree(infoModel);
-    document.appendChild(root);
-
-    // Transform DOM tree into stream.
-    Transformer transformer = buildTransformer();
-    DOMSource source = new DOMSource(document);
-    StreamResult result = new StreamResult(outputStream);
-    transformer.transform(source, result);
+    KnowledgeDocument kd = buildKnowledgeDocument(infoModel);
+    outputStream.write(utils.prettyFormat(utils.getStringForGraph(kd), 2)
+        .getBytes(StandardCharsets.UTF_8));
+    outputStream.flush();
 
     LOG.info("Ending export of HeD model");
   }
@@ -120,261 +116,132 @@ public class HeDExporter extends ExporterBase implements HeDXmlConstants {
   }
 
   /**
-   * Builds the cem tree.
+   * Builds the knowledge document to convert to XML.
    *
    * @param infoModel the info model
-   * @return the element
-   * @throws ValidationException the validation exception
-   * @throws IOException Signals that an I/O exception has occurred.
-   * @throws ContradictionException the contradiction exception
+   * @return the knowledge document
+   * @throws JAXBException
+   * @throws TransformerConfigurationException
    */
-  private Element buildHedTree(HeDInformationModel infoModel)
-    throws ValidationException, IOException, ContradictionException {
-    LOG.debug("  Build Cem Tree");
-    LOG.debug("    Handle " + KNOWLEDGE_DOCUMENT);
-    Element root = document.createElement(KNOWLEDGE_DOCUMENT);
-    Attr namespace = document.createAttribute(XMLNS);
-    namespace.setNodeValue("urn:hl7-org:knowledgeartifact:r1");
-    root.setAttributeNode(namespace);
-    namespace = document.createAttribute(XMLNS_VMR);
-    namespace.setNodeValue("urn:hl7-org:vmr:r2");
-    root.setAttributeNode(namespace);
-    namespace = document.createAttribute(XMLNS_DT);
-    namespace.setNodeValue("urn:hl7-org:cdsdt:r2");
-    root.setAttributeNode(namespace);
-    namespace = document.createAttribute(XMLNS_P1);
-    namespace.setNodeValue("http://www.w3.org/1999/xhtml");
-    root.setAttributeNode(namespace);
-    namespace = document.createAttribute(XMLNS_XML);
-    namespace.setNodeValue("http://www.w3.org/XML/1998/namespace");
-    root.setAttributeNode(namespace);
-    namespace = document.createAttribute(XMLNS_XSI);
-    namespace.setNodeValue("http://www.w3.org/2001/XMLSchema-instance");
-    root.setAttributeNode(namespace);
-    namespace = document.createAttribute(XSI_SCHEMA_LOCATION);
-    namespace
-        .setNodeValue("urn:hl7-org:knowledgeartifact:r1 ../schema/knowledgeartifact/knowledgedocument.xsd ");
-    root.setAttributeNode(namespace);
+  private KnowledgeDocument buildKnowledgeDocument(HeDInformationModel infoModel)
+    throws JAXBException, TransformerConfigurationException {
+    KnowledgeDocument kd = new KnowledgeDocument();
 
-    // CETYPE element.
-    Element metadata = buildMetadataElement(infoModel);
-    root.appendChild(metadata);
+    // Build Metadata
+    Metadata metadata = buildMetadata(infoModel);
+    kd.setMetadata(metadata);
 
-    return root;
+    if (infoModel.getExternalData() != null)
+      kd.setExternalData(infoModel.getExternalData());
+
+    if (infoModel.getExpressions() != null)
+      kd.setExpressions(infoModel.getExpressions());
+
+    if (infoModel.getExpressions() != null)
+      kd.setExpressions(infoModel.getExpressions());
+
+    if (infoModel.getConditions() != null)
+      kd.setConditions(infoModel.getConditions());
+
+    if (infoModel.getActionGroup() != null)
+      kd.setActionGroup(infoModel.getActionGroup());
+
+    return kd;
   }
 
   /**
-   * Builds the metadata element.
+   * Builds the metadata.
    *
    * @param infoModel the info model
-   * @return the element
-   * @throws ValidationException the validation exception
-   * @throws IOException Signals that an I/O exception has occurred.
-   * @throws ContradictionException the contradiction exception
+   * @return the metadata
+   * @throws JAXBException
+   * @throws TransformerConfigurationException
    */
-  private Element buildMetadataElement(HeDInformationModel infoModel)
-    throws ValidationException, IOException, ContradictionException {
-    LOG.debug("    Handle " + METADATA);
-    Element metadata = document.createElement(METADATA);
+  private Metadata buildMetadata(HeDInformationModel infoModel)
+    throws JAXBException, TransformerConfigurationException {
+    Metadata metadata = new Metadata();
 
     // key
-    String key = infoModel.getKey();
-    LOG.debug("      key = " + key);
-    Element identifiers = buildIdentifiers(key);
-    metadata.appendChild(identifiers);
+    Identifiers ids = infoModel.getIdentifiers();
+    metadata.setIdentifiers(ids);
 
-    // artifactType
-    String artifactType = infoModel.getArtifactType();
-    LOG.debug("      artifactType = " + artifactType);
-    if (artifactType != null) {
-      Element atElement = buildArtifactType(artifactType);
-      metadata.appendChild(atElement);
-    }
+    // artifact type
+    Metadata.ArtifactType artifactType = new Metadata.ArtifactType();
+    artifactType.setValue(ArtifactType.valueOf(infoModel.getArtifactType()));
+    metadata.setArtifactType(artifactType);
 
     // schema identifier
-    LOG.debug("      schemaIdentifier = " + artifactType);
-    Element schemaIdentifier = buildSchemaIdentifier();
-    metadata.appendChild(schemaIdentifier);
+    VersionedIdentifier schemaId = new VersionedIdentifier();
+    schemaId.setRoot(infoModel.getschemaIdentifier());
+    schemaId.setVersion("1.0");
+    metadata.setSchemaIdentifier(schemaId);
 
-    // data models
-    List<HeDModelReference> dataModels = infoModel.getDataModels();
-    LOG.debug("      dataModels");
-    Element dataModelElement = buildDataModels(dataModels);
-    if (dataModelElement.getChildNodes().getLength() > 0) {
-      metadata.appendChild(dataModelElement);
+    // dataModels
+    if (infoModel.getDataModels() != null) {
+      metadata.setDataModels(infoModel.getDataModels());
     }
-    
-    
-    // titles
-    String name = infoModel.getName();
-    LOG.debug("      name = " + name);
-    Element title = buildTitle(name);
-    metadata.appendChild(title);
+
+    if (infoModel.getLibraries() != null)
+      metadata.setLibraries(infoModel.getLibraries());
+
+    // title
+    ST title = new ST();
+    title.setValue(infoModel.getName());
+    metadata.setTitle(title);
+
+    // description
+    ST description = new ST();
+    description.setValue(infoModel.getDescription());
+    metadata.setDescription(description);
+
+    // key terms
+    KeyTerms keyTerms = new KeyTerms();
+    metadata.setKeyTerms(keyTerms);
+    for (String keyTerm : infoModel.getKeyTerms()) {
+      CD cd = new CD();
+      ST originalText = new ST();
+      originalText.setValue(keyTerm);
+      cd.setOriginalText(originalText);
+      keyTerms.getTerm().add(cd);
+    }
+
+    // status
+    Status status = new Status();
+    status.setValue(ArtifactStatusType.valueOf(infoModel.getStatus()));
+
+    // documentation
+    if (infoModel.getDocumentation() != null)
+      metadata.setDocumentation(infoModel.getDocumentation());
+
+    // related resources
+    if (infoModel.getRelatedResources() != null)
+      metadata.setRelatedResources(infoModel.getRelatedResources());
+
+    // supporting evidence
+    if (infoModel.getSupportingEvidence() != null)
+      metadata.setSupportingEvidence(infoModel.getSupportingEvidence());
+
+    // applicability
+    if (infoModel.getApplicability() != null)
+      metadata.setApplicability(infoModel.getApplicability());
+
+    // categories
+    if (infoModel.getCategories() != null)
+      metadata.setCategories(infoModel.getCategories());
+
+    // event history
+    if (infoModel.getEventHistory() != null)
+      metadata.setEventHistory(infoModel.getEventHistory());
+
+    // contributions
+    if (infoModel.getContributions() != null)
+      metadata.setContributions(infoModel.getContributions());
+
+    // publishers
+    if (infoModel.getPublishers() != null)
+      metadata.setPublishers(infoModel.getPublishers());
 
     return metadata;
   }
 
-  /**
-   * Builds the identifiers.
-   *
-   * @param key the key
-   * @return the element
-   */
-  private Element buildIdentifiers(String key) {
-    Element identifiers = document.createElement(IDENTIFIERS);
-
-    Element identifier = document.createElement(IDENTIFIER);
-    identifiers.appendChild(identifier);
-
-    Attr rootAttr = document.createAttribute(ROOT);
-    rootAttr.setNodeValue(key);
-    identifier.setAttributeNode(rootAttr);
-
-    Attr versionAttr = document.createAttribute(VERSION);
-    versionAttr.setNodeValue("1.0");
-    identifier.setAttributeNode(versionAttr);
-
-    return identifiers;
-  }
-
-  /**
-   * Builds the artifact type.
-   *
-   * @param artifactType the artifact Type
-   * @return the element
-   */
-  private Element buildArtifactType(String artifactType) {
-    Element title = document.createElement(ARTIFACT_TYPE);
-
-    Attr valueAttr = document.createAttribute(VALUE);
-    valueAttr.setNodeValue(artifactType);
-    title.setAttributeNode(valueAttr);
-
-    return title;
-  }
-  
-  /**
-   * Builds the data models.
-   *
-   * @param dataModels the data models
-   * @return the element
-   */
-  private Element buildDataModels(List<HeDModelReference> dataModels) {
-    Element dataModelElement = document.createElement(DATA_MODELS);
-
-    for (HeDModelReference ref : dataModels) {
-      Element modelReference = document.createElement(MODEL_REFERENCE);
-      Element description = document.createElement(DESCRIPTION);
-      Attr def = document.createAttribute(VALUE);
-      def.setNodeValue(ref.getDescription());
-      description.setAttributeNode(def);
-      Element referencedModel = document.createElement(REFERENCED_MODEL);
-      Attr refMod = document.createAttribute(VALUE);
-      refMod.setNodeValue(ref.getReferencedModel());
-      referencedModel.setAttributeNode(refMod);
-      modelReference.appendChild(description);
-      modelReference.appendChild(referencedModel);
-      dataModelElement.appendChild(modelReference);
-    }
-    return dataModelElement;
-  }  
-
-  /**
-   * Builds the schema identifier.
-   *
-   * @return the element
-   */
-  private Element buildSchemaIdentifier() {
-    Element schemaIdentifier = document.createElement(SCHEMA_IDENTIFIER);
-
-    Attr rootAttr = document.createAttribute(ROOT);
-    rootAttr.setNodeValue(SCHEMA_IDENTIFIER_ROOT);
-    schemaIdentifier.setAttributeNode(rootAttr);
-
-    Attr versionAttr = document.createAttribute(VERSION);
-    versionAttr.setNodeValue(SCHEMA_IDENTIFIER_VERSION);
-    schemaIdentifier.setAttributeNode(versionAttr);
-
-    return schemaIdentifier;
-  }
-
-  /**
-   * Builds the title.
-   *
-   * @param name the name
-   * @return the element
-   */
-  private Element buildTitle(String name) {
-    Element title = document.createElement(TITLE);
-
-    Attr valueAttr = document.createAttribute(VALUE);
-    valueAttr.setNodeValue(name);
-    title.setAttributeNode(valueAttr);
-
-    return title;
-  }
-
-  /**
-   * Builds the dom.
-   *
-   * @return the document
-   * @throws ParserConfigurationException the parser configuration exception
-   */
-  private Document buildDom() throws ParserConfigurationException {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder = factory.newDocumentBuilder();
-    return builder.newDocument();
-  }
-
-  /**
-   * Builds the transformer.
-   *
-   * @return the transformer
-   * @throws Exception the exception
-   */
-  private Transformer buildTransformer() throws Exception {
-    TransformerFactory factory = TransformerFactory.newInstance();
-    Transformer transformer = factory.newTransformer();
-
-    // Indent output.
-    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
-        "4");
-
-    // Skip XML declaration header.
-    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-
-    return transformer;
-  }
-
-  /**
-   * Utility method to take a string and convert it to normal Java variable name
-   * capitalization. This normally means converting the first character from
-   * upper case to lower case, but in the (unusual) special case when there is
-   * more than one character and both the first and second characters are upper
-   * case, we leave it alone.
-   * 
-   * Thus "FooBah" becomes "fooBah" and "X" becomes "x", but "URL" stays as
-   * "URL".
-   * 
-   * Parameters
-   * @param name The string to be decapitalized. Returns:
-   * @return The decapitalized version of the string.
-   * 
-   *         Note, this was copied from 1.7_40 release of the JDK, as it was
-   *         removed from com.sun.xml.internal.ws.util.StringUtils in 1.8.
-   */
-
-  public static String decapitalize(String name) {
-    if (name == null || name.length() == 0) {
-      return name;
-    }
-    if (name.length() > 1 && Character.isUpperCase(name.charAt(1))
-        && Character.isUpperCase(name.charAt(0))) {
-      return name;
-    }
-    char chars[] = name.toCharArray();
-    chars[0] = Character.toLowerCase(chars[0]);
-    return new String(chars);
-  }
 }

@@ -18,52 +18,70 @@
  */
 package gov.va.isaac.models.hed.importer;
 
-import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.ImportHandler;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
-import gov.va.isaac.models.hed.HeDModelReference;
-import gov.va.isaac.models.hed.HeDXmlConstants;
+import gov.va.isaac.models.hed.HeDXmlUtils;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
+import org.hl7.cdsdt.r2.CD;
+import org.hl7.knowledgeartifact.r1.ActionGroup;
+import org.hl7.knowledgeartifact.r1.Conditions;
+import org.hl7.knowledgeartifact.r1.InlineResource;
+import org.hl7.knowledgeartifact.r1.KnowledgeDocument;
+import org.hl7.knowledgeartifact.r1.KnowledgeDocument.ExternalData;
+import org.hl7.knowledgeartifact.r1.Metadata.Applicability;
+import org.hl7.knowledgeartifact.r1.Metadata.Categories;
+import org.hl7.knowledgeartifact.r1.Metadata.Contributions;
+import org.hl7.knowledgeartifact.r1.Metadata.DataModels;
+import org.hl7.knowledgeartifact.r1.Metadata.EventHistory;
+import org.hl7.knowledgeartifact.r1.Metadata.Identifiers;
+import org.hl7.knowledgeartifact.r1.Metadata.Libraries;
+import org.hl7.knowledgeartifact.r1.Metadata.Publishers;
+import org.hl7.knowledgeartifact.r1.Metadata.RelatedResources;
+import org.hl7.knowledgeartifact.r1.Metadata.TemplateIds;
+import org.hl7.knowledgeartifact.r1.Metadata.UsageTerms;
+import org.hl7.knowledgeartifact.r1.SupportingEvidence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import com.google.common.base.Preconditions;
 
 /**
  * An {@link ImportHandler} for importing a HeD model from an XML file.
  * 
  * @author bcarlsenca
  */
-public class HeDImporter extends ImporterBase implements ImportHandler,
-    HeDXmlConstants {
+public class HeDImporter extends ImporterBase implements ImportHandler {
 
   /** The Constant LOG. */
   private static final Logger LOG = LoggerFactory.getLogger(HeDImporter.class);
 
+  /** The utils. */
+  private HeDXmlUtils utils;
+
   /**
    * Instantiates an empty {@link HeDImporter}.
+   * @throws TransformerConfigurationException
    */
-  public HeDImporter() {
+  public HeDImporter() throws TransformerConfigurationException {
     super();
+    utils = new HeDXmlUtils();
   }
 
   /*
@@ -73,19 +91,22 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
    */
   @Override
   public InformationModel importModel(File file) throws Exception {
-    FileInputStream in = null;
-    try {
-      LOG.info("Preparing to import CEM model from: " + file.getName());
-      in = new FileInputStream(file);
-      LOG.info("Ending import of CEM model from: " + file.getName());
-      InformationModel model = importModel(in);
-      in.close();
-      return model;
-    } catch (Exception e) {
-      in.close();
-      throw e;
-    }
+    LOG.info("Preparing to import CEM model from: " + file.getName());
+    LOG.info("Ending import of CEM model from: " + file.getName());
+    KnowledgeDocument document =
+        (KnowledgeDocument) utils
+            .getGraphForFile(file, KnowledgeDocument.class);
+    // Parse into HeD model.
+    HeDInformationModel infoModel = createInformationModel(document);
 
+    // Save the information model
+    // if (service.exists(infoModel)) {
+    // throw new IOException("Model already imported.");
+    // }
+    InformationModelService service = getInformationModelService();
+    service.saveInformationModel(infoModel);
+    LOG.info("Ending import of HeD model from stream");
+    return infoModel;
   }
 
   /*
@@ -95,37 +116,22 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
    */
   @Override
   public InformationModel importModel(InputStream in) throws Exception {
-    LOG.info("Preparing to import HeD model from stream");
-
-    // Make sure in background thread.
-    FxUtils.checkBackgroundThread();
-
-    // Obtain service
-    InformationModelService service = getInformationModelService();
-
-    // focus concept is no longer hardcoded - this will be connected to model
-    // LATER using UI
-    // Get focus concept.
-    // String focusConceptUuid = "215fd598-e21d-3e27-a0a2-8e23b1b36dfc";
-    // ConceptChronicleBI focusConcept =
-    // getDataStore().getConcept(UUID.fromString(focusConceptUuid));
-    // LOG.info("focusConcept: " + focusConcept.toString());
-
-    // Load DOM tree from file.
-    Node domRoot = loadModel(in);
+    KnowledgeDocument document =
+        (KnowledgeDocument) utils
+            .getGraphForStream(in, KnowledgeDocument.class);
 
     // Parse into HeD model.
-    HeDInformationModel infoModel = createInformationModel(domRoot);
+    HeDInformationModel infoModel = createInformationModel(document);
 
     // Save the information model
     // if (service.exists(infoModel)) {
     // throw new IOException("Model already imported.");
     // }
+    InformationModelService service = getInformationModelService();
     service.saveInformationModel(infoModel);
-
     LOG.info("Ending import of HeD model from stream");
-
     return infoModel;
+
   }
 
   /**
@@ -134,179 +140,127 @@ public class HeDImporter extends ImporterBase implements ImportHandler,
    * @param rootNode the root node
    * @return the HeD information model
    * @throws IOException
+   * @throws JAXBException
+   * @throws TransformerConfigurationException
+   * @throws UnsupportedEncodingException
+   * @throws ParserConfigurationException
+   * @throws TransformerException
    */
-  private HeDInformationModel createInformationModel(Node kdNode)
-    throws IOException {
+  private HeDInformationModel createInformationModel(KnowledgeDocument kd)
+    throws JAXBException, TransformerConfigurationException,
+    UnsupportedEncodingException {
 
     // Create the model
     HeDInformationModel infoModel = new HeDInformationModel();
     infoModel.setType(InformationModelType.HeD);
 
-    // Iterate through KNOWLEDGE_DOCUMENT node children and process.
-    NodeList kdNodeChildren = kdNode.getChildNodes();
-    for (int nodeCount = 0; nodeCount < kdNodeChildren.getLength(); nodeCount++) {
-      Node loopNode = kdNodeChildren.item(nodeCount);
-      LOG.debug("loopNode : " + nodeCount + " - " + loopNode.getNodeName());
+    String key =
+        kd.getMetadata().getIdentifiers().getIdentifier().get(0).getRoot();
+    LOG.debug("      key = " + key);
+    // Key may contain things indexer can't handle, URL encode
+    infoModel.setKey(URLEncoder.encode(key, StandardCharsets.UTF_8.name()));
 
-      switch (loopNode.getNodeName()) {
-        case METADATA:
-          String key = getIdentifier(loopNode);
-          LOG.debug("      key = " + key);
-          infoModel.setKey(key);
-          String name = getName(loopNode);
-          LOG.debug("      name = " + name);
-          infoModel.setName(name);
-          String artifactType = getArtifactType(loopNode);
-          LOG.debug("      artifactType = " + artifactType);
-          if (artifactType != null)
-            infoModel.setArtifactType(artifactType);
+    Identifiers identifiers = kd.getMetadata().getIdentifiers();
+    LOG.debug("      identifiers = " + identifiers);
+    infoModel.setIdentifiers(identifiers);
 
-          List<HeDModelReference> dataModels = getDataModels(loopNode);
-          LOG.debug("      dataModels.ct = " + dataModels.size());
-          if (dataModels.size() > 0) {
-            infoModel.setDataModels(dataModels);
-          }
+    String name = kd.getMetadata().getTitle().getValue();
+    LOG.debug("      name = " + name);
+    infoModel.setName(name);
 
-          break;
+    String artifactType =
+        kd.getMetadata().getArtifactType().getValue().toString();
+    LOG.debug("      artifactType = " + artifactType);
+    infoModel.setArtifactType(artifactType);
 
-        default:
+    String schemaIdentifier = kd.getMetadata().getSchemaIdentifier().getRoot();
+    LOG.debug("      schemaIdentifier = " + schemaIdentifier);
+    infoModel.setSchemaIdentifier(schemaIdentifier);
 
-          break;
+    TemplateIds templateIds = kd.getMetadata().getTemplateIds();
+    LOG.debug("      templateIds = " + templateIds);
+    infoModel.setTemplateIds(templateIds);
+
+    DataModels dataModels = kd.getMetadata().getDataModels();
+    LOG.debug("      dataModels.ct = " + dataModels.getModelReference().size());
+    infoModel.setDataModels(dataModels);
+
+    Libraries libraries = kd.getMetadata().getLibraries();
+    LOG.debug("      libraries = " + libraries);
+    infoModel.setLibraries(libraries);
+
+    if (kd.getMetadata().getDescription() != null) {
+      String description = kd.getMetadata().getDescription().getValue();
+      LOG.debug("      description = " + description);
+      infoModel.setDescription(description);
+    }
+
+    List<String> keyTerms = new ArrayList<>();
+    if (kd.getMetadata().getKeyTerms() != null) {
+      for (CD keyTerm : kd.getMetadata().getKeyTerms().getTerm()) {
+        keyTerms.add(keyTerm.getOriginalText().getValue());
+      }
+      LOG.debug("      keyTerms.ct = " + keyTerms.size());
+      if (keyTerms.size() > 0) {
+        infoModel.setKeyTerms(keyTerms);
       }
     }
+
+    String status = kd.getMetadata().getStatus().getValue().toString();
+    LOG.debug("      status = " + status);
+    infoModel.setStatus(status);
+
+    InlineResource documentation = kd.getMetadata().getDocumentation();
+    LOG.debug("      documentation = " + documentation);
+    infoModel.setDocumentation(documentation);
+
+    RelatedResources relatedResources = kd.getMetadata().getRelatedResources();
+    LOG.debug("      relatedResources = " + relatedResources);
+    infoModel.setRelatedResources(relatedResources);
+
+    SupportingEvidence supportingEvidence =
+        kd.getMetadata().getSupportingEvidence();
+    LOG.debug("      supportingEvidence = " + supportingEvidence);
+    infoModel.setSupportingEvidence(supportingEvidence);
+
+    Applicability applicability = kd.getMetadata().getApplicability();
+    LOG.debug("      applicability = " + applicability);
+    infoModel.setApplicability(applicability);
+
+    Categories categories = kd.getMetadata().getCategories();
+    LOG.debug("      categories = " + categories);
+    infoModel.setCategories(categories);
+
+    EventHistory eventHistory = kd.getMetadata().getEventHistory();
+    LOG.debug("      event history = " + eventHistory);
+    infoModel.setEventHistory(eventHistory);
+
+    Contributions contributions = kd.getMetadata().getContributions();
+    LOG.debug("      contributions = " + contributions);
+    infoModel.setContributions(contributions);
+
+    Publishers publishers = kd.getMetadata().getPublishers();
+    LOG.debug("      publishers = " + publishers);
+    infoModel.setPublishers(publishers);
+
+    UsageTerms usageTerms = kd.getMetadata().getUsageTerms();
+    LOG.debug("      usageTerms = " + usageTerms);
+    infoModel.setUsageTerms(usageTerms);
+
+    // Content
+
+    ExternalData externalData = kd.getExternalData();
+    LOG.debug("      externalData = " + externalData);
+    infoModel.setExternalData(externalData);
+
+    Conditions conditions = kd.getConditions();
+    LOG.debug("      conditions = " + conditions);
+    infoModel.setConditions(conditions);
+
+    ActionGroup actionGroup = kd.getActionGroup();
+    LOG.debug("      actionGroup = " + actionGroup);
+    infoModel.setActionGroup(actionGroup);
 
     return infoModel;
-  }
-
-  /**
-   * Returns the identifier.
-   *
-   * @param metadataNode the metadata node
-   * @return the identifier
-   */
-  private String getIdentifier(Node metadataNode) {
-    Node identifiersNode = getChildNodeByName(IDENTIFIERS, metadataNode);
-    Node identifierNode = getChildNodeByName(IDENTIFIER, identifiersNode);
-    return identifierNode.getAttributes().getNamedItem(ROOT).getTextContent();
-  }
-
-  /**
-   * Returns the name.
-   *
-   * @param metadataNode the metadata node
-   * @return the name
-   */
-  private String getName(Node metadataNode) {
-    Node titleNode = getChildNodeByName(TITLE, metadataNode);
-    return titleNode.getAttributes().getNamedItem(VALUE).getTextContent();
-  }
-
-  /**
-   * Returns the artifact type.
-   *
-   * @param metadataNode the metadata node
-   * @return the artifact type
-   */
-  private String getArtifactType(Node metadataNode) {
-    Node titleNode = getChildNodeByName(ARTIFACT_TYPE, metadataNode);
-    return titleNode == null ? null : titleNode.getAttributes()
-        .getNamedItem(VALUE).getTextContent();
-  }
-
-  /**
-   * Returns the data models.
-   *
-   * @param metadataNode the metadata node
-   * @return the data models
-   */
-  private List<HeDModelReference> getDataModels(Node metadataNode) {
-    List<HeDModelReference> dataModels = new ArrayList<>();
-    Node dataModelNodes = getChildNodeByName(DATA_MODELS, metadataNode);
-    for (Node modelRefNode : getChildNodes(dataModelNodes)) {
-      if (modelRefNode.getNodeName().equals(MODEL_REFERENCE)) {
-        HeDModelReference ref = new HeDModelReference();
-        Node description = getChildNodeByName(DESCRIPTION, modelRefNode);
-        Node referencedModel =
-            getChildNodeByName(REFERENCED_MODEL, modelRefNode);
-        ref.setDescription(description.getAttributes().getNamedItem(VALUE)
-            .getTextContent());
-        ref.setReferencedModel(referencedModel.getAttributes()
-            .getNamedItem(VALUE).getTextContent());
-        dataModels.add(ref);
-      }
-
-    }
-    return dataModels;
-
-  }
-
-  /**
-   * Returns the child node by name.
-   *
-   * @param name the name
-   * @param parentNode the parent node
-   * @return the child node by name
-   */
-  private Node getChildNodeByName(String name, Node parentNode) {
-    NodeList childNodes = parentNode.getChildNodes();
-    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
-      Node loopNode = childNodes.item(nodeCount);
-      LOG.debug("loopNode : " + nodeCount + " - " + loopNode.getNodeName());
-      if (loopNode.getNodeName().equals(name)) {
-        return loopNode;
-      }
-    }
-    throw new IllegalArgumentException("No child node exists with name " + name);
-  }
-
-  /**
-   * Returns the child nodes as an iterable.
-   *
-   * @param node the node
-   * @return the child nodes
-   */
-  private List<Node> getChildNodes(Node node) {
-    List<Node> nodes = new ArrayList<>();
-    NodeList childNodes = node.getChildNodes();
-    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
-      Node loopNode = childNodes.item(nodeCount);
-      nodes.add(loopNode);
-    }
-    return nodes;
-  }
-
-  /**
-   * Load model from XML file into a {@link Node}.
-   *
-   * @param in the input stream
-   * @return the node
-   * @throws ParserConfigurationException the parser configuration exception
-   * @throws SAXException the SAX exception
-   * @throws IOException Signals that an I/O exception has occurred.
-   */
-  private Node loadModel(InputStream in) throws ParserConfigurationException,
-    SAXException, IOException {
-    // Parse XML file.
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    DocumentBuilder db = dbf.newDocumentBuilder();
-    Document document = db.parse(in);
-
-    NodeList childNodes = document.getChildNodes();
-    Node rootNode = null;
-    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
-      Node loopNode = childNodes.item(nodeCount);
-      LOG.debug("loopNode: " + loopNode.getNodeName());
-      if (loopNode.getNodeName().equals(KNOWLEDGE_DOCUMENT)) {
-        rootNode = loopNode;
-        break;
-      }
-    }
-    LOG.debug("rootNode: " + rootNode.getNodeName());
-
-    // Sanity check.
-    Preconditions.checkState(rootNode != null, "No " + KNOWLEDGE_DOCUMENT
-        + " root node in XML");
-
-    return rootNode;
   }
 }

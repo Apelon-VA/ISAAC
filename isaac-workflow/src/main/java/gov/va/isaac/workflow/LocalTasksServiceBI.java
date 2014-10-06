@@ -37,8 +37,13 @@ public interface LocalTasksServiceBI {
     List<LocalTask> getTasks();
     List<LocalTask> getTasksByComponentId(String componentId);
     void saveTask(LocalTask task);
+
+    void completeTask(Long taskId, Map<String, String> outputVariables);
+    void releaseTask(Long taskId);
+
     void setAction(Long taskId, Action action, Map<String, String> outputVariables);
     void setAction(Long taskId, Action action, TaskActionStatus status, Map<String, String> outputVariables);
+
     void commit();
     void createSchema();
     void dropSchema();
