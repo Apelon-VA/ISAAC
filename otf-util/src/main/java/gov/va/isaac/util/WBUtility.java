@@ -19,9 +19,6 @@
 package gov.va.isaac.util;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.interfaces.utility.UserPreferencesI;
-
-import java.io.File;
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -32,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -126,7 +122,7 @@ public class WBUtility {
 	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-				int authorNid = TermAux.USER.getLenient().getConceptNid();
+				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUser().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
 
@@ -943,68 +939,13 @@ public class WBUtility {
 
 	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
 		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
+		@SuppressWarnings("unchecked")
 		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
 		
 		ComponentVersionBI latestVersion = null;
 		for (ComponentVersionBI v : versions) {
 			if ((v.getTime() != Long.MAX_VALUE) && 
-			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
-				latestVersion = v;
-			}
-		}
-		return latestVersion;
-	}
-
-	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
-		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
-		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
-		
-		ComponentVersionBI latestVersion = null;
-		for (ComponentVersionBI v : versions) {
-			if ((v.getTime() != Long.MAX_VALUE) && 
-			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
-				latestVersion = v;
-			}
-		}
-		return latestVersion;
-	}
-
-	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
-		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
-		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
-		
-		ComponentVersionBI latestVersion = null;
-		for (ComponentVersionBI v : versions) {
-			if ((v.getTime() != Long.MAX_VALUE) && 
-			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
-				latestVersion = v;
-			}
-		}
-		return latestVersion;
-	}
-
-	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
-		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
-		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
-		
-		ComponentVersionBI latestVersion = null;
-		for (ComponentVersionBI v : versions) {
-			if ((v.getTime() != Long.MAX_VALUE) && 
-			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
-				latestVersion = v;
-			}
-		}
-		return latestVersion;
-	}
-
-	public static ComponentVersionBI getLastCommittedVersion(ComponentChronicleBI<?> chronicle) {
-		// Strictly Time-Based sorting.  Should suffice until a) Path setup changes or b) Proper implementation added to tcc
-		Collection<ComponentVersionBI> versions = (Collection<ComponentVersionBI>) chronicle.getVersions();
-		
-		ComponentVersionBI latestVersion = null;
-		for (ComponentVersionBI v : versions) {
-			if ((v.getTime() != Long.MAX_VALUE) && 
-			    (latestVersion == null || v.getTime() > latestVersion.getTime())) {
+				(latestVersion == null || v.getTime() > latestVersion.getTime())) {
 				latestVersion = v;
 			}
 		}
