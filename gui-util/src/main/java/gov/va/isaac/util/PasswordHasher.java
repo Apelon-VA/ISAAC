@@ -25,6 +25,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link PasswordHasher}
@@ -39,6 +41,7 @@ import javax.crypto.spec.PBEParameterSpec;
  */
 public class PasswordHasher
 {
+	private static final Logger log_ = LoggerFactory.getLogger(PasswordHasher.class);
 	// The higher the number of iterations the more expensive computing the hash is for us
 	// and also for a brute force attack.
 	private static final int iterations = 10 * 1024;
@@ -53,7 +56,7 @@ public class PasswordHasher
 		//generateSeed is extremely slow (and random) on linux, since it blocks for entropy, 
 		//and many linux systems may not have enough entropy, and block for many seconds before returning a random value.
 		//This tells java to use a slightly less perfect random number generator, if the proper random 
-		//generator doesn't have enough entropy.  In the real world, for our purposes, I hightly doubt
+		//generator doesn't have enough entropy.  In the real world, for our purposes, I highly doubt
 		//we need the missing security.
 		if (System.getProperty("os.name").equals("Linux"))
 		{
@@ -67,9 +70,12 @@ public class PasswordHasher
 	 */
 	public static String getSaltedHash(String password) throws Exception
 	{
+		long startTime = System.currentTimeMillis();
 		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
 		// store the salt with the password
-		return Base64.getEncoder().encodeToString(salt) + "$$$" + hash(password, salt);
+		String result = Base64.getEncoder().encodeToString(salt) + "$$$" + hash(password, salt);
+		log_.info("Compute Salted Hash time {} ms", System.currentTimeMillis() - startTime);
+		return result;
 	}
 
 	/**
@@ -93,13 +99,16 @@ public class PasswordHasher
 	// using PBKDF2 from Sun
 	private static String hash(String password, byte[] salt) throws Exception
 	{
+		long startTime = System.currentTimeMillis();
 		if (password == null || password.length() == 0)
 		{
 			throw new IllegalArgumentException("Empty passwords are not supported.");
 		}
 		SecretKeyFactory f = SecretKeyFactory.getInstance(keyFactoryAlgorithm);
 		SecretKey key = f.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
-		return Base64.getEncoder().encodeToString(key.getEncoded());
+		String result = Base64.getEncoder().encodeToString(key.getEncoded());
+		log_.info("Password compute time: {} ms", System.currentTimeMillis() - startTime);
+		return result;
 	}
 	
 	public static String encrypt(String password, String data) throws Exception
@@ -109,9 +118,12 @@ public class PasswordHasher
 	
 	public static String encrypt(String password, byte[] data) throws Exception
 	{
+		long startTime = System.currentTimeMillis();
 		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
 		// store the salt with the password
-		return Base64.getEncoder().encodeToString(salt) + "$$$" + encrypt(password, salt, data);
+		String result = Base64.getEncoder().encodeToString(salt) + "$$$" + encrypt(password, salt, data);
+		log_.info("Encrypt Time {} ms", System.currentTimeMillis() - startTime);
+		return result;
 	}
 	
 	private static String encrypt(String password, byte[] salt, byte[] data) throws Exception
@@ -130,12 +142,15 @@ public class PasswordHasher
 	
 	public static byte[] decrypt(String password, String encryptedData) throws Exception
 	{
+		long startTime = System.currentTimeMillis();
 		String[] saltAndPass = encryptedData.split("\\$\\$\\$");
 		if (saltAndPass.length != 2)
 		{
 			throw new Exception("Invalid encrypted data, can't find salt");
 		}
-		return decrypt(password, Base64.getDecoder().decode(saltAndPass[0]), saltAndPass[1]);
+		byte[] result = decrypt(password, Base64.getDecoder().decode(saltAndPass[0]), saltAndPass[1]);
+		log_.info("Dncrypt Time {} ms", System.currentTimeMillis() - startTime);
+		return result;
 	}
 
 	private static byte[] decrypt(String password, byte[] salt, String data) throws Exception
