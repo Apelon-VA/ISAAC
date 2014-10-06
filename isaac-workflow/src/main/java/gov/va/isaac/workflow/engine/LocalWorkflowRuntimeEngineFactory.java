@@ -30,8 +30,8 @@ import java.util.logging.Logger;
  *
  * @author alo
  */
-
-public class LocalWorkflowRuntimeEngineFactory {
+public final class LocalWorkflowRuntimeEngineFactory {
+	private LocalWorkflowRuntimeEngineFactory() {}
 
     private static LocalWorkflowRuntimeEngineBI lwf;
 
@@ -54,6 +54,5 @@ public class LocalWorkflowRuntimeEngineFactory {
         }
 
         return lwf;
-    }
-    
+    }  
 }
