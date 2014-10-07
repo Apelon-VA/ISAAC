@@ -24,7 +24,6 @@ import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
 
@@ -62,7 +61,8 @@ public class WorkflowInitiationViewController {
 		//component_name, // Passed through API
 		instructions("Instructions"),
 		edit_coordinate(), // don't display
-		edit_coordinate_promotion("Promotion Path");
+		edit_coordinate_promotion("Promotion Path"),
+		skip_to_review("Skip to Review");
 		
 		private final String displayName;
 		
@@ -307,6 +307,7 @@ public class WorkflowInitiationViewController {
 			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.name(), instructionsTextArea.getText());
 			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), "");
 			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionPathCoordinateLabel.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.skip_to_review.name(), Boolean.FALSE.toString().toLowerCase());
 		} else {
 			// TODO: handle other WorkflowProcessModel values
 		}

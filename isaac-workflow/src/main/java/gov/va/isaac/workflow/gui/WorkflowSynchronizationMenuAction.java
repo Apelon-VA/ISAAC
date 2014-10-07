@@ -24,12 +24,15 @@
  */
 package gov.va.isaac.workflow.gui;
 
+import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
+import javafx.application.Platform;
+import javafx.scene.Node;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,7 +77,7 @@ public class WorkflowSynchronizationMenuAction implements IsaacViewWithMenusI
 			@Override
 			public void handleMenuSelection(Window parent)
 			{
-				synchronize();
+				synchronize(parent.getScene().getRoot());
 			}
 			
 			@Override
@@ -120,15 +123,15 @@ public class WorkflowSynchronizationMenuAction implements IsaacViewWithMenusI
 		return wfEngine_;
 	}
 
-	private void synchronize() {
+	private void synchronize(Node root) {
 		// TODO: enable BusyPopover for synchronize()
-		//final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing workflow...", ?);
+		final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing workflow...", root);
 		
 		Utility.execute(() -> {
 			try
 			{
 				getWorkflowEngine().synchronizeWithRemote();
-				//Platform.runLater(() ->  { synchronizePopover.hide(); });
+				Platform.runLater(() ->  { synchronizePopover.hide(); });
 			}
 			catch (Exception e)
 			{
