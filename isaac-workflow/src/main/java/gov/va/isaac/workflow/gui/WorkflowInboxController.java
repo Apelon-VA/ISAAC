@@ -232,7 +232,7 @@ public class WorkflowInboxController
 						claimTasksButton.setDisable(false);
 						refreshContent();
 						
-						synchronize(false);
+						synchronize(true);
 					});
 				}
 				catch (Exception e)
