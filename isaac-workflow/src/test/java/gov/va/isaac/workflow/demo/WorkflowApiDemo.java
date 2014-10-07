@@ -18,8 +18,6 @@
  */
 package gov.va.isaac.workflow.demo;
 
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 
 /**
  *
@@ -28,7 +26,7 @@ import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 public class WorkflowApiDemo {
     
     public static void main(String[] args) {
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+//        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
         
 //        String userId = "test-user";
         
@@ -65,7 +63,7 @@ public class WorkflowApiDemo {
 //        wfEngine.getLocalTaskService().getTasksOwnedByStatus(userId, openStatuses, "en-US");
         
         // Synchronize with remote server, completed task will be uploaded, new tasks will be downloaded
-        wfEngine.synchronizeWithRemote();
+//        wfEngine.synchronizeWithRemote();
         
     }
     
