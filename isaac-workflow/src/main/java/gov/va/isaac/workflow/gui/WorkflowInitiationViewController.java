@@ -329,7 +329,7 @@ public class WorkflowInitiationViewController {
 			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() 
 					+ "\nFor componentId " + componentOrConcept.getPrimordialUuid());	
 
-			Utility.submit(() -> getWorkflowService().synchronizeWithRemote());
+			//Utility.submit(() -> getWorkflowService().synchronizeWithRemote());
 
 			doCancel();
 		}

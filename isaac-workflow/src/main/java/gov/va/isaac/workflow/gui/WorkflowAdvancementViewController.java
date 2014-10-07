@@ -332,8 +332,7 @@ public class WorkflowAdvancementViewController
 		if (wfEngine_ == null)
 		{
 			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-			
-			Utility.submit(() -> wfEngine_.synchronizeWithRemote());
+			//Utility.submit(() -> wfEngine_.synchronizeWithRemote());
 		}
 	}
 	

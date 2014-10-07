@@ -259,12 +259,12 @@ public class WorkflowTaskDetailsViewController {
 		if (workflowEngine == null) {
 			workflowEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
 
-			Utility.submit(new Runnable() {
-				@Override
-				public void run() {
-					workflowEngine.synchronizeWithRemote();
-				}
-			});
+//			Utility.submit(new Runnable() {
+//				@Override
+//				public void run() {
+//					workflowEngine.synchronizeWithRemote();
+//				}
+//			});
 		}
 
 		return workflowEngine;
