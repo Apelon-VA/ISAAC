@@ -23,7 +23,7 @@ import org.hl7.vmr.r2.CodedIdentifier;
  * 
  * Can include a detailed input specification for the focal patient as well as for related evaluated persons.  Note that it is assumed that the superset of data required for related evaluated persons are the same for each of the related evaluated persons (e.g., relatives).  If input specifications are not provided regarding patients or other evaluated persons, then this signifies that no further constraints are being placed on required data other than what is expressed through the input data model and its existing template(s).
  * 
- *  As a specific example, a CDSInputSpecification may be used to specify required CDS input by a CDS guidance service compliant with the HL7 Decision Support Service standard.  Specifically, this type of specification can be encapsulated within the “query” section of a Decision Support Service’s specification of knowledge module data requirements.  Further information regarding this type of use case can be found in the HL7 Decision Support Service specification and the HL7 Decision Support Service Implementation Guide.
+ *  As a specific example, a CDSInputSpecification may be used to specify required CDS input by a CDS guidance service compliant with the HL7 Decision Support Service standard.  Specifically, this type of specification can be encapsulated within the ï¿½queryï¿½ section of a Decision Support Serviceï¿½s specification of knowledge module data requirements.  Further information regarding this type of use case can be found in the HL7 Decision Support Service specification and the HL7 Decision Support Service Implementation Guide.
  * 
  * <p>Java class for CDSInputSpecification complex type.
  * 

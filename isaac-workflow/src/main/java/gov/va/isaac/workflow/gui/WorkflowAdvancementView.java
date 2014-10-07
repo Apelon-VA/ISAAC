@@ -18,14 +18,10 @@
  */
 package gov.va.isaac.workflow.gui;
 
-import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
-//import gov.va.isaac.gui.conceptViews.SimpleConceptView;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
-import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.net.URL;
@@ -40,8 +36,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-import org.glassfish.hk2.api.PerLookup;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @Service
-@PerLookup
+@Singleton
 public class WorkflowAdvancementView extends Stage implements WorkflowAdvancementViewI
 {
 	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);

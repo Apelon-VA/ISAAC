@@ -811,7 +811,7 @@ public class CommonMenus
 		
 		if (cc != null) {
 			if (cc instanceof RefexDynamicChronicleBI) {
-				RefexDynamicChronicleBI refexChron = (RefexDynamicChronicleBI)cc;
+				RefexDynamicChronicleBI<?> refexChron = (RefexDynamicChronicleBI<?>)cc;
 				
 				try {
 					if (WBUtility.getConceptVersion(refexChron.getAssemblageNid()).isAnnotationStyleRefex()) {

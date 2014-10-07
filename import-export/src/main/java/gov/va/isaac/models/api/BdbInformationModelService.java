@@ -343,27 +343,37 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("  property refset = " + propertyRefset.getRefexName());
     for (RefexDynamicChronicleBI<?> refex : modelConcept
         .getRefexDynamicAnnotations()) {
-      RefexDynamicVersionBI<?> refexVersion = 
+      RefexDynamicVersionBI<?> refexVersion =
           refex.getVersion(WBUtility.getViewCoordinate());
       LOG.debug("  refex = " + refex.toUserString());
       // Look for matching refex id and "active" flag
-      if (refexVersion != null && refex.getAssemblageNid() == propertyRefset
-          .getRefexUsageDescriptorNid() && refexVersion.isActive()) {
+      if (refexVersion != null
+          && refex.getAssemblageNid() == propertyRefset
+              .getRefexUsageDescriptorNid() && refexVersion.isActive()) {
         // Create properties for each annotation
         InformationModelProperty property =
             new DefaultInformationModelProperty();
         RefexDynamicDataBI[] data = refexVersion.getData();
-        property.setLabel(((RefexDynamicString) data[0]).getDataString());
-        property.setType(((RefexDynamicString) data[1]).getDataString());
-        property.setName(((RefexDynamicString) data[2]).getDataString());
-        property
-            .setDefaultValue(((RefexDynamicString) data[3]).getDataString());
-        property.setValue(((RefexDynamicString) data[4]).getDataString());
-        property.setCardinalityMin(((RefexDynamicString) data[5])
-            .getDataString());
-        property.setCardinalityMax(((RefexDynamicString) data[6])
-            .getDataString());
-        property.setVisibility(((RefexDynamicString) data[7]).getDataString());
+        if (data[0] != null)
+          property.setLabel(((RefexDynamicString) data[0]).getDataString());
+        if (data[1] != null)
+          property.setType(((RefexDynamicString) data[1]).getDataString());
+        if (data[2] != null)
+          property.setName(((RefexDynamicString) data[2]).getDataString());
+        if (data[3] != null)
+          property.setDefaultValue(((RefexDynamicString) data[3])
+              .getDataString());
+        if (data[4] != null)
+          property.setValue(((RefexDynamicString) data[4]).getDataString());
+        if (data[5] != null)
+          property.setCardinalityMin(((RefexDynamicString) data[5])
+              .getDataString());
+        if (data[6] != null)
+          property.setCardinalityMax(((RefexDynamicString) data[6])
+              .getDataString());
+        if (data[7] != null)
+          property
+              .setVisibility(((RefexDynamicString) data[7]).getDataString());
         LOG.debug("    property " + property.getLabel() + ", "
             + property.getName());
         model.addProperty(property);
@@ -747,7 +757,8 @@ public class BdbInformationModelService implements InformationModelService {
         .getRefexDynamicAnnotations()) {
       RefexDynamicVersionBI<?> refexVersion =
           refex.getVersion(WBUtility.getViewCoordinate());
-      if (refexVersion != null && !refexUuids.contains(refex.getPrimordialUuid())) {
+      if (refexVersion != null
+          && !refexUuids.contains(refex.getPrimordialUuid())) {
         RefexDynamicCAB refexBlueprint =
             refexVersion.makeBlueprint(WBUtility.getViewCoordinate(),
                 IdDirective.PRESERVE, RefexDirective.EXCLUDE);

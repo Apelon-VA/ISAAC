@@ -21,7 +21,7 @@ import org.hl7.cdsdt.r2.PQ;
 /**
  * A clinical order for provision of a supply of a medication generally with the intention that it is subsequently consumed by a patient (usually in response to a prescription). 
  * 
- * An order for a substance to be dispensed but not administered.  (E.g.,, “naloxone at bedside”).
+ * An order for a substance to be dispensed but not administered.  (E.g.,, ï¿½naloxone at bedsideï¿½).
  * 
  * <p>Java class for SubstanceDispenseOrder complex type.
  * 

@@ -18,7 +18,7 @@ import org.hl7.cdsdt.r2.PQ;
 
 
 /**
- * This is the Event of a pharmacy filling a prescription or a record of a substance being dispensed but not administered.  (E.g.,, “naloxone at bedside”).
+ * This is the Event of a pharmacy filling a prescription or a record of a substance being dispensed but not administered.  (E.g.,, ï¿½naloxone at bedsideï¿½).
  * 
  * <p>Java class for SubstanceDispenseEvent complex type.
  * 

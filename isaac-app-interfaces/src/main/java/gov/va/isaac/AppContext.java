@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@
  */
 package gov.va.isaac;
 
+import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
@@ -25,6 +26,7 @@ import gov.va.oia.HK2Utilities.HK2RuntimeInitializer;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -38,15 +40,18 @@ import org.slf4j.LoggerFactory;
 public class AppContext
 {
 	private static ServiceLocator serviceLocator_;
-	private static AppProperties appProperties_;
+	private static IsaacAppConfigI isaacAppConfig_;
+
+	private static Logger log_ = LoggerFactory.getLogger(AppContext.class);
 
 	/**
 	 * Call this once (and only once) to initialize the ISAAC HK2 service Locator.
 	 * After this is called, you can access the service locator via convenience methods here,
-	 * or via a call directly to HK2:
+	 * or via a call directly to HK2: 
 	 * {@code
 	 *     ServiceLocatorFactory.getInstance().create("ISAAC");
 	 * }
+	 * 
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 *
@@ -58,13 +63,15 @@ public class AppContext
 			throw new RuntimeException("Only one service locator should be set");
 		}
 		serviceLocator_ = HK2RuntimeInitializer.init("ISAAC", false, "gov.va", "org.ihtsdo");
-
-		appProperties_ = new AppProperties();
+		isaacAppConfig_ = serviceLocator_.getService(IsaacAppConfigI.class);
 	}
 
-	public static AppProperties getAppProperties()
+	/**
+	 * @return
+	 */
+	public static IsaacAppConfigI getAppConfiguration()
 	{
-		return appProperties_;
+		return isaacAppConfig_;
 	}
 
 	public static ServiceLocator getServiceLocator()
@@ -76,12 +83,13 @@ public class AppContext
 	{
 		return serviceLocator_.getService(contractOrService, qualifiers);
 	}
-	
+
 	/**
 	 * Find a service by name, and automatically fall back to any service which implements the contract if the named service was not available.
-     * @param contractOrService May not be null, and is the contract or concrete implementation to get the best instance of
-     * @param name May be null (to indicate any name is ok), and is the name of the implementation to be returned
-     * @param qualifiers The set of qualifiers that must match this service definition
+	 * 
+	 * @param contractOrService May not be null, and is the contract or concrete implementation to get the best instance of
+	 * @param name May be null (to indicate any name is ok), and is the name of the implementation to be returned
+	 * @param qualifiers The set of qualifiers that must match this service definition
 	 * @return
 	 */
 	public static <T> T getService(Class<T> contractOrService, String name, Annotation... qualifiers)
@@ -89,8 +97,7 @@ public class AppContext
 		T service = serviceLocator_.getService(contractOrService, name, qualifiers);
 		if (service == null && name != null)
 		{
-			LoggerFactory.getLogger(AppContext.class).info("Requested service '" + name + "' was not available, returning arbitrary service " +
-					"which matches the contract (if any)");
+			log_.info("Requested service '" + name + "' was not available, returning arbitrary service " + "which matches the contract (if any)");
 			return serviceLocator_.getService(contractOrService, qualifiers);
 		}
 		return service;

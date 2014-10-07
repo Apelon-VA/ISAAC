@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
 
+import javax.inject.Singleton;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -36,7 +38,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
-import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 @Service
-@PerLookup
+@Singleton
 public class WorkflowInitiationView extends Stage implements WorkflowInitiationViewI
 {
 	private final Logger logger = LoggerFactory.getLogger(WorkflowInitiationView.class);

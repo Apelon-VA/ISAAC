@@ -41,10 +41,14 @@ import org.jvnet.hk2.annotations.Contract;
 public interface ServicesToPreloadI
 {
 	/**
-	 * Implementers don't actually have to do anything when called here... this is just to prevent the compiler
+	 * Implementers don't actually have to do anything when called here... since most services should have done any 
+	 * necessary loading when the constructor was called.  This is just to prevent the compiler
 	 * from doing something silly and dropping the for-loop over the ServiceToPreloadI objects, when it looks like
-	 * nothing is actually being done.  Implementors may do something here, however, if they prefer.  This will be 
-	 * called during the startup sequence.
+	 * nothing is actually being done.  Implementors may do something here, however, if they prefer to have the constructor
+	 * do nothing, and instead, handle the loading when loadRequested is called.  This will be called during the startup sequence.
+	 * 
+	 * If any expensive works needs to be done as a result of loadRequested - it should be done in a background thread - loadRequested
+	 * should return immediately.
 	 */
 	public void loadRequested();
 }

@@ -19,6 +19,7 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.ToolTipDefaultsFixer;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
@@ -28,6 +29,8 @@ import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import java.util.Hashtable;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
@@ -219,18 +222,37 @@ public class AppController {
         mainSplitPane.getItems().remove(loadWait);
         loadWait = null;
 
-        // Enable the menus.
-        for (Menu menu : menuBar.getMenus())
-        {
-            menu.setDisable(false);
-        }
-        
         //Kick off other preloads
         for (ServicesToPreloadI service : preloadRequested_)
         {
             LOG.debug("Preloading {}", service);
             service.loadRequested();
         }
+
+        AtomicLong loginFailCount = new AtomicLong(0);
+        LightWeightLogin.showLoginDialog(mainSplitPane, new Consumer<Boolean>()
+        {
+            @Override
+            public void accept(Boolean t)
+            {
+                if (!t)
+                {
+                    if (loginFailCount.incrementAndGet() > 3)
+                    {
+                        ((App)ExtendedAppContext.getMainApplicationWindow()).shutdown();
+                    }
+                }
+                else
+                {
+                    // Enable the menus.
+                    for (Menu menu : menuBar.getMenus())
+                    {
+                        menu.setDisable(false);
+                    }
+                }
+                
+            }
+        });
     }
 
     private BorderPane buildPanelForView(DockedViewI dockedView)

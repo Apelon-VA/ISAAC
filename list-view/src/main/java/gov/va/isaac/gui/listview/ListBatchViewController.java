@@ -116,6 +116,7 @@ import au.com.bytecode.opencsv.CSVWriter;
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@SuppressWarnings("deprecation")
 public class ListBatchViewController
 {
 	private enum LocalMenuItem {
@@ -363,8 +364,16 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.commit(row.getItem().getNid());
-						updateTableItem(row.getItem(), false);
+						try
+						{
+							WBUtility.commit(row.getItem().getNid());
+							updateTableItem(row.getItem(), false);
+						}
+						catch (IOException ex)
+						{
+							logger_.error("Unexpected error during commit", ex);
+							AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+						}
 					}
 				});
 
@@ -375,6 +384,7 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
+						//TODO this should be presented to the user... not silently logged
 						try {
 							ExtendedAppContext.getDataStore().forget(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), row.getItem().getNid()));
 							updateTableItem(row.getItem(), false);
@@ -460,8 +470,16 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WBUtility.commit();
-				uncommitAllTableItems();
+				try
+				{
+					WBUtility.commit();
+					uncommitAllTableItems();
+				}
+				catch (IOException ex)
+				{
+					logger_.error("Unexpected error during commit", ex);
+					AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+				}
 			}
 		});
 
@@ -554,8 +572,8 @@ public class ListBatchViewController
 							if (f.exists())
 							{
 								Action response = Dialogs.create().owner(rootPane.getScene().getWindow()).title("Overwrite existing file?")
-										.masthead(null).nativeTitleBar().message("The file '" + f.getName() + "' already exists.  Overwrite?").showConfirm();
-								if (response != Dialog.Actions.YES)
+										.masthead(null).styleClass(Dialog.STYLE_CLASS_NATIVE).message("The file '" + f.getName() + "' already exists.  Overwrite?").showConfirm();
+								if (response != Dialog.ACTION_YES)
 								{
 									return;
 								}
@@ -664,7 +682,7 @@ public class ListBatchViewController
 												Dialogs.create().title("Concept Import Completed").masthead(null)
 													.message("The Concept List import is complete" 
 															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""))
-															.owner(rootPane.getScene().getWindow()).nativeTitleBar().showInformation();
+															.owner(rootPane.getScene().getWindow()).styleClass(Dialog.STYLE_CLASS_NATIVE).showInformation();
 											}
 										});
 										
@@ -697,7 +715,7 @@ public class ListBatchViewController
 								}
 							};
 							Dialogs.create().title("Importing").masthead(null).message("Importing").owner(rootPane.getScene().getWindow())
-								.nativeTitleBar().showWorkerProgress(t);
+								.styleClass(Dialog.STYLE_CLASS_NATIVE).showWorkerProgress(t);
 							Utility.execute(t);
 						}
 						else
@@ -997,13 +1015,22 @@ public class ListBatchViewController
 		}
 		
 		if (isUncommitted) {
-			WBUtility.addUncommitted(con);
-			newCon.setUncommitted(true);
-			
-			if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
-				uncommittedCount++;
+			try
+			{
+				WBUtility.addUncommitted(con);
+				newCon.setUncommitted(true);
+				
+				if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
+					uncommittedCount++;
+				}
+			}
+			catch (IOException ex)
+			{
+				logger_.error("Unexpected error during add uncommited", ex);
+				AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
 			}
 		} else {
+			//TODO this should be shown to the user, not silently logged
 			try {
 				ExtendedAppContext.getDataStore().forget(con);
 				newCon.setUncommitted(false);

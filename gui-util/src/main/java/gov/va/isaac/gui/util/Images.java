@@ -69,16 +69,19 @@ public enum Images {
     INBOX(setupImage("/icons/fugue/16x16/icons-shadowless/inbox.png")),
     COMMIT(setupImage("/icons/silk/16x16/database_save.png")),
     CANCEL(setupImage("/icons/misc/16x16/cancel-change.png")),
-    EDIT(setupImage("icons/silk/16x16/pencil.png")),
-    ATTACH(setupImage("icons/silk/16x16/attach.png")),
+    EDIT(setupImage("/icons/silk/16x16/pencil.png")),
+    ATTACH(setupImage("/icons/silk/16x16/attach.png")),
     HISTORY(setupImage("/icons/fugue/16x16/icons-shadowless/clock.png")),
-    FILTER_16(setupImage("icons/misc/16x16/filter.png")),
-    FILTER_32(setupImage("icons/misc/32x32/filter.png")),
+    FILTER_16(setupImage("/icons/misc/16x16/filter.png")),
+    FILTER_32(setupImage("/icons/misc/32x32/filter.png")),
     CONFIGURE(setupImage("/icons/fugue/16x16/icons-shadowless/ui-check-boxes-series.png")),
     HISTORICAL(setupImage("/icons/fugue/16x16/icons-shadowless/clock-history.png")),
     BLACK_DOT(setupImage("/icons/diagona/16x16/158.png")),
     GREY_DOT(setupImage("/icons/diagona/16x16/158.png")),
-    YELLOW_DOT(setupImage("/icons/diagona/16x16/154.png"));
+    YELLOW_DOT(setupImage("/icons/diagona/16x16/154.png")),
+    USER(setupImage("/icons/misc/16x16/user.png")),
+    LOCK(setupImage("/icons/misc/16x16/lock.png")),
+    KEYS(setupImage("/icons/misc/48x48/login.png"));
 
     private final Image image;
 

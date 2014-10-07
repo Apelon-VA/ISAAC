@@ -20,7 +20,7 @@ import org.hl7.vmr.r2.CodedIdentifier;
 /**
  * Abstract base class specifying the output to be provided by a specific CDS use case. 
  * 
- *  As a specific example, a CDSOutputSpecification may be used to specify details on the CDS output that will be returned by a CDS guidance service compliant with the HL7 Decision Support Service standard.  Specifically, this type of specification can be encapsulated within the “CDS output specification” section of a Decision Support Service’s specification of knowledge module evaluation result semantics.  Further information regarding this type of use case can be found in the HL7 Decision Support Service specification and the HL7 Decision Support Service Implementation Guide.
+ *  As a specific example, a CDSOutputSpecification may be used to specify details on the CDS output that will be returned by a CDS guidance service compliant with the HL7 Decision Support Service standard.  Specifically, this type of specification can be encapsulated within the ï¿½CDS output specificationï¿½ section of a Decision Support Serviceï¿½s specification of knowledge module evaluation result semantics.  Further information regarding this type of use case can be found in the HL7 Decision Support Service specification and the HL7 Decision Support Service Implementation Guide.
  * 
  * <p>Java class for CDSOutputSpecification complex type.
  * 

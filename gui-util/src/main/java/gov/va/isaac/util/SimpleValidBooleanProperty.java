@@ -38,6 +38,7 @@ public class SimpleValidBooleanProperty extends SimpleBooleanProperty
 	
 	public SimpleValidBooleanProperty(boolean initialValue, String reasonWhyInvalid)
 	{
+		super(initialValue);
 		if (!initialValue)
 		{
 			if (reasonWhyInvalid == null || reasonWhyInvalid.length() == 0)
