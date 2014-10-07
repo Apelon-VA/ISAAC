@@ -228,16 +228,14 @@ public class WorkflowInboxController
 					getWorkflowEngine().claim(10, user);
 					Platform.runLater(() -> 
 					{
-						claimPopover.hide();
-						claimTasksButton.setDisable(false);
-						refreshContent();
-						
 						synchronize(true);
 					});
 				}
 				catch (Exception e)
 				{
 					logger.error("Unexpected error claiming tasks", e);
+				} finally {
+					cleanup(claimPopover, claimTasksButton, this);
 				}
 			});
 		});
@@ -271,19 +269,28 @@ public class WorkflowInboxController
 			try
 			{
 				getWorkflowEngine().synchronizeWithRemote();
-				Platform.runLater(() -> 
-				{
-					if (finalBusyPopover != null) {
-						finalBusyPopover.hide();
-					}
-					synchronizeButton.setDisable(false);
-					refreshContent();
-				});
 			}
 			catch (Exception e)
 			{
 				logger.error("Unexpected error synchronizing tasks", e);
+			} finally {
+				if (finalBusyPopover != null) {
+					cleanup(finalBusyPopover, synchronizeButton, this);
+				}
 			}
+		});
+	}
+	
+	/*
+	 * Need this method as workaround for compiler/JVM bug:
+	 * { @link http://stackoverflow.com/questions/13219297/bad-type-on-operand-stack-using-jdk-8-lambdas-with-anonymous-inner-classes }
+	 * { @link http://mail.openjdk.java.net/pipermail/lambda-dev/2012-September/005938.html }
+	 */
+	public static void cleanup(BusyPopover popover, Button button, WorkflowInboxController toRefresh) {
+		Platform.runLater(() -> {
+		popover.hide();
+		button.setDisable(false);
+		toRefresh.refreshContent();
 		});
 	}
 	

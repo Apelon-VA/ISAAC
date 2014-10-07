@@ -131,11 +131,12 @@ public class WorkflowSynchronizationMenuAction implements IsaacViewWithMenusI
 			try
 			{
 				getWorkflowEngine().synchronizeWithRemote();
-				Platform.runLater(() ->  { synchronizePopover.hide(); });
 			}
 			catch (Exception e)
 			{
 				logger.error("Unexpected error synchronizing workflow", e);
+			} finally {
+				Platform.runLater(() ->  { synchronizePopover.hide(); });
 			}
 		});
 	}
