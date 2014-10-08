@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 public class AppContext
 {
 	private static ServiceLocator serviceLocator_;
-	private static IsaacAppConfigI isaacAppConfig_;
 
 	private static Logger log_ = LoggerFactory.getLogger(AppContext.class);
 
@@ -63,7 +62,6 @@ public class AppContext
 			throw new RuntimeException("Only one service locator should be set");
 		}
 		serviceLocator_ = HK2RuntimeInitializer.init("ISAAC", false, "gov.va", "org.ihtsdo");
-		isaacAppConfig_ = serviceLocator_.getService(IsaacAppConfigI.class);
 	}
 
 	/**
@@ -71,7 +69,7 @@ public class AppContext
 	 */
 	public static IsaacAppConfigI getAppConfiguration()
 	{
-		return isaacAppConfig_;
+		return serviceLocator_.getService(IsaacAppConfigI.class);
 	}
 
 	public static ServiceLocator getServiceLocator()
