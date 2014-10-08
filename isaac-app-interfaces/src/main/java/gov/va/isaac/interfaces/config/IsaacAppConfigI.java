@@ -19,6 +19,7 @@
 package gov.va.isaac.interfaces.config;
 
 import java.net.URL;
+import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -53,5 +54,10 @@ public interface IsaacAppConfigI
 	 * The deployment ID for the KIE workflow server
 	 */
 	public String getWorkflowServerDeploymentID();
-	 
+	
+	/**
+	 * The UUID for the Path to which content published via Workflow will automatically be promoted to
+	 * @return
+	 */
+	public UUID getPromotionPathUUID();
 }

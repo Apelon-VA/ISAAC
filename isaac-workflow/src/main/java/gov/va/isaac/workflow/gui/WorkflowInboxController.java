@@ -233,7 +233,10 @@ public class WorkflowInboxController
 				catch (Exception e)
 				{
 					LOG.error("Unexpected error claiming tasks", e);
-					AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
+					Platform.runLater(() -> 
+					{
+						AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
+					});
 				} finally {
 					cleanup(claimPopover, claimTasksButton, this);
 				}

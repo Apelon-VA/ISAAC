@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.workflow.persistence;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
@@ -55,6 +56,7 @@ public final class DatastoreManager implements ServicesToPreloadI, ShutdownBroad
 	private DatastoreManager()
 	{
 		//For HK2 to construct
+		AppContext.getMainApplicationWindow().registerShutdownListener(this);
 	}
 	
 	public DataSource getDataSource()

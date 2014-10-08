@@ -22,8 +22,13 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 import java.io.InputStream;
+<<<<<<< HEAD
 import java.net.MalformedURLException;
 import java.net.URL;
+=======
+import java.util.UUID;
+
+>>>>>>> branch 'master' of https://github.com/Apelon-VA/ISAAC.git
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -114,5 +119,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setUserRepositoryPath(read.getUserRepositoryPath());
 		setWorkflowServerDeploymentID(read.getWorkflowServerDeploymentID());
 		setWorkflowServerURL(read.getWorkflowServerURL());
+		setPromotionPath(read.getPromotionPath());
+	}
+	
+	@Override
+	public UUID getPromotionPathUUID() {
+		return UUID.fromString(getPromotionPath());
 	}
 }
