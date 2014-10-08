@@ -18,8 +18,8 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,10 +33,11 @@ import org.kie.api.task.model.TaskSummary;
  *
  * @author alo
  */
-public class RemoteServiceDemo {
+public class RemoteServiceDemo extends BaseTest {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+    public static void main(String[] args) throws IOException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
+        setup();
+        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
 
         Map<String, Object> params = new HashMap<String, Object>();
         String rndId = UUID.randomUUID().toString();
