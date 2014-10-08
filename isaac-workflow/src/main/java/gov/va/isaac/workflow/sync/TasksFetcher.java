@@ -96,7 +96,6 @@ public class TasksFetcher {
                 countRemoved++;
             }
         }
-        persistenceApi.commit();
         result = "Tasks -> New: " + countNew + " Updated: " + countUpdated + " Removed: " + countRemoved; 
         return result;
     }
