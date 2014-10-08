@@ -105,7 +105,6 @@ public class ComponentDescriptionHelper {
 			int assemblageDynamicNid = refexDynamicVersion.getAssemblageNid();
 			ConceptVersionBI assemblageDynamicComponentVersion = WBUtility.getConceptVersion(assemblageDynamicNid);
 			UUID assemblageDynamicUuid = assemblageDynamicComponentVersion.getPrimordialUuid();
-			String refexType = "";
 			try {
 				if (assemblageDynamicComponentVersion.isAnnotationStyleRefex()) {
 					description = ComponentType.RefexDynamic.name() + " annotated member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
