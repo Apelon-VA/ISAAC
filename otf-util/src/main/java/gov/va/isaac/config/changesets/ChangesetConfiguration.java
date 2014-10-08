@@ -46,7 +46,7 @@ public class ChangesetConfiguration
 	{
 		Utility.execute(() ->
 		{
-			String userName = ExtendedAppContext.getCurrentlyLoggedInUser().getUserLogonName();
+			String userName = ExtendedAppContext.getCurrentlyLoggedInUser();
 			logger.info("Configuring changset writer for {}", userName);
 			File changeSetRoot = new File(new File(new File("profiles"), userName), "changesets");
 			

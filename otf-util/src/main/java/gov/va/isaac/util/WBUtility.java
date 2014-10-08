@@ -122,7 +122,7 @@ public class WBUtility {
 	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUser().getConceptUUID());
+				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
 
@@ -196,7 +196,7 @@ public class WBUtility {
 
 					if (descVer.getTypeNid() == getFSNNid() || descVer.getTypeNid() == getFsnRf1Nid()) {
 						if (descVer.getStatus() == Status.ACTIVE) {
-							if (ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
+							if (ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN()) {
 								return descVer.getText();
 							} else {
 								fsn = descVer.getText();
@@ -208,7 +208,7 @@ public class WBUtility {
 					} else if ((descVer.getTypeNid() == getSynonymTypeNid() || descVer.getTypeNid() == getSynonymRf1TypeNid()) && 
 							   isPreferred(descVer.getAnnotations())) {
 						if (descVer.getStatus() == Status.ACTIVE) {
-							if (!ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
+							if (!ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN()) {
 								return descVer.getText();
 							} else {
 								preferred = descVer.getText();
@@ -355,7 +355,7 @@ public class WBUtility {
 			DescriptionVersionDdo dv = d.getVersions().get(d.getVersions().size() - 1);
 			if (dv.getTypeReference().getUuid().equals(FSN_UUID) || dv.getTypeReference().getUuid().equals(FSN_RF1_UUID)) {
 				if (dv.getStatus() == Status.ACTIVE) {
-					if (ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
+					if (ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN()) {
 						return dv.getText();
 					} else {
 						fsn = dv.getText();
@@ -365,7 +365,7 @@ public class WBUtility {
 				}
 			} else if (dv.getTypeReference().getUuid().equals(SYNONYM_UUID) || dv.getTypeReference().getUuid().equals(SYNONYM_RF1_UUID)) {
 				if ((dv.getStatus() == Status.ACTIVE) && isPreferred(dv.getAnnotations())) {
-					if (!ExtendedAppContext.getCurrentlyLoggedInUser().getDisplayFSN()) {
+					if (!ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN()) {
 						return dv.getText();
 					} else {
 						preferred = dv.getText();
