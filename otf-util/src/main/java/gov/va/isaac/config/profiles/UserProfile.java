@@ -91,7 +91,12 @@ public class UserProfile
 		//for jaxb and clone
 	}
 
-	protected UserProfile(String userLogonName, String password)
+	/**
+	 * Do not call - use {@link UserProfileManager#createUserProfile(gov.va.isaac.config.generated.User, gov.va.isaac.config.generated.NewUserDefaults)}
+	 * 
+	 * Only public due to a testing quirk  - BaseTest - in workflow needs this, as may some JUnit tests, eventually.
+	 */
+	public UserProfile(String userLogonName, String password)
 	{
 		this.userLogonName = userLogonName;
 		try

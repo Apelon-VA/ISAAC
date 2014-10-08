@@ -56,22 +56,31 @@ public class UserProfileManager implements ServicesToPreloadI
 	private final File profilesFolder_ = new File("profiles");
 	private final String prefsFileName_ = "Preferences.xml";
 
-	private CountDownLatch cdl = new CountDownLatch(2);
+	//protected, rather than private, to allow the mock code to bypass this
+	protected CountDownLatch cdl = new CountDownLatch(2);
 
 	private ObservableList<String> userNamesWithProfiles_ = FXCollections.observableList(new ArrayList<>());
 	private UserProfile loggedInUser_;
 
-	private UserProfileManager()
+	protected UserProfileManager()
 	{
-		//For HK2 to construct
+		//For HK2 to construct, and for the MockUserProfileManager
 	}
 
 	/**
 	 * Returns a clone of the UserProfile - changes made to the profile will be lost unless you call {@link #saveChanges()}
 	 */
-	public UserProfile getCurrentlyLoggedInUser()
+	public UserProfile getCurrentlyLoggedInUserProfile()
 	{
 		return loggedInUser_.clone();
+	}
+	
+	/**
+	 * Returns a clone of the user logon name
+	 */
+	public String getCurrentlyLoggedInUser()
+	{
+		return new String(loggedInUser_.getUserLogonName());
 	}
 	
 	public void saveChanges(UserProfile userProfile) throws InvalidUserException, IOException
@@ -296,7 +305,7 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public User createNewUser(User user) throws InvalidUserException, IOException
 	{
-		if (!getCurrentlyLoggedInUser().hasRole(RoleOption.ADMIN))
+		if (!getCurrentlyLoggedInUserProfile().hasRole(RoleOption.ADMIN))
 		{
 			throw new IOException("You do not have the necessary permissions to create new users");
 		}
