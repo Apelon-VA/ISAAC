@@ -20,6 +20,7 @@ package gov.va.isaac.interfaces.config;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.UUID;
 
 import org.jvnet.hk2.annotations.Contract;
 
@@ -341,6 +342,14 @@ public interface IsaacAppConfigI {
   public String getPromotionPath();
 
   /**
+   * The UUID for the Path to which content published via Workflow will
+   * automatically be promoted to.
+   * 
+   * @return the UUID
+   */
+  public UUID getPromotionPathAsUUID();
+
+  /**
    * Returns the url for string.
    *
    * @param value the value
@@ -352,5 +361,19 @@ public interface IsaacAppConfigI {
     } catch (MalformedURLException e) {
       return null;
     }
+  }
+
+
+  /**
+   * Returns the uuid for string.
+   *
+   * @param value the value
+   * @return the uuid for string
+   */
+  public static UUID getUuidForString(String value) {
+    if (value == null) {
+      return null;
+    }
+    return UUID.fromString(value);
   }
 }

@@ -24,6 +24,7 @@ import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.UUID;
 
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
@@ -145,6 +146,14 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
   @Override
   public URL getChangeSetUrlAsURL() {
     return IsaacAppConfigI.getUrlForString(getChangeSetUrl());
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
+   */
+  @Override
+  public UUID getPromotionPathAsUUID() {
+    return IsaacAppConfigI.getUuidForString(getPromotionPath());
   }
 
 }
