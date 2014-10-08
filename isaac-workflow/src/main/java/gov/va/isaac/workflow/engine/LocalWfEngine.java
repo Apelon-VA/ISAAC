@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.workflow.engine;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
@@ -25,16 +27,16 @@ import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.TaskActionStatus;
-import gov.va.isaac.workflow.persistence.LocalTasksApi;
-import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.sync.TasksFetcher;
-
-import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.jbpm.services.task.impl.model.xml.JaxbContent;
+import org.jvnet.hk2.annotations.Service;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
 import org.kie.api.runtime.process.ProcessInstance;
@@ -48,60 +50,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 
+ * {@link LocalWfEngine}
  *
  * @author alo
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@Service
+@Singleton
 public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
 
-    private URL url;
-    private String userId;
-    private String password;
-    private String deploymentId;
-    public static RuntimeEngine remoteEngine;
-    public static ProcessInstanceCreationRequestsAPI processRequestsApi;
-    public static LocalTasksServiceBI localTasksService;
+    private RuntimeEngine remoteEngine;
+    
+    @Inject
+    private ProcessInstanceServiceBI procApi;
+    
+    @Inject
+    private LocalTasksServiceBI ltapi;
     
     private static final Logger log = LoggerFactory.getLogger(LocalWfEngine.class);
-
-    public LocalWfEngine(URL url, String userId, String password, String deploymentId) {
-        this.url = url;
-        this.userId = userId;
-        this.password = password;
-        this.deploymentId = deploymentId;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getDeploymentId() {
-        return deploymentId;
-    }
-
-    @Override
-    public void setRemoteData(URL url, String userId, String password, String deploymentId) {
-        this.url = url;
-        this.userId = userId;
-        this.password = password;
-        this.deploymentId = deploymentId;
+    
+    private LocalWfEngine()
+    {
+        //For HK2 to construct
     }
 
     @Override
     public void synchronizeWithRemote() {
         try {
             // Upload pending actions
-            LocalTasksServiceBI ltapi = getLocalTaskService();
             TaskService remoteService = getRemoteTaskService();
-            ProcessInstanceServiceBI procApi = getProcessInstanceService();
             int countActions = 0;
+            String userId = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
             List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(TaskActionStatus.Pending);
             for (LocalTask loopTask : actions) {
                 Task remoteTask = remoteService.getTaskById(loopTask.getId());
@@ -133,7 +113,6 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
                 
                 countActions++;
             }
-            ltapi.commit();
 
             // Upload pending requests
             int countInstances = 0;
@@ -154,79 +133,91 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         } catch (Exception ex) {
             ex.printStackTrace();
             log.error("Error synchronizing", ex);
+            //TODO handle this error
         }
     }
 
     @Override
-    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) {
-        KieSession session = getRemoteEngine().getKieSession();
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("component_id", instanceRequest.getComponentId());
-        params.put("component_name", instanceRequest.getComponentName());
-        params.put("created_by", instanceRequest.getUserId());
-        params.putAll(instanceRequest.getVariables());
-        if (instanceRequest.getParams() != null) {
-            params.putAll(instanceRequest.getParams());
+    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) throws RemoteException, DatastoreException {
+        try
+        {
+            KieSession session = getRemoteEngine().getKieSession();
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("component_id", instanceRequest.getComponentId());
+            params.put("component_name", instanceRequest.getComponentName());
+            params.put("created_by", instanceRequest.getUserId());
+            params.putAll(instanceRequest.getVariables());
+            if (instanceRequest.getParams() != null) {
+                params.putAll(instanceRequest.getParams());
+            }
+            ProcessInstance newInstance = session.startProcess(instanceRequest.getProcessName(), params);
+            procApi.updateRequestStatus(instanceRequest.getId(),
+                    ProcessInstanceCreationRequestI.RequestStatus.CREATED,
+                    "Instance created on KIE Server: " + AppContext.getAppConfiguration().getWorkflowServerURLasURL().toString(), newInstance.getId());
         }
-        ProcessInstance newInstance = session.startProcess(instanceRequest.getProcessName(), params);
-        processRequestsApi.updateRequestStatus(instanceRequest.getId(),
-                ProcessInstanceCreationRequestI.RequestStatus.CREATED,
-                "Instance created on KIE Server: " + getUrl().toString(), newInstance.getId());
+        catch (RuntimeException e)
+        {
+            throw new RemoteException("Server error", e);
+        }
     }
 
     @Override
-    public LocalTasksServiceBI getLocalTaskService() {
-        if (LocalWfEngine.localTasksService != null) {
-            return LocalWfEngine.localTasksService;
+    public TaskService getRemoteTaskService() throws RemoteException {
+        try
+        {
+            return getRemoteEngine().getTaskService();
+        }
+        catch (RuntimeException e)
+        {
+            throw new RemoteException("Server error", e);
+        }
+    }
+
+    private RuntimeEngine getRemoteEngine() throws RemoteException {
+        if (remoteEngine != null) {
+            return remoteEngine;
         } else {
-            LocalWfEngine.localTasksService = new LocalTasksApi(userId);
-            return LocalWfEngine.localTasksService;
+            try
+            {
+                RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(AppContext.getAppConfiguration().getWorkflowServerDeploymentID(), 
+                        AppContext.getAppConfiguration().getWorkflowServerURLasURL(),
+                        ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername(), 
+                        ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowPassword());
+                remoteEngine = restSessionFactory.newRuntimeEngine();
+                return remoteEngine;
+            }
+            catch (RuntimeException e)
+            {
+                throw new RemoteException("Error connecting to server", e);
+            }
         }
     }
 
     @Override
-    public TaskService getRemoteTaskService() {
-        return getRemoteEngine().getTaskService();
-    }
-
-    private RuntimeEngine getRemoteEngine() {
-        if (LocalWfEngine.remoteEngine != null) {
-            return LocalWfEngine.remoteEngine;
-        } else {
-            RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(deploymentId, url, userId, password);
-            LocalWfEngine.remoteEngine = restSessionFactory.newRuntimeEngine();
-            return LocalWfEngine.remoteEngine;
+    public Map<String, Object> getVariablesMapForTaskId(Long taskId) throws RemoteException {
+        try
+        {
+            Task task = getRemoteEngine().getTaskService().getTaskById(taskId);
+            Content contentById = getRemoteEngine().getTaskService().getContentById(task.getTaskData().getDocumentContentId());
+            JaxbContent jaxbTaskContent = (JaxbContent) contentById;
+            return jaxbTaskContent.getContentMap();
+        }
+        catch (RuntimeException e)
+        {
+            throw new RemoteException("Server error", e);
         }
     }
 
     @Override
-    public Map<String, Object> getVariablesMapForTaskId(Long taskId) {
-        Task task = getRemoteEngine().getTaskService().getTaskById(taskId);
-        Content contentById = getRemoteEngine().getTaskService().getContentById(task.getTaskData().getDocumentContentId());
-        JaxbContent jaxbTaskContent = (JaxbContent) contentById;
-        return jaxbTaskContent.getContentMap();
-        //return new HashMap<>();
+    public void release(Long taskId) throws DatastoreException {
+        Map<String, String> variableMap = new HashMap<>();
+        ltapi.setAction(taskId, Action.RELEASE, TaskActionStatus.Pending, variableMap);
     }
 
     @Override
-    public ProcessInstanceServiceBI getProcessInstanceService() {
-        if (LocalWfEngine.processRequestsApi != null) {
-            return LocalWfEngine.processRequestsApi;
-        } else {
-            LocalWfEngine.processRequestsApi = new ProcessInstanceCreationRequestsAPI();
-            return LocalWfEngine.processRequestsApi;
-        }
-    }
-
-    @Override
-    public void release(Long taskId) {
-		Map<String, String> variableMap = new HashMap<>();
-		getLocalTaskService().setAction(taskId, Action.RELEASE, TaskActionStatus.Pending, variableMap);
-    }
-
-    @Override
-    public void claim(Integer count, String userId) {
+    public void claim(Integer count) throws RemoteException {
         TaskService remoteService = getRemoteTaskService();
+        String userId = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
         List<TaskSummary> availableTasks = remoteService.getTasksAssignedAsPotentialOwner(userId, "en-UK");
         log.debug("Available {}", availableTasks.size());
         int claimed = 0;
@@ -239,13 +230,11 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         }
     }
 
-private HashMap<String, Object> toObjectValueMap(Map<String, String> sourceMap) {
-    HashMap<String, Object> result = new HashMap<String, Object>();
-    for (String loopSourceKey : sourceMap.keySet()) {
-        result.put(loopSourceKey, sourceMap.get(loopSourceKey));
+    private HashMap<String, Object> toObjectValueMap(Map<String, String> sourceMap) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        for (String loopSourceKey : sourceMap.keySet()) {
+            result.put(loopSourceKey, sourceMap.get(loopSourceKey));
+        }
+        return result;
     }
-    return result;
-}
-
-
 }
