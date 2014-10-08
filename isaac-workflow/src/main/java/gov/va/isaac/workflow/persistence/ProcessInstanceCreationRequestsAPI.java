@@ -72,20 +72,20 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
-            // PINST_REQUESTS (id int PRIMARY KEY, component_id varchar(40), component_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), wf_id Integer)");
-            PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message, request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+    public ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) 
+            throws DatastoreException {
+        try (Connection conn = ds.getConnection()) {
+            PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message,"
+                + " request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
             psInsert.setString(1, componentId != null ? componentId.toString() : null);
             psInsert.setString(2, componentName);
             psInsert.setString(3, processName);
             psInsert.setString(4, author);
-            psInsert.setString(5, "REQUESTED");
+            psInsert.setString(5, ProcessInstanceCreationRequestI.RequestStatus.REQUESTED.name());
             psInsert.setString(6, "");
-            Long requestTime = System.currentTimeMillis();
-            psInsert.setString(7, String.valueOf(requestTime));
-            psInsert.setString(8, "0");
-            psInsert.setInt(9, 0);
+            psInsert.setLong(7, System.currentTimeMillis());
+            psInsert.setLong(8, 0L);
+            psInsert.setLong(9, 0L);
             psInsert.setString(10, serializeMap(variables));
             psInsert.executeUpdate();
             
@@ -116,9 +116,13 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             PreparedStatement psUpdateRequest = conn.prepareStatement("update PINST_REQUESTS set sync_message = ?, status = ?, wf_id = ? where id = ?");
             psUpdateRequest.setString(1, syncMessage);
             psUpdateRequest.setString(2, status.name());
-            psUpdateRequest.setInt(3, Integer.parseInt(wfId.toString()));
-            psUpdateRequest.setInt(4, wfId.intValue());
-            psUpdateRequest.executeUpdate();
+            psUpdateRequest.setLong(3, (wfId == null ? 0 : wfId));
+            psUpdateRequest.setInt(4, id);
+            int rowCount = psUpdateRequest.executeUpdate();
+            if (rowCount != 1)
+            {
+                throw new DatastoreException("updateRequestStatus failed to update any rows!");
+            }
             conn.commit();
         } catch (SQLException ex) {
             throw new DatastoreException(ex);
@@ -130,7 +134,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = 'REQUESTED'");
+            ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = '"
+                    + ProcessInstanceCreationRequestI.RequestStatus.REQUESTED.name() + "'");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
@@ -160,7 +165,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and component_id = '" + componentId + "' and status = 'REQUESTED'");
+            ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and component_id = '" + componentId + "' and status = '"
+                    + ProcessInstanceCreationRequestI.RequestStatus.REQUESTED.name() + "'");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
@@ -243,7 +249,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         {
             ProcessInstanceCreationRequestI request = new ProcessInstanceCreationRequest();
             request.setId(rs.getInt(1));
-            request.setWfId(Long.parseLong(rs.getString(2)));
+            request.setWfId(rs.getLong(2));
             request.setComponentId(rs.getString(3));
             request.setComponentName(rs.getString(4));
             request.setProcessName(rs.getString(5));
@@ -263,8 +269,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                     throw new DatastoreException("Unexpected 'status' found in DB: " + status);
             }
             request.setSyncMessage(rs.getString(8));
-            request.setRequestTime((rs.getString(9).isEmpty()) ? 0L : Long.parseLong(rs.getString(9)));
-            request.setSyncTime((rs.getString(10).isEmpty()) ? 0L : Long.parseLong(rs.getString(10)));
+            request.setRequestTime(rs.getLong(9));
+            request.setSyncTime(rs.getLong(10));
             request.setVariables(rs.getString(11).isEmpty() ? new HashMap<String, String>() : deserializeMap(rs.getString(11)));
 
             return request;
@@ -284,18 +290,20 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
-                s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, wf_id INTEGER, component_id varchar(40), component_name varchar(255), process_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), variables long varchar)");
+                s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, "
+                        + "wf_id bigint, "
+                        + "component_id varchar(40), "
+                        + "component_name varchar(255), "
+                        + "process_name varchar(255), "
+                        + "user_id varchar(40), "
+                        + "status varchar(40), "
+                        + "sync_message varchar(255), "
+                        + "request_time bigint, "
+                        + "sync_time bigint, "
+                        + "variables long varchar)");
                 log.debug("Created table PINST_REQUESTS");
             } else {
                 log.debug("PINST_REQUESTS already exists!");
-            }
-            rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS_PARAMS", null);
-            if (!rs.next()) {
-                Statement s = conn.createStatement();
-                s.execute("create table PINST_REQUESTS_PARAMS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, pins_id int, param_name varchar(255), param_value varchar(255))");
-                log.debug("Created table PINST_REQUESTS_PARAMS");
-            } else {
-                log.debug("PINST_REQUESTS_PARAMS already exists!");
             }
             conn.commit();
         } catch (SQLException ex) {
@@ -304,25 +312,18 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     }
 
     @Override
-    public void dropSchema() {
+    public void dropSchema() throws DatastoreException {
         try (Connection conn = ds.getConnection()){
             log.info("Dropping PINST_REQUESTS");
             Statement s = conn.createStatement();
             s.execute("drop table PINST_REQUESTS");
         } catch (SQLException ex) {
-            log.error("PINST_REQUESTS already deleted...", ex);
-        }
-        try (Connection conn = ds.getConnection()){
-            log.info("Dropping PINST_REQUESTS_PARAMS");
-            Statement s = conn.createStatement();
-            s.execute("drop table PINST_REQUESTS_PARAMS");
-        } catch (SQLException ex) {
-            log.error("PINST_REQUESTS_PARAMS already deleted...", ex);
-        }
-        try (Connection conn = ds.getConnection()){
-            conn.commit();
-        } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            if (ex.getMessage().contains("does not exist")) {
+                log.info("Table did not exist");
+            }
+            else {
+                throw new DatastoreException(ex);
+            }
         }
     }
 
