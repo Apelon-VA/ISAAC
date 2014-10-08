@@ -129,7 +129,7 @@ public class WorkflowInitiationViewController {
 	}
 
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		UUID promotionPathUUID = AppContext.getAppConfiguration().getPromotionPathUUID();
+		UUID promotionPathUUID = UUID.fromString(AppContext.getAppConfiguration().getPromotionPath());
 		try {
 			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
 		} catch (IOException | ContradictionException e) {

@@ -21,10 +21,10 @@ package gov.va.isaac.config;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
+
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.UUID;
+
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -32,6 +32,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +49,13 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppConfigI
 {
+	
+	/**  The log_. */
 	private static Logger log_ = LoggerFactory.getLogger(IsaacAppConfigWrapper.class);
 	
+	/**
+	 * Instantiates an empty {@link IsaacAppConfigWrapper}.
+	 */
 	public IsaacAppConfigWrapper()
 	{
 		//Default values
@@ -80,29 +86,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 			log_.warn("Unexpected error reading app configuration file, using defaults", ex);
 		}
 	}
-	
-	
-	
-	/**
-	 * @see IsaacAppConfigI#getWorkflowServerURLasURL()
-	 * Necessary because JAXB returns this as a string, rather than a URL.
-	 */
-	@Override
-	public URL getWorkflowServerURLasURL()
-	{
-		try
-		{
-			return new URL(super.getWorkflowServerURL());
-		}
-		catch (MalformedURLException e)
-		{
-			log_.error("Invalid URL specified for Workflow Server URL '" + super.getWorkflowServerURL() + "'", e);
-			return null;
-		}
-	}
 
 	/**
 	 * Copy all of the data from the deserialized data - which doesn't implement our interface - to this instance, which does.
+	 *
+	 * @param read the read
 	 */
 	private void copyHack(IsaacAppConfig read)
 	{
@@ -112,14 +100,51 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		{
 			setApplicationTitle(read.getApplicationTitle());
 		}
-		setUserRepositoryPath(read.getUserRepositoryPath());
-		setWorkflowServerDeploymentID(read.getWorkflowServerDeploymentID());
-		setWorkflowServerURL(read.getWorkflowServerURL());
+		setChangeSetUrl(read.getChangeSetUrl());
+		setWorkflowServerDeploymentId(read.getWorkflowServerDeploymentId());
+		setWorkflowServerUrl(read.getWorkflowServerUrl());
 		setPromotionPath(read.getPromotionPath());
+		// TODO: need to add in other properties
 	}
-	
-	@Override
-	public UUID getPromotionPathUUID() {
-		return UUID.fromString(getPromotionPath());
-	}
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrlAsURL()
+   */
+  @Override
+  public URL getWorkflowServerUrlAsURL() {
+    return IsaacAppConfigI.getUrlForString(getWorkflowServerUrl());
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrlAsURL()
+   */
+  @Override
+  public URL getScmUrlAsURL() {
+    return IsaacAppConfigI.getUrlForString(getScmUrl());
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposUrlAsURL()
+   */
+  @Override
+  public URL getDistReposUrlAsURL() {
+    return IsaacAppConfigI.getUrlForString(getDistReposUrl());
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapUrlAsURL()
+   */
+  @Override
+  public URL getDistReposSnapUrlAsURL() {
+    return IsaacAppConfigI.getUrlForString(getDistReposSnapUrl());
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
+   */
+  @Override
+  public URL getChangeSetUrlAsURL() {
+    return IsaacAppConfigI.getUrlForString(getChangeSetUrl());
+  }
+
 }

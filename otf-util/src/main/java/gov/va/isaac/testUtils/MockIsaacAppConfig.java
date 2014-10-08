@@ -18,10 +18,12 @@
  */
 package gov.va.isaac.testUtils;
 
+import gov.va.isaac.interfaces.config.IsaacAppConfigI;
+
 import java.net.URL;
 import java.util.UUID;
+
 import org.jvnet.hk2.annotations.Service;
-import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
 /**
  * {@link MockIsaacAppConfig}
@@ -45,6 +47,15 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 		//For HK2
 	}
 	
+	/**
+	 * Configure.
+	 *
+	 * @param appTitle the app title
+	 * @param userRepoPath the user repo path
+	 * @param workflowServerDeploymentID the workflow server deployment id
+	 * @param workflowServerURL the workflow server url
+	 * @param workflowPromotionPath the workflow promotion path
+	 */
 	public void configure(String appTitle, String userRepoPath, String workflowServerDeploymentID, URL workflowServerURL, UUID workflowPromotionPath)
 	{
 		appTitle_ = appTitle;
@@ -64,39 +75,227 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getUserRepositoryPath()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrl()
 	 */
 	@Override
-	public String getUserRepositoryPath()
+	public String getChangeSetUrl()
 	{
 		return userRepoPath_;
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerURLasURL()
-	 */
-	@Override
-	public URL getWorkflowServerURLasURL()
-	{
-		return workflowServerURL_;
-	}
+  @Override
+  public String getArchetypeGroupId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerDeploymentID()
-	 */
-	@Override
-	public String getWorkflowServerDeploymentID()
-	{
-		return workflowServerDeploymentID_;
-	}
+  @Override
+  public String getArchetypeArtifactId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathUUID()
-	 */
-	@Override
-	public UUID getPromotionPathUUID()
-	{
-		return workflowPromotionPath_;
-	}
+  @Override
+  public String getArchetypeVersion() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getIsaacVersion() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getScmConnection() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getScmUrl() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDistReposId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDistReposName() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDistReposUrl() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDistReposSnapId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDistReposSnapName() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDistReposSnapUrl() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDbGroupId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDbArtifactId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDbVersion() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDbClassifier() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDroolsGroupId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDroolsArtifactId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDroolsVersion() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDroolsClassifier() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getPreviousReleaseVersion() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getReleaseVersion() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getExtensionNamespace() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDefaultEditPathName() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDefaultEditPathUuid() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDefaultViewPathName() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getDefaultViewPathUuid() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getUserSchemaLocation() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getWorkflowServerUrl() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getWorkflowServerDeploymentId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getPromotionPath() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public URL getWorkflowServerUrlAsURL() {
+    return IsaacAppConfigI.getUrlForString(getWorkflowServerUrl());
+  }
+
+  @Override
+  public URL getScmUrlAsURL() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public URL getDistReposUrlAsURL() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public URL getDistReposSnapUrlAsURL() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public URL getChangeSetUrlAsURL() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }
