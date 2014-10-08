@@ -23,10 +23,11 @@ import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *

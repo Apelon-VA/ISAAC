@@ -24,10 +24,11 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
+import org.kie.api.task.model.Status;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.kie.api.task.model.Status;
 
 /**
  *

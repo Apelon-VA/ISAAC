@@ -25,13 +25,14 @@ import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.testUtils.MockIsaacAppConfig;
 import gov.va.isaac.testUtils.MockUserProfileManager;
 import gov.va.isaac.workflow.persistence.DatastoreManager;
+import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
+import org.jvnet.hk2.annotations.Service;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.UUID;
-import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
-import org.jvnet.hk2.annotations.Service;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * {@link BaseTest}

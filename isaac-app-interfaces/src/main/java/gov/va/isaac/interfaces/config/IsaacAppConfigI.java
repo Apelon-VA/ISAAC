@@ -59,5 +59,5 @@ public interface IsaacAppConfigI
 	 * The UUID for the Path to which content published via Workflow will automatically be promoted to
 	 * @return
 	 */
-	public UUID getPromotionPathUUID();
+	public UUID getPromotionPathAsUUID();
 }

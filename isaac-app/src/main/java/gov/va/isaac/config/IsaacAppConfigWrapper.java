@@ -119,7 +119,14 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	}
 	
 	@Override
-	public UUID getPromotionPathUUID() {
-		return UUID.fromString(getPromotionPath());
+	public UUID getPromotionPathAsUUID() {
+		if (getPromotionPath() == null)
+		{
+			return null;
+		}
+		else
+		{
+			return UUID.fromString(getPromotionPath());
+		}
 	}
 }
