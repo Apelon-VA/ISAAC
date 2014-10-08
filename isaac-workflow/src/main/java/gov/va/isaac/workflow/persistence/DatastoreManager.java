@@ -56,7 +56,7 @@ public final class DatastoreManager implements ServicesToPreloadI, ShutdownBroad
 	private DatastoreManager()
 	{
 		//For HK2 to construct
-		AppContext.getMainApplicationWindow().registerShutdownListener(this);
+		//AppContext.getMainApplicationWindow().registerShutdownListener(this);
 	}
 	
 	public DataSource getDataSource()

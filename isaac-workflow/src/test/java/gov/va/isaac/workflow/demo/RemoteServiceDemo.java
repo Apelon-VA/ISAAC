@@ -21,6 +21,8 @@ package gov.va.isaac.workflow.demo;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.engine.RemoteWfEngine;
+import org.kie.api.task.model.TaskSummary;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.kie.api.task.model.TaskSummary;
 
 /**
  *

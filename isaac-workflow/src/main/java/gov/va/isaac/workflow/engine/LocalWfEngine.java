@@ -186,9 +186,11 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
         log.debug("Available {}", availableTasks.size());
         int claimed = 0;
         for (TaskSummary loopTask : availableTasks) {
-            if (loopTask.getActualOwner() ==  null || !loopTask.getActualOwner().getId().equals(userId)) {
-                remoteService.claim(loopTask.getId(), userId);
-                claimed++;
+            if (loopTask.getStatus().equals(Status.Ready)) {
+                if (loopTask.getActualOwner() == null || !loopTask.getActualOwner().getId().equals(userId)) {
+                    remoteService.claim(loopTask.getId(), userId);
+                    claimed++;
+                }
             }
             if (claimed >= count) break;
         }
