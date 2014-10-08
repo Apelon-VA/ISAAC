@@ -23,6 +23,7 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.engine.RemoteWfEngine;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class TasksFetcher {
         reservedStatuses.add(Status.InProgress);
     }
 
-    public String fetchTasks(String userId) throws Exception {
+    public String fetchTasks(String userId) throws DatastoreException, RemoteException {
         String result = "";
         int countNew = 0;
         int countUpdated = 0;
