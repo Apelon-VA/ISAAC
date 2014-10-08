@@ -977,7 +977,7 @@ public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastLi
 			}
 			if (s.getAuthor() == null || s.getAuthor().length() == 0)
 			{
-				s.setAuthor(ExtendedAppContext.getCurrentlyLoggedInUser().getUserLogonName());
+				s.setAuthor(ExtendedAppContext.getCurrentlyLoggedInUser());
 			}
 			try
 			{
