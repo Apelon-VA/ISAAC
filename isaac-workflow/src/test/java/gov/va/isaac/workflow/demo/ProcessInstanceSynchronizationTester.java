@@ -18,43 +18,42 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
-
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *
  * @author alo
  */
-public class ProcessInstanceSynchronizationTester {
+public class ProcessInstanceSynchronizationTester extends BaseTest {
 
     public static void main(String[] args) throws Exception {
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-        ProcessInstanceCreationRequestsAPI procApi = (ProcessInstanceCreationRequestsAPI) wfEngine.getProcessInstanceService();
+        setup();
+        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
+        ProcessInstanceServiceBI procApi = AppContext.getService(ProcessInstanceServiceBI.class);
         procApi.dropSchema();
         procApi.createSchema();
         Map<String,String> variables = new HashMap<String, String>();
         variables.put("coordinateId", "16e04a1e-32a6-11e4-99ba-164230d1df67");
         variables.put("lastCommitTimeStamp", "1409665029");
-        ProcessInstanceCreationRequestI newInstance = wfEngine.getProcessInstanceService().createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
+        ProcessInstanceCreationRequestI newInstance = procApi.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
         System.out.println("New instance: " + newInstance.getId());
         
-        List<ProcessInstanceCreationRequestI> pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
+        List<ProcessInstanceCreationRequestI> pending = procApi.getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
 
         System.out.println("Pending count: " + pending.size());
         for (ProcessInstanceCreationRequestI loopP : pending) {
             System.out.println("Pending instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
         }
         
-        List<ProcessInstanceCreationRequestI> completed = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.CREATED);
+        List<ProcessInstanceCreationRequestI> completed = procApi.getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.CREATED);
         System.out.println("Complete count: " + completed.size());
         for (ProcessInstanceCreationRequestI loopP : completed) {
             System.out.println("Complete instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
@@ -66,13 +65,13 @@ public class ProcessInstanceSynchronizationTester {
             wfEngine.requestProcessInstanceCreationToServer(loopP);
         }
         System.out.println(" done!");
-        pending = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
+        pending = procApi.getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
         System.out.println("Pending count: " + pending.size());
         for (ProcessInstanceCreationRequestI loopP : pending) {
             System.out.println("Pending instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
         }
         
-        completed = wfEngine.getProcessInstanceService().getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.CREATED);
+        completed = procApi.getOwnedRequestsByStatus("test-user", ProcessInstanceCreationRequestI.RequestStatus.CREATED);
         System.out.println("Complete count: " + completed.size());
         for (ProcessInstanceCreationRequestI loopP : completed) {
             System.out.println("Complete instance: " + loopP.getId() + " " + loopP.getComponentId() + " " + loopP.getStatus().name() + " " + loopP.getWfId() + " " + loopP.getSyncMessage());
