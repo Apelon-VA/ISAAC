@@ -58,8 +58,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
 
-
-    
     @Inject
     private ProcessInstanceServiceBI procApi;
     
@@ -74,7 +72,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     }
 
     @Override
-    public void synchronizeWithRemote() {
+    public void synchronizeWithRemote() throws RemoteException, DatastoreException {
         try {
             // Upload pending actions
             TaskService remoteService = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService();
@@ -128,10 +126,9 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             log.debug("   - Actions processed: {}", countActions);
             log.debug("   - Instances processed: {}", countInstances);
             log.debug("   - {}", result);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (RemoteException | DatastoreException ex) {
             log.error("Error synchronizing", ex);
-            //TODO handle this error
+            throw ex;
         }
     }
 

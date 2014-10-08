@@ -31,8 +31,7 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface LocalWorkflowRuntimeEngineBI {
 
-    //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
-    public void synchronizeWithRemote();
+    public void synchronizeWithRemote() throws RemoteException, DatastoreException;
     
     public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) throws RemoteException, DatastoreException;
     
