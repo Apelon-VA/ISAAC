@@ -91,10 +91,10 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathUUID()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
 	 */
 	@Override
-	public UUID getPromotionPathUUID()
+	public UUID getPromotionPathAsUUID()
 	{
 		return workflowPromotionPath_;
 	}
