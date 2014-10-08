@@ -26,19 +26,16 @@ package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.control.TextInputControl;
 
 /**
  * VariableGridPaneNodeConfigurationHelper

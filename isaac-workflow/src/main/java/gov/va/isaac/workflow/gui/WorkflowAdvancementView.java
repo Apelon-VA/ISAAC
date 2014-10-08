@@ -22,11 +22,9 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
-
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -35,12 +33,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link WorkflowAdvancementView}
@@ -52,7 +46,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class WorkflowAdvancementView extends Stage implements WorkflowAdvancementViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
+//	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
 
 	private WorkflowAdvancementViewController controller_;
 

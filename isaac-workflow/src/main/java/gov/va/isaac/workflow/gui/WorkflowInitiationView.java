@@ -112,6 +112,7 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 		}
 	}
 	
+	@Override
 	public void setComponent(UUID uuid) {
 		try {
 			setComponent(WBUtility.getComponentVersion(uuid));
@@ -123,6 +124,7 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 		}
 	}
 
+	@Override
 	public void setComponent(int nid) {
 		try {
 			setComponent(WBUtility.getComponentVersion(nid));
@@ -134,10 +136,12 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 		}
 	}
 
+	@Override
 	public UUID getComponentUuid() {
 		return controller_.getComponent().getPrimordialUuid();
 	}
 
+	@Override
 	public int getComponentNid() {
 		return controller_.getComponent().getNid();
 	}
