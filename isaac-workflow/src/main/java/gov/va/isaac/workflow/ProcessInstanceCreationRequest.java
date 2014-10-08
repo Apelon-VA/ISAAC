@@ -220,11 +220,13 @@ public class ProcessInstanceCreationRequest implements ProcessInstanceCreationRe
         this.wfId = wfId;
     }
 
-    public Map<String, String> getVariables() {
+    @Override
+	public Map<String, String> getVariables() {
         return variables;
     }
 
-    public void setVariables(Map<String, String> variables) {
+    @Override
+	public void setVariables(Map<String, String> variables) {
         this.variables = variables;
     }
 
