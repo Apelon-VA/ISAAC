@@ -73,7 +73,7 @@ public class TasksFetcher {
                 LocalTask loopLocal = new LocalTask(loopTask, true);
                 persistenceApi.saveTask(loopLocal);
                 countNew++;
-            } else if (!dbTask.getOwner().equals(loopTask.getActualOwner().getId()) || !dbTask.getStatus().equals(loopTask.getStatus().name())) {
+            } else if (!dbTask.getOwner().equals(loopTask.getActualOwner().getId()) || !dbTask.getStatus().name().equals(loopTask.getStatus().name())) {
                 log.debug("Task has changed: " + loopTask.getId());
                 LocalTask loopLocal = new LocalTask(loopTask, true);
                 persistenceApi.saveTask(loopLocal);

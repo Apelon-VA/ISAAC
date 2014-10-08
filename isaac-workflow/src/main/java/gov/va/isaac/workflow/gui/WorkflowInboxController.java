@@ -110,7 +110,7 @@ public class WorkflowInboxController
 
 		// BEGIN Task name
 		TableColumn<LocalTask, String> tCol = new TableColumn<>();
-		tCol.setText("Name");
+		tCol.setText("Status");
 		tCol.setCellValueFactory((value) -> {
 			return new SimpleStringProperty(value.getValue().getName());
 		});

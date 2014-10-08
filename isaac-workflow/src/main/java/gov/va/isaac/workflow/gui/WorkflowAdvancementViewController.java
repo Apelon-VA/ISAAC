@@ -22,34 +22,35 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.taskmodel.TaskModel;
 import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
+
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+
 import javax.inject.Inject;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.kie.api.task.model.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,92 +64,82 @@ public class WorkflowAdvancementViewController
 {	
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowAdvancementViewController.class);
 	
+	enum WorkflowActionsValueMap {
+		sendToReviewer("Send To Reviewer", "aa"),
+		sendToApprover("Send To Approver", "aa"),
+		approveForPublication("Approve For Publication", "aa"),
+		cancelWorkflow("Cancel Workflow", "aa"),
+		rejectToEditor("Reject and Send to Editor", "aa"),
+		rejectToReviewer("Reject and Send to Reviewer", "aa");
+		
+		private final String displayName;
+		private final String serverAction;
+		
+		private WorkflowActionsValueMap() {
+			this(null, null);
+		}
+
+		private WorkflowActionsValueMap(String displayName, String serverAction) {
+			this.displayName = displayName;
+			this.serverAction = serverAction;
+		}
+		
+		public String getDisplayName() {
+			return displayName;
+		}
+		
+		public String getServerAction() {
+			return serverAction;
+		}
+	}
+	
 	// Underlying concept for loading detail pane
 	private ConceptVersionBI conceptVersion;
 
-	// Embedded concept detail pane
-	PopupConceptViewI conceptView;
-	
 	@FXML private BorderPane borderPane;
-	@FXML private TabPane centralTabPane;
-	@FXML private Button saveActionButton;
-
-	@FXML private Label taskLabel;
-	@FXML private Button releaseTaskActionButton;
-	//@FXML private ComboBox<Action> actionComboBox;
-	
-	@FXML private Button viewTaskDetailsButton;
+	@FXML private TextArea commentTextField;
+	@FXML private Button closeButton;
+	@FXML private Button advanceButton;
+	@FXML private Label generatedComponentSummary;
+	@FXML private ComboBox<WorkflowActionsValueMap> actionComboBox;	
+	@FXML private GridPane advanceWfGridPane;
 	
 	private WorkflowAdvancementView stage;
-
-	private GridPane inputTabGridPane;
-	private Tab inputTab;
-	private Label inputTabLabel;
-	private ScrollPane conceptScrollPane;
-
 	private TaskModel taskModel = null;
 	
 	@Inject
 	private LocalTasksServiceBI taskService_;
 
+	private LocalTask initialTask;
+
+	private UUID componentId;
+
 	// Initialize GUI (invoked by FXML)
 	@FXML
 	void initialize()
 	{
-		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert releaseTaskActionButton != null : "fx:id=\"releaseTaskActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert taskLabel != null : "fx:id=\"taskLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		
 		AppContext.getServiceLocator().inject(this);
 
-		conceptScrollPane = new ScrollPane();
-		conceptScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
-		conceptScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-		Tab conceptTab = new Tab("Concept Details");
-		conceptTab.setContent(conceptScrollPane);
-		conceptTab.setClosable(false);
-		centralTabPane.getTabs().add(conceptTab);
-		
-		inputTabLabel = new Label("Input");
-		inputTab = new Tab();
-		inputTab.setGraphic(inputTabLabel);
-		
-		ScrollPane inputTabScrollPane = new ScrollPane();
-		inputTabScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
-		inputTabScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-		inputTabGridPane = new GridPane();
-		inputTabScrollPane.setContent(inputTabGridPane);
-		inputTab.setContent(inputTabScrollPane);
-		centralTabPane.getTabs().add(inputTab);
-		
 		// Disabling saveActionButton until dependencies met 
-		saveActionButton.setDisable(true);
-
-		viewTaskDetailsButton.setOnAction((e) -> {
-			WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-			view.setTask(taskModel.getTask().getId());
-			view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-		});
-
-		// This code only for embedded concept detail view
-		// Use H2K to find and initialize conceptView as a ConceptView
-		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		advanceButton.setDisable(true);
 
 		// Activation of save depends on taskModel.isSavable()
-		saveActionButton.setOnAction((action) -> {
+		advanceButton.setOnAction((action) -> {
 			if (taskModel.isSavable()) {
 				Platform.runLater(() -> 
 				{
 					unbindSaveActionButtonFromModelIsSavableProperty();
-					saveActionButton.setDisable(true);
+					advanceButton.setDisable(true);
 				});
-				final BusyPopover saveActionBusyPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
+				final BusyPopover saveActionBusyPopover = BusyPopover.createBusyPopover("Saving action...", advanceButton);
 
 				Utility.execute(() -> {
 					try
 					{
 						taskService_.completeTask(taskModel.getTask().getId(), taskModel.getCurrentOutputVariables());
+						
+						addToPromotionPath();
+						
 						Platform.runLater(() -> 
 						{
 							//refreshSaveActionButtonBinding();
@@ -170,39 +161,6 @@ public class WorkflowAdvancementViewController
 				logger.error("Error completing task: fields not set: task={}", taskModel.getTask());
 			}
 		});
-
-		// Activation of release
-		releaseTaskActionButton.setOnAction((action) -> {
-			Platform.runLater(() -> 
-			{
-				unbindSaveActionButtonFromModelIsSavableProperty();
-				saveActionButton.setDisable(true);
-				releaseTaskActionButton.setDisable(true);
-			});
-			final BusyPopover claimPopover = BusyPopover.createBusyPopover("Releasing action...", releaseTaskActionButton);
-
-			Utility.execute(() -> {
-				try
-				{
-					taskService_.releaseTask(taskModel.getTask().getId());
-					Platform.runLater(() -> 
-					{
-						
-
-						if (stage != null) {
-							stage.close();
-						}
-					});
-				}
-				catch (Exception e)
-				{
-					claimPopover.hide();
-					logger.error("Error releasing task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-				} finally {
-					cleanupAfterReleaseTaskAction(this, claimPopover);
-				}
-			});
-		});
 	}
 
 	/*
@@ -218,25 +176,8 @@ public class WorkflowAdvancementViewController
 		});
 	}
 
-	/*
-	 * Need this method as workaround for compiler/JVM bug:
-	 * { @link http://stackoverflow.com/questions/13219297/bad-type-on-operand-stack-using-jdk-8-lambdas-with-anonymous-inner-classes }
-	 * { @link http://mail.openjdk.java.net/pipermail/lambda-dev/2012-September/005938.html }
-	 */
-	private static void cleanupAfterReleaseTaskAction(WorkflowAdvancementViewController ctrlr, BusyPopover claimPopover) {
-		Platform.runLater(() ->  {
-		claimPopover.hide();
-		ctrlr.refreshSaveActionButtonBinding();
-		ctrlr.releaseTaskActionButton.setDisable(false);
-		});
-	}
-
 	void setStage(WorkflowAdvancementView stage) {
 		this.stage = stage;
-	}
-
-	private void loadTaskLabel() {
-		taskLabel.setText("#" + taskModel.getTask().getId() + ": " + taskModel.getTask().getComponentName() + ": " + taskModel.getTask().getName());
 	}
 
 	public LocalTask getTask() {
@@ -258,7 +199,7 @@ public class WorkflowAdvancementViewController
 			throw new RuntimeException(msg);
 		}
 		
-		LocalTask initialTask = null;
+		initialTask = null;
 		try
 		{
 			initialTask = taskService_.getTask(taskId);
@@ -327,19 +268,9 @@ public class WorkflowAdvancementViewController
 					ObservableValue<? extends Boolean> observable,
 					Boolean oldValue,
 					Boolean newValue) {
-				setInputTabColorBasedOnTaskModelOutputVariables();
 			}});
-		setInputTabColorBasedOnTaskModelOutputVariables();
 		
 		loadContent();
-	}
-
-	private void setInputTabColorBasedOnTaskModelOutputVariables() {
-		if (taskModel.getOutputVariablesSavableProperty().get()) {
-			inputTabLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
-		} else {
-			inputTabLabel.setStyle("-fx-text-fill: red;");
-		}
 	}
 
 	ConceptVersionBI getConcept() {
@@ -347,42 +278,23 @@ public class WorkflowAdvancementViewController
 	}
 	
 	private void bindSaveActionButtonToModelIsSavableProperty() {
-		saveActionButton.disableProperty().bind(taskModel.getIsSavableProperty().not());
+		advanceButton.disableProperty().bind(taskModel.getIsSavableProperty().not());
 	}
 	private void unbindSaveActionButtonFromModelIsSavableProperty() {
-		saveActionButton.disableProperty().unbind();
-	}
-	
-	private void loadTaskModel() {
-		
-		int rowIndex = 0;
-		for (String outputVariable : taskModel.getOutputVariableNames()) {
-			this.inputTabGridPane.addRow(rowIndex++, taskModel.getOutputVariableInputNodeLabel(outputVariable), taskModel.getOutputVariableInputNode(outputVariable));
-		}
-		
-		for (Node child : inputTabGridPane.getChildren()) {
-			VariableGridPaneNodeConfigurationHelper.configureNode(child);
-		}
+		advanceButton.disableProperty().unbind();
 	}
 
 	// Load data into GUI components
 	protected void loadContent()
 	{
-		loadTaskLabel();
-		
-		loadTaskModel();
-		
-		loadConcept();
+		componentId = UUID.fromString(initialTask.getComponentId());
+		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
+
+		setComboBoxContents();
 		
 		refreshSaveActionButtonBinding();
 	}
 
-	private void loadConcept() {
-		// loadConcept() must not be called before setTask()
-		conceptView.setConcept(conceptVersion.getNid());
-		conceptScrollPane.setContent(conceptView.getView());
-	}
-	
 	private void refreshSaveActionButtonBinding()
 	{
 		unbindSaveActionButtonFromModelIsSavableProperty();
@@ -391,5 +303,14 @@ public class WorkflowAdvancementViewController
 	
 	public Region getRootNode() {
 		return borderPane;
+	}
+
+	private void setComboBoxContents() {
+
+	}
+
+	private void addToPromotionPath() {
+		// TODO Auto-generated method stub
+		
 	}
 }

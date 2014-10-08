@@ -1,69 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <BorderPane fx:id="borderPane" maxHeight="1.7976931348623157E308" prefHeight="378.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowAdvancementViewController">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
-   <center>
-      <TabPane fx:id="centralTabPane" />
-   </center>
-   <top>
-      <GridPane BorderPane.alignment="CENTER">
-        <columnConstraints>
-          <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="8.0" />
-          <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" percentWidth="60.0" />
-            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="TOP" vgrow="NEVER" />
-            <RowConstraints vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Label alignment="TOP_LEFT" text="Workflow Panel" GridPane.columnIndex="1">
-               <font>
-                  <Font name="System Bold" size="12.0" />
-               </font>
-            </Label>
-            <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" nodeOrientation="RIGHT_TO_LEFT" text="Task" GridPane.rowIndex="1" GridPane.valignment="TOP">
-               <GridPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </GridPane.margin>
-               <font>
-                  <Font name="System Bold" size="12.0" />
-               </font>
-            </Label>
-            <Label fx:id="taskLabel" text="taskLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.valignment="TOP" GridPane.vgrow="SOMETIMES">
-               <GridPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </GridPane.margin>
-            </Label>
-            <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
-               <children>
-                  <Button fx:id="releaseTaskActionButton" mnemonicParsing="false" text="Release">
-                     <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </HBox.margin>
-                  </Button>
-                <Button fx:id="saveActionButton" mnemonicParsing="false" text="Save">
-                     <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </HBox.margin>
-                  </Button>
-               </children>
-            </HBox>
-         </children>
-      </GridPane>
-   </top>
-   <bottom>
-      <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <items>
-            <Button fx:id="viewTaskDetailsButton" mnemonicParsing="false" text="View Task Details" />
-         </items></ToolBar>
-   </bottom>
+<top><VBox alignment="TOP_CENTER" fillWidth="false" spacing="5.0" BorderPane.alignment="CENTER">
+<children><Label text="Advance Workflow">
+<font>
+<Font name="System Bold" size="18.0" />
+</font></Label><Label fx:id="generatedComponentSummary">
+<VBox.margin>
+<Insets />
+</VBox.margin></Label>
+</children>
+<BorderPane.margin>
+<Insets top="5.0" />
+</BorderPane.margin></VBox>
+</top>
+<bottom><HBox alignment="CENTER" fillHeight="false" spacing="30.0" BorderPane.alignment="CENTER">
+<children><Button fx:id="advanceButton" mnemonicParsing="false" text="Advance" /><Button fx:id="closeButton" mnemonicParsing="false" text="Close" />
+</children>
+<BorderPane.margin>
+<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+</BorderPane.margin></HBox>
+</bottom>
+<center><GridPane fx:id="advanceWfGridPane" alignment="CENTER" hgap="15.0" vgap="15.0" BorderPane.alignment="CENTER">
+  <columnConstraints>
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="73.0" minWidth="-Infinity" prefWidth="63.0" />
+    <ColumnConstraints hgrow="NEVER" maxWidth="612.0" minWidth="10.0" prefWidth="547.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints fillHeight="false" maxHeight="-Infinity" minHeight="-Infinity" vgrow="SOMETIMES" />
+    <RowConstraints fillHeight="false" maxHeight="-Infinity" minHeight="-Infinity" vgrow="SOMETIMES" />
+  </rowConstraints>
+<children><Label text="Action">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label><Label text="Comment" GridPane.rowIndex="1">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label><ComboBox fx:id="actionComboBox" prefWidth="150.0" GridPane.columnIndex="1" /><TextArea fx:id="commentTextField" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+</children>
+<padding>
+<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+</padding>
+</GridPane>
+</center>
 </BorderPane>
