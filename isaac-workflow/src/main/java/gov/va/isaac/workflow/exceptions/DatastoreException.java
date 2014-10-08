@@ -42,5 +42,4 @@ public class DatastoreException extends Exception
 		super("Datastore failure", e);
 		log.error("Datastore Failure", e);
 	}
-
 }

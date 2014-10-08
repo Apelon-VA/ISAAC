@@ -36,5 +36,4 @@ public class RemoteException extends Exception
 	{
 		super(message, cause);
 	}
-
 }
