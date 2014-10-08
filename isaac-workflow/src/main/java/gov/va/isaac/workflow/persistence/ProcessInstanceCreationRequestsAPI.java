@@ -18,10 +18,11 @@
  */
 package gov.va.isaac.workflow.persistence;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
-
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -37,27 +38,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
+import javax.inject.Singleton;
+import javax.sql.DataSource;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 
+ * {@link ProcessInstanceCreationRequestsAPI}
  *
  * @author alo
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@Service
+@Singleton
 public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServiceBI {
 
-    private Connection conn;
+    private final Logger log = LoggerFactory.getLogger(ProcessInstanceCreationRequestsAPI.class);
+    private DataSource ds;
     
-    private static final Logger log = LoggerFactory.getLogger(ProcessInstanceCreationRequestsAPI.class);
-
-    public ProcessInstanceCreationRequestsAPI() {
-        conn = ConnectionManager.getConn();
+    private ProcessInstanceCreationRequestsAPI() {
+        //For HK2 to construct
+        ds = AppContext.getService(DatastoreManager.class).getDataSource();
+        try
+        {
+            createSchema();
+        }
+        catch (DatastoreException e)
+        {
+            log.error("Create schema failed during init", e);
+        }
     }
 
     @Override
-    public ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) {
-        try {
+    public ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) throws DatastoreException {
+        try (Connection conn = ds.getConnection()){
             // PINST_REQUESTS (id int PRIMARY KEY, component_id varchar(40), component_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), wf_id Integer)");
             PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message, request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
             psInsert.setString(1, componentId != null ? componentId.toString() : null);
@@ -87,99 +103,91 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             result.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
             result.setUserId(author);
             result.setVariables(variables);
-            psInsert.closeOnCompletion();
             conn.commit();
             return result;
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
-            try {
-                conn.rollback();
-            } catch (SQLException ex1) {
-                log.error("Unexpected SQL Exception during rollback from previous exception", ex1);
-            }
+            throw new DatastoreException(ex);
         }
-        return null;
     }
 
     @Override
-    public void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId) {
-        try {
+    public void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId) throws DatastoreException {
+        try (Connection conn = ds.getConnection()){
             PreparedStatement psUpdateRequest = conn.prepareStatement("update PINST_REQUESTS set sync_message = ?, status = ?, wf_id = ? where id = ?");
             psUpdateRequest.setString(1, syncMessage);
             psUpdateRequest.setString(2, status.name());
             psUpdateRequest.setInt(3, Integer.parseInt(wfId.toString()));
             psUpdateRequest.setInt(4, wfId.intValue());
             psUpdateRequest.executeUpdate();
-            psUpdateRequest.closeOnCompletion();
             conn.commit();
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
     }
 
     @Override
-    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner) {
+    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try {
+        try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = 'REQUESTED'");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
         return requests;
     }
 
     @Override
-    public List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status) {
+    public List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try {
+        try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = '" + status.name() + "'");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
         return requests;
     }
     
     @Override
-    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId) {
+    public List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try {
+        try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and component_id = '" + componentId + "' and status = 'REQUESTED'");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
         return requests;
     }
 
     @Override
-    public List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId) {
+    public List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try {
+        try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where component_id = '" + componentId + "'");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
         return requests;
     }
 
     @Override
-    public ProcessInstanceCreationRequestI getRequestByWfId(Long wfId) {
-        try {
+    public ProcessInstanceCreationRequestI getRequestByWfId(Long wfId) throws DatastoreException {
+        try (Connection conn = ds.getConnection()){
             ProcessInstanceCreationRequestI request = null;
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where wf_id = " + wfId);
@@ -187,35 +195,33 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 // no results
             } else {
                 request = readRequest(rs);
-                s.closeOnCompletion();
                 return request;
             }
 
             return request;
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
-        return null;
     }
 
     @Override
-    public List<ProcessInstanceCreationRequestI> getRequests() {
+    public List<ProcessInstanceCreationRequestI> getRequests() throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try {
+        try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS");
             while (rs.next()) {
                 requests.add(readRequest(rs));
             }
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
         return requests;
     }
 
     @Override
-    public ProcessInstanceCreationRequestI getRequest(int id) {
-        try {
+    public ProcessInstanceCreationRequestI getRequest(int id) throws DatastoreException {
+        try (Connection conn = ds.getConnection()){
             ProcessInstanceCreationRequestI request = null;
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where id = " + id);
@@ -223,55 +229,62 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                 // no results
             } else {
                 request = readRequest(rs);
-                s.closeOnCompletion();
                 return request;
             }
 
             return request;
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
-        return null;
     }
 
-    private ProcessInstanceCreationRequestI readRequest(ResultSet rs) throws SQLException {
-        ProcessInstanceCreationRequestI request = new ProcessInstanceCreationRequest();
-        request.setId(rs.getInt(1));
-        request.setWfId(Long.parseLong(rs.getString(2)));
-        request.setComponentId(rs.getString(3));
-        request.setComponentName(rs.getString(4));
-        request.setProcessName(rs.getString(5));
-        request.setUserId(rs.getString(6));
-        String status = rs.getString(7);
-        switch (status) {
-            case "CREATED":
-                request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.CREATED);
-                break;
-            case "REQUESTED":
-                request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
-                break;
-            case "REJECTED":
-                request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REJECTED);
-                break;
-        }
-        request.setSyncMessage(rs.getString(8));
-        request.setRequestTime((rs.getString(9).isEmpty()) ? 0L : Long.parseLong(rs.getString(9)));
-        request.setSyncTime((rs.getString(10).isEmpty()) ? 0L : Long.parseLong(rs.getString(10)));
-        request.setVariables(rs.getString(11).isEmpty() ? new HashMap<String, String>() : deserializeMap(rs.getString(11)));
+    private ProcessInstanceCreationRequestI readRequest(ResultSet rs) throws SQLException, DatastoreException {
+        try
+        {
+            ProcessInstanceCreationRequestI request = new ProcessInstanceCreationRequest();
+            request.setId(rs.getInt(1));
+            request.setWfId(Long.parseLong(rs.getString(2)));
+            request.setComponentId(rs.getString(3));
+            request.setComponentName(rs.getString(4));
+            request.setProcessName(rs.getString(5));
+            request.setUserId(rs.getString(6));
+            String status = rs.getString(7);
+            switch (status) {
+                case "CREATED":
+                    request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.CREATED);
+                    break;
+                case "REQUESTED":
+                    request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REQUESTED);
+                    break;
+                case "REJECTED":
+                    request.setStatus(ProcessInstanceCreationRequestI.RequestStatus.REJECTED);
+                    break;
+                default :
+                    throw new DatastoreException("Unexpected 'status' found in DB: " + status);
+            }
+            request.setSyncMessage(rs.getString(8));
+            request.setRequestTime((rs.getString(9).isEmpty()) ? 0L : Long.parseLong(rs.getString(9)));
+            request.setSyncTime((rs.getString(10).isEmpty()) ? 0L : Long.parseLong(rs.getString(10)));
+            request.setVariables(rs.getString(11).isEmpty() ? new HashMap<String, String>() : deserializeMap(rs.getString(11)));
 
-        return request;
+            return request;
+        }
+        catch (NumberFormatException e)
+        {
+            throw new DatastoreException("Encountered an unparseable number in a field that should have held a number: " + e.getMessage());
+        }
     }
 
     @Override
-	public void createSchema() {
-        try {
-            log.info("Creating schema");
+    public void createSchema() throws DatastoreException {
+        try (Connection conn = ds.getConnection()){
+            //TODO this DB schema is not consistent with the datatypes used for reading and writing....
+            log.info("Creating Workflow Process Instance Schema");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
                 s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, wf_id INTEGER, component_id varchar(40), component_name varchar(255), process_name varchar(255), user_id varchar(40), status varchar(40), sync_message varchar(255), request_time varchar(40), sync_time varchar(40), variables long varchar)");
-                s.closeOnCompletion();
                 log.debug("Created table PINST_REQUESTS");
             } else {
                 log.debug("PINST_REQUESTS already exists!");
@@ -280,36 +293,33 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             if (!rs.next()) {
                 Statement s = conn.createStatement();
                 s.execute("create table PINST_REQUESTS_PARAMS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, pins_id int, param_name varchar(255), param_value varchar(255))");
-                s.closeOnCompletion();
                 log.debug("Created table PINST_REQUESTS_PARAMS");
             } else {
-            	log.debug("PINST_REQUESTS_PARAMS already exists!");
+                log.debug("PINST_REQUESTS_PARAMS already exists!");
             }
             conn.commit();
         } catch (SQLException ex) {
-            log.error("Unexpected SQL Exception", ex);
+            throw new DatastoreException(ex);
         }
     }
 
     @Override
-	public void dropSchema() {
-        try {
+    public void dropSchema() {
+        try (Connection conn = ds.getConnection()){
             log.info("Dropping PINST_REQUESTS");
             Statement s = conn.createStatement();
             s.execute("drop table PINST_REQUESTS");
-            s.closeOnCompletion();
         } catch (SQLException ex) {
-            log.error("PINST_REQUESTS already deleted...");
+            log.error("PINST_REQUESTS already deleted...", ex);
         }
-        try {
+        try (Connection conn = ds.getConnection()){
             log.info("Dropping PINST_REQUESTS_PARAMS");
             Statement s = conn.createStatement();
             s.execute("drop table PINST_REQUESTS_PARAMS");
-            s.closeOnCompletion();
         } catch (SQLException ex) {
-            log.error("PINST_REQUESTS_PARAMS already deleted...");
+            log.error("PINST_REQUESTS_PARAMS already deleted...", ex);
         }
-        try {
+        try (Connection conn = ds.getConnection()){
             conn.commit();
         } catch (SQLException ex) {
             log.error("Unexpected SQL Exception", ex);
@@ -329,13 +339,21 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         return serializedMap;
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, String> deserializeMap(String serializedMap) {
         if (serializedMap == null || serializedMap.isEmpty()) {
             return new HashMap<String, String>();
         } else {
-            XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMap.getBytes()));
-            Map<String, String> parsedMap = (Map<String, String>) xmlDecoder.readObject();
-            return parsedMap;
+            try (XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMap.getBytes())))
+            {
+                return (Map<String, String>) xmlDecoder.readObject();
+            }
+            catch (Exception e)
+            {
+                log.error("Unexpected error while deserializing map", e);
+                throw e;
+            }
+            
         }
     }
 
