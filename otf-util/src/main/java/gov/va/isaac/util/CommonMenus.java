@@ -28,14 +28,12 @@ import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
-
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
@@ -47,7 +45,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -520,8 +517,16 @@ public class CommonMenus
 					}, // canHandle
 					taskIdProvider.getObservableTaskIdCount().isEqualTo(1),				//make visible
 				() -> { // onHandlable
-					WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-					view.releaseTask(taskIdProvider.getTaskIds().iterator().next());
+					try
+					{
+						WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+						view.releaseTask(taskIdProvider.getTaskIds().iterator().next());
+					}
+					catch (IOException e)
+					{
+						LOG.error("Problem releasing task");
+						AppContext.getCommonDialogs().showErrorDialog("problem releasing task", e);
+					}
 				},
 				() -> { // onNotHandlable
 					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");

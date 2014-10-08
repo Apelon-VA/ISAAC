@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
@@ -27,8 +26,8 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
-import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
@@ -67,7 +66,13 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -86,8 +91,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.SplitPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -96,6 +99,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -103,11 +107,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -1074,7 +1079,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		initializeWorkflowServices();
 
 		final WorkflowProcess process = WorkflowProcess.REVIEW3;
-		final String userName = ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername();
 		String preferredDescription = null;
 		try {
 			if (componentOrConceptVersion instanceof ConceptVersionBI) {
@@ -1083,19 +1087,23 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			} else {
 				preferredDescription = componentOrConceptVersion.toUserString();
 			}
+			
+			LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" 
+					+ componentOrConceptVersion.getPrimordialUuid().toString() + "\", processName=\"" + process.getText() + "\")");
+			ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewComponentWorkflowRequest(preferredDescription, 
+					componentOrConceptVersion.getPrimordialUuid(), process.getText(), new HashMap<String,String>());
+			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
+			
 		} catch (Exception e1) {
-			String title = "Failed creating new concept workflow";
-			String msg = title + ". Unexpected error getting description for componentVersion (nid=" + componentOrConceptVersion.getNid() + ", uuid=" + componentOrConceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
+			String title = "Error sending component to workflow";
+			String msg = title + ". Unexpected error while sending the component (nid=" + componentOrConceptVersion.getNid() + ", uuid=" 
+					+ componentOrConceptVersion.getPrimordialUuid().toString() + "): caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
 			LOG.error(msg, e1);
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, e1.getMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
-			e1.printStackTrace();
 			
 			return;
 		}
 
-		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + preferredDescription + "\", conceptUuid=\"" + componentOrConceptVersion.getPrimordialUuid().toString() + "\", user=\"" + userName + "\", processName=\"" + process.getText() + "\")");
-		ProcessInstanceCreationRequestI createdRequest = conceptWorkflowService.createNewComponentWorkflowRequest(preferredDescription, componentOrConceptVersion.getPrimordialUuid(), userName, process.getText(), new HashMap<String,String>());
-		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 	}
 
 	private void exportSearchResultsToListBatchView() {

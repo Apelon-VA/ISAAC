@@ -24,9 +24,9 @@
  */
 package gov.va.isaac.interfaces.workflow;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -42,7 +42,6 @@ public interface ComponentWorkflowServiceI {
 	public abstract ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(
 			String preferredDescription,
 			UUID UUID,
-			String userName,
 			String processName,
-			Map<String,String> variables);
+			Map<String,String> variables) throws IOException;
 }
