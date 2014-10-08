@@ -103,27 +103,27 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                     } else {
                         if (!task.getOwner().equals(taskInDb.getOwner())) {
                             log.info(" User has changed from {} to {}.", taskInDb.getOwner(), task.getOwner());
-                            try {
-                                PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
-                                psUpdateUser.setString(1, task.getOwner());
-                                psUpdateUser.setInt(2, Integer.parseInt(task.getId().toString()));
-                                psUpdateUser.executeUpdate();
-                                conn.commit();
-                            } catch (SQLException ex1) {
-                                log.error("Unexpected SQL Error", ex1);
+                            PreparedStatement psUpdateUser = conn.prepareStatement("update local_tasks set owner = ? where id = ?");
+                            psUpdateUser.setString(1, task.getOwner());
+                            psUpdateUser.setInt(2, Integer.parseInt(task.getId().toString()));
+                            int updatedRowCount = psUpdateUser.executeUpdate();
+                            if (updatedRowCount != 1)
+                            {
+                                throw new DatastoreException("update owner on existing task failed!");
                             }
+                            conn.commit();
                         }
                         if (!task.getStatus().equals(taskInDb.getStatus())) {
                             log.info(" Status has changed from {} to {}.", taskInDb.getStatus(), task.getStatus());
-                            try {
-                                PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
-                                psUpdateStatus.setString(1, task.getStatus().name());
-                                psUpdateStatus.setInt(2, Integer.parseInt(task.getId().toString()));
-                                psUpdateStatus.executeUpdate();
-                                conn.commit();
-                            } catch (SQLException ex1) {
-                                log.error("Unexpected SQL Error", ex1);
+                            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set status = ? where id = ?");
+                            psUpdateStatus.setString(1, task.getStatus().name());
+                            psUpdateStatus.setInt(2, Integer.parseInt(task.getId().toString()));
+                            int updatedRowCount = psUpdateStatus.executeUpdate();
+                            if (updatedRowCount != 1)
+                            {
+                                throw new DatastoreException("update status on existing task failed!");
                             }
+                            conn.commit();
                         }
                         //log.error("-Unknown?-");
                     };
@@ -149,7 +149,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             psUpdateStatus.setString(2, TaskActionStatus.Pending.name());
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
-            psUpdateStatus.executeUpdate();
+            int updatedRowCount = psUpdateStatus.executeUpdate();
+            if (updatedRowCount != 1)
+            {
+                throw new DatastoreException("update action  on existing task failed!");
+            }
             conn.commit();
         } catch (RuntimeException re) {
             log.error("Caught {} \"{}\" setting Action {} on task {}: {}", re.getClass().getName(), re.getLocalizedMessage(), action, taskId, outputVariables);
@@ -167,7 +171,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             psUpdateStatus.setString(2, actionStatus.name());
             psUpdateStatus.setString(3, serializeMap(outputVariables));
             psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
-            psUpdateStatus.executeUpdate();
+            int updatedRowCount = psUpdateStatus.executeUpdate();
+            if (updatedRowCount != 1)
+            {
+                throw new DatastoreException("update action on existing task failed!");
+            }
             conn.commit();
         } catch (RuntimeException re) {
             log.error("Caught {} \"{}\" setting Action {} with TaskActionStatus {} on task {}: {}", re.getClass().getName(), re.getLocalizedMessage(), action, actionStatus, taskId, outputVariables);
@@ -357,7 +365,17 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "LOCAL_TASKS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
-                s.execute("create table LOCAL_TASKS(id int PRIMARY KEY, name varchar(40), componentId varchar(40), componentName varchar(255), status varchar(40), owner varchar(40), action varchar(40), actionStatus varchar(40), inputVariables long varchar, outputVariables long varchar)");
+                s.execute("create table LOCAL_TASKS("
+                        + "id bigint PRIMARY KEY, "
+                        + "name varchar(40), "
+                        + "componentId varchar(40), "
+                        + "componentName varchar(255), "
+                        + "status varchar(40), "
+                        + "owner varchar(40), "
+                        + "action varchar(40), "
+                        + "actionStatus varchar(40), "
+                        + "inputVariables long varchar, "
+                        + "outputVariables long varchar)");
                 conn.commit();
                 log.info("Created table LOCAL_TASKS");
             } else {
@@ -371,12 +389,19 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     @Override
     public void dropSchema() throws DatastoreException {
         try (Connection conn = ds.getConnection()){
-            log.info("Dropping schema");
+            log.info("Dropping table local_tasks");
             Statement s = conn.createStatement();
             s.execute("drop table LOCAL_TASKS");
             conn.commit();
         } catch (SQLException ex) {
-            throw new DatastoreException(ex);  //TODO
+            if (ex.getMessage().contains("does not exist"))
+            {
+                log.info("Table did not exist");
+            }
+            else
+            {
+                throw new DatastoreException(ex);
+            }
         }
     }
 }
