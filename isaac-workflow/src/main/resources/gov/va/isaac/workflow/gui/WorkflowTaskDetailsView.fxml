@@ -61,8 +61,15 @@
 <Insets top="5.0" />
 </BorderPane.margin></VBox>
 </top>
-<bottom><HBox alignment="CENTER" fillHeight="false" spacing="10.0" BorderPane.alignment="CENTER">
-<children><Button fx:id="advanceWfButton" mnemonicParsing="false" text="Advance Workflow" />
+<bottom>
+<VBox spacing="10.0">
+<children><HBox alignment="CENTER" fillHeight="false" spacing="30.0" BorderPane.alignment="CENTER">
+<children><Button fx:id="openConceputButton" mnemonicParsing="false" text="Open Concept" /><Button fx:id="viewWfHxButton" mnemonicParsing="false" text="View Workflow History" /><Button fx:id="advanceWfButton" mnemonicParsing="false" text="Advance Workflow" /><Button fx:id="releaseTaskButton" mnemonicParsing="false" text="Release Task" />
+</children>
+<BorderPane.margin>
+<Insets bottom="10.0" top="15.0" />
+</BorderPane.margin></HBox><HBox alignment="TOP_CENTER">
+<children>
       <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets bottom="10.0" top="15.0" />
@@ -70,10 +77,12 @@
 <HBox.margin>
 <Insets />
 </HBox.margin>
-      </Button><Button fx:id="releaseTaskButton" mnemonicParsing="false" text="Release Task" />
+      </Button>
+</children></HBox>
 </children>
 <BorderPane.margin>
-<Insets bottom="10.0" top="15.0" />
-</BorderPane.margin></HBox>
+<Insets bottom="15.0" top="15.0" />
+</BorderPane.margin>
+</VBox>
 </bottom>
 </BorderPane>
