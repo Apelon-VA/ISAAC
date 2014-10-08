@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.interfaces.config;
 
+import java.net.URL;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -42,4 +43,15 @@ public interface IsaacAppConfigI
 	 * The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.
 	 */
 	public String getUserRepositoryPath();
+	
+	/**
+	 * The full URL for the REST API of the KIE Workflow server.
+	 */
+	public URL getWorkflowServerURLasURL();
+	
+	/**
+	 * The deployment ID for the KIE workflow server
+	 */
+	public String getWorkflowServerDeploymentID();
+	 
 }

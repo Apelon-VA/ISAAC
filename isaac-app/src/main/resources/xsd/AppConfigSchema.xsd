@@ -16,6 +16,7 @@
 	<xs:element name="isaacAppConfig">
 		<xs:complexType>
 			<xs:sequence>
+			
 				<xs:element name="applicationTitle" type="xs:string" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -26,6 +27,7 @@
 						<xs:documentation>The text string that is displayed in the ISAAC title bar, about box, and other typical locations.</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
 				<xs:element name="userRepositoryPath" type="xs:string" minOccurs="0" maxOccurs="1">
 					<xs:annotation>
 						<xs:appinfo>
@@ -36,6 +38,29 @@
 						<xs:documentation>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
+				<xs:element name="workflowServerURL" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The full URL for the REST API of the KIE Workflow server.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The full URL for the REST API of the KIE Workflow server.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="workflowServerDeploymentID" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The deployment ID for the KIE workflow server</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The deployment ID for the KIE workflow server</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>

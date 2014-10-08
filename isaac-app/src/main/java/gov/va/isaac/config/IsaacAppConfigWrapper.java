@@ -18,7 +18,12 @@
  */
 package gov.va.isaac.config;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.config.generated.IsaacAppConfig;
+import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -29,9 +34,6 @@ import javax.xml.validation.SchemaFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import gov.va.isaac.AppContext;
-import gov.va.isaac.config.generated.IsaacAppConfig;
-import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
 /**
  * {@link IsaacAppConfigWrapper}
@@ -78,9 +80,39 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		}
 	}
 	
+	
+	
+	/**
+	 * @see IsaacAppConfigI#getWorkflowServerURLasURL()
+	 * Necessary because JAXB returns this as a string, rather than a URL.
+	 */
+	@Override
+	public URL getWorkflowServerURLasURL()
+	{
+		try
+		{
+			return new URL(super.getWorkflowServerURL());
+		}
+		catch (MalformedURLException e)
+		{
+			log_.error("Invalid URL specified for Workflow Server URL '" + super.getWorkflowServerURL() + "'", e);
+			return null;
+		}
+	}
+
+	/**
+	 * Copy all of the data from the deserialized data - which doesn't implement our interface - to this instance, which does.
+	 */
 	private void copyHack(IsaacAppConfig read)
 	{
-		setApplicationTitle(read.getApplicationTitle());
-		setUserRepositoryPath(getUserRepositoryPath());
+		//TODO we will need a way for the user to change some of these parameters later (and a place to save them) like the two 
+		//workflow ones.  where and how?
+		if (read.getApplicationTitle() != null && read.getApplicationTitle().length() > 0)
+		{
+			setApplicationTitle(read.getApplicationTitle());
+		}
+		setUserRepositoryPath(read.getUserRepositoryPath());
+		setWorkflowServerDeploymentID(read.getWorkflowServerDeploymentID());
+		setWorkflowServerURL(read.getWorkflowServerURL());
 	}
 }
