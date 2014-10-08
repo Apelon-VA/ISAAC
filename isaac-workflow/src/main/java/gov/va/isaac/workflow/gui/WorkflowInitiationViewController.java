@@ -19,7 +19,6 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -27,10 +26,9 @@ import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -42,7 +40,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -310,13 +307,20 @@ public class WorkflowInitiationViewController {
 		} else {
 			// TODO: handle other WorkflowProcessModel values
 		}
-
-		String username = ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername();
 		
 		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + description + "\", conceptUuid=\"" 
-		+ componentOrConcept.getPrimordialUuid().toString() + "\", user=\"" + username + "\", processName=\"" + process + "\")");
-		ProcessInstanceCreationRequestI createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), 
-				username, process.getText(), map);
+		+ componentOrConcept.getPrimordialUuid().toString() + "\", processName=\"" + process + "\")");
+		ProcessInstanceCreationRequestI createdRequest = null;
+		
+		try
+		{
+			createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), 
+					process.getText(), map);
+		}
+		catch (IOException e)
+		{
+			LOG.error("Unexpected error creating request", e);
+		}
 		
 		if (createdRequest == null) {
 			String title = "Workflow Initiation Failed";

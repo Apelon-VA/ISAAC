@@ -26,18 +26,16 @@ import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.util.Map;
 import java.util.UUID;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-
+import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,19 +102,22 @@ public class WorkflowTaskDetailsViewController {
 	@FXML private Button releaseTaskButton;
 	@FXML private Button advanceWfButton;
 
-    @FXML private Label generatedComponentSummary;
+	@FXML private Label generatedComponentSummary;
 
-    @FXML private Label taskIdLabel;
-    @FXML private Label statusLabel;
-    @FXML private Label componentLabel;	
-    @FXML private Label componentIdLabel;
-    
-    @FXML private TextArea instructionsTextArea;
-    @FXML private TextArea commentsTextArea;
+	@FXML private Label taskIdLabel;
+	@FXML private Label statusLabel;
+	@FXML private Label componentLabel;	
+	@FXML private Label componentIdLabel;
+	
+	@FXML private TextArea instructionsTextArea;
+	@FXML private TextArea commentsTextArea;
 
 	private WorkflowTaskDetailsView workflowTaskDetailsView;
 	private LocalTask task;	
+	
+	@Inject
 	private LocalWorkflowRuntimeEngineBI workflowEngine;
+	@Inject
 	private LocalTasksServiceBI localTasksService;
 	
 	public Pane getRoot() {
@@ -146,8 +147,9 @@ public class WorkflowTaskDetailsViewController {
 		loadContents();
 	}
 	
-	public void setTask(long taskId) {
-		LocalTask retrievedTask = getLocalTasksService().getTask(taskId);
+	public void setTask(long taskId) throws DatastoreException {
+		sync();  //TODO clean this up
+		LocalTask retrievedTask = localTasksService.getTask(taskId);
 		
 		setTask(retrievedTask);
 	}
@@ -158,12 +160,25 @@ public class WorkflowTaskDetailsViewController {
 
 	@FXML
 	public void initialize() {
+		
+		AppContext.getServiceLocator().inject(this);
 		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		
 		closeButton.setOnAction((e) -> doCancel());
 		advanceWfButton.setOnAction((e) -> doAdvanceWorkflow());
-		releaseTaskButton.setOnAction((e) -> doReleaseTask());
+		releaseTaskButton.setOnAction((e) -> 
+		{
+			try
+			{
+				doReleaseTask();
+			}
+			catch (DatastoreException e1)
+			{
+				LOG.error("Error releasing task", e1);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error releasing task", e1);
+			}
+		});
 	}
 
 	private void loadContents() {
@@ -226,8 +241,8 @@ public class WorkflowTaskDetailsViewController {
 		}
 	}
 
-	public void doReleaseTask(long taskId) {
-		LocalWorkflowRuntimeEngineFactory.getRuntimeEngine().release(taskId);
+	public void doReleaseTask(long taskId) throws DatastoreException {
+		workflowEngine.release(taskId);
 	}
 	
 	private void doCancel() {
@@ -242,31 +257,18 @@ public class WorkflowTaskDetailsViewController {
 		workflowTaskDetailsView.close();
 	}
 	
-	private void doReleaseTask() {
-		LocalWorkflowRuntimeEngineFactory.getRuntimeEngine().release(task.getId());
+	private void doReleaseTask() throws DatastoreException {
+		workflowEngine.release(task.getId());
 		workflowTaskDetailsView.close();
 	}
 
-	private LocalTasksServiceBI getLocalTasksService() {
-		if (localTasksService == null) {
-			localTasksService = getWorkflowEngine().getLocalTaskService();
-		}
+	private void sync() {
 		
-		return localTasksService;
-	}
-	
-	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
-		if (workflowEngine == null) {
-			workflowEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-
-			Utility.submit(new Runnable() {
-				@Override
-				public void run() {
-					workflowEngine.synchronizeWithRemote();
-				}
-			});
-		}
-
-		return workflowEngine;
+		Utility.submit(new Runnable() {
+			@Override
+			public void run() {
+				workflowEngine.synchronizeWithRemote();
+			}
+		});
 	}
 }

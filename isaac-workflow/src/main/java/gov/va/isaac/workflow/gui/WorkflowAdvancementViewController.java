@@ -29,12 +29,10 @@ import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.taskmodel.TaskModel;
 import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
-
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -49,7 +47,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-
+import javax.inject.Inject;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -92,7 +90,10 @@ public class WorkflowAdvancementViewController
 	private TaskModel taskModel = null;
 	
 	// Workflow Engine and Task Service
+	@Inject
 	private LocalWorkflowRuntimeEngineBI wfEngine_;
+	
+	@Inject
 	private LocalTasksServiceBI taskService_;
 
 	// Initialize GUI (invoked by FXML)
@@ -103,9 +104,10 @@ public class WorkflowAdvancementViewController
 		assert releaseTaskActionButton != null : "fx:id=\"releaseTaskActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert taskLabel != null : "fx:id=\"taskLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
+		
+		AppContext.getServiceLocator().inject(this);
 
-		initializeWorkflowEngine();
-		initializeTaskService();
+		doRemoteSync();  //TODO this is an incredibly bad place to do this....
 
 		conceptScrollPane = new ScrollPane();
 		conceptScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
@@ -223,6 +225,8 @@ public class WorkflowAdvancementViewController
 	}
 
 	public void setTask(long taskId) {
+		//TODO Joel - what is a user supposed to do about any of these failures?  Shouldn't all of these be putting up a dialog informing them that the 
+		//set task failed?  You can't just silently eat them - or can you eat some of these?
 		if (taskModel != null) {
 			String msg = "Cannot reset initialTask from " + taskModel.getTask().getId() + " to " + taskId;
 			logger.error(msg);
@@ -235,9 +239,17 @@ public class WorkflowAdvancementViewController
 			throw new RuntimeException(msg);
 		}
 				
-		initializeServices();
+		doRemoteSync();
 		
-		LocalTask initialTask = taskService_.getTask(taskId);
+		LocalTask initialTask = null;
+		try
+		{
+			initialTask = taskService_.getTask(taskId);
+		}
+		catch (DatastoreException e1)
+		{
+			logger.error("error getting task", e1);
+		}
 
 		if (initialTask == null) {
 			logger.error("Task retrieved by id {} is null", taskId);
@@ -317,24 +329,10 @@ public class WorkflowAdvancementViewController
 		return conceptVersion;
 	}
 	
-	private void initializeServices() {
-		initializeWorkflowEngine();
-		initializeTaskService();
-	}
-	
-	private void initializeTaskService() {
-		if (taskService_ == null) {
-			taskService_ = wfEngine_.getLocalTaskService();
-		}
-	}
-	
-	private void initializeWorkflowEngine() {
-		if (wfEngine_ == null)
-		{
-			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
-			
-			Utility.submit(() -> wfEngine_.synchronizeWithRemote());
-		}
+	private void doRemoteSync()
+	{
+		//TODO why in so many places?  error handling?  This is slow!
+		Utility.submit(() -> wfEngine_.synchronizeWithRemote());
 	}
 	
 	private void bindSaveActionButtonToModelIsSavableProperty() {
@@ -361,7 +359,7 @@ public class WorkflowAdvancementViewController
 	{
 		loadTaskLabel();
 		
-		initializeServices();
+		doRemoteSync();
 		
 		loadTaskModel();
 		

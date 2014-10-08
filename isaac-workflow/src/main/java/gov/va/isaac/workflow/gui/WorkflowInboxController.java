@@ -30,8 +30,7 @@ import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -58,7 +56,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
-
+import javax.inject.Inject;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -72,7 +70,6 @@ import org.slf4j.LoggerFactory;
 public class WorkflowInboxController
 {
 	private static final Logger LOG = LoggerFactory.getLogger(WorkflowInboxController.class);
-
 	
 	@FXML BorderPane rootBorderPane;
 	@FXML ResourceBundle resources;
@@ -82,10 +79,10 @@ public class WorkflowInboxController
 	@FXML Label userName;
 	@FXML TableView<LocalTask> taskTable;
 
+	@Inject
 	private LocalWorkflowRuntimeEngineBI wfEngine_;
+	@Inject
 	private LocalTasksServiceBI taskService_;
-	private final static Logger logger = LoggerFactory.getLogger(WorkflowInboxController.class);
-	private String user = ExtendedAppContext.getCurrentlyLoggedInUser().getWorkflowUsername();
 	
 	public static WorkflowInboxController init() throws IOException {
 		// Load FXML
@@ -99,13 +96,15 @@ public class WorkflowInboxController
 	@FXML
 	void initialize()
 	{
+		AppContext.getServiceLocator().inject(this);
 		assert claimTasksButton != null : "fx:id=\"claimTasksButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert synchronizeButton != null : "fx:id=\"synchronizeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert userName != null : "fx:id=\"userName\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
-		userName.setText(user);
+		//TODO maybe use the preferred name instead of their login name?
+		userName.setText(ExtendedAppContext.getCurrentlyLoggedInUser());
 
 		taskTable.setTableMenuButtonVisible(true);
 
@@ -225,7 +224,7 @@ public class WorkflowInboxController
 			Utility.execute(() -> {
 				try
 				{
-					getWorkflowEngine().claim(10, user);
+					wfEngine_.claim(10);
 					Platform.runLater(() -> 
 					{
 						claimPopover.hide();
@@ -237,7 +236,8 @@ public class WorkflowInboxController
 				}
 				catch (Exception e)
 				{
-					logger.error("Unexpected error claiming tasks", e);
+					LOG.error("Unexpected error claiming tasks", e);
+					AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
 				}
 			});
 		});
@@ -270,7 +270,7 @@ public class WorkflowInboxController
 		Utility.execute(() -> {
 			try
 			{
-				getWorkflowEngine().synchronizeWithRemote();
+				wfEngine_.synchronizeWithRemote();  //TODO deal with this...
 				Platform.runLater(() -> 
 				{
 					if (finalBusyPopover != null) {
@@ -282,7 +282,7 @@ public class WorkflowInboxController
 			}
 			catch (Exception e)
 			{
-				logger.error("Unexpected error synchronizing tasks", e);
+				LOG.error("Unexpected error synchronizing tasks", e);
 			}
 		});
 	}
@@ -295,26 +295,17 @@ public class WorkflowInboxController
 	private void refreshContent()
 	{
 		taskTable.getItems().clear();
-		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks());
-	}
-
-	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
-		if (wfEngine_ == null)
+		try
 		{
-			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+			taskTable.getItems().addAll(taskService_.getOpenOwnedTasks());
 		}
-		
-		return wfEngine_;
+		catch (DatastoreException e)
+		{
+			LOG.error("Unexpected error refreshing tasks", e);
+			AppContext.getCommonDialogs().showErrorDialog("There was a problem reading the tasks", e);
+		}
 	}
 
-	private LocalTasksServiceBI getTaskService() {
-		if (taskService_ == null) {
-			taskService_ = getWorkflowEngine().getLocalTaskService();
-		}
-		
-		return taskService_;
-	}
-	
 	private class MyCellFactoryCallback<T> implements Callback<TableColumn<LocalTask, T>, TableCell<LocalTask, T>> {
 		@Override
 		public TableCell<LocalTask, T> call(TableColumn<LocalTask, T> param) {
