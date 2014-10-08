@@ -149,7 +149,7 @@ public class PasswordHasher
 			throw new Exception("Invalid encrypted data, can't find salt");
 		}
 		byte[] result = decrypt(password, Base64.getDecoder().decode(saltAndPass[0]), saltAndPass[1]);
-		log_.info("Dncrypt Time {} ms", System.currentTimeMillis() - startTime);
+		log_.info("Decrypt Time {} ms", System.currentTimeMillis() - startTime);
 		return result;
 	}
 

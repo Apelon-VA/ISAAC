@@ -28,7 +28,6 @@ import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.taskmodel.TaskModel;
 import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
@@ -89,10 +88,6 @@ public class WorkflowAdvancementViewController
 
 	private TaskModel taskModel = null;
 	
-	// Workflow Engine and Task Service
-	@Inject
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	
 	@Inject
 	private LocalTasksServiceBI taskService_;
 
@@ -106,8 +101,6 @@ public class WorkflowAdvancementViewController
 		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
 		
 		AppContext.getServiceLocator().inject(this);
-
-		doRemoteSync();  //TODO this is an incredibly bad place to do this....
 
 		conceptScrollPane = new ScrollPane();
 		conceptScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
@@ -150,7 +143,7 @@ public class WorkflowAdvancementViewController
 					unbindSaveActionButtonFromModelIsSavableProperty();
 					saveActionButton.setDisable(true);
 				});
-				final BusyPopover claimPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
+				final BusyPopover saveActionBusyPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
 
 				Utility.execute(() -> {
 					try
@@ -158,8 +151,7 @@ public class WorkflowAdvancementViewController
 						taskService_.completeTask(taskModel.getTask().getId(), taskModel.getCurrentOutputVariables());
 						Platform.runLater(() -> 
 						{
-							claimPopover.hide();
-							refreshSaveActionButtonBinding();
+							//refreshSaveActionButtonBinding();
 
 							if (stage != null) {
 								stage.close();
@@ -168,8 +160,9 @@ public class WorkflowAdvancementViewController
 					}
 					catch (Exception e)
 					{
-						claimPopover.hide();
 						logger.error("Error saving task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+					} finally {
+						cleanupAfterSaveTaskAction(this, saveActionBusyPopover);
 					}
 				});
 			} else { // ! this.taskModel.isSavable()
@@ -194,9 +187,7 @@ public class WorkflowAdvancementViewController
 					taskService_.releaseTask(taskModel.getTask().getId());
 					Platform.runLater(() -> 
 					{
-						claimPopover.hide();
-						refreshSaveActionButtonBinding();
-						releaseTaskActionButton.setDisable(false);
+						
 
 						if (stage != null) {
 							stage.close();
@@ -207,8 +198,36 @@ public class WorkflowAdvancementViewController
 				{
 					claimPopover.hide();
 					logger.error("Error releasing task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+				} finally {
+					cleanupAfterReleaseTaskAction(this, claimPopover);
 				}
 			});
+		});
+	}
+
+	/*
+	 * Need this method as workaround for compiler/JVM bug:
+	 * { @link http://stackoverflow.com/questions/13219297/bad-type-on-operand-stack-using-jdk-8-lambdas-with-anonymous-inner-classes }
+	 * { @link http://mail.openjdk.java.net/pipermail/lambda-dev/2012-September/005938.html }
+	 */
+	private static void cleanupAfterSaveTaskAction(WorkflowAdvancementViewController ctrlr, BusyPopover saveActionBusyPopover) {
+		Platform.runLater(() ->  {
+			saveActionBusyPopover.hide();
+
+			ctrlr.refreshSaveActionButtonBinding();
+		});
+	}
+
+	/*
+	 * Need this method as workaround for compiler/JVM bug:
+	 * { @link http://stackoverflow.com/questions/13219297/bad-type-on-operand-stack-using-jdk-8-lambdas-with-anonymous-inner-classes }
+	 * { @link http://mail.openjdk.java.net/pipermail/lambda-dev/2012-September/005938.html }
+	 */
+	private static void cleanupAfterReleaseTaskAction(WorkflowAdvancementViewController ctrlr, BusyPopover claimPopover) {
+		Platform.runLater(() ->  {
+		claimPopover.hide();
+		ctrlr.refreshSaveActionButtonBinding();
+		ctrlr.releaseTaskActionButton.setDisable(false);
 		});
 	}
 
@@ -238,8 +257,6 @@ public class WorkflowAdvancementViewController
 			logger.error(msg);
 			throw new RuntimeException(msg);
 		}
-				
-		doRemoteSync();
 		
 		LocalTask initialTask = null;
 		try
@@ -329,12 +346,6 @@ public class WorkflowAdvancementViewController
 		return conceptVersion;
 	}
 	
-	private void doRemoteSync()
-	{
-		//TODO why in so many places?  error handling?  This is slow!
-		Utility.submit(() -> wfEngine_.synchronizeWithRemote());
-	}
-	
 	private void bindSaveActionButtonToModelIsSavableProperty() {
 		saveActionButton.disableProperty().bind(taskModel.getIsSavableProperty().not());
 	}
@@ -358,8 +369,6 @@ public class WorkflowAdvancementViewController
 	protected void loadContent()
 	{
 		loadTaskLabel();
-		
-		doRemoteSync();
 		
 		loadTaskModel();
 		

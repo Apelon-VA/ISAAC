@@ -21,7 +21,6 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
@@ -148,7 +147,6 @@ public class WorkflowTaskDetailsViewController {
 	}
 	
 	public void setTask(long taskId) throws DatastoreException {
-		sync();  //TODO clean this up
 		LocalTask retrievedTask = localTasksService.getTask(taskId);
 		
 		setTask(retrievedTask);
@@ -260,15 +258,5 @@ public class WorkflowTaskDetailsViewController {
 	private void doReleaseTask() throws DatastoreException {
 		workflowEngine.release(task.getId());
 		workflowTaskDetailsView.close();
-	}
-
-	private void sync() {
-		
-		Utility.submit(new Runnable() {
-			@Override
-			public void run() {
-				workflowEngine.synchronizeWithRemote();
-			}
-		});
 	}
 }

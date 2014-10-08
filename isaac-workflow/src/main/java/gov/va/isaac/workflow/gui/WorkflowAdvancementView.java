@@ -33,7 +33,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import javax.inject.Singleton;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -43,7 +43,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-@Singleton
+@PerLookup
 public class WorkflowAdvancementView extends Stage implements WorkflowAdvancementViewI
 {
 //	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
