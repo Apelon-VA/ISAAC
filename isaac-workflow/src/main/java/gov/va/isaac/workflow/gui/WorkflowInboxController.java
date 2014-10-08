@@ -21,7 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusTaskIdProvider;
@@ -31,6 +31,7 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -56,7 +58,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
+
 import javax.inject.Inject;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -382,7 +386,8 @@ public class WorkflowInboxController
 							int cellIndex = c.getIndex();
 							LocalTask task = taskTable.getItems().get(cellIndex);
 
-							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+							WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+//							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
 							view.setTask(task.getId());
 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 						}

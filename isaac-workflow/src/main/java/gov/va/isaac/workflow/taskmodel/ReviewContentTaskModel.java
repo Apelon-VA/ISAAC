@@ -30,7 +30,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 
 /**
@@ -40,26 +39,6 @@ import javafx.scene.control.TextArea;
  *
  */
 public class ReviewContentTaskModel extends TaskModel {
-	public enum Response {
-		approve("Send for approval"),
-		reject("Reject"),
-		cancel("Cancel");
-		
-		private final String displayText;
-		private Response(String displayTxt) {
-			displayText = displayTxt;
-		}
-		
-		public String getDisplayText() { return displayText; }
-		
-		public static Response valueOfIfExists(String str) {
-			try {
-				return valueOf(str);
-			} catch (Throwable t) {
-				return null;
-			}
-		}
-	}
 	public enum InputVariable {
 		component_id("Component Id"),
 		component_name("Component Name"),
@@ -104,8 +83,8 @@ public class ReviewContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	ReviewContentTaskModel(LocalTask inputTask) {
-		super(inputTask, OutputVariable.values());
+	ReviewContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+		super(inputTask, userActionOutputResponseComboBox, OutputVariable.values());
 	}
 
 	/**
@@ -128,7 +107,7 @@ public class ReviewContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	protected Node createOutputVariableInputNode(String variableName) {
+	protected Node getOrCreateOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {
@@ -145,56 +124,41 @@ public class ReviewContentTaskModel extends TaskModel {
 			return commentTextArea;
 		}
 		case out_response: {
-			ComboBox<Response> responseComboBox = new ComboBox<>();
-			
+			ComboBox<UserActionOutputResponse> responseComboBox = getUserActionOutputResponseComboBox();
+			responseComboBox.getItems().addAll(
+					UserActionOutputResponse.sendToApprover,
+					UserActionOutputResponse.rejectToEditor,
+					UserActionOutputResponse.cancelWorkflow);
+
 			StringProperty responseProperty = getOutputVariableValueProperty(OutputVariable.out_response.name());
 
 			setOutputVariableValidator(OutputVariable.out_response.name(), new Validator() {
 				@Override
 				public boolean isValid() {
-					return responseProperty != null && Response.valueOfIfExists(responseProperty.get()) != null;
-				}
-			});
-
-			responseComboBox.valueProperty().addListener(new ChangeListener<Response>() {
-				@Override
-				public void changed(
-						ObservableValue<? extends Response> observable,
-						Response oldValue,
-						Response newValue) {
-					responseProperty.set(newValue != null ? newValue.name() : null);
-				}});
-			responseComboBox.setButtonCell(new ListCell<Response>() {
-				@Override
-				protected void updateItem(Response t, boolean bln) {
-					super.updateItem(t, bln); 
-					if (bln) {
-						setText("");
-					} else {
-						setText(t.displayText);
+					if (responseProperty == null || responseProperty.get() == null) {
+						return false;
 					}
-				}
-			});
 
-			responseComboBox.setCellFactory((p) -> {
-				final ListCell<Response> cell = new ListCell<Response>() {
-					@Override
-					protected void updateItem(Response c, boolean emptyRow) {
-						super.updateItem(c, emptyRow);
-
-						if(c == null || emptyRow) {
-							setText(null);
-						} else {
-							setText(c.displayText);
+					for (UserActionOutputResponse configuredUserAction : responseComboBox.getItems()) {
+						if (configuredUserAction.getUserActionOutputResponseValue().equals(responseProperty.get())) {
+							return true;
 						}
 					}
-				};
 
-				return cell;
+					return false;
+				}
 			});
 
+			responseComboBox.valueProperty().addListener(new ChangeListener<UserActionOutputResponse>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends UserActionOutputResponse> observable,
+						UserActionOutputResponse oldValue,
+						UserActionOutputResponse newValue) {
+					responseProperty.set(newValue != null ? newValue.getUserActionOutputResponseValue() : null);
+				}});
+
 			// Initialize state of input control, triggering handlers/listeners
-			responseComboBox.getItems().addAll(Response.values());
 			responseComboBox.getSelectionModel().select(null);
 			
 			return responseComboBox;
