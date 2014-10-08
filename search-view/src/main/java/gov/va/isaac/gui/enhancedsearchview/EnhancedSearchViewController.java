@@ -1029,8 +1029,16 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		// Use HashSet to ensure that only one workflow is created for each concept
 		if (searchResultsTable.getItems().size() > 0) {
 			new Thread(new Runnable() {
+				@Override
 				public void run() {
-					conceptWorkflowService.synchronizeWithRemote();
+					try
+					{
+						conceptWorkflowService.synchronizeWithRemote();
+					}
+					catch (IOException e)
+					{
+						LOG.error("Sync execution failed", e);
+					}
 				}
 			}).start();
 		}
@@ -1066,9 +1074,17 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				exportSearchResultToWorkflow(conceptOrComponent);
 			}
 			
+			//TODO dan needs to rework these - they don't belong in threads (not here, anyway) - will be managed by the sync call.
 			new Thread(new Runnable() {
 				public void run() {
-					conceptWorkflowService.synchronizeWithRemote();
+					try
+					{
+						conceptWorkflowService.synchronizeWithRemote();
+					}
+					catch (IOException e)
+					{
+						LOG.error("Sync execution failed", e);
+					}
 				}
 			}).start();
 		}
