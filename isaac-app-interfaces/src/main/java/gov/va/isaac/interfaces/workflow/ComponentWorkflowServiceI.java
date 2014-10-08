@@ -37,7 +37,7 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface ComponentWorkflowServiceI {
-	public abstract void synchronizeWithRemote();
+	public abstract void synchronizeWithRemote() throws IOException;
 
 	public abstract ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(
 			String preferredDescription,

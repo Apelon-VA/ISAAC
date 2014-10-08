@@ -29,6 +29,7 @@ import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -64,11 +65,19 @@ public class ComponentWorkflowService implements ComponentWorkflowServiceI {
 	}
 
 	/**
+	 * @throws IOException 
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#synchronizeWithRemote()
 	 */
 	@Override
-	public void synchronizeWithRemote() {
-		wfEngine_.synchronizeWithRemote();
+	public void synchronizeWithRemote() throws IOException {
+		try
+		{
+			wfEngine_.synchronizeWithRemote();
+		}
+		catch (RemoteException | DatastoreException e)
+		{
+			throw new IOException(e);
+		}
 	}
 	
 	/**
