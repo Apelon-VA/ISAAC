@@ -52,6 +52,6 @@ public interface ProcessInstanceServiceBI {
     
     void createSchema() throws DatastoreException;
     
-    void dropSchema();
+    void dropSchema() throws DatastoreException;
     
 }
