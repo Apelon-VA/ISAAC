@@ -32,10 +32,10 @@ import org.kie.api.task.model.TaskSummary;
  * @author alo
  */
 public class LocalTask {
-	public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
-	public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
+    public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
+    public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
 
-	// Task ID in KIE
+    // Task ID in KIE
     private Long id;
 
     // Name of the step in the workflow (i.e. Review, Approve, etc)
@@ -193,13 +193,13 @@ public class LocalTask {
         this.outputVariables = outputVariables;
     }
 
-	@Override
-	public String toString() {
-		return "LocalTask [id=" + id + ", name=" + name + ", componentName="
-				+ componentName + ", componentId=" + componentId + ", status="
-				+ status + ", owner=" + owner + ", action=" + action
-				+ ", actionStatus=" + actionStatus + ", inputVariables="
-				+ (inputVariables ==  null ? "null" : inputVariables.entrySet()) 
-				+ ", outputVariables=" + (outputVariables == null  ? "null" : outputVariables.entrySet()) + "]";
-	}
+    @Override
+    public String toString() {
+        return "LocalTask [id=" + id + ", name=" + name + ", componentName="
+                + componentName + ", componentId=" + componentId + ", status="
+                + status + ", owner=" + owner + ", action=" + action
+                + ", actionStatus=" + actionStatus + ", inputVariables="
+                + (inputVariables ==  null ? "null" : inputVariables.entrySet()) 
+                + ", outputVariables=" + (outputVariables == null  ? "null" : outputVariables.entrySet()) + "]";
+    }
 }

@@ -114,7 +114,7 @@ public class ApproveContentTaskModel extends TaskModel {
 		super(inputTask, OutputVariable.values());
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#getLabelName(java.lang.String)
 	 */
 	@Override
@@ -130,7 +130,7 @@ public class ApproveContentTaskModel extends TaskModel {
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override

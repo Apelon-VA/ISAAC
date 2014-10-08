@@ -268,7 +268,7 @@ public class WorkflowInboxController
 		Utility.execute(() -> {
 			try
 			{
-				wfEngine_.synchronizeWithRemote();  //TODO deal with this...
+				wfEngine_.synchronizeWithRemote();
 			}
 			catch (Exception e)
 			{

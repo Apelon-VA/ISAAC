@@ -45,199 +45,199 @@ public class ProcessInstanceCreationRequest implements ProcessInstanceCreationRe
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getProcessName()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getProcessName()
+     */
     @Override
-	public String getProcessName() {
+    public String getProcessName() {
         return processName;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setProcessName(java.lang.String)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setProcessName(java.lang.String)
+     */
     @Override
-	public void setProcessName(String processName) {
+    public void setProcessName(String processName) {
         this.processName = processName;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getParams()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getParams()
+     */
     @Override
-	public Map<String, Object> getParams() {
+    public Map<String, Object> getParams() {
         return params;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setParams(java.util.Map)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setParams(java.util.Map)
+     */
     @Override
-	public void setParams(Map<String, Object> params) {
+    public void setParams(Map<String, Object> params) {
         this.params = params;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getUserId()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getUserId()
+     */
     @Override
-	public String getUserId() {
+    public String getUserId() {
         return userId;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setUserId(java.lang.String)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setUserId(java.lang.String)
+     */
     @Override
-	public void setUserId(String userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getRequestTime()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getRequestTime()
+     */
     @Override
-	public Long getRequestTime() {
+    public Long getRequestTime() {
         return requestTime;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setRequestTime(java.lang.Long)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setRequestTime(java.lang.Long)
+     */
     @Override
-	public void setRequestTime(Long requestTime) {
+    public void setRequestTime(Long requestTime) {
         this.requestTime = requestTime;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getSyncTime()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getSyncTime()
+     */
     @Override
-	public Long getSyncTime() {
+    public Long getSyncTime() {
         return syncTime;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setSyncTime(java.lang.Long)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setSyncTime(java.lang.Long)
+     */
     @Override
-	public void setSyncTime(Long syncTime) {
+    public void setSyncTime(Long syncTime) {
         this.syncTime = syncTime;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getStatus()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getStatus()
+     */
     @Override
-	public RequestStatus getStatus() {
+    public RequestStatus getStatus() {
         return status;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setStatus(gov.va.isaac.workflow.ProcessInstanceCreationRequest.RequestStatus)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setStatus(gov.va.isaac.workflow.ProcessInstanceCreationRequest.RequestStatus)
+     */
     @Override
-	public void setStatus(RequestStatus status) {
+    public void setStatus(RequestStatus status) {
         this.status = status;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getSyncMessage()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getSyncMessage()
+     */
     @Override
-	public String getSyncMessage() {
+    public String getSyncMessage() {
         return syncMessage;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setSyncMessage(java.lang.String)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setSyncMessage(java.lang.String)
+     */
     @Override
-	public void setSyncMessage(String syncMessage) {
+    public void setSyncMessage(String syncMessage) {
         this.syncMessage = syncMessage;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getComponentId()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getComponentId()
+     */
     @Override
-	public String getComponentId() {
+    public String getComponentId() {
         return componentId;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setComponentId(java.lang.String)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setComponentId(java.lang.String)
+     */
     @Override
-	public void setComponentId(String componentId) {
+    public void setComponentId(String componentId) {
         this.componentId = componentId;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getComponentName()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getComponentName()
+     */
     @Override
-	public String getComponentName() {
+    public String getComponentName() {
         return componentName;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setComponentName(java.lang.String)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setComponentName(java.lang.String)
+     */
     @Override
-	public void setComponentName(String componentName) {
+    public void setComponentName(String componentName) {
         this.componentName = componentName;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getId()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getId()
+     */
     @Override
-	public int getId() {
+    public int getId() {
         return id;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setId(int)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setId(int)
+     */
     @Override
-	public void setId(int id) {
+    public void setId(int id) {
         this.id = id;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getWfId()
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#getWfId()
+     */
     @Override
-	public long getWfId() {
+    public long getWfId() {
         return wfId;
     }
 
     /* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setWfId(long)
-	 */
+     * @see gov.va.isaac.workflow.ProcessInstanceCreationRequestI#setWfId(long)
+     */
     @Override
-	public void setWfId(long wfId) {
+    public void setWfId(long wfId) {
         this.wfId = wfId;
     }
 
     @Override
-	public Map<String, String> getVariables() {
+    public Map<String, String> getVariables() {
         return variables;
     }
 
     @Override
-	public void setVariables(Map<String, String> variables) {
+    public void setVariables(Map<String, String> variables) {
         this.variables = variables;
     }
 
     @Override
-	public String toString() {
-		return "ProcessInstanceCreationRequest [id=" + id + ", processName="
-				+ processName + ", componentId=" + componentId
-				+ ", componentName=" + componentName + ", params=" + params
-				+ ", userId=" + userId + ", requestTime=" + requestTime
-				+ ", syncTime=" + syncTime + ", status=" + status
-				+ ", syncMessage=" + syncMessage + ", wfId=" + wfId + "]";
-	}
+    public String toString() {
+        return "ProcessInstanceCreationRequest [id=" + id + ", processName="
+                + processName + ", componentId=" + componentId
+                + ", componentName=" + componentName + ", params=" + params
+                + ", userId=" + userId + ", requestTime=" + requestTime
+                + ", syncTime=" + syncTime + ", status=" + status
+                + ", syncMessage=" + syncMessage + ", wfId=" + wfId + "]";
+    }
     
 }

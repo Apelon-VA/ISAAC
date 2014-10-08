@@ -84,7 +84,7 @@ public class EditContentTaskModel extends TaskModel {
 		super(inputTask, OutputVariable.values());
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#getLabelName(java.lang.String)
 	 */
 	@Override
@@ -100,7 +100,7 @@ public class EditContentTaskModel extends TaskModel {
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
