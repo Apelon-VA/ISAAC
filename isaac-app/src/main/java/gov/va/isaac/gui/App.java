@@ -304,7 +304,7 @@ public class App extends Application implements ApplicationWindowI{
         
         try
         {
-            configDataStorePaths(new File("C:\\Users\\Brian Carlsen\\Desktop\\x\\berkeley-db"));
+            configDataStorePaths(new File("berkeley-db"));
         }
         catch (IOException e)
         {
