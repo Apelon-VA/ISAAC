@@ -18,30 +18,31 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-import gov.va.isaac.workflow.persistence.*;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.sync.TasksFetcher;
-
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.kie.api.task.model.Status;
 
 /**
  *
  * @author alo
  */
-public class FetchTest {
+public class FetchTest extends BaseTest {
     
-    public static void main(String[] args) {
-        LocalTasksApi tapi = new LocalTasksApi("alejandro");
+    public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException, DatastoreException {
+        setup();
+        LocalTasksServiceBI tapi = AppContext.getService(LocalTasksServiceBI.class);
         tapi.dropSchema();
         tapi.createSchema();
         String userId = "alejandro";
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
         
         TasksFetcher tf = new TasksFetcher(wfEngine.getRemoteTaskService(), tapi);
         

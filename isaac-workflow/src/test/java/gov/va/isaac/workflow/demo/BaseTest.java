@@ -35,6 +35,9 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 /**
  * {@link BaseTest}
  * 
+ * Basic, haskish setup code to cobble together an HK2 environment for running one-off tests - like the ones here
+ * in gov.va.isaac.workflow.demo.  
+ * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Service

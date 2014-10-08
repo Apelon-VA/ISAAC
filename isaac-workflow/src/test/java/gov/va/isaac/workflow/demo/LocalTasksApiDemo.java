@@ -18,22 +18,26 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.TaskActionStatus;
-import gov.va.isaac.workflow.persistence.LocalTasksApi;
-
+import gov.va.isaac.workflow.exceptions.DatastoreException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.kie.api.task.model.Status;
 
 /**
  *
  * @author alo
  */
-public class LocalTasksApiDemo {
+public class LocalTasksApiDemo extends BaseTest {
     
-    public static void main(String[] args) {
-        LocalTasksApi tapi = new LocalTasksApi("alejandro");
+    public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException {
+        setup();
+        LocalTasksServiceBI tapi = AppContext.getService(LocalTasksServiceBI.class);
         tapi.dropSchema();
         System.out.print("Creting Schema...  ");
         tapi.createSchema();
@@ -45,10 +49,10 @@ public class LocalTasksApiDemo {
         task.setComponentId("componentId");
         task.setComponentName("componentName");
         task.setOwner("alo");
+        task.setStatus(Status.Obsolete);
         
         System.out.print("Saving task 2...  ");
         tapi.saveTask(task);
-        tapi.commit();
         System.out.println("OK");
         
         System.out.print("Getting task 2...  ");

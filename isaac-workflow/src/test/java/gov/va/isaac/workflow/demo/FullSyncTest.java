@@ -18,28 +18,26 @@ package gov.va.isaac.workflow.demo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
+import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 
 /**
  *
  * @author alo
  */
-public class FullSyncTest {
+public class FullSyncTest extends BaseTest {
     
-   public static void main(String[] args) {
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+   public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException {
+        setup();
+        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
 
-        String userid = "alejandro";
-
-        LocalTasksServiceBI localTasksService = wfEngine.getLocalTaskService();
-        ProcessInstanceServiceBI processService = wfEngine.getProcessInstanceService();
+        LocalTasksServiceBI localTasksService = AppContext.getService(LocalTasksServiceBI.class);
+        ProcessInstanceServiceBI processService = AppContext.getService(ProcessInstanceServiceBI.class);
         
         localTasksService.dropSchema();
         localTasksService.createSchema();
@@ -52,11 +50,11 @@ public class FullSyncTest {
         
         //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
 
-       Long lastTaskId = null;
+        //Long lastTaskId = null;
         for (LocalTask loopTask : localTasksService.getOpenOwnedTasks()) {
             System.out.println("TaskId: " + loopTask.getId() + " " + loopTask.getName());
             System.out.println("Component: " + loopTask.getComponentId() + " " + loopTask.getComponentName());
-            lastTaskId = loopTask.getId();
+            //lastTaskId = loopTask.getId();
             if (loopTask.getInputVariables() != null) {
                 for (String key : loopTask.getInputVariables().keySet()) {
                     System.out.println("Input variable: " + key + ": " + loopTask.getInputVariables().get(key));

@@ -23,7 +23,6 @@ import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +35,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 public class ProcessInstanceCreationTester extends BaseTest {
     
     public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException, DatastoreException {
-    	setup();
-    	ProcessInstanceServiceBI pis = AppContext.getService(ProcessInstanceServiceBI.class);
+        setup();
+        ProcessInstanceServiceBI pis = AppContext.getService(ProcessInstanceServiceBI.class);
         pis.dropSchema();
         pis.createSchema();
         Map<String,String> variables = new HashMap<String, String>();
