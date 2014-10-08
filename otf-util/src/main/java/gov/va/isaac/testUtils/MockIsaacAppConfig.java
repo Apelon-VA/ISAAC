@@ -19,6 +19,7 @@
 package gov.va.isaac.testUtils;
 
 import java.net.URL;
+import java.util.UUID;
 import org.jvnet.hk2.annotations.Service;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
@@ -37,18 +38,20 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	String userRepoPath_;
 	String workflowServerDeploymentID_;
 	URL workflowServerURL_;
+	UUID workflowPromotionPath_;
 	
 	private MockIsaacAppConfig()
 	{
 		//For HK2
 	}
 	
-	public void configure(String appTitle, String userRepoPath, String workflowServerDeploymentID, URL workflowServerURL)
+	public void configure(String appTitle, String userRepoPath, String workflowServerDeploymentID, URL workflowServerURL, UUID workflowPromotionPath)
 	{
 		appTitle_ = appTitle;
 		userRepoPath_ = userRepoPath;
 		workflowServerDeploymentID_ = workflowServerDeploymentID;
 		workflowServerURL_ = workflowServerURL;
+		workflowPromotionPath_ = workflowPromotionPath;
 	}
 	
 	/**
@@ -85,6 +88,15 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	public String getWorkflowServerDeploymentID()
 	{
 		return workflowServerDeploymentID_;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathUUID()
+	 */
+	@Override
+	public UUID getPromotionPathUUID()
+	{
+		return workflowPromotionPath_;
 	}
 
 }

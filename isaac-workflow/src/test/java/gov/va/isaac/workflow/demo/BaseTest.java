@@ -28,6 +28,7 @@ import gov.va.isaac.workflow.persistence.DatastoreManager;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.UUID;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -59,7 +60,7 @@ public class BaseTest
 		//AppContext.getServiceLocator().getServiceHandle(IsaacAppConfigWrapper.class).destroy();  //This isn't on the classpath for local run
 		
 		AppContext.getService(MockIsaacAppConfig.class).configure("test", "test", "gov.va.isaac.demo:terminology-authoring:1.4",
-				new URL("http://162.243.255.43:8080/kie-wb/"));
+				new URL("http://162.243.255.43:8080/kie-wb/"), UUID.randomUUID());
 		
 		
 		UserProfile up = new UserProfile("test", "test");
