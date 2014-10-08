@@ -20,7 +20,6 @@ package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +34,8 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link WorkflowAdvancementView}
@@ -46,7 +47,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class WorkflowAdvancementView extends Stage implements WorkflowAdvancementViewI
 {
-//	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
+	private final Logger logger = LoggerFactory.getLogger(WorkflowAdvancementView.class);
 
 	private WorkflowAdvancementViewController controller_;
 
@@ -89,65 +90,35 @@ public class WorkflowAdvancementView extends Stage implements WorkflowAdvancemen
 			initStyle(StageStyle.DECORATED);
 		}
 
+		logger.debug("showing Workflow Advancement View");
 		show();
 	}
 
-//	public void setConcept(ConceptVersionBI concept) {
-//		// Make sure in application thread.
-//		FxUtils.checkFxUserThread();
-//		controller_.setConcept(concept);
-//	}
-	
-//	@Override
-//	public void setConcept(UUID conceptUUID) {
-//		try {
-//			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptUUID));
-//		} catch (IOException e) {
-//			String title = "Unexpected error loading concept with UUID " + conceptUUID;
-//			String msg = e.getClass().getName();
-//			logger.error(title, e);
-//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-//		}
-//	}
-//
-//	@Override
-//	public void setConcept(int conceptNid) {
-//		try {
-//			setConcept(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), conceptNid));
-//		} catch (IOException e) {
-//			String title = "Unexpected error loading concept with Nid " + conceptNid;
-//			String msg = e.getClass().getName();
-//			logger.error(title, e);
-//			AppContext.getCommonDialogs().showErrorDialog(title, msg, e.getMessage());
-//		}
-//	}
-
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.ViewI#getView()
+	 */
 	@Override
 	public Region getView() {
 		return controller_.getRootNode();
 	}
 
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.TaskWithConceptViewI#getConceptUuid()
+	 */
 	@Override
 	public UUID getConceptUuid() {
 		return controller_.getConcept().getPrimordialUuid();
 	}
 
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.TaskWithConceptViewI#getConceptNid()
+	 */
 	@Override
 	public int getConceptNid() {
 		return controller_.getConcept().getConceptNid();
 	}
 
-	@Override
-	public void setViewMode(ConceptViewMode mode) {
-		throw new RuntimeException("setViewMode(" + mode + ") not supported");
-	}
-
-	@Override
-	public ConceptViewMode getViewMode() {
-		return null;
-	}
-
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#setInitialTask(long)
 	 */
 	@Override
@@ -157,7 +128,7 @@ public class WorkflowAdvancementView extends Stage implements WorkflowAdvancemen
 		controller_.setTask(taskId);
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI#getInitialTask()
 	 */
 	@Override
