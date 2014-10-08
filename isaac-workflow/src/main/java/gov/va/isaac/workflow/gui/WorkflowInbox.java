@@ -18,24 +18,25 @@
  */
 package gov.va.isaac.workflow.gui;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
-
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link WorkflowInbox}
@@ -48,6 +49,7 @@ import org.jvnet.hk2.annotations.Service;
 public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 {
 	WorkflowInboxController controller_;
+	private final Logger logger = LoggerFactory.getLogger(WorkflowInbox.class);
 
 	private WorkflowInbox() throws IOException
 	{
@@ -59,8 +61,59 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
-		// We don't currently have any custom menus with this view
 		ArrayList<MenuItemI> menus = new ArrayList<>();
+		MenuItemI mi = new MenuItemI()
+		{
+			@Override
+			public void handleMenuSelection(Window parent)
+			{
+				// TODO: enable BusyPopover for synchronize()
+				//final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing workflow...", ?);
+				
+				Utility.execute(() -> {
+					try
+					{
+						AppContext.getService(LocalWorkflowRuntimeEngineBI.class).synchronizeWithRemote();
+						//Platform.runLater(() ->  { synchronizePopover.hide(); });
+					}
+					catch (Exception e)
+					{
+						logger.error("Unexpected error synchronizing workflow", e);
+					}
+				});
+			}
+			
+			@Override
+			public int getSortOrder()
+			{
+				return 20;
+			}
+			
+			@Override
+			public String getParentMenuId()
+			{
+				return ApplicationMenus.ACTIONS.getMenuId();
+			}
+			
+			@Override
+			public String getMenuName()
+			{
+				return "Synchronize Workflow";
+			}
+			
+			@Override
+			public String getMenuId()
+			{
+				return "synchronizeWorkflowMenu";
+			}
+			
+			@Override
+			public boolean enableMnemonicParsing()
+			{
+				return false;
+			}
+		};
+		menus.add(mi);
 		return menus;
 	}
 
