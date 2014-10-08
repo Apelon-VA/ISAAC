@@ -19,36 +19,38 @@
 package gov.va.isaac.workflow;
 
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  *
  * @author alo
  */
+@Contract
 public interface ProcessInstanceServiceBI {
 
-    ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables);
+    ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) throws DatastoreException;
 
-    List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner);
+    List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner) throws DatastoreException;
 
-    List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId);
+    List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId) throws DatastoreException;
 
-    List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status);
+    List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status) throws DatastoreException;
 
-    ProcessInstanceCreationRequestI getRequest(int id);
+    ProcessInstanceCreationRequestI getRequest(int id) throws DatastoreException;
 
-    ProcessInstanceCreationRequestI getRequestByWfId(Long wfId);
+    ProcessInstanceCreationRequestI getRequestByWfId(Long wfId) throws DatastoreException;
 
-    List<ProcessInstanceCreationRequestI> getRequests();
+    List<ProcessInstanceCreationRequestI> getRequests() throws DatastoreException;
 
-    List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId);
+    List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId) throws DatastoreException;
 
-    void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId);
+    void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId) throws DatastoreException;
     
-    void createSchema();
+    void createSchema() throws DatastoreException;
     
     void dropSchema();
     

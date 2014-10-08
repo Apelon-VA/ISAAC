@@ -18,35 +18,35 @@
  */
 package gov.va.isaac.workflow;
 
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.util.List;
 import java.util.Map;
-
+import org.jvnet.hk2.annotations.Contract;
 import org.kie.api.task.model.Status;
 
 /**
  *
  * @author alo
  */
+@Contract
 public interface LocalTasksServiceBI {
     
-    List<LocalTask> getOpenOwnedTasks();
-    List<LocalTask> getOpenOwnedTasksByComponentId(String componentId);
-    List<LocalTask> getOwnedTasksByStatus(Status status);
-    List<LocalTask> getOwnedTasksByActionStatus(TaskActionStatus actionStatus);
-    LocalTask getTask(Long id);
-    List<LocalTask> getTasks();
-    List<LocalTask> getTasksByComponentId(String componentId);
-    void saveTask(LocalTask task);
+    List<LocalTask> getOpenOwnedTasks() throws DatastoreException;
+    List<LocalTask> getOpenOwnedTasksByComponentId(String componentId) throws DatastoreException;
+    List<LocalTask> getOwnedTasksByStatus(Status status) throws DatastoreException;
+    List<LocalTask> getOwnedTasksByActionStatus(TaskActionStatus actionStatus) throws DatastoreException;
+    LocalTask getTask(Long id) throws DatastoreException;
+    List<LocalTask> getTasks() throws DatastoreException;
+    List<LocalTask> getTasksByComponentId(String componentId) throws DatastoreException;
+    void saveTask(LocalTask task) throws DatastoreException;
 
-    void completeTask(Long taskId, Map<String, String> outputVariables);
-    void releaseTask(Long taskId);
+    void completeTask(Long taskId, Map<String, String> outputVariables) throws DatastoreException;
+    void releaseTask(Long taskId) throws DatastoreException;
 
-    void setAction(Long taskId, Action action, Map<String, String> outputVariables);
-    void setAction(Long taskId, Action action, TaskActionStatus status, Map<String, String> outputVariables);
+    void setAction(Long taskId, Action action, Map<String, String> outputVariables) throws DatastoreException;
+    void setAction(Long taskId, Action action, TaskActionStatus status, Map<String, String> outputVariables) throws DatastoreException;
 
-    void commit();
-    void createSchema();
-    void dropSchema();
-    void closeConnection();
+    void createSchema() throws DatastoreException;
+    void dropSchema() throws DatastoreException;
     
 }

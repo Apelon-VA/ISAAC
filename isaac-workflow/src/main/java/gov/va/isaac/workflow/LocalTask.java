@@ -18,12 +18,11 @@
  */
 package gov.va.isaac.workflow;
 
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.AppContext;
+import java.rmi.RemoteException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
@@ -69,7 +68,7 @@ public class LocalTask {
     public LocalTask() {
     }
 
-    public LocalTask(TaskSummary summary, boolean fetchAttachments) {
+    public LocalTask(TaskSummary summary, boolean fetchAttachments) throws RemoteException {
         this.id = summary.getId();
         this.name = summary.getName();
         this.status = summary.getStatus();
@@ -79,7 +78,7 @@ public class LocalTask {
             this.owner = "";
         }
         if (fetchAttachments) {
-            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
             this.componentId = (String) vmap.get("in_component_id");
             this.componentName = (String) vmap.get("in_component_name");
@@ -91,7 +90,7 @@ public class LocalTask {
         }
     }
 
-    public LocalTask(Task task, boolean fetchAttachments) {
+    public LocalTask(Task task, boolean fetchAttachments) throws RemoteException {
         this.id = task.getId();
         this.name = task.getNames().iterator().next().getText();
         this.status = task.getTaskData().getStatus();
@@ -102,7 +101,7 @@ public class LocalTask {
         }
 
         if (fetchAttachments) {
-            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
             this.componentId = (String) vmap.get("in_component_id");
             this.componentName = (String) vmap.get("in_component_name");
@@ -200,6 +199,7 @@ public class LocalTask {
 				+ componentName + ", componentId=" + componentId + ", status="
 				+ status + ", owner=" + owner + ", action=" + action
 				+ ", actionStatus=" + actionStatus + ", inputVariables="
-				+ inputVariables.entrySet() + ", outputVariables=" + outputVariables.entrySet() + "]";
+				+ (inputVariables ==  null ? "null" : inputVariables.entrySet()) 
+				+ ", outputVariables=" + (outputVariables == null  ? "null" : outputVariables.entrySet()) + "]";
 	}
 }
