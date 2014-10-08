@@ -284,7 +284,6 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     @Override
     public void createSchema() throws DatastoreException {
         try (Connection conn = ds.getConnection()){
-            //TODO this DB schema is not consistent with the datatypes used for reading and writing....
             log.info("Creating Workflow Process Instance Schema");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
