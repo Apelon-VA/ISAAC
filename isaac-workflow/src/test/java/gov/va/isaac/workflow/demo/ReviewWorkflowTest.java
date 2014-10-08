@@ -18,28 +18,31 @@ package gov.va.isaac.workflow.demo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
-import gov.va.isaac.workflow.*;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.workflow.Action;
+import gov.va.isaac.workflow.LocalTasksServiceBI;
+import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.TaskActionStatus;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *
  * @author alo
  */
-public class ReviewWorkflowTest {
+public class ReviewWorkflowTest extends BaseTest {
 
-    public static void main(String[] args) {
-        LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+    public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException {
+        setup();
+        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
 
-        String userid = "alejandro";
-
-        LocalTasksServiceBI localTasksService = wfEngine.getLocalTaskService();
-        ProcessInstanceServiceBI processService = wfEngine.getProcessInstanceService();
+        LocalTasksServiceBI localTasksService = AppContext.getService(LocalTasksServiceBI.class);
+        ProcessInstanceServiceBI processService = AppContext.getService(ProcessInstanceServiceBI.class);
 
         localTasksService.dropSchema();
         localTasksService.createSchema();
@@ -52,7 +55,7 @@ public class ReviewWorkflowTest {
         wfEngine.synchronizeWithRemote();
 
         // Claim a task
-        wfEngine.claim(1, userid);
+        wfEngine.claim(1);
         wfEngine.synchronizeWithRemote();
 
         //Get 1st task
@@ -65,7 +68,7 @@ public class ReviewWorkflowTest {
         wfEngine.synchronizeWithRemote();
 
         // Claim next task
-        wfEngine.claim(1, userid);
+        wfEngine.claim(1);
         wfEngine.synchronizeWithRemote();
         Long secondTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
@@ -77,7 +80,7 @@ public class ReviewWorkflowTest {
         wfEngine.synchronizeWithRemote();
 
         // Claim next task
-        wfEngine.claim(1, userid);
+        wfEngine.claim(1);
         wfEngine.synchronizeWithRemote();
         Long thirdTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
