@@ -46,20 +46,23 @@ public class RemoteWfEngine
 
 	public RuntimeEngine getRemoteEngine() throws RemoteException
 	{
-		if (remoteEngine != null)
+		RuntimeEngine re = remoteEngine;
+		if (re != null)
 		{
-			return remoteEngine;
+			return re;
 		}
 		else
 		{
 			//TODO prompt the user, block, wait for their response - let them update credentials
 			try
 			{
-				RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(AppContext.getAppConfiguration().getWorkflowServerDeploymentID(), AppContext
-						.getAppConfiguration().getWorkflowServerURLasURL(), ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername(),
+				RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(AppContext.getAppConfiguration().getWorkflowServerDeploymentID(), 
+						AppContext.getAppConfiguration().getWorkflowServerURLasURL(), 
+						ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername(),
 						ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowPassword());
-				remoteEngine = restSessionFactory.newRuntimeEngine();
-				return remoteEngine;
+				re = restSessionFactory.newRuntimeEngine();
+				remoteEngine = re;
+				return re;
 			}
 			catch (RuntimeException e)
 			{
@@ -78,5 +81,13 @@ public class RemoteWfEngine
 		{
 			throw new RemoteException("Server error", e);
 		}
+	}
+	
+	/**
+	 * Calling this will force the next call that requires remote access to reconnect
+	 */
+	public void closeConnection()
+	{
+		remoteEngine = null;
 	}
 }
