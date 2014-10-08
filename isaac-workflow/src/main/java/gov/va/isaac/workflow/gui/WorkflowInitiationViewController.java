@@ -27,8 +27,10 @@ import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -44,6 +46,7 @@ import javafx.scene.layout.Pane;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,9 +132,13 @@ public class WorkflowInitiationViewController {
 		});
 	}
 
-	// TODO: eliminate hard-coding of promotionPathCoordinateTextField
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		return "ISAAC Release Candidate Path";
+		UUID promotionPathUUID = AppContext.getAppConfiguration().getPromotionPathUUID();
+		try {
+			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
+		} catch (IOException | ContradictionException e) {
+			return "";
+		}
 	}
 	
 	// Private helper method to test validity of data required for save

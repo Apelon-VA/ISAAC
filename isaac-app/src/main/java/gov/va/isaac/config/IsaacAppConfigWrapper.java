@@ -19,6 +19,8 @@
 package gov.va.isaac.config;
 
 import java.io.InputStream;
+import java.util.UUID;
+
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -82,5 +84,10 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	{
 		setApplicationTitle(read.getApplicationTitle());
 		setUserRepositoryPath(getUserRepositoryPath());
+		setPromotionPath(read.getPromotionPath());
+	}
+	
+	public UUID getPromotionPathUUID() {
+		return UUID.fromString(getPromotionPath());
 	}
 }

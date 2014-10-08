@@ -13,6 +13,11 @@
 	<!-- Note that JAXB is broken (has been forever) and doesn't properly create javadocs from <documentation> tags like it should for elements...
 	the only real workaround is to duplicate all the doc... which is stupid... but what can you do. -->
 
+	<xs:simpleType name="UUID">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}" />
+		</xs:restriction>
+	</xs:simpleType>	
 	<xs:element name="isaacAppConfig">
 		<xs:complexType>
 			<xs:sequence>
@@ -34,6 +39,16 @@
 							</jxb:property>
 						</xs:appinfo>
 						<xs:documentation>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="promotionPath" type="UUID" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The UUID for the Path to which content published via Workflow will automatically be promoted to.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
 					</xs:annotation>
 				</xs:element>
 			</xs:sequence>

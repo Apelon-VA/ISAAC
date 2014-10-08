@@ -18,6 +18,8 @@
  */
 package gov.va.isaac.interfaces.config;
 
+import java.util.UUID;
+
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -42,4 +44,6 @@ public interface IsaacAppConfigI
 	 * The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.
 	 */
 	public String getUserRepositoryPath();
+	
+	public UUID getPromotionPathUUID();
 }
