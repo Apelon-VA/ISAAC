@@ -28,12 +28,10 @@ import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.InputEvent;
 
 /**
  * EditContentTaskModel

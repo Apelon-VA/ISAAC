@@ -25,15 +25,9 @@
 package gov.va.isaac.workflow.taskmodel;
 
 import gov.va.isaac.workflow.LocalTask;
-import gov.va.isaac.workflow.taskmodel.ReviewContentTaskModel.OutputVariable;
-import gov.va.isaac.workflow.taskmodel.ReviewContentTaskModel.Response;
-import gov.va.isaac.workflow.taskmodel.TaskModel.Validator;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.InputEvent;
 
 /**
  * EditContentTaskModel
