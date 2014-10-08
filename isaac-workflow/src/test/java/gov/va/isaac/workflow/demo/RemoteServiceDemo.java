@@ -20,6 +20,7 @@ package gov.va.isaac.workflow.demo;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.engine.RemoteWfEngine;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -53,7 +54,7 @@ public class RemoteServiceDemo extends BaseTest {
 //        Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(firstTask.getId());
 //        
 //        String componentUuidStr = (String) vmap.get("componentId");
-        List<TaskSummary> possibleTasks = wfEngine.getRemoteTaskService().getTasksAssignedAsPotentialOwner("alejandro", "en-UK");
+        List<TaskSummary> possibleTasks = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService().getTasksAssignedAsPotentialOwner("alejandro", "en-UK");
 
         for (TaskSummary loopTask : possibleTasks) {
             System.out.println("Task: " + loopTask.getName() + " - " + loopTask.getId());

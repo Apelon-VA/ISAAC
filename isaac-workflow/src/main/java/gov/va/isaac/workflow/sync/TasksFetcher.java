@@ -18,12 +18,14 @@
  */
 package gov.va.isaac.workflow.sync;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
+import gov.va.isaac.workflow.TaskActionStatus;
+import gov.va.isaac.workflow.engine.RemoteWfEngine;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-
-import gov.va.isaac.workflow.TaskActionStatus;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.TaskSummary;
@@ -45,9 +47,9 @@ public class TasksFetcher {
     
     private static final Logger log = LoggerFactory.getLogger(TasksFetcher.class);
 
-    public TasksFetcher(TaskService remoteTaskService, LocalTasksServiceBI persistenceApi) {
-        this.remoteTaskService = remoteTaskService;
-        this.persistenceApi = persistenceApi;
+    public TasksFetcher() throws RemoteException {
+        persistenceApi = AppContext.getService(LocalTasksServiceBI.class);
+        remoteTaskService = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService();
         availableStatuses = new ArrayList<Status>();
         availableStatuses.add(Status.Ready);
         availableStatuses.add(Status.Created);

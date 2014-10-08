@@ -23,7 +23,6 @@ import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.rmi.RemoteException;
 import java.util.Map;
 import org.jvnet.hk2.annotations.Contract;
-import org.kie.api.task.TaskService;
 
 /**
  *
@@ -36,9 +35,6 @@ public interface LocalWorkflowRuntimeEngineBI {
     public void synchronizeWithRemote();
     
     public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) throws RemoteException, DatastoreException;
-    
-    //TODO do I actually  need this?
-    public TaskService getRemoteTaskService() throws RemoteException;
     
     public Map<String,Object> getVariablesMapForTaskId(Long taskId) throws RemoteException;
     

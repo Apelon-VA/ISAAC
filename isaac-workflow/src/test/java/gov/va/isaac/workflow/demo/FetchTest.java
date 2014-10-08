@@ -21,7 +21,6 @@ package gov.va.isaac.workflow.demo;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.sync.TasksFetcher;
 import java.io.IOException;
@@ -42,9 +41,8 @@ public class FetchTest extends BaseTest {
         tapi.dropSchema();
         tapi.createSchema();
         String userId = "alejandro";
-        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
         
-        TasksFetcher tf = new TasksFetcher(wfEngine.getRemoteTaskService(), tapi);
+        TasksFetcher tf = new TasksFetcher();
         
         try {
             System.out.println("Reading Local Tasks Repository (no filters): ");
