@@ -18,30 +18,33 @@
  */
 package gov.va.isaac.workflow.demo;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
+import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 /**
  *
  * @author alo
  */
-public class ProcessInstanceCreationTester {
+public class ProcessInstanceCreationTester extends BaseTest {
     
-    public static void main(String[] args) {
-        ProcessInstanceCreationRequestsAPI papi = new ProcessInstanceCreationRequestsAPI();
-        papi.dropSchema();
-        papi.createSchema();
+    public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException, DatastoreException {
+    	setup();
+    	ProcessInstanceServiceBI pis = AppContext.getService(ProcessInstanceServiceBI.class);
+        pis.dropSchema();
+        pis.createSchema();
         Map<String,String> variables = new HashMap<String, String>();
         variables.put("key 1", "value 1");
         variables.put("key 2", "value 2");
-        papi.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
-        for (ProcessInstanceCreationRequestI loopR : papi.getRequests()) {
+        pis.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
+        for (ProcessInstanceCreationRequestI loopR : pis.getRequests()) {
             System.out.println("id: " + loopR.getId() + " - pname: "  + loopR.getProcessName() + " - cid: " + loopR.getComponentId() + " - cname: " + loopR.getComponentName() + " - rtime: "  + loopR.getRequestTime() + " - status: "  + loopR.getStatus() + " - userId: "  + loopR.getUserId());
         }
         
