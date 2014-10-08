@@ -19,6 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
@@ -29,6 +30,7 @@ import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
@@ -67,18 +69,20 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 			@Override
 			public void handleMenuSelection(Window parent)
 			{
-				// TODO: enable BusyPopover for synchronize()
-				//final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing workflow...", ?);
+				final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing workflow...", parent.getScene().getRoot());
 				
 				Utility.execute(() -> {
 					try
 					{
 						AppContext.getService(LocalWorkflowRuntimeEngineBI.class).synchronizeWithRemote();
-						//Platform.runLater(() ->  { synchronizePopover.hide(); });
 					}
 					catch (Exception e)
 					{
 						logger.error("Unexpected error synchronizing workflow", e);
+					}
+					finally 
+					{
+						Platform.runLater(() ->  { synchronizePopover.hide(); });
 					}
 				});
 			}
@@ -117,7 +121,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 		return menus;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.ViewI#getView()
 	 */
 	@Override
@@ -145,7 +149,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 		return controller_.getView();
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
 	 */
 	@Override
@@ -197,7 +201,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 		return menuItem;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
 	@Override
