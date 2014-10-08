@@ -24,22 +24,21 @@
  */
 package gov.va.isaac.workflow;
 
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
+import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import org.glassfish.hk2.api.PerLookup;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
-import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
 
 /**
  * ComponentWorkflowService
@@ -48,18 +47,23 @@ import gov.va.isaac.workflow.persistence.ProcessInstanceCreationRequestsAPI;
  *
  */
 @Service
-@PerLookup
+@Singleton
 public class ComponentWorkflowService implements ComponentWorkflowServiceI {
-	private static final Logger LOG = LoggerFactory.getLogger(ComponentWorkflowService.class);
-
-	private final LocalWorkflowRuntimeEngineBI wfEngine_;
 	
-	public ComponentWorkflowService() {
-		// TODO: determine if LocalWorkflowRuntimeEngineBI wfEngine_ should be static
-		wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+	private final Logger LOG = LoggerFactory.getLogger(ComponentWorkflowService.class);
+
+	@Inject
+	private LocalWorkflowRuntimeEngineBI wfEngine_;
+	
+	@Inject
+	private ProcessInstanceServiceBI pis_;
+	
+	private ComponentWorkflowService() 
+	{
+		//For HK2 to construct
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#synchronizeWithRemote()
 	 */
 	@Override
@@ -67,27 +71,41 @@ public class ComponentWorkflowService implements ComponentWorkflowServiceI {
 		wfEngine_.synchronizeWithRemote();
 	}
 	
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI, java.lang.String, java.lang.String)
+	/**
+	 * reads the preferred description from the concept, and calls 
+	 * {@link ComponentWorkflowServiceI#createNewComponentWorkflowRequest(String, UUID, String, Map)}
 	 */
-	public ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(ConceptVersionBI conceptVersion, String userName, String processName, Map<String,String> variables) throws IOException, ContradictionException {
+	public ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(ConceptVersionBI conceptVersion, String processName, 
+			Map<String,String> variables) throws IOException, ContradictionException {
 		String preferredDescription = conceptVersion.getPreferredDescription().getText();
 
-		return createNewComponentWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), userName, processName, variables);
+		return createNewComponentWorkflowRequest(preferredDescription, conceptVersion.getPrimordialUuid(), processName, variables);
 	}
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.workflow.ConceptWorkflowServiceI#createNewConceptWorkflowRequest(java.lang.String, java.util.UUID, java.lang.String, java.lang.String)
+	
+	/**
+	 * @see {@link ComponentWorkflowServiceI#createNewComponentWorkflowRequest(String, UUID, String, Map)}
 	 */
 	@Override
-	public ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(String preferredDescription, UUID uuid, String userName, String processName, Map<String,String> variables) {
-		ProcessInstanceCreationRequestsAPI popi = new ProcessInstanceCreationRequestsAPI();
-		LOG.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + uuid.toString() + "\", prefDesc=\"" + preferredDescription + "\", user=\"" + userName + "\")");
-        if (variables == null) {
-            variables = new HashMap<String,String>();
-        }
-		ProcessInstanceCreationRequestI createdRequest = popi.createRequest(processName, uuid, preferredDescription, userName, variables);
-		LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
-		
-		return createdRequest;
+	public ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(String preferredDescription, UUID uuid, String processName, 
+			Map<String,String> variables) throws IOException {
+		try
+		{
+			LOG.debug("Invoking ProcessInstanceCreationRequestsAPI().createRequest(processName=\"" + processName + "\", conceptUuid=\"" + uuid.toString() 
+					+ "\", prefDesc=\"" + preferredDescription + "\")");
+			if (variables == null) {
+				variables = new HashMap<String,String>();
+			}
+			
+			String user = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
+			
+			ProcessInstanceCreationRequestI createdRequest = pis_.createRequest(processName, uuid, preferredDescription, user, variables);
+			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
+			
+			return createdRequest;
+		}
+		catch (DatastoreException e)
+		{
+			throw new IOException("Error creating request", e);
+		}
 	}
 }
