@@ -25,13 +25,11 @@
 package gov.va.isaac.workflow.taskmodel;
 
 import gov.va.isaac.workflow.LocalTask;
-import gov.va.isaac.workflow.taskmodel.TaskModel.UserActionOutputResponse;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 
 /**
@@ -89,8 +87,7 @@ public class ApproveContentTaskModel extends TaskModel {
 	
 	public enum OutputVariable {
 		out_response("Response"),
-		out_comment("Comment"),
-		out_submit_list("Submission List");
+		out_comment("Comment");
 
 		private final String labelName;
 		private OutputVariable(String labelName) {
@@ -192,18 +189,6 @@ public class ApproveContentTaskModel extends TaskModel {
 			return responseComboBox;
 		}
 
-		case out_submit_list: {
-			TextArea submitListTextArea = new TextArea();
-			
-			StringProperty submitListProperty = getOutputVariableValueProperty(variableName);
-
-			submitListProperty.bind(submitListTextArea.textProperty());
-			
-			// Initialize state of input control, triggering handlers/listeners
-			submitListTextArea.setText("");
-			
-			return submitListTextArea;
-		}
 		
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);
 		}
