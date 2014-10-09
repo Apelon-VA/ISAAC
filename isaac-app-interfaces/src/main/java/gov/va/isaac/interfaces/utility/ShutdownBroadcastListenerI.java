@@ -22,9 +22,12 @@ import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 
 
 /**
- * ShutdownBroadcastI
+ * {@link ShutdownBroadcastListenerI}
  *
  * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
+ * 
+ * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
+ * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
  * 
  * @see ApplicationWindowI
  *

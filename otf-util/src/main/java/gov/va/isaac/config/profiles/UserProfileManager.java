@@ -265,6 +265,15 @@ public class UserProfileManager implements ServicesToPreloadI
 	}
 	
 	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
+	 */
+	@Override
+	public void shutdown()
+	{
+		// noop
+	}
+	
+	/**
 	 * Returns a sorted list of all user names that could potentially log on, based on 
 	 * the existence of their profiles directory.
 	 */

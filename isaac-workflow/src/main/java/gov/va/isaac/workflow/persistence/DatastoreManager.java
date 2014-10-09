@@ -18,9 +18,7 @@
  */
 package gov.va.isaac.workflow.persistence;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,7 +40,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  */
 @Service
 @Singleton
-public final class DatastoreManager implements ServicesToPreloadI, ShutdownBroadcastListenerI
+public final class DatastoreManager implements ServicesToPreloadI
 {
 	private static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
 	private static final String protocol = "jdbc:derby:";
@@ -56,7 +54,6 @@ public final class DatastoreManager implements ServicesToPreloadI, ShutdownBroad
 	private DatastoreManager()
 	{
 		//For HK2 to construct
-		//AppContext.getMainApplicationWindow().registerShutdownListener(this);
 	}
 	
 	public DataSource getDataSource()
@@ -109,7 +106,7 @@ public final class DatastoreManager implements ServicesToPreloadI, ShutdownBroad
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
 	 */
 	@Override
 	public void shutdown()

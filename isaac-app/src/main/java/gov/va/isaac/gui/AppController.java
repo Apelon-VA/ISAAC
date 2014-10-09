@@ -27,6 +27,7 @@ import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class AppController {
+public class AppController implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
@@ -83,7 +84,7 @@ public class AppController {
     public AppController() {
 
         AppContext.getServiceLocator().inject(this);
-
+        AppContext.getMainApplicationWindow().registerShutdownListener(this);
         ToolTipDefaultsFixer.setTooltipTimers(100, 20000, 200);
         
         root_ = new BorderPane();
@@ -215,7 +216,7 @@ public class AppController {
         return root_;
     }
 
-    public void finishInit() {
+    protected void finishInit() {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
         
@@ -317,5 +318,20 @@ public class AppController {
                 break;
             }
         }
+    }
+
+    /**
+     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
+     */
+    @Override
+    public void shutdown()
+    {
+        //notify anything that was preloaded
+        for (ServicesToPreloadI service : preloadRequested_)
+        {
+            LOG.debug("Preloading {}", service);
+            service.shutdown();
+        }
+        
     }
 }
