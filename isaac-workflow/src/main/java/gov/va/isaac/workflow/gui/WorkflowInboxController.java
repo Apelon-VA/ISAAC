@@ -250,6 +250,8 @@ public class WorkflowInboxController
 		synchronizeButton.setOnAction((action) -> {
 			synchronize(true);
 		});
+		
+		loadContent();
 	}
 
 	private String getCompType(String componentName) {
