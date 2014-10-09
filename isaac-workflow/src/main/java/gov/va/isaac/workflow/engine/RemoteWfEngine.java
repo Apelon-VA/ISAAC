@@ -20,8 +20,11 @@ package gov.va.isaac.workflow.engine;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+
 import java.rmi.RemoteException;
+
 import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Service;
 import org.kie.api.runtime.manager.RuntimeEngine;
 import org.kie.api.task.TaskService;
@@ -56,8 +59,8 @@ public class RemoteWfEngine
 			//TODO DAN prompt the user, block, wait for their response - let them update credentials
 			try
 			{
-				RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(AppContext.getAppConfiguration().getWorkflowServerDeploymentID(), 
-						AppContext.getAppConfiguration().getWorkflowServerURLasURL(), 
+				RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(AppContext.getAppConfiguration().getWorkflowServerDeploymentId(), 
+						AppContext.getAppConfiguration().getWorkflowServerUrlAsURL(), 
 						ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername(),
 						ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowPassword());
 				re = restSessionFactory.newRuntimeEngine();

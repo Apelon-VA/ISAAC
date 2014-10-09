@@ -25,8 +25,11 @@
 package gov.va.isaac.workflow.taskmodel;
 
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.taskmodel.ApproveContentTaskModel.OutputVariable;
+import gov.va.isaac.workflow.taskmodel.TaskModel.UserActionOutputResponse;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 
 /**
@@ -80,8 +83,13 @@ public class EditContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	EditContentTaskModel(LocalTask inputTask) {
-		super(inputTask, OutputVariable.values());
+	EditContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+		super(inputTask, userActionOutputResponseComboBox, OutputVariable.values());
+		
+		userActionOutputResponseComboBox.getItems().add(
+				UserActionOutputResponse.sendToReviewer);
+		
+		userActionOutputResponseComboBox.getSelectionModel().selectFirst();
 	}
 
 	/**
@@ -104,7 +112,7 @@ public class EditContentTaskModel extends TaskModel {
 	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#createOutputNode(java.lang.String)
 	 */
 	@Override
-	protected Node createOutputVariableInputNode(String variableName) {
+	protected Node getOrCreateOutputVariableInputNode(String variableName) {
 		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
 		
 		switch (outputVariable) {

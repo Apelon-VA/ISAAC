@@ -22,31 +22,32 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.taskmodel.TaskModel;
+import gov.va.isaac.workflow.taskmodel.TaskModel.UserActionOutputResponse;
 import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
+
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.Node;
+
 import javax.inject.Inject;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -66,89 +67,54 @@ public class WorkflowAdvancementViewController
 	// Underlying concept for loading detail pane
 	private ConceptVersionBI conceptVersion;
 
-	// Embedded concept detail pane
-	PopupConceptViewI conceptView;
-	
 	@FXML private BorderPane borderPane;
-	@FXML private TabPane centralTabPane;
-	@FXML private Button saveActionButton;
-
-	@FXML private Label taskLabel;
-	@FXML private Button releaseTaskActionButton;
-	//@FXML private ComboBox<Action> actionComboBox;
-	
-	@FXML private Button viewTaskDetailsButton;
+	//@FXML private TextArea commentTextField;
+	@FXML private Button closeButton;
+	@FXML private Button advanceButton;
+	@FXML private Label generatedComponentSummary;
+	@FXML private ComboBox<UserActionOutputResponse> actionComboBox;	
+	@FXML private GridPane advanceWfGridPane;
 	
 	private WorkflowAdvancementView stage;
-
-	private GridPane inputTabGridPane;
-	private Tab inputTab;
-	private Label inputTabLabel;
-	private ScrollPane conceptScrollPane;
-
 	private TaskModel taskModel = null;
 	
 	@Inject
 	private LocalTasksServiceBI taskService_;
 
+	private LocalTask initialTask;
+
+	private UUID componentId;
+
 	// Initialize GUI (invoked by FXML)
 	@FXML
 	void initialize()
 	{
-		assert saveActionButton != null : "fx:id=\"saveActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert releaseTaskActionButton != null : "fx:id=\"releaseTaskActionButton\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert taskLabel != null : "fx:id=\"taskLabel\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		assert centralTabPane != null : "fx:id=\"centralTabPane\" was not injected: check your FXML file 'WorkflowAdvancementView.fxml'.";
-		
 		AppContext.getServiceLocator().inject(this);
 
-		conceptScrollPane = new ScrollPane();
-		conceptScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
-		conceptScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-		Tab conceptTab = new Tab("Concept Details");
-		conceptTab.setContent(conceptScrollPane);
-		conceptTab.setClosable(false);
-		centralTabPane.getTabs().add(conceptTab);
-		
-		inputTabLabel = new Label("Input");
-		inputTab = new Tab();
-		inputTab.setGraphic(inputTabLabel);
-		
-		ScrollPane inputTabScrollPane = new ScrollPane();
-		inputTabScrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
-		inputTabScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-		inputTabGridPane = new GridPane();
-		inputTabScrollPane.setContent(inputTabGridPane);
-		inputTab.setContent(inputTabScrollPane);
-		centralTabPane.getTabs().add(inputTab);
+		closeButton.setOnAction((action) -> {
+			stage.close();
+		});
 		
 		// Disabling saveActionButton until dependencies met 
-		saveActionButton.setDisable(true);
-
-		viewTaskDetailsButton.setOnAction((e) -> {
-			WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-			view.setTask(taskModel.getTask().getId());
-			view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-		});
-
-		// This code only for embedded concept detail view
-		// Use H2K to find and initialize conceptView as a ConceptView
-		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		advanceButton.setDisable(true);
 
 		// Activation of save depends on taskModel.isSavable()
-		saveActionButton.setOnAction((action) -> {
+		advanceButton.setOnAction((action) -> {
 			if (taskModel.isSavable()) {
 				Platform.runLater(() -> 
 				{
 					unbindSaveActionButtonFromModelIsSavableProperty();
-					saveActionButton.setDisable(true);
+					advanceButton.setDisable(true);
 				});
-				final BusyPopover saveActionBusyPopover = BusyPopover.createBusyPopover("Saving action...", saveActionButton);
+				final BusyPopover saveActionBusyPopover = BusyPopover.createBusyPopover("Saving action...", advanceButton);
 
 				Utility.execute(() -> {
 					try
 					{
 						taskService_.completeTask(taskModel.getTask().getId(), taskModel.getCurrentOutputVariables());
+						
+						addToPromotionPath();
+						
 						Platform.runLater(() -> 
 						{
 							//refreshSaveActionButtonBinding();
@@ -170,39 +136,6 @@ public class WorkflowAdvancementViewController
 				logger.error("Error completing task: fields not set: task={}", taskModel.getTask());
 			}
 		});
-
-		// Activation of release
-		releaseTaskActionButton.setOnAction((action) -> {
-			Platform.runLater(() -> 
-			{
-				unbindSaveActionButtonFromModelIsSavableProperty();
-				saveActionButton.setDisable(true);
-				releaseTaskActionButton.setDisable(true);
-			});
-			final BusyPopover claimPopover = BusyPopover.createBusyPopover("Releasing action...", releaseTaskActionButton);
-
-			Utility.execute(() -> {
-				try
-				{
-					taskService_.releaseTask(taskModel.getTask().getId());
-					Platform.runLater(() -> 
-					{
-						
-
-						if (stage != null) {
-							stage.close();
-						}
-					});
-				}
-				catch (Exception e)
-				{
-					claimPopover.hide();
-					logger.error("Error releasing task: unexpected " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
-				} finally {
-					cleanupAfterReleaseTaskAction(this, claimPopover);
-				}
-			});
-		});
 	}
 
 	/*
@@ -218,25 +151,8 @@ public class WorkflowAdvancementViewController
 		});
 	}
 
-	/*
-	 * Need this method as workaround for compiler/JVM bug:
-	 * { @link http://stackoverflow.com/questions/13219297/bad-type-on-operand-stack-using-jdk-8-lambdas-with-anonymous-inner-classes }
-	 * { @link http://mail.openjdk.java.net/pipermail/lambda-dev/2012-September/005938.html }
-	 */
-	private static void cleanupAfterReleaseTaskAction(WorkflowAdvancementViewController ctrlr, BusyPopover claimPopover) {
-		Platform.runLater(() ->  {
-		claimPopover.hide();
-		ctrlr.refreshSaveActionButtonBinding();
-		ctrlr.releaseTaskActionButton.setDisable(false);
-		});
-	}
-
 	void setStage(WorkflowAdvancementView stage) {
 		this.stage = stage;
-	}
-
-	private void loadTaskLabel() {
-		taskLabel.setText("#" + taskModel.getTask().getId() + ": " + taskModel.getTask().getComponentName() + ": " + taskModel.getTask().getName());
 	}
 
 	public LocalTask getTask() {
@@ -246,35 +162,66 @@ public class WorkflowAdvancementViewController
 	public void setTask(long taskId) {
 		//TODO Joel - what is a user supposed to do about any of these failures?  Shouldn't all of these be putting up a dialog informing them that the 
 		//set task failed?  You can't just silently eat them - or can you eat some of these?
+
+		final String errorDialogTitle = "Failed Setting Workflow Task";
+		final String errorDialogMsg = "Failed setting initial workflow task by id #" + taskId;
 		if (taskModel != null) {
-			String msg = "Cannot reset initialTask from " + taskModel.getTask().getId() + " to " + taskId;
-			logger.error(msg);
-			throw new RuntimeException(msg);
+			String details = "Cannot reset initialTask from #" + taskModel.getTask().getId() + " to #" + taskId;
+			logger.error(details);
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
+			
+			return;
 		}
 
 		if (conceptVersion != null) {
-			String msg = "Cannot set initialTask to " + taskId + " when conceptVersion is already set to " + new SimpleDisplayConcept(conceptVersion);
-			logger.error(msg);
-			throw new RuntimeException(msg);
+			String details = "Cannot set initialTask to #" + taskId + " when conceptVersion is already set to " + new SimpleDisplayConcept(conceptVersion);
+
+			logger.error(details);
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
+
+			return;
 		}
 		
-		LocalTask initialTask = null;
+		initialTask = null;
 		try
 		{
 			initialTask = taskService_.getTask(taskId);
 		}
 		catch (DatastoreException e1)
 		{
-			logger.error("error getting task", e1);
+			String details = "Failed loading initial workflow task #" + taskId + ". Caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
+			logger.error(details, e1);
+
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
+
+			return;
 		}
 
 		if (initialTask == null) {
-			logger.error("Task retrieved by id {} is null", taskId);
+			String details = "Failed loading initial workflow task #" + initialTask.getId() + " (got null)";
+			
+			logger.error(details);
+			
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
 
 			return;
 		}
 		if (initialTask.getComponentId() == null) {
-			logger.error("Component ID for task {} is null", initialTask.getId());
+			String details = "Component ID for task #" + initialTask.getId() + " is null";
+
+			logger.error(details);
+
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			//stage.close();
 
 			return;
 		}
@@ -282,7 +229,12 @@ public class WorkflowAdvancementViewController
 		try {
 			componentUuid = UUID.fromString(initialTask.getComponentId());
 		} catch (IllegalArgumentException e) {
-			logger.error("Component ID for task {} is not a valid UUID", initialTask.getId());
+			String details = "Component ID for task #" + initialTask.getId() + " is not a valid UUID";
+			logger.error(details);
+
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			//stage.close();
 
 			return;
 		}
@@ -294,7 +246,11 @@ public class WorkflowAdvancementViewController
 
 			containingConcept = WBUtility.getConceptVersion(componentUuid);
 			if (containingConcept == null) {
-				logger.error("Component ID for task " + initialTask.getId() + " retrieved a null concept");
+				String details = "Component ID for task #" + initialTask.getId() + " retrieved a null concept";
+
+				logger.error(details);
+				
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
 
 				return;
 			}
@@ -302,12 +258,21 @@ public class WorkflowAdvancementViewController
 			try {
 				containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
 			} catch (Exception e) {
-				logger.error("Failed getting version from ComponentChronicleBI task " + initialTask.getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-				e.printStackTrace();
+				String details = "Failed getting version from ComponentChronicleBI task " + initialTask.getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
+
+				logger.error(details, e);
+				
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+				
+				return;
 			}
 
 			if (containingConcept == null) {
-				logger.error("ComponentChronicleBI task " + initialTask.getId() + " contained a null enclosing concept");
+				String details = "ComponentChronicleBI task " + initialTask.getId() + " contained a null enclosing concept";
+
+				logger.error(details);
+				
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
 
 				return;
 			}
@@ -319,7 +284,7 @@ public class WorkflowAdvancementViewController
 		
 		conceptVersion = containingConcept;
 		
-		taskModel = TaskModelFactory.newTaskModel(initialTask);
+		taskModel = TaskModelFactory.newTaskModel(initialTask, actionComboBox);
 
 		taskModel.getOutputVariablesSavableProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -327,19 +292,11 @@ public class WorkflowAdvancementViewController
 					ObservableValue<? extends Boolean> observable,
 					Boolean oldValue,
 					Boolean newValue) {
-				setInputTabColorBasedOnTaskModelOutputVariables();
-			}});
-		setInputTabColorBasedOnTaskModelOutputVariables();
+				
+			}
+		});
 		
 		loadContent();
-	}
-
-	private void setInputTabColorBasedOnTaskModelOutputVariables() {
-		if (taskModel.getOutputVariablesSavableProperty().get()) {
-			inputTabLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
-		} else {
-			inputTabLabel.setStyle("-fx-text-fill: red;");
-		}
 	}
 
 	ConceptVersionBI getConcept() {
@@ -347,42 +304,36 @@ public class WorkflowAdvancementViewController
 	}
 	
 	private void bindSaveActionButtonToModelIsSavableProperty() {
-		saveActionButton.disableProperty().bind(taskModel.getIsSavableProperty().not());
+		advanceButton.disableProperty().bind(taskModel.getIsSavableProperty().not());
 	}
 	private void unbindSaveActionButtonFromModelIsSavableProperty() {
-		saveActionButton.disableProperty().unbind();
-	}
-	
-	private void loadTaskModel() {
-		
-		int rowIndex = 0;
-		for (String outputVariable : taskModel.getOutputVariableNames()) {
-			this.inputTabGridPane.addRow(rowIndex++, taskModel.getOutputVariableInputNodeLabel(outputVariable), taskModel.getOutputVariableInputNode(outputVariable));
-		}
-		
-		for (Node child : inputTabGridPane.getChildren()) {
-			VariableGridPaneNodeConfigurationHelper.configureNode(child);
-		}
+		advanceButton.disableProperty().unbind();
 	}
 
-	// Load data into GUI components
+	// Load data into GUI components not already loaded by TaskModel
 	protected void loadContent()
 	{
-		loadTaskLabel();
-		
+		componentId = UUID.fromString(initialTask.getComponentId());
+		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
+
 		loadTaskModel();
-		
-		loadConcept();
 		
 		refreshSaveActionButtonBinding();
 	}
-
-	private void loadConcept() {
-		// loadConcept() must not be called before setTask()
-		conceptView.setConcept(conceptVersion.getNid());
-		conceptScrollPane.setContent(conceptView.getView());
-	}
 	
+	private void loadTaskModel() {
+		int rowIndex = 1;
+		for (String outputVariable : taskModel.getOutputVariableNames()) {
+			if (taskModel.getOutputVariableInputNode(outputVariable) != this.actionComboBox) {
+				advanceWfGridPane.addRow(rowIndex++, taskModel.getOutputVariableInputNodeLabel(outputVariable), taskModel.getOutputVariableInputNode(outputVariable));
+			}
+		}
+		
+//		for (Node child : inputTabGridPane.getChildren()) {
+//			VariableGridPaneNodeConfigurationHelper.configureNode(child);
+//		}
+	}
+
 	private void refreshSaveActionButtonBinding()
 	{
 		unbindSaveActionButtonFromModelIsSavableProperty();
@@ -391,5 +342,9 @@ public class WorkflowAdvancementViewController
 	
 	public Region getRootNode() {
 		return borderPane;
+	}
+
+	private void addToPromotionPath() {
+		// TODO Auto-generated method stub
 	}
 }

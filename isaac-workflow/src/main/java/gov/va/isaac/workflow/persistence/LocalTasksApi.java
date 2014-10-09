@@ -78,6 +78,8 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
     @Override
     public void saveTask(LocalTask task) throws DatastoreException {
+    	WorkflowHistoryHelper.createAndAddNewEntry(task, Action.NONE, task.getInputVariables());
+
         try (Connection conn = ds.getConnection()) {
             try {
                 PreparedStatement psInsert = conn.prepareStatement("insert into local_tasks values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -143,29 +145,15 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
     @Override
     public void setAction(Long taskId, Action action, Map<String,String> outputVariables) throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
-            PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
-            psUpdateStatus.setString(1, action.name());
-            psUpdateStatus.setString(2, TaskActionStatus.Pending.name());
-            psUpdateStatus.setString(3, serializeMap(outputVariables));
-            psUpdateStatus.setInt(4, Integer.parseInt(taskId.toString()));
-            int updatedRowCount = psUpdateStatus.executeUpdate();
-            if (updatedRowCount != 1)
-            {
-                throw new DatastoreException("update action  on existing task failed!");
-            }
-            conn.commit();
-        } catch (RuntimeException re) {
-            log.error("Caught {} \"{}\" setting Action {} on task {}: {}", re.getClass().getName(), re.getLocalizedMessage(), action, taskId, outputVariables);
-            throw re;
-        } catch (SQLException ex1) {
-            throw new DatastoreException(ex1);
-        }
+        setAction(taskId, action, TaskActionStatus.Pending, outputVariables);
     }
 
     @Override
     public void setAction(Long taskId, Action action, TaskActionStatus actionStatus, Map<String,String> outputVariables) throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
+    	LocalTask task = this.getTask(taskId);
+    	WorkflowHistoryHelper.createAndAddNewEntry(task, action, outputVariables);
+    	
+    	try (Connection conn = ds.getConnection()){
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action.name());
             psUpdateStatus.setString(2, actionStatus.name());

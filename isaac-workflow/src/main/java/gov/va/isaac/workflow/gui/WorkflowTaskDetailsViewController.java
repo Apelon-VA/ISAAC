@@ -19,22 +19,28 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
+
 import java.util.Map;
 import java.util.UUID;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+
 import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +104,10 @@ public class WorkflowTaskDetailsViewController {
 	@FXML private BorderPane mainBorderPane;
 
 	@FXML private Button closeButton;
+	@FXML private Button openConceputButton;
 	@FXML private Button releaseTaskButton;
 	@FXML private Button advanceWfButton;
+	@FXML private Button viewWfHxButton;
 
 	@FXML private Label generatedComponentSummary;
 
@@ -118,6 +126,8 @@ public class WorkflowTaskDetailsViewController {
 	private LocalWorkflowRuntimeEngineBI workflowEngine;
 	@Inject
 	private LocalTasksServiceBI localTasksService;
+
+	private int conceptId;
 	
 	public Pane getRoot() {
 		return mainBorderPane;
@@ -177,10 +187,14 @@ public class WorkflowTaskDetailsViewController {
 				AppContext.getCommonDialogs().showErrorDialog("Unexpected error releasing task", e1);
 			}
 		});
+		openConceputButton.setOnAction((e) -> openConceptPanel());
+		viewWfHxButton.setOnAction((e) -> viewWorkflowHistory());
 	}
 
 	private void loadContents() {
-		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(UUID.fromString(task.getComponentId())));
+		UUID componentId = UUID.fromString(task.getComponentId());
+		conceptId = WBUtility.getComponentChronicle(componentId).getConceptNid();
+		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
 
 		taskIdLabel.setText(Long.toString(task.getId()));
 
@@ -255,8 +269,18 @@ public class WorkflowTaskDetailsViewController {
 		workflowTaskDetailsView.close();
 	}
 	
+	private void openConceptPanel() {
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		cv.setConcept(conceptId);
+		cv.showView(null);
+	}
+
 	private void doReleaseTask() throws DatastoreException {
 		workflowEngine.release(task.getId());
 		workflowTaskDetailsView.close();
+	}
+
+	private void viewWorkflowHistory() {
+		// TODO Auto-generated method stub
 	}
 }

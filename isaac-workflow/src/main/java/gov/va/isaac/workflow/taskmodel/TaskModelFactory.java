@@ -24,7 +24,9 @@
  */
 package gov.va.isaac.workflow.taskmodel;
 
+import javafx.scene.control.ComboBox;
 import gov.va.isaac.workflow.LocalTask;
+import gov.va.isaac.workflow.taskmodel.TaskModel.UserActionOutputResponse;
 
 /**
  * TaskModelFactory
@@ -58,16 +60,16 @@ public class TaskModelFactory {
 		}
 	};
 
-	public static TaskModel newTaskModel(LocalTask task) {
+	public static TaskModel newTaskModel(LocalTask task, ComboBox<UserActionOutputResponse> userActionResponseComboBox) {
 		TaskType taskType = TaskType.valueOfNodeName(task.getName());
 
 		switch(taskType) {
 		case edit_content:
-			return new EditContentTaskModel(task);
+			return new EditContentTaskModel(task, userActionResponseComboBox);
 		case review_content:
-			return new ReviewContentTaskModel(task);
+			return new ReviewContentTaskModel(task, userActionResponseComboBox);
 		case approve_content:
-			return new ApproveContentTaskModel(task);
+			return new ApproveContentTaskModel(task, userActionResponseComboBox);
 
 		default: throw new IllegalArgumentException("Unsupported TaskType " + taskType);
 		}
