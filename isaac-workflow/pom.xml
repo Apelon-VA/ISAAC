@@ -33,20 +33,7 @@
         <dependency>
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
-            <version>0.9.2.1</version>
-            <exclusions>
-                <exclusion>
-                    <!-- This old version doesn't support any modern logger -->
-                    <groupId>com.mchange</groupId>
-                    <artifactId>mchange-commons-java</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- Manual reference this, since the ref above is bad -->
-        <dependency>
-            <groupId>com.mchange</groupId>
-            <artifactId>mchange-commons-java</artifactId>
-            <version>0.2.7</version>
+            <version>0.9.5-pre8</version>
         </dependency>
         <dependency>
             <groupId>gov.va.isaac.modules</groupId>
