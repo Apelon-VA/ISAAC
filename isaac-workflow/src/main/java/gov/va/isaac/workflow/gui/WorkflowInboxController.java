@@ -79,7 +79,6 @@ public class WorkflowInboxController
 	@FXML ResourceBundle resources;
 	@FXML URL location;
 	@FXML Button claimTasksButton;
-	@FXML Button synchronizeButton;
 	@FXML Label userName;
 	@FXML TableView<LocalTask> taskTable;
 
@@ -102,7 +101,6 @@ public class WorkflowInboxController
 	{
 		AppContext.getServiceLocator().inject(this);
 		assert claimTasksButton != null : "fx:id=\"claimTasksButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert synchronizeButton != null : "fx:id=\"synchronizeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert userName != null : "fx:id=\"userName\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
@@ -247,10 +245,6 @@ public class WorkflowInboxController
 			});
 		});
 
-		synchronizeButton.setOnAction((action) -> {
-			synchronize(true);
-		});
-		
 		loadContent();
 	}
 
@@ -264,14 +258,8 @@ public class WorkflowInboxController
 	}
 	
 	private void synchronize(final boolean displayBusyPopover) {
-		synchronizeButton.setDisable(true);
-
 		BusyPopover synchronizePopover = null;
 		
-		if (displayBusyPopover) {
-			synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
-		}
-
 		final BusyPopover finalBusyPopover = synchronizePopover;
 		
 		Utility.execute(() -> {
@@ -283,9 +271,6 @@ public class WorkflowInboxController
 			{
 				LOG.error("Unexpected error synchronizing tasks", e);
 			} finally {
-				if (finalBusyPopover != null) {
-					cleanup(finalBusyPopover, synchronizeButton, this);
-				}
 			}
 		});
 	}
