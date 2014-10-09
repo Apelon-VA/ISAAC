@@ -20,6 +20,7 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -79,19 +80,57 @@ public final class DatastoreManager implements ServicesToPreloadI
 		Utility.execute(() -> {
 			try
 			{
+				File derbyFolder = new File(dbName); 
+				if (!derbyFolder.exists())
+				{
+					log.info("No Derby DB folder found at {}, creating a new DB", derbyFolder.getAbsolutePath());
+					//So, derby is silly, and doesn't have any way you can configure it for a pool, while at the same time, allowing
+					//it to create a database, if necessary.  The only way I've found to keep it quiet during startup is to see if the DB
+					//exists, if not, connect to it once with the 'special' URL, then shut that down - then start up the proper pool with the 
+					//normal URL.  (facepalm)
+					DriverManager.getConnection(protocol + dbName + ";create=true", "workflow", "workflow");
+					try
+					{
+						DriverManager.getConnection(protocol + ";shutdown=true;deregister=false");
+					}
+					catch (SQLException e)
+					{
+						//Yes... this is really how derby signals a proper DB shutdown.  Sigh.
+						if (e.getErrorCode() == 50000)
+						{
+							log.debug("Initial Workflow database shutdown");
+						}
+						else
+						{
+							log.error("Unexpected error shutting down Workflow DB", e);
+						}
+					}
+					//Derby requires this nasty hack to be allowed to restart properly...
+					Class.forName(driver).newInstance();
+				}
+
+				//c3p0 isn't configuring right with the logger... don't know why.  force it to slf4j
+				System.setProperty("com.mchange.v2.log.MLog", "com.mchange.v2.log.slf4j.Slf4jMLog");
+				
 				//Configure up a c3p0 connection pool.  It has reasonable defaults for most everything.
 				//It will also handle automatically closing result sets, statements, etc, when connections are returned
 				//to the pool via connection.close()
 				ComboPooledDataSource cpds = new ComboPooledDataSource();
 				cpds.setDriverClass(driver); //loads the jdbc driver
-				cpds.setJdbcUrl(protocol + dbName + ";create=true");
+				cpds.setJdbcUrl(protocol + dbName);
 				cpds.setUser("workflow");
 				cpds.setPassword("workflow");
 
+				log.info("Opening the connection pool on the DB folder {}", derbyFolder.getAbsolutePath());
+				
 				Connection c = cpds.getConnection();
 				if (!c.createStatement().execute("values 1"))
 				{
 					log.warn("derby test statement failed!");
+				}
+				else
+				{
+					log.info("Workflow database ready");
 				}
 				c.close();
 
@@ -111,13 +150,17 @@ public final class DatastoreManager implements ServicesToPreloadI
 	@Override
 	public void shutdown()
 	{
+		if (dataSource_ != null)
+		{
 		dataSource_.close();
+		}
 		try
 		{
 			DriverManager.getConnection(protocol + ";shutdown=true");
 		}
 		catch (SQLException e)
 		{
+			//Yes... this is really how derby signals a proper DB shutdown.  Sigh.
 			if (e.getErrorCode() == 50000)
 			{
 				log.info("Workflow database shutdown");
@@ -127,6 +170,5 @@ public final class DatastoreManager implements ServicesToPreloadI
 				log.error("Unexpected error shutting down Workflow DB", e);
 			}
 		}
-		
 	}
 }
