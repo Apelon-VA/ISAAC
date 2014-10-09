@@ -289,7 +289,8 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
             if (!rs.next()) {
                 Statement s = conn.createStatement();
-                s.execute("create table PINST_REQUESTS (id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, "
+                s.execute("create table PINST_REQUESTS "
+                        + "(id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY, "
                         + "wf_id bigint, "
                         + "component_id varchar(40), "
                         + "component_name varchar(255), "
@@ -300,6 +301,9 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                         + "request_time bigint, "
                         + "sync_time bigint, "
                         + "variables long varchar)");
+                s.execute("create index status_idx on PINST_REQUESTS(status)");
+                s.execute("create index status_idx on PINST_REQUESTS(component_id)");
+                s.execute("create index status_idx on PINST_REQUESTS(wf_id)");
                 log.debug("Created table PINST_REQUESTS");
             } else {
                 log.debug("PINST_REQUESTS already exists!");

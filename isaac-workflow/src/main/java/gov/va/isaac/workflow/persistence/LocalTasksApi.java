@@ -376,6 +376,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                         + "actionStatus varchar(40), "
                         + "inputVariables long varchar, "
                         + "outputVariables long varchar)");
+                
+                s.execute("create index status_idx on LOCAL_TASKS(status)");
+                s.execute("create index actionStatus_idx on LOCAL_TASKS(actionStatus)");
+                s.execute("create index componentId_idx on LOCAL_TASKS(componentId)");
+                
                 conn.commit();
                 log.info("Created table LOCAL_TASKS");
             } else {
