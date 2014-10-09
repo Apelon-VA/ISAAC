@@ -75,6 +75,8 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 					try
 					{
 						AppContext.getService(LocalWorkflowRuntimeEngineBI.class).synchronizeWithRemote();
+					// TODO: Required but throws exception
+						controller_.loadContent();
 					}
 					catch (Exception e)
 					{
