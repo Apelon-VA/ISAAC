@@ -20,10 +20,10 @@ package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
-import gov.va.isaac.util.Utility;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javafx.application.Platform;
@@ -72,7 +72,7 @@ public class WorkflowInitializationPropertyChangeListener implements PropertyCha
 	
 	public void enable()
 	{
-		if (!enabled)
+		if (!enabled && ExtendedAppContext.getCurrentlyLoggedInUserProfile().isLaunchWorkflowForEachCommit())
 		{
 			LOG.info("Enabling the workflow commit listener");
 			ExtendedAppContext.getDataStore().addPropertyChangeListener(CONCEPT_EVENT.POST_COMMIT, this);
@@ -126,12 +126,7 @@ public class WorkflowInitializationPropertyChangeListener implements PropertyCha
 	@Override
 	public void loadRequested()
 	{
-		Utility.execute(() -> {
-			if (ExtendedAppContext.getCurrentlyLoggedInUserProfile().isLaunchWorkflowForEachCommit())
-			{
-				enable();
-			}
-		});
+		AppContext.getService(UserProfileManager.class).registerLoginCallback((user) -> {enable();});
 	}
 
 	/**

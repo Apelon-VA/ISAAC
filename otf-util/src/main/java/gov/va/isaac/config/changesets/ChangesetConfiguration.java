@@ -18,14 +18,19 @@
  */
 package gov.va.isaac.config.changesets;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.util.UUID;
+import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGenerationPolicy;
 import org.ihtsdo.otf.tcc.api.changeset.ChangeSetGeneratorBI;
 import org.ihtsdo.otf.tcc.model.cs.ChangeSetLogWriter;
 import org.ihtsdo.otf.tcc.model.cs.ChangeSetWriterHandler;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,15 +39,40 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class ChangesetConfiguration
+@Service
+@Singleton
+public class ChangesetConfiguration implements ServicesToPreloadI
 {
-	private static Logger logger = LoggerFactory.getLogger(ChangesetConfiguration.class);
+	private Logger logger = LoggerFactory.getLogger(ChangesetConfiguration.class);
 	
+	private ChangesetConfiguration()
+	{
+		//for HK2
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
+	 */
+	@Override
+	public void loadRequested()
+	{
+		AppContext.getService(UserProfileManager.class).registerLoginCallback((user) -> configureChangeSetWriter());
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
+	 */
+	@Override
+	public void shutdown()
+	{
+		//noop
+	}
+
 	/**
 	 * Typically called immediately after a user logs in, in order to configure the changeset writers for the user.
 	 * Also, horribly slow - so it runs in a background thread.
 	 */
-	public static void configureChangeSetWriter()
+	public void configureChangeSetWriter()
 	{
 		Utility.execute(() ->
 		{
