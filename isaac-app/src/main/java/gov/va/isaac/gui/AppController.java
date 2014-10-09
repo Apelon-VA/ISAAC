@@ -329,7 +329,7 @@ public class AppController implements ShutdownBroadcastListenerI {
         //notify anything that was preloaded
         for (ServicesToPreloadI service : preloadRequested_)
         {
-            LOG.debug("Preloading {}", service);
+            LOG.debug("Shutdown notify {}", service);
             service.shutdown();
         }
         
