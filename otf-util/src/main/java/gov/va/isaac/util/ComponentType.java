@@ -22,7 +22,7 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.workflow;
+package gov.va.isaac.util;
 
 /**
  * ComponentType

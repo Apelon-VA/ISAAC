@@ -24,9 +24,11 @@
  */
 package gov.va.isaac.workflow;
 
-import java.util.UUID;
-
+import gov.va.isaac.util.ComponentType;
+import gov.va.isaac.util.ComponentTypeHelper;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.UUID;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;

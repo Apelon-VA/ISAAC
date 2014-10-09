@@ -20,6 +20,7 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
@@ -29,6 +30,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -39,8 +41,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.jvnet.hk2.annotations.Service;
 import org.kie.api.task.model.Status;
 import org.slf4j.Logger;
@@ -148,10 +155,6 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         setAction(taskId, action, TaskActionStatus.Pending, outputVariables);
     }
 
-    private static class PlacePromotionClauseHere {
-    	
-    }
-    
     @Override
     public void setAction(Long taskId, Action action, TaskActionStatus actionStatus, Map<String,String> outputVariables) throws DatastoreException {
     	LocalTask task = this.getTask(taskId);
@@ -175,27 +178,24 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         } catch (SQLException ex1) {
             throw new DatastoreException(ex1);
         }
-    	
-    	/*
-    	 * TODO: detect condition requiring promotion, perform sync and kick off process.
-    	 * Proper method for handling is connecting to WF as user "issac",
-    	 * claiming and syncing tasks, and advancing "Promote content" and
-    	 * "Submit content" tasks.  Promote content will move instance to
-    	 * "Submit content", and "Submit content" will do something like
-    	 * email a result message, etc,.
-    	 */
-    	new PlacePromotionClauseHere();
     	if ((task.getName().equals("Approve content") || task.getName().equals("Adjudicate content"))
     			&& action == Action.COMPLETE
     			&& actionStatus == TaskActionStatus.Pending
     			&& outputVariables.get("out_response") != null && outputVariables.get("out_response").equals("approve")) {
     		
-    		// do here
-    		
+    		populateReleaseCandidatePath(task);    		
     	}
     }
     
-    @Override
+    private void populateReleaseCandidatePath(LocalTask task) {
+		try {
+			WBUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
+		} catch (IOException | ContradictionException | InvalidCAB e) {
+			AppContext.getCommonDialogs().showErrorDialog("Error Promoting Concept to Promotion Path", "Unexpected error adding a new version of the concept onto the promotion path", e.getMessage());
+		}		
+	}
+
+	@Override
     public void completeTask(Long taskId, Map<String, String> outputVariablesMap) throws DatastoreException {
         setAction(taskId, Action.COMPLETE, outputVariablesMap);
     }

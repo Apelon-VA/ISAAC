@@ -29,7 +29,6 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-import gov.va.isaac.workflow.persistence.WorkflowHistoryHelper;
 
 import java.util.Map;
 import java.util.UUID;
