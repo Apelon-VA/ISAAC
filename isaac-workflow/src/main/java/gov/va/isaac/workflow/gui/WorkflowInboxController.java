@@ -30,6 +30,7 @@ import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 
 import java.io.IOException;
@@ -298,7 +299,10 @@ public class WorkflowInboxController
 		taskTable.getItems().clear();
 		try
 		{
-			taskTable.getItems().addAll(taskService_.getOpenOwnedTasks());
+			List<LocalTask> tasksForTable = taskService_.getOpenOwnedTasks();
+			List<LocalTask> tasksToRemoveFromTable = taskService_.getOwnedTasksByActionStatus(TaskActionStatus.Pending);
+			tasksForTable.removeAll(tasksToRemoveFromTable);
+			taskTable.getItems().addAll(tasksForTable);
 		}
 		catch (DatastoreException e)
 		{
@@ -374,7 +378,6 @@ public class WorkflowInboxController
 							LocalTask task = taskTable.getItems().get(cellIndex);
 
 							WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-//							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
 							view.setTask(task.getId());
 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 						}
