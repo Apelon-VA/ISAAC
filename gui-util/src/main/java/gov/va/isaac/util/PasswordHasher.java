@@ -74,7 +74,7 @@ public class PasswordHasher
 		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
 		// store the salt with the password
 		String result = Base64.getEncoder().encodeToString(salt) + "$$$" + hash(password, salt);
-		log_.info("Compute Salted Hash time {} ms", System.currentTimeMillis() - startTime);
+		log_.debug("Compute Salted Hash time {} ms", System.currentTimeMillis() - startTime);
 		return result;
 	}
 
@@ -107,7 +107,7 @@ public class PasswordHasher
 		SecretKeyFactory f = SecretKeyFactory.getInstance(keyFactoryAlgorithm);
 		SecretKey key = f.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
 		String result = Base64.getEncoder().encodeToString(key.getEncoded());
-		log_.info("Password compute time: {} ms", System.currentTimeMillis() - startTime);
+		log_.debug("Password compute time: {} ms", System.currentTimeMillis() - startTime);
 		return result;
 	}
 	
@@ -122,7 +122,7 @@ public class PasswordHasher
 		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
 		// store the salt with the password
 		String result = Base64.getEncoder().encodeToString(salt) + "$$$" + encrypt(password, salt, data);
-		log_.info("Encrypt Time {} ms", System.currentTimeMillis() - startTime);
+		log_.debug("Encrypt Time {} ms", System.currentTimeMillis() - startTime);
 		return result;
 	}
 	
@@ -149,7 +149,7 @@ public class PasswordHasher
 			throw new Exception("Invalid encrypted data, can't find salt");
 		}
 		byte[] result = decrypt(password, Base64.getDecoder().decode(saltAndPass[0]), saltAndPass[1]);
-		log_.info("Decrypt Time {} ms", System.currentTimeMillis() - startTime);
+		log_.debug("Decrypt Time {} ms", System.currentTimeMillis() - startTime);
 		return result;
 	}
 
