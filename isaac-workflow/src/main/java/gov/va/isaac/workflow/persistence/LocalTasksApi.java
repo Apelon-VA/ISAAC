@@ -148,6 +148,10 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         setAction(taskId, action, TaskActionStatus.Pending, outputVariables);
     }
 
+    private static class PlacePromotionClauseHere {
+    	
+    }
+    
     @Override
     public void setAction(Long taskId, Action action, TaskActionStatus actionStatus, Map<String,String> outputVariables) throws DatastoreException {
     	LocalTask task = this.getTask(taskId);
@@ -171,6 +175,16 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         } catch (SQLException ex1) {
             throw new DatastoreException(ex1);
         }
+    	
+    	/*
+    	 * TODO: detect condition requiring promotion, perform sync and kick off process.
+    	 * Proper method for handling is connecting to WF as user "issac",
+    	 * claiming and syncing tasks, and advancing "Promote content" and
+    	 * "Submit content" tasks.  Promote content will move instance to
+    	 * "Submit content", and "Submit content" will do something like
+    	 * email a result message, etc,.
+    	 */
+    	new PlacePromotionClauseHere();
     }
     
     @Override
