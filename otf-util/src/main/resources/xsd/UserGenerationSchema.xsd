@@ -148,6 +148,20 @@
 								for the default language (when false).  Defaults to true, if not provided.</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				
+				<xs:element name="launchWorkflowForEachCommit" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>When true, each commit of a concept will begin the workflow process for the concept, presenting
+									a GUI screen to the user.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>When true, each commit of a concept will begin the workflow process for the concept, presenting
+							a GUI screen to the user.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>

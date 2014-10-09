@@ -79,6 +79,8 @@ public class UserProfile
 	@XmlElement 
 	private String syncPasswordEncrypted = null;
 	
+	@XmlElement
+	private boolean launchWorkflowForEachCommit = true;
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
 	 */
@@ -287,13 +289,20 @@ public class UserProfile
 		}
 	}
 	
-
 	/**
 	 * The UUID of the concept in the DB that represents this user.
 	 */
 	public UUID getConceptUUID()
 	{
 		return conceptUUID;
+	}
+
+	/**
+	 * The UUID of the concept in the DB that represents this user.
+	 */
+	protected void setConceptUUID(UUID conceptUUID)
+	{
+		this.conceptUUID = conceptUUID;
 	}
 	
 	public boolean hasRole(RoleOption role)
@@ -305,13 +314,22 @@ public class UserProfile
 		//TODO implement role checking - probably store these on the user concept in a refex?
 		return true;
 	}
+	
 
 	/**
-	 * The UUID of the concept in the DB that represents this user.
+	 * @return the launchWorkflowForEachCommit
 	 */
-	protected void setConceptUUID(UUID conceptUUID)
+	public boolean isLaunchWorkflowForEachCommit()
 	{
-		this.conceptUUID = conceptUUID;
+		return launchWorkflowForEachCommit;
+	}
+
+	/**
+	 * @param launchWorkflowForEachCommit the launchWorkflowForEachCommit to set
+	 */
+	public void setLaunchWorkflowForEachCommit(boolean launchWorkflowForEachCommit)
+	{
+		this.launchWorkflowForEachCommit = launchWorkflowForEachCommit;
 	}
 
 	protected void store(File fileToWrite) throws IOException
@@ -348,17 +366,6 @@ public class UserProfile
 		}
 	}
 
-	public static void main(String[] args) throws Exception
-	{
-		UserProfile f = new UserProfile("cc", "ba");
-		f.setPassword("ba", "b");
-
-		File foo = new File("foo");
-		foo.mkdir();
-
-		f.store(new File(foo, "Preferences.xml"));
-	}
-	
 	@Override
 	protected UserProfile clone()
 	{
@@ -373,6 +380,7 @@ public class UserProfile
 		clone.workflowPasswordEncrypted = this.workflowPasswordEncrypted;
 		clone.workflowUsername = this.workflowUsername;
 		clone.conceptUUID = this.conceptUUID;
+		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
 		
 		return clone;
 	}

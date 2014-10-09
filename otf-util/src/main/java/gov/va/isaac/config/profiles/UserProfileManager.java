@@ -178,6 +178,10 @@ public class UserProfileManager implements ServicesToPreloadI
 			{
 				up.setDisplayFSN(defaults.isDisplayFSN().booleanValue());
 			}
+			if (defaults.isLaunchWorkflowForEachCommit() != null)
+			{
+				up.setLaunchWorkflowForEachCommit(defaults.isLaunchWorkflowForEachCommit());
+			}
 		}
 		up.setConceptUUID(UUID.fromString(user.getUUID()));
 		
