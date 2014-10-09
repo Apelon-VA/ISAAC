@@ -301,9 +301,9 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
                         + "request_time bigint, "
                         + "sync_time bigint, "
                         + "variables long varchar)");
-                s.execute("create index status_idx on PINST_REQUESTS(status)");
-                s.execute("create index status_idx on PINST_REQUESTS(component_id)");
-                s.execute("create index status_idx on PINST_REQUESTS(wf_id)");
+                s.execute("create index WORKFLOW_status_idx on PINST_REQUESTS(status)");
+                s.execute("create index WORKFLOW_component_id_idx on PINST_REQUESTS(component_id)");
+                s.execute("create index WORKFLOW_wf_id_idx on PINST_REQUESTS(wf_id)");
                 log.debug("Created table PINST_REQUESTS");
             } else {
                 log.debug("PINST_REQUESTS already exists!");
