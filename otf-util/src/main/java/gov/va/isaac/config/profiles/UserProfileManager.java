@@ -72,6 +72,7 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public UserProfile getCurrentlyLoggedInUserProfile()
 	{
+	  if (loggedInUser_ == null) return null;
 		return loggedInUser_.clone();
 	}
 	

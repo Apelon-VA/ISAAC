@@ -122,7 +122,13 @@ public class WBUtility {
 	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
+		  	    int authorNid;
+			    if (ExtendedAppContext.getCurrentlyLoggedInUserProfile() != null) {
+				  authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
+			    } else { 
+			      authorNid = TermAux.USER.getLenient().getNid(); 
+			    }
+			  
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
 
