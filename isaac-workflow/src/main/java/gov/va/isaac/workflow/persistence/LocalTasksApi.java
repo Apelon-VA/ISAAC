@@ -232,7 +232,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
-            //TODO these gets are still going to be an issue, if they have the wrong username when the initially create local tasks.
+            //TODO DAN these gets are still going to be an issue, if they have the wrong username when the initially create local tasks.
             //we will need to change the userId in the DB - if the user enters a different workflow username
             ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername() 
                     + "' and actionStatus = '" + actionStatus + "'");

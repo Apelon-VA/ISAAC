@@ -74,7 +74,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     @Override
     public void synchronizeWithRemote() throws RemoteException, DatastoreException {
         try {
-            //TODO rework this to handle tasks one at a time... return an error summary, don't throw exceptions.
+            //TODO DAN SYNC rework this to handle tasks one at a time... return an error summary, don't throw exceptions.
             // Upload pending actions
             TaskService remoteService = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService();
             int countActions = 0;
