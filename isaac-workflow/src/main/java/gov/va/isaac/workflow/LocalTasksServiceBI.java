@@ -21,6 +21,8 @@ package gov.va.isaac.workflow;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 import org.jvnet.hk2.annotations.Contract;
 import org.kie.api.task.model.Status;
 
@@ -32,12 +34,12 @@ import org.kie.api.task.model.Status;
 public interface LocalTasksServiceBI {
     
     List<LocalTask> getOpenOwnedTasks() throws DatastoreException;
-    List<LocalTask> getOpenOwnedTasksByComponentId(String componentId) throws DatastoreException;
+    List<LocalTask> getOpenOwnedTasksByComponentId(UUID componentId) throws DatastoreException;
     List<LocalTask> getOwnedTasksByStatus(Status status) throws DatastoreException;
     List<LocalTask> getOwnedTasksByActionStatus(TaskActionStatus actionStatus) throws DatastoreException;
     LocalTask getTask(Long id) throws DatastoreException;
     List<LocalTask> getTasks() throws DatastoreException;
-    List<LocalTask> getTasksByComponentId(String componentId) throws DatastoreException;
+    List<LocalTask> getTasksByComponentId(UUID componentId) throws DatastoreException;
     void saveTask(LocalTask task) throws DatastoreException;
 
     void completeTask(Long taskId, Map<String, String> outputVariables) throws DatastoreException;

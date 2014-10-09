@@ -256,12 +256,12 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
 
     @Override
-    public List<LocalTask> getOpenOwnedTasksByComponentId(String componentId) throws DatastoreException {
+    public List<LocalTask> getOpenOwnedTasksByComponentId(UUID componentId) throws DatastoreException {
         List<LocalTask> tasks = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername() 
-                    + "' and componentId = '" + componentId + "' and (status = 'Reserved' or status = 'InProgress')");
+                    + "' and componentId = '" + componentId.toString() + "' and (status = 'Reserved' or status = 'InProgress')");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }
@@ -272,11 +272,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     }
     
     @Override
-    public List<LocalTask> getTasksByComponentId(String componentId) throws DatastoreException {
+    public List<LocalTask> getTasksByComponentId(UUID componentId) throws DatastoreException {
         List<LocalTask> tasks = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where componentId = '" + componentId + "'");
+            ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where componentId = '" + componentId.toString() + "'");
             while (rs.next()) {
                 tasks.add(readTask(rs));
             }

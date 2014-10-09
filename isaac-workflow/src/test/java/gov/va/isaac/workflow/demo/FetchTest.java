@@ -27,6 +27,7 @@ import org.kie.api.task.model.Status;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +64,7 @@ public class FetchTest extends BaseTest {
             List<LocalTask> openOwnedTasks = tapi.getOpenOwnedTasks();
             System.out.println("Testing getOpenOwnedTasks (" + userId + "): " + openOwnedTasks.size());
             
-            List<LocalTask> ownedTasksForAsthma = tapi.getOpenOwnedTasksByComponentId("0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66");
+            List<LocalTask> ownedTasksForAsthma = tapi.getOpenOwnedTasksByComponentId(UUID.fromString("0ca5c7c0-9e6a-11e3-a5e2-0800200c9a66"));
             System.out.println("Testing getOpenOwnedTasksByComponentId (Asthma, " + userId + "): " + ownedTasksForAsthma.size());
             
             List<LocalTask> ownedTasksByStatus = tapi.getOwnedTasksByStatus(Status.Reserved);
