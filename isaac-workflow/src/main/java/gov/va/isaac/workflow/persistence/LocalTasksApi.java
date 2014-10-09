@@ -185,6 +185,14 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     	 * email a result message, etc,.
     	 */
     	new PlacePromotionClauseHere();
+    	if ((task.getName().equals("Approve content") || task.getName().equals("Adjudicate content"))
+    			&& action == Action.COMPLETE
+    			&& actionStatus == TaskActionStatus.Pending
+    			&& outputVariables.get("out_response") != null && outputVariables.get("out_response").equals("approve")) {
+    		
+    		// do here
+    		
+    	}
     }
     
     @Override
