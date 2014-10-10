@@ -690,14 +690,7 @@ public class ListBatchViewController
 									catch (final Exception e)
 									{
 										logger_.error("Unexpected error loading concept file", e);
-										Platform.runLater(new Runnable()
-										{
-											@Override
-											public void run()
-											{
-												AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
-											}
-										});
+										AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
 									}
 									finally
 									{
