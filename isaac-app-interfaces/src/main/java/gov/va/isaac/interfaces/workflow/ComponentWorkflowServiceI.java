@@ -37,7 +37,12 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface ComponentWorkflowServiceI {
-	public abstract void synchronizeWithRemote() throws IOException;
+	
+	/**
+	 * A non-blocking call to perform a sync.  Sync happens in the background, no errors are reported back (even if they happen)
+	 * This call returns immediately.
+	 */
+	public abstract void synchronizeWithRemote();
 
 	public abstract ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(
 			String preferredDescription,

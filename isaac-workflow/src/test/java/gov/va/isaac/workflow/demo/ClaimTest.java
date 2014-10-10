@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 
 /**
@@ -36,20 +36,21 @@ public class ClaimTest extends BaseTest {
         LocalWorkflowRuntimeEngineBI wfEngine =  AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
 
         LocalTasksServiceBI localTasksService = AppContext.getService(LocalTasksServiceBI.class);
-        ProcessInstanceServiceBI processService = AppContext.getService(ProcessInstanceServiceBI.class);
+        RemoteSynchronizer remoteSyncService = AppContext.getService(RemoteSynchronizer.class);
+        remoteSyncService.loadRequested();
 
 //        localTasksService.dropSchema();
 //        localTasksService.createSchema();
 //        processService.dropSchema();
 //        processService.createSchema();
 
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
         System.out.println("Local Tasks count: " +localTasksService.getOpenOwnedTasks().size());
 
         wfEngine.claim(1);
 
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
         System.out.println("Local Tasks count: " +localTasksService.getOpenOwnedTasks().size());
 

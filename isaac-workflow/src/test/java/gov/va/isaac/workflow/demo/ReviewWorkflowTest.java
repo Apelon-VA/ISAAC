@@ -22,9 +22,9 @@ package gov.va.isaac.workflow.demo;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.workflow.*;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +35,15 @@ import java.util.Map;
  */
 public class ReviewWorkflowTest extends BaseTest {
 
-    public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException {
+    public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, 
+    	NoSuchFieldException, SecurityException, IOException, InterruptedException {
         setup();
         LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
 
         LocalTasksServiceBI localTasksService = AppContext.getService(LocalTasksServiceBI.class);
         ProcessInstanceServiceBI processService = AppContext.getService(ProcessInstanceServiceBI.class);
+        RemoteSynchronizer remoteSyncService = AppContext.getService(RemoteSynchronizer.class);
+        remoteSyncService.loadRequested();
 
         localTasksService.dropSchema();
         localTasksService.createSchema();
@@ -50,11 +53,11 @@ public class ReviewWorkflowTest extends BaseTest {
         // Create Instance
         Map<String,String> variables = new HashMap<String, String>();
         processService.createRequest(WorkflowProcess.REVIEW3.getText(), Snomed.ASTHMA.getUuids()[0], "Asthma (disorder)", "alejandro", variables);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
         // Claim a task
         wfEngine.claim(1);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
         //Get 1st task
         Long taskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
@@ -63,11 +66,11 @@ public class ReviewWorkflowTest extends BaseTest {
         HashMap<String, String> v1 = new HashMap<String, String>();
         v1.put("out_comment", "Edit is finished");
         localTasksService.setAction(taskId, Action.COMPLETE, TaskActionStatus.Pending, v1);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
         // Claim next task
         wfEngine.claim(1);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
         Long secondTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 2nd task
@@ -75,11 +78,11 @@ public class ReviewWorkflowTest extends BaseTest {
         v2.put("out_comment", "The edit looks OK");
         v2.put("out_response", "approve");
         localTasksService.setAction(secondTaskId, Action.COMPLETE, TaskActionStatus.Pending, v2);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
         // Claim next task
         wfEngine.claim(1);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
         Long thirdTaskId = localTasksService.getOpenOwnedTasks().iterator().next().getId();
 
         //Complete 2nd task
@@ -87,7 +90,7 @@ public class ReviewWorkflowTest extends BaseTest {
         v3.put("out_comment", "Ready to be published");
         v3.put("out_response", "approve");
         localTasksService.setAction(thirdTaskId, Action.COMPLETE, TaskActionStatus.Pending, v3);
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
 
 
 
@@ -136,5 +139,8 @@ public class ReviewWorkflowTest extends BaseTest {
 //            System.out.println("TaskId: " + loopTask.getId());
 //        }
 
+        
+        System.out.println("Testing complete");
+        
     }
 }

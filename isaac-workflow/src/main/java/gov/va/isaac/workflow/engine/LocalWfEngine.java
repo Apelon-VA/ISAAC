@@ -22,13 +22,11 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.Action;
-import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-import gov.va.isaac.workflow.sync.TasksFetcher;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
@@ -69,68 +67,6 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     private LocalWfEngine()
     {
         //For HK2 to construct
-    }
-
-    @Override
-    public void synchronizeWithRemote() throws RemoteException, DatastoreException {
-        try {
-            //TODO DAN SYNC rework this to handle tasks one at a time... return an error summary, don't throw exceptions.
-            // Upload pending actions
-            TaskService remoteService = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService();
-            int countActions = 0;
-            String userId = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
-            List<LocalTask> actions = ltapi.getOwnedTasksByActionStatus(TaskActionStatus.Pending);
-            for (LocalTask loopTask : actions) {
-                Task remoteTask = remoteService.getTaskById(loopTask.getId());
-                if (remoteTask != null) {
-                    remoteTask.getTaskData().getStatus();
-                    if (remoteTask.getTaskData().getStatus().equals(Status.Completed)) {
-                        // too late, task not available
-                    } else if (remoteTask.getTaskData().getStatus().equals(Status.Reserved)) {
-                        // start and action
-                        if (loopTask.getAction().equals(Action.COMPLETE)) {
-                            remoteService.start(loopTask.getId(), userId);
-                            remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Complete,  loopTask.getOutputVariables());
-                        } else if (loopTask.getAction().equals(Action.RELEASE)) {
-                            remoteService.release(loopTask.getId(), userId);
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Canceled,  loopTask.getOutputVariables());
-                        }
-                    }  else if (remoteTask.getTaskData().getStatus().equals(Status.InProgress)) {
-                        // action
-                        if (loopTask.getAction().equals(Action.COMPLETE)) {
-                            remoteService.complete(loopTask.getId(), userId, toObjectValueMap(loopTask.getOutputVariables()));
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Complete,  loopTask.getOutputVariables());
-                        } else if (loopTask.getAction().equals(Action.RELEASE)) {
-                            remoteService.release(loopTask.getId(), userId);
-                            ltapi.setAction(loopTask.getId(), loopTask.getAction(), TaskActionStatus.Canceled,  loopTask.getOutputVariables());
-                        }
-                    }
-                }
-                
-                countActions++;
-            }
-
-            // Upload pending requests
-            int countInstances = 0;
-            List<ProcessInstanceCreationRequestI> pendingRequests = procApi.getOpenOwnedRequests(userId);
-            for (ProcessInstanceCreationRequestI loopP : pendingRequests) {
-                requestProcessInstanceCreationToServer(loopP);
-                countInstances++;
-            }
-            
-            // Sync tasks
-            TasksFetcher tf = new TasksFetcher();
-            String result = tf.fetchTasks(userId);
-            
-            log.info("Sync finished");
-            log.debug("   - Actions processed: {}", countActions);
-            log.debug("   - Instances processed: {}", countInstances);
-            log.debug("   - {}", result);
-        } catch (RemoteException | DatastoreException ex) {
-            log.error("Error synchronizing", ex);
-            throw ex;
-        }
     }
 
     @Override
@@ -194,13 +130,5 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             }
             if (claimed >= count) break;
         }
-    }
-
-    private HashMap<String, Object> toObjectValueMap(Map<String, String> sourceMap) {
-        HashMap<String, Object> result = new HashMap<String, Object>();
-        for (String loopSourceKey : sourceMap.keySet()) {
-            result.put(loopSourceKey, sourceMap.get(loopSourceKey));
-        }
-        return result;
     }
 }

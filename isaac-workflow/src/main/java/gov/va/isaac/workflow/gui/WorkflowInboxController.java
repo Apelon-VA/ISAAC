@@ -31,8 +31,9 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.TaskActionStatus;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
+import gov.va.isaac.workflow.engine.SynchronizeResult;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -59,9 +59,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
-
 import javax.inject.Inject;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -83,10 +81,9 @@ public class WorkflowInboxController
 	@FXML Label userName;
 	@FXML TableView<LocalTask> taskTable;
 
-	@Inject
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	@Inject
-	private LocalTasksServiceBI taskService_;
+	@Inject private LocalWorkflowRuntimeEngineBI wfEngine_;
+	@Inject private LocalTasksServiceBI taskService_;
+	@Inject private RemoteSynchronizer remoteSyncService_;
 	
 	public static WorkflowInboxController init() throws IOException {
 		// Load FXML
@@ -228,18 +225,16 @@ public class WorkflowInboxController
 				try
 				{
 					wfEngine_.claim(10);
-					Platform.runLater(() -> 
+					SynchronizeResult sr = remoteSyncService_.blockingSynchronize();
+					if (sr.hasError())
 					{
-						synchronize(true);
-					});
+						AppContext.getCommonDialogs().showErrorDialog("Claim Error", "There was a problem running sync after the task claim", sr.getErrorSummary());
+					}
 				}
 				catch (Exception e)
 				{
 					LOG.error("Unexpected error claiming tasks", e);
-					Platform.runLater(() -> 
-					{
-						AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
-					});
+					AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
 				} finally {
 					cleanup(claimPopover, claimTasksButton, this);
 				}
@@ -256,24 +251,6 @@ public class WorkflowInboxController
 
 	public Region getView() {
 		return rootBorderPane;
-	}
-	
-	private void synchronize(final boolean displayBusyPopover) {
-		BusyPopover synchronizePopover = null;
-		
-		final BusyPopover finalBusyPopover = synchronizePopover;
-		
-		Utility.execute(() -> {
-			try
-			{
-				wfEngine_.synchronizeWithRemote();
-			}
-			catch (Exception e)
-			{
-				LOG.error("Unexpected error synchronizing tasks", e);
-			} finally {
-			}
-		});
 	}
 	
 	/*
