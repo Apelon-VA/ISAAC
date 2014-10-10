@@ -104,7 +104,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setChangeSetUrl(read.getChangeSetUrl());
 		setWorkflowServerDeploymentId(read.getWorkflowServerDeploymentId());
 		setWorkflowServerUrl(read.getWorkflowServerUrl());
-		setPromotionPath(read.getPromotionPath());
+		setWorkflowPromotionPathUuid(read.getWorkflowPromotionPathUuid());
 		// TODO: need to add in other properties
 	}
 
@@ -152,8 +152,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
    * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
    */
   @Override
-  public UUID getPromotionPathAsUUID() {
-    return IsaacAppConfigI.getUuidForString(getPromotionPath());
+  public UUID getWorkflowPromotionPathUuidAsUUID() {
+    return IsaacAppConfigI.getUuidForString(getWorkflowPromotionPathUuid());
   }
 
 }

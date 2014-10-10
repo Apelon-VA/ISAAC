@@ -173,8 +173,10 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
     // Data element (0-1).
     String dataType = infoModel.getDataType();
     LOG.debug("      dataType = " + dataType);
-    Element dataElement = buildDataElement(dataType);
-    cetype.appendChild(dataElement);
+    if (dataType != null) {
+      Element dataElement = buildDataElement(dataType);
+      cetype.appendChild(dataElement);
+    }
 
     // Qual elements (0-M).
     LOG.debug("      quals");
@@ -262,7 +264,7 @@ public class CEMExporter extends ExporterBase implements CEMXmlConstants {
 
     // Name attribute.
     Attr nameAttr = document.createAttribute(ID);
-    String name = decapitalize(type);
+    String name = component.getName();
     nameAttr.setNodeValue(name);
     e.setAttributeNode(nameAttr);
 

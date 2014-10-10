@@ -20,6 +20,7 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -30,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -965,7 +967,7 @@ public class WBUtility {
 	public static void addToPromotionPath(UUID compUuid) throws IOException, ContradictionException, InvalidCAB {
 		// Setup Edit Path to be promotion path
 		List<ConceptSpec> origPaths = getEC().getEditPathListSpecs();
-		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getPromotionPathAsUUID());
+		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID());
 		ConceptSpec cs = new ConceptSpec(pp.getNid());
 		
 		List<ConceptSpec> editPaths = new ArrayList<ConceptSpec>();
@@ -1002,4 +1004,23 @@ public class WBUtility {
 		editPaths.addAll(origPaths);
 		getEC().setEditPathListSpecs(editPaths);
 	}
+	
+	
+	/**
+	 * Returns the uuid for fsn and pt based on the ConceptCB assignment algorithm.
+	 *
+     * @param fsn the fsn
+     * @param pt the pt
+	 * @return the uuid for fsn
+	 */
+	public static UUID getUuidForFsn(String fsn, String pt) {
+      List<String> fsns = new ArrayList<>();
+      fsns.add(fsn);
+      List<String> pts = new ArrayList<>();
+      pts.add(pt);
+	  return ConceptCB.computeComponentUuid(IdDirective.GENERATE_REFEX_CONTENT_HASH, fsns, pts, null);
+	}
 }
+
+
+

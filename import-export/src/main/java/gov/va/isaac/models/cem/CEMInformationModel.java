@@ -99,7 +99,10 @@ public class CEMInformationModel extends DefaultInformationModel {
    * @return the data type
    */
   public String getDataType() {
-    return getPropertyByLabel("data").getType();
+    InformationModelProperty property = getPropertyByLabel("data");
+    if (property == null)
+      return null;
+    return property.getType();
   }
 
   /**

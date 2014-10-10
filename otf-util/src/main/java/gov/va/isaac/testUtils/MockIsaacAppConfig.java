@@ -131,10 +131,10 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	 * Returns the promotion path as uuid.
 	 *
 	 * @return the promotion path as uuid
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowPromotionPathUuidAsUUID()
 	 */
 	@Override
-	public UUID getPromotionPathAsUUID()
+	public UUID getWorkflowPromotionPathUuidAsUUID()
 	{
 		return workflowPromotionPath_;
 	}
@@ -436,13 +436,17 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPath()
-   */
   @Override
-  public String getPromotionPath() {
+  public String getWorkflowPromotionPathName() {
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public String getWorkflowPromotionPathUuid() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 }

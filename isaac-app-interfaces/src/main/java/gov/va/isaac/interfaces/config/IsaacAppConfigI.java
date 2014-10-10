@@ -333,13 +333,22 @@ public interface IsaacAppConfigI {
   public String getWorkflowServerDeploymentId();
 
   /**
+   * The name for the Path to which content published via Workflow will
+   * automatically be promoted to.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getWorkflowPromotionPathName();
+
+  /**
    * The UUID for the Path to which content published via Workflow will
    * automatically be promoted to.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getPromotionPath();
+  public String getWorkflowPromotionPathUuid();
 
   /**
    * The UUID for the Path to which content published via Workflow will
@@ -347,7 +356,7 @@ public interface IsaacAppConfigI {
    * 
    * @return the UUID
    */
-  public UUID getPromotionPathAsUUID();
+  public UUID getWorkflowPromotionPathUuidAsUUID();
 
   /**
    * Returns the url for string.

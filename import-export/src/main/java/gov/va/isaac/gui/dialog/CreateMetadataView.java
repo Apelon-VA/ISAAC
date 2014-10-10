@@ -37,10 +37,7 @@ import javafx.concurrent.Task;
 import javafx.scene.Cursor;
 import javafx.stage.Window;
 
-import javax.inject.Singleton;
-
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +47,8 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-@Service
-@Singleton
+//@Service
+//@Singleton
 public class CreateMetadataView implements PopupViewI, IsaacViewWithMenusI {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

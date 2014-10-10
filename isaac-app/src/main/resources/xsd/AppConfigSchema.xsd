@@ -369,7 +369,7 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="promotionPath" type="UUID" minOccurs="0" maxOccurs="1">
+        <xs:element name="workflowPromotionPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
               <jxb:property>
@@ -377,6 +377,17 @@
               </jxb:property>
             </xs:appinfo>
             <xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="workflowPromotionPathName" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The workflow promotion path name</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The worfklow promotion path name</xs:documentation>
           </xs:annotation>
         </xs:element>
 
