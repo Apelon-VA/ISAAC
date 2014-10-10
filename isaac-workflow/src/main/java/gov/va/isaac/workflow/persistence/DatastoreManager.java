@@ -59,6 +59,7 @@ public final class DatastoreManager implements ServicesToPreloadI
 	
 	public DataSource getDataSource()
 	{
+		loadRequested();
 		try
 		{
 			cdl.await();
@@ -76,6 +77,10 @@ public final class DatastoreManager implements ServicesToPreloadI
 	@Override
 	public void loadRequested()
 	{
+		if (cdl.getCount() == 0)
+		{
+			return;
+		}
 		//start up Derby in a background thread
 		Utility.execute(() -> {
 			try
