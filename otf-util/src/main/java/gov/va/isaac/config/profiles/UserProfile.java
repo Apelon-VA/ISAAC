@@ -98,9 +98,10 @@ public class UserProfile
 	 * 
 	 * Only public due to a testing quirk  - BaseTest - in workflow needs this, as may some JUnit tests, eventually.
 	 */
-	public UserProfile(String userLogonName, String password)
+	public UserProfile(String userLogonName, String password, UUID conceptUUID)
 	{
 		this.userLogonName = userLogonName;
+		this.conceptUUID = conceptUUID;
 		try
 		{
 			this.hashedPassword = PasswordHasher.getSaltedHash(password);
@@ -297,14 +298,6 @@ public class UserProfile
 		return conceptUUID;
 	}
 
-	/**
-	 * The UUID of the concept in the DB that represents this user.
-	 */
-	protected void setConceptUUID(UUID conceptUUID)
-	{
-		this.conceptUUID = conceptUUID;
-	}
-	
 	public boolean hasRole(RoleOption role)
 	{
 		if (role == null)

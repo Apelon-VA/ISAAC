@@ -181,7 +181,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		new File(profileFolder, "changesets").mkdir();
 		File prefFile = new File(profileFolder, prefsFileName_);
 
-		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword());
+		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword(), UUID.fromString(user.getUUID()));
 		if (defaults != null)
 		{
 			if (defaults.getStatedInferredPolicy() != null)
@@ -197,7 +197,6 @@ public class UserProfileManager implements ServicesToPreloadI
 				up.setLaunchWorkflowForEachCommit(defaults.isLaunchWorkflowForEachCommit());
 			}
 		}
-		up.setConceptUUID(UUID.fromString(user.getUUID()));
 		
 		String temp = (user.getSyncUserName() != null && user.getSyncUserName().length() > 0 ? user.getSyncUserName() : user.getUniqueLogonName());
 		
