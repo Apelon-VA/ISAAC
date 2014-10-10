@@ -85,7 +85,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
     @Override
     public void saveTask(LocalTask task) throws DatastoreException {
-    	WorkflowHistoryHelper.createAndAddNewEntry(task, Action.NONE, task.getInputVariables());
+        WorkflowHistoryHelper.createAndAddNewEntry(task, Action.NONE, task.getInputVariables());
 
         try (Connection conn = ds.getConnection()) {
             try {
@@ -157,10 +157,10 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 
     @Override
     public void setAction(Long taskId, Action action, TaskActionStatus actionStatus, Map<String,String> outputVariables) throws DatastoreException {
-    	LocalTask task = this.getTask(taskId);
-    	WorkflowHistoryHelper.createAndAddNewEntry(task, action, outputVariables);
-    	
-    	try (Connection conn = ds.getConnection()){
+        LocalTask task = this.getTask(taskId);
+        WorkflowHistoryHelper.createAndAddNewEntry(task, action, outputVariables);
+        
+        try (Connection conn = ds.getConnection()){
             PreparedStatement psUpdateStatus = conn.prepareStatement("update local_tasks set action = ?, actionStatus = ?, outputVariables = ? where id = ?");
             psUpdateStatus.setString(1, action.name());
             psUpdateStatus.setString(2, actionStatus.name());
@@ -178,24 +178,25 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         } catch (SQLException ex1) {
             throw new DatastoreException(ex1);
         }
-    	if ((task.getName().equals("Approve content") || task.getName().equals("Adjudicate content"))
-    			&& action == Action.COMPLETE
-    			&& actionStatus == TaskActionStatus.Pending
-    			&& outputVariables.get("out_response") != null && outputVariables.get("out_response").equals("approve")) {
-    		
-    		populateReleaseCandidatePath(task);    		
-    	}
+        if ((task.getName().equals("Approve content") || task.getName().equals("Adjudicate content"))
+                && action == Action.COMPLETE
+                && actionStatus == TaskActionStatus.Pending
+                && outputVariables.get("out_response") != null && outputVariables.get("out_response").equals("approve")) {
+            
+            populateReleaseCandidatePath(task);
+        }
     }
     
-    private void populateReleaseCandidatePath(LocalTask task) {
-		try {
-			WBUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
-		} catch (IOException | ContradictionException | InvalidCAB e) {
-			AppContext.getCommonDialogs().showErrorDialog("Error Promoting Concept to Promotion Path", "Unexpected error adding a new version of the concept onto the promotion path", e.getMessage());
-		}		
-	}
+    private void populateReleaseCandidatePath(LocalTask task) throws DatastoreException {
+        try {
+            WBUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
+        } catch (Exception e) {
+            log.error("Error promoting concept to promption path for task: " + task, e);
+            throw new DatastoreException("Unexpected error adding a new version of the concept onto the promotion path for task " + task, e);
+        }
+    }
 
-	@Override
+    @Override
     public void completeTask(Long taskId, Map<String, String> outputVariablesMap) throws DatastoreException {
         setAction(taskId, Action.COMPLETE, outputVariablesMap);
     }
