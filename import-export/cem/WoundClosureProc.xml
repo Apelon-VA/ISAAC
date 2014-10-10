@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ceml>
+    <cem name="WoundClosureProc" kind="statement" base="Procedure">
+        <qual type="DirectSite" id="directSite" card="0-1"></qual>
+        <qual type="ApproachSite" id="approachSite" card="0-1"></qual>
+        <qual type="RouteMethodDevice" id="routeMethodDevice" card="0-1"></qual>
+        <qual type="PatientResponse" id="patientResponse" card="0-1"></qual>
+        <qual type="RelativeTemporalContext" id="relativeTemporalContext" card="0-M"></qual>
+        <mod type="NegationInd" id="negationInd" card="0-1"></mod>
+        <constraint path="data.codableConcept.code" value="WoundClosure_CODE"></constraint>
+        <constraint path="routeMethodDevice.data.codableConcept.valueset" value="WoundClosureRouteMethodDevice_VALUESET_CODE"></constraint>
+    </cem>
+    <info>
+        <definition>WoundClosureProc is the act of closing a wound by some method (sutures, staples, steri-strips, etc.)</definition>
+    </info>
+</ceml>
