@@ -36,12 +36,13 @@ import javafx.scene.control.TextArea;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class EditContentTaskModel extends TaskModel {
+public class DualReviewEditContentTaskModel extends TaskModel {
 	public enum InputVariable {
 		component_id("Component Id"),
 		component_name("Component Name"),
 		instructions("Instructions"),
-		edit_coordinate("Edit Coordinate");
+		edit_coordinate_1("Edit Coordinate"),
+		edit_coordinate_2("Edit Coordinate");
 		
 		private final String labelName;
 		private InputVariable(String labelName) {
@@ -81,7 +82,7 @@ public class EditContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	EditContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+	DualReviewEditContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
 		super(inputTask, userActionOutputResponseComboBox, OutputVariable.values());
 		
 		userActionOutputResponseComboBox.getItems().add(

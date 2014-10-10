@@ -21,16 +21,15 @@ package gov.va.isaac.interfaces.gui.views;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link PopupTaskWithConceptViewI}
+ * {@link WorkflowHistoryViewI}
  * 
- * An interface that allows the creation of an PopupTaskWithConceptViewI implementation,
- * which will be a JavaFX component that extends/implements both {@link TaskWithConceptViewI}
- * and {@link PopupViewI}.  This popup panel is intended to allow display and manipulation of
- * a specified existing workflow task, which itself contains a displayable concept
+ * An interface that allows the creation of an WorkflowHistoryViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link PopupTaskWithConceptViewI}.
+ * This popup panel is intended to allow display component's Workflow History
  *
- * @author <a href="jkniaz@apelon.com">Joel Kniaz</a>
+ * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a> 
  */
 @Contract
-public interface PopupTaskWithConceptViewI extends TaskWithConceptViewI, PopupViewI
+public interface WorkflowHistoryViewI extends PopupTaskWithConceptViewI
 {
 }

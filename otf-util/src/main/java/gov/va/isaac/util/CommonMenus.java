@@ -488,26 +488,6 @@ public class CommonMenus
 			menuItems.add(openTaskViewMenuItem);
 		}
 		
-		MenuItem existingWorkflowInstanceAdvancementMenuItem = createNewMenuItem(
-				CommonMenuItem.WORKFLOW_ADVANCEMENT_VIEW,
-				builder,
-				() -> {
-					return taskIdProvider.getObservableTaskIdCount().get() == 1;
-					}, // canHandle
-					taskIdProvider.getObservableTaskIdCount().isEqualTo(1),				//make visible
-				() -> { // onHandlable
-					WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
-					view.setTask(taskIdProvider.getTaskIds().iterator().next());
-					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-				},
-				() -> { // onNotHandlable
-					AppContext.getCommonDialogs().showInformationDialog("Invalid Concept or invalid number of Concepts selected", "Selection must be of exactly one valid Concept");
-				}
-				);
-		if (existingWorkflowInstanceAdvancementMenuItem != null)
-		{
-			menuItems.add(existingWorkflowInstanceAdvancementMenuItem);
-		}
 
 		MenuItem newReleaseWorkflowTaskItem = createNewMenuItem(
 				CommonMenuItem.RELEASE_WORKFLOW_TASK,

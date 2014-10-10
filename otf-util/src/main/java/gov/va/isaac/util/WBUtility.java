@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.util;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import java.io.IOException;
 import java.text.Format;
@@ -34,6 +35,9 @@ import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexCAB;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
@@ -956,5 +960,46 @@ public class WBUtility {
 			}
 		}
 		return latestVersion;
+	}
+
+	public static void addToPromotionPath(UUID compUuid) throws IOException, ContradictionException, InvalidCAB {
+		// Setup Edit Path to be promotion path
+		List<ConceptSpec> origPaths = getEC().getEditPathListSpecs();
+		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getPromotionPathAsUUID());
+		ConceptSpec cs = new ConceptSpec(pp.getNid());
+		
+		List<ConceptSpec> editPaths = new ArrayList<ConceptSpec>();
+		editPaths.add(cs);
+		editCoord.setEditPathListSpecs(editPaths);
+		
+		
+		// Create new version of Component
+		ComponentVersionBI comp = getComponentVersion(compUuid);
+		ComponentType type = ComponentTypeHelper.getComponentType(comp);
+		ComponentChronicleBI<?> cbi = null;
+		
+		if (type == ComponentType.Concept) {
+			ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			cbi = getBuilder().construct(cab);
+		} else if (type == ComponentType.Description) {
+			DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			cbi = getBuilder().construct(cab);
+		} else if (type == ComponentType.Relationship) {
+			RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			cbi = getBuilder().construct(cab);
+		} else if (type == ComponentType.Refex) {
+			RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			cbi = getBuilder().construct(cab);
+		} else if (type == ComponentType.RefexDynamic) {
+			RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			cbi = getBuilder().construct(cab);
+		}
+		
+		commit(cbi.getEnclosingConcept().getVersion(vc));
+		
+		// Revert to original Edit path
+		editPaths.clear();
+		editPaths.addAll(origPaths);
+		getEC().setEditPathListSpecs(editPaths);
 	}
 }

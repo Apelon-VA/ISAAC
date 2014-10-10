@@ -21,6 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.ComponentDescriptionHelper;
@@ -281,6 +282,10 @@ public class WorkflowTaskDetailsViewController {
 	}
 
 	private void viewWorkflowHistory() {
-		// TODO Auto-generated method stub
+		WorkflowHistoryViewI view = AppContext.getService(WorkflowHistoryViewI.class);
+		view.setTask(task.getId());
+		view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+
+		//		workflowTaskDetailsView.close();
 	}
 }

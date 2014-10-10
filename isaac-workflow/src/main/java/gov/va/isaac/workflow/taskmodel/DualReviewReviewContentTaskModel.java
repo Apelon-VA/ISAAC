@@ -26,6 +26,8 @@ package gov.va.isaac.workflow.taskmodel;
 
 import gov.va.isaac.workflow.LocalTask;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
@@ -36,12 +38,19 @@ import javafx.scene.control.TextArea;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class EditContentTaskModel extends TaskModel {
+public class DualReviewReviewContentTaskModel extends TaskModel {
 	public enum InputVariable {
 		component_id("Component Id"),
 		component_name("Component Name"),
 		instructions("Instructions"),
-		edit_coordinate("Edit Coordinate");
+		
+		// Only one of the following two should ever exist in the same task
+		editor_comment_1("Editor Comment"),
+		editor_comment_2("Editor Comment"),
+		
+		// Only one of the following two should ever exist in the same task
+		editor_coordinate_1("Edit Coordinate"),
+		editor_coordinate_2("Edit Coordinate");
 		
 		private final String labelName;
 		private InputVariable(String labelName) {
@@ -60,6 +69,7 @@ public class EditContentTaskModel extends TaskModel {
 	}
 	
 	public enum OutputVariable {
+		out_response("Response"),
 		out_comment("Comment");
 
 		private final String labelName;
@@ -81,13 +91,8 @@ public class EditContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	EditContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+	DualReviewReviewContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
 		super(inputTask, userActionOutputResponseComboBox, OutputVariable.values());
-		
-		userActionOutputResponseComboBox.getItems().add(
-				UserActionOutputResponse.sendToReviewer);
-		
-		userActionOutputResponseComboBox.getSelectionModel().selectFirst();
 	}
 
 	/**
@@ -117,12 +122,53 @@ public class EditContentTaskModel extends TaskModel {
 		case out_comment: {
 			TextArea commentTextArea = new TextArea();
 			
-			StringProperty commentProperty = getOutputVariableValueProperty(OutputVariable.out_comment.name());
+			StringProperty commentProperty = getOutputVariableValueProperty(variableName);
 
 			commentProperty.bind(commentTextArea.textProperty());
+			
+			// Initialize state of input control, triggering handlers/listeners
 			commentTextArea.setText("");
 			
 			return commentTextArea;
+		}
+		case out_response: {
+			ComboBox<UserActionOutputResponse> responseComboBox = getUserActionOutputResponseComboBox();
+			responseComboBox.getItems().addAll(
+					UserActionOutputResponse.sendToApprover,
+					UserActionOutputResponse.rejectToEditor);
+
+			StringProperty responseProperty = getOutputVariableValueProperty(OutputVariable.out_response.name());
+
+			setOutputVariableValidator(OutputVariable.out_response.name(), new Validator() {
+				@Override
+				public boolean isValid() {
+					if (responseProperty == null || responseProperty.get() == null) {
+						return false;
+					}
+
+					for (UserActionOutputResponse configuredUserAction : responseComboBox.getItems()) {
+						if (configuredUserAction.getUserActionOutputResponseValue().equals(responseProperty.get())) {
+							return true;
+						}
+					}
+
+					return false;
+				}
+			});
+
+			responseComboBox.valueProperty().addListener(new ChangeListener<UserActionOutputResponse>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends UserActionOutputResponse> observable,
+						UserActionOutputResponse oldValue,
+						UserActionOutputResponse newValue) {
+					responseProperty.set(newValue != null ? newValue.getUserActionOutputResponseValue() : null);
+				}});
+
+			// Initialize state of input control, triggering handlers/listeners
+			responseComboBox.getSelectionModel().select(null);
+			
+			return responseComboBox;
 		}
 		
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);

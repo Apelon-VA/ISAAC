@@ -22,10 +22,9 @@ package gov.va.isaac.workflow.demo;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-
 import java.io.IOException;
 
 /**
@@ -34,12 +33,14 @@ import java.io.IOException;
  */
 public class FullSyncTest extends BaseTest {
     
-   public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, IOException {
+   public static void main(String[] args) throws DatastoreException, ClassNotFoundException, IllegalArgumentException, IllegalAccessException,
+       NoSuchFieldException, SecurityException, IOException, InterruptedException {
         setup();
-        LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
 
         LocalTasksServiceBI localTasksService = AppContext.getService(LocalTasksServiceBI.class);
         ProcessInstanceServiceBI processService = AppContext.getService(ProcessInstanceServiceBI.class);
+        RemoteSynchronizer remoteSyncService = AppContext.getService(RemoteSynchronizer.class);
+        remoteSyncService.loadRequested();
         
         localTasksService.dropSchema();
         localTasksService.createSchema();
@@ -48,7 +49,7 @@ public class FullSyncTest extends BaseTest {
         
 //        assertTrue(localTasksService.getOpenOwnedTasks(userid).size() == 0);
         
-        wfEngine.synchronizeWithRemote();
+        remoteSyncService.blockingSynchronize();
         
         //assertTrue(localTasksService.getOpenOwnedTasks(userid).size() > 0);
 

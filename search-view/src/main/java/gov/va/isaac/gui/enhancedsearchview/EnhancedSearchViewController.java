@@ -1027,22 +1027,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		initializeWorkflowServices();
 
 		// Use HashSet to ensure that only one workflow is created for each concept
-		if (searchResultsTable.getItems().size() > 0) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try
-					{
-						conceptWorkflowService.synchronizeWithRemote();
-					}
-					catch (IOException e)
-					{
-						LOG.error("Sync execution failed", e);
-					}
-				}
-			}).start();
-		}
-
 		Map<Integer, ComponentVersionBI> conceptsOrComponents = new HashMap<>();
 		if (aggregationTypeComboBox.getSelectionModel().getSelectedItem() == AggregationType.CONCEPT) {
 			for (CompositeSearchResult result : searchResultsTable.getItems()) {
@@ -1074,19 +1058,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				exportSearchResultToWorkflow(conceptOrComponent);
 			}
 			
-			//TODO dan needs to rework these - they don't belong in threads (not here, anyway) - will be managed by the sync call.
-			new Thread(new Runnable() {
-				public void run() {
-					try
-					{
-						conceptWorkflowService.synchronizeWithRemote();
-					}
-					catch (IOException e)
-					{
-						LOG.error("Sync execution failed", e);
-					}
-				}
-			}).start();
+			conceptWorkflowService.synchronizeWithRemote();
 		}
 	}
 

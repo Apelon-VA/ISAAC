@@ -22,11 +22,9 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.workflow;
+package gov.va.isaac.util;
 
 import java.util.UUID;
-
-import gov.va.isaac.util.WBUtility;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;

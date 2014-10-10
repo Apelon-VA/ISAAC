@@ -347,4 +347,13 @@ public class DroolsExecutorsManager implements ServicesToPreloadI
 	{
 		// nothing to do, we already kick off init in the constructor.
 	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
+	 */
+	@Override
+	public void shutdown()
+	{
+		// noop
+	}
 }

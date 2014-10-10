@@ -36,6 +36,11 @@ public class DatastoreException extends Exception
 	{
 		super(string);
 	}
+	
+	public DatastoreException(String string, Exception e)
+	{
+		super(string, e);
+	}
 
 	public DatastoreException(SQLException e)
 	{

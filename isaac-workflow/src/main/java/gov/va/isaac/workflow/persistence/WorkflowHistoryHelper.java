@@ -31,11 +31,16 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +56,8 @@ public class WorkflowHistoryHelper {
 
 	private final static String WF_HISTORY_MAP_VARIABLE_NAME = "wf_history";
 
+	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy @ HH:mm:ss");
+
 	/*
 	 * Author
 	 * Time
@@ -60,12 +67,10 @@ public class WorkflowHistoryHelper {
 	 *
 	 */
 	enum WorkflowHistoryVariable {
-		wf_hist_task_name,
-		wf_hist_component_id,
-		wf_hist_component_name,
 		wf_hist_action_owner,
 		wf_hist_action_time,
-		wf_hist_action
+		wf_hist_action, 
+		wf_hist_comment
 	}
 
 	public static List<Map<String, String>> getHistoryEntries(LocalTask task) {
@@ -97,16 +102,14 @@ public class WorkflowHistoryHelper {
 		return builder.toString();
 	}
 	
-	private static Map<String, String> createNewHistoryEntry(LocalTask task, Action action) {
+	private static Map<String, String> createNewHistoryEntry(LocalTask task, Action action, String comment) {
 		long time = new Date().getTime();
 
 		Map<String, String> newEntry = new HashMap<>();
-		newEntry.put(WorkflowHistoryVariable.wf_hist_task_name.name(), task.getName());
-		newEntry.put(WorkflowHistoryVariable.wf_hist_component_id.name(), task.getComponentId());
-		newEntry.put(WorkflowHistoryVariable.wf_hist_component_name.name(), task.getComponentName());
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action_owner.name(), task.getOwner());
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action_time.name(), Long.toString(time));
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action.name(), action.name());
+		newEntry.put(WorkflowHistoryVariable.wf_hist_comment.name(), comment);
 
 		return newEntry;
 	}
@@ -115,7 +118,7 @@ public class WorkflowHistoryHelper {
 
 		List<Map<String, String>> existingEntries = getHistoryEntries(task);
 		int numExistingEntries = existingEntries.size();
-		Map<String, String> newEntry = createNewHistoryEntry(task, action);
+		Map<String, String> newEntry = createNewHistoryEntry(task, action, outputVariables.get("out_comment"));
 		outputVariables.putAll(newEntry);
 		existingEntries.add(outputVariables);
 
@@ -147,6 +150,43 @@ public class WorkflowHistoryHelper {
 			List<Map<String, String>> parsedMaps = (List<Map<String, String>>) xmlDecoder.readObject();
 			xmlDecoder.close();
 			return parsedMaps;
+		}
+	}
+
+	public static void loadGridPane(GridPane gp, LocalTask task) {
+		List<Map<String, String>> entries = getHistoryEntries(task);
+		
+		int counter = 0;
+		for (Map<String, String> entry : entries) {
+			String owner = "Owner doesn't exist";
+			String action = "Action doesn't exist";
+			String timestamp = "Timestamp doesn't exist";
+			
+			for (String key : entry.keySet()) {
+				if (key.equals(WorkflowHistoryVariable.wf_hist_action_owner.toString())) {
+					owner = entry.get(key);
+				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action.toString())) {
+					action = entry.get(key);
+					
+					if (action.equalsIgnoreCase("None")) {
+						action = "Initialize Workflow";
+					}
+				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action_time.toString())) {
+					Long time = Long.parseLong(entry.get(key));
+					
+			        timestamp = sdf.format(time);
+				} 
+					
+			}
+
+			Label ownerLabel = new Label(owner);
+			ownerLabel.setFont(new Font("System Bold", 14));
+			Label actionLabel = new Label(action);
+			actionLabel.setFont(new Font("System Bold", 14));
+			Label timeLabel = new Label(timestamp);
+			timeLabel.setFont(new Font("System Bold", 14));
+
+			gp.addRow(counter++, ownerLabel, actionLabel, timeLabel);
 		}
 	}
 }

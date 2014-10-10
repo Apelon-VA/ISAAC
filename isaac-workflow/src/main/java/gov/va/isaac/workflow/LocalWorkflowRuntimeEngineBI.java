@@ -31,8 +31,6 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface LocalWorkflowRuntimeEngineBI {
 
-    public void synchronizeWithRemote() throws RemoteException, DatastoreException;
-    
     public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) throws RemoteException, DatastoreException;
     
     public Map<String,Object> getVariablesMapForTaskId(Long taskId) throws RemoteException;

@@ -26,7 +26,8 @@ import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
+import gov.va.isaac.workflow.engine.SynchronizeResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,12 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 				Utility.execute(() -> {
 					try
 					{
-						AppContext.getService(LocalWorkflowRuntimeEngineBI.class).synchronizeWithRemote();
+						SynchronizeResult sr = AppContext.getService(RemoteSynchronizer.class).blockingSynchronize();
+						
+						if (sr.hasError())
+						{
+							AppContext.getCommonDialogs().showErrorDialog("Error Synchronizing", "There were errors during synchronization", sr.getErrorSummary());
+						}
 					}
 					catch (Exception e)
 					{
@@ -207,5 +213,23 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 	@Override
 	public String getViewTitle() {
 		return "Workflow Inbox";
+	}
+	
+	/**
+	 * Inform the view that the data in the datastore has changed, and it should refresh itself.
+	 */
+	public void reloadContent()
+	{
+		if (controller_ != null)
+		{
+			if (Platform.isFxApplicationThread())
+			{
+				controller_.loadContent();
+			}
+			else
+			{
+				Platform.runLater(() -> controller_.loadContent());
+			}
+		}
 	}
 }

@@ -29,6 +29,7 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.taskmodel.TaskModel;
+import gov.va.isaac.workflow.taskmodel.TaskModel.UserActionOutputResponse;
 import gov.va.isaac.workflow.taskmodel.TaskModelFactory;
 
 import java.util.UUID;
@@ -40,7 +41,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -50,7 +50,6 @@ import javax.inject.Inject;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.kie.api.task.model.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,44 +63,15 @@ public class WorkflowAdvancementViewController
 {	
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowAdvancementViewController.class);
 	
-	enum WorkflowActionsValueMap {
-		sendToReviewer("Send To Reviewer", "aa"),
-		sendToApprover("Send To Approver", "aa"),
-		approveForPublication("Approve For Publication", "aa"),
-		cancelWorkflow("Cancel Workflow", "aa"),
-		rejectToEditor("Reject and Send to Editor", "aa"),
-		rejectToReviewer("Reject and Send to Reviewer", "aa");
-		
-		private final String displayName;
-		private final String serverAction;
-		
-		private WorkflowActionsValueMap() {
-			this(null, null);
-		}
-
-		private WorkflowActionsValueMap(String displayName, String serverAction) {
-			this.displayName = displayName;
-			this.serverAction = serverAction;
-		}
-		
-		public String getDisplayName() {
-			return displayName;
-		}
-		
-		public String getServerAction() {
-			return serverAction;
-		}
-	}
-	
 	// Underlying concept for loading detail pane
 	private ConceptVersionBI conceptVersion;
 
 	@FXML private BorderPane borderPane;
-	@FXML private TextArea commentTextField;
+	//@FXML private TextArea commentTextField;
 	@FXML private Button closeButton;
 	@FXML private Button advanceButton;
 	@FXML private Label generatedComponentSummary;
-	@FXML private ComboBox<WorkflowActionsValueMap> actionComboBox;	
+	@FXML private ComboBox<UserActionOutputResponse> actionComboBox;	
 	@FXML private GridPane advanceWfGridPane;
 	
 	private WorkflowAdvancementView stage;
@@ -120,6 +90,10 @@ public class WorkflowAdvancementViewController
 	{
 		AppContext.getServiceLocator().inject(this);
 
+		closeButton.setOnAction((action) -> {
+			stage.close();
+		});
+		
 		// Disabling saveActionButton until dependencies met 
 		advanceButton.setDisable(true);
 
@@ -187,16 +161,28 @@ public class WorkflowAdvancementViewController
 	public void setTask(long taskId) {
 		//TODO Joel - what is a user supposed to do about any of these failures?  Shouldn't all of these be putting up a dialog informing them that the 
 		//set task failed?  You can't just silently eat them - or can you eat some of these?
+
+		final String errorDialogTitle = "Failed Setting Workflow Task";
+		final String errorDialogMsg = "Failed setting initial workflow task by id #" + taskId;
 		if (taskModel != null) {
-			String msg = "Cannot reset initialTask from " + taskModel.getTask().getId() + " to " + taskId;
-			logger.error(msg);
-			throw new RuntimeException(msg);
+			String details = "Cannot reset initialTask from #" + taskModel.getTask().getId() + " to #" + taskId;
+			logger.error(details);
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
+			
+			return;
 		}
 
 		if (conceptVersion != null) {
-			String msg = "Cannot set initialTask to " + taskId + " when conceptVersion is already set to " + new SimpleDisplayConcept(conceptVersion);
-			logger.error(msg);
-			throw new RuntimeException(msg);
+			String details = "Cannot set initialTask to #" + taskId + " when conceptVersion is already set to " + new SimpleDisplayConcept(conceptVersion);
+
+			logger.error(details);
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
+
+			return;
 		}
 		
 		initialTask = null;
@@ -206,16 +192,35 @@ public class WorkflowAdvancementViewController
 		}
 		catch (DatastoreException e1)
 		{
-			logger.error("error getting task", e1);
+			String details = "Failed loading initial workflow task #" + taskId + ". Caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
+			logger.error(details, e1);
+
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
+
+			return;
 		}
 
 		if (initialTask == null) {
-			logger.error("Task retrieved by id {} is null", taskId);
+			String details = "Failed loading initial workflow task #" + initialTask.getId() + " (got null)";
+			
+			logger.error(details);
+			
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			stage.close();
 
 			return;
 		}
 		if (initialTask.getComponentId() == null) {
-			logger.error("Component ID for task {} is null", initialTask.getId());
+			String details = "Component ID for task #" + initialTask.getId() + " is null";
+
+			logger.error(details);
+
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			//stage.close();
 
 			return;
 		}
@@ -223,7 +228,12 @@ public class WorkflowAdvancementViewController
 		try {
 			componentUuid = UUID.fromString(initialTask.getComponentId());
 		} catch (IllegalArgumentException e) {
-			logger.error("Component ID for task {} is not a valid UUID", initialTask.getId());
+			String details = "Component ID for task #" + initialTask.getId() + " is not a valid UUID";
+			logger.error(details);
+
+			AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+
+			//stage.close();
 
 			return;
 		}
@@ -235,7 +245,11 @@ public class WorkflowAdvancementViewController
 
 			containingConcept = WBUtility.getConceptVersion(componentUuid);
 			if (containingConcept == null) {
-				logger.error("Component ID for task " + initialTask.getId() + " retrieved a null concept");
+				String details = "Component ID for task #" + initialTask.getId() + " retrieved a null concept";
+
+				logger.error(details);
+				
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
 
 				return;
 			}
@@ -243,12 +257,21 @@ public class WorkflowAdvancementViewController
 			try {
 				containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
 			} catch (Exception e) {
-				logger.error("Failed getting version from ComponentChronicleBI task " + initialTask.getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-				e.printStackTrace();
+				String details = "Failed getting version from ComponentChronicleBI task " + initialTask.getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
+
+				logger.error(details, e);
+				
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
+				
+				return;
 			}
 
 			if (containingConcept == null) {
-				logger.error("ComponentChronicleBI task " + initialTask.getId() + " contained a null enclosing concept");
+				String details = "ComponentChronicleBI task " + initialTask.getId() + " contained a null enclosing concept";
+
+				logger.error(details);
+				
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogMsg, details, stage);
 
 				return;
 			}
@@ -260,7 +283,7 @@ public class WorkflowAdvancementViewController
 		
 		conceptVersion = containingConcept;
 		
-		taskModel = TaskModelFactory.newTaskModel(initialTask);
+		taskModel = TaskModelFactory.newTaskModel(initialTask, actionComboBox);
 
 		taskModel.getOutputVariablesSavableProperty().addListener(new ChangeListener<Boolean>() {
 			@Override
@@ -268,7 +291,9 @@ public class WorkflowAdvancementViewController
 					ObservableValue<? extends Boolean> observable,
 					Boolean oldValue,
 					Boolean newValue) {
-			}});
+				
+			}
+		});
 		
 		loadContent();
 	}
@@ -284,15 +309,28 @@ public class WorkflowAdvancementViewController
 		advanceButton.disableProperty().unbind();
 	}
 
-	// Load data into GUI components
+	// Load data into GUI components not already loaded by TaskModel
 	protected void loadContent()
 	{
 		componentId = UUID.fromString(initialTask.getComponentId());
 		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
 
-		setComboBoxContents();
+		loadTaskModel();
 		
 		refreshSaveActionButtonBinding();
+	}
+	
+	private void loadTaskModel() {
+		int rowIndex = 1;
+		for (String outputVariable : taskModel.getOutputVariableNames()) {
+			if (taskModel.getOutputVariableInputNode(outputVariable) != this.actionComboBox) {
+				advanceWfGridPane.addRow(rowIndex++, taskModel.getOutputVariableInputNodeLabel(outputVariable), taskModel.getOutputVariableInputNode(outputVariable));
+			}
+		}
+		
+//		for (Node child : inputTabGridPane.getChildren()) {
+//			VariableGridPaneNodeConfigurationHelper.configureNode(child);
+//		}
 	}
 
 	private void refreshSaveActionButtonBinding()
@@ -305,12 +343,7 @@ public class WorkflowAdvancementViewController
 		return borderPane;
 	}
 
-	private void setComboBoxContents() {
-
-	}
-
 	private void addToPromotionPath() {
 		// TODO Auto-generated method stub
-		
 	}
 }

@@ -18,7 +18,6 @@
  */
 package gov.va.isaac.config.profiles;
 
-import gov.va.isaac.config.changesets.ChangesetConfiguration;
 import gov.va.isaac.config.generated.NewUserDefaults;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.User;
@@ -34,6 +33,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -61,6 +61,8 @@ public class UserProfileManager implements ServicesToPreloadI
 
 	private ObservableList<String> userNamesWithProfiles_ = FXCollections.observableList(new ArrayList<>());
 	private UserProfile loggedInUser_;
+	
+	private ArrayList<Consumer<String>> notifyUponLogin = new ArrayList<>();
 
 	protected UserProfileManager()
 	{
@@ -72,7 +74,10 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public UserProfile getCurrentlyLoggedInUserProfile()
 	{
-	  if (loggedInUser_ == null) return null;
+		if (loggedInUser_ == null)
+		{
+			return null;
+		}
 		return loggedInUser_.clone();
 	}
 	
@@ -81,6 +86,10 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public String getCurrentlyLoggedInUser()
 	{
+		if (loggedInUser_ == null)
+		{
+			return null;
+		}
 		return new String(loggedInUser_.getUserLogonName());
 	}
 	
@@ -137,8 +146,12 @@ public class UserProfileManager implements ServicesToPreloadI
 					loggedInUser_ = up;
 					Files.write(new File(profilesFolder_, "lastUser.txt").toPath(), userLogonName.getBytes(), 
 							StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
-					ChangesetConfiguration.configureChangeSetWriter();
+					for (Consumer<String> listener : notifyUponLogin)
+					{
+						listener.accept(loggedInUser_.getUserLogonName());
 				}
+					notifyUponLogin = null;
+			}
 			}
 			catch (IOException e)
 			{
@@ -168,7 +181,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		new File(profileFolder, "changesets").mkdir();
 		File prefFile = new File(profileFolder, prefsFileName_);
 
-		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword());
+		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword(), UUID.fromString(user.getUUID()));
 		if (defaults != null)
 		{
 			if (defaults.getStatedInferredPolicy() != null)
@@ -179,8 +192,11 @@ public class UserProfileManager implements ServicesToPreloadI
 			{
 				up.setDisplayFSN(defaults.isDisplayFSN().booleanValue());
 			}
+			if (defaults.isLaunchWorkflowForEachCommit() != null)
+			{
+				up.setLaunchWorkflowForEachCommit(defaults.isLaunchWorkflowForEachCommit());
 		}
-		up.setConceptUUID(UUID.fromString(user.getUUID()));
+		}
 		
 		String temp = (user.getSyncUserName() != null && user.getSyncUserName().length() > 0 ? user.getSyncUserName() : user.getUniqueLogonName());
 		
@@ -262,6 +278,15 @@ public class UserProfileManager implements ServicesToPreloadI
 	}
 	
 	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
+	 */
+	@Override
+	public void shutdown()
+	{
+		// noop
+	}
+	
+	/**
 	 * Returns a sorted list of all user names that could potentially log on, based on 
 	 * the existence of their profiles directory.
 	 */
@@ -333,5 +358,10 @@ public class UserProfileManager implements ServicesToPreloadI
 			throw new IOException("That user concept already exists");
 		}
 		return user;
+	}
+	
+	public void registerLoginCallback(Consumer<String> userLoggedIn)
+	{
+		notifyUponLogin.add(userLoggedIn);
 	}
 }

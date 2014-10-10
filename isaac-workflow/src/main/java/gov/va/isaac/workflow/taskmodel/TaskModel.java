@@ -41,7 +41,9 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +56,37 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class TaskModel {
 	private final static Logger LOGGER = LoggerFactory.getLogger(TaskModel.class);
+
+	public enum UserActionOutputResponse {
+		sendToReviewer("Send To Reviewer", null), // used only by Edit content but does not correspond to any output variable
+		sendToApprover("Send To Approver", "approve"), // used by ReviewContentTaskModel
+		approveForPublication("Approve For Publication", "approve"), // ?
+		cancelWorkflow("Cancel Workflow", "cancel"),
+		rejectToEditor("Reject and Send to Editor", "reject"),
+		rejectToReviewer("Reject and Send to Reviewer", "reject-review"),
+		rejectToReviewer1("Reject and Send to Reviewer 1", "reject-review-1"),
+		rejectToReviewer2("Reject and Send to Reviewer 2", "reject-review-2"),;
+		
+		private final String displayValue;
+		private final String userActionOutputResponseValue;
+		
+		private UserActionOutputResponse() {
+			this(null, null);
+		}
+
+		private UserActionOutputResponse(String displayName, String serverAction) {
+			this.displayValue = displayName;
+			this.userActionOutputResponseValue = serverAction;
+		}
+		
+		public String getDisplayValue() {
+			return displayValue;
+		}
+		
+		public String getUserActionOutputResponseValue() {
+			return userActionOutputResponseValue;
+		}
+	}
 
 	interface Validator {
 		boolean isValid();
@@ -130,6 +163,8 @@ public abstract class TaskModel {
 
 	private final LocalTask task;
 
+	private final ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox;
+
 	private final ObjectProperty<Action> actionProperty = new SimpleObjectProperty<>(Action.COMPLETE);
 
 	private final Map<String, ComponentsForOutputVariable> componentsForOutputVariables = new HashMap<>();
@@ -138,11 +173,47 @@ public abstract class TaskModel {
 	
 	private final BooleanProperty outputVariablesSavableProperty = new SimpleBooleanProperty(false);
 
+	protected final ComboBox<UserActionOutputResponse> getUserActionOutputResponseComboBox() {
+		return userActionOutputResponseComboBox;
+	}
+
+	protected void initializeUserActionOutputResponseComboBox() {
+		getUserActionOutputResponseComboBox().setButtonCell(new ListCell<UserActionOutputResponse>() {
+			@Override
+			protected void updateItem(UserActionOutputResponse t, boolean bln) {
+				super.updateItem(t, bln); 
+				if (bln) {
+					setText("");
+				} else {
+					setText(t.getDisplayValue());
+				}
+			}
+		});
+
+		getUserActionOutputResponseComboBox().setCellFactory((p) -> {
+			final ListCell<UserActionOutputResponse> cell = new ListCell<UserActionOutputResponse>() {
+				@Override
+				protected void updateItem(UserActionOutputResponse c, boolean emptyRow) {
+					super.updateItem(c, emptyRow);
+
+					if(c == null || emptyRow) {
+						setText(null);
+					} else {
+						setText(c.getDisplayValue());
+					}
+				}
+			};
+
+			return cell;
+		});
+	}
+
 	/**
 	 * 
 	 */
-	protected TaskModel(LocalTask inputTask) {
-		task = inputTask;
+	protected TaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+		this.task = inputTask;
+		this.userActionOutputResponseComboBox = userActionOutputResponseComboBox;
 
 		getActionProperty().addListener(getDefaultListenerToSetIsSavableProperty());
 		getOutputVariablesSavableProperty().addListener(new ChangeListener<Boolean>() {
@@ -153,9 +224,11 @@ public abstract class TaskModel {
 					Boolean newValue) {
 				isSavableProperty.set(isSavable());
 			}});
+
+		initializeUserActionOutputResponseComboBox();
 	}
-	protected TaskModel(LocalTask inputTask, Enum<? extends Enum<?>>[] enumValues) {
-		this(inputTask);
+	protected TaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox, Enum<? extends Enum<?>>[] enumValues) {
+		this(inputTask, userActionOutputResponseComboBox);
 		
 		for (Enum<?> en : enumValues) {
 			addOutputVariable(en.name());
@@ -242,7 +315,7 @@ public abstract class TaskModel {
 			}});
 
 		
-		Node newNode = createOutputVariableInputNode(variableName);
+		Node newNode = getOrCreateOutputVariableInputNode(variableName);
 		componentsForOutputVariable.setInputNode(newNode);
 	}
 	
@@ -335,5 +408,5 @@ public abstract class TaskModel {
 	 * and the respective ComponentsForOutputVariable has been put into the componentsForOutputVariables map
 	 * 
 	 */
-	protected abstract Node createOutputVariableInputNode(String variableName);
+	protected abstract Node getOrCreateOutputVariableInputNode(String variableName);
 }

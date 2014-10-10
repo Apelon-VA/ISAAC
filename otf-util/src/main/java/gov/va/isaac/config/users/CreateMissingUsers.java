@@ -56,4 +56,13 @@ public class CreateMissingUsers implements ServicesToPreloadI
 			}
 		});
 	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
+	 */
+	@Override
+	public void shutdown()
+	{
+		// noop
+	}
 }

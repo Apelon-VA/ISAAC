@@ -21,7 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusTaskIdProvider;
@@ -30,6 +30,9 @@ import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.TaskActionStatus;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
+import gov.va.isaac.workflow.engine.SynchronizeResult;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
 import java.net.URL;
@@ -75,14 +78,12 @@ public class WorkflowInboxController
 	@FXML ResourceBundle resources;
 	@FXML URL location;
 	@FXML Button claimTasksButton;
-	@FXML Button synchronizeButton;
 	@FXML Label userName;
 	@FXML TableView<LocalTask> taskTable;
 
-	@Inject
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	@Inject
-	private LocalTasksServiceBI taskService_;
+	@Inject private LocalWorkflowRuntimeEngineBI wfEngine_;
+	@Inject private LocalTasksServiceBI taskService_;
+	@Inject private RemoteSynchronizer remoteSyncService_;
 	
 	public static WorkflowInboxController init() throws IOException {
 		// Load FXML
@@ -98,7 +99,6 @@ public class WorkflowInboxController
 	{
 		AppContext.getServiceLocator().inject(this);
 		assert claimTasksButton != null : "fx:id=\"claimTasksButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert synchronizeButton != null : "fx:id=\"synchronizeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert userName != null : "fx:id=\"userName\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
@@ -225,27 +225,23 @@ public class WorkflowInboxController
 				try
 				{
 					wfEngine_.claim(10);
-					Platform.runLater(() -> 
+					SynchronizeResult sr = remoteSyncService_.blockingSynchronize();
+					if (sr.hasError())
 					{
-						synchronize(true);
-					});
+						AppContext.getCommonDialogs().showErrorDialog("Claim Error", "There was a problem running sync after the task claim", sr.getErrorSummary());
+					}
 				}
 				catch (Exception e)
 				{
 					LOG.error("Unexpected error claiming tasks", e);
-					Platform.runLater(() -> 
-					{
-						AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
-					});
+					AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
 				} finally {
 					cleanup(claimPopover, claimTasksButton, this);
 				}
 			});
 		});
 
-		synchronizeButton.setOnAction((action) -> {
-			synchronize(true);
-		});
+		loadContent();
 	}
 
 	private String getCompType(String componentName) {
@@ -255,33 +251,6 @@ public class WorkflowInboxController
 
 	public Region getView() {
 		return rootBorderPane;
-	}
-	
-	private void synchronize(final boolean displayBusyPopover) {
-		synchronizeButton.setDisable(true);
-
-		BusyPopover synchronizePopover = null;
-		
-		if (displayBusyPopover) {
-			synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
-		}
-
-		final BusyPopover finalBusyPopover = synchronizePopover;
-		
-		Utility.execute(() -> {
-			try
-			{
-				wfEngine_.synchronizeWithRemote();
-			}
-			catch (Exception e)
-			{
-				LOG.error("Unexpected error synchronizing tasks", e);
-			} finally {
-				if (finalBusyPopover != null) {
-					cleanup(finalBusyPopover, synchronizeButton, this);
-				}
-			}
-		});
 	}
 	
 	/*
@@ -307,7 +276,10 @@ public class WorkflowInboxController
 		taskTable.getItems().clear();
 		try
 		{
-			taskTable.getItems().addAll(taskService_.getOpenOwnedTasks());
+			List<LocalTask> tasksForTable = taskService_.getOpenOwnedTasks();
+			List<LocalTask> tasksToRemoveFromTable = taskService_.getOwnedTasksByActionStatus(TaskActionStatus.Pending);
+			tasksForTable.removeAll(tasksToRemoveFromTable);
+			taskTable.getItems().addAll(tasksForTable);
 		}
 		catch (DatastoreException e)
 		{
@@ -382,7 +354,7 @@ public class WorkflowInboxController
 							int cellIndex = c.getIndex();
 							LocalTask task = taskTable.getItems().get(cellIndex);
 
-							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+							WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
 							view.setTask(task.getId());
 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 						}
