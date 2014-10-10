@@ -38,11 +38,22 @@ import javafx.scene.control.TextArea;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class ApproveContentTaskModel extends TaskModel {
+public class DualReviewAdjudicateContentTaskModel extends TaskModel {
 	public enum InputVariable {
 		component_id("Component Id"),
 		component_name("Component Name"),
-		instructions("Instructions");
+		instructions("Instructions"),
+		
+		editor_comment_1("Editor 1 Comment"),
+		editor_comment_2("Editor 2 Comment"),
+		
+		review_comment_1("Reviewer 1 Comment"),
+		review_comment_2("Reviewer 2 Comment"),
+
+		edit_coordinate_1("Edit Coordinate 1"),
+		edit_coordinate_2("Edit Coordinate 2"),
+		
+		edit_coordinate_adjudicator("Adjudicator Edit Coordinate");
 		
 		private final String labelName;
 		private InputVariable(String labelName) {
@@ -62,7 +73,8 @@ public class ApproveContentTaskModel extends TaskModel {
 	
 	public enum OutputVariable {
 		out_response("Response"),
-		out_comment("Comment");
+		out_comment("Comment"),
+		out_submit_list("Submission List");
 
 		private final String labelName;
 		private OutputVariable(String labelName) {
@@ -83,7 +95,7 @@ public class ApproveContentTaskModel extends TaskModel {
 	/**
 	 * @param inputTask
 	 */
-	ApproveContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+	DualReviewAdjudicateContentTaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
 		super(inputTask, userActionOutputResponseComboBox, OutputVariable.values());
 	}
 
@@ -127,8 +139,8 @@ public class ApproveContentTaskModel extends TaskModel {
 			ComboBox<UserActionOutputResponse> responseComboBox = getUserActionOutputResponseComboBox();
 			responseComboBox.getItems().addAll(
 					UserActionOutputResponse.approveForPublication,
-					UserActionOutputResponse.rejectToEditor,
-					UserActionOutputResponse.rejectToReviewer,
+					UserActionOutputResponse.rejectToReviewer1,
+					UserActionOutputResponse.rejectToReviewer2,
 					UserActionOutputResponse.cancelWorkflow);
 
 			StringProperty responseProperty = getOutputVariableValueProperty(OutputVariable.out_response.name());

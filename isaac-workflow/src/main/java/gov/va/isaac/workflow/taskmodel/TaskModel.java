@@ -63,7 +63,9 @@ public abstract class TaskModel {
 		approveForPublication("Approve For Publication", "approve"), // ?
 		cancelWorkflow("Cancel Workflow", "cancel"),
 		rejectToEditor("Reject and Send to Editor", "reject"),
-		rejectToReviewer("Reject and Send to Reviewer", "reject-review");
+		rejectToReviewer("Reject and Send to Reviewer", "reject-review"),
+		rejectToReviewer1("Reject and Send to Reviewer 1", "reject-review-1"),
+		rejectToReviewer2("Reject and Send to Reviewer 2", "reject-review-2"),;
 		
 		private final String displayValue;
 		private final String userActionOutputResponseValue;

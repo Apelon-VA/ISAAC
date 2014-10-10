@@ -42,7 +42,8 @@ public class ReviewContentTaskModel extends TaskModel {
 	public enum InputVariable {
 		component_id("Component Id"),
 		component_name("Component Name"),
-		instructions("Instructions");
+		instructions("Instructions"),
+		edit_coordinate("Edit Coordinate");
 		
 		private final String labelName;
 		private InputVariable(String labelName) {

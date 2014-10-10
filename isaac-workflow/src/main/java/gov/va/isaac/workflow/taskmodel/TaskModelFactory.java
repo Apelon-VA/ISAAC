@@ -38,7 +38,13 @@ public class TaskModelFactory {
 	enum TaskType {
 		edit_content("Edit content"),
 		review_content("Review content"),
-		approve_content("Approve content");
+		approve_content("Approve content"),
+		
+		dual_review_edit_content_1("Edit content 1"),
+		dual_review_edit_content_2("Edit content 2"),
+		dual_review_content_1("Review content 1"),
+		dual_review_content_2("Review content 2"),
+		dual_review_adjudicate_content("Adjudicate content");
 
 		private final String nodeName;
 		private TaskType(String nodeName) {
@@ -70,6 +76,14 @@ public class TaskModelFactory {
 			return new ReviewContentTaskModel(task, userActionResponseComboBox);
 		case approve_content:
 			return new ApproveContentTaskModel(task, userActionResponseComboBox);
+		case dual_review_edit_content_1:
+		case dual_review_edit_content_2:
+			return new DualReviewEditContentTaskModel(task, userActionResponseComboBox);
+		case dual_review_content_1:
+		case dual_review_content_2:
+			return new DualReviewReviewContentTaskModel(task, userActionResponseComboBox);
+		case dual_review_adjudicate_content:
+			return new DualReviewAdjudicateContentTaskModel(task, userActionResponseComboBox);
 
 		default: throw new IllegalArgumentException("Unsupported TaskType " + taskType);
 		}
