@@ -91,31 +91,55 @@ public class CommonDialogs implements CommonDialogsI
 	@Override
 	public synchronized void showErrorDialog(String title, String message, String details)
 	{
-		// Make sure in application thread.
-		FxUtils.checkFxUserThread();
-		
-		ErrorDialog ed;
-		
-		//If we already have our cached one up, create a new one.
-		if (errorDialog_.isShowing())
+		boolean calledFromFXThread = Toolkit.getToolkit().isFxUserThread();
+		Runnable r = new Runnable()
 		{
-			try
+			@Override
+			public void run()
 			{
-				ed = new ErrorDialog(errorDialog_.getOwner());
+				ErrorDialog ed;
+				
+				//If we already have our cached one up, create a new one.
+				if (errorDialog_.isShowing())
+				{
+					try
+					{
+						ed = new ErrorDialog(errorDialog_.getOwner());
+					}
+					catch (IOException e)
+					{
+						LOG.error("Unexpected error creating an error dialog!", e);
+						throw new RuntimeException("Can't display error dialog!");
+					}
+				}
+				else
+				{
+					ed = errorDialog_;
+				}
+		
+				ed.setVariables(title, message, details);
+				if (!calledFromFXThread)
+				{
+					ed.show();  //don't block
+					Platform.runLater(() -> 
+					{
+						ed.toFront();  //bug hack fix
+					});
+				}
+				else
+				{
+					ed.showAndWait();  //block
+				}
 			}
-			catch (IOException e)
-			{
-				LOG.error("Unexpected error creating an error dialog!", e);
-				throw new RuntimeException("Can't display error dialog!");
-			}
+		};
+		if (calledFromFXThread)
+		{
+			r.run();
 		}
 		else
 		{
-			ed = errorDialog_;
+			Platform.runLater(r);
 		}
-
-		ed.setVariables(title, message, details);
-		ed.showAndWait();
 	}
 
 	/**
@@ -173,10 +197,9 @@ public class CommonDialogs implements CommonDialogsI
 	@Override
 	public void showErrorDialog(String title, String message, String details, Window parentWindow)
 	{
+		boolean calledFromFXThread = Toolkit.getToolkit().isFxUserThread();
 		Runnable r = new Runnable()
 		{
-			boolean wasBackgroundThread = !Toolkit.getToolkit().isFxUserThread();
-			
 			@Override
 			public void run()
 			{
@@ -184,17 +207,17 @@ public class CommonDialogs implements CommonDialogsI
 				{
 					ErrorDialog ed = new ErrorDialog(parentWindow);
 					ed.setVariables(title, message, details);
-					if (wasBackgroundThread)
+					if (!calledFromFXThread)
 					{
-						ed.show();
+						ed.show();  //don't block
 						Platform.runLater(() -> 
 						{
-							ed.toFront();
+							ed.toFront();  //bug hack fix
 						});
 					}
 					else
 					{
-						ed.showAndWait();
+						ed.showAndWait();  //block
 					}
 				}
 				catch (IOException e)
@@ -203,7 +226,7 @@ public class CommonDialogs implements CommonDialogsI
 				}
 			}
 		};
-		if (Toolkit.getToolkit().isFxUserThread())
+		if (calledFromFXThread)
 		{
 			r.run();
 		}
@@ -216,10 +239,9 @@ public class CommonDialogs implements CommonDialogsI
 	@Override
 	public void showInformationDialog(String title, String message, Window parentWindow)
 	{
+		boolean calledFromFXThread = Toolkit.getToolkit().isFxUserThread();
 		Runnable r = new Runnable()
 		{
-			boolean wasBackgroundThread = !Toolkit.getToolkit().isFxUserThread();
-			
 			@Override
 			public void run()
 			{
@@ -227,17 +249,17 @@ public class CommonDialogs implements CommonDialogsI
 				{
 					InformationDialog id = new InformationDialog(parentWindow);
 					id.setVariables(title, message);
-					if (wasBackgroundThread)
+					if (!calledFromFXThread)
 					{
-						id.show();
+						id.show();  //don't block
 						Platform.runLater(() -> 
 						{
-							id.toFront();
+							id.toFront();  //bug hack fix
 						});
 					}
 					else
 					{
-						id.showAndWait();
+						id.showAndWait();  //block
 					}
 				}
 				catch (IOException e)
@@ -246,7 +268,7 @@ public class CommonDialogs implements CommonDialogsI
 				}
 			}
 		};
-		if (Toolkit.getToolkit().isFxUserThread())
+		if (calledFromFXThread)
 		{
 			r.run();
 		}
