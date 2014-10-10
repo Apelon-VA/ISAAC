@@ -18,8 +18,6 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
-import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -34,5 +32,5 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface PopupTaskWithConceptViewI extends TaskWithConceptViewI, PopupViewI
-{   
+{
 }
