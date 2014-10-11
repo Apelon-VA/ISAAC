@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+import org.apache.derby.jdbc.EmbeddedDriver;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,20 +158,24 @@ public final class DatastoreManager implements ServicesToPreloadI
 	{
 		if (dataSource_ != null)
 		{
-		dataSource_.close();
-		}
-		try
-		{
-			DriverManager.getConnection(protocol + ";shutdown=true");
-		}
-		catch (SQLException e)
-		{
-			//Yes... this is really how derby signals a proper DB shutdown.  Sigh.
-			if (e.getErrorCode() == 50000)
+			dataSource_.close();
+			try
 			{
-				log.info("Workflow database shutdown");
+				((EmbeddedDriver)Class.forName(driver).newInstance()).connect(protocol + ";shutdown=true", null);
 			}
-			else
+			catch (SQLException e)
+			{
+				//Yes... this is really how derby signals a proper DB shutdown.  Sigh.
+				if (e.getErrorCode() == 50000)
+				{
+					log.info("Workflow database shutdown");
+				}
+				else
+				{
+					log.error("Unexpected error shutting down Workflow DB", e);
+				}
+			}
+			catch (Exception e)
 			{
 				log.error("Unexpected error shutting down Workflow DB", e);
 			}
