@@ -168,6 +168,8 @@ public class LightWeightDialogs
 				bp.autosize();
 			}
 		});
+		
+		txPassword.setOnAction((event) -> loginButton.fire());
 
 		Platform.runLater(() -> txPassword.requestFocus());
 		bp.autosize();
