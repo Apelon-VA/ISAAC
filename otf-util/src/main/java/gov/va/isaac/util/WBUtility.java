@@ -128,13 +128,7 @@ public class WBUtility {
 	public static EditCoordinate getEC()  {
 		if (editCoord == null) {
 			try {
-		  	    int authorNid;
-			    if (ExtendedAppContext.getCurrentlyLoggedInUserProfile() != null) {
-				  authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
-			    } else { 
-			      authorNid = TermAux.USER.getLenient().getNid(); 
-			    }
-			  
+				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
 
@@ -1009,18 +1003,15 @@ public class WBUtility {
 	/**
 	 * Returns the uuid for fsn and pt based on the ConceptCB assignment algorithm.
 	 *
-     * @param fsn the fsn
-     * @param pt the pt
+	 * @param fsn the fsn
+	 * @param pt the pt
 	 * @return the uuid for fsn
 	 */
 	public static UUID getUuidForFsn(String fsn, String pt) {
-      List<String> fsns = new ArrayList<>();
-      fsns.add(fsn);
-      List<String> pts = new ArrayList<>();
-      pts.add(pt);
-	  return ConceptCB.computeComponentUuid(IdDirective.GENERATE_REFEX_CONTENT_HASH, fsns, pts, null);
+		List<String> fsns = new ArrayList<>();
+		fsns.add(fsn);
+		List<String> pts = new ArrayList<>();
+		pts.add(pt);
+		return ConceptCB.computeComponentUuid(IdDirective.GENERATE_REFEX_CONTENT_HASH, fsns, pts, null);
 	}
 }
-
-
-
