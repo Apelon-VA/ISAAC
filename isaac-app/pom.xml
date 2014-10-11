@@ -27,11 +27,6 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.controlsfx</groupId>
-			<artifactId>controlsfx</artifactId>
-		</dependency>
-
 		<!-- Need to override the scope on these 3 logging packages -->
 		<!-- The native logback implementation (note, the logback api comes from parent) -->
 		<dependency>

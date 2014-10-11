@@ -100,7 +100,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
@@ -571,9 +570,9 @@ public class ListBatchViewController
 							// Only have to check this if we muck with the file name...
 							if (f.exists())
 							{
-								Action response = Dialogs.create().owner(rootPane.getScene().getWindow()).title("Overwrite existing file?")
-										.masthead(null).styleClass(Dialog.STYLE_CLASS_NATIVE).message("The file '" + f.getName() + "' already exists.  Overwrite?").showConfirm();
-								if (response != Dialog.ACTION_YES)
+								DialogResponse dr = AppContext.getCommonDialogs().showYesNoDialog("Overwrite existing file?", 
+										"The file '" + f.getName() + "' already exists.  Overwrite?");
+								if (DialogResponse.YES != dr)
 								{
 									return;
 								}
@@ -679,10 +678,8 @@ public class ListBatchViewController
 											public void run()
 											{
 												addMultipleItems(newConcepts);
-												Dialogs.create().title("Concept Import Completed").masthead(null)
-													.message("The Concept List import is complete" 
-															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""))
-															.owner(rootPane.getScene().getWindow()).styleClass(Dialog.STYLE_CLASS_NATIVE).showInformation();
+												AppContext.getCommonDialogs().showInformationDialog("Concept Import Completed", "The Concept List import is complete" 
+															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""));
 											}
 										});
 										
@@ -707,8 +704,10 @@ public class ListBatchViewController
 									return null;
 								}
 							};
+							//TODO replace this with either a Java 8 (u40) Dialog, or just build this little thing - this is the only place
+							//in the entire code base where we use controlsFx...
 							Dialogs.create().title("Importing").masthead(null).message("Importing").owner(rootPane.getScene().getWindow())
-								.styleClass(Dialog.STYLE_CLASS_NATIVE).showWorkerProgress(t);
+								.nativeTitleBar().showWorkerProgress(t);
 							Utility.execute(t);
 						}
 						else
