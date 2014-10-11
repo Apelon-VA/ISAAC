@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 {
+	private static final Logger LOG = LoggerFactory.getLogger(WorkflowInbox.class);
 	WorkflowInboxController controller_;
 	private final Logger logger = LoggerFactory.getLogger(WorkflowInbox.class);
 
@@ -145,7 +146,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 					}
 					catch (IOException e)
 					{
-						//LOG.error("Unexpected error initializing the Search View", e);
+						LOG.error("Unexpected error initializing the Search View", e);
 						return new Label("oops - check logs");
 					}
 				}
