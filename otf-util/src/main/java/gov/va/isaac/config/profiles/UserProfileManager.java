@@ -149,9 +149,9 @@ public class UserProfileManager implements ServicesToPreloadI
 					for (Consumer<String> listener : notifyUponLogin)
 					{
 						listener.accept(loggedInUser_.getUserLogonName());
-				}
+					}
 					notifyUponLogin = null;
-			}
+				}
 			}
 			catch (IOException e)
 			{
@@ -195,7 +195,7 @@ public class UserProfileManager implements ServicesToPreloadI
 			if (defaults.isLaunchWorkflowForEachCommit() != null)
 			{
 				up.setLaunchWorkflowForEachCommit(defaults.isLaunchWorkflowForEachCommit());
-		}
+			}
 		}
 		
 		String temp = (user.getSyncUserName() != null && user.getSyncUserName().length() > 0 ? user.getSyncUserName() : user.getUniqueLogonName());
