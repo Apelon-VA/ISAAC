@@ -25,7 +25,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.Path;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 
 /**
  * Represents metadata about an information model.
@@ -58,7 +58,7 @@ public class InformationModelMetadata {
    * @throws ContradictionException the contradiction exception
    */
   public static InformationModelMetadata newInstance(int stampNid,
-    BdbTerminologyStore dataStore, ViewCoordinate vc) throws IOException,
+    TerminologyStoreDI dataStore, ViewCoordinate vc) throws IOException,
     ContradictionException {
     String importerName = "Hard-coded placeholder";
 

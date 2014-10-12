@@ -24,7 +24,7 @@ import gov.va.isaac.models.api.BdbInformationModelService;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.datastore.BdbPathManager;
 
 /**
  * Goal which creates information model refset metadata in the ISAAC environment
@@ -49,6 +49,7 @@ public class InfoModelMetadata extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     try {
       getLog().info("Creating metadata");
+      BdbPathManager.get().resetPathMap();
       createMetadata();
       getLog().info("Done creating new path.");
     } catch (Exception e) {
@@ -68,7 +69,7 @@ public class InfoModelMetadata extends AbstractMojo {
     // Obtain already-open datastore and use it
     dataStore = AppContext.getService(TerminologyStoreDI.class);
     BdbInformationModelService service = new BdbInformationModelService(
-        (BdbTerminologyStore)dataStore);
+        dataStore);
     service.createMetadataConcepts();
   }
 }

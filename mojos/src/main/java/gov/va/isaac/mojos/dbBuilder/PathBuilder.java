@@ -210,27 +210,27 @@ public class PathBuilder extends AbstractMojo {
     dataStore.commit();
     getLog().info("New Path " + pathConcept.getPrimordialUuid());
 
-//    getLog().info("WRITE path refset info");
-//    ConceptChronicleBI paths =
-//        dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getNid());
-//    ConceptVersionBI pathsVersion =
-//        paths.getVersion(StandardViewCoordinates.getSnomedStatedLatest());
-//    getLog().info("paths: " + paths.getNid() + " " + paths.toUserString());
-//    for (RefexChronicleBI<?> refex : pathsVersion.getRefsetMembers()) {
-//      getLog().info("  refex : " + refex.toUserString());
-//    }
-//
-//    getLog().info("WRITE path origin refset info");
-//    ConceptChronicleBI pathOrigins =
-//        dataStore.getConcept(TermAux.PATH_ORIGIN_REFSET.getLenient().getNid());
-//    ConceptVersionBI pathOriginsVersion =
-//        pathOrigins.getVersion(StandardViewCoordinates.getSnomedStatedLatest());
-//    getLog().info(
-//        "paths: " + pathOrigins.getNid() + " " + pathOrigins.toUserString());
-//    for (RefexChronicleBI<?> refex : pathOriginsVersion.getRefsetMembers()) {
-//      getLog().info("  refex : " + refex.toUserString());
-//    }
+    getLog().info("WRITE path refset info");
+    ConceptChronicleBI paths =
+        dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getNid());
+    ConceptVersionBI pathsVersion =
+        paths.getVersion(StandardViewCoordinates.getSnomedStatedLatest());
+    getLog().info("paths: " + paths.getNid() + " " + paths.toUserString());
+    for (RefexChronicleBI<?> refex : pathsVersion.getRefsetMembers()) {
+      getLog().info("  refex : " + refex.toUserString());
+    }
 
+    getLog().info("WRITE path origin refset info");
+    ConceptChronicleBI pathOrigins =
+        dataStore.getConcept(TermAux.PATH_ORIGIN_REFSET.getLenient().getNid());
+    ConceptVersionBI pathOriginsVersion =
+        pathOrigins.getVersion(StandardViewCoordinates.getSnomedStatedLatest());
+    getLog().info(
+        "paths: " + pathOrigins.getNid() + " " + pathOrigins.toUserString());
+    for (RefexChronicleBI<?> refex : pathOriginsVersion.getRefsetMembers()) {
+      getLog().info("  refex : " + refex.toUserString());
+    }
+    
   }
 
   /**

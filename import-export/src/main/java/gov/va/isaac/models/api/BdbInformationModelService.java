@@ -65,7 +65,7 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
@@ -85,7 +85,7 @@ public class BdbInformationModelService implements InformationModelService {
       .getLogger(BdbInformationModelService.class);
 
   /** The data store. */
-  private BdbTerminologyStore dataStore;
+  private TerminologyStoreDI dataStore;
 
   /**
    * Instantiates a {@link BdbInformationModelService} from the specified
@@ -94,7 +94,7 @@ public class BdbInformationModelService implements InformationModelService {
    * @param dataStore the data store
    * @throws IOException
    */
-  public BdbInformationModelService(BdbTerminologyStore dataStore)
+  public BdbInformationModelService(TerminologyStoreDI dataStore)
       throws IOException {
     if (dataStore == null) {
       throw new IOException("Data store unexpectedly null");
