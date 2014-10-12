@@ -38,6 +38,8 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javax.inject.Singleton;
+import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
+import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +97,10 @@ public class UserProfileManager implements ServicesToPreloadI
 	
 	public void saveChanges(UserProfile userProfile) throws InvalidUserException, IOException
 	{
+		if (isAutomationModeEnabled())
+		{
+			throw new RuntimeException("API Misuse - automation mode is enabled!");
+		}
 		UserProfile temp = userProfile.clone();
 		if (!temp.getUserLogonName().equals(loggedInUser_.getUserLogonName()))
 		{
@@ -104,8 +110,16 @@ public class UserProfileManager implements ServicesToPreloadI
 		loggedInUser_ = temp;
 	}
 
+	/**
+	 * Calls {@link #authenticateBoolean(String, String)} and captures the exception, returning false instead 
+	 * for a logon failure.
+	 */
 	public boolean authenticateBoolean(String userLogonName, String password)
 	{
+		if (isAutomationModeEnabled())
+		{
+			throw new RuntimeException("API Misuse - automation mode is enabled!");
+		}
 		try
 		{
 			authenticate(userLogonName, password);
@@ -123,6 +137,10 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public void authenticate(String userLogonName, String password) throws InvalidUserException
 	{
+		if (isAutomationModeEnabled())
+		{
+			throw new RuntimeException("API Misuse - automation mode is enabled!");
+		}
 		checkInit();
 		if (!userNamesWithProfiles_.contains(userLogonName))
 		{
@@ -149,9 +167,9 @@ public class UserProfileManager implements ServicesToPreloadI
 					for (Consumer<String> listener : notifyUponLogin)
 					{
 						listener.accept(loggedInUser_.getUserLogonName());
-				}
+					}
 					notifyUponLogin = null;
-			}
+				}
 			}
 			catch (IOException e)
 			{
@@ -169,8 +187,11 @@ public class UserProfileManager implements ServicesToPreloadI
 	{
 		logger.info("Creating user profile for " + user.getUniqueLogonName());
 
+		if (isAutomationModeEnabled())
+		{
+			throw new RuntimeException("API Misuse - automation mode is enabled!");
+		}
 		//don't need to checkInit - doesProfileExist does that for us
-
 		if (doesProfileExist(user.getUniqueLogonName()))
 		{
 			throw new IOException("User Profile already exists for " + user.getUniqueLogonName() + "!");
@@ -195,7 +216,7 @@ public class UserProfileManager implements ServicesToPreloadI
 			if (defaults.isLaunchWorkflowForEachCommit() != null)
 			{
 				up.setLaunchWorkflowForEachCommit(defaults.isLaunchWorkflowForEachCommit());
-		}
+			}
 		}
 		
 		String temp = (user.getSyncUserName() != null && user.getSyncUserName().length() > 0 ? user.getSyncUserName() : user.getUniqueLogonName());
@@ -249,32 +270,35 @@ public class UserProfileManager implements ServicesToPreloadI
 	@Override
 	public void loadRequested()
 	{
-		cdl.countDown();  //2 to 1 tells us that loadRequested was called.
-
-		Utility.execute(() -> {
-			logger.debug("Configuring UserProfileManager, using the path " + profilesFolder_.getAbsolutePath());
-			profilesFolder_.mkdirs();
-
-			if (!profilesFolder_.exists() || !profilesFolder_.isDirectory())
-			{
-				logger.error("The user profile folder could not be created!");
-			}
-
-			for (File f : profilesFolder_.listFiles())
-			{
-				if (f.isDirectory())
+		if (cdl.getCount() == 2)
+		{
+			cdl.countDown();  //2 to 1 tells us that loadRequested was called.
+	
+			Utility.execute(() -> {
+				logger.debug("Configuring UserProfileManager, using the path " + profilesFolder_.getAbsolutePath());
+				profilesFolder_.mkdirs();
+	
+				if (!profilesFolder_.exists() || !profilesFolder_.isDirectory())
 				{
-					File prefFile = new File(f, prefsFileName_);
-					if (prefFile.exists() && prefFile.isFile())
+					logger.error("The user profile folder could not be created!");
+				}
+	
+				for (File f : profilesFolder_.listFiles())
+				{
+					if (f.isDirectory())
 					{
-						userNamesWithProfiles_.add(f.getName());
+						File prefFile = new File(f, prefsFileName_);
+						if (prefFile.exists() && prefFile.isFile())
+						{
+							userNamesWithProfiles_.add(f.getName());
+						}
 					}
 				}
-			}
-			FXCollections.sort(userNamesWithProfiles_);
-
-			cdl.countDown();  //0 tells us init is complete
-		});
+				FXCollections.sort(userNamesWithProfiles_);
+	
+				cdl.countDown();  //0 tells us init is complete
+			});
+		}
 	}
 	
 	/**
@@ -302,6 +326,10 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public String getLastLoggedInUser()
 	{
+		if (isAutomationModeEnabled())
+		{
+			return null;
+		}
 		checkInit();
 		try
 		{
@@ -331,6 +359,10 @@ public class UserProfileManager implements ServicesToPreloadI
 	 */
 	public User createNewUser(User user) throws InvalidUserException, IOException
 	{
+		if (isAutomationModeEnabled())
+		{
+			throw new RuntimeException("API Misuse - automation mode is enabled!");
+		}
 		if (!getCurrentlyLoggedInUserProfile().hasRole(RoleOption.ADMIN))
 		{
 			throw new IOException("You do not have the necessary permissions to create new users");
@@ -363,5 +395,44 @@ public class UserProfileManager implements ServicesToPreloadI
 	public void registerLoginCallback(Consumer<String> userLoggedIn)
 	{
 		notifyUponLogin.add(userLoggedIn);
+	}
+	
+	/**
+	 * This can be called to set the "logged in" user to the 'user' user - having appropriate values for the various calls here.
+	 * This is typically used for operations like mojo execution during a DB build, or JUnit testing.
+	 * 
+	 * This cannot be called if {@link #authenticate(String, String)} has been called.
+	 * 
+	 * Calling {@link #loadRequested()} after calling this is a noop - it will not load users in the normal way.  
+	 * 
+	 * When Automation Mode is configured - any API call that makes changes will throw an exception.  create*, save*, etc.
+	 * 
+	 * @throws InvalidUserException 
+	 */
+	public void configureAutomationMode() throws InvalidUserException
+	{
+		if (loggedInUser_ != null)
+		{
+			throw new InvalidUserException("Cannot set automation mode when a user has logged in!");
+		}
+		if (cdl.getCount() == 2)
+		{
+			cdl.countDown();
+			cdl.countDown();
+		}
+		UserProfile up = new UserProfile(TermAux.USER.getDescription(), TermAux.USER.getDescription(), TermAux.USER.getUuids()[0]);
+		up.setLaunchWorkflowForEachCommit(false);
+		loggedInUser_ = up;
+		userNamesWithProfiles_.add(up.getUserLogonName());
+		Log.info("User Profile Manager automation mode enabled!");
+	}
+	
+	public boolean isAutomationModeEnabled()
+	{
+		if (loggedInUser_ != null && TermAux.USER.getUuids()[0].equals(loggedInUser_.getConceptUUID()))
+		{
+			return true;
+		}
+		return false;
 	}
 }

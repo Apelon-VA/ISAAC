@@ -18,3 +18,45 @@
 .tab-close-button:hover {
     -fx-background-color: derive(-fx-mark-color, -30%);
 }
+
+
+.dialog {
+    -fx-border-width: 2;
+    -fx-border-radius: 5 5 0 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 11, 0.0, 3, 3);
+    -fx-border-color: #a3a3a3;
+    -fx-background-color: linear-gradient(#ffffff,#f3f3f4);
+    -fx-background-radius: 5 5 0 0;
+}
+
+.dialog-window-header {
+    -fx-padding: 0 3 0 8;
+    -fx-background-color: linear-gradient(#595959, #474747 37%, #343434);
+    -fx-background-radius: 5 5 0 0;
+}
+
+.dialog-message-banner {
+    -fx-opacity:1; 
+    -fx-text-fill: A94442;
+    -fx-background-color: F2DEDE;
+    -fx-border-width: 1; 
+    -fx-border-color: EBCCD1; 
+    -fx-padding: 5 10 5 10;
+    -fx-font-weight:bold;
+    -fx-graphic-text-gap: 10;
+}
+
+.window-close-button {
+    -fx-background-color: #949494;
+    -fx-shape: "M395.992,296.758l1.794-1.794l7.292,7.292l-1.795,1.794 L395.992,296.758z M403.256,294.992l1.794,1.794l-7.292,7.292l-1.794-1.795 L403.256,294.992z";
+}
+
+.window-close-button:hover {
+    -fx-background-color: #fefeff;
+}
+.window-close-button:pressed {
+    -fx-background-color: linear-gradient(#505050,#2d2d2d),
+                          linear-gradient(#a3a3a3, #8b8b8b 34%, #777777 36%, #777777 63%, #8b8b8b 65%, #adadad);
+}
+
+

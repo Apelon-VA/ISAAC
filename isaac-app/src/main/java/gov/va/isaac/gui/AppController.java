@@ -36,7 +36,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -45,12 +44,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
@@ -69,7 +66,7 @@ public class AppController implements ShutdownBroadcastListenerI {
     private BorderPane root_;
     private SplitPane mainSplitPane;
     private MenuBar menuBar;
-    private VBox loadWait;
+    private BorderPane loadWait;
 
     @Inject
     private IterableProvider<IsaacViewWithMenusI> moduleViews_;
@@ -94,19 +91,14 @@ public class AppController implements ShutdownBroadcastListenerI {
         mainSplitPane.getStyleClass().add("hashedBackground");
         
         root_.setCenter(mainSplitPane);
+        root_.setMaxHeight(Double.MAX_VALUE);
+        root_.setMaxWidth(Double.MAX_VALUE);
         
-        loadWait = new VBox();
-        loadWait.setFillWidth(true);
-        Label l = new Label("Initializing Database...");
-        l.setPadding(new Insets(50, 50, 10, 50));
-        l.setAlignment(Pos.CENTER);
-        l.setMaxWidth(Double.MAX_VALUE);
-        loadWait.getChildren().add(l);
-        ProgressBar pb = new ProgressBar(-1);
-        pb.setMaxWidth(Double.MAX_VALUE);
-        pb.setPadding(new Insets(10, 150, 50, 150));
-        loadWait.getChildren().add(pb);
+        loadWait = new BorderPane();
+        loadWait.setCenter(LightWeightDialogs.buildLoadingDialog());
         mainSplitPane.getItems().add(loadWait);
+        mainSplitPane.setMaxWidth(Double.MAX_VALUE);
+        mainSplitPane.setMaxHeight(Double.MAX_VALUE);
         
         
         menuBar = new MenuBar();
@@ -220,9 +212,6 @@ public class AppController implements ShutdownBroadcastListenerI {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
         
-        mainSplitPane.getItems().remove(loadWait);
-        loadWait = null;
-
         //Kick off other preloads
         for (ServicesToPreloadI service : preloadRequested_)
         {
@@ -230,8 +219,10 @@ public class AppController implements ShutdownBroadcastListenerI {
             service.loadRequested();
         }
 
+        loadWait.getChildren().clear();
+        
         AtomicLong loginFailCount = new AtomicLong(0);
-        LightWeightLogin.showLoginDialog(mainSplitPane, new Consumer<Boolean>()
+        loadWait.setCenter(LightWeightDialogs.buildLoginDialog(new Consumer<Boolean>()
         {
             @Override
             public void accept(Boolean t)
@@ -245,6 +236,8 @@ public class AppController implements ShutdownBroadcastListenerI {
                 }
                 else
                 {
+                    mainSplitPane.getItems().remove(loadWait);
+                    loadWait = null;
                     // Enable the menus.
                     for (Menu menu : menuBar.getMenus())
                     {
@@ -253,7 +246,8 @@ public class AppController implements ShutdownBroadcastListenerI {
                 }
                 
             }
-        });
+        }));
+        BorderPane.setAlignment(loadWait.getCenter(), Pos.CENTER);
     }
 
     private BorderPane buildPanelForView(DockedViewI dockedView)

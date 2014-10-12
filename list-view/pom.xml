@@ -36,11 +36,13 @@
 			<version>2.3</version>
 		</dependency>
 		
+		<!-- TODO get rid of this dependency... we only use one thing from it... -->
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
+			<version>8.0.5</version>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>
