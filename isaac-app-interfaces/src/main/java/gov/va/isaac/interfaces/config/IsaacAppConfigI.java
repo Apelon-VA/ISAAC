@@ -302,12 +302,20 @@ public interface IsaacAppConfigI {
   public String getDefaultViewPathUuid();
 
   /**
-   * The URI to this document.
+   * The URI to the users.xml schema document.
    * 
    * @return possible object is {@link String }
    * 
    */
   public String getUserSchemaLocation();
+
+  /**
+   * The URI to the app.xml schema document.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getAppSchemaLocation();
 
   /**
    * The full URL for the REST API of the KIE Workflow server.

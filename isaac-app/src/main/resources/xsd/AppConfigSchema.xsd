@@ -192,7 +192,10 @@
             <xs:documentation>Database classifier.</xs:documentation>
           </xs:annotation>
         </xs:element>
- 
+        
+        <!-- Users - PLACEHOLDER -->       
+    
+        <!-- Drools configuration - PLACEHOLDER
         <xs:element name="droolsGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -236,7 +239,8 @@
             <xs:documentation>Drools classifier.</xs:documentation>
           </xs:annotation>
         </xs:element>
-
+ -->
+ 
         <xs:element name="applicationTitle" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -292,6 +296,62 @@
           </xs:annotation>
         </xs:element>
 
+        <xs:element name="appSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The URI to this document.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The URI to this document.</xs:documentation>
+          </xs:annotation>
+        </xs:element>  
+
+        <xs:element name="userSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The URI to the users schema document.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The URI to this document.</xs:documentation>
+          </xs:annotation>
+        </xs:element>  
+  				
+        <xs:element name="workflowServerUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The full URL for the REST API of the KIE Workflow server.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The full URL for the REST API of the KIE Workflow server.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				
+        <xs:element name="workflowServerDeploymentId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The deployment ID for the KIE workflow server</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The deployment ID for the KIE workflow server</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="workflowPromotionPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The UUID for the Path to which content published via Workflow will automatically be promoted to.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+
         <xs:element name="defaultEditPathName" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -333,50 +393,6 @@
               </jxb:property>
             </xs:appinfo>
             <xs:documentation>Default view path uuid.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="userSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The URI to this document.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The URI to this document.</xs:documentation>
-          </xs:annotation>
-        </xs:element>  
-  				
-        <xs:element name="workflowServerUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The full URL for the REST API of the KIE Workflow server.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The full URL for the REST API of the KIE Workflow server.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-				
-        <xs:element name="workflowServerDeploymentId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The deployment ID for the KIE workflow server</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The deployment ID for the KIE workflow server</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="workflowPromotionPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The UUID for the Path to which content published via Workflow will automatically be promoted to.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
           </xs:annotation>
         </xs:element>
 
