@@ -1823,7 +1823,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
 			case CONCEPT:
 			{
-				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
 				builder.setCallback(this);
 				builder.setTaskId(Tasks.SEARCH.ordinal());
 				if (searchResultsFilter != null) {
@@ -1841,7 +1841,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 			case DESCRIPTION:
 			{
-				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
 				builder.setCallback(this);
 				builder.setTaskId(Tasks.SEARCH.ordinal());
 				if (searchResultsFilter != null) {
@@ -1867,6 +1867,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 		} catch (Exception e) {
 			LOG.error("Search failed unexpectedly...", e);
+			searchRunning.set(false);
 			ssh = null;  //force a null ptr in taskComplete, so an error is displayed.
 			taskComplete(0, null);
 		}
