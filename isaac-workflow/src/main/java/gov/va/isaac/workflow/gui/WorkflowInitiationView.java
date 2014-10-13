@@ -23,11 +23,9 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
-
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -35,7 +33,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.jvnet.hk2.annotations.Service;
@@ -111,6 +108,7 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 		}
 	}
 	
+	@Override
 	public void setComponent(UUID uuid) {
 		try {
 			setComponent(WBUtility.getComponentVersion(uuid));
@@ -122,6 +120,7 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 		}
 	}
 
+	@Override
 	public void setComponent(int nid) {
 		try {
 			setComponent(WBUtility.getComponentVersion(nid));
@@ -133,20 +132,13 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 		}
 	}
 
+	@Override
 	public UUID getComponentUuid() {
 		return controller_.getComponent().getPrimordialUuid();
 	}
 
+	@Override
 	public int getComponentNid() {
 		return controller_.getComponent().getNid();
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI#getInitiatedTaskId()
-	 */
-	@Override
-	public Long getInitiatedTaskId() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

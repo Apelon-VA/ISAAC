@@ -24,9 +24,9 @@
  */
 package gov.va.isaac.interfaces.workflow;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -37,12 +37,16 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface ComponentWorkflowServiceI {
+	
+	/**
+	 * A non-blocking call to perform a sync.  Sync happens in the background, no errors are reported back (even if they happen)
+	 * This call returns immediately.
+	 */
 	public abstract void synchronizeWithRemote();
 
 	public abstract ProcessInstanceCreationRequestI createNewComponentWorkflowRequest(
 			String preferredDescription,
 			UUID UUID,
-			String userName,
 			String processName,
-			Map<String,String> variables);
+			Map<String,String> variables) throws IOException;
 }

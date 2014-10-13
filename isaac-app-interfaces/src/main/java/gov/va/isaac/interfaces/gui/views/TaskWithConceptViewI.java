@@ -56,16 +56,4 @@ public interface TaskWithConceptViewI extends ViewI
 	 * @return conceptUuid the selected concept as int
 	 */
 	public int getConceptNid();
-
-	/**
-	 * Update the view to show the selected concept in the specified ConceptViewMode
-	 * @param conceptUuid the ConceptViewMode used to display the selected concept
-	 */
-	public void setViewMode(ConceptViewMode mode);
-
-	/**
-	 * Get the ConceptViewMode used to display the selected concept.
-	 * @param conceptUuid the ConceptViewMode used to display the selected concept
-	 */
-	public ConceptViewMode getViewMode();
 }

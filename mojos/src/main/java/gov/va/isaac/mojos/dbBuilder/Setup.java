@@ -19,6 +19,7 @@
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import java.io.File;
 import java.lang.reflect.Field;
 import org.apache.maven.plugin.AbstractMojo;
@@ -74,6 +75,9 @@ public class Setup extends AbstractMojo
 			AppContext.getService(TerminologyStoreDI.class);
 			
 			getLog().info("Done setting up terminology store");
+			
+			getLog().info("Set Automation User");
+			AppContext.getService(UserProfileManager.class).configureAutomationMode();
 		}
 		catch (Exception e)
 		{

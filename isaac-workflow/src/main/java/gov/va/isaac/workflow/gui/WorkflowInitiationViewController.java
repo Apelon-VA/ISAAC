@@ -24,32 +24,25 @@ import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.util.WBUtility;
-import gov.va.isaac.workflow.LocalTask;
-import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.workflow.ComponentDescriptionHelper;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.UUID;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +59,16 @@ public class WorkflowInitiationViewController {
 		//component_id, // Passed through API
 		//component_name, // Passed through API
 		instructions("Instructions"),
-		//edit_coordinate, // don't display
-		edit_coordinate_promotion("Promotion Path");
+		edit_coordinate(), // don't display
+		edit_coordinate_promotion("Promotion Path"),
+		skip_to_review("Skip to Review");
 		
 		private final String displayName;
 		
+		private WorkflowProcessREVIEW3InputVariablesMapValue() {
+			this(null);
+		}
+
 		private WorkflowProcessREVIEW3InputVariablesMapValue(String displayName) {
 			this.displayName = displayName;
 		}
@@ -87,50 +85,69 @@ public class WorkflowInitiationViewController {
 
 	@FXML private BorderPane mainBorderPane;
 	
-	@FXML private Label workflowProcessesComboBoxLabel;
-	@FXML private ComboBox<WorkflowProcess> workflowProcessesComboBox;
-	
 	@FXML private Button cancelButton;
 	@FXML private Button initiateButton;
 
-	@FXML private TextField componentDescriptionTextField;
-	@FXML private Label componentTypeLabel; // componentOrConcept vs concept
+	@FXML private Label generatedComponentDescriptionLabel;
+	@FXML private Label promotionPathCoordinateLabel;
+	
+	@FXML private ComboBox<WorkflowProcess> workflowProcessesComboBox;
+	@FXML private TextArea instructionsTextArea;
 
-	private TextArea instructionsTextArea;
-	private Label instructionsTextAreaLabel;
-	
-//	private TextField editPathCoordinateTextField;
-//	private Label editPathCoordinateTextFieldLabel;
-	
-	private TextField promotionPathCoordinateTextField;
-	private Label promotionPathCoordinateTextFieldLabel;
-	
-	@FXML private GridPane variablesGridPane;
 
 	private WorkflowInitiationView workflowInitiationView;
 	private ComponentWorkflowServiceI workflowService;
-
 	private ComponentVersionBI componentOrConcept;
-	private Long initiatedTaskId;
 
-	private LocalTasksServiceBI taskService_;
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	
-	// TODO: eliminate hard-coding of promotionPathCoordinateTextField
+	@FXML
+	public void initialize() {
+		initializeWorkflowProcessesComboBox();
+
+		// TODO: must move to model to handle other WorkflowProcessModel types
+		instructionsTextArea.clear();
+		promotionPathCoordinateLabel.setText("");
+
+		promotionPathCoordinateLabel.setText(getDefaultPromotionPathCoordinateTextFieldContent());
+		
+		instructionsTextArea.setOnKeyTyped((e) -> initiateButton.setDisable(! isDataRequiredForInitiateOk()));
+		instructionsTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
+			@Override
+			public void handle(InputEvent event) {
+				initiateButton.setDisable(! isDataRequiredForInitiateOk());
+			}
+		});
+
+		cancelButton.setOnAction((e) -> doCancel());
+		
+		initiateButton.setDisable(! isDataRequiredForInitiateOk());
+		initiateButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				initiateWorkflow();
+			}
+		});
+	}
+
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		return "ISAAC Release Candidate Path";
+		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
+		if (promotionPathUUID == null)
+		{
+			return "";
+		}
+		try {
+			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
+		} catch (IOException | ContradictionException e) {
+			return "";
+		}
 	}
 	
-	private String getUserName() {
-		// TODO: replace hard-coded username
-		return "alejandro";
-	}
-
 	// Private helper method to test validity of data required for save
 	private boolean isDataRequiredForInitiateOk() {
 		WorkflowProcess selectedProcess = null;
+		int selectedIndex = -1;
 		if (workflowProcessesComboBox != null) {
 			selectedProcess = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
+			selectedIndex = workflowProcessesComboBox.getSelectionModel().getSelectedIndex();
 		}
 
 		String instructions = null;
@@ -138,7 +155,7 @@ public class WorkflowInitiationViewController {
 			instructions = instructionsTextArea.getText();
 		}
 		
-		if (selectedProcess != null && instructions != null && instructions.length() > 0) {
+		if (selectedProcess != null && selectedIndex > 0 && instructions != null && instructions.length() > 0) {
 			return true;
 		} else {
 			return false;
@@ -151,22 +168,6 @@ public class WorkflowInitiationViewController {
 
 	public ComponentVersionBI getComponent() {
 		return componentOrConcept;
-	}
-
-	private ComponentType getComponentType() {
-		return componentOrConcept instanceof ConceptVersionBI ? ComponentType.Concept : ComponentType.Component;
-	}
-
-	private static String getComponentDescription(ComponentVersionBI componentOrConceptVersion) {
-		if (componentOrConceptVersion instanceof ConceptVersionBI) {
-			return WBUtility.getDescription(componentOrConceptVersion.getNid());
-		} else {
-			if (componentOrConceptVersion instanceof DescriptionVersionBI) {
-				return ((DescriptionVersionBI<?>)componentOrConceptVersion).getText();
-			} else {
-				return componentOrConceptVersion.toUserString();
-			}
-		}
 	}
 
 	void setView(WorkflowInitiationView workflowInitiationView) {
@@ -182,9 +183,11 @@ public class WorkflowInitiationViewController {
 
 		componentOrConcept = passedComponentOrConcept;
 		if (componentOrConcept instanceof ConceptVersionBI) {
-			LOG.debug("Set concept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" + passedComponentOrConcept.toUserString());
+			LOG.debug("Set concept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" 
+					+ passedComponentOrConcept.toUserString());
 		} else {
-			LOG.debug("Set componentOrConcept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" + WBUtility.getDescription(passedComponentOrConcept.getNid()));
+			LOG.debug("Set componentOrConcept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" 
+					+ WBUtility.getDescription(passedComponentOrConcept.getNid()));
 		}
 		
 		loadContents();
@@ -206,84 +209,13 @@ public class WorkflowInitiationViewController {
 		setComponent(componentVersion);
 	}
 
-	@FXML
-	public void initialize() {
-		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert initiateButton != null : "fx:id=\"initiateButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert workflowProcessesComboBoxLabel != null : "fx:id=\"workflowProcessesComboBoxLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert workflowProcessesComboBox != null : "fx:id=\"workflowProcessesComboBox\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert componentDescriptionTextField != null : "fx:id=\"componentDescriptionTextField\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert componentTypeLabel != null : "fx:id=\"componentTypeLabel\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-
-		initializeWorkflowProcessesComboBox();
-
-		cancelButton.setText("Cancel");
-		cancelButton.setOnAction((e) -> doCancel());
-
-		// TODO: must move to model to handle other WorkflowProcess types
-		variablesGridPane.getChildren().clear();
-		int row = 0;
-		
-		instructionsTextAreaLabel = new Label();
-		instructionsTextAreaLabel.setText("Instructions");
-		instructionsTextAreaLabel.setPadding(new Insets(5));
-		instructionsTextArea = new TextArea();
-		instructionsTextArea.setPromptText("Enter instructions");
-		instructionsTextArea.setPadding(new Insets(5));
-		instructionsTextArea.setOnKeyTyped((e) -> initiateButton.setDisable(! isDataRequiredForInitiateOk()));
-		instructionsTextArea.addEventHandler(InputEvent.ANY, new EventHandler<InputEvent>() {
-			@Override
-			public void handle(InputEvent event) {
-				initiateButton.setDisable(! isDataRequiredForInitiateOk());
-			}
-		});
-
-		variablesGridPane.addRow(row, instructionsTextAreaLabel, instructionsTextArea);
-		row++;
-		
-		// Removing editPathCoordinateTextField as per conversation with Jesse 20140918
-//		editPathCoordinateTextFieldLabel = new Label();
-//		editPathCoordinateTextFieldLabel.setText("Edit Coordinate");
-//		editPathCoordinateTextFieldLabel.setPadding(new Insets(5));
-//		editPathCoordinateTextField = new TextField();
-//		editPathCoordinateTextField.setPadding(new Insets(5));
-//		variablesGridPane.addRow(row++, editPathCoordinateTextFieldLabel, editPathCoordinateTextField);
-
-		promotionPathCoordinateTextFieldLabel = new Label();
-		promotionPathCoordinateTextFieldLabel.setText("Promotion Path");
-		promotionPathCoordinateTextFieldLabel.setPadding(new Insets(5));
-		promotionPathCoordinateTextField = new TextField();
-		promotionPathCoordinateTextField.setPadding(new Insets(5));
-		promotionPathCoordinateTextField.setText(getDefaultPromotionPathCoordinateTextFieldContent());
-		variablesGridPane.addRow(row++, promotionPathCoordinateTextFieldLabel, promotionPathCoordinateTextField);
-
-		variablesGridPane.getColumnConstraints().get(0).setPercentWidth(30);
-		variablesGridPane.getColumnConstraints().get(0).setFillWidth(true);
-		variablesGridPane.getColumnConstraints().get(1).setPercentWidth(70);
-		variablesGridPane.getColumnConstraints().get(1).setFillWidth(true);
-
-		initiateButton.setText("Initiate");
-		initiateButton.setDisable(! isDataRequiredForInitiateOk());
-		initiateButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				initiateWorkflow();
-			}
-		});
-	}
-
 	private void loadContents() {
 		loadWorkflowProcessesComboBox();
 
-		componentTypeLabel.setText(getComponentType().name());
-		componentDescriptionTextField.setText(getComponentDescription(componentOrConcept));
+		generatedComponentDescriptionLabel.setText(ComponentDescriptionHelper.getComponentDescription(componentOrConcept));
 	}
 
 	private void initializeWorkflowProcessesComboBox() {
-		workflowProcessesComboBoxLabel.setText("Workflow Process");
-		workflowProcessesComboBoxLabel.setPadding(new Insets(5));
-		
 		workflowProcessesComboBox.setEditable(false);
 		workflowProcessesComboBox.setPromptText("Select Workflow Process");
 		workflowProcessesComboBox.setCellFactory((p) -> {
@@ -325,7 +257,8 @@ public class WorkflowInitiationViewController {
 
 	private void loadWorkflowProcessesComboBox() {
 		workflowProcessesComboBox.getItems().clear();
-		workflowProcessesComboBox.getItems().addAll(WorkflowProcess.REVIEW3);
+		workflowProcessesComboBox.getItems().add(WorkflowProcess.PROMPT);
+		workflowProcessesComboBox.getItems().add(WorkflowProcess.REVIEW3);
 		workflowProcessesComboBox.getSelectionModel().selectFirst();
 	}
 
@@ -352,15 +285,15 @@ public class WorkflowInitiationViewController {
 //				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 //				return false;
 //			}
-			if (promotionPathCoordinateTextField.getText() == null || promotionPathCoordinateTextField.getText().length() == 0) {
+			if (promotionPathCoordinateLabel.getText() == null || promotionPathCoordinateLabel.getText().length() == 0) {
 				String msg = "Edit view coordinate UUID text field is empty";
 				String details = "Must enter edit view coordinate UUID into edit coordinate text field";
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 				return false;
 			}
 		} else {
-			String msg = "Unsupported WorkflowProcess: " + workflowProcessesComboBox.getSelectionModel().getSelectedItem();
-			String details = "Only WorkflowProcess." + WorkflowProcess.REVIEW3 + " currently supported";
+			String msg = "Unsupported WorkflowProcessModel: " + workflowProcessesComboBox.getSelectionModel().getSelectedItem();
+			String details = "Only WorkflowProcessModel." + WorkflowProcess.REVIEW3 + " currently supported";
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 			return false;
 		}
@@ -373,39 +306,45 @@ public class WorkflowInitiationViewController {
 			return;
 		}
 
-		String description = componentDescriptionTextField.getText();
+		String description = generatedComponentDescriptionLabel.getText();
 		WorkflowProcess process = workflowProcessesComboBox.getSelectionModel().getSelectedItem();
 		
 		Map<String, String> map = new HashMap<>();
 		if (process == WorkflowProcess.REVIEW3) {
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.getDisplayName(), instructionsTextArea.getText());
-			//map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), editPathCoordinateTextField.getText());
-			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.getDisplayName(), promotionPathCoordinateTextField.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.instructions.name(), instructionsTextArea.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate.name(), "");
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.edit_coordinate_promotion.name(), promotionPathCoordinateLabel.getText());
+			map.put(WorkflowProcessREVIEW3InputVariablesMapValue.skip_to_review.name(), Boolean.FALSE.toString().toLowerCase());
 		} else {
-			// TODO: handle other WorkflowProcess values
+			// TODO: handle other WorkflowProcessModel values
 		}
-
-		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + description + "\", conceptUuid=\"" + componentOrConcept.getPrimordialUuid().toString() + "\", user=\"" + getUserName() + "\", processName=\"" + process + "\")");
-		ProcessInstanceCreationRequestI createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), getUserName(), process.getText(), map);
+		
+		LOG.debug("Invoking createNewConceptWorkflowRequest(preferredDescription=\"" + description + "\", conceptUuid=\"" 
+		+ componentOrConcept.getPrimordialUuid().toString() + "\", processName=\"" + process + "\")");
+		ProcessInstanceCreationRequestI createdRequest = null;
+		
+		try
+		{
+			createdRequest = getWorkflowService().createNewComponentWorkflowRequest(description, componentOrConcept.getPrimordialUuid(), 
+					process.getText(), map);
+		}
+		catch (IOException e)
+		{
+			LOG.error("Unexpected error creating request", e);
+		}
 		
 		if (createdRequest == null) {
 			String title = "Workflow Initiation Failed";
-			String msg = "Failed creating WorkflowProcess " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " (service call returned null)";
+			String msg = "Failed creating WorkflowProcessModel " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " (service call returned null)";
 			String details = "Component: " + description + "\n" + map;
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 		} else {
 			LOG.debug("Created ProcessInstanceCreationRequestI: " + createdRequest);
 			
-			initiatedTaskId = createdRequest.getWfId();
-			
-			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() + " task id " + createdRequest.getWfId() + ":\n" + createdRequest, workflowInitiationView);	
+			AppContext.getCommonDialogs().showInformationDialog("Workflow initiation succeeded", "Created " + workflowProcessesComboBox.getSelectionModel().getSelectedItem() 
+					+ "\nFor componentId " + componentOrConcept.getPrimordialUuid());	
 
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					getWorkflowService().synchronizeWithRemote();
-				}
-			}).start();
+			//Utility.submit(() -> getWorkflowService().synchronizeWithRemote());
 
 			doCancel();
 		}

@@ -38,6 +38,7 @@ public class SimpleValidBooleanProperty extends SimpleBooleanProperty
 	
 	public SimpleValidBooleanProperty(boolean initialValue, String reasonWhyInvalid)
 	{
+		super(initialValue);
 		if (!initialValue)
 		{
 			if (reasonWhyInvalid == null || reasonWhyInvalid.length() == 0)
@@ -110,7 +111,6 @@ public class SimpleValidBooleanProperty extends SimpleBooleanProperty
 	@Override
 	protected void fireValueChangedEvent()
 	{
-		// TODO Auto-generated method stub
 		try
 		{
 			super.fireValueChangedEvent();
@@ -120,6 +120,4 @@ public class SimpleValidBooleanProperty extends SimpleBooleanProperty
 			log_.error("Severe API messup - exception within one of the bindings attached to this binding!", e);
 		}
 	}
-	
-	
 }

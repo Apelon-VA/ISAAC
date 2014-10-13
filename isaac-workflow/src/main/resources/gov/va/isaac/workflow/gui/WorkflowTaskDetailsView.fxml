@@ -1,20 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
-<?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowTaskDetailsViewController">
-   <bottom>
-      <HBox fillHeight="false" BorderPane.alignment="TOP_LEFT" />
-   </bottom>
-   <top>
-      <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="TOP_CENTER">
+<BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowTaskDetailsViewController">
+<center><GridPane hgap="5.0" vgap="5.0" BorderPane.alignment="CENTER">
+  <columnConstraints>
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" />
+    <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="470.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+    <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+<RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+<RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+<RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+  </rowConstraints>
+<BorderPane.margin>
+<Insets left="5.0" right="5.0" />
+</BorderPane.margin>
+<children><Label text="Task Id">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label><Label text="Status" GridPane.rowIndex="1">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Label><Label text="Component Id" GridPane.rowIndex="2">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Label><Label text="Instructions" GridPane.rowIndex="3">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Label><Label text="Comments" GridPane.rowIndex="4">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Label><Label fx:id="taskIdLabel" GridPane.columnIndex="1" /><Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" /><Label fx:id="componentIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" /><TextArea fx:id="instructionsTextArea" editable="false" prefHeight="60.0" prefWidth="444.0" scrollTop="60.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.vgrow="NEVER" /><TextArea editable="false" prefHeight="60.0" prefWidth="444.0" scrollTop="60.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.vgrow="NEVER" />
+</children>
+<padding>
+<Insets left="5.0" right="5.0" top="10.0" />
+</padding>
+</GridPane>
+</center>
+<top><VBox alignment="TOP_CENTER" fillWidth="false" spacing="5.0" BorderPane.alignment="CENTER">
+<children><Label text="Task Details">
+<font>
+<Font name="System Bold" size="18.0" />
+</font></Label><Label fx:id="generatedComponentSummary" textAlignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font></Label>
+</children>
+<BorderPane.margin>
+<Insets top="5.0" />
+</BorderPane.margin></VBox>
+</top>
+<bottom>
+<VBox spacing="10.0">
+<children><HBox alignment="CENTER" fillHeight="false" spacing="30.0" BorderPane.alignment="CENTER">
+<children><Button fx:id="openConceputButton" mnemonicParsing="false" text="Open Concept" /><Button fx:id="viewWfHxButton" mnemonicParsing="false" text="View Workflow History" /><Button fx:id="advanceWfButton" mnemonicParsing="false" text="Advance Workflow" /><Button fx:id="releaseTaskButton" mnemonicParsing="false" text="Release Task" />
+</children>
+<BorderPane.margin>
+<Insets bottom="10.0" top="15.0" />
+</BorderPane.margin></HBox><HBox alignment="TOP_CENTER">
+<children>
+      <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="CENTER">
          <BorderPane.margin>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            <Insets bottom="10.0" top="15.0" />
          </BorderPane.margin>
+<HBox.margin>
+<Insets />
+</HBox.margin>
       </Button>
-   </top>
+</children></HBox>
+</children>
+<BorderPane.margin>
+<Insets bottom="15.0" top="15.0" />
+</BorderPane.margin>
+</VBox>
+</bottom>
 </BorderPane>

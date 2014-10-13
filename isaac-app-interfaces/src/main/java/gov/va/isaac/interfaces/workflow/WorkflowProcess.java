@@ -18,7 +18,7 @@
  */
 
 /**
- * WorkflowProcess
+ * WorkflowProcessModel
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -32,6 +32,7 @@ package gov.va.isaac.interfaces.workflow;
  */
 public enum WorkflowProcess {
 	//REVIEW("terminology-authoring.ReviewWorkflow"),
+	PROMPT("Choose Workflow Process Definition"),
 	REVIEW3("terminology-authoring.ReviewWorkflow3"),
 	DUAL_REVIEW("terminology-authoring.DualReviewWorkflow");
 	

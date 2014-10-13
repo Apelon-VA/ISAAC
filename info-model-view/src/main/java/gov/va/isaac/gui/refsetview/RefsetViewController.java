@@ -19,10 +19,10 @@
 package gov.va.isaac.gui.refsetview;
 
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -42,12 +41,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * RefsetViewController
@@ -56,6 +56,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
  */
 public class RefsetViewController {
 
+	private static final Logger logger = LoggerFactory.getLogger(RefsetViewController.class);
 	//note - this was initially supposed to be a refex viewer (refset) but then it got turned into a specific infoModelView tool - and the generic code 
 	//was never finished... probably never will be.  So I've moved it here, into the info-model-view itself - and removed the confusingly named interfaces.
 	//The classes themselves still carry the confusing 'Refset' naming, however.
@@ -99,8 +100,16 @@ public class RefsetViewController {
 		commitButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
-					WBUtility.commit();
-					reloadData();
+					try
+					{
+						WBUtility.commit();
+						reloadData();
+					}
+					catch (IOException ex)
+					{
+						logger.error("Unexpected error during commit", ex);
+						AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+					}
 				}
 			});
 	}

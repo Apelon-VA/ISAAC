@@ -19,6 +19,7 @@
 package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.ToolTipDefaultsFixer;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
@@ -26,13 +27,18 @@ import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
+import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -41,13 +47,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+
 import javax.inject.Inject;
+
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,14 +64,14 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class AppController {
+public class AppController implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
     private BorderPane root_;
     private SplitPane mainSplitPane;
     private MenuBar menuBar;
-    private VBox loadWait;
+    private BorderPane loadWait;
 
     @Inject
     private IterableProvider<IsaacViewWithMenusI> moduleViews_;
@@ -80,7 +86,7 @@ public class AppController {
     public AppController() {
 
         AppContext.getServiceLocator().inject(this);
-
+        AppContext.getMainApplicationWindow().registerShutdownListener(this);
         ToolTipDefaultsFixer.setTooltipTimers(100, 20000, 200);
         
         root_ = new BorderPane();
@@ -90,19 +96,14 @@ public class AppController {
         mainSplitPane.getStyleClass().add("hashedBackground");
         
         root_.setCenter(mainSplitPane);
+        root_.setMaxHeight(Double.MAX_VALUE);
+        root_.setMaxWidth(Double.MAX_VALUE);
         
-        loadWait = new VBox();
-        loadWait.setFillWidth(true);
-        Label l = new Label("Initializing Database...");
-        l.setPadding(new Insets(50, 50, 10, 50));
-        l.setAlignment(Pos.CENTER);
-        l.setMaxWidth(Double.MAX_VALUE);
-        loadWait.getChildren().add(l);
-        ProgressBar pb = new ProgressBar(-1);
-        pb.setMaxWidth(Double.MAX_VALUE);
-        pb.setPadding(new Insets(10, 150, 50, 150));
-        loadWait.getChildren().add(pb);
+        loadWait = new BorderPane();
+        loadWait.setCenter(LightWeightDialogs.buildLoadingDialog());
         mainSplitPane.getItems().add(loadWait);
+        mainSplitPane.setMaxWidth(Double.MAX_VALUE);
+        mainSplitPane.setMaxHeight(Double.MAX_VALUE);
         
         
         menuBar = new MenuBar();
@@ -155,9 +156,17 @@ public class AppController {
                     menuItem.setGraphic(new ImageView(menuItemsToCreate.getImage()));
                 }
                 parentMenu.getItems().add(menuItem);
+                //TODO fix this sorting API stuff... supposed to be sorted by the menu order in the menu API - but was never finished... see other TODO below.
+                parentMenu.getItems().sort(new Comparator<MenuItem>() {
+                  @Override
+                  public int compare(MenuItem o1, MenuItem o2) {
+                    return o1.getText().compareTo(o2.getText());
+                  }
+                  
+                });
             }
         }
-        
+
         for (final DockedViewI dv : dockedViews_)
         {
             try
@@ -212,18 +221,9 @@ public class AppController {
         return root_;
     }
 
-    public void finishInit() {
+    protected void finishInit() {
         // Make sure in application thread.
         FxUtils.checkFxUserThread();
-        
-        mainSplitPane.getItems().remove(loadWait);
-        loadWait = null;
-
-        // Enable the menus.
-        for (Menu menu : menuBar.getMenus())
-        {
-            menu.setDisable(false);
-        }
         
         //Kick off other preloads
         for (ServicesToPreloadI service : preloadRequested_)
@@ -231,6 +231,36 @@ public class AppController {
             LOG.debug("Preloading {}", service);
             service.loadRequested();
         }
+
+        loadWait.getChildren().clear();
+        
+        AtomicLong loginFailCount = new AtomicLong(0);
+        loadWait.setCenter(LightWeightDialogs.buildLoginDialog(new Consumer<Boolean>()
+        {
+            @Override
+            public void accept(Boolean t)
+            {
+                if (!t)
+                {
+                    if (loginFailCount.incrementAndGet() > 3)
+                    {
+                        ((App)ExtendedAppContext.getMainApplicationWindow()).shutdown();
+                    }
+                }
+                else
+                {
+                    mainSplitPane.getItems().remove(loadWait);
+                    loadWait = null;
+                    // Enable the menus.
+                    for (Menu menu : menuBar.getMenus())
+                    {
+                        menu.setDisable(false);
+                    }
+                }
+                
+            }
+        }));
+        BorderPane.setAlignment(loadWait.getCenter(), Pos.CENTER);
     }
 
     private BorderPane buildPanelForView(DockedViewI dockedView)
@@ -295,5 +325,20 @@ public class AppController {
                 break;
             }
         }
+    }
+
+    /**
+     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
+     */
+    @Override
+    public void shutdown()
+    {
+        //notify anything that was preloaded
+        for (ServicesToPreloadI service : preloadRequested_)
+        {
+            LOG.debug("Shutdown notify {}", service);
+            service.shutdown();
+        }
+        
     }
 }

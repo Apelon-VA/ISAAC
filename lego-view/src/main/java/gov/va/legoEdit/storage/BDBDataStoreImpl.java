@@ -19,7 +19,9 @@
 package gov.va.legoEdit.storage;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+import gov.va.isaac.util.WBUtility;
 import gov.va.legoEdit.model.ModelUtil;
 import gov.va.legoEdit.model.bdbModel.LegoBDB;
 import gov.va.legoEdit.model.bdbModel.LegoListBDB;
@@ -29,12 +31,12 @@ import gov.va.legoEdit.model.schemaModel.Lego;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import gov.va.legoEdit.model.schemaModel.Pncs;
 import gov.va.legoEdit.model.schemaModel.Stamp;
-import gov.va.legoEdit.model.userPrefs.UserPreferences;
 import gov.va.legoEdit.storage.util.LegoBDBConvertingIterator;
 import gov.va.legoEdit.storage.util.LegoListBDBConvertingIterator;
 import gov.va.legoEdit.storage.util.PncsBDBConvertingIterator;
 import gov.va.legoEdit.util.TimeConvert;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -971,19 +973,27 @@ public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastLi
 			if (s == null)
 			{
 				s = new Stamp();
-				s.setStatus(UserPreferences.getDefaultStatus());
+				s.setStatus("Active");
 			}
 			if (s.getAuthor() == null || s.getAuthor().length() == 0)
 			{
-				s.setAuthor(UserPreferences.getAuthor());
+				s.setAuthor(ExtendedAppContext.getCurrentlyLoggedInUser());
 			}
-			if (s.getModule() == null || s.getModule().length() == 0)
+			try
 			{
-				s.setModule(UserPreferences.getModule());
+				if (s.getModule() == null || s.getModule().length() == 0)
+				{
+					s.setModule(WBUtility.getEC().getModuleSpec().getDescription());
+				}
+				if (s.getPath() == null || s.getPath().length() == 0)
+				{
+					//TODO [Lego edit] this isn't quite right...
+					s.setPath(WBUtility.getEC().getEditPathListSpecs().get(0).getDescription());
+				}
 			}
-			if (s.getPath() == null || s.getPath().length() == 0)
+			catch (IOException e)
 			{
-				s.setPath(UserPreferences.getPath());
+				logger.error("Unexpected error setting module or path");
 			}
 			s.setTime(TimeConvert.convert(System.currentTimeMillis()));
 			s.setUuid(UUID.randomUUID().toString());

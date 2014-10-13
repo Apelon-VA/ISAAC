@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.0"
+  elementFormDefault="qualified">
+  
+
+<!-- Version 2014/10/08 -->
+<!-- 
+  Changelog:
+  2014/10/08 - Aligned with archetype properties
+  2014/09/30 - Initial version
+ -->
+
+  <!-- Note that JAXB is broken (has been forever) and doesn't properly create javadocs from <documentation> tags like it should for elements...
+  the only real workaround is to duplicate all the doc... which is stupid... but what can you do. -->
+
+  <xs:element name="isaacAppConfig">
+    <xs:complexType>
+      <xs:sequence>
+			
+        <xs:element name="archetypeGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Archetype group id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Archetype group id</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="archetypeArtifactId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Archetype artifact id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Archetype artifact id.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="archetypeVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Archetype version.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Archetype version.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="isaacVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>ISAAC toolkit version.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>ISAAC toolkit version.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="scmConnection" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Code base for the PA project.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Code base for the PA project.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="scmUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Browsable URL for PA project code.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Browsable URL for PA project code.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="distReposId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Distribution repository id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Distribution repository id.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="distReposName" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Distribution repository name.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Distribution repository name.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="distReposUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Distribution repository Url.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Distribution repository Url.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="distReposSnapId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Distribution snapshot repository id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Distribution snapshot repository id.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="distReposSnapName" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Distribution snapshot repository name.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Distribution snapshot repository name.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="distReposSnapUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Distribution snapshot repository Url.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Distribution snapshot repository Url.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="dbGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Database group id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Database group id</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="dbArtifactId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Database artifact id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Database artifact id.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="dbVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Database version.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Database version.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="dbClassifier" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Database classifier.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Database classifier.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        
+        <!-- Users - PLACEHOLDER -->       
+    
+        <!-- Drools configuration - PLACEHOLDER
+        <xs:element name="droolsGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Drools group id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Drools group id</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="droolsArtifactId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Drools artifact id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Drools artifact id.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="droolsVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Drools version.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Drools version.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="droolsClassifier" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Drools classifier.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Drools classifier.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+ -->
+ 
+        <xs:element name="applicationTitle" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The text string that is displayed in the ISAAC title bar, about box, and other typical locations.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The text string that is displayed in the ISAAC title bar, about box, and other typical locations.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="previousReleaseVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Previous release version.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Previous release version.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="releaseVersion" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Release version.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Release version.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="extensionNamespace" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Extension namespace.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Extension namespace.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				
+        <xs:element name="changeSetUrl" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="appSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The URI to this document.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The URI to this document.</xs:documentation>
+          </xs:annotation>
+        </xs:element>  
+
+        <xs:element name="userSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The URI to the users schema document.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The URI to this document.</xs:documentation>
+          </xs:annotation>
+        </xs:element>  
+  				
+        <xs:element name="workflowServerUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The full URL for the REST API of the KIE Workflow server.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The full URL for the REST API of the KIE Workflow server.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+				
+        <xs:element name="workflowServerDeploymentId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The deployment ID for the KIE workflow server</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The deployment ID for the KIE workflow server</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="workflowPromotionPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The UUID for the Path to which content published via Workflow will automatically be promoted to.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+
+        <xs:element name="defaultEditPathName" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Default edit path name.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Default edit path name.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="defaultEditPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Default edit path uuid.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Default edit path uuid.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="defaultViewPathName" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Default view path name.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Default view path name.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="defaultViewPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Default view path uuid.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Default view path uuid.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="workflowPromotionPathName" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The workflow promotion path name</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The worfklow promotion path name</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:simpleType name="UUID">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}" />
+    </xs:restriction>
+  </xs:simpleType>  
+</xs:schema>

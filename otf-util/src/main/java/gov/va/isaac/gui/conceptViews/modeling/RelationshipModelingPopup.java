@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -107,7 +108,8 @@ public class RelationshipModelingPopup extends ModelingPopup
 			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
 
 			if (chronicle.isUncommitted()) {
-				displayVersion = (RelationshipVersionBI<?>) chronicle.getVersions().toArray()[chronicle.getVersions().size() - 2];
+				displayVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+
 			}
 
 			// TODO: Needs to reference previous commit, not component as-is before panel opened
@@ -168,35 +170,37 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 			@Override
 			public void changed(ObservableValue<? extends String> arg0, String oldVal, String newVal) {
-				int newGroup = 0; 
+				// Test new or different value
 				if (rel != null) {
-					if (newVal.trim().length() > 0) {
-						groupNewSelected.set(true);
-					} else {
-						groupNewSelected.set(false);
-					}
-					
-					if (modificationMade.get() || groupNewSelected.get()) {
-						try {
-							newGroup = Integer.parseInt(newVal);
-							if (newGroup < 0) {
-								reasonSaveDisabled_.set("Group must be 0 or greater");
-							
-								if (!passesQA()) {
-									reasonSaveDisabled_.set("Failed QA");
-								}
-							}
-						} catch (NumberFormatException e) {
-							reasonSaveDisabled_.set("Must select an integer");
-						} 
-					}
-
-					if (rel.getGroup() != newGroup) {
+					if (!Integer.toString(rel.getGroup()).equals(newVal)) {
 						modificationMade.set(true);
 					} else {
 						modificationMade.set(false);
 						reasonSaveDisabled_.set("Cannot save unless original content changed");
 					}
+				} else {
+					if (newVal.trim().length() > 0) {
+						groupNewSelected.set(true);
+					} else {
+						groupNewSelected.set(false);
+					}
+				}
+				
+				// Test valid value
+				int newGroup = 0; 
+				if (modificationMade.get() || groupNewSelected.get()) {
+					try {
+						newGroup = Integer.parseInt(newVal);
+						if (newGroup < 0) {
+							reasonSaveDisabled_.set("Group must be 0 or greater");
+						
+							if (!passesQA()) {
+								reasonSaveDisabled_.set("Failed QA");
+							}
+						}
+					} catch (NumberFormatException e) {
+						reasonSaveDisabled_.set("Must select an integer");
+					} 
 				}
 			}
 		});
@@ -390,7 +394,11 @@ public class RelationshipModelingPopup extends ModelingPopup
 				}
 			} else {
 				RelationshipCAB dcab;
-				
+
+				if (rel.isUncommitted()) {
+					ExtendedAppContext.getDataStore().forget(rel);
+				}
+			
 				if (!isDestination) {
 					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				} else {

@@ -100,7 +100,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
@@ -116,6 +115,7 @@ import au.com.bytecode.opencsv.CSVWriter;
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
+@SuppressWarnings("deprecation")
 public class ListBatchViewController
 {
 	private enum LocalMenuItem {
@@ -363,8 +363,16 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.commit(row.getItem().getNid());
-						updateTableItem(row.getItem(), false);
+						try
+						{
+							WBUtility.commit(row.getItem().getNid());
+							updateTableItem(row.getItem(), false);
+						}
+						catch (IOException ex)
+						{
+							logger_.error("Unexpected error during commit", ex);
+							AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+						}
 					}
 				});
 
@@ -375,8 +383,13 @@ public class ListBatchViewController
 					@Override
 					public void handle(ActionEvent event)
 					{
-						WBUtility.forget(row.getItem().getNid());
-						updateTableItem(row.getItem(), false);
+						//TODO this should be presented to the user... not silently logged
+						try {
+							ExtendedAppContext.getDataStore().forget(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), row.getItem().getNid()));
+							updateTableItem(row.getItem(), false);
+						} catch (IOException e) {
+							logger_.error("Unable to cancel comp: " + row.getItem().getNid(), e);
+						}
 					}
 				});
 				
@@ -456,8 +469,16 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WBUtility.commit();
-				uncommitAllTableItems();
+				try
+				{
+					WBUtility.commit();
+					uncommitAllTableItems();
+				}
+				catch (IOException ex)
+				{
+					logger_.error("Unexpected error during commit", ex);
+					AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
+				}
 			}
 		});
 
@@ -549,9 +570,9 @@ public class ListBatchViewController
 							// Only have to check this if we muck with the file name...
 							if (f.exists())
 							{
-								Action response = Dialogs.create().owner(rootPane.getScene().getWindow()).title("Overwrite existing file?")
-										.masthead(null).nativeTitleBar().message("The file '" + f.getName() + "' already exists.  Overwrite?").showConfirm();
-								if (response != Dialog.Actions.YES)
+								DialogResponse dr = AppContext.getCommonDialogs().showYesNoDialog("Overwrite existing file?", 
+										"The file '" + f.getName() + "' already exists.  Overwrite?");
+								if (DialogResponse.YES != dr)
 								{
 									return;
 								}
@@ -657,10 +678,8 @@ public class ListBatchViewController
 											public void run()
 											{
 												addMultipleItems(newConcepts);
-												Dialogs.create().title("Concept Import Completed").masthead(null)
-													.message("The Concept List import is complete" 
-															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""))
-															.owner(rootPane.getScene().getWindow()).nativeTitleBar().showInformation();
+												AppContext.getCommonDialogs().showInformationDialog("Concept Import Completed", "The Concept List import is complete" 
+															+ (readErrors.length() > 0 ? "\r\n\r\nThere were some errors:\r\n" + readErrors.toString() : ""));
 											}
 										});
 										
@@ -668,14 +687,7 @@ public class ListBatchViewController
 									catch (final Exception e)
 									{
 										logger_.error("Unexpected error loading concept file", e);
-										Platform.runLater(new Runnable()
-										{
-											@Override
-											public void run()
-											{
-												AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
-											}
-										});
+										AppContext.getCommonDialogs().showErrorDialog("Unexpected error exporting concepts", e);
 									}
 									finally
 									{
@@ -692,6 +704,8 @@ public class ListBatchViewController
 									return null;
 								}
 							};
+							//TODO replace this with either a Java 8 (u40) Dialog, or just build this little thing - this is the only place
+							//in the entire code base where we use controlsFx...
 							Dialogs.create().title("Importing").masthead(null).message("Importing").owner(rootPane.getScene().getWindow())
 								.nativeTitleBar().showWorkerProgress(t);
 							Utility.execute(t);
@@ -993,18 +1007,31 @@ public class ListBatchViewController
 		}
 		
 		if (isUncommitted) {
-			WBUtility.addUncommitted(con);
-			newCon.setUncommitted(true);
-			
-			if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
-				uncommittedCount++;
+			try
+			{
+				WBUtility.addUncommitted(con);
+				newCon.setUncommitted(true);
+				
+				if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
+					uncommittedCount++;
+				}
+			}
+			catch (IOException ex)
+			{
+				logger_.error("Unexpected error during add uncommited", ex);
+				AppContext.getCommonDialogs().showErrorDialog("Error committing concept", ex);
 			}
 		} else {
-			WBUtility.forget(con);
-			newCon.setUncommitted(false);
+			//TODO this should be shown to the user, not silently logged
+			try {
+				ExtendedAppContext.getDataStore().forget(con);
+				newCon.setUncommitted(false);
 
-			if (!isUncommitted && oldCon.isUncommitted()) {
-				uncommittedCount--;
+				if (!isUncommitted && oldCon.isUncommitted()) {
+					uncommittedCount--;
+				}
+			} catch (IOException e) {
+				logger_.error("Unable to cancel concept: " + con.getNid(), e);
 			}
 		}
 

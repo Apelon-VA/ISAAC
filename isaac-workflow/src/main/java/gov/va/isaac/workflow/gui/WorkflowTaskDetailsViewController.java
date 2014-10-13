@@ -18,32 +18,29 @@
  */
 package gov.va.isaac.workflow.gui;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.CommonMenusDataProvider;
+import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +57,7 @@ public class WorkflowTaskDetailsViewController {
 	enum MapVariable {
 		in_instructions("Instructions"),
 		TaskName("Task Name"),
-		NodeName("Node Name"),
+		NodeName("Workflow Process Node Name"),
 		in_component_name("Component Name"),
 		in_edit_coordinate(), // Don't display
 		in_component_id("Component Id"),
@@ -85,28 +82,53 @@ public class WorkflowTaskDetailsViewController {
 		}
 		
 		public static boolean shouldDisplay(String str) {
+			MapVariable var = valueOfIfExists(str);
+			
+			if (var != null) {
+				return var.shouldDisplay();
+			} else {
+				return true;
+			}
+		}
+		
+		public static MapVariable valueOfIfExists(String str) {
 			try {
 				MapVariable var = MapVariable.valueOf(str);
 				
-				return var.shouldDisplay();
-			} catch (Exception e) {
-				return false;
+				return var;
+			} catch (Throwable e) {
+				return null;
 			}
 		}
 	}
 	
 	@FXML private BorderPane mainBorderPane;
-	
-	@FXML private Button closeButton;
-	
-	private GridPane variableMapGridPane;
-	
-	private WorkflowTaskDetailsView workflowTaskDetailsView;
 
-	private LocalTask task;
+	@FXML private Button closeButton;
+	@FXML private Button openConceputButton;
+	@FXML private Button releaseTaskButton;
+	@FXML private Button advanceWfButton;
+	@FXML private Button viewWfHxButton;
+
+	@FXML private Label generatedComponentSummary;
+
+	@FXML private Label taskIdLabel;
+	@FXML private Label statusLabel;
+	@FXML private Label componentLabel;	
+	@FXML private Label componentIdLabel;
 	
+	@FXML private TextArea instructionsTextArea;
+	@FXML private TextArea commentsTextArea;
+
+	private WorkflowTaskDetailsView workflowTaskDetailsView;
+	private LocalTask task;	
+	
+	@Inject
 	private LocalWorkflowRuntimeEngineBI workflowEngine;
+	@Inject
 	private LocalTasksServiceBI localTasksService;
+
+	private int conceptId;
 	
 	public Pane getRoot() {
 		return mainBorderPane;
@@ -135,8 +157,8 @@ public class WorkflowTaskDetailsViewController {
 		loadContents();
 	}
 	
-	public void setTask(long taskId) {
-		LocalTask retrievedTask = getLocalTasksService().getTask(taskId);
+	public void setTask(long taskId) throws DatastoreException {
+		LocalTask retrievedTask = localTasksService.getTask(taskId);
 		
 		setTask(retrievedTask);
 	}
@@ -147,134 +169,123 @@ public class WorkflowTaskDetailsViewController {
 
 	@FXML
 	public void initialize() {
+		
+		AppContext.getServiceLocator().inject(this);
 		assert mainBorderPane != null : "fx:id=\"mainBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-
-		closeButton.setText("Close");
-		closeButton.setOnAction((e) -> doCancel());
-
-		initializeVariableMapGridPane();
-
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setContent(variableMapGridPane);
-		scrollPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
-		scrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		
-		mainBorderPane.setCenter(scrollPane);
-	}
-
-	private void initializeVariableMapGridPane() {
-		variableMapGridPane = new GridPane();
-	}
-
-	private Node configureNode(Node node) {
-		if (node instanceof Label) {
-			Label label = (Label)node;
-			
-			label.setPadding(new Insets(5));
-
-			int columnIndex = GridPane.getColumnIndex(label);
-			if (columnIndex == 0) {
-				label.setStyle("-fx-font-weight: bold");
+		closeButton.setOnAction((e) -> doCancel());
+		advanceWfButton.setOnAction((e) -> doAdvanceWorkflow());
+		releaseTaskButton.setOnAction((e) -> 
+		{
+			try
+			{
+				doReleaseTask();
 			}
-			
-			label.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent event) {
-					if (event.getButton() == MouseButton.SECONDARY) {
-						CommonMenusDataProvider dp = new CommonMenusDataProvider() {
-							@Override
-							public String[] getStrings() {
-								List<String> items = new ArrayList<>();
-								items.add(label.getText());
-
-
-								String[] itemArray = items.toArray(new String[items.size()]);
-
-								// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-								//System.out.println("Selected strings: " + Arrays.toString(itemArray));
-
-								return itemArray;
-							}
-						};
-
-						ContextMenu cm = new ContextMenu();
-						CommonMenus.addCommonMenus(cm, dp);
-
-						label.setContextMenu(cm);
-					} 
-				}
-			});
-		}
-
-		return node;
+			catch (DatastoreException e1)
+			{
+				LOG.error("Error releasing task", e1);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error releasing task", e1);
+			}
+		});
+		openConceputButton.setOnAction((e) -> openConceptPanel());
+		viewWfHxButton.setOnAction((e) -> viewWorkflowHistory());
 	}
 
 	private void loadContents() {
-		int rowIndex = 0;
-		variableMapGridPane.addRow(rowIndex++, new Label("Task Id"), new Label(Long.toString(task.getId())));
-		variableMapGridPane.addRow(rowIndex++, new Label("Component Id"), new Label(task.getComponentId()));
-		variableMapGridPane.addRow(rowIndex++, new Label("Component"), new Label(task.getComponentName()));
+		UUID componentId = UUID.fromString(task.getComponentId());
+		conceptId = WBUtility.getComponentChronicle(componentId).getConceptNid();
+		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
+
+		taskIdLabel.setText(Long.toString(task.getId()));
 
 		if (task.getInputVariables() != null) {
 			if (task.getInputVariables().size() > 0) {
-				//variableMapGridPane.addRow(rowIndex++, new Label("Input Variables"));
+				String[] editorComments = null;
+				String[] reviewComments = null;
+				String[] approveComments = null;
 				
 				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
+					
 					if (MapVariable.shouldDisplay(entry.getKey())) {
-						variableMapGridPane.addRow(rowIndex++, new Label(MapVariable.valueOf(entry.getKey()).getDisplayName()), new Label(entry.getValue()));
+						if (entry.getKey().equals("NodeName")) {
+							statusLabel.setText(entry.getValue());
+						} else if (entry.getKey().equals("in_component_id")) {
+							componentIdLabel.setText(entry.getValue());
+						} else if (entry.getKey().equals("in_instructions")) {
+							instructionsTextArea.setText(entry.getValue());
+						} else if (entry.getKey().equals("editor_comment") && entry.getValue().trim().length() > 0) {
+							editorComments = entry.getValue().split(";");
+						} else if (entry.getKey().equals("review_comment") && entry.getValue().trim().length() > 0) {
+							reviewComments = entry.getValue().split(";");
+						} else if (entry.getKey().equals("approval_comment") && entry.getValue().trim().length() > 0) {
+							approveComments = entry.getValue().split(";");
+						}
 					} else {
-						LOG.debug("Not displaying unexpected input variables map entry: {}", entry);
+						LOG.debug("Not displaying excluded input variables map entry: {}", entry);
 					}
 				}
-			}
-		}
-		if (task.getOutputVariables() != null) {
-			if (task.getOutputVariables().size() > 0) {
-				//variableMapGridPane.addRow(rowIndex++, new Label("Output Variables"));
 				
-				for (Map.Entry<String, String> entry: task.getOutputVariables().entrySet()) {
-					if (MapVariable.shouldDisplay(entry.getKey())) {
-						variableMapGridPane.addRow(rowIndex++, new Label(MapVariable.valueOf(entry.getKey()).getDisplayName()), new Label(entry.getValue()));
-					} else {
-						LOG.debug("Not displaying unexpected output variables map entry: {}", entry);
+				if (editorComments != null) {
+					StringBuffer str = new StringBuffer();
+					for (int i = 0; i < editorComments.length; i++) {
+						if (i == 0) {
+							str.append(editorComments[0]);
+						} else {
+							str.append("\r\n");
+							str.append(reviewComments[i]);
+						}
+
+						
+						if (reviewComments != null && reviewComments.length < i) {
+							str.append("\r\n");
+							str.append(reviewComments[i]);
+						}
+
+						if (approveComments != null && approveComments.length < i) {
+							str.append("\r\n");
+							str.append(approveComments[i]);
+						}
 					}
+					
+					commentsTextArea.setText(str.toString());
 				}
 			}
-		}
-		
-		for (Node node : variableMapGridPane.getChildren()) {
-			configureNode(node);
 		}
 	}
 
-	/**
-	 * Handler for cancel button.
-	 */
-	public void doCancel() {
+	public void doReleaseTask(long taskId) throws DatastoreException {
+		workflowEngine.release(taskId);
+	}
+	
+	private void doCancel() {
+		workflowTaskDetailsView.close();
+	}
+	
+	private void doAdvanceWorkflow() {
+		WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+		view.setTask(task.getId());
+		view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+
+		workflowTaskDetailsView.close();
+	}
+	
+	private void openConceptPanel() {
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		cv.setConcept(conceptId);
+		cv.showView(null);
+	}
+
+	private void doReleaseTask() throws DatastoreException {
+		workflowEngine.release(task.getId());
 		workflowTaskDetailsView.close();
 	}
 
-	private LocalTasksServiceBI getLocalTasksService() {
-		if (localTasksService == null) {
-			localTasksService = getWorkflowEngine().getLocalTaskService();
-		}
-		
-		return localTasksService;
-	}
-	
-	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
-		if (workflowEngine == null) {
-			workflowEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+	private void viewWorkflowHistory() {
+		WorkflowHistoryViewI view = AppContext.getService(WorkflowHistoryViewI.class);
+		view.setTask(task.getId());
+		view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					workflowEngine.synchronizeWithRemote();
-				}
-			}).start();
-		}
-
-		return workflowEngine;
+		//		workflowTaskDetailsView.close();
 	}
 }

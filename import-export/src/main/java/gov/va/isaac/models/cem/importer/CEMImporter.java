@@ -31,7 +31,9 @@ import gov.va.isaac.models.cem.CEMXmlConstants;
 import gov.va.isaac.models.util.ImporterBase;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -74,8 +76,23 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
    */
   @Override
   public InformationModel importModel(File file) throws Exception {
-    LOG.info("Preparing to import CEM model from: " + file.getName());
+    FileInputStream in = null;
+    try {
+      LOG.info("Preparing to import CEM model from: " + file.getName());
+      in = new FileInputStream(file);
+      LOG.info("Ending import of CEM model from: " + file.getName());
+      InformationModel model = importModel(in);
+      in.close();
+      return model;
+    } catch (Exception e) {
+      in.close();
+      throw e;
+    }
+  }
 
+  @Override
+  public InformationModel importModel(InputStream in) throws Exception {
+    LOG.info("Preparing to import CEM model from stream");
     // Make sure in background thread.
     FxUtils.checkBackgroundThread();
 
@@ -83,7 +100,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
     InformationModelService service = getInformationModelService();
 
     // Load DOM tree from file.
-    Node domRoot = loadModel(file);
+    Node domRoot = loadModel(in);
 
     // Parse into CEM model.
     CEMInformationModel infoModel = createInformationModel(domRoot);
@@ -93,12 +110,14 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
     // This is to retain functionality from before
     UUID conceptUuid = UUID.fromString("215fd598-e21d-3e27-a0a2-8e23b1b36dfc");
     infoModel.addAssociatedConceptUuid(conceptUuid);
-    
+
     // Save the information model
+    // if (service.exists(infoModel)) {
+    // throw new IOException(
+    // "Model already imported");
+    // }
     service.saveInformationModel(infoModel);
-
-    LOG.info("Ending import of CEM model from: " + file.getName());
-
+    LOG.info("Ending import of CEM model from stream");
     return infoModel;
   }
 
@@ -112,37 +131,36 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
   private CEMInformationModel createInformationModel(Node rootNode)
     throws IOException {
 
-    // Look for CETYPE child node.
-    Node cetypeNode = null;
+    // Look for CEM child node.
+    Node cemNode = null;
     NodeList childNodes = rootNode.getChildNodes();
     for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
       Node childNode = childNodes.item(nodeCount);
       LOG.debug("childNode : " + nodeCount + " - " + childNode.getNodeName());
 
-      if (childNode.getNodeName().equals(CETYPE)) {
-        cetypeNode = childNode;
+      if (childNode.getNodeName().equals(CEM)) {
+        cemNode = childNode;
         break;
       }
     }
 
     // Sanity check.
-    Preconditions.checkNotNull(cetypeNode, "No CETYPE child node in XML file!");
-    LOG.debug("cetype: " + cetypeNode.getNodeName());
+    Preconditions.checkNotNull(cemNode, "No CEM child node in XML file!");
+    LOG.debug("cem: " + cemNode.getNodeName());
 
     // Create the model
     CEMInformationModel infoModel = new CEMInformationModel();
     infoModel.setType(InformationModelType.CEM);
 
-    // Parse CETYPE node attributes.
-    String name =
-        cetypeNode.getAttributes().getNamedItem(NAME).getTextContent();
+    // Parse CEM node attributes.
+    String name = cemNode.getAttributes().getNamedItem(NAME).getTextContent();
     infoModel.setName(name);
     LOG.info("name: " + name);
 
-    // Iterate through CETYPE node children and process.
-    NodeList cetypeChildren = cetypeNode.getChildNodes();
-    for (int nodeCount = 0; nodeCount < cetypeChildren.getLength(); nodeCount++) {
-      Node loopNode = cetypeChildren.item(nodeCount);
+    // Iterate through CEM node children and process.
+    NodeList cemChildren = cemNode.getChildNodes();
+    for (int nodeCount = 0; nodeCount < cemChildren.getLength(); nodeCount++) {
+      Node loopNode = cemChildren.item(nodeCount);
       LOG.debug("loopNode : " + nodeCount + " - " + loopNode.getNodeName());
 
       switch (loopNode.getNodeName()) {
@@ -162,7 +180,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
 
         case QUAL:
           String qualName =
-              loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+              loopNode.getAttributes().getNamedItem(ID).getTextContent();
           String qualType =
               loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
           String qualCard =
@@ -188,7 +206,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
 
         case MOD:
           String modName =
-              loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+              loopNode.getAttributes().getNamedItem(ID).getTextContent();
           String modType =
               loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
           String modCard =
@@ -214,7 +232,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
 
         case ATT:
           String attName =
-              loopNode.getAttributes().getNamedItem(NAME).getTextContent();
+              loopNode.getAttributes().getNamedItem(ID).getTextContent();
           String attType =
               loopNode.getAttributes().getNamedItem(TYPE).getTextContent();
           String attCard =
@@ -258,6 +276,26 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
       }
     }
 
+    LOG.info("CHECK FOR INFO");
+    // Handle the definition
+    childNodes = rootNode.getChildNodes();
+    for (int nodeCount = 0; nodeCount < childNodes.getLength(); nodeCount++) {
+      Node childNode = childNodes.item(nodeCount);
+      if (childNode.getNodeName().equals(INFO)) {
+        LOG.info("FOUND info");
+        NodeList infoChildren = childNode.getChildNodes();
+        for (int chdNodeCount = 0; chdNodeCount < infoChildren.getLength(); chdNodeCount++) {
+          Node defNode = infoChildren.item(chdNodeCount);
+          if (defNode.getNodeName().equals(DEFINITION)) {
+            String definition = defNode.getTextContent();
+            LOG.info("definition - " + definition);
+            infoModel.setDefinition(definition);
+          }
+        }
+        break;
+      }
+    }
+
     return infoModel;
   }
 
@@ -270,21 +308,20 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
    * @throws SAXException the SAX exception
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  private Node loadModel(File file) throws ParserConfigurationException,
+  private Node loadModel(InputStream in) throws ParserConfigurationException,
     SAXException, IOException {
     // Parse XML file.
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder db = dbf.newDocumentBuilder();
-    Document document = db.parse(file);
+    Document document = db.parse(in);
 
     Node rootNode = document.getFirstChild();
     LOG.info("rootNode: " + rootNode.getNodeName());
 
     // Sanity check.
     Preconditions.checkState(rootNode.getNodeName().toLowerCase().equals(CEML),
-        "No CEML root node in XML file! " + file.getName());
+        "No CEML root node");
 
-    LOG.info("File OK: " + file.getName());
     return rootNode;
   }
 }

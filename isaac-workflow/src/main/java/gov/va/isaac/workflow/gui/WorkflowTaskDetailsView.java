@@ -22,10 +22,9 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
-
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
 import java.net.URL;
-
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -33,7 +32,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -118,5 +116,17 @@ public class WorkflowTaskDetailsView extends Stage implements WorkflowTaskViewI
 	@Override
 	public Long getTask() {
 		return controller_.getTask() != null ? controller_.getTask().getId() : null;
+	}
+
+	@Override
+	public void releaseTask(long taskId) throws IOException {
+		try
+		{
+			controller_.doReleaseTask(taskId);
+		}
+		catch (DatastoreException e)
+		{
+			throw new IOException(e.getMessage());
+		}
 	}
 }

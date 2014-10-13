@@ -18,12 +18,15 @@
  */
 package gov.va.isaac.workflow.sync;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
+import gov.va.isaac.workflow.TaskActionStatus;
+import gov.va.isaac.workflow.engine.RemoteWfEngine;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-
-import gov.va.isaac.workflow.TaskActionStatus;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.TaskSummary;
@@ -45,9 +48,9 @@ public class TasksFetcher {
     
     private static final Logger log = LoggerFactory.getLogger(TasksFetcher.class);
 
-    public TasksFetcher(TaskService remoteTaskService, LocalTasksServiceBI persistenceApi) {
-        this.remoteTaskService = remoteTaskService;
-        this.persistenceApi = persistenceApi;
+    public TasksFetcher() throws RemoteException {
+        persistenceApi = AppContext.getService(LocalTasksServiceBI.class);
+        remoteTaskService = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService();
         availableStatuses = new ArrayList<Status>();
         availableStatuses.add(Status.Ready);
         availableStatuses.add(Status.Created);
@@ -56,7 +59,7 @@ public class TasksFetcher {
         reservedStatuses.add(Status.InProgress);
     }
 
-    public String fetchTasks(String userId) throws Exception {
+    public String fetchTasks(String userId) throws DatastoreException, RemoteException {
         String result = "";
         int countNew = 0;
         int countUpdated = 0;
@@ -70,7 +73,7 @@ public class TasksFetcher {
                 LocalTask loopLocal = new LocalTask(loopTask, true);
                 persistenceApi.saveTask(loopLocal);
                 countNew++;
-            } else if (!dbTask.getOwner().equals(loopTask.getActualOwner().getId()) || !dbTask.getStatus().equals(loopTask.getStatus().name())) {
+            } else if (!dbTask.getOwner().equals(loopTask.getActualOwner().getId()) || !dbTask.getStatus().name().equals(loopTask.getStatus().name())) {
                 log.debug("Task has changed: " + loopTask.getId());
                 LocalTask loopLocal = new LocalTask(loopTask, true);
                 persistenceApi.saveTask(loopLocal);
@@ -96,7 +99,6 @@ public class TasksFetcher {
                 countRemoved++;
             }
         }
-        persistenceApi.commit();
         result = "Tasks -> New: " + countNew + " Updated: " + countUpdated + " Removed: " + countRemoved; 
         return result;
     }
@@ -113,5 +115,4 @@ public class TasksFetcher {
             }
         }
     }
-
 }

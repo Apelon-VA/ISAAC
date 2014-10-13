@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowHistoryViewController">
+<center><GridPane fx:id="wfHxGridPane" hgap="15.0" vgap="15.0" BorderPane.alignment="CENTER">
+  <columnConstraints>
+    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" />
+    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" />
+<ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" />
+  </columnConstraints>
+<BorderPane.margin>
+<Insets left="15.0" right="15.0" />
+</BorderPane.margin>
+<padding>
+<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+</padding>
+<rowConstraints>
+<RowConstraints />
+</rowConstraints>
+</GridPane>
+</center>
+<top>
+                  <Label fx:id="generatedComponentDescriptionLabel" text="Workflow History" textAlignment="CENTER" wrapText="true" BorderPane.alignment="CENTER">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+<font>
+<Font name="System Bold" size="18.0" />
+</font>
+<BorderPane.margin>
+<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+</BorderPane.margin>
+                  </Label>
+</top>
+<bottom><Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="CENTER">
+<BorderPane.margin>
+<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+</BorderPane.margin></Button>
+</bottom>
+</BorderPane>

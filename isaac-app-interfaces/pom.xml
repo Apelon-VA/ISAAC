@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>1.0-Sprint_14-SNAPSHOT</version>
+		<version>1.0-Sprint_15-SNAPSHOT</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>isaac-app-interfaces</artifactId>
@@ -26,8 +26,6 @@
 	</dependencies>
 
 	<profiles>
-		<!-- TODO fix the classifier on this if/when maven ever gets around to releasing 2.9.2 of this plugin... which finally 
-		has the ability to set the classifier -->
 		<profile>
 			<id>docbook</id>
 			<activation>
@@ -58,6 +56,7 @@
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<doctitle>ISAAC Contract Interfaces</doctitle>
 							<subpackages>gov.va.isaac.interfaces.gui</subpackages>
+							<classifier>docbook</classifier>
 						</configuration>
 					</plugin>
 				</plugins>

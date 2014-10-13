@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.0"
+	elementFormDefault="qualified">
+	
+
+<!-- Version 2014/10/01 -->
+<!-- 
+	Changelog:
+	
+	2014/10/01	- Initial version
+ -->
+
+	<!-- Note that JAXB is broken (has been forever) and doesn't properly create javadocs from <documentation> tags like it should for elements...
+	the only real workaround is to duplicate all the doc... which is stupid... but what can you do. -->
+
+	<xs:element name="isaacUserCreation">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="user" maxOccurs="unbounded" minOccurs="0" />
+				<xs:element ref="newUserDefaults" maxOccurs="1" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="user">
+		<xs:complexType>
+			<xs:sequence>
+			
+				<xs:element name="uniqueFullName" type="xs:string" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The Unique Full Name of the user (typically "FirstName LastName [uniqueBit]")</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The Unique Full Name of the user (typically "FirstName LastName [uniqueBit]")</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="fullName" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The Preferred Full Name of the user.  May duplicate another user with the same Full Name.  Useful if 
+								the uniqueFullName property had to be modified to make it unique, due to user name collisions.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The Preferred Full Name of the user.  May duplicate another user with the same Full Name.  Useful if 
+							the uniqueFullName property had to be modified to make it unique, due to user name collisions.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="uniqueLogonName" type="xs:string" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The Unique username for the user - this will be the logon identifier</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The Unique username for the user - this will be the logon identifier</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="password" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The initial password. If unspecified, will be set to the uniqueUserName</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The initial password. If unspecified, will be set to the uniqueUserName</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="UUID" type="UUID" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The UUID for the user concept to be generated. If unspecified, will be generated based on the uniqueUserName
+								</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The UUID for the user concept to be generated. If unspecified, will be generated based on the uniqueUserName
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="workflowUserName" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The initial username to suggest to the user for workflow remote access (sync)</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The initial username to suggest to the user for workflow remote access (sync)</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="syncUserName" type="xs:string" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The initial username to suggest to the user for database sync (git/svn)</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The initial username to suggest to the user for database sync (git/svn)</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="roles" type="roleOption" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>Additional roles (beyond the default role of user) to grant to this user</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>Additional roles (beyond the default role of user) to grant to this user</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="newUserDefaults">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="statedInferredPolicy" type="statedInferredOptions" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>Display policy for the taxonomy.  Defaults to inferredThenStated if not provided.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>Display policy for the taxonomy.  Defaults to inferredThenStated if not provided.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="displayFSN" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>When displaying a single description for a concept - use the FSN (when true) or the preferred term
+								for the default language (when false).  Defaults to true, if not provided.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>When displaying a single description for a concept - use the FSN (when true) or the preferred term
+								for the default language (when false).  Defaults to true, if not provided.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+				<xs:element name="launchWorkflowForEachCommit" type="xs:boolean" minOccurs="0" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>When true, each commit of a concept will begin the workflow process for the concept, presenting
+									a GUI screen to the user.</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>When true, each commit of a concept will begin the workflow process for the concept, presenting
+							a GUI screen to the user.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:simpleType name="statedInferredOptions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="stated" />
+			<xs:enumeration value="inferred" />
+			<xs:enumeration value="inferredThenStated" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="roleOption">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="admin" />
+			<xs:enumeration value="user" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:element name="conceptSpec">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="FSN" type="xs:string" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The FSN for the concept</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The FSN for the concept</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="UUID" type="UUID" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The UUID for the concept</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The UUID for the concept</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:simpleType name="UUID">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}" />
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

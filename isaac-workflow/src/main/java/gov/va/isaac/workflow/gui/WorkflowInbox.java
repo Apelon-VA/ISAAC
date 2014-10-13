@@ -18,24 +18,28 @@
  */
 package gov.va.isaac.workflow.gui;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
-
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
+import gov.va.isaac.workflow.engine.SynchronizeResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link WorkflowInbox}
@@ -47,7 +51,9 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 {
+	private static final Logger LOG = LoggerFactory.getLogger(WorkflowInbox.class);
 	WorkflowInboxController controller_;
+	private final Logger logger = LoggerFactory.getLogger(WorkflowInbox.class);
 
 	private WorkflowInbox() throws IOException
 	{
@@ -59,12 +65,70 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 	@Override
 	public List<MenuItemI> getMenuBarMenus()
 	{
-		// We don't currently have any custom menus with this view
 		ArrayList<MenuItemI> menus = new ArrayList<>();
+		MenuItemI mi = new MenuItemI()
+		{
+			@Override
+			public void handleMenuSelection(Window parent)
+			{
+				final BusyPopover synchronizePopover = BusyPopover.createBusyPopover("Synchronizing workflow...", parent.getScene().getRoot());
+				
+				Utility.execute(() -> {
+					try
+					{
+						SynchronizeResult sr = AppContext.getService(RemoteSynchronizer.class).blockingSynchronize();
+						
+						if (sr.hasError())
+						{
+							AppContext.getCommonDialogs().showErrorDialog("Error Synchronizing", "There were errors during synchronization", sr.getErrorSummary());
+						}
+					}
+					catch (Exception e)
+					{
+						logger.error("Unexpected error synchronizing workflow", e);
+					}
+					finally 
+					{
+						Platform.runLater(() ->  { synchronizePopover.hide(); });
+					}
+				});
+			}
+			
+			@Override
+			public int getSortOrder()
+			{
+				return 20;
+			}
+			
+			@Override
+			public String getParentMenuId()
+			{
+				return ApplicationMenus.ACTIONS.getMenuId();
+			}
+			
+			@Override
+			public String getMenuName()
+			{
+				return "Synchronize Workflow";
+			}
+			
+			@Override
+			public String getMenuId()
+			{
+				return "synchronizeWorkflowMenu";
+			}
+			
+			@Override
+			public boolean enableMnemonicParsing()
+			{
+				return false;
+			}
+		};
+		menus.add(mi);
 		return menus;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.ViewI#getView()
 	 */
 	@Override
@@ -82,7 +146,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 					}
 					catch (IOException e)
 					{
-						//LOG.error("Unexpected error initializing the Search View", e);
+						LOG.error("Unexpected error initializing the Search View", e);
 						return new Label("oops - check logs");
 					}
 				}
@@ -92,7 +156,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 		return controller_.getView();
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getMenuBarMenuToShowView()
 	 */
 	@Override
@@ -144,11 +208,29 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 		return menuItem;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getViewTitle()
 	 */
 	@Override
 	public String getViewTitle() {
 		return "Workflow Inbox";
+	}
+	
+	/**
+	 * Inform the view that the data in the datastore has changed, and it should refresh itself.
+	 */
+	public void reloadContent()
+	{
+		if (controller_ != null)
+		{
+			if (Platform.isFxApplicationThread())
+			{
+				controller_.loadContent();
+			}
+			else
+			{
+				Platform.runLater(() -> controller_.loadContent());
+			}
+		}
 	}
 }

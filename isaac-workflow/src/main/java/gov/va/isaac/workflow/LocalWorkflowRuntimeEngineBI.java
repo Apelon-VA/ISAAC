@@ -19,35 +19,24 @@
 package gov.va.isaac.workflow;
 
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-
-import java.net.URL;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
+import java.rmi.RemoteException;
 import java.util.Map;
-
-import org.kie.api.task.TaskService;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  *
  * @author alo
  */
+@Contract
 public interface LocalWorkflowRuntimeEngineBI {
+
+    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) throws RemoteException, DatastoreException;
     
-    public void setRemoteData(URL url, String userId, String password, String deploymentId);
+    public Map<String,Object> getVariablesMapForTaskId(Long taskId) throws RemoteException;
     
-    //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
-    public void synchronizeWithRemote();
-    
-    public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest);
-    
-    //TODO these APIs need to throw errors, not silently eat them
-    public ProcessInstanceServiceBI getProcessInstanceService();
-    
-    public LocalTasksServiceBI getLocalTaskService();
-    
-    public TaskService getRemoteTaskService();
-    
-    public Map<String,Object> getVariablesMapForTaskId(Long taskId);
-    
-    //TODO this API needs to throw errors, not silently eat them - also, a cancel mechanism would be nice
-    public void claim(Integer count, String userId);
+    public void claim(Integer count) throws RemoteException;
+
+    public void release(Long taskId) throws DatastoreException;
     
 }

@@ -19,9 +19,9 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusTaskIdProvider;
@@ -30,8 +30,10 @@ import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.workflow.TaskActionStatus;
+import gov.va.isaac.workflow.engine.RemoteSynchronizer;
+import gov.va.isaac.workflow.engine.SynchronizeResult;
+import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,9 +42,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
-
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -59,7 +59,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
-
+import javax.inject.Inject;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -73,21 +73,17 @@ import org.slf4j.LoggerFactory;
 public class WorkflowInboxController
 {
 	private static final Logger LOG = LoggerFactory.getLogger(WorkflowInboxController.class);
-
 	
 	@FXML BorderPane rootBorderPane;
 	@FXML ResourceBundle resources;
 	@FXML URL location;
 	@FXML Button claimTasksButton;
-	@FXML Button synchronizeButton;
 	@FXML Label userName;
 	@FXML TableView<LocalTask> taskTable;
 
-	private LocalWorkflowRuntimeEngineBI wfEngine_;
-	private LocalTasksServiceBI taskService_;
-	private final Logger logger = LoggerFactory.getLogger(WorkflowInboxController.class);
-	//TODO figure out how we handle usernames
-	private String user = "alejandro";
+	@Inject private LocalWorkflowRuntimeEngineBI wfEngine_;
+	@Inject private LocalTasksServiceBI taskService_;
+	@Inject private RemoteSynchronizer remoteSyncService_;
 	
 	public static WorkflowInboxController init() throws IOException {
 		// Load FXML
@@ -101,19 +97,20 @@ public class WorkflowInboxController
 	@FXML
 	void initialize()
 	{
+		AppContext.getServiceLocator().inject(this);
 		assert claimTasksButton != null : "fx:id=\"claimTasksButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
-		assert synchronizeButton != null : "fx:id=\"synchronizeButton\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert userName != null : "fx:id=\"userName\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
-		userName.setText(user);
+		//TODO maybe use the preferred name instead of their login name?
+		userName.setText(ExtendedAppContext.getCurrentlyLoggedInUser());
 
 		taskTable.setTableMenuButtonVisible(true);
 
 		// BEGIN Task name
 		TableColumn<LocalTask, String> tCol = new TableColumn<>();
-		tCol.setText("Task");
+		tCol.setText("Status");
 		tCol.setCellValueFactory((value) -> {
 			return new SimpleStringProperty(value.getValue().getName());
 		});
@@ -122,13 +119,22 @@ public class WorkflowInboxController
 
 		// BEGIN Task id
 		tCol = new TableColumn<>();
-		tCol.setText("id");
+		tCol.setText("Id");
 		tCol.setCellValueFactory((value) -> {
 			return new SimpleStringProperty(value.getValue().getId() + "");
 		});
 		taskTable.getColumns().add(tCol);
 		// END Task id
 		
+		// BEGIN Component Type
+		tCol = new TableColumn<>();
+		tCol.setText("Component Type");
+		tCol.setCellValueFactory((value) -> {
+			return new SimpleStringProperty(getCompType(value.getValue().getComponentName()));
+		});
+		taskTable.getColumns().add(tCol);
+		// END Component name
+
 		// BEGIN Component name
 		tCol = new TableColumn<>();
 		tCol.setText("Component");
@@ -138,46 +144,6 @@ public class WorkflowInboxController
 		taskTable.getColumns().add(tCol);
 		// END Component name
 
-		// BEGIN WorkflowAction
-		tCol = new TableColumn<>();
-		tCol.setText("Action");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getAction().toString());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END WorkflowAction
-
-		// BEGIN TaskActionStatus
-		tCol = new TableColumn<>();
-		tCol.setText("Action Status");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getActionStatus().name());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END TaskActionStatus
-		
-		// BEGIN Owner
-		tCol = new TableColumn<>();
-		tCol.setText("Owner");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getOwner());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END Owner
-
-		// BEGIN Status
-		tCol = new TableColumn<>();
-		tCol.setText("Status");
-		tCol.setCellValueFactory((value) -> {
-			return new SimpleStringProperty(value.getValue().getStatus().name());
-		});
-		tCol.setVisible(false);
-		taskTable.getColumns().add(tCol);
-		// END Status
-		
 		// BEGIN Component id (hidden)
 		tCol = new TableColumn<>();
 		tCol.setText("Component Id");
@@ -188,58 +154,7 @@ public class WorkflowInboxController
 		taskTable.getColumns().add(tCol);
 		// END Component id (hidden)
 				
-		// BEGIN Concept
-		TableColumn<LocalTask, SimpleDisplayConcept> conceptCol = new TableColumn<>();
-		conceptCol.setText("Concept");
-		conceptCol.setCellValueFactory((value) -> {
-			if (value.getValue().getComponentId() == null) {
-				LOG.error("Component ID for task {} is null", value.getValue().getId());
 
-				return new SimpleObjectProperty<SimpleDisplayConcept>();
-			}
-			UUID componentUuid = null;
-			try {
-				componentUuid = UUID.fromString(value.getValue().getComponentId());
-			} catch (IllegalArgumentException e) {
-				LOG.error("Component ID for task {} is not a valid UUID", value.getValue().getId());
-
-				return new SimpleObjectProperty<SimpleDisplayConcept>();
-			}
-
-			ConceptVersionBI containingConcept = null;
-			ComponentChronicleBI<?> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
-			if (componentChronicle == null) {
-				LOG.warn("Component ID for task " + value.getValue().getId() + " retrieved a null componentChronicle");
-
-				containingConcept = WBUtility.getConceptVersion(componentUuid);
-				if (containingConcept == null) {
-					LOG.error("Component ID for task " + value.getValue().getId() + " retrieved a null concept");
-
-					return new SimpleObjectProperty<SimpleDisplayConcept>();
-				}
-			} else {
-				try {
-					containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
-				} catch (Exception e) {
-					LOG.error("Failed getting version from ComponentChronicleBI task " + value.getValue().getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
-					e.printStackTrace();
-				}
-				if (containingConcept == null) {
-					LOG.error("ComponentChronicleBI task " + value.getValue().getId() + " contained a null enclosing concept");
-
-					return new SimpleObjectProperty<SimpleDisplayConcept>();
-				}
-			}
-
-			if (componentChronicle == null) {
-				LOG.warn("Component id " + componentUuid + " for task " + value.getValue().getId() + " is a concept, not just a component.");
-			}
-			SimpleDisplayConcept displayConcept = new SimpleDisplayConcept(containingConcept);
-			return new SimpleObjectProperty<SimpleDisplayConcept>(displayConcept);
-		});
-		taskTable.getColumns().add(conceptCol);
-		// END concept
-		
 		// BEGIN Concept
 		TableColumn<LocalTask, String> conceptIdCol = new TableColumn<>();
 		conceptIdCol.setText("Concept Id");
@@ -294,8 +209,7 @@ public class WorkflowInboxController
 		conceptIdCol.setVisible(false);
 		taskTable.getColumns().add(conceptIdCol);
 		// END concept ID
-		
-		
+
 		float colWidth = 1.0f / taskTable.getColumns().size();
 		for (TableColumn<LocalTask, ?> col : taskTable.getColumns())
 		{
@@ -310,60 +224,45 @@ public class WorkflowInboxController
 			Utility.execute(() -> {
 				try
 				{
-					getWorkflowEngine().claim(10, user);
-					Platform.runLater(() -> 
+					wfEngine_.claim(10);
+					SynchronizeResult sr = remoteSyncService_.blockingSynchronize();
+					if (sr.hasError())
 					{
-						claimPopover.hide();
-						claimTasksButton.setDisable(false);
-						refreshContent();
-						
-						synchronize(false);
-					});
+						AppContext.getCommonDialogs().showErrorDialog("Claim Error", "There was a problem running sync after the task claim", sr.getErrorSummary());
+					}
 				}
 				catch (Exception e)
 				{
-					logger.error("Unexpected error claiming tasks", e);
+					LOG.error("Unexpected error claiming tasks", e);
+					AppContext.getCommonDialogs().showErrorDialog("There was a problem claiming tasks", e);
+				} finally {
+					cleanup(claimPopover, claimTasksButton, this);
 				}
 			});
 		});
 
-		synchronizeButton.setOnAction((action) -> {
-			synchronize(true);
-		});
+		loadContent();
+	}
+
+	private String getCompType(String componentName) {
+		String[] s = componentName.split(" ");
+		return s[0];
 	}
 
 	public Region getView() {
 		return rootBorderPane;
 	}
 	
-	private void synchronize(final boolean displayBusyPopover) {
-		synchronizeButton.setDisable(true);
-
-		BusyPopover synchronizePopover = null;
-		
-		if (displayBusyPopover) {
-			synchronizePopover = BusyPopover.createBusyPopover("Synchronizing tasks...", synchronizeButton);
-		}
-
-		final BusyPopover finalBusyPopover = synchronizePopover;
-		
-		Utility.execute(() -> {
-			try
-			{
-				getWorkflowEngine().synchronizeWithRemote();
-				Platform.runLater(() -> 
-				{
-					if (finalBusyPopover != null) {
-						finalBusyPopover.hide();
-					}
-					synchronizeButton.setDisable(false);
-					refreshContent();
-				});
-			}
-			catch (Exception e)
-			{
-				logger.error("Unexpected error synchronizing tasks", e);
-			}
+	/*
+	 * Need this method as workaround for compiler/JVM bug:
+	 * { @link http://stackoverflow.com/questions/13219297/bad-type-on-operand-stack-using-jdk-8-lambdas-with-anonymous-inner-classes }
+	 * { @link http://mail.openjdk.java.net/pipermail/lambda-dev/2012-September/005938.html }
+	 */
+	public static void cleanup(BusyPopover popover, Button button, WorkflowInboxController toRefresh) {
+		Platform.runLater(() -> {
+			popover.hide();
+			button.setDisable(false);
+			toRefresh.refreshContent();
 		});
 	}
 	
@@ -375,26 +274,20 @@ public class WorkflowInboxController
 	private void refreshContent()
 	{
 		taskTable.getItems().clear();
-		taskTable.getItems().addAll(getTaskService().getOpenOwnedTasks());
-	}
-
-	private LocalWorkflowRuntimeEngineBI getWorkflowEngine() {
-		if (wfEngine_ == null)
+		try
 		{
-			wfEngine_ = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+			List<LocalTask> tasksForTable = taskService_.getOpenOwnedTasks();
+			List<LocalTask> tasksToRemoveFromTable = taskService_.getOwnedTasksByActionStatus(TaskActionStatus.Pending);
+			tasksForTable.removeAll(tasksToRemoveFromTable);
+			taskTable.getItems().addAll(tasksForTable);
 		}
-		
-		return wfEngine_;
+		catch (DatastoreException e)
+		{
+			LOG.error("Unexpected error refreshing tasks", e);
+			AppContext.getCommonDialogs().showErrorDialog("There was a problem reading the tasks", e);
+		}
 	}
 
-	private LocalTasksServiceBI getTaskService() {
-		if (taskService_ == null) {
-			taskService_ = getWorkflowEngine().getLocalTaskService();
-		}
-		
-		return taskService_;
-	}
-	
 	private class MyCellFactoryCallback<T> implements Callback<TableColumn<LocalTask, T>, TableCell<LocalTask, T>> {
 		@Override
 		public TableCell<LocalTask, T> call(TableColumn<LocalTask, T> param) {
@@ -461,7 +354,7 @@ public class WorkflowInboxController
 							int cellIndex = c.getIndex();
 							LocalTask task = taskTable.getItems().get(cellIndex);
 
-							WorkflowAdvancementViewI view = AppContext.getService(WorkflowAdvancementViewI.class);
+							WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
 							view.setTask(task.getId());
 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 						}

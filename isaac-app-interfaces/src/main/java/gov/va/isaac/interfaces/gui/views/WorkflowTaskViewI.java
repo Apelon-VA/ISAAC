@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.interfaces.gui.views;
 
+import java.io.IOException;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -49,4 +50,6 @@ public interface WorkflowTaskViewI extends PopupViewI {
 	 * the details of which are displayed
 	 */
 	public Long getTask();
+	
+	public void releaseTask(long taskId) throws IOException;
 }

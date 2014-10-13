@@ -19,8 +19,11 @@
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.UUID;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
@@ -52,20 +55,30 @@ import org.ihtsdo.otf.tcc.datastore.BdbTermBuilder;
  */
 public class PathBuilder extends AbstractMojo {
 
-  //TODO use MojoConceptSpec for these parameters, for clarity
+  // TODO use MojoConceptSpec for these parameters, for clarity
   /**
    * Origin path UUIDs to connect the new path to.
    * @parameter
-   * @required
    */
   private String[] originPathUuids;
 
   /**
+   * Origin path FSNs to connect the new path to. Used if UUIDs are not known.
+   * @parameter
+   */
+  private String[] originPathFsns;
+
+  /**
    * Parent path UUID of the current path.
    * @parameter
-   * @required
    */
   private String parentPathUuid;
+
+  /**
+   * Parent path FSN of the current path.
+   * @parameter
+   */
+  private String parentPathFsn;
 
   /**
    * The fully specified name of the path concept.
@@ -133,8 +146,14 @@ public class PathBuilder extends AbstractMojo {
 
     // Setup parent concept
     UUID parents[] = new UUID[1];
-    ConceptChronicleBI bpConcept =
-        dataStore.getConcept(UUID.fromString(parentPathUuid));
+    ConceptChronicleBI bpConcept = null;
+    if (parentPathUuid != null) {
+      bpConcept = dataStore.getConcept(UUID.fromString(parentPathUuid));
+    } else if (parentPathFsn != null) {
+      bpConcept = dataStore.getConcept(WBUtility.getUuidForFsn(parentPathFsn,parentPathFsn));
+    } else {
+      throw new IOException("Missing parent path parameter");
+    }
     // Must use standard view coordinate here, otherwise we won't be able to
     // find this concept.
     ConceptVersionBI con =
@@ -161,22 +180,35 @@ public class PathBuilder extends AbstractMojo {
     ConceptChronicleBI pathOriginRefset =
         dataStore.getConcept(PATH_ORIGIN_REFSET.getLenient()
             .getPrimordialUuid());
-    for (String originUuid : originPathUuids) {
-      ConceptChronicleBI originConcept =
-          dataStore.getConcept(UUID.fromString(originUuid));
-      getLog().info(
-          "  Add new path concept to PATH_ORIGINS_REFSET - " + originUuid);
-      addNidLongMember(pathOriginRefset, pathConcept, originConcept);
+    if (originPathUuids != null) {
+      for (String originUuid : originPathUuids) {
+        ConceptChronicleBI originConcept =
+            dataStore.getConcept(UUID.fromString(originUuid));
+        getLog().info(
+            "  Add new path concept to PATH_ORIGINS_REFSET - " + originUuid);
+        addNidLongMember(pathOriginRefset, pathConcept, originConcept);
 
-      // Make sure each origin concept is correctly modeled as a path
-      // NOTE: this is probably not necessary 
-      // getLog().info("    Add origin path to PATH_REFSET");
-      // getLog().info("    " + originConcept.toUserString());
-      // addNidMember(pathRefset, path, originConcept);
+        // Make sure each origin concept is correctly modeled as a path
+        // NOTE: this is probably not necessary
+        // getLog().info("    Add origin path to PATH_REFSET");
+        // getLog().info("    " + originConcept.toUserString());
+        // addNidMember(pathRefset, path, originConcept);
+      }
+    } else if (originPathFsns != null) {
+      for (String originFsn : originPathFsns) {
+        ConceptChronicleBI originConcept =
+            dataStore.getConcept(WBUtility.getUuidForFsn(originFsn, originFsn));
+        getLog().info(
+            "  Add new path concept to PATH_ORIGINS_REFSET - " + originFsn + " " + WBUtility.getUuidForFsn(originFsn,originFsn));
+        addNidLongMember(pathOriginRefset, pathConcept, originConcept);
+      }
+    } else {
+      throw new Exception("Origin paths not specified");
     }
 
     // Commit uncommitted changes
     dataStore.commit();
+    getLog().info("New Path " + pathConcept.getPrimordialUuid());
 
     getLog().info("WRITE path refset info");
     ConceptChronicleBI paths =
@@ -198,7 +230,7 @@ public class PathBuilder extends AbstractMojo {
     for (RefexChronicleBI<?> refex : pathOriginsVersion.getRefsetMembers()) {
       getLog().info("  refex : " + refex.toUserString());
     }
-
+    
   }
 
   /**

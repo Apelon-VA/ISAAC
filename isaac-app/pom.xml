@@ -1,51 +1,74 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>gov.va.isaac</groupId>
-        <artifactId>isaac-parent</artifactId>
-        <version>1.0-Sprint_14-SNAPSHOT</version>
-    </parent>
-    <groupId>gov.va.isaac.modules</groupId>
-    <artifactId>isaac-app</artifactId>
-    <packaging>jar</packaging>
+	<parent>
+		<groupId>gov.va.isaac</groupId>
+		<artifactId>isaac-parent</artifactId>
+		<version>1.0-Sprint_15-SNAPSHOT</version>
+	</parent>
+	
+	<groupId>gov.va.isaac.modules</groupId>
+	<artifactId>isaac-app</artifactId>
+	<packaging>jar</packaging>
 
-    <name>ISAAC Application</name>
-    <description>
-        ISAAC GUI - contains application window and menus.
-    </description>
+	<name>ISAAC Application</name>
+	
+	<description>
+		ISAAC GUI - contains application window and menus.
+	</description>
 
-    <dependencies>
-        
-        <dependency>
-            <groupId>gov.va.isaac.modules</groupId>
-            <artifactId>otf-util</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        
-        <!-- Need to override the scope on these 3 logging packages -->
-        <!-- The native logback implementation (note, the logback api comes from parent) -->
-        <dependency> 
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>compile</scope>
-        </dependency>
+	<dependencies>
 
-        <!-- Redirects Java logging into logback -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        
-        <!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        
-    </dependencies>
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>otf-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		
+		<!-- Need to override the scope on these 3 logging packages -->
+		<!-- The native logback implementation (note, the logback api comes from parent) -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>compile</scope>
+		</dependency>
 
+		<!-- Redirects Java logging into logback -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.9.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+					<generatePackage>gov.va.isaac.config.generated</generatePackage>
+					<accessExternalSchema>All</accessExternalSchema>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

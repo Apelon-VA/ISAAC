@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.conceptViews;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
@@ -7,9 +8,8 @@ import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
-
+import java.io.IOException;
 import java.util.UUID;
-
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -19,11 +19,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,22 +126,35 @@ public class EnhancedConceptViewController {
 		commitButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				WBUtility.commit(concept);
-				clearContents();
-				commitButton.setDisable(true);
-				cancelButton.setDisable(true);
-				creator.setConceptValues(concept, currentMode);
+				try
+				{
+					WBUtility.commit(concept);
+					clearContents();
+					commitButton.setDisable(true);
+					cancelButton.setDisable(true);
+					creator.setConceptValues(concept, currentMode);
+				}
+				catch (IOException e)
+				{
+					LOG.error("Unexpected error during commit", e);
+					ExtendedAppContext.getCommonDialogs().showErrorDialog("Error committing concept", e);
+				}
 			}
 		});
 		
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				WBUtility.forget(concept);
-				clearContents();
-				commitButton.setDisable(true);
-				cancelButton.setDisable(true);
-				creator.setConceptValues(concept, currentMode);
+				try {
+					ExtendedAppContext.getDataStore().forget(concept);
+
+					clearContents();
+					commitButton.setDisable(true);
+					cancelButton.setDisable(true);
+					creator.setConceptValues(concept, currentMode);
+				} catch (Exception e) {
+					LOG.error("Unable to cancel concept: " + concept.getNid(), e);
+				}
 			}
 		});
 		

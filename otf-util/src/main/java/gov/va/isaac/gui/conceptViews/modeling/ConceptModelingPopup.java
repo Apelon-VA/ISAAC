@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.conceptViews.modeling;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -127,6 +128,9 @@ public class ConceptModelingPopup extends ModelingPopup
 	{
 		try
 		{
+			if (attr.isUncommitted()) {
+				ExtendedAppContext.getDataStore().forget(attr);
+			}
 			boolean isDefined = (cb.getSelectionModel().getSelectedIndex() == 0); 
 			ConceptAttributeAB cab = new ConceptAttributeAB(attr.getConceptNid(), isDefined, RefexDirective.EXCLUDE);
 			// Need to add a fix for storing isDefined 

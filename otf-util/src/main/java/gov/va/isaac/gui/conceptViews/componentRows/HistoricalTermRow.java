@@ -27,11 +27,11 @@ public class HistoricalTermRow extends TermRow {
 		GridPane termGP = new GridPane();
 		termGP.setHgap(3);
 		
-		Rectangle rec = createAnnotRectangle(desc);
-		
 		int termCounter = 0;
 		Collection<? extends DescriptionVersionBI> versions = desc.getVersions();
 		for (DescriptionVersionBI<?> dv : versions) {
+			Rectangle rec = createAnnotRectangle(dv);
+			
 			Label descLabel = labelHelper.createLabel(dv, dv.getText(), ComponentType.DESCRIPTION, 0);
 			Label descTypeLabel = null;
 
@@ -76,6 +76,7 @@ public class HistoricalTermRow extends TermRow {
 			GridPane.setMargin(descAuthorLabel, new Insets(0, 20, 0, 20));
 			GridPane.setMargin(descPathLabel, new Insets(0, 0, 0, 20));
 
+			System.out.println(termCounter + "\t" + descLabel + "\t" + descTypeLabel + "\t" + descCaseLabel + "\t" + descLangLabel + "\t" + descStatusLabel + "\t" + descTimeLabel + "\t" + descAuthorLabel + "\t" + descPathLabel);
 			termGP.addRow(termCounter++, rec, descLabel, descTypeLabel, descCaseLabel, descLangLabel, descStatusLabel, descTimeLabel, descAuthorLabel, descPathLabel);
 		}
 		

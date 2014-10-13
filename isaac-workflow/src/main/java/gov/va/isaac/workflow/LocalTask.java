@@ -18,13 +18,11 @@
  */
 package gov.va.isaac.workflow;
 
-import gov.va.isaac.workflow.engine.LocalWorkflowRuntimeEngineFactory;
-
+import gov.va.isaac.AppContext;
+import java.rmi.RemoteException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskSummary;
@@ -34,11 +32,10 @@ import org.kie.api.task.model.TaskSummary;
  * @author alo
  */
 public class LocalTask {
-	
-	public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
-	public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
+    public static final Comparator<LocalTask> ID_COMPARATOR = (LocalTask o1, LocalTask o2) -> (Long.valueOf(o1.id).compareTo(Long.valueOf(o2.id)));
+    public static final Comparator<LocalTask> NAME_COMPARATOR = (LocalTask o1, LocalTask o2) -> o1.name.compareTo(o2.name);
 
-	// Task ID in KIE
+    // Task ID in KIE
     private Long id;
 
     // Name of the step in the workflow (i.e. Review, Approve, etc)
@@ -71,7 +68,7 @@ public class LocalTask {
     public LocalTask() {
     }
 
-    public LocalTask(TaskSummary summary, boolean fetchAttachments) {
+    public LocalTask(TaskSummary summary, boolean fetchAttachments) throws RemoteException {
         this.id = summary.getId();
         this.name = summary.getName();
         this.status = summary.getStatus();
@@ -81,7 +78,7 @@ public class LocalTask {
             this.owner = "";
         }
         if (fetchAttachments) {
-            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(summary.getId());
             this.componentId = (String) vmap.get("in_component_id");
             this.componentName = (String) vmap.get("in_component_name");
@@ -93,7 +90,7 @@ public class LocalTask {
         }
     }
 
-    public LocalTask(Task task, boolean fetchAttachments) {
+    public LocalTask(Task task, boolean fetchAttachments) throws RemoteException {
         this.id = task.getId();
         this.name = task.getNames().iterator().next().getText();
         this.status = task.getTaskData().getStatus();
@@ -104,7 +101,7 @@ public class LocalTask {
         }
 
         if (fetchAttachments) {
-            LocalWorkflowRuntimeEngineBI wfEngine = LocalWorkflowRuntimeEngineFactory.getRuntimeEngine();
+            LocalWorkflowRuntimeEngineBI wfEngine = AppContext.getService(LocalWorkflowRuntimeEngineBI.class);
             Map<String, Object> vmap = wfEngine.getVariablesMapForTaskId(task.getId());
             this.componentId = (String) vmap.get("in_component_id");
             this.componentName = (String) vmap.get("in_component_name");
@@ -164,12 +161,6 @@ public class LocalTask {
         this.owner = owner;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        return hash;
-    }
-
     public Action getAction() {
         return action;
     }
@@ -203,41 +194,12 @@ public class LocalTask {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final LocalTask other = (LocalTask) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.componentId, other.componentId)) {
-            return false;
-        }
-        if (!Objects.equals(this.componentName, other.componentName)) {
-            return false;
-        }
-        if (!Objects.equals(this.status, other.status)) {
-            return false;
-        }
-        if (!Objects.equals(this.owner, other.owner)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return "LocalTask [id=" + id + ", name=" + name + ", componentName="
+                + componentName + ", componentId=" + componentId + ", status="
+                + status + ", owner=" + owner + ", action=" + action
+                + ", actionStatus=" + actionStatus + ", inputVariables="
+                + (inputVariables ==  null ? "null" : inputVariables.entrySet()) 
+                + ", outputVariables=" + (outputVariables == null  ? "null" : outputVariables.entrySet()) + "]";
     }
-
-	@Override
-	public String toString() {
-		return "LocalTask [id=" + id + ", name=" + name + ", componentName="
-				+ componentName + ", componentId=" + componentId + ", status="
-				+ status + ", owner=" + owner + ", action=" + action
-				+ ", actionStatus=" + actionStatus + ", inputVariables="
-				+ inputVariables.entrySet() + ", outputVariables=" + outputVariables.entrySet() + "]";
-	}
 }

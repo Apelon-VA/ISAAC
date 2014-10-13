@@ -57,16 +57,10 @@ public interface WorkflowInitiationViewI extends PopupViewI {
 	 * associated with the new task to be created
 	 */
 	public void setComponent(int nid);
+
 	/**
 	 * @return the int NID of the existing component or concept
 	 * associated with the new task created or to be created
 	 */
 	public int getComponentNid();
-	
-	/**
-	 * @return Long the Long workflow task id of the new task
-	 * created by the user of the view.  Will be null if task not yet created
-	 * or if task instantiation failed.
-	 */
-	public Long getInitiatedTaskId();
 }
