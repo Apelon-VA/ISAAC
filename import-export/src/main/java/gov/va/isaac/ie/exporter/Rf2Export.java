@@ -19,7 +19,6 @@ package gov.va.isaac.ie.exporter;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
-import gov.va.isaac.models.owl.exporter.OWLExporter;
 import gov.va.isaac.util.AbstractProgressReporter;
 import gov.va.isaac.util.ProgressListener;
 import gov.va.isaac.util.WBUtility;
@@ -1347,6 +1346,7 @@ public class Rf2Export extends AbstractProgressReporter implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
+    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
     if (conceptsToProcess.isMember(cNid)) {
       count++;
       ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
@@ -1381,8 +1381,7 @@ public class Rf2Export extends AbstractProgressReporter implements
    */
   @Override
   public boolean allowCancel() {
-    // TODO Auto-generated method stub
-    return false;
+    return true;
   }
 
   /*

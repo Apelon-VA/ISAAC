@@ -31,6 +31,7 @@ import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
@@ -41,6 +42,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -61,38 +63,38 @@ import com.google.common.collect.Iterators;
  */
 public class ExportFileSettingsDialogController {
 
-  /**  The Constant MODEL_TYPE_PROPERTY. */
+  /** The Constant MODEL_TYPE_PROPERTY. */
   public static final String MODEL_TYPE_PROPERTY =
       "gov.va.isaac.gui.dialog.import-settings.model-type";
 
-  /**  The Constant FILE_SELECTION_PROPERTY. */
+  /** The Constant FILE_SELECTION_PROPERTY. */
   public static final String FILE_SELECTION_PROPERTY =
       "gov.va.isaac.gui.dialog.import-settings.file-selection";
 
-  /**  The Constant LOG. */
+  /** The Constant LOG. */
   private static final Logger LOG = LoggerFactory
       .getLogger(ExportFileSettingsDialogController.class);
 
-  /**  The model type combo. */
+  /** The model type combo. */
   @FXML
   private ComboBox<ExportType> modelTypeCombo;
 
-  /**  The path combo. */
+  /** The path combo. */
   @FXML
   private ComboBox<ConceptChronicleBI> pathCombo;
 
-  /**  The folder selection label. */
+  /** The folder selection label. */
   @FXML
   private Label folderSelectionLabel;
 
-  /**  The zip. */
+  /** The zip. */
   @FXML
   private CheckBox zip;
 
-  /**  The export settings dialog. */
+  /** The export settings dialog. */
   private ExportFileSettingsDialog exportSettingsDialog;
 
-  /**  The export stage. */
+  /** The export stage. */
   private Stage exportStage;
 
   /**
@@ -222,6 +224,13 @@ public class ExportFileSettingsDialogController {
         exportStage.show();
       }
 
+      ((Stage) exportStage.getScene().getWindow())
+          .setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+              exportView.doCancel();
+            }
+          });
       exportView.doExport(exportType, pathNid, folder, zipChecked);
 
     } catch (Exception ex) {

@@ -40,13 +40,17 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Cursor;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +85,15 @@ public class ImportView extends GridPane {
   /** The result label. */
   final Label resultLabel = new Label();
 
+  /** The cancel button. */
+  final Button cancelButton = new Button("Cancel");
+
+  /**  The importer task. */
+  private Task<InformationModel> task = null;
+  
+  /**  The request cancel. */
+  boolean requestCancel = false;
+
   /**
    * Instantiates an empty {@link ImportView}.
    */
@@ -95,7 +108,13 @@ public class ImportView extends GridPane {
     progressBar.setMinWidth(400);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
-
+    builder.addRow("", cancelButton);
+    cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent event) {
+        doCancel();
+      }
+    });
     setConstraints();
 
     // Set minimum dimensions.
@@ -139,7 +158,7 @@ public class ImportView extends GridPane {
     }
 
     // Do work in background.
-    Task<InformationModel> task = new ImporterTask(fileName, importHandler);
+    task = new ImporterTask(fileName, importHandler);
 
     // Bind cursor to task state.
     ObjectBinding<Cursor> cursorBinding =
@@ -152,6 +171,25 @@ public class ImportView extends GridPane {
     t.start();
   }
 
+  /**
+   * Do cancel.
+   */
+  public void doCancel() {
+    LOG.info("Cancel import.");
+    if (requestCancel) {
+      // complete the process
+      ((Stage)getScene().getWindow()).close();    
+      return;
+    }
+
+    // Set requestCancel to true and cancel task
+    requestCancel = true;
+    if (task.isRunning()) {
+      task.cancel(true);
+    }
+    cancelButton.setText("Close");
+  }
+  
   /**
    * Sets the FX constraints.
    */
@@ -216,6 +254,9 @@ public class ImportView extends GridPane {
         int progress = 0;
         int maxProgress = Collections.list(zipFile.entries()).size();
         for (final ZipEntry entry : Collections.list(zipFile.entries())) {
+          if (requestCancel) {
+            break;
+          }
           Platform.runLater(() -> {
             statusLabel.setText("Processing " + entry.getName());
           });
@@ -266,8 +307,6 @@ public class ImportView extends GridPane {
      */
     @Override
     protected void succeeded() {
-      InformationModel result = this.getValue();
-
       // Update UI.
       progressBar.setProgress(1);
       statusLabel.setText("");
@@ -285,7 +324,7 @@ public class ImportView extends GridPane {
 
       // Update UI.
       progressBar.setProgress(1);
-      statusLabel.setText("");
+      // leave last status value
       resultLabel.setText("Failed to import model.");
 
       // Show dialog.

@@ -20,10 +20,10 @@ package gov.va.isaac.ie;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.exporter.EConceptExporter;
+import gov.va.isaac.ie.exporter.OWLExporter;
 import gov.va.isaac.ie.exporter.Rf2Export;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
 import gov.va.isaac.model.ExportType;
-import gov.va.isaac.models.owl.exporter.OWLExporter;
 import gov.va.isaac.util.ProgressListener;
 import gov.va.isaac.util.WBUtility;
 

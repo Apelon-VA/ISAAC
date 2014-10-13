@@ -4,7 +4,6 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.models.util.CommonBase;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.ProgressReporter;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedOutputStream;
@@ -31,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * @author bcarlsen
  */
 public class EConceptExporter extends CommonBase implements
-    ProcessUnfetchedConceptDataBI, ProgressReporter {
+    Exporter, ProcessUnfetchedConceptDataBI {
 
   /** Listeners */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -77,9 +76,11 @@ public class EConceptExporter extends CommonBase implements
    * @param pathNid the path nid
    * @throws Exception the exception
    */
+  @Override
   public void export(int pathNid) throws Exception {
     this.pathNid = pathNid;
     dataStore.iterateConceptDataInSequence(this);
+
     dos.flush();
     dos.close();
     LOG.info("Wrote " + count + " concepts.");
@@ -103,7 +104,7 @@ public class EConceptExporter extends CommonBase implements
    */
   @Override
   public boolean allowCancel() {
-    return false;
+    return true;
   }
 
   /*
@@ -117,6 +118,7 @@ public class EConceptExporter extends CommonBase implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
+    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
     allCount++;
     if (concept.getPathNid() == pathNid) {
@@ -188,4 +190,5 @@ public class EConceptExporter extends CommonBase implements
   public void removeProgressListener(ProgressListener l) {
     listeners.remove(l);
   }
+
 }

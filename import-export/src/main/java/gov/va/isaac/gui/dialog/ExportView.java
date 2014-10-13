@@ -25,6 +25,7 @@ import gov.va.isaac.ie.ExportFileHandler;
 import gov.va.isaac.model.ExportType;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
+import gov.va.isaac.util.WBUtility;
 
 import java.io.File;
 
@@ -32,13 +33,17 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Cursor;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +64,9 @@ public class ExportView extends GridPane {
   /** The model type label. */
   private final Label exportTypeLabel = new Label();
 
+  /** The path name label. */
+  private final Label pathNameLabel = new Label();
+
   /** The folder name label. */
   private final Label folderNameLabel = new Label();
 
@@ -71,6 +79,18 @@ public class ExportView extends GridPane {
   /** The result label. */
   final Label resultLabel = new Label();
 
+  /** The cancel button. */
+  final Button cancelButton = new Button("Cancel");
+
+  /** The exporter task. */
+  Task<Boolean> task;
+
+  /** the task thread */
+  Thread taskThread = null;
+  
+  /**  The request cancel. */
+  boolean requestCancel = false;
+  
   /**
    * Instantiates an empty {@link ExportView}.
    */
@@ -80,12 +100,19 @@ public class ExportView extends GridPane {
     // GUI placeholders.
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Export Type: ", exportTypeLabel);
+    builder.addRow("Path Name: ", pathNameLabel);
     builder.addRow("Folder Name: ", folderNameLabel);
     builder.addRow("Progress: ", progressBar);
     progressBar.setMinWidth(400);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
-
+    builder.addRow("", cancelButton);
+    cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent event) {
+        doCancel();
+      }
+    });
     setConstraints();
 
     // Set minimum dimensions.
@@ -96,8 +123,8 @@ public class ExportView extends GridPane {
   /**
    * Perform an export according the specifed parameters.
    *
-   * @param exportType the export type 
-   * @param pathNid the path nid to export
+   * @param exportType the export type
+   * @param pathNid the path nid
    * @param folderName the file name
    * @param zipChecked the flag indicating whether to compress output
    */
@@ -111,6 +138,7 @@ public class ExportView extends GridPane {
 
     // Update UI.
     exportTypeLabel.setText(exportType.getDisplayName());
+    pathNameLabel.setText(WBUtility.getConPrefTerm(pathNid));
     folderNameLabel.setText(folderName);
 
     File folder = new File(folderName);
@@ -119,7 +147,7 @@ public class ExportView extends GridPane {
         new ExportFileHandler(pathNid, exportType, folder, zipChecked);
 
     // Do work in background.
-    Task<Boolean> task = new ExporterTask(exportFileHandler);
+    task = new ExporterTask(exportFileHandler);
 
     // Bind cursor to task state.
     ObjectBinding<Cursor> cursorBinding =
@@ -127,12 +155,36 @@ public class ExportView extends GridPane {
             .otherwise(Cursor.DEFAULT);
     this.getScene().cursorProperty().bind(cursorBinding);
 
-    Thread t = new Thread(task, "Exporter_" + exportType);
-    t.setDaemon(true);
-    t.start();
-
+    taskThread = new Thread(task, "Exporter_" + exportType);
+    taskThread.setDaemon(true);
+    taskThread.start();
   }
 
+  /**
+   * Do cancel.
+   */
+  public void doCancel() {
+    LOG.info("Cancel import.");
+    if (requestCancel) {
+      // complete the process
+      ((Stage)getScene().getWindow()).close();    
+      return;
+    }
+
+    // Set requestCancel to true and cancel task
+    requestCancel = true;
+    if (task.isRunning()) {
+      LOG.info("task is running, cancel it");
+      task.cancel(true);
+      // TODO: shouldn't be necessary, but I can't figure how to cancel an OTF concept iterator
+      taskThread.interrupt();
+    } else {
+       LOG.info("task is not running");
+     }
+   
+    cancelButton.setText("Close");
+  }
+  
   /**
    * Sets the FX constraints.
    */
@@ -182,7 +234,7 @@ public class ExportView extends GridPane {
         @Override
         public void updateProgress(ProgressEvent pe) {
           Platform.runLater(() -> {
-            progressBar.setProgress( ((double)pe.getProgress())/100);
+            progressBar.setProgress(((double) pe.getProgress()) / 100);
             statusLabel.setText(pe.getNote());
           });
         }
@@ -221,16 +273,15 @@ public class ExportView extends GridPane {
     protected void failed() {
       Throwable ex = getException();
       progressBar.setProgress(100);
-      statusLabel.setText("");
+      // leave last comment on failure, e.g. do not set status label here
       resultLabel.setText("Failed to export data");
 
       String title = ex.getClass().getName();
-      String msg =
-          String
-              .format("Unexpected error exporting to file");
+      String msg = String.format("Unexpected error exporting to file");
       LOG.error(msg, ex);
       AppContext.getCommonDialogs()
           .showErrorDialog(title, msg, ex.getMessage());
     }
+    
   }
 }

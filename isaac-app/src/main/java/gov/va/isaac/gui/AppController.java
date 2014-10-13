@@ -28,10 +28,13 @@ import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
@@ -48,7 +51,9 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+
 import javax.inject.Inject;
+
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,9 +156,16 @@ public class AppController implements ShutdownBroadcastListenerI {
                     menuItem.setGraphic(new ImageView(menuItemsToCreate.getImage()));
                 }
                 parentMenu.getItems().add(menuItem);
+                parentMenu.getItems().sort(new Comparator<MenuItem>() {
+                  @Override
+                  public int compare(MenuItem o1, MenuItem o2) {
+                    return o1.getText().compareTo(o2.getText());
+                  }
+                  
+                });
             }
         }
-        
+
         for (final DockedViewI dv : dockedViews_)
         {
             try

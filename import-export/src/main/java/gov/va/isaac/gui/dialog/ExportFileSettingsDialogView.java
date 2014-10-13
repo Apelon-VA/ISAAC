@@ -77,7 +77,7 @@ public class ExportFileSettingsDialogView implements PopupViewI, IsaacViewWithMe
 			@Override
 			public String getMenuName()
 			{
-				return "Export To File";
+				return "Export To File...";
 			}
 
 			@Override

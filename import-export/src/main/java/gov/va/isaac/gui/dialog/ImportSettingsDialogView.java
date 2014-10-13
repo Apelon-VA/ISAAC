@@ -73,7 +73,7 @@ public class ImportSettingsDialogView implements PopupViewI, IsaacViewWithMenusI
 			@Override
 			public String getMenuName()
 			{
-				return "Information Models Importer...";
+				return "Import Models...";
 			}
 
 			@Override

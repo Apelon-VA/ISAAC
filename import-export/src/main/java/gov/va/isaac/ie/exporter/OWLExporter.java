@@ -1,4 +1,4 @@
-package gov.va.isaac.models.owl.exporter;
+package gov.va.isaac.ie.exporter;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
@@ -234,7 +234,7 @@ public class OWLExporter extends CommonBase implements
    */
   @Override
   public boolean allowCancel() {
-    return false;
+    return true;
   }
 
   /*
@@ -248,6 +248,7 @@ public class OWLExporter extends CommonBase implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
+    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
     LOG.debug("Process concept " + concept.getPrimordialUuid());
     allCount++;
