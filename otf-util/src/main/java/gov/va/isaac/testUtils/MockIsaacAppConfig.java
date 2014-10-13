@@ -311,42 +311,6 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
   }
 
   /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDroolsGroupId()
-   */
-  @Override
-  public String getDroolsGroupId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDroolsArtifactId()
-   */
-  @Override
-  public String getDroolsArtifactId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDroolsVersion()
-   */
-  @Override
-  public String getDroolsVersion() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDroolsClassifier()
-   */
-  @Override
-  public String getDroolsClassifier() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
    * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPreviousReleaseVersion()
    */
   @Override
@@ -444,6 +408,12 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 
   @Override
   public String getWorkflowPromotionPathUuid() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getAppSchemaLocation() {
     // TODO Auto-generated method stub
     return null;
   }

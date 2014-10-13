@@ -185,39 +185,6 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getDbClassifier();
-
-  /**
-   * Drools group id.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDroolsGroupId();
-
-  /**
-   * Drools artifact id.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDroolsArtifactId();
-
-  /**
-   * Drools version.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDroolsVersion();
-
-  /**
-   * Drools classifier.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDroolsClassifier();
-
   /**
    * The text string that is displayed in the ISAAC title bar, about box, and
    * other typical locations.
