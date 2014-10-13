@@ -20,6 +20,7 @@ package gov.va.isaac.ie;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.exporter.EConceptExporter;
+import gov.va.isaac.ie.exporter.Exporter;
 import gov.va.isaac.ie.exporter.OWLExporter;
 import gov.va.isaac.ie.exporter.Rf2Export;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
@@ -74,6 +75,9 @@ public class ExportFileHandler {
   /** The zip. */
   private boolean zip;
 
+  /**  The exporter. */
+  private Exporter exporter;
+  
   /**
    * Instantiates an empty {@link ExportFileHandler}.
    * @param pathNid the path nid to export
@@ -122,9 +126,10 @@ public class ExportFileHandler {
         outputStream = new FileOutputStream(file);
       }
 
-      EConceptExporter exporter = new EConceptExporter(outputStream);
-      exporter.addProgressListener(listener);
-      exporter.export(pathNid);
+      EConceptExporter econceptExporter = new EConceptExporter(outputStream);
+      exporter = econceptExporter;
+      econceptExporter.addProgressListener(listener);
+      econceptExporter.export(pathNid);
       outputStream.flush();
       outputStream.close();
 
@@ -152,9 +157,10 @@ public class ExportFileHandler {
         outputStream = new FileOutputStream(file);
       }
 
-      OWLExporter exporter = new OWLExporter(outputStream);
-      exporter.addProgressListener(listener);
-      exporter.export(pathNid);
+      OWLExporter owlExporter = new OWLExporter(outputStream);
+      exporter = owlExporter;
+      owlExporter.addProgressListener(listener);
+      owlExporter.export(pathNid);
       outputStream.flush();
       outputStream.close();
 
@@ -177,8 +183,9 @@ public class ExportFileHandler {
           new Rf2Export(releaseFolder, releaseType, LanguageCode.EN_US,
               COUNTRY_CODE.US, namespace, Calendar.getInstance().getTime(),
               pathNid, WBUtility.getViewCoordinate(), taxonomyParentNids);
+      exporter = rf2Export;
       rf2Export.addProgressListener(listener);
-      rf2Export.export();
+      rf2Export.export(pathNid);
       rf2Export.writeOneTimeFiles();
       rf2Export.close();
       if (zip) {
@@ -300,5 +307,12 @@ public class ExportFileHandler {
     }
 
     return directory.delete();
+  }
+
+  /**
+   * Do cancel.
+   */
+  public void doCancel() {
+    exporter.cancel();
   }
 }

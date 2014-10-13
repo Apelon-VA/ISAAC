@@ -61,6 +61,9 @@ public class EConceptExporter extends CommonBase implements
   /** the toal */
   private int progressMax = 0;
 
+  /**  The request cancel. */
+  private boolean requestCancel = false;
+  
   /**
    * Instantiates a {@link EConceptExporter} from the specified parameters.
    *
@@ -93,7 +96,7 @@ public class EConceptExporter extends CommonBase implements
    */
   @Override
   public boolean continueWork() {
-    return true;
+    return !requestCancel;
   }
 
   /*
@@ -189,6 +192,11 @@ public class EConceptExporter extends CommonBase implements
   @Override
   public void removeProgressListener(ProgressListener l) {
     listeners.remove(l);
+  }
+
+  @Override
+  public void cancel() {
+    requestCancel = true;    
   }
 
 }

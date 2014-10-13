@@ -188,6 +188,7 @@ public class ImportView extends GridPane {
       task.cancel(true);
     }
     cancelButton.setText("Close");
+    resultLabel.setText("Successfully cancelled import.");
   }
   
   /**
@@ -309,8 +310,12 @@ public class ImportView extends GridPane {
     protected void succeeded() {
       // Update UI.
       progressBar.setProgress(1);
-      statusLabel.setText("");
-      resultLabel.setText("Successfully imported model.");
+      if (requestCancel) {
+        resultLabel.setText("Successfully cancelled imported.");
+      } else {
+        statusLabel.setText("");
+        resultLabel.setText("Successfully imported model.");       
+      }
     }
 
     /*
