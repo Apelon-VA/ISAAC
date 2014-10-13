@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://www.snomed.org/tig?t=tig_release_files">IHTSDO Technical
  *      Implementation Guide - Release File Specifications</a>
  */
-public class Rf2Export extends AbstractProgressReporter implements
+public class Rf2Export extends AbstractProgressReporter implements Exporter,
     org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI {
 
   /** The Constant LOG. */
@@ -163,6 +163,9 @@ public class Rf2Export extends AbstractProgressReporter implements
   private static UUID REFSET_DESC_NAMESPACE = UUID
       .fromString("d1871eb0-8a47-11e1-b0c4-0800200c9a66");
 
+  /**  The request cancel. */
+  private boolean requestCancel = false;
+  
   /** The count. */
   @SuppressWarnings("unused")
   private int count = 0;
@@ -482,7 +485,8 @@ public class Rf2Export extends AbstractProgressReporter implements
    *
    * @throws Exception the exception
    */
-  public void export() throws Exception {
+  @Override
+  public void export(int pathNid) throws Exception {
     dataStore.iterateConceptDataInSequence(this);
   }
 
@@ -557,7 +561,7 @@ public class Rf2Export extends AbstractProgressReporter implements
    */
   @Override
   public boolean continueWork() {
-    return true;
+    return !requestCancel;
   }
 
   /**
@@ -1395,5 +1399,11 @@ public class Rf2Export extends AbstractProgressReporter implements
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public void cancel() {
+    requestCancel = true;    
+  }
+
 
 }

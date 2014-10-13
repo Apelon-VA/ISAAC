@@ -87,10 +87,13 @@ public class ExportView extends GridPane {
 
   /** the task thread */
   Thread taskThread = null;
-  
-  /**  The request cancel. */
+
+  /** The request cancel. */
   boolean requestCancel = false;
-  
+
+  /** The export file handler. */
+  ExportFileHandler exportFileHandler = null;
+
   /**
    * Instantiates an empty {@link ExportView}.
    */
@@ -143,7 +146,7 @@ public class ExportView extends GridPane {
 
     File folder = new File(folderName);
     // Inject into an ExportFileHandler.
-    ExportFileHandler exportFileHandler =
+    exportFileHandler =
         new ExportFileHandler(pathNid, exportType, folder, zipChecked);
 
     // Do work in background.
@@ -167,24 +170,16 @@ public class ExportView extends GridPane {
     LOG.info("Cancel import.");
     if (requestCancel) {
       // complete the process
-      ((Stage)getScene().getWindow()).close();    
+      ((Stage) getScene().getWindow()).close();
       return;
     }
 
     // Set requestCancel to true and cancel task
     requestCancel = true;
-    if (task.isRunning()) {
-      LOG.info("task is running, cancel it");
-      task.cancel(true);
-      // TODO: shouldn't be necessary, but I can't figure how to cancel an OTF concept iterator
-      taskThread.interrupt();
-    } else {
-       LOG.info("task is not running");
-     }
-   
+    exportFileHandler.doCancel();
     cancelButton.setText("Close");
   }
-  
+
   /**
    * Sets the FX constraints.
    */
@@ -215,11 +210,9 @@ public class ExportView extends GridPane {
    */
   class ExporterTask extends Task<Boolean> {
 
-    /** The import handler. */
-    private final ExportFileHandler exportFileHandler;
-
+    /** The export handler. */
     ExporterTask(ExportFileHandler exportFileHandler) {
-      this.exportFileHandler = exportFileHandler;
+      // do nothing
     }
 
     /*
@@ -260,8 +253,12 @@ public class ExportView extends GridPane {
     protected void succeeded() {
       // Update UI.
       progressBar.setProgress(100);
-      statusLabel.setText("");
-      resultLabel.setText("Successfully exported data");
+      if (requestCancel) {
+        resultLabel.setText("Successfully cancelled export");
+      } else {
+        statusLabel.setText("");
+        resultLabel.setText("Successfully exported data");
+      }
     }
 
     /*
@@ -282,6 +279,6 @@ public class ExportView extends GridPane {
       AppContext.getCommonDialogs()
           .showErrorDialog(title, msg, ex.getMessage());
     }
-    
+
   }
 }

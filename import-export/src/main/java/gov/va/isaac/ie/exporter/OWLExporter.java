@@ -5,7 +5,6 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.models.util.CommonBase;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.ProgressReporter;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.BufferedOutputStream;
@@ -58,7 +57,8 @@ import org.slf4j.LoggerFactory;
  * @author Tim Kao
  */
 public class OWLExporter extends CommonBase implements
-    ProcessUnfetchedConceptDataBI, ProgressReporter {
+   Exporter, ProcessUnfetchedConceptDataBI {
+  
 
   /** Listeners */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -101,6 +101,9 @@ public class OWLExporter extends CommonBase implements
   /** The set of axioms. */
   private Set<OWLAxiom> setOfAxioms = new HashSet<>();
 
+  /**  The request cancel. */
+  private boolean requestCancel = false;
+  
   //
   // Hardcoded SNOMED info
   //
@@ -206,6 +209,7 @@ public class OWLExporter extends CommonBase implements
    * @param pathNid the path nid
    * @throws Exception the exception
    */
+  @Override
   public void export(int pathNid) throws Exception {
     this.pathNid = pathNid;
     dataStore.iterateConceptDataInSequence(this);
@@ -223,7 +227,7 @@ public class OWLExporter extends CommonBase implements
    */
   @Override
   public boolean continueWork() {
-    return true;
+    return !requestCancel;
   }
 
   /*
@@ -613,4 +617,13 @@ public class OWLExporter extends CommonBase implements
   public void removeProgressListener(ProgressListener l) {
     listeners.remove(l);
   }
+
+  /**
+   * Cancel.
+   */
+  @Override
+  public void cancel() {
+    requestCancel = true;    
+  }
+
 }

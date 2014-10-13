@@ -16,4 +16,8 @@ public interface Exporter extends ProgressReporter {
    */
   public void export(int pathNid) throws Exception;
   
+  /**
+   * Cancel.
+   */
+  public void cancel();
 }
