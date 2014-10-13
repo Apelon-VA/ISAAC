@@ -73,8 +73,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString("wrongPassword", encrypted).equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString("wrongPassword", encrypted);
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
@@ -91,8 +92,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString("", encrypted).equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString("", encrypted);
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
@@ -109,8 +111,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString("wrongPassword", encrypted).equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString("wrongPassword", encrypted);
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
@@ -127,8 +130,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString(password, "wrong encrypted string").equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString(password, "wrong encrypted string");
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
