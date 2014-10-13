@@ -156,6 +156,7 @@ public class AppController implements ShutdownBroadcastListenerI {
                     menuItem.setGraphic(new ImageView(menuItemsToCreate.getImage()));
                 }
                 parentMenu.getItems().add(menuItem);
+                //TODO fix this sorting API stuff... supposed to be sorted by the menu order in the menu API - but was never finished... see other TODO below.
                 parentMenu.getItems().sort(new Comparator<MenuItem>() {
                   @Override
                   public int compare(MenuItem o1, MenuItem o2) {
