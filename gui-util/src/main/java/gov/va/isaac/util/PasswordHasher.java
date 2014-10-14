@@ -22,9 +22,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -54,20 +54,11 @@ public class PasswordHasher
 	private static final int desiredKeyLen = 256;
 	private static final String keyFactoryAlgorithm = "PBKDF2WithHmacSHA1";
 	private static final String cipherAlgorithm = "PBEWithSHA1AndDESede";
-	private static final String secureRandomAlgorithm = "SHA1PRNG";
+	private static final Random random = new Random();  //Note, it would be more secure to use SecureRandom... but the entropy issues on Linux are a nasty issue
+	//and it results in SecureRandom.getInstance(...).generateSeed(...) blocking for long periods of time.  A regular random is certainly good enough
+	//for our encryption purposes.
 	
-	static
-	{
-		//generateSeed is extremely slow (and random) on linux, since it blocks for entropy, 
-		//and many linux systems may not have enough entropy, and block for many seconds before returning a random value.
-		//This tells java to use a slightly less perfect random number generator, if the proper random 
-		//generator doesn't have enough entropy.  In the real world, for our purposes, I highly doubt
-		//we need the missing security.
-		if (System.getProperty("os.name").equals("Linux"))
-		{
-			System.setProperty("java.security.egd", "file:/dev/./urandom");
-		}
-	}
+	
 
 	/**
 	 * Computes a salted PBKDF2 hash of given plaintext password suitable for storing in a database.
@@ -76,7 +67,8 @@ public class PasswordHasher
 	public static String getSaltedHash(String password) throws Exception
 	{
 		long startTime = System.currentTimeMillis();
-		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
+		byte[] salt = new byte[saltLen];
+		random.nextBytes(salt);
 		// store the salt with the password
 		String result = Base64.getEncoder().encodeToString(salt) + "$$$" + hash(password, salt);
 		log_.debug("Compute Salted Hash time {} ms", System.currentTimeMillis() - startTime);
@@ -124,7 +116,8 @@ public class PasswordHasher
 	public static String encrypt(String password, byte[] data) throws Exception
 	{
 		long startTime = System.currentTimeMillis();
-		byte[] salt = SecureRandom.getInstance(secureRandomAlgorithm).generateSeed(saltLen);
+		byte[] salt = new byte[saltLen];
+		random.nextBytes(salt);
 		// store the salt with the password
 		String result = Base64.getEncoder().encodeToString(salt) + "$$$" + encrypt(password, salt, data);
 		log_.debug("Encrypt Time {} ms", System.currentTimeMillis() - startTime);

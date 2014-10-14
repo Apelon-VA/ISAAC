@@ -51,10 +51,6 @@ public class BaseTest
 	protected static void setup() throws ClassNotFoundException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException,
 			SecurityException
 	{
-		if (System.getProperty("os.name").equals("Linux"))
-		{
-			System.setProperty("java.security.egd", "file:/dev/./urandom");
-		}
 		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../../ISAAC-PA-VA-Fork/app/berkeley-db").getCanonicalPath());
 		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../../ISAAC-PA-VA-Fork/app/berkeley-db").getCanonicalPath());
 		// Configure Java logging into logback
