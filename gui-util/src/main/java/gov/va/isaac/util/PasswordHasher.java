@@ -18,7 +18,12 @@
  */
 package gov.va.isaac.util;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -132,7 +137,13 @@ public class PasswordHasher
 		SecretKey key = keyFactory.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
 		Cipher pbeCipher = Cipher.getInstance(cipherAlgorithm);
 		pbeCipher.init(Cipher.ENCRYPT_MODE, key, new PBEParameterSpec(salt, iterations));
-		return Base64.getEncoder().encodeToString(pbeCipher.doFinal(data));
+		
+		//attach a sha1 checksum to the end of the data, so we know if we decrypted it properly.
+		byte[] dataCheckSum = computeChecksum("SHA1", data).getBytes();
+		ByteBuffer temp = ByteBuffer.allocate(data.length + dataCheckSum.length);
+		temp.put(data);
+		temp.put(dataCheckSum);
+		return Base64.getEncoder().encodeToString(pbeCipher.doFinal(temp.array()));
 	}
 	
 	public static String decryptToString(String password, String encryptedData) throws Exception
@@ -159,13 +170,44 @@ public class PasswordHasher
 		SecretKey key = keyFactory.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
 		Cipher pbeCipher = Cipher.getInstance(cipherAlgorithm);
 		pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(salt, iterations));
+		byte[] decrypted;
 		try
 		{
-			return pbeCipher.doFinal(Base64.getDecoder().decode(data));
+			decrypted = pbeCipher.doFinal(Base64.getDecoder().decode(data));
 		}
 		catch (Exception e)
 		{
 			throw new Exception("Invalid decryption password");
 		}
+		if (decrypted.length >= 40)
+		{
+			//The last 40 bytes should be the SHA1 Sum
+			String checkSum = new String(Arrays.copyOfRange(decrypted, decrypted.length - 40, decrypted.length));
+			byte[] userData = Arrays.copyOf(decrypted, decrypted.length - 40);
+			String computed = computeChecksum("SHA1", userData);
+			if (!checkSum.equals(computed))
+			{
+				throw new Exception("Invalid decryption password, or truncated data");
+			}
+			else
+			{
+				return userData;
+			}
+		}
+		else
+		{
+			throw new Exception("Truncated data");
+		}
+	}
+	
+	/**
+	 * Type can be any supported type, like 'MD5' or 'SHA1'
+	 * @throws NoSuchAlgorithmException 
+	 */
+	public static String computeChecksum(String type, byte[] data) throws NoSuchAlgorithmException
+	{
+		MessageDigest md = MessageDigest.getInstance(type);
+		byte[] digest = md.digest(data);
+		return new BigInteger(1, digest).toString(16);
 	}
 }
