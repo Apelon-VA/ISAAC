@@ -55,7 +55,7 @@ public class UserProfileManager implements ServicesToPreloadI
 {
 	private Logger logger = LoggerFactory.getLogger(UserProfileManager.class);
 
-	private final File profilesFolder_ = new File("profiles");
+	private File profilesFolder_ = new File("profiles");
 	private final String prefsFileName_ = "Preferences.xml";
 
 	//protected, rather than private, to allow the mock code to bypass this
@@ -187,10 +187,6 @@ public class UserProfileManager implements ServicesToPreloadI
 	{
 		logger.info("Creating user profile for " + user.getUniqueLogonName());
 
-		if (isAutomationModeEnabled())
-		{
-			throw new RuntimeException("API Misuse - automation mode is enabled!");
-		}
 		//don't need to checkInit - doesProfileExist does that for us
 		if (doesProfileExist(user.getUniqueLogonName()))
 		{
@@ -230,11 +226,20 @@ public class UserProfileManager implements ServicesToPreloadI
 		up.setWorkflowPassword(temp);  //Just a guess
 		
 		up.store(prefFile);
-		Platform.runLater(() ->
+		if (isAutomationModeEnabled())
 		{
+			//Just put them in the list on this thread - nobody is listening
 			userNamesWithProfiles_.add(user.getUniqueLogonName());
-			FXCollections.sort(userNamesWithProfiles_);
-		});
+		}
+		else
+		{
+			//do this on the platform thread, so GUI updates can be processed properly.  Also, sort.
+			Platform.runLater(() ->
+			{
+				userNamesWithProfiles_.add(user.getUniqueLogonName());
+				FXCollections.sort(userNamesWithProfiles_);
+			});
+		}
 		
 	}
 
@@ -407,15 +412,24 @@ public class UserProfileManager implements ServicesToPreloadI
 	 * 
 	 * When Automation Mode is configured - any API call that makes changes will throw an exception.  create*, save*, etc.
 	 * 
+	 * @param userProfileLocation (optional) the path to use for the user profiles.  Defaults to 'profiles' relative to 
+	 * the JVM launch path.  If the location is provided, it will also look there for any existing users, and populate
+	 * the real users list.  If null, it won't attempt to load users.
 	 * @throws InvalidUserException 
 	 */
-	public void configureAutomationMode() throws InvalidUserException
+	public void configureAutomationMode(File userProfileLocation) throws InvalidUserException
 	{
 		if (loggedInUser_ != null)
 		{
 			throw new InvalidUserException("Cannot set automation mode when a user has logged in!");
 		}
-		if (cdl.getCount() == 2)
+		
+		if (userProfileLocation != null)
+		{
+			profilesFolder_ = userProfileLocation;
+			loadRequested();
+		}
+		else if (cdl.getCount() == 2)
 		{
 			cdl.countDown();
 			cdl.countDown();

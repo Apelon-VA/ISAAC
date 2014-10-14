@@ -20,6 +20,7 @@ package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.util.DBLocator;
 import java.io.File;
 import java.lang.reflect.Field;
 import org.apache.maven.plugin.AbstractMojo;
@@ -40,12 +41,22 @@ public class Setup extends AbstractMojo
 {
 
 	/**
-	 * Location of the file.
+	 * Location of the folder to look for the BDB database.  May be a direct link to a "berkeley-db" folder, 
+	 * or it may be a link to a "foo.bdb" folder which contains a "berkeley-db" folder, or it may be a link 
+	 * to the parent of a "foo.bdb" folder.
 	 * 
 	 * @parameter
 	 * @required
 	 */
 	private String bdbFolderLocation;
+	
+	/**
+	 * Location of the folder that contains the user profiles
+	 * 
+	 * @parameter
+	 * @optional
+	 */
+	private File userProfileFolderLocation;
 
 	/*
 	 * (non-Javadoc)
@@ -60,8 +71,10 @@ public class Setup extends AbstractMojo
 			getLog().info("Setup terminology store");
 			File bdbFolderFile = new File(bdbFolderLocation);
 
+			bdbFolderFile = DBLocator.findDBFolder(bdbFolderFile);
+			
 			System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolderFile.getCanonicalPath());
-			System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, bdbFolderFile.getCanonicalPath());
+			System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, DBLocator.findLuceneIndexFolder(bdbFolderFile).getCanonicalPath());
 
 			getLog().info("  Setup AppContext, bdb location = " + bdbFolderFile.getCanonicalPath());
 			AppContext.setup();
@@ -77,7 +90,7 @@ public class Setup extends AbstractMojo
 			getLog().info("Done setting up terminology store");
 			
 			getLog().info("Set Automation User");
-			AppContext.getService(UserProfileManager.class).configureAutomationMode();
+			AppContext.getService(UserProfileManager.class).configureAutomationMode(userProfileFolderLocation);
 		}
 		catch (Exception e)
 		{
