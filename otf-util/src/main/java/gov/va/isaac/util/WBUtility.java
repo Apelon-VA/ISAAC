@@ -130,13 +130,15 @@ public class WBUtility {
 			try {
 				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
-				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
+				int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
 
 				// Use the default edit path in the configuration
-				editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
-				LOG.info("Using path " + 
+				if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
+				  editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
+				  LOG.info("Using path " + 
 				    AppContext.getAppConfiguration().getDefaultEditPathName()
 				    + " as the Edit Coordinate");
+				}
 				// Override edit path nid 
 				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
             } catch (NullPointerException e) {
@@ -688,17 +690,19 @@ public class WBUtility {
 		if (vc == null) {
           try {
               vc = StandardViewCoordinates.getSnomedStatedLatest();
-              // Use the default edit path in the configuration
-              LOG.info("Using path "
+              // Use the default view path in the configuration
+              if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
+                LOG.info("Using path "
                   + AppContext.getAppConfiguration().getDefaultViewPathName()
                   + " as the View Coordinate");
-              // Start with standard view coordinate and override the path setting to
-              // use the ISAAC development path
-              Position position = 
+                // Start with standard view coordinate and override the path setting to
+                // use the ISAAC development path
+                Position position = 
                   dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
                       UUID.fromString(AppContext.getAppConfiguration()
                           .getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
-              vc.setViewPosition(position);
+                vc.setViewPosition(position);
+              }
           } catch (NullPointerException e) {
             LOG.error("View path UUID does not exist", e);
           } catch (IOException e) {
