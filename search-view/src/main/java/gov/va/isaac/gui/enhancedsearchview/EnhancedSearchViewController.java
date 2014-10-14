@@ -809,10 +809,12 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			if (! validateSearchViewModel(model, "Failed loading saved search " + displayConcept)) {
 				return;
 			} else {
+				searchTypeComboBox.getSelectionModel().select(null);
 
 				searchViewModel.copy(model);
-				//initializeSearchTypeComboBox(searchViewModel.getSearchType());
+
 				searchTypeComboBox.getSelectionModel().select(searchViewModel.getSearchType().getSearchType());
+
 				refreshSearchViewModelBindings();
 				
 				searchFilterGridPane.getChildren().clear();
@@ -1635,18 +1637,30 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 					searchTypeControlsHbox.getChildren().add(addIsDescendantOfFilterButton);
 					if (searchType == SearchType.LUCENE) {
-						LuceneSearchTypeFilter displayableLuceneFilter = new LuceneSearchTypeFilter();
-						filter = displayableLuceneFilter;
+						LuceneSearchTypeFilter displayableLuceneFilter = null;
 
 						Label searchParamLabel = new Label("Lucene Param");
 						searchParamLabel.setPadding(new Insets(5.0));
 
 						TextField searchParamTextField = new TextField();
 
-						if (searchViewModel.getSearchType() != filter) {
+						if (searchViewModel.getSearchType() != null && searchViewModel.getSearchType().getSearchType() == searchType) {
+							searchParamTextField.setText(((LuceneSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty().get());
+							displayableLuceneFilter = ((LuceneSearchTypeFilter)searchViewModel.getSearchType());
+						} else {
+							displayableLuceneFilter = new LuceneSearchTypeFilter();
+							filter = displayableLuceneFilter;
 							searchViewModel.setSearchType(filter);
 						}
-						Bindings.bindBidirectional(searchParamTextField.textProperty(), ((LuceneSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty());
+						searchParamTextField.textProperty().addListener(new ChangeListener<String>() {
+							@Override
+							public void changed(
+									ObservableValue<? extends String> observable,
+									String oldValue, String newValue) {
+								((LuceneSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty().set(newValue);
+								//LOG.debug("LUCENE searchParamTextField changed from \"{}\" to \"{}\".  SearchViewModel LuceneSearchTypeFilter search param is \"{}\"", oldValue, newValue, ((LuceneSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty().get());
+							}
+						});
 
 						searchParamTextField.setPadding(new Insets(5.0));
 						searchParamTextField.setPromptText("Enter search text");
@@ -1656,27 +1670,30 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 						searchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
 					} 
-					else if (searchType == SearchType.REGEXP) {
-						RegExpSearchTypeFilter displayableRegExpFilter = new RegExpSearchTypeFilter();
-
-						filter = displayableRegExpFilter;
-
-						Label searchParamLabel = new Label("RegExp Param");
-						searchParamLabel.setPadding(new Insets(5.0));
-
-						TextField searchParamTextField = new TextField();
-
-						searchViewModel.setSearchType(filter);
-						Bindings.bindBidirectional(searchParamTextField.textProperty(), ((RegExpSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty());
-
-						searchParamTextField.setPadding(new Insets(5.0));
-						searchParamTextField.setPromptText("Enter search text");
-						if (displayableRegExpFilter.getSearchParameter() != null) {
-							searchParamTextField.setText(displayableRegExpFilter.getSearchParameter());
-						}
-
-						searchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
-					} else {
+//					else if (searchType == SearchType.REGEXP) {
+//						RegExpSearchTypeFilter displayableRegExpFilter = new RegExpSearchTypeFilter();
+//
+//						filter = displayableRegExpFilter;
+//
+//						Label searchParamLabel = new Label("RegExp Param");
+//						searchParamLabel.setPadding(new Insets(5.0));
+//
+//						TextField searchParamTextField = new TextField();
+//
+//						searchViewModel.setSearchType(filter);
+//						
+//						((RegExpSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty().set("");
+//						Bindings.bindBidirectional(searchParamTextField.textProperty(), ((RegExpSearchTypeFilter)searchViewModel.getSearchType()).getSearchParameterProperty());
+//
+//						searchParamTextField.setPadding(new Insets(5.0));
+//						searchParamTextField.setPromptText("Enter search text");
+//						if (displayableRegExpFilter.getSearchParameter() != null) {
+//							searchParamTextField.setText(displayableRegExpFilter.getSearchParameter());
+//						}
+//
+//						searchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
+//					}
+					else {
 						throw new RuntimeException("Unsupported SearchType " + searchType);
 					}
 
@@ -1691,7 +1708,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			initializeSearchResultsTable();
 		});
 
-		searchTypeComboBox.setItems(FXCollections.observableArrayList(SearchType.values()));
+		searchTypeComboBox.setItems(FXCollections.observableArrayList(SearchType.LUCENE));
 		searchTypeComboBox.getSelectionModel().select(SearchType.LUCENE);
 	}
 

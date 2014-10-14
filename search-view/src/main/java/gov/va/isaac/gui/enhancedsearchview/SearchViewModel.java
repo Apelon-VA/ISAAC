@@ -92,7 +92,7 @@ public class SearchViewModel {
 		name.set(other.getName());
 		description.set(other.getDescription());
 		//if (other.getSearchType() == null || searchTypeFilterProperty.get() == null || searchTypeFilterProperty.get().getClass() != other.getSearchType().getClass()) {
-			searchTypeFilterProperty.set(other.getSearchType());
+		searchTypeFilterProperty.set(other.getSearchType());
 		//} else {
 		//	searchTypeFilterProperty.get().copy(other.getSearchType());
 		//}
