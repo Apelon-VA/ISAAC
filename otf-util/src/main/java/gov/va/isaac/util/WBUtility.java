@@ -132,14 +132,15 @@ public class WBUtility {
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.SNOMED_CORE.getLenient().getConceptNid();
 
-				//If the ISAAC_DEV_PATH concept exists, use it.
-				if (dataStore.getConcept(ISAAC_DEV_PATH.getUuids()[0]).getUUIDs().size() > 0)
-				{
-					LOG.info("Using path " + ISAAC_DEV_PATH.getDescription() + " as the Edit Coordinate");
-					// Override edit path nid with "ISAAC development path"
-					editPathNid = ISAAC_DEV_PATH.getLenient().getConceptNid();
-				}
+				// Use the default edit path in the configuration
+				editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
+				LOG.info("Using path " + 
+				    AppContext.getAppConfiguration().getDefaultEditPathName()
+				    + " as the Edit Coordinate");
+				// Override edit path nid 
 				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
+            } catch (NullPointerException e) {
+	            LOG.error("Edit path UUID does not exist", e);
 			} catch (IOException e) {
 				LOG.error("error configuring edit coordinate", e);
 			}
@@ -685,19 +686,23 @@ public class WBUtility {
 	public static ViewCoordinate getViewCoordinate()
 	{
 		if (vc == null) {
-			try
-			{
-				vc = StandardViewCoordinates.getSnomedStatedLatest();
-				//If the ISAAC_DEV_PATH concept exists, use it.
-				if (dataStore.getConcept(ISAAC_DEV_PATH.getUuids()[0]).getUUIDs().size() > 0)
-				{
-					LOG.info("Using path " + ISAAC_DEV_PATH.getDescription() + " as the View Coordinate");
-					// Start with standard view coordinate and override the path setting to use the ISAAC development path
-					Position position = dataStore.newPosition(dataStore.getPath(ISAAC_DEV_PATH.getLenient().getConceptNid()), Long.MAX_VALUE);
-					vc.setViewPosition(position);
-				}
-			} catch (IOException e) {
-				LOG.error("Unexpected error fetching view coordinates!", e);
+          try {
+              vc = StandardViewCoordinates.getSnomedStatedLatest();
+              // Use the default edit path in the configuration
+              LOG.info("Using path "
+                  + AppContext.getAppConfiguration().getDefaultViewPathName()
+                  + " as the View Coordinate");
+              // Start with standard view coordinate and override the path setting to
+              // use the ISAAC development path
+              Position position = 
+                  dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
+                      UUID.fromString(AppContext.getAppConfiguration()
+                          .getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
+              vc.setViewPosition(position);
+          } catch (NullPointerException e) {
+            LOG.error("View path UUID does not exist", e);
+          } catch (IOException e) {
+            LOG.error("Unexpected error fetching view coordinates!", e);
 			}
 		}
 		
