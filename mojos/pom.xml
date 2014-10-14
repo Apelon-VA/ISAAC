@@ -45,5 +45,28 @@
 			<artifactId>otf-util</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		
+		<!-- Need to override the scope on these 3 logging packages - so users can 
+		configure logging during the mojo execution -->
+		<!-- The native logback implementation (note, the logback api comes from parent) -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Redirects Java logging into logback -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>
