@@ -31,6 +31,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
@@ -54,6 +55,7 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -73,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -119,6 +122,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Callback;
+
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -156,20 +160,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		public String toString() {
 			return display;
 		}
-	}
-
-	enum SearchType {
-		LUCENE("Lucene"),
-		REGEXP("RegExp");
-
-		private final String display;
-
-		private SearchType(String display) {
-			this.display = display;
-		}
-
-		@Override
-		public String toString() { return display; }
 	}
 
 	enum TaxonomyViewMode {
@@ -821,7 +811,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			} else {
 
 				searchViewModel.copy(model);
-				initializeSearchTypeComboBox(searchViewModel.getSearchType());
+				//initializeSearchTypeComboBox(searchViewModel.getSearchType());
+				searchTypeComboBox.getSelectionModel().select(searchViewModel.getSearchType().getSearchType());
 				refreshSearchViewModelBindings();
 				
 				searchFilterGridPane.getChildren().clear();
@@ -1603,16 +1594,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	}
 	
 	private void initializeSearchTypeComboBox() {
-		initializeSearchTypeComboBox(null);
-	}
-
-	private void initializeSearchTypeComboBox(final SearchTypeFilter<?> passedSearchTypeFilter) {
 		assert searchTypeComboBox != null : "fx:id=\"searchTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		searchTypeComboBox.setEditable(false);
 
 		// Force single selection
-		searchTypeComboBox.getSelectionModel().selectFirst();
 		searchTypeComboBox.setCellFactory((p) -> {
 			final ListCell<SearchType> cell = new ListCell<SearchType>() {
 				@Override
@@ -1649,7 +1635,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 
 					searchTypeControlsHbox.getChildren().add(addIsDescendantOfFilterButton);
 					if (searchType == SearchType.LUCENE) {
-						LuceneSearchTypeFilter displayableLuceneFilter = (passedSearchTypeFilter != null && passedSearchTypeFilter instanceof LuceneSearchTypeFilter) ? (LuceneSearchTypeFilter)passedSearchTypeFilter : new LuceneSearchTypeFilter();
+						LuceneSearchTypeFilter displayableLuceneFilter = new LuceneSearchTypeFilter();
 						filter = displayableLuceneFilter;
 
 						Label searchParamLabel = new Label("Lucene Param");
@@ -1671,7 +1657,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 						searchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
 					} 
 					else if (searchType == SearchType.REGEXP) {
-						RegExpSearchTypeFilter displayableRegExpFilter = (passedSearchTypeFilter != null && passedSearchTypeFilter instanceof RegExpSearchTypeFilter) ? (RegExpSearchTypeFilter)passedSearchTypeFilter : new RegExpSearchTypeFilter();
+						RegExpSearchTypeFilter displayableRegExpFilter = new RegExpSearchTypeFilter();
 
 						filter = displayableRegExpFilter;
 
@@ -1706,13 +1692,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		});
 
 		searchTypeComboBox.setItems(FXCollections.observableArrayList(SearchType.values()));
-		if (passedSearchTypeFilter == null || (passedSearchTypeFilter != null && (passedSearchTypeFilter instanceof LuceneSearchTypeFilter))) {
-			searchTypeComboBox.getSelectionModel().select(SearchType.LUCENE);
-		} else if (passedSearchTypeFilter != null && (passedSearchTypeFilter instanceof RegExpSearchTypeFilter)) {
-			searchTypeComboBox.getSelectionModel().select(SearchType.REGEXP);
-		} else {
-			throw new RuntimeException("Unsupported SearchTypeFilter " + passedSearchTypeFilter.getClass().getName() + ".  Must be either LuceneSearchTypeFilter or RegExpSearchTypeFilter.");
-		}
+		searchTypeComboBox.getSelectionModel().select(SearchType.LUCENE);
 	}
 
 	private void initializeAggregationTypeComboBox() {
@@ -1823,7 +1803,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			switch (aggregationTypeComboBox.getSelectionModel().getSelectedItem()) {
 			case CONCEPT:
 			{
-				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
 				builder.setCallback(this);
 				builder.setTaskId(Tasks.SEARCH.ordinal());
 				if (searchResultsFilter != null) {
@@ -1841,7 +1821,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 			case DESCRIPTION:
 			{
-				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter());
+				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
 				builder.setCallback(this);
 				builder.setTaskId(Tasks.SEARCH.ordinal());
 				if (searchResultsFilter != null) {
@@ -1867,6 +1847,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 		} catch (Exception e) {
 			LOG.error("Search failed unexpectedly...", e);
+			searchRunning.set(false);
 			ssh = null;  //force a null ptr in taskComplete, so an error is displayed.
 			taskComplete(0, null);
 		}

@@ -82,4 +82,12 @@ public class LuceneSearchTypeFilter implements SearchTypeFilter<LuceneSearchType
 	public void copy(LuceneSearchTypeFilter toCopy) {
 		searchParameter.set(toCopy.getSearchParameter());
 	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter#getSearchType()
+	 */
+	@Override
+	public SearchType getSearchType() {
+		return SearchType.LUCENE;
+	}
 }
