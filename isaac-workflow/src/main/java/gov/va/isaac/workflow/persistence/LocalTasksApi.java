@@ -20,6 +20,7 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
@@ -134,7 +135,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             		};
 
                 	for (ActionEventListener listener : actionEventListeners) {
-                		listener.handle(event);
+                		Utility.execute(() -> listener.handle(event));
                 	}
                 }
             } catch (SQLException ex) {
@@ -231,7 +232,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         		};
 
             	for (ActionEventListener listener : actionEventListeners) {
-            		listener.handle(event);
+            		Utility.execute(() -> listener.handle(event));
             	}
             }
         } catch (RuntimeException re) {
