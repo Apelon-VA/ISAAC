@@ -189,6 +189,7 @@ public class ImportView extends GridPane {
       task.cancel(true);
     }
     cancelButton.setText("Close");
+    requestCancel = true;
     resultLabel.setText("Successfully cancelled import.");
   }
   
@@ -332,6 +333,7 @@ public class ImportView extends GridPane {
       // Update UI.
       progressBar.setProgress(1);
       cancelButton.setText("Close");
+      requestCancel = true;
       if (requestCancel) {
         resultLabel.setText("Successfully cancelled imported.");
       } else {

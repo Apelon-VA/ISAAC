@@ -126,7 +126,7 @@ public class EConceptExporter extends CommonBase implements
     if (concept.getPrimordialUuid().toString().equals("")){
       System.out.println("Found it!");
     }
-    if (concept.getPathNid() == pathNid) {
+    if (Exporter.isQualifying(concept.getNid(), pathNid)) {
       count++;
       TtkConceptChronicle converted = ChronicleConverter.convert(concept);
       converted.writeExternal(dos);

@@ -574,9 +574,10 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
    */
   private void process(ConceptChronicleBI concept) throws Exception {
     boolean write = true;
-    if (concept.getVersion(viewCoordinate).getPathNid() != pathNid) {
-      write = false;
-    }
+    // NO NEED for this check because each component individually checks
+    //if (concept.getVersion(viewCoordinate).getPathNid() != pathNid) {
+    //  write = false;
+    //}
     if (write) {
       ConceptAttributeChronicleBI ca = concept.getConceptAttributes();
       processConceptAttribute(ca);
@@ -1350,7 +1351,6 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
-    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
     if (conceptsToProcess.isMember(cNid)) {
       count++;
       ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());

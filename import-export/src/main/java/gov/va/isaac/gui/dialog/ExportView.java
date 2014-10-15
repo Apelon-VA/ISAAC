@@ -254,6 +254,7 @@ public class ExportView extends GridPane {
       // Update UI.
       progressBar.setProgress(100);
       cancelButton.setText("Close");
+      requestCancel = true;
       if (requestCancel) {
         resultLabel.setText("Successfully cancelled export");
       } else {
@@ -272,6 +273,7 @@ public class ExportView extends GridPane {
       Throwable ex = getException();
       progressBar.setProgress(100);
       cancelButton.setText("Close");
+      requestCancel = true;
       // leave last comment on failure, e.g. do not set status label here
       resultLabel.setText("Failed to export data");
 
