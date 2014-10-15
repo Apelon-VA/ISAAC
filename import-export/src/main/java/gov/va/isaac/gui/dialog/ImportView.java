@@ -29,12 +29,11 @@ import gov.va.isaac.models.fhim.importer.FHIMImporter;
 import gov.va.isaac.models.hed.importer.HeDImporter;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import javax.xml.transform.TransformerConfigurationException;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -51,6 +50,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.stage.Stage;
+
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -250,7 +251,10 @@ public class ImportView extends GridPane {
     protected InformationModel call() throws Exception {
       InformationModel returnValue = null;
       // Do work - loop if .zip file case
+      boolean errorFound = false;
+      File f = File.createTempFile("importError", ".txt");
       if (this.fileName.endsWith(".zip")) {
+        FileWriter out = new FileWriter(f);
         ZipFile zipFile = new ZipFile(new File(this.fileName));
         int progress = 0;
         int maxProgress = Collections.list(zipFile.entries()).size();
@@ -269,7 +273,17 @@ public class ImportView extends GridPane {
           if (entry.getName().endsWith(".xml")
               || entry.getName().endsWith(".uml")) {
             InputStream stream = zipFile.getInputStream(entry);
-            returnValue = importHandler.importModel(stream);
+            try {
+              returnValue = importHandler.importModel(stream);
+            } catch (Exception e) {
+              // Add case to errors file
+              if (!errorFound) {
+                out.write("Problems importing:" + System.lineSeparator());
+              }
+              errorFound = true;
+              out.write(entry.getName() + " - " + e.getMessage() +
+                  System.lineSeparator());       
+            }
             stream.close();
           } else {
             Platform.runLater(() -> {
@@ -280,7 +294,8 @@ public class ImportView extends GridPane {
           progress++;
         }
         zipFile.close();
-
+        out.flush();
+        out.close();
       } else {
         Platform.runLater(() -> {
           statusLabel.setText("Processing " + fileName);
@@ -290,9 +305,15 @@ public class ImportView extends GridPane {
         });
         returnValue = importHandler.importModel(new File(fileName));
       }
-      Platform.runLater(() -> {
-        statusLabel.setText("done");
-      });
+      if (errorFound) {
+        Platform.runLater(() -> {
+          statusLabel.setText("Error loading models, see: " + f.getAbsolutePath());
+        });
+      } else {
+        Platform.runLater(() -> {
+          statusLabel.setText("done");
+        });     
+      }
       Platform.runLater(() -> {
         progressBar.setProgress(1);
       });
@@ -310,11 +331,11 @@ public class ImportView extends GridPane {
     protected void succeeded() {
       // Update UI.
       progressBar.setProgress(1);
+      cancelButton.setText("Close");
       if (requestCancel) {
         resultLabel.setText("Successfully cancelled imported.");
       } else {
-        statusLabel.setText("");
-        resultLabel.setText("Successfully imported model.");       
+        resultLabel.setText("Successfully imported model(s).");       
       }
     }
 
@@ -329,6 +350,7 @@ public class ImportView extends GridPane {
 
       // Update UI.
       progressBar.setProgress(1);
+      cancelButton.setText("Close");
       // leave last status value
       resultLabel.setText("Failed to import model.");
 
