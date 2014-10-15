@@ -123,8 +123,11 @@ public class EConceptExporter extends CommonBase implements
     throws Exception {
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
     allCount++;
-    if (concept.getPrimordialUuid().toString().equals("")){
-      System.out.println("Found it!");
+    if (LOG.isDebugEnabled())
+    {
+      if (concept.getPrimordialUuid().toString().equals("")){
+        LOG.debug("Found a concept with no primoridial UUID: {}", concept);
+      }
     }
     if (Exporter.isQualifying(concept.getNid(), pathNid)) {
       count++;

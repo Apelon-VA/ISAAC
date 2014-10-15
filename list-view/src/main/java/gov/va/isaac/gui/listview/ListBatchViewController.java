@@ -42,6 +42,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -100,7 +101,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
-import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -115,7 +115,6 @@ import au.com.bytecode.opencsv.CSVWriter;
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-@SuppressWarnings("deprecation")
 public class ListBatchViewController
 {
 	private enum LocalMenuItem {
@@ -414,7 +413,7 @@ public class ListBatchViewController
 											descs[i] = selected.get(i).getDescription();
 										}
 
-										//System.out.println(selected.size() + " item(s) selected: " + Arrays.toString(descs));
+										logger_.debug(selected.size() + " item(s) selected: " + Arrays.toString(descs));
 
 										return descs;
 									}
@@ -429,7 +428,7 @@ public class ListBatchViewController
 											nids.add(concept.getNid());
 										}
 
-										//System.out.println(selected.size() + " item(s) selected: " + nids);
+										logger_.debug(selected.size() + " item(s) selected: " + nids);
 
 										return nids;
 									}
