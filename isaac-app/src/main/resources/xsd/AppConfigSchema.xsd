@@ -192,6 +192,17 @@
             <xs:documentation>Database classifier.</xs:documentation>
           </xs:annotation>
         </xs:element>
+
+        <xs:element name="dbType" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Database artifact type.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Database artifact type.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
         
         <!-- Users - PLACEHOLDER -->       
     

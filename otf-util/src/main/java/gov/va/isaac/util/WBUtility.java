@@ -126,7 +126,6 @@ public class WBUtility {
 	}
 	
 	public static EditCoordinate getEC()  {
-      LOG.info("GET EC");
 	  if (editCoord == null) {
 			try {
 				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
@@ -689,7 +688,6 @@ public class WBUtility {
 	 */
 	public static ViewCoordinate getViewCoordinate()
 	{
-	  LOG.info("GET VC");
 	  if (vc == null) {
           try {
               vc = StandardViewCoordinates.getSnomedStatedLatest();

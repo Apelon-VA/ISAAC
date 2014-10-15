@@ -116,7 +116,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setDbGroupId(read.getDbGroupId());
 		setDbArtifactId(read.getDbArtifactId());
 		setDbVersion(read.getDbVersion());
-		setDbClassifier(read.getDbClassifier());
+        setDbClassifier(read.getDbClassifier());
+        setDbType(read.getDbType());
 		setApplicationTitle(read.getApplicationTitle());
 		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
 		setReleaseVersion(read.getReleaseVersion());
