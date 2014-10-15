@@ -30,6 +30,8 @@ import java.util.Hashtable;
 import java.util.UUID;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -41,7 +43,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
  */
 public class TerminologyHelperDrools
 {
-
+	private static final Logger LOG = LoggerFactory.getLogger(TerminologyHelperDrools.class);
 	private Hashtable<String, String> usspelling;
 	private Hashtable<String, String> ukspelling;
 	private String strSplitChars;
@@ -128,7 +130,7 @@ public class TerminologyHelperDrools
 		}
 		catch (Exception e)
 		{
-			//System.out.println("Exception in TerminologyHelperDrools.checkWordInList: " + e);
+			LOG.warn("Exception in getICSCatetory", e);
 		}
 		return retString;
 	}
@@ -308,7 +310,7 @@ public class TerminologyHelperDrools
 		}
 		catch (Exception e)
 		{
-			System.out.println("Exception in TerminologyHelperDrools.checkTermSpelling: " + e);
+			LOG.warn("Exception in checkTermSpelling", e);
 		}
 		return true;
 	}
@@ -358,7 +360,7 @@ public class TerminologyHelperDrools
 		}
 		catch (Exception e)
 		{
-			System.out.println("Exception in TerminologyHelperDrools.checkTermSpelling: " + e);
+			LOG.warn("Exception in getSpellingTerms", e);
 		}
 		return "";
 	}
@@ -388,7 +390,7 @@ public class TerminologyHelperDrools
 		}
 		catch (Exception e)
 		{
-			//System.out.println("Exception in TerminologyHelperDrools.LoadProperties: " + e);
+			LOG.warn("Exception in loadProperties", e);
 			propsLoaded = false;
 			return false;
 		}
