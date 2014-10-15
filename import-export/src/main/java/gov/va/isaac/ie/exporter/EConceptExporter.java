@@ -121,9 +121,11 @@ public class EConceptExporter extends CommonBase implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
-    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
     allCount++;
+    if (concept.getPrimordialUuid().toString().equals("")){
+      System.out.println("Found it!");
+    }
     if (concept.getPathNid() == pathNid) {
       count++;
       TtkConceptChronicle converted = ChronicleConverter.convert(concept);

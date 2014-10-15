@@ -340,18 +340,6 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="workflowPromotionPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The UUID for the Path to which content published via Workflow will automatically be promoted to.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-
         <xs:element name="defaultEditPathName" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -404,6 +392,17 @@
               </jxb:property>
             </xs:appinfo>
             <xs:documentation>The worfklow promotion path name</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
+        <xs:element name="workflowPromotionPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>The UUID for the Path to which content published via Workflow will automatically be promoted to.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>The UUID for the Path to which content published via Workflow will automatically be promoted to.</xs:documentation>
           </xs:annotation>
         </xs:element>
 

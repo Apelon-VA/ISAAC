@@ -418,5 +418,4 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
     return null;
   }
 
-
 }

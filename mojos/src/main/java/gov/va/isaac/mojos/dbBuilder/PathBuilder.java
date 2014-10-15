@@ -167,6 +167,8 @@ public class PathBuilder extends AbstractMojo {
     // Create concept and mark for commit
     ConceptChronicleBI pathConcept = getBuilder().construct(newConCB);
     dataStore.addUncommitted(pathConcept);
+    dataStore.commit();
+    getLog().info("New Path " + pathConcept.getPrimordialUuid());
 
     // Add to path refset
     ConceptChronicleBI pathRefset =
@@ -175,6 +177,7 @@ public class PathBuilder extends AbstractMojo {
         dataStore.getConcept(PATH.getLenient().getPrimordialUuid());
     getLog().info("  Add new path concept to PATH_REFSET");
     addNidMember(pathRefset, path, pathConcept);
+    dataStore.commit();
 
     // Add each origin to PATH_ORIGIN_REFSET
     ConceptChronicleBI pathOriginRefset =
@@ -208,7 +211,6 @@ public class PathBuilder extends AbstractMojo {
 
     // Commit uncommitted changes
     dataStore.commit();
-    getLog().info("New Path " + pathConcept.getPrimordialUuid());
 
     getLog().info("WRITE path refset info");
     ConceptChronicleBI paths =
@@ -244,15 +246,19 @@ public class PathBuilder extends AbstractMojo {
    */
   private void addNidMember(ConceptChronicleBI refCon,
     ConceptChronicleBI refComp, ConceptChronicleBI value) throws Exception {
-    // GENERATE_HASH is OK because we only have one entry per member
-    // EXCLUDE is OK because these things dont have connected reset members
+    //getLog().info("  add to path refset: " + refCon.getPrimordialUuid() + ", " 
+    //    + refComp.getPrimordialUuid() + ", " + value.getPrimordialUuid());
+
+    // GENERATE_REFEX_CONTENT_HASH is ideal here but there is an OTF bug
+    // Use GENERATE_RANDOM for now instead.
     RefexCAB newMember =
         new RefexCAB(RefexType.CID, refComp.getNid(), refCon.getNid(),
-            IdDirective.GENERATE_HASH, RefexDirective.EXCLUDE);
+            IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
     newMember.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, value.getNid());
 
     @SuppressWarnings("unused")
     RefexChronicleBI<?> newMemChron = getBuilder().construct(newMember);
+    //getLog().info("  new member uuid = " + newMemChron.getPrimordialUuid());
 
     if (!refCon.isAnnotationStyleRefex()) {
       dataStore.addUncommitted(refCon);
@@ -272,6 +278,9 @@ public class PathBuilder extends AbstractMojo {
    */
   private void addNidLongMember(ConceptChronicleBI refCon,
     ConceptChronicleBI refComp, ConceptChronicleBI value) throws Exception {
+    //getLog().info("  add to path origins refset: " + refCon.getPrimordialUuid() + ", " 
+    //    + refComp.getPrimordialUuid() + ", " + value.getPrimordialUuid());
+
     RefexCAB newMember;
     // GENERATE_REFEX_CONTENT_HASH is ideal here but there is an OTF bug
     // Use GENERATE_RANDOM for now instead.
@@ -287,6 +296,7 @@ public class PathBuilder extends AbstractMojo {
 
     @SuppressWarnings("unused")
     RefexChronicleBI<?> newMemChron = getBuilder().construct(newMember);
+    //getLog().info("  new member uuid = " + newMemChron.getPrimordialUuid());
     if (!refCon.isAnnotationStyleRefex()) {
       dataStore.addUncommitted(refCon);
     } else {
@@ -318,6 +328,7 @@ public class PathBuilder extends AbstractMojo {
   public static EditCoordinate getEC() throws ValidationException, IOException {
     int authorNid = TermAux.USER.getLenient().getConceptNid();
     int module = Snomed.CORE_MODULE.getLenient().getNid();
+    // Should be able to be wb aux but this causes weird problems
     int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
     return new EditCoordinate(authorNid, module, editPathNid);
   }

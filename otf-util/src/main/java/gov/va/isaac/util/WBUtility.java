@@ -126,13 +126,15 @@ public class WBUtility {
 	}
 	
 	public static EditCoordinate getEC()  {
-		if (editCoord == null) {
+      LOG.info("GET EC");
+	  if (editCoord == null) {
 			try {
 				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
 
 				// Use the default edit path in the configuration
+                LOG.info("  DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
 				if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
 				  editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
 				  LOG.info("Using path " + 
@@ -687,10 +689,12 @@ public class WBUtility {
 	 */
 	public static ViewCoordinate getViewCoordinate()
 	{
-		if (vc == null) {
+	  LOG.info("GET VC");
+	  if (vc == null) {
           try {
               vc = StandardViewCoordinates.getSnomedStatedLatest();
               // Use the default view path in the configuration
+              LOG.info("  DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
               if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
                 LOG.info("Using path "
                   + AppContext.getAppConfiguration().getDefaultViewPathName()
