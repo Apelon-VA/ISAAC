@@ -46,6 +46,7 @@ public class CompositeSearchResult {
 	protected CompositeSearchResult(ComponentVersionBI matchingComponent, float score) {
 		this.matchingComponents.add(matchingComponent);
 		this.bestScore = score;
+		//TODO fix this - this tosses a null ptr if the search result that was found isn't visible on the current path...
 		this.containingConcept = WBUtility.getConceptVersion(matchingComponent.getConceptNid());
 	}
 	
