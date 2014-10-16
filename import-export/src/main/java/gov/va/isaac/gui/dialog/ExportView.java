@@ -101,6 +101,9 @@ public class ExportView extends GridPane {
     super();
 
     // GUI placeholders.
+    this.setHgap(10);
+    this.setVgap(10);
+    this.setPadding(new javafx.geometry.Insets(10,10,10,10));
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Export Type: ", exportTypeLabel);
     builder.addRow("Path Name: ", pathNameLabel);
@@ -254,13 +257,13 @@ public class ExportView extends GridPane {
       // Update UI.
       progressBar.setProgress(100);
       cancelButton.setText("Close");
-      requestCancel = true;
       if (requestCancel) {
         resultLabel.setText("Successfully cancelled export");
       } else {
         statusLabel.setText("");
         resultLabel.setText("Successfully exported data");
       }
+      requestCancel = true;
     }
 
     /*

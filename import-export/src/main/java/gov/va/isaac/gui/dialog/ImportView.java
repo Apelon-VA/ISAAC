@@ -31,7 +31,9 @@ import gov.va.isaac.models.hed.importer.HeDImporter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -89,10 +91,10 @@ public class ImportView extends GridPane {
   /** The cancel button. */
   final Button cancelButton = new Button("Cancel");
 
-  /**  The importer task. */
+  /** The importer task. */
   private Task<InformationModel> task = null;
-  
-  /**  The request cancel. */
+
+  /** The request cancel. */
   boolean requestCancel = false;
 
   /**
@@ -102,6 +104,9 @@ public class ImportView extends GridPane {
     super();
 
     // GUI placeholders.
+    this.setHgap(10);
+    this.setVgap(10);
+    this.setPadding(new javafx.geometry.Insets(10,10,10,10));
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Information Model: ", modelTypeLabel);
     builder.addRow("File Name: ", fileNameLabel);
@@ -128,9 +133,10 @@ public class ImportView extends GridPane {
    *
    * @param modelType the model type
    * @param fileName the file name
-   * @throws TransformerConfigurationException 
+   * @throws TransformerConfigurationException
    */
-  public void doImport(InformationModelType modelType, final String fileName) throws TransformerConfigurationException {
+  public void doImport(InformationModelType modelType, final String fileName)
+    throws TransformerConfigurationException {
     Preconditions.checkNotNull(modelType);
     Preconditions.checkNotNull(fileName);
 
@@ -179,7 +185,7 @@ public class ImportView extends GridPane {
     LOG.info("Cancel import.");
     if (requestCancel) {
       // complete the process
-      ((Stage)getScene().getWindow()).close();    
+      ((Stage) getScene().getWindow()).close();
       return;
     }
 
@@ -192,13 +198,14 @@ public class ImportView extends GridPane {
     requestCancel = true;
     resultLabel.setText("Successfully cancelled import.");
   }
-  
+
   /**
    * Sets the FX constraints.
    */
   private void setConstraints() {
 
     // Column 1 has empty constraints.
+    ColumnConstraints c1 = new ColumnConstraints();
     this.getColumnConstraints().add(new ColumnConstraints());
 
     // Column 2 should grow to fill space.
@@ -253,7 +260,13 @@ public class ImportView extends GridPane {
       InformationModel returnValue = null;
       // Do work - loop if .zip file case
       boolean errorFound = false;
-      File f = File.createTempFile("importError", ".txt");
+      SimpleDateFormat df = new SimpleDateFormat("YYYYmmDD");
+      File f =
+          new File(System.getenv("user.home"), 
+              "importError." + df.format(new Date()) + ".txt");
+      if (f.exists()) {
+        f.delete();
+      }
       if (this.fileName.endsWith(".zip")) {
         FileWriter out = new FileWriter(f);
         ZipFile zipFile = new ZipFile(new File(this.fileName));
@@ -268,7 +281,7 @@ public class ImportView extends GridPane {
           });
           final int progressFinal = progress;
           Platform.runLater(() -> {
-            progressBar.setProgress((progressFinal*1.0) / maxProgress);
+            progressBar.setProgress((progressFinal * 1.0) / maxProgress);
           });
           // Process each .zip or .uml file
           if (entry.getName().endsWith(".xml")
@@ -282,8 +295,8 @@ public class ImportView extends GridPane {
                 out.write("Problems importing:" + System.lineSeparator());
               }
               errorFound = true;
-              out.write(entry.getName() + " - " + e.getMessage() +
-                  System.lineSeparator());       
+              out.write(entry.getName() + " - " + e.getMessage()
+                  + System.lineSeparator());
             }
             stream.close();
           } else {
@@ -308,12 +321,13 @@ public class ImportView extends GridPane {
       }
       if (errorFound) {
         Platform.runLater(() -> {
-          statusLabel.setText("Error loading models, see: " + f.getAbsolutePath());
+          statusLabel.setText("Error loading models, see: "
+              + f.getAbsolutePath());
         });
       } else {
         Platform.runLater(() -> {
           statusLabel.setText("done");
-        });     
+        });
       }
       Platform.runLater(() -> {
         progressBar.setProgress(1);
@@ -333,12 +347,12 @@ public class ImportView extends GridPane {
       // Update UI.
       progressBar.setProgress(1);
       cancelButton.setText("Close");
-      requestCancel = true;
       if (requestCancel) {
         resultLabel.setText("Successfully cancelled imported.");
       } else {
-        resultLabel.setText("Successfully imported model(s).");       
+        resultLabel.setText("Successfully imported model(s).");
       }
+      requestCancel = true;
     }
 
     /*
