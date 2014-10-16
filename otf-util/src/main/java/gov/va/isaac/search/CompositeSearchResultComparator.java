@@ -49,20 +49,23 @@ public class CompositeSearchResultComparator implements Comparator<CompositeSear
 			return -1;
 		}
 		
+		if (o1.getContainingConcept() == null || o2.getContainingConcept() == null)
+		{
+			//can't do anything.... 
+			return 0;
+		}
 		// else same score
 		String o1FSN = null;
 		try {
 			o1FSN = o1.getContainingConcept().getFullySpecifiedDescription().getText().trim();
 		} catch (IOException | ContradictionException e) {
 			LOG.error("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
-			e.printStackTrace();
 		}
 		String o2FSN = null;
 		try {
 			o2FSN = o2.getContainingConcept().getFullySpecifiedDescription().getText().trim();
 		} catch (IOException | ContradictionException e) {
 			LOG.error("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
-			e.printStackTrace();
 		}
 		int fsnComparison = o1FSN.compareTo(o2FSN);
 		if (fsnComparison != 0) {
@@ -75,7 +78,6 @@ public class CompositeSearchResultComparator implements Comparator<CompositeSear
 			o1PreferredDescription = o1.getContainingConcept().getPreferredDescription().getText().trim();
 		} catch (IOException | ContradictionException e) {
 			LOG.error("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
-			e.printStackTrace();
 		}
 
 		String o2PreferredDescription = null;

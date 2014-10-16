@@ -318,10 +318,9 @@ public class SearchViewController implements TaskCompleteCallback
 							box.setFillWidth(true);
 							
 							final ConceptVersionBI wbConcept = item.getContainingConcept();
-							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "error - see log");
-							
+							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "Not on path!");
 						
-							if (item.getMatchingComponents().iterator().next() instanceof RefexDynamicVersionBI<?>)
+							if (item.getMatchingComponents().size() > 0 && item.getMatchingComponents().iterator().next() instanceof RefexDynamicVersionBI<?>)
 							{
 								HBox hb = new HBox();
 								Label concept = new Label("Referenced Concept");
@@ -424,11 +423,13 @@ public class SearchViewController implements TaskCompleteCallback
 									List<String> items = new ArrayList<>();
 									for (CompositeSearchResult currentItem : searchResults.getSelectionModel().getSelectedItems())
 									{
-										//items.add(source.getTableColumn().getCellData(index).toString());
-										final ConceptVersionBI currentWbConcept = currentItem.getContainingConcept();
-										final String currentPreferredText = (currentWbConcept != null ? WBUtility.getDescription(currentWbConcept) : "error - see log");
-
-										items.add(currentPreferredText);
+										ConceptVersionBI currentWbConcept = currentItem.getContainingConcept();
+										if (currentWbConcept == null)
+										{
+											//not on path, most likely
+											continue;
+										}
+										items.add(WBUtility.getDescription(currentWbConcept));
 									}
 
 									String[] itemArray = items.toArray(new String[items.size()]);
@@ -445,6 +446,11 @@ public class SearchViewController implements TaskCompleteCallback
 
 									for (CompositeSearchResult r : searchResults.getSelectionModel().getSelectedItems())
 									{
+										if (r.getContainingConcept() == null)
+										{
+											//not on path
+											continue;
+										}
 										nids.add(r.getContainingConcept().getNid());
 									}
 									return nids;
@@ -474,7 +480,10 @@ public class SearchViewController implements TaskCompleteCallback
 				CompositeSearchResult dragItem = searchResults.getSelectionModel().getSelectedItem();
 				if (dragItem != null)
 				{
-					return dragItem.getContainingConcept() + "";
+					if (dragItem.getContainingConcept() != null)
+					{
+						return dragItem.getContainingConcept() + "";
+					}
 				}
 				return null;
 			}
