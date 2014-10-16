@@ -103,7 +103,7 @@ public class ExportView extends GridPane {
     // GUI placeholders.
     this.setHgap(10);
     this.setVgap(10);
-    this.setPadding(new javafx.geometry.Insets(10,10,10,10));
+    this.setPadding(new javafx.geometry.Insets(10, 10, 10, 10));
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Export Type: ", exportTypeLabel);
     builder.addRow("Path Name: ", pathNameLabel);
@@ -112,7 +112,11 @@ public class ExportView extends GridPane {
     progressBar.setMinWidth(400);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
-    builder.addRow("", cancelButton);
+    @SuppressWarnings("deprecation")
+    javafx.scene.layout.HBox hbox = javafx.scene.layout.HBoxBuilder.create()
+    .alignment(javafx.geometry.Pos.TOP_CENTER).children(cancelButton).build();
+
+    builder.addRow(hbox);
     cancelButton.setOnAction(new EventHandler<ActionEvent>() {
       @Override
       public void handle(ActionEvent event) {

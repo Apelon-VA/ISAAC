@@ -114,7 +114,11 @@ public class ImportView extends GridPane {
     progressBar.setMinWidth(400);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
-    builder.addRow("", cancelButton);
+    @SuppressWarnings("deprecation")
+    javafx.scene.layout.HBox hbox = javafx.scene.layout.HBoxBuilder.create()
+    .alignment(javafx.geometry.Pos.TOP_CENTER).children(cancelButton).build();
+
+    builder.addRow(hbox);
     cancelButton.setOnAction(new EventHandler<ActionEvent>() {
       @Override
       public void handle(ActionEvent event) {
@@ -205,7 +209,6 @@ public class ImportView extends GridPane {
   private void setConstraints() {
 
     // Column 1 has empty constraints.
-    ColumnConstraints c1 = new ColumnConstraints();
     this.getColumnConstraints().add(new ColumnConstraints());
 
     // Column 2 should grow to fill space.
