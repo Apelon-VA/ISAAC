@@ -90,9 +90,6 @@ import org.slf4j.LoggerFactory;
  * @author jefron
  */
 public class WBUtility {
-	//TODO we need to look up paths dynamically in the DB, let the user choose - store the setting / default somewhere in the DB (or user profile?)
-	private static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
-
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
@@ -125,25 +122,25 @@ public class WBUtility {
 		return dataBuilder;
 	}
 	
-	public static EditCoordinate getEC()  {
-	  if (editCoord == null) {
+	public static EditCoordinate getEC() {
+		if (editCoord == null) {
 			try {
 				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
 
 				// Use the default edit path in the configuration
-                LOG.info("  DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
+				LOG.info("DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
 				if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
-				  editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
-				  LOG.info("Using path " + 
-				    AppContext.getAppConfiguration().getDefaultEditPathName()
-				    + " as the Edit Coordinate");
+					editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
+					LOG.info("Using path " + 
+					AppContext.getAppConfiguration().getDefaultEditPathName()
+					+ " as the Edit Coordinate");
 				}
 				// Override edit path nid 
-				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
-            } catch (NullPointerException e) {
-	            LOG.error("Edit path UUID does not exist", e);
+				editCoord = new EditCoordinate(authorNid, module, editPathNid);
+			} catch (NullPointerException e) {
+				LOG.error("Edit path UUID does not exist", e);
 			} catch (IOException e) {
 				LOG.error("error configuring edit coordinate", e);
 			}
@@ -216,7 +213,7 @@ public class WBUtility {
 							bestFound = descVer.getText();
 						}
 					} else if ((descVer.getTypeNid() == getSynonymTypeNid() || descVer.getTypeNid() == getSynonymRf1TypeNid()) && 
-							   isPreferred(descVer.getAnnotations())) {
+							isPreferred(descVer.getAnnotations())) {
 						if (descVer.getStatus() == Status.ACTIVE) {
 							if (!ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN()) {
 								return descVer.getText();
@@ -688,27 +685,27 @@ public class WBUtility {
 	 */
 	public static ViewCoordinate getViewCoordinate()
 	{
-	  if (vc == null) {
-          try {
-              vc = StandardViewCoordinates.getSnomedStatedLatest();
-              // Use the default view path in the configuration
-              LOG.info("  DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
-              if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
-                LOG.info("Using path "
-                  + AppContext.getAppConfiguration().getDefaultViewPathName()
-                  + " as the View Coordinate");
-                // Start with standard view coordinate and override the path setting to
-                // use the ISAAC development path
-                Position position = 
-                  dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
-                      UUID.fromString(AppContext.getAppConfiguration()
-                          .getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
-                vc.setViewPosition(position);
-              }
-          } catch (NullPointerException e) {
-            LOG.error("View path UUID does not exist", e);
-          } catch (IOException e) {
-            LOG.error("Unexpected error fetching view coordinates!", e);
+		if (vc == null) {
+			try {
+				vc = StandardViewCoordinates.getSnomedStatedLatest();
+				// Use the default view path in the configuration
+				LOG.info("	DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
+				if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
+				LOG.info("Using path "
+					+ AppContext.getAppConfiguration().getDefaultViewPathName()
+					+ " as the View Coordinate");
+				// Start with standard view coordinate and override the path setting to
+				// use the ISAAC development path
+				Position position = 
+					dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
+						UUID.fromString(AppContext.getAppConfiguration()
+							.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
+				vc.setViewPosition(position);
+				}
+			} catch (NullPointerException e) {
+			LOG.error("View path UUID does not exist", e);
+			} catch (IOException e) {
+			LOG.error("Unexpected error fetching view coordinates!", e);
 			}
 		}
 		
@@ -799,7 +796,7 @@ public class WBUtility {
 	{
 		ArrayList<ConceptVersionBI> results = new ArrayList<>();
 		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getOriginNid()));
@@ -818,7 +815,7 @@ public class WBUtility {
 	{
 		Set<ConceptVersionBI> results = new HashSet<>();
 		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getDestinationNid()));
@@ -941,7 +938,7 @@ public class WBUtility {
 		dataStore.addUncommittedNoChecks(con);
 	}
 	
-	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException  {
+	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException {
 		ConceptChronicleBI pathRefset =
 				dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
 			Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
@@ -986,19 +983,19 @@ public class WBUtility {
 		ComponentChronicleBI<?> cbi = null;
 		
 		if (type == ComponentType.Concept) {
-			ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			cbi = getBuilder().construct(cab);
 		} else if (type == ComponentType.Description) {
-			DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			cbi = getBuilder().construct(cab);
 		} else if (type == ComponentType.Relationship) {
-			RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			cbi = getBuilder().construct(cab);
 		} else if (type == ComponentType.Refex) {
-			RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			cbi = getBuilder().construct(cab);
 		} else if (type == ComponentType.RefexDynamic) {
-			RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			cbi = getBuilder().construct(cab);
 		}
 		
