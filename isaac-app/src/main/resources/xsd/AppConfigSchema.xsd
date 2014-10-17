@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.0"
   elementFormDefault="qualified">
-  
+
 
 <!-- Version 2014/10/08 -->
 <!-- 
@@ -16,7 +16,7 @@
   <xs:element name="isaacAppConfig">
     <xs:complexType>
       <xs:sequence>
-			
+
         <xs:element name="archetypeGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -295,7 +295,7 @@
             <xs:documentation>Extension namespace.</xs:documentation>
           </xs:annotation>
         </xs:element>
-				
+
         <xs:element name="changeSetUrl" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -328,7 +328,7 @@
             <xs:documentation>The URI to this document.</xs:documentation>
           </xs:annotation>
         </xs:element>  
-  				
+
         <xs:element name="workflowServerUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -339,7 +339,7 @@
             <xs:documentation>The full URL for the REST API of the KIE Workflow server.</xs:documentation>
           </xs:annotation>
         </xs:element>
-				
+
         <xs:element name="workflowServerDeploymentId" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
