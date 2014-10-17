@@ -153,7 +153,6 @@ public class WorkflowInitiationViewController {
 
 		// TODO: must move to model to handle other WorkflowProcessModel types
 		instructionsTextArea.clear();
-		promotionPathCoordinateLabel.setText("");
 
 		promotionPathCoordinateLabel.setText(getDefaultPromotionPathCoordinateTextFieldContent());
 
@@ -177,16 +176,18 @@ public class WorkflowInitiationViewController {
 	}
 
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
-		if (promotionPathUUID == null)
-		{
-			return "";
-		}
-		try {
-			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
-		} catch (IOException | ContradictionException e) {
-			return "";
-		}
+		
+		return "A test promotion path coordinate";
+//		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
+//		if (promotionPathUUID == null)
+//		{
+//			return "";
+//		}
+//		try {
+//			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
+//		} catch (IOException | ContradictionException e) {
+//			return "";
+//		}
 	}
 
 	// Private helper method to test validity of data required for save
@@ -336,8 +337,8 @@ public class WorkflowInitiationViewController {
 			//				return false;
 			//			}
 			if (promotionPathCoordinateLabel.getText() == null || promotionPathCoordinateLabel.getText().length() == 0) {
-				String msg = "Promotion view coordinate UUID text field is empty";
-				String details = "Must enter promotion view coordinate UUID into promotion coordinate text field";
+				String msg = "Promotion view coordinate is unset";
+				String details = "Promotion view coordinate must be set in config file app.xml";
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 				return false;
 			}
@@ -351,8 +352,8 @@ public class WorkflowInitiationViewController {
 			//		return false;
 			//	}
 			if (promotionPathCoordinateLabel.getText() == null || promotionPathCoordinateLabel.getText().length() == 0) {
-				String msg = "Promotion view coordinate UUID text field is empty";
-				String details = "Must enter promotion view coordinate UUID into promotion coordinate text field";
+				String msg = "Promotion view coordinate is unset";
+				String details = "Promotion view coordinate must be set in config file app.xml";
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, workflowInitiationView);
 				return false;
 			}

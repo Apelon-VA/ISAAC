@@ -95,7 +95,8 @@ public class WorkflowInboxController
 		@Override
 		public void handle(ActionEvent actionEvent) {
 			if (actionEvent.getActionStatus() == TaskActionStatus.Pending) {
-				for (LocalTask taskInTable : taskTable.getItems()) {
+				List<LocalTask> displayedItems = new ArrayList<>(taskTable.getItems());
+				for (LocalTask taskInTable : displayedItems) {
 					if (taskInTable.getId() == actionEvent.getTaskId()) {
 						taskTable.getItems().remove(taskInTable);
 						LOG.debug("ActionEventListener removed {} task id #{} due to pending {} action", taskInTable.getName(), taskInTable.getId(), taskInTable.getAction());
@@ -301,12 +302,14 @@ public class WorkflowInboxController
 		{
 			List<LocalTask> tasksForTable = taskService_.getOpenOwnedTasks();
 			// Remove (do not display) tasks with TaskActionStatus.Pending
+			List<LocalTask> tasksToRemove = new ArrayList<>();
 			for (LocalTask task : tasksForTable) {
 				if (task.getActionStatus() == TaskActionStatus.Pending) {
-					tasksForTable.remove(task);
+					tasksToRemove.add(task);
 				}
 			}
 
+			tasksForTable.removeAll(tasksToRemove);
 			taskTable.getItems().addAll(tasksForTable);
 		}
 		catch (DatastoreException e)
