@@ -45,6 +45,12 @@
 			<artifactId>otf-util</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<!-- Need this to get the app configuration schema -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>isaac-app</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 		
 		<!-- Need to override the scope on these 3 logging packages - so users can 
 		configure logging during the mojo execution -->
