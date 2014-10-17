@@ -499,6 +499,6 @@ public class LocalTasksApi implements LocalTasksServiceBI {
 	 */
 	@Override
 	public void removeActionEventListener(ActionEventListener listener) {
-		this.removeActionEventListener(listener);
+		this.actionEventListeners.remove(listener);
 	}
 }
