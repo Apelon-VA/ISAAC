@@ -135,7 +135,8 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             		};
 
                 	for (ActionEventListener listener : actionEventListeners) {
-                		Utility.execute(() -> listener.handle(event));
+                		//Utility.execute(() -> listener.handle(event));
+                		listener.handle(event);
                 	}
                 }
             } catch (SQLException ex) {
@@ -232,7 +233,8 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         		};
 
             	for (ActionEventListener listener : actionEventListeners) {
-            		Utility.execute(() -> listener.handle(event));
+            		//Utility.execute(() -> listener.handle(event));
+            		listener.handle(event);
             	}
             }
         } catch (RuntimeException re) {

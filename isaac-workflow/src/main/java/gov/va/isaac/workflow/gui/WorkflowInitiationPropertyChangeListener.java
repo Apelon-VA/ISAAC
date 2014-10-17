@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * {@link WorkflowInitializationPropertyChangeListener}
+ * {@link WorkflowInitiationPropertyChangeListener}
  *
  * @author jefron
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Singleton
-public class WorkflowInitializationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI
+public class WorkflowInitiationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI
 {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private boolean enabled = false;
@@ -63,7 +63,7 @@ public class WorkflowInitializationPropertyChangeListener implements PropertyCha
 	private static LocalTasksServiceBI localTasksService = null;
 	private static ProcessInstanceServiceBI processService = null;
 
-	private WorkflowInitializationPropertyChangeListener()
+	private WorkflowInitiationPropertyChangeListener()
 	{
 		// for HK2 to create
 	}

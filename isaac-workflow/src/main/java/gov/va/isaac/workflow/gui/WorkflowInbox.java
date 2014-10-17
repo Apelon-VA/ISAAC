@@ -146,7 +146,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 					}
 					catch (IOException e)
 					{
-						LOG.error("Unexpected error initializing the Search View", e);
+						LOG.error("Unexpected error initializing the Workflow Inbox View", e);
 						return new Label("oops - check logs");
 					}
 				}

@@ -119,13 +119,14 @@ public class WorkflowHistoryHelper {
 		List<Map<String, String>> existingEntries = getHistoryEntries(task);
 		int numExistingEntries = existingEntries.size();
 		Map<String, String> newEntry = createNewHistoryEntry(task, action, outputVariables.get("out_comment"));
-		outputVariables.putAll(newEntry);
-		existingEntries.add(outputVariables);
+		//outputVariables.putAll(newEntry);
+		//existingEntries.add(outputVariables);
+		existingEntries.add(newEntry);
 
 		String serializedEntries = serializeMaps(existingEntries);
 		outputVariables.put(WF_HISTORY_MAP_VARIABLE_NAME, serializedEntries);
 
-		logger.debug("Added new history entry for task #{} with {} existing entries: {}", task.getId(), numExistingEntries, outputVariables);
+		logger.debug("Added new history entry for task #{} with {} existing entries: {}", task.getId(), numExistingEntries, existingEntries);
 	}
 
 	private static String serializeMaps(List<Map<String, String>> list) {
