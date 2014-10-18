@@ -45,4 +45,10 @@ public interface ApplicationWindowI
 	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
 	
 	public void ensureDockedViewIsVisble(DockedViewI view);
+	
+	/**
+	 * A utility call to enable access to the built-in ability of JavaFX to launch a (system) web browser
+	 * @param url
+	 */
+	public void browseURL(String url);
 }

@@ -72,6 +72,7 @@ public class AppController implements ShutdownBroadcastListenerI {
     private SplitPane mainSplitPane;
     private MenuBar menuBar;
     private BorderPane loadWait;
+    private boolean preloadExecuted = false;
 
     @Inject
     private IterableProvider<IsaacViewWithMenusI> moduleViews_;
@@ -231,7 +232,8 @@ public class AppController implements ShutdownBroadcastListenerI {
             LOG.debug("Preloading {}", service);
             service.loadRequested();
         }
-
+        preloadExecuted = true;
+        
         loadWait.getChildren().clear();
         
         AtomicLong loginFailCount = new AtomicLong(0);
@@ -333,12 +335,14 @@ public class AppController implements ShutdownBroadcastListenerI {
     @Override
     public void shutdown()
     {
-        //notify anything that was preloaded
-        for (ServicesToPreloadI service : preloadRequested_)
+        if (preloadExecuted)
         {
-            LOG.debug("Shutdown notify {}", service);
-            service.shutdown();
+            //notify anything that was preloaded
+            for (ServicesToPreloadI service : preloadRequested_)
+            {
+                LOG.debug("Shutdown notify {}", service);
+                service.shutdown();
+            }
         }
-        
     }
 }

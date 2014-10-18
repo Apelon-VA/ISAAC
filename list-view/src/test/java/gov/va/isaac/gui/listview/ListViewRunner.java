@@ -106,4 +106,12 @@ public class ListViewRunner extends Application implements ApplicationWindowI
 	{
 		
 	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#browseURL(java.lang.String)
+	 */
+	@Override
+	public void browseURL(String url)
+	{
+	}
 }
