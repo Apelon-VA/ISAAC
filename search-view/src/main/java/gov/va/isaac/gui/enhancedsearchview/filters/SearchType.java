@@ -18,18 +18,22 @@
  */
 
 /**
- * SearchTypeFilter
+ * SearchType
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
-/**
- * SearchTypeFilter
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- *
- */
-public interface SearchTypeFilter<T extends SearchTypeFilter<T>> extends Filter<T> {
-	SearchType getSearchType();
+public enum SearchType {
+	LUCENE("Lucene"),
+	REGEXP("RegExp");
+
+	private final String display;
+
+	private SearchType(String display) {
+		this.display = display;
+	}
+
+	@Override
+	public String toString() { return display; }
 }

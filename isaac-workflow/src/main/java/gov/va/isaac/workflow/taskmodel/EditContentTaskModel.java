@@ -37,27 +37,27 @@ import javafx.scene.control.TextArea;
  *
  */
 public class EditContentTaskModel extends TaskModel {
-	public enum InputVariable {
-		component_id("Component Id"),
-		component_name("Component Name"),
-		instructions("Instructions"),
-		edit_coordinate("Edit Coordinate");
-		
-		private final String labelName;
-		private InputVariable(String labelName) {
-			this.labelName = labelName;
-		}
-		
-		public String getLabelName() { return labelName; }
-		
-		public static InputVariable fromString(String str) {
-			try {
-				return valueOf(str);
-			} catch (Throwable t) {
-				return null;
-			}
-		}
-	}
+//	public enum InputVariable {
+//		component_id("Component Id"),
+//		component_name("Component Name"),
+//		instructions("Instructions"),
+//		edit_coordinate("Edit Coordinate");
+//		
+//		private final String labelName;
+//		private InputVariable(String labelName) {
+//			this.labelName = labelName;
+//		}
+//		
+//		public String getLabelName() { return labelName; }
+//		
+//		public static InputVariable fromString(String str) {
+//			try {
+//				return valueOf(str);
+//			} catch (Throwable t) {
+//				return null;
+//			}
+//		}
+//	}
 	
 	public enum OutputVariable {
 		out_comment("Comment");
@@ -95,9 +95,9 @@ public class EditContentTaskModel extends TaskModel {
 	 */
 	@Override
 	protected String getOutputVariableInputNodeLabelName(String variableName) {
-		if (InputVariable.fromString(variableName) != null) {
-			return InputVariable.fromString(variableName).getLabelName();
-		}
+//		if (InputVariable.fromString(variableName) != null) {
+//			return InputVariable.fromString(variableName).getLabelName();
+//		}
 
 		if (OutputVariable.fromString(variableName) != null) {
 			return OutputVariable.fromString(variableName).getLabelName();

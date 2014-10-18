@@ -101,6 +101,9 @@ public class ExportView extends GridPane {
     super();
 
     // GUI placeholders.
+    this.setHgap(10);
+    this.setVgap(10);
+    this.setPadding(new javafx.geometry.Insets(10, 10, 10, 10));
     GridPaneBuilder builder = new GridPaneBuilder(this);
     builder.addRow("Export Type: ", exportTypeLabel);
     builder.addRow("Path Name: ", pathNameLabel);
@@ -109,7 +112,11 @@ public class ExportView extends GridPane {
     progressBar.setMinWidth(400);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
-    builder.addRow("", cancelButton);
+    @SuppressWarnings("deprecation")
+    javafx.scene.layout.HBox hbox = javafx.scene.layout.HBoxBuilder.create()
+    .alignment(javafx.geometry.Pos.TOP_CENTER).children(cancelButton).build();
+
+    builder.addRow(hbox);
     cancelButton.setOnAction(new EventHandler<ActionEvent>() {
       @Override
       public void handle(ActionEvent event) {
@@ -253,12 +260,14 @@ public class ExportView extends GridPane {
     protected void succeeded() {
       // Update UI.
       progressBar.setProgress(100);
+      cancelButton.setText("Close");
       if (requestCancel) {
         resultLabel.setText("Successfully cancelled export");
       } else {
         statusLabel.setText("");
         resultLabel.setText("Successfully exported data");
       }
+      requestCancel = true;
     }
 
     /*
@@ -270,6 +279,8 @@ public class ExportView extends GridPane {
     protected void failed() {
       Throwable ex = getException();
       progressBar.setProgress(100);
+      cancelButton.setText("Close");
+      requestCancel = true;
       // leave last comment on failure, e.g. do not set status label here
       resultLabel.setText("Failed to export data");
 

@@ -24,6 +24,7 @@ import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+import gov.va.isaac.util.DBLocator;
 import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -73,7 +74,7 @@ public class App extends Application implements ApplicationWindowI{
 
         this.controller = new AppController();
 
-        primaryStage.getIcons().add(new Image("/icons/16x16/application-block.png"));
+        primaryStage.getIcons().add(new Image("/icons/application-icon.png"));
         String title = AppContext.getAppConfiguration().getApplicationTitle();
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(controller.getRoot()));
@@ -191,32 +192,34 @@ public class App extends Application implements ApplicationWindowI{
         }
         else
         {
+            File localBDBLocation = DBLocator.findDBFolder(bdbFolder);
+            File localLuceneLocation = DBLocator.findLuceneIndexFolder(localBDBLocation);
             
-            if (!bdbFolder.exists())
+            if (!localBDBLocation.exists())
             {
-                throw new FileNotFoundException("Couldn't find specified bdb data store '" + bdbFolder.getAbsolutePath() + "'");
+                throw new FileNotFoundException("Couldn't find specified bdb data store '" + localBDBLocation.getAbsolutePath() + "'");
             }
-            if (!bdbFolder.isDirectory())
+            if (!localBDBLocation.isDirectory())
             {
-                throw new IOException("The specified bdb data store: '" + bdbFolder.getAbsolutePath() + "' is not a folder");
+                throw new IOException("The specified bdb data store: '" + localBDBLocation.getAbsolutePath() + "' is not a folder");
             }
             
             if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
             {
-                System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolder.getCanonicalPath());
+                System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, localBDBLocation.getCanonicalPath());
             }
             else
             {
-                LOG.warn("The application specified '" + bdbFolder.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY 
+                LOG.warn("The application specified '" + localBDBLocation.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY 
                         + "is set to " + System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY + " this will override the application path"));
             }
             if (System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) == null)
             {
-                System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, bdbFolder.getCanonicalPath());
+                System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, localLuceneLocation.getCanonicalPath());
             }
             else
             {
-                LOG.warn("The application specified '" + bdbFolder.getCanonicalPath() + "' but the system property " + LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY 
+                LOG.warn("The application specified '" + localLuceneLocation.getCanonicalPath() + "' but the system property " + LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY 
                         + "is set to " + System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) + " this will override the application path");
             }
             
@@ -293,14 +296,6 @@ public class App extends Application implements ApplicationWindowI{
         f.set(null, AppContext.getServiceLocator());
         //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
         //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
-        
-        //This is a hack to make SecureRandom not block while waiting for entropy on Linux system. 
-        //This needs to be done early... otherwise, something else in the dependency chain inits the security system before 
-        //the static call in PasswordHasher.java can... and we get stuck waiting for entropy, which prevents user profiles from geing generated.
-        if (System.getProperty("os.name").equals("Linux"))
-        {
-            System.setProperty("java.security.egd", "file:/dev/./urandom");
-        }
         
         try
         {

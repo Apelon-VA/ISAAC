@@ -185,6 +185,15 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getDbClassifier();
+
+  /**
+   * Database archetype type.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getDbType();
+
   /**
    * The text string that is displayed in the ISAAC title bar, about box, and
    * other typical locations.

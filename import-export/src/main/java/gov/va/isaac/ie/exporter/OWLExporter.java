@@ -256,7 +256,7 @@ public class OWLExporter extends CommonBase implements
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
     LOG.debug("Process concept " + concept.getPrimordialUuid());
     allCount++;
-    if (concept.getPathNid() == pathNid) {
+    if (Exporter.isQualifying(concept.getNid(),pathNid)) {
       count++;
       convertToOWLObjects(concept);
     }

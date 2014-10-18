@@ -29,30 +29,25 @@ import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
-import gov.va.isaac.workflow.engine.RemoteWfEngine;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
 import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
 import org.jvnet.hk2.annotations.Service;
-import org.kie.api.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 /**
  * 
- * {@link WorkflowInitializationPropertyChangeListener}
+ * {@link WorkflowInitiationPropertyChangeListener}
  *
  * @author jefron
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
@@ -60,15 +55,15 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Singleton
-public class WorkflowInitializationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI
+public class WorkflowInitiationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI
 {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private boolean enabled = false;
 	private List<Integer> componentsToAdd;
 	private static LocalTasksServiceBI localTasksService = null;
-    private static ProcessInstanceServiceBI processService = null;
+	private static ProcessInstanceServiceBI processService = null;
 
-	private WorkflowInitializationPropertyChangeListener()
+	private WorkflowInitiationPropertyChangeListener()
 	{
 		// for HK2 to create
 	}
@@ -97,7 +92,7 @@ public class WorkflowInitializationPropertyChangeListener implements PropertyCha
 			ExtendedAppContext.getDataStore().addPropertyChangeListener(CONCEPT_EVENT.PRE_COMMIT, this);
 			enabled = true;
 			localTasksService = AppContext.getService(LocalTasksServiceBI.class);
-	        processService = AppContext.getService(ProcessInstanceServiceBI.class);
+			processService = AppContext.getService(ProcessInstanceServiceBI.class);
 		}
 	}
 
@@ -114,6 +109,12 @@ public class WorkflowInitializationPropertyChangeListener implements PropertyCha
 				componentsToAdd = identifyComponents(allConceptNids);
 			} else if (CONCEPT_EVENT.POST_COMMIT.name().equals(evt.getPropertyName())) {
 				LOG.debug("post-commit triggered in workflow listener");
+				
+				if (componentsToAdd == null)
+				{
+					LOG.debug("componentsToAdd was null at POST_COMMIT - perhaps the listener was registered in the middle of a commit?");
+					return;
+				}
 
 				Platform.runLater(() -> {
 					boolean showEm = componentsToAdd.size() <= 20;
@@ -172,7 +173,7 @@ public class WorkflowInitializationPropertyChangeListener implements PropertyCha
 					componentsToWf.add(componentNid);
 				}
 			} catch (DatastoreException e) {
-				e.printStackTrace();
+				LOG.error("Unexpected", e);
 			}
 		}
 

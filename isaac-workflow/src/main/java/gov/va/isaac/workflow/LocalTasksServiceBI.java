@@ -32,7 +32,17 @@ import org.kie.api.task.model.Status;
  */
 @Contract
 public interface LocalTasksServiceBI {
-    
+	public static interface ActionEvent {
+		Long getTaskId();
+		Action getAction();
+		TaskActionStatus getActionStatus();
+		Map<String, String> getOutputVariables();
+	}
+	@FunctionalInterface
+    public static interface ActionEventListener {
+    	void handle(ActionEvent actionEvent);
+    }
+
     List<LocalTask> getOpenOwnedTasks() throws DatastoreException;
     List<LocalTask> getOpenOwnedTasksByComponentId(UUID componentId) throws DatastoreException;
     List<LocalTask> getOwnedTasksByStatus(Status status) throws DatastoreException;
@@ -48,7 +58,9 @@ public interface LocalTasksServiceBI {
     void setAction(Long taskId, Action action, Map<String, String> outputVariables) throws DatastoreException;
     void setAction(Long taskId, Action action, TaskActionStatus status, Map<String, String> outputVariables) throws DatastoreException;
 
+    void addActionEventListener(ActionEventListener listener);
+    void removeActionEventListener(ActionEventListener listener);
+    
     void createSchema() throws DatastoreException;
     void dropSchema() throws DatastoreException;
-    
 }

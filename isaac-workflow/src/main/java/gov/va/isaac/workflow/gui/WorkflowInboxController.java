@@ -29,11 +29,14 @@ import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
+import gov.va.isaac.workflow.LocalTasksServiceBI.ActionEvent;
+import gov.va.isaac.workflow.LocalTasksServiceBI.ActionEventListener;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
 import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.engine.RemoteSynchronizer;
 import gov.va.isaac.workflow.engine.SynchronizeResult;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -59,7 +63,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
+
 import javax.inject.Inject;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
@@ -84,6 +90,21 @@ public class WorkflowInboxController
 	@Inject private LocalWorkflowRuntimeEngineBI wfEngine_;
 	@Inject private LocalTasksServiceBI taskService_;
 	@Inject private RemoteSynchronizer remoteSyncService_;
+	
+	private final ActionEventListener actionEventListener = new ActionEventListener() {
+		@Override
+		public void handle(ActionEvent actionEvent) {
+			if (actionEvent.getActionStatus() == TaskActionStatus.Pending) {
+				List<LocalTask> displayedItems = new ArrayList<>(taskTable.getItems());
+				for (LocalTask taskInTable : displayedItems) {
+					if (taskInTable.getId() == actionEvent.getTaskId()) {
+						taskTable.getItems().remove(taskInTable);
+						LOG.debug("ActionEventListener removed {} task id #{} due to pending {} action", taskInTable.getName(), taskInTable.getId(), taskInTable.getAction());
+					}
+				}
+			}
+		}
+	};
 	
 	public static WorkflowInboxController init() throws IOException {
 		// Load FXML
@@ -241,6 +262,7 @@ public class WorkflowInboxController
 			});
 		});
 
+		// TODO: not sure we should be loading content in init(). Maybe move to getView()?
 		loadContent();
 	}
 
@@ -273,18 +295,29 @@ public class WorkflowInboxController
 
 	private void refreshContent()
 	{
+		// Remove actionEventListener to prevent concurrent modification of list
+		taskService_.removeActionEventListener(actionEventListener);
 		taskTable.getItems().clear();
 		try
 		{
 			List<LocalTask> tasksForTable = taskService_.getOpenOwnedTasks();
-			List<LocalTask> tasksToRemoveFromTable = taskService_.getOwnedTasksByActionStatus(TaskActionStatus.Pending);
-			tasksForTable.removeAll(tasksToRemoveFromTable);
+			// Remove (do not display) tasks with TaskActionStatus.Pending
+			List<LocalTask> tasksToRemove = new ArrayList<>();
+			for (LocalTask task : tasksForTable) {
+				if (task.getActionStatus() == TaskActionStatus.Pending) {
+					tasksToRemove.add(task);
+				}
+			}
+
+			tasksForTable.removeAll(tasksToRemove);
 			taskTable.getItems().addAll(tasksForTable);
 		}
 		catch (DatastoreException e)
 		{
 			LOG.error("Unexpected error refreshing tasks", e);
 			AppContext.getCommonDialogs().showErrorDialog("There was a problem reading the tasks", e);
+		} finally {
+			taskService_.addActionEventListener(actionEventListener);
 		}
 	}
 

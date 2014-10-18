@@ -35,42 +35,70 @@ import java.util.Collections;
 import java.util.List;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 
 public class SearchViewModel {
-	private BooleanProperty isValid = new SimpleBooleanProperty();
-	private StringProperty name = new SimpleStringProperty();
-	private StringProperty description = new SimpleStringProperty();
+	private final BooleanProperty isSearchRunnableProperty = new SimpleBooleanProperty();
+	private final StringProperty name = new SimpleStringProperty();
+	private final StringProperty description = new SimpleStringProperty();
 
-	private SearchTypeFilter searchTypeFilter;
+	private final ObjectProperty<SearchTypeFilter> searchTypeFilterProperty = new SimpleObjectProperty();
 	private final ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> filters = FXCollections.observableArrayList();
-	private ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
-	private IntegerProperty maxResults = new SimpleIntegerProperty(100);
-	private StringProperty droolsExpr = new SimpleStringProperty();
+	private final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty(WBUtility.getViewCoordinate());
+	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
+	private final StringProperty droolsExpr = new SimpleStringProperty();
 	
 	public SearchViewModel() {
+		filters.addListener(new ListChangeListener<NonSearchTypeFilter<?>>() {
+			@Override
+			public void onChanged(
+					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
+				isSearchRunnableProperty.set(isValid());
+			}
+		});
+		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends SearchTypeFilter> observable,
+					SearchTypeFilter oldValue, SearchTypeFilter newValue) {
+				isSearchRunnableProperty.set(isValid());
+			}
+		});
+		viewCoordinateProperty.addListener(new ChangeListener<ViewCoordinate>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends ViewCoordinate> observable,
+					ViewCoordinate oldValue, ViewCoordinate newValue) {
+				isSearchRunnableProperty.set(isValid());
+			}
+		});
 	}
 	
 	public void copy(SearchViewModel other) {
 		name.set(other.getName());
 		description.set(other.getDescription());
-		if (other.getSearchType() == null || searchTypeFilter == null || searchTypeFilter.getClass() != other.getSearchType().getClass()) {
-			searchTypeFilter = other.getSearchType();
-		} else {
-			searchTypeFilter.copy(other.getSearchType());
-		}
+		//if (other.getSearchType() == null || searchTypeFilterProperty.get() == null || searchTypeFilterProperty.get().getClass() != other.getSearchType().getClass()) {
+		searchTypeFilterProperty.set(other.getSearchType());
+		//} else {
+		//	searchTypeFilterProperty.get().copy(other.getSearchType());
+		//}
 		filters.clear();
 		filters.addAll(other.getFilters());
-		viewCoordinate = other.viewCoordinate;
+		viewCoordinateProperty.set(other.viewCoordinateProperty.get());
 		maxResults.set(other.getMaxResults());
 		droolsExpr.set(other.getDroolsExpr());
 	}
@@ -80,11 +108,11 @@ public class SearchViewModel {
 			return false;
 		}
 
-		if (viewCoordinate == null) {
+		if (viewCoordinateProperty.get() == null) {
 			return false;
 		}
 		
-		if (searchTypeFilter == null || ! searchTypeFilter.isValid()) {
+		if (searchTypeFilterProperty.get() == null || ! searchTypeFilterProperty.get().isValid()) {
 			return false;
 		}
 		
@@ -92,13 +120,14 @@ public class SearchViewModel {
 	}
 	
 	public SearchTypeFilter<?> getSearchType() {
-		return searchTypeFilter;
+		return searchTypeFilterProperty.get();
 	}
 	public void setSearchType(SearchTypeFilter<?> searchTypeFilter) {
-		this.searchTypeFilter = searchTypeFilter;
+		this.searchTypeFilterProperty.set(searchTypeFilter);
 	}
 
-
+	public BooleanProperty getIsSearchRunnableProperty() { return isSearchRunnableProperty; }
+	
 	public StringProperty getNameProperty() {
 		return name;
 	}
@@ -124,10 +153,13 @@ public class SearchViewModel {
 	}
 	
 	public ViewCoordinate getViewCoordinate() {
-		return viewCoordinate;
+		return viewCoordinateProperty.get();
+	}
+	public ObjectProperty<ViewCoordinate> getViewCoordinateProperty() {
+		return viewCoordinateProperty;
 	}
 	public void setViewCoordinate(ViewCoordinate viewCoordinate) {
-		this.viewCoordinate = viewCoordinate;
+		this.viewCoordinateProperty.set(viewCoordinate);
 	}
 
 	public IntegerProperty getMaxResultsProperty() {
@@ -176,10 +208,10 @@ public class SearchViewModel {
 
 	@Override
 	public String toString() {
-		return "SearchViewModel [isValid=" + isValid + ", name=" + name
+		return "SearchViewModel [isValid=" + isSearchRunnableProperty + ", name=" + name
 				+ ", description=" + description + ", searchTypeFilter="
-				+ searchTypeFilter + ", maxResults=" + maxResults
+				+ searchTypeFilterProperty.get() + ", maxResults=" + maxResults
 				+ ", droolsExpr=" + droolsExpr + ", filter=" + Arrays.toString(filters.toArray())
-				+ ", viewCoordinate=" + (viewCoordinate != null ? viewCoordinate.getViewPosition() : null) + "]";
+				+ ", viewCoordinate=" + (viewCoordinateProperty.get() != null ? viewCoordinateProperty.get().getViewPosition() : null) + "]";
 	}
 }

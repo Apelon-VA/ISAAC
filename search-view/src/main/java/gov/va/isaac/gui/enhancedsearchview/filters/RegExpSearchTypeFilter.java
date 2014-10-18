@@ -82,4 +82,12 @@ public class RegExpSearchTypeFilter implements SearchTypeFilter<RegExpSearchType
 	public void copy(RegExpSearchTypeFilter toCopy) {
 		searchParameter.set(toCopy.getSearchParameter());
 	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter#getSearchType()
+	 */
+	@Override
+	public SearchType getSearchType() {
+		return SearchType.REGEXP;
+	}
 }

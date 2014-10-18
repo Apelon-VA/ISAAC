@@ -418,5 +418,10 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
     return null;
   }
 
+  @Override
+  public String getDbType() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

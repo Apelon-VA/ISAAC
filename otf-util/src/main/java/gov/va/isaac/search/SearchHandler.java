@@ -163,7 +163,8 @@ public class SearchHandler
 
 									// normalize the scores between 0 and 1
 									float normScore = (searchResult.getScore() / maxScore);
-									CompositeSearchResult csr = new CompositeSearchResult(cc, normScore);
+									CompositeSearchResult csr = (cc == null ? new CompositeSearchResult(searchResult.getNid(), normScore) : 
+										new CompositeSearchResult(cc, normScore));
 									initialSearchResults.add(csr);
 									
 
@@ -250,8 +251,14 @@ public class SearchHandler
 		if (mergeOnConcepts)
 		{
 			Hashtable<Integer, CompositeSearchResult> merged = new Hashtable<>();
+			ArrayList<CompositeSearchResult> unmergeable = new ArrayList<>();
 			for (CompositeSearchResult csr : rawResults)
 			{
+				if (csr.getContainingConcept() == null)
+				{
+					unmergeable.add(csr);
+					continue;
+				}
 				CompositeSearchResult found = merged.get(csr.getContainingConcept().getNid());
 				if (found == null)
 				{
@@ -264,6 +271,7 @@ public class SearchHandler
 			}
 			rawResults.clear();
 			rawResults.addAll(merged.values());
+			rawResults.addAll(unmergeable);
 		}
 		
 		Collections.sort(rawResults, (comparator == null ? new CompositeSearchResultComparator() : comparator));
@@ -353,7 +361,8 @@ public class SearchHandler
 
 								// normalize the scores between 0 and 1
 								float normScore = (searchResult.getScore() / maxScore);
-								CompositeSearchResult csr = new CompositeSearchResult(cc, normScore);
+								CompositeSearchResult csr = (cc == null ? new CompositeSearchResult(searchResult.getNid(), normScore) : 
+									new CompositeSearchResult(cc, normScore));
 								initialSearchResults.add(csr);
 							}
 						}

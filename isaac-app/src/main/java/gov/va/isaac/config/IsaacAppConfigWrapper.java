@@ -101,11 +101,38 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		{
 			setApplicationTitle(read.getApplicationTitle());
 		}
+		setArchetypeGroupId(read.getArchetypeGroupId());
+		setArchetypeArtifactId(read.getArchetypeArtifactId());
+		setArchetypeVersion(read.getArchetypeVersion());
+		setIsaacVersion(read.getIsaacVersion());
+		setScmConnection(read.getScmConnection());
+		setScmUrl(read.getScmUrl());
+		setDistReposId(read.getDistReposId());
+		setDistReposName(read.getDistReposName());
+		setDistReposUrl(read.getDistReposUrl());
+		setDistReposSnapId(read.getDistReposSnapId());
+		setDistReposSnapName(read.getDistReposSnapName());
+		setDistReposSnapUrl(read.getDistReposSnapUrl());
+		setDbGroupId(read.getDbGroupId());
+		setDbArtifactId(read.getDbArtifactId());
+		setDbVersion(read.getDbVersion());
+        setDbClassifier(read.getDbClassifier());
+        setDbType(read.getDbType());
+		setApplicationTitle(read.getApplicationTitle());
+		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
+		setReleaseVersion(read.getReleaseVersion());
+		setExtensionNamespace(read.getExtensionNamespace());
 		setChangeSetUrl(read.getChangeSetUrl());
-		setWorkflowServerDeploymentId(read.getWorkflowServerDeploymentId());
+		setAppSchemaLocation(read.getAppSchemaLocation());
+		setUserSchemaLocation(read.getUserSchemaLocation());
 		setWorkflowServerUrl(read.getWorkflowServerUrl());
+		setWorkflowServerDeploymentId(read.getWorkflowServerDeploymentId());
+		setDefaultEditPathName(read.getDefaultEditPathName());
+		setDefaultEditPathUuid(read.getDefaultEditPathUuid());
+		setDefaultViewPathName(read.getDefaultViewPathName());
+		setDefaultViewPathUuid(read.getDefaultViewPathUuid());
+		setWorkflowPromotionPathName(read.getWorkflowPromotionPathName());
 		setWorkflowPromotionPathUuid(read.getWorkflowPromotionPathUuid());
-		// TODO: need to add in other properties
 	}
 
   /* (non-Javadoc)
