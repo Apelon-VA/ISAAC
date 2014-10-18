@@ -115,7 +115,6 @@ public class WorkflowHistoryHelper {
 	}
 
 	public static void createAndAddNewEntry(LocalTask task, Action action, Map<String, String> outputVariables) {
-
 		List<Map<String, String>> existingEntries = getHistoryEntries(task);
 		int numExistingEntries = existingEntries.size();
 		Map<String, String> newEntry = createNewHistoryEntry(task, action, outputVariables.get("out_comment"));
@@ -129,55 +128,64 @@ public class WorkflowHistoryHelper {
 		logger.debug("Added new history entry for task #{} with {} existing entries: {}", task.getId(), numExistingEntries, existingEntries);
 	}
 
-	private static String serializeMaps(List<Map<String, String>> list) {
-		if (list == null) {
+	private static String serializeMaps(List<Map<String, String>> listOfHistoryEntryMaps) {
+		if (listOfHistoryEntryMaps == null) {
+			logger.warn("serialized null listOfHistoryEntryMaps into zero-length string \"\"");
 			return "";
 		}
+		logger.debug("serializing listOfHistoryEntryMaps of size {}: {}", listOfHistoryEntryMaps.size(), listOfHistoryEntryMaps);
+
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		XMLEncoder xmlEncoder = new XMLEncoder(bos);
-		xmlEncoder.writeObject(list);
+		xmlEncoder.writeObject(listOfHistoryEntryMaps);
 		xmlEncoder.close();
 
 		String serializedMaps = bos.toString();
+		
+		logger.debug("serialized listOfHistoryEntryMaps of size {} into XML: {}", listOfHistoryEntryMaps.size(), serializedMaps);
 		return serializedMaps;
 	}
 
-	private static List<Map<String, String>> deserializeMaps(String serializedMaps) {
-		if (serializedMaps == null || serializedMaps.isEmpty()) {
+	private static List<Map<String, String>> deserializeMaps(String listOfSerializedMaps) {
+		if (listOfSerializedMaps == null || listOfSerializedMaps.isEmpty()) {
+			logger.warn("null or empty xml string passed.  Returning empty history entry map list.");
 			return new ArrayList<Map<String, String>>();
 		} else {
-			XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMaps.getBytes()));
+			XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(listOfSerializedMaps.getBytes()));
 			@SuppressWarnings("unchecked")
 			List<Map<String, String>> parsedMaps = (List<Map<String, String>>) xmlDecoder.readObject();
 			xmlDecoder.close();
+			logger.debug("deserialized xml string \"{}\" into list of history entry maps with {} entries: {}", listOfSerializedMaps, parsedMaps.size(), parsedMaps.toString());
 			return parsedMaps;
 		}
 	}
 
 	public static void loadGridPane(GridPane gp, LocalTask task) {
-		List<Map<String, String>> entries = getHistoryEntries(task);
+		List<Map<String, String>> historyEntryMaps = getHistoryEntries(task);
 		
 		int counter = 0;
-		for (Map<String, String> entry : entries) {
+		for (Map<String, String> historyEntryMap : historyEntryMaps) {
 			String owner = "Owner doesn't exist";
 			String action = "Action doesn't exist";
 			String timestamp = "Timestamp doesn't exist";
+			String comment = "Comment doesn't exist";
 			
-			for (String key : entry.keySet()) {
+			for (String key : historyEntryMap.keySet()) {
 				if (key.equals(WorkflowHistoryVariable.wf_hist_action_owner.toString())) {
-					owner = entry.get(key);
+					owner = historyEntryMap.get(key);
 				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action.toString())) {
-					action = entry.get(key);
+					action = historyEntryMap.get(key);
 					
 					if (action.equalsIgnoreCase("None")) {
 						action = "Initialize Workflow";
 					}
 				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action_time.toString())) {
-					Long time = Long.parseLong(entry.get(key));
+					Long time = Long.parseLong(historyEntryMap.get(key));
 					
 			        timestamp = sdf.format(time);
-				} 
-					
+				} else if (key.equals(WorkflowHistoryVariable.wf_hist_comment.toString())) {
+					comment = historyEntryMap.get(key);
+				}
 			}
 
 			Label ownerLabel = new Label(owner);
@@ -186,8 +194,10 @@ public class WorkflowHistoryHelper {
 			actionLabel.setFont(new Font("System Bold", 14));
 			Label timeLabel = new Label(timestamp);
 			timeLabel.setFont(new Font("System Bold", 14));
+			Label commentLabel = new Label(comment);
+			commentLabel.setFont(new Font("System Bold", 14));
 
-			gp.addRow(counter++, ownerLabel, actionLabel, timeLabel);
+			gp.addRow(counter++, ownerLabel, actionLabel, timeLabel, commentLabel);
 		}
 	}
 }
