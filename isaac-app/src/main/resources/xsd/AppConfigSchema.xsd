@@ -362,7 +362,7 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="defaultEditPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+        <xs:element name="defaultEditPathUuid" type="UUID" minOccurs="1" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
               <jxb:property>
@@ -384,7 +384,7 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="defaultViewPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+        <xs:element name="defaultViewPathUuid" type="UUID" minOccurs="1" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
               <jxb:property>
