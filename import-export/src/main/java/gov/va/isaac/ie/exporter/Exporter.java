@@ -55,6 +55,8 @@ public interface Exporter extends ProgressReporter {
     // atts
     ConceptAttributeVersionBI<?> att =
         cv.getConceptAttributes().getVersion(vc);
+    if (att == null)
+      return false;
     if (att.getPathNid() == pathNid)
       return true;
     
