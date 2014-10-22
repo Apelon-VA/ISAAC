@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 public class WorkflowHistoryHelper {
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowHistoryHelper.class);
 
-	private final static String WF_HISTORY_MAP_VARIABLE_NAME = "wf_history";
+	private final static String WF_HISTORY_MAP_VARIABLE_NAME = "history";
 
 	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy @ HH:mm:ss");
 
