@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
 public class WorkflowHistoryHelper {
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowHistoryHelper.class);
 
-	private final static String WF_HISTORY_MAP_VARIABLE_NAME = "history";
+	private final static String WF_IN_HISTORY_MAP_VARIABLE_NAME = "in_history";
+	private final static String WF_OUT_HISTORY_MAP_VARIABLE_NAME = "out_history";
 
 	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy @ HH:mm:ss");
 
@@ -74,8 +75,9 @@ public class WorkflowHistoryHelper {
 	}
 
 	public static List<Map<String, String>> getHistoryEntries(LocalTask task) {
-		List<Map<String, String>> existingEntries = deserializeMaps(task.getInputVariables().get(WF_HISTORY_MAP_VARIABLE_NAME));
+		List<Map<String, String>> existingEntries = deserializeMaps(task.getInputVariables().get(WF_IN_HISTORY_MAP_VARIABLE_NAME));
 
+		logger.debug("Got {} history entries from task #{}: {}", existingEntries.size(), task.getId(), historyEntriesToString(existingEntries));
 		return existingEntries;
 	}
 
@@ -123,7 +125,7 @@ public class WorkflowHistoryHelper {
 		existingEntries.add(newEntry);
 
 		String serializedEntries = serializeMaps(existingEntries);
-		outputVariables.put(WF_HISTORY_MAP_VARIABLE_NAME, serializedEntries);
+		outputVariables.put(WF_OUT_HISTORY_MAP_VARIABLE_NAME, serializedEntries);
 
 		logger.debug("Added new history entry for task #{} with {} existing entries: {}", task.getId(), numExistingEntries, existingEntries);
 	}
@@ -163,6 +165,8 @@ public class WorkflowHistoryHelper {
 	public static void loadGridPane(GridPane gp, LocalTask task) {
 		List<Map<String, String>> historyEntryMaps = getHistoryEntries(task);
 		
+		logger.debug("Loading GridPane with {} history entries from task #{}: {}", historyEntryMaps.size(), task.getId(), historyEntriesToString(historyEntryMaps));
+
 		int counter = 0;
 		for (Map<String, String> historyEntryMap : historyEntryMaps) {
 			String owner = "Owner doesn't exist";

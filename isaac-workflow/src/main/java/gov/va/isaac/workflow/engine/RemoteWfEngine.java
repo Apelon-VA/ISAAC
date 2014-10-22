@@ -21,6 +21,7 @@ package gov.va.isaac.workflow.engine;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 
+import java.net.URL;
 import java.rmi.RemoteException;
 
 import javax.inject.Singleton;
@@ -29,6 +30,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.kie.api.runtime.manager.RuntimeEngine;
 import org.kie.api.task.TaskService;
 import org.kie.services.client.api.RemoteRestRuntimeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link RemoteWfEngine}
@@ -40,6 +43,8 @@ import org.kie.services.client.api.RemoteRestRuntimeFactory;
 @Singleton
 public class RemoteWfEngine
 {
+	private static final Logger LOG = LoggerFactory.getLogger(RemoteWfEngine.class);
+
 	private RuntimeEngine remoteEngine;
 
 	private RemoteWfEngine()
@@ -59,9 +64,14 @@ public class RemoteWfEngine
 			//TODO DAN prompt the user, block, wait for their response - let them update credentials
 			try
 			{
-				RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(AppContext.getAppConfiguration().getWorkflowServerDeploymentId(), 
-						AppContext.getAppConfiguration().getWorkflowServerUrlAsURL(), 
-						ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername(),
+				final String deploymentId = AppContext.getAppConfiguration().getWorkflowServerDeploymentId();
+				final URL workflowServerUrlAsURL = AppContext.getAppConfiguration().getWorkflowServerUrlAsURL();
+				final String workflowUserName = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
+				LOG.debug("Getting remote WF engine with deploymentId={}, workflowServerUrlAsURL={} and workflowUserName={}", deploymentId, workflowServerUrlAsURL, workflowUserName);
+				RemoteRestRuntimeFactory restSessionFactory = new RemoteRestRuntimeFactory(
+						deploymentId, 
+						workflowServerUrlAsURL, 
+						workflowUserName,
 						ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowPassword());
 				re = restSessionFactory.newRuntimeEngine();
 				remoteEngine = re;
