@@ -71,7 +71,8 @@ public class WorkflowHistoryHelper {
 		wf_hist_action_owner,
 		wf_hist_action_time,
 		wf_hist_action, 
-		wf_hist_comment
+		wf_hist_comment,
+		wf_hist_task_name
 	}
 
 	public static List<Map<String, String>> getHistoryEntries(LocalTask task) {
@@ -112,6 +113,7 @@ public class WorkflowHistoryHelper {
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action_time.name(), Long.toString(time));
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action.name(), action.name());
 		newEntry.put(WorkflowHistoryVariable.wf_hist_comment.name(), comment);
+		newEntry.put(WorkflowHistoryVariable.wf_hist_task_name.name(), task.getName());
 
 		return newEntry;
 	}
@@ -169,10 +171,11 @@ public class WorkflowHistoryHelper {
 
 		int counter = 0;
 		for (Map<String, String> historyEntryMap : historyEntryMaps) {
-			String owner = "Owner doesn't exist";
-			String action = "Action doesn't exist";
-			String timestamp = "Timestamp doesn't exist";
-			String comment = "Comment doesn't exist";
+			String owner = "Owner unset";
+			String action = "Action unset";
+			String timestamp = "Timestamp unset";
+			String comment = "Comment unset";
+			String taskName = "Task name unset";
 			
 			for (String key : historyEntryMap.keySet()) {
 				if (key.equals(WorkflowHistoryVariable.wf_hist_action_owner.toString())) {
@@ -189,11 +192,15 @@ public class WorkflowHistoryHelper {
 			        timestamp = sdf.format(time);
 				} else if (key.equals(WorkflowHistoryVariable.wf_hist_comment.toString())) {
 					comment = historyEntryMap.get(key);
+				} else if (key.equals(WorkflowHistoryVariable.wf_hist_task_name.toString())) {
+					taskName = historyEntryMap.get(key);
 				}
 			}
 
 			Label ownerLabel = new Label(owner);
 			ownerLabel.setFont(new Font("System Bold", 14));
+			Label taskNameLabel = new Label(taskName);
+			taskNameLabel.setFont(new Font("System Bold", 14));
 			Label actionLabel = new Label(action);
 			actionLabel.setFont(new Font("System Bold", 14));
 			Label timeLabel = new Label(timestamp);
@@ -201,7 +208,7 @@ public class WorkflowHistoryHelper {
 			Label commentLabel = new Label(comment);
 			commentLabel.setFont(new Font("System Bold", 14));
 
-			gp.addRow(counter++, ownerLabel, actionLabel, timeLabel, commentLabel);
+			gp.addRow(counter++, ownerLabel, taskNameLabel, actionLabel, timeLabel, commentLabel);
 		}
 	}
 }

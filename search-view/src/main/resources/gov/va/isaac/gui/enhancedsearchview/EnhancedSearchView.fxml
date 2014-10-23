@@ -18,7 +18,6 @@
          <center>
             <StackPane>
                <children>
-                  <ProgressIndicator fx:id="searchProgress" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" />
                   <TableView fx:id="searchResultsTable" BorderPane.alignment="CENTER" />
                </children>
             </StackPane>

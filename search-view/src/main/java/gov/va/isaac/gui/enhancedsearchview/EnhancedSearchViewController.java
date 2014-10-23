@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
+import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
@@ -205,7 +206,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private Button exportSearchResultsAsTabDelimitedValuesButton;
 	@FXML private Button exportSearchResultsToListBatchViewButton;
 	@FXML private Button exportSearchResultsToWorkflowButton;
-	@FXML private ProgressIndicator searchProgress;
+	
 	@FXML private Label totalResultsSelectedLabel;
 	@FXML private Button resetDefaultsButton;
 	private Button addIsDescendantOfFilterButton;
@@ -235,7 +236,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	private Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
 	
 	private final BooleanProperty searchRunning = new SimpleBooleanProperty(false);
-	
+
+	private BusyPopover searchRunningPopover;
+
 	private SearchHandle ssh = null;
 
 	private Window windowForTableViewExportDialog;
@@ -269,7 +272,6 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert searchProgress != null : "fx:id=\"searchProgress\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
@@ -308,13 +310,22 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				exportResultsToSearchTaxonomyPanel();
 			}
 		});
-		//exportResultsToSearchTaxonomyPanelButton.setVisible(false);
 		
 		initializeWorkflowServices();
 
-		//final BooleanProperty searchTextValid = new SimpleBooleanProperty(false);
-		//searchButton.disableProperty().bind(searchTextValid.not());
-		searchProgress.visibleProperty().bind(searchRunning);
+		searchRunning.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (newValue) {
+					searchRunningPopover = BusyPopover.createBusyPopover("Searching...", searchButton);
+				} else {
+					if (searchRunningPopover != null) {
+						searchRunningPopover.hide();
+					}
+				}
+			}
+		});
 
 		maxResultsCustomTextFieldLabel.setText("Max Results");
 		maxResultsCustomTextField = new IntegerField();
