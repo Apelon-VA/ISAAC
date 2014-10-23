@@ -72,7 +72,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			
 			VBox titleBox = new VBox();
 			
-			Label title = new Label("Dynamic Refex Index Configuration");
+			Label title = new Label("Dynamic Sememe Index Configuration");
 			title.getStyleClass().add("titleLabel");
 			title.setAlignment(Pos.CENTER);
 			title.setMaxWidth(Double.MAX_VALUE);
@@ -98,9 +98,9 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			
 			if (rdud.isAnnotationStyle())
 			{
-				indexMember_ = new CheckBox("Index refex members");
-				indexMember_.setTooltip(new Tooltip("Allows queries to find all components that have an instance of this refex.\n"
-						+ "Only applicable to Annotation-style refexes"));
+				indexMember_ = new CheckBox("Index sememe members");
+				indexMember_.setTooltip(new Tooltip("Allows queries to find all components that have an instance of this sememe.\n"
+						+ "Only applicable to Annotation-style sememes"));
 				if (currentIndexConfig != null)
 				{
 					indexMember_.setSelected(true);
@@ -109,7 +109,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			}
 			else if (rdud.getColumnInfo().length == 0)
 			{
-				vbox.getChildren().add(new Label("Member-style refexes without columns are not indexable"));
+				vbox.getChildren().add(new Label("Member-style Sememes without columns are not indexable"));
 			}
 			
 			for (RefexDynamicColumnInfo col : rdud.getColumnInfo())
@@ -244,7 +244,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 		stage.initOwner(parent);
 		Scene scene = new Scene(root_);
 		stage.setScene(scene);
-		stage.setTitle("Configure Dynamic Refex Indexing");
+		stage.setTitle("Configure Dynamic Sememe Indexing");
 		stage.getScene().getStylesheets().add(DynamicReferencedItemsView.class.getResource("/isaac-shared-styles.css").toString());
 		stage.setWidth(450);
 		stage.setHeight(400);

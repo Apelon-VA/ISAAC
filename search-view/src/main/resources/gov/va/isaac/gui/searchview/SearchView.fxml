@@ -52,7 +52,7 @@
 									<children>
 										<Label maxHeight="1.7976931348623157E308" minWidth="62.0" text="Search In" HBox.hgrow="NEVER">
 											<tooltip>
-												<Tooltip text="Specify the elements of the concept to search - either Descriptions or attached Refex data" />
+												<Tooltip text="Specify the elements of the concept to search - either Descriptions or attached Sememe data" />
 											</tooltip>
 										</Label>
 										<ChoiceBox fx:id="searchIn" maxWidth="1.7976931348623157E308" prefWidth="100.0" HBox.hgrow="ALWAYS" />
@@ -65,7 +65,7 @@
 										<Label maxHeight="1.7976931348623157E308" minWidth="129.0" text="Search Assemblage" HBox.hgrow="NEVER">
 											<tooltip>
 												<Tooltip
-													text="Limit the search to Refexes that use the specified Assemblage concept.  Leave blank to search all Assemblage concepts." />
+													text="Limit the search to Sememes that use the specified Assemblage concept.  Leave blank to search all Assemblage concepts." />
 											</tooltip>
 										</Label>
 									</children>

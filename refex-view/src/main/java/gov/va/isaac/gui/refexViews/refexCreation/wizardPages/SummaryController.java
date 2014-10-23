@@ -124,7 +124,7 @@ public class SummaryController implements PanelControllersI {
 					refexData.isAnnotatedStyle());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
-			AppContext.getCommonDialogs().showErrorDialog("Error Creating Refex", "Unexpected error creating the Refex", e.getMessage(), summaryPane.getScene().getWindow());
+			AppContext.getCommonDialogs().showErrorDialog("Error Creating Sememe", "Unexpected error creating the Sememe", e.getMessage(), summaryPane.getScene().getWindow());
 		}
 	}
 	

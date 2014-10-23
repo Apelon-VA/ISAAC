@@ -136,7 +136,7 @@ public class DefinitionController implements PanelControllersI {
 			{
 				if (refexName.getText().trim().isEmpty())
 				{
-					return "The Refex Name is required";
+					return "The Sememe Name is required";
 				}
 				else
 				{
@@ -200,7 +200,7 @@ public class DefinitionController implements PanelControllersI {
 			{
 				if (refexDescription.getText().trim().isEmpty())
 				{
-					return "The Refex Description is required";
+					return "The Sememe Description is required";
 				}
 				else
 				{
@@ -247,7 +247,7 @@ public class DefinitionController implements PanelControllersI {
 			if (!parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()))) 
 			{
 				YesNoDialog yn = new YesNoDialog(refsetCreationPane.getScene().getWindow());
-				DialogResponse r = yn.showYesNoDialog("Continue?", "The parent concept you selected is not a descendent of the concept 'Dynamic Refexes'.\n"
+				DialogResponse r = yn.showYesNoDialog("Continue?", "The parent concept you selected is not a descendent of the concept 'Dynamic Sememes'.\n"
 						+ "Click Yes to continue using this concept, or No to go back and make changes.");
 				if (DialogResponse.YES == r)
 				{
@@ -258,7 +258,7 @@ public class DefinitionController implements PanelControllersI {
 			return true;
 		} catch (IOException | ContradictionException e) 
 		{
-			logger.error("Unable to verify if concept is ancestor of Dynamic Refex Concept", e);
+			logger.error("Unable to verify if concept is ancestor of Dynamic Sememe Concept", e);
 			AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "Error Reading Parent Concept", e.getMessage(), refsetCreationPane.getScene().getWindow());
 			return false;
 		}

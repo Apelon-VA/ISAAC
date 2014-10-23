@@ -32,7 +32,7 @@
 					<top>
 						<VBox>
 							<children>
-								<Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Dynamic Refex Definitions" BorderPane.alignment="CENTER">
+								<Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Dynamic Sememe Definitions" BorderPane.alignment="CENTER">
 									<font>
 										<Font name="System Bold" size="18.0" />
 									</font>
@@ -55,7 +55,7 @@
 														<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
 													</rowConstraints>
 													<children>
-														<Label text="Refex Style" />
+														<Label text="Sememe Style" />
 														<ChoiceBox fx:id="refexStyleFilter" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
 														<TextField fx:id="descriptionMatchesFilter" promptText=" - Show All -" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 														<Label text="Description" GridPane.rowIndex="1" />
@@ -74,7 +74,7 @@
 					<bottom>
 						<ToolBar prefWidth="200.0" BorderPane.alignment="CENTER">
 							<items>
-								<Label fx:id="statusLabel" text="Showing X of Y Refexes" />
+								<Label fx:id="statusLabel" text="Showing X of Y Sememes" />
 								<Region maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
 								<Button fx:id="clearFilterButton" mnemonicParsing="false" text="Clear Filter" />
 							</items>
@@ -93,7 +93,7 @@
 					<center>
 						<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
 							<children>
-								<Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Selected Refex Details" BorderPane.alignment="CENTER">
+								<Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Selected Sememe Details" BorderPane.alignment="CENTER">
 									<font>
 										<Font name="System Bold" size="18.0" />
 									</font>
@@ -133,7 +133,7 @@
 												<Insets right="15.0" />
 											</padding>
 										</Label>
-										<Label text="Refex Style" GridPane.rowIndex="3">
+										<Label text="Sememe Style" GridPane.rowIndex="3">
 											<font>
 												<Font name="System Bold" size="13.0" />
 											</font>

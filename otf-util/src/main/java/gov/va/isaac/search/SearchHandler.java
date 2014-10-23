@@ -325,8 +325,8 @@ public class SearchHandler
 					
 					if (refexIndexer == null)
 					{
-						LOG.warn("No refex indexer found, aborting.");
-						searchHandle.setError(new Exception("No refex indexer available, cannot search"));
+						LOG.warn("No sememe indexer found, aborting.");
+						searchHandle.setError(new Exception("No sememe indexer available, cannot search"));
 					}
 					else
 					{

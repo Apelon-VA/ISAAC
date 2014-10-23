@@ -84,13 +84,13 @@ public class RefexCreationWizard implements RefexCreationViewI, IsaacViewWithMen
 			@Override
 			public String getMenuName()
 			{
-				return "Define Refex Assemblage";
+				return "Define Sememe Assemblage";
 			}
 			
 			@Override
 			public String getMenuId()
 			{
-				return "defineRefexExtensionMenu";
+				return "defineSememeExtensionMenu";
 			}
 			
 			@Override
@@ -115,7 +115,7 @@ public class RefexCreationWizard implements RefexCreationViewI, IsaacViewWithMen
 			stage.initModality(Modality.NONE);
 			ScreensController sc = new ScreensController();
 			stage.setScene(new Scene(sc, 600, 400));
-			stage.setTitle("Define Refex Assemblage");
+			stage.setTitle("Define Sememe Assemblage");
 			stage.getScene().getStylesheets().add(RefexCreationWizard.class.getResource("/isaac-shared-styles.css").toString());
 			stage.show();
 			sc.showFirstScreen();

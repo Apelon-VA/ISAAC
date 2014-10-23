@@ -79,13 +79,13 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 			@Override
 			public String getMenuName()
 			{
-				return "Dynamic Refex View Panel";
+				return "Dynamic Sememe View Panel";
 			}
 
 			@Override
 			public String getMenuId()
 			{
-				return "dynamicRefexViewPanelMenuItem";
+				return "dynamicSememeViewPanelMenuItem";
 			}
 
 			@Override
@@ -112,7 +112,7 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 	@Override
 	public String getViewTitle()
 	{
-		return "Dynamic Refex Viewer";
+		return "Dynamic Sememe Viewer";
 	}
 
 	/**
@@ -129,8 +129,8 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 			}
 			catch (IOException e)
 			{
-				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing DynamicRefexListView", e);
-				AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating DynamicRefexListView", e);
+				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing DynamicSememeListView", e);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating DynamicSememeListView", e);
 				return new Label("Unexpected error initializing view, see log file");
 			}
 

@@ -444,9 +444,9 @@ public class SearchConceptHelper {
 
 				try {
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
-					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic refexes: " +  matchingConcept.getRefexesDynamic().size());
-					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
-					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic refexes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic sememes: " +  matchingConcept.getRefexesDynamic().size());
+					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
+					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
 			
 					LOG.debug("Displaying newly loaded save concept refexes");
 					DynamicRefexHelper.displayDynamicRefexes(matchingConcept);
@@ -459,7 +459,7 @@ public class SearchConceptHelper {
 				int i = 0;
 				Collection<? extends RefexDynamicVersionBI<?>> refexes = matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
 				for (RefexDynamicVersionBI<?> refex : refexes) {
-					LOG.debug("Displaying refex #" + (++i) + " of " + refexes.size());
+					LOG.debug("Displaying sememe #" + (++i) + " of " + refexes.size());
 					DynamicRefexHelper.displayDynamicRefex(refex);
 
 					RefexDynamicUsageDescription dud = null;
