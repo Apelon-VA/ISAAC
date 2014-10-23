@@ -90,15 +90,6 @@ public class ListViewRunner extends Application implements ApplicationWindowI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
-	 */
-	@Override
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener)
-	{
-		
-	}
-
-	/**
 	 * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#ensureDockedViewIsVisble(gov.va.isaac.interfaces.gui.views.DockedViewI)
 	 */
 	@Override

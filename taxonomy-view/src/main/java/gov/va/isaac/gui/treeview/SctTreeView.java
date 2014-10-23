@@ -82,7 +82,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
     protected SctTreeView() {
         treeView_ = new TreeView<>();
-        AppContext.getMainApplicationWindow().registerShutdownListener(this);
+        AppContext.getRuntimeGlobals().registerShutdownListener(this);
         sp_ = new StackPane();
         ProgressIndicator pi = new ProgressIndicator();
         pi.setMaxHeight(100.0);

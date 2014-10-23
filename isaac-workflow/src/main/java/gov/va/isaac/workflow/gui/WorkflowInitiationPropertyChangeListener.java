@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.utility.CommitListenerI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
@@ -55,7 +57,8 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Singleton
-public class WorkflowInitiationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI
+@Named (value="Workflow Initiation")
+public class WorkflowInitiationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI, CommitListenerI
 {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private boolean enabled = false;
@@ -68,21 +71,40 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 		// for HK2 to create
 	}
 	
+	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.CommitListenerI#getListenerName()
+	 */
+	@Override
+	public String getListenerName()
+	{
+		return "Workflow Initiation";
+	}
+
 	public boolean isEnabled()
 	{
 		return enabled;
 	}
 	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.CommitListenerI#disable()
+	 */
+	@Override
 	public void disable()
 	{
 		if (enabled)
 		{
 			LOG.info("Disabling the workflow commit listener");
+			//TODO file yet another OTF bug - this doesn't work.  We still get property change notifications after calling remove... 
 			ExtendedAppContext.getDataStore().removePropertyChangeListener(this);
 			enabled = false;
 		}
 	}
 	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.CommitListenerI#enable()
+	 */
+	@Override
 	public void enable()
 	{
 		if (!enabled && ExtendedAppContext.getCurrentlyLoggedInUserProfile().isLaunchWorkflowForEachCommit())
@@ -99,6 +121,11 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)
 	{
+		//TODO this shouldn't be necessary, but OTF has a bug....
+		if (!enabled)
+		{
+			return;
+		}
 		try
 		{
 			if (CONCEPT_EVENT.PRE_COMMIT.name().equals(evt.getPropertyName()))
