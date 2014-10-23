@@ -24,14 +24,12 @@ import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.gui.download.DownloadDialog;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.DBLocator;
 import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.function.Consumer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -64,7 +62,6 @@ public class App extends Application implements ApplicationWindowI{
     private boolean shutdown = false;
     private Stage primaryStage_;
     private CommonDialogs commonDialog_;
-    private ArrayList<ShutdownBroadcastListenerI> shutdownListeners_ = new ArrayList<>();
     private static IOException dataStoreLocationInitException_ = null;
 
     @Override
@@ -262,13 +259,7 @@ public class App extends Application implements ApplicationWindowI{
             {
                 ExtendedAppContext.getDataStore().shutdown();
             }
-            for (ShutdownBroadcastListenerI s : shutdownListeners_)
-            {
-                if (s != null)
-                {
-                    s.shutdown();
-                }
-            }
+            controller.shutdown();
         } catch (Exception ex) {
             String message = "Trouble shutting down";
             LOG.warn(message, ex);
@@ -285,15 +276,6 @@ public class App extends Application implements ApplicationWindowI{
     public Stage getPrimaryStage()
     {
         return primaryStage_;
-    }
-    
-    /**
-     * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
-     */
-    @Override
-    public void registerShutdownListener(ShutdownBroadcastListenerI listener)
-    {
-        shutdownListeners_.add(listener);
     }
     
     /**

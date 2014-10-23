@@ -86,7 +86,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     public SctTreeItem(TaxonomyReferenceWithConcept t, SctTreeItemDisplayPolicies displayPolicies, Node node) {
         super(t, node);
         this.displayPolicies = displayPolicies;
-        AppContext.getMainApplicationWindow().registerShutdownListener(this);
+        AppContext.getRuntimeGlobals().registerShutdownListener(this);
     }
 
     public SctTreeItemDisplayPolicies getDisplayPolicies() {

@@ -177,41 +177,49 @@ public class GenerateUsers
 	public static void createUserConcept(User user) throws IOException, InvalidCAB, ContradictionException
 	{
 		logger.info("Creating user " + toString(user) + " in DB");
-		BdbTerminologyStore ts = ExtendedAppContext.getDataStore();
-		String fsn = user.getUniqueFullName();
-		String preferredName = user.getFullName();
-		String logonName = user.getUniqueLogonName();
-		UUID userUUID = UUID.fromString(user.getUUID());
-
-		LanguageCode lc = LanguageCode.EN_US;
-		UUID isA = Snomed.IS_A.getUuids()[0];
-		IdDirective idDir = IdDirective.PRESERVE_CONCEPT_REST_HASH;
-		UUID module = TermAux.TERM_AUX_MODULE.getUuids()[0];
-		UUID parents[] = new UUID[] { TermAux.USER.getUuids()[0] };
-
-		ConceptCB cab = new ConceptCB(fsn, preferredName, lc, isA, idDir, module, userUUID, parents);
-
-		DescriptionCAB dCab = new DescriptionCAB(cab.getComponentUuid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getUuids()[0], lc, logonName, true,
-				IdDirective.GENERATE_HASH);
-		dCab.getProperties().put(ComponentProperty.MODULE_ID, module);
-
-		//Mark it as acceptable
-		RefexCAB rCabAcceptable = new RefexCAB(RefexType.CID, dCab.getComponentUuid(), Snomed.US_LANGUAGE_REFEX.getUuids()[0], IdDirective.GENERATE_HASH,
-				RefexDirective.EXCLUDE);
-		rCabAcceptable.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, SnomedMetadataRf2.ACCEPTABLE_RF2.getUuids()[0]);
-		rCabAcceptable.getProperties().put(ComponentProperty.MODULE_ID, module);
-		dCab.addAnnotationBlueprint(rCabAcceptable);
-
-		cab.addDescriptionCAB(dCab);
-		
-		//TODO store roles on the concept
-
-		//Build this on the lowest level path, otherwise, other code that references this will fail (as it doesn't know about custom paths)
-		ConceptChronicleBI newCon = ts.getTerminologyBuilder(
-				new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.TERM_AUX_MODULE.getLenient().getNid(), TermAux.WB_AUX_PATH.getLenient()
-						.getConceptNid()), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
-		ts.addUncommitted(newCon);
-		ts.commit(newCon);
+		AppContext.getRuntimeGlobals().disableAllCommitListeners();
+		try
+		{
+			BdbTerminologyStore ts = ExtendedAppContext.getDataStore();
+			String fsn = user.getUniqueFullName();
+			String preferredName = user.getFullName();
+			String logonName = user.getUniqueLogonName();
+			UUID userUUID = UUID.fromString(user.getUUID());
+	
+			LanguageCode lc = LanguageCode.EN_US;
+			UUID isA = Snomed.IS_A.getUuids()[0];
+			IdDirective idDir = IdDirective.PRESERVE_CONCEPT_REST_HASH;
+			UUID module = TermAux.TERM_AUX_MODULE.getUuids()[0];
+			UUID parents[] = new UUID[] { TermAux.USER.getUuids()[0] };
+	
+			ConceptCB cab = new ConceptCB(fsn, preferredName, lc, isA, idDir, module, userUUID, parents);
+	
+			DescriptionCAB dCab = new DescriptionCAB(cab.getComponentUuid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getUuids()[0], lc, logonName, true,
+					IdDirective.GENERATE_HASH);
+			dCab.getProperties().put(ComponentProperty.MODULE_ID, module);
+	
+			//Mark it as acceptable
+			RefexCAB rCabAcceptable = new RefexCAB(RefexType.CID, dCab.getComponentUuid(), Snomed.US_LANGUAGE_REFEX.getUuids()[0], IdDirective.GENERATE_HASH,
+					RefexDirective.EXCLUDE);
+			rCabAcceptable.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, SnomedMetadataRf2.ACCEPTABLE_RF2.getUuids()[0]);
+			rCabAcceptable.getProperties().put(ComponentProperty.MODULE_ID, module);
+			dCab.addAnnotationBlueprint(rCabAcceptable);
+	
+			cab.addDescriptionCAB(dCab);
+			
+			//TODO store roles on the concept
+	
+			//Build this on the lowest level path, otherwise, other code that references this will fail (as it doesn't know about custom paths)
+			ConceptChronicleBI newCon = ts.getTerminologyBuilder(
+					new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.TERM_AUX_MODULE.getLenient().getNid(), TermAux.WB_AUX_PATH.getLenient()
+							.getConceptNid()), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
+			ts.addUncommitted(newCon);
+			ts.commit(newCon);
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
+		}
 	}
 
 	/**

@@ -18,6 +18,7 @@
  */
 package gov.va.isaac;
 
+import gov.va.isaac.interfaces.RuntimeGlobalsI;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
@@ -27,8 +28,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +67,7 @@ public class AppContext
 		{
 			throw new RuntimeException("Only one service locator should be set");
 		}
-		ArrayList<String> packagesToSearch = new ArrayList(Arrays.asList("gov.va", "org.ihtsdo"));
+		ArrayList<String> packagesToSearch = new ArrayList<String>(Arrays.asList("gov.va", "org.ihtsdo"));
 
 		boolean readInhabitantFiles = Boolean.getBoolean(System.getProperty(READ_INHABITANT_FILES, "false"));
 		if (System.getProperty(EXTRA_PACKAGES_TO_SEARCH) != null) {
@@ -125,6 +124,11 @@ public class AppContext
 	public static ApplicationWindowI getMainApplicationWindow()
 	{
 		return getService(ApplicationWindowI.class);
+	}
+	
+	public static RuntimeGlobalsI getRuntimeGlobals()
+	{
+		return getService(RuntimeGlobalsI.class);
 	}
 
 	public static PopupConceptViewI createConceptViewWindow()

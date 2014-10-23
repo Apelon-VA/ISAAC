@@ -189,12 +189,28 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 								}
 								else
 								{
-									LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(assemblageConcept_.getNid(), toIndex);
+									AppContext.getRuntimeGlobals().disableAllCommitListeners();
+									try
+									{
+										LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(assemblageConcept_.getNid(), toIndex);
+									}
+									finally
+									{
+										AppContext.getRuntimeGlobals().enableAllCommitListeners();
+									}
 								}
 							}
 							else
 							{
-								LuceneDynamicRefexIndexerConfiguration.disableIndex(assemblageConcept_.getNid());
+								AppContext.getRuntimeGlobals().disableAllCommitListeners();
+								try
+								{
+									LuceneDynamicRefexIndexerConfiguration.disableIndex(assemblageConcept_.getNid());
+								}
+								finally
+								{
+									AppContext.getRuntimeGlobals().enableAllCommitListeners();
+								}
 							}
 							return null;
 						}
