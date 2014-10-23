@@ -159,12 +159,12 @@
 <a class="jxr_linenumber" name="149" href="#149">149</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()</em>
 <a class="jxr_linenumber" name="150" href="#150">150</a> <em class="jxr_javadoccomment">	 */</em>
 <a class="jxr_linenumber" name="151" href="#151">151</a> 	@Override
-<a class="jxr_linenumber" name="152" href="#152">152</a> 	<strong class="jxr_keyword">public</strong> CustomTask&lt;String&gt; createTask()
+<a class="jxr_linenumber" name="152" href="#152">152</a> 	<strong class="jxr_keyword">public</strong> CustomTask&lt;OperationResult&gt; createTask()
 <a class="jxr_linenumber" name="153" href="#153">153</a> 	{
-<a class="jxr_linenumber" name="154" href="#154">154</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> CustomTask&lt;String&gt;(RoleReplaceValue.<strong class="jxr_keyword">this</strong>)
+<a class="jxr_linenumber" name="154" href="#154">154</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> CustomTask&lt;OperationResult&gt;(RoleReplaceValue.<strong class="jxr_keyword">this</strong>)
 <a class="jxr_linenumber" name="155" href="#155">155</a> 		{
 <a class="jxr_linenumber" name="156" href="#156">156</a> 			@Override
-<a class="jxr_linenumber" name="157" href="#157">157</a> 			<strong class="jxr_keyword">protected</strong> String call() <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="157" href="#157">157</a> 			<strong class="jxr_keyword">protected</strong> <a href="../../../../../../gov/va/isaac/gui/listview/operations/OperationResult.html">OperationResult</a> call() <strong class="jxr_keyword">throws</strong> Exception
 <a class="jxr_linenumber" name="158" href="#158">158</a> 			{
 <a class="jxr_linenumber" name="159" href="#159">159</a> <em class="jxr_comment">//				double i = 0;</em>
 <a class="jxr_linenumber" name="160" href="#160">160</a> <em class="jxr_comment">//				for (SimpleDisplayConcept c : conceptList_)</em>
@@ -191,7 +191,7 @@
 <a class="jxr_linenumber" name="181" href="#181">181</a> <em class="jxr_comment">//				}</em>
 <a class="jxr_linenumber" name="182" href="#182">182</a> <em class="jxr_comment">//				return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";</em>
 <a class="jxr_linenumber" name="183" href="#183">183</a> 				<em class="jxr_comment">//TODO implement RoleReplaceValue</em>
-<a class="jxr_linenumber" name="184" href="#184">184</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Not yet implemented"</span>;
+<a class="jxr_linenumber" name="184" href="#184">184</a> 				<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/listview/operations/OperationResult.html">OperationResult</a>();
 <a class="jxr_linenumber" name="185" href="#185">185</a> 			}
 <a class="jxr_linenumber" name="186" href="#186">186</a> 		};
 <a class="jxr_linenumber" name="187" href="#187">187</a> 	}

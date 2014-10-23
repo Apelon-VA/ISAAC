@@ -118,12 +118,12 @@
 <a class="jxr_linenumber" name="108" href="#108">108</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()</em>
 <a class="jxr_linenumber" name="109" href="#109">109</a> <em class="jxr_javadoccomment">	 */</em>
 <a class="jxr_linenumber" name="110" href="#110">110</a> 	@Override
-<a class="jxr_linenumber" name="111" href="#111">111</a> 	<strong class="jxr_keyword">public</strong> CustomTask&lt;String&gt; createTask()
+<a class="jxr_linenumber" name="111" href="#111">111</a> 	<strong class="jxr_keyword">public</strong> CustomTask&lt;OperationResult&gt; createTask()
 <a class="jxr_linenumber" name="112" href="#112">112</a> 	{
-<a class="jxr_linenumber" name="113" href="#113">113</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> CustomTask&lt;String&gt;(ParentAddNew.<strong class="jxr_keyword">this</strong>)
+<a class="jxr_linenumber" name="113" href="#113">113</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> CustomTask&lt;OperationResult&gt;(ParentAddNew.<strong class="jxr_keyword">this</strong>)
 <a class="jxr_linenumber" name="114" href="#114">114</a> 		{
 <a class="jxr_linenumber" name="115" href="#115">115</a> 			@Override
-<a class="jxr_linenumber" name="116" href="#116">116</a> 			<strong class="jxr_keyword">protected</strong> String call() <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="116" href="#116">116</a> 			<strong class="jxr_keyword">protected</strong> <a href="../../../../../../gov/va/isaac/gui/listview/operations/OperationResult.html">OperationResult</a> call() <strong class="jxr_keyword">throws</strong> Exception
 <a class="jxr_linenumber" name="117" href="#117">117</a> 			{
 <a class="jxr_linenumber" name="118" href="#118">118</a> <em class="jxr_comment">//				double i = 0;</em>
 <a class="jxr_linenumber" name="119" href="#119">119</a> <em class="jxr_comment">//				for (SimpleDisplayConcept c : conceptList_)</em>
@@ -150,7 +150,7 @@
 <a class="jxr_linenumber" name="140" href="#140">140</a> <em class="jxr_comment">//				}</em>
 <a class="jxr_linenumber" name="141" href="#141">141</a> <em class="jxr_comment">//				return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";</em>
 <a class="jxr_linenumber" name="142" href="#142">142</a> 				<em class="jxr_comment">//TODO implement ParentAddNew</em>
-<a class="jxr_linenumber" name="143" href="#143">143</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Not yet implemented"</span>;
+<a class="jxr_linenumber" name="143" href="#143">143</a> 				<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/listview/operations/OperationResult.html">OperationResult</a>();
 <a class="jxr_linenumber" name="144" href="#144">144</a> 			}
 <a class="jxr_linenumber" name="145" href="#145">145</a> 		};
 <a class="jxr_linenumber" name="146" href="#146">146</a> 	}

@@ -316,7 +316,7 @@
 <a class="jxr_linenumber" name="306" href="#306">306</a> 				<strong class="jxr_keyword">synchronized</strong> (runningSearches)
 <a class="jxr_linenumber" name="307" href="#307">307</a> 				{
 <a class="jxr_linenumber" name="308" href="#308">308</a> 					<strong class="jxr_keyword">int</strong> id = searchCounter++;
-<a class="jxr_linenumber" name="309" href="#309">309</a> 					SearchHandle ssh = SearchHandler.prefixSearch(text, 5, <strong class="jxr_keyword">this</strong>, id);
+<a class="jxr_linenumber" name="309" href="#309">309</a> 					SearchHandle ssh = SearchHandler.descriptionSearch(text, 5, <strong class="jxr_keyword">true</strong>, <strong class="jxr_keyword">this</strong>, id, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="310" href="#310">310</a> 					runningSearches.put(id, ssh);
 <a class="jxr_linenumber" name="311" href="#311">311</a> 				}
 <a class="jxr_linenumber" name="312" href="#312">312</a> 			}
@@ -371,13 +371,13 @@
 <a class="jxr_linenumber" name="361" href="#361">361</a> 		VBox box = <strong class="jxr_keyword">new</strong> VBox();
 <a class="jxr_linenumber" name="362" href="#362">362</a> 		box.setPadding(<strong class="jxr_keyword">new</strong> Insets(3, 3, 3, 3));
 <a class="jxr_linenumber" name="363" href="#363">363</a> 
-<a class="jxr_linenumber" name="364" href="#364">364</a> 		ConceptVersionBI c = result.getConcept();
+<a class="jxr_linenumber" name="364" href="#364">364</a> 		ConceptVersionBI c = result.getContainingConcept();
 <a class="jxr_linenumber" name="365" href="#365">365</a> 
 <a class="jxr_linenumber" name="366" href="#366">366</a> 		Label concept = <strong class="jxr_keyword">new</strong> Label(WBUtility.getDescription(c));
 <a class="jxr_linenumber" name="367" href="#367">367</a> 		concept.getStyleClass().add(<span class="jxr_string">"lookAheadBoldLabel"</span>);
 <a class="jxr_linenumber" name="368" href="#368">368</a> 		box.getChildren().add(concept);
 <a class="jxr_linenumber" name="369" href="#369">369</a> 
-<a class="jxr_linenumber" name="370" href="#370">370</a> 		<strong class="jxr_keyword">for</strong> (String s : result.getMatchStrings())
+<a class="jxr_linenumber" name="370" href="#370">370</a> 		<strong class="jxr_keyword">for</strong> (String s : result.getMatchingStrings())
 <a class="jxr_linenumber" name="371" href="#371">371</a> 		{
 <a class="jxr_linenumber" name="372" href="#372">372</a> 			<strong class="jxr_keyword">if</strong> (s.equals(WBUtility.getDescription(c)))
 <a class="jxr_linenumber" name="373" href="#373">373</a> 			{

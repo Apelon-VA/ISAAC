@@ -30,42 +30,42 @@
 <a class="jxr_linenumber" name="20" href="#20">20</a>  
 <a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.AppContext;
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.util.Images;
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.MenuItemI;
-<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.DockedViewI;
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.ExportDialog;
-<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.ImportDialogController;
-<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.LegoSummaryPane;
-<a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.legoFilterPane.LegoFilterPaneController;
-<a class="jxr_linenumber" name="29" href="#29">29</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.model.LegoListByReference;
-<a class="jxr_linenumber" name="30" href="#30">30</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.model.schemaModel.LegoList;
-<a class="jxr_linenumber" name="31" href="#31">31</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.storage.BDBDataStoreImpl;
-<a class="jxr_linenumber" name="32" href="#32">32</a>  <strong class="jxr_keyword">import</strong> java.io.File;
-<a class="jxr_linenumber" name="33" href="#33">33</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
-<a class="jxr_linenumber" name="34" href="#34">34</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
-<a class="jxr_linenumber" name="35" href="#35">35</a>  <strong class="jxr_keyword">import</strong> java.util.List;
-<a class="jxr_linenumber" name="36" href="#36">36</a>  <strong class="jxr_keyword">import</strong> javafx.application.Platform;
-<a class="jxr_linenumber" name="37" href="#37">37</a>  <strong class="jxr_keyword">import</strong> javafx.fxml.FXMLLoader;
-<a class="jxr_linenumber" name="38" href="#38">38</a>  <strong class="jxr_keyword">import</strong> javafx.scene.Parent;
-<a class="jxr_linenumber" name="39" href="#39">39</a>  <strong class="jxr_keyword">import</strong> javafx.scene.Scene;
-<a class="jxr_linenumber" name="40" href="#40">40</a>  <strong class="jxr_keyword">import</strong> javafx.scene.image.Image;
-<a class="jxr_linenumber" name="41" href="#41">41</a>  <strong class="jxr_keyword">import</strong> javafx.scene.layout.Region;
-<a class="jxr_linenumber" name="42" href="#42">42</a>  <strong class="jxr_keyword">import</strong> javafx.stage.FileChooser;
-<a class="jxr_linenumber" name="43" href="#43">43</a>  <strong class="jxr_keyword">import</strong> javafx.stage.Modality;
-<a class="jxr_linenumber" name="44" href="#44">44</a>  <strong class="jxr_keyword">import</strong> javafx.stage.Stage;
-<a class="jxr_linenumber" name="45" href="#45">45</a>  <strong class="jxr_keyword">import</strong> javafx.stage.StageStyle;
-<a class="jxr_linenumber" name="46" href="#46">46</a>  <strong class="jxr_keyword">import</strong> javafx.stage.Window;
-<a class="jxr_linenumber" name="47" href="#47">47</a>  <strong class="jxr_keyword">import</strong> javax.inject.Singleton;
-<a class="jxr_linenumber" name="48" href="#48">48</a>  <strong class="jxr_keyword">import</strong> org.jvnet.hk2.annotations.Service;
-<a class="jxr_linenumber" name="49" href="#49">49</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
-<a class="jxr_linenumber" name="50" href="#50">50</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
-<a class="jxr_linenumber" name="51" href="#51">51</a>  <strong class="jxr_keyword">import</strong> com.sun.javafx.tk.Toolkit;
-<a class="jxr_linenumber" name="52" href="#52">52</a>  
-<a class="jxr_linenumber" name="53" href="#53">53</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="54" href="#54">54</a>  <em class="jxr_javadoccomment"> * {@link LegoListView}</em>
-<a class="jxr_linenumber" name="55" href="#55">55</a>  <em class="jxr_javadoccomment"> *</em>
-<a class="jxr_linenumber" name="56" href="#56">56</a>  <em class="jxr_javadoccomment"> * @author &lt;a href="<a href="mailto:daniel.armbrust.list@gmail.com" target="alexandria_uri">mailto:daniel.armbrust.list@gmail.com</a>"&gt;Dan Armbrust&lt;/a&gt; </em>
-<a class="jxr_linenumber" name="57" href="#57">57</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="58" href="#58">58</a>  @SuppressWarnings(<span class="jxr_string">"restriction"</span>)
+<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.ApplicationMenus;
+<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.MenuItemI;
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.DockedViewI;
+<a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.ExportDialog;
+<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.ImportDialogController;
+<a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.LegoSummaryPane;
+<a class="jxr_linenumber" name="29" href="#29">29</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.gui.legoFilterPane.LegoFilterPaneController;
+<a class="jxr_linenumber" name="30" href="#30">30</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.model.LegoListByReference;
+<a class="jxr_linenumber" name="31" href="#31">31</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.model.schemaModel.LegoList;
+<a class="jxr_linenumber" name="32" href="#32">32</a>  <strong class="jxr_keyword">import</strong> gov.va.legoEdit.storage.BDBDataStoreImpl;
+<a class="jxr_linenumber" name="33" href="#33">33</a>  <strong class="jxr_keyword">import</strong> java.io.File;
+<a class="jxr_linenumber" name="34" href="#34">34</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
+<a class="jxr_linenumber" name="35" href="#35">35</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="36" href="#36">36</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="37" href="#37">37</a>  <strong class="jxr_keyword">import</strong> javafx.application.Platform;
+<a class="jxr_linenumber" name="38" href="#38">38</a>  <strong class="jxr_keyword">import</strong> javafx.fxml.FXMLLoader;
+<a class="jxr_linenumber" name="39" href="#39">39</a>  <strong class="jxr_keyword">import</strong> javafx.scene.Parent;
+<a class="jxr_linenumber" name="40" href="#40">40</a>  <strong class="jxr_keyword">import</strong> javafx.scene.Scene;
+<a class="jxr_linenumber" name="41" href="#41">41</a>  <strong class="jxr_keyword">import</strong> javafx.scene.image.Image;
+<a class="jxr_linenumber" name="42" href="#42">42</a>  <strong class="jxr_keyword">import</strong> javafx.scene.layout.Region;
+<a class="jxr_linenumber" name="43" href="#43">43</a>  <strong class="jxr_keyword">import</strong> javafx.stage.FileChooser;
+<a class="jxr_linenumber" name="44" href="#44">44</a>  <strong class="jxr_keyword">import</strong> javafx.stage.Modality;
+<a class="jxr_linenumber" name="45" href="#45">45</a>  <strong class="jxr_keyword">import</strong> javafx.stage.Stage;
+<a class="jxr_linenumber" name="46" href="#46">46</a>  <strong class="jxr_keyword">import</strong> javafx.stage.StageStyle;
+<a class="jxr_linenumber" name="47" href="#47">47</a>  <strong class="jxr_keyword">import</strong> javafx.stage.Window;
+<a class="jxr_linenumber" name="48" href="#48">48</a>  <strong class="jxr_keyword">import</strong> javax.inject.Singleton;
+<a class="jxr_linenumber" name="49" href="#49">49</a>  <strong class="jxr_keyword">import</strong> org.jvnet.hk2.annotations.Service;
+<a class="jxr_linenumber" name="50" href="#50">50</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
+<a class="jxr_linenumber" name="51" href="#51">51</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
+<a class="jxr_linenumber" name="52" href="#52">52</a>  <strong class="jxr_keyword">import</strong> com.sun.javafx.tk.Toolkit;
+<a class="jxr_linenumber" name="53" href="#53">53</a>  
+<a class="jxr_linenumber" name="54" href="#54">54</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="55" href="#55">55</a>  <em class="jxr_javadoccomment"> * {@link LegoListView}</em>
+<a class="jxr_linenumber" name="56" href="#56">56</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="57" href="#57">57</a>  <em class="jxr_javadoccomment"> * @author &lt;a href="<a href="mailto:daniel.armbrust.list@gmail.com" target="alexandria_uri">mailto:daniel.armbrust.list@gmail.com</a>"&gt;Dan Armbrust&lt;/a&gt; </em>
+<a class="jxr_linenumber" name="58" href="#58">58</a>  <em class="jxr_javadoccomment"> */</em>
 <a class="jxr_linenumber" name="59" href="#59">59</a>  @Service
 <a class="jxr_linenumber" name="60" href="#60">60</a>  @Singleton
 <a class="jxr_linenumber" name="61" href="#61">61</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/legoEdit/gui/legoListView/LegoListView.html">LegoListView</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../gov/va/isaac/interfaces/gui/views/DockedViewI.html">DockedViewI</a>
@@ -135,7 +135,7 @@
 <a class="jxr_linenumber" name="125" href="#125">125</a> 			@Override
 <a class="jxr_linenumber" name="126" href="#126">126</a> 			<strong class="jxr_keyword">public</strong> String getParentMenuId()
 <a class="jxr_linenumber" name="127" href="#127">127</a> 			{
-<a class="jxr_linenumber" name="128" href="#128">128</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"importExportMenu"</span>;
+<a class="jxr_linenumber" name="128" href="#128">128</a> 				<strong class="jxr_keyword">return</strong> ApplicationMenus.IMPORT_EXPORT.getMenuId();
 <a class="jxr_linenumber" name="129" href="#129">129</a> 			}
 <a class="jxr_linenumber" name="130" href="#130">130</a> 			
 <a class="jxr_linenumber" name="131" href="#131">131</a> 			@Override
@@ -191,7 +191,7 @@
 <a class="jxr_linenumber" name="181" href="#181">181</a> 			@Override
 <a class="jxr_linenumber" name="182" href="#182">182</a> 			<strong class="jxr_keyword">public</strong> String getParentMenuId()
 <a class="jxr_linenumber" name="183" href="#183">183</a> 			{
-<a class="jxr_linenumber" name="184" href="#184">184</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"importExportMenu"</span>;
+<a class="jxr_linenumber" name="184" href="#184">184</a> 				<strong class="jxr_keyword">return</strong> ApplicationMenus.IMPORT_EXPORT.getMenuId();
 <a class="jxr_linenumber" name="185" href="#185">185</a> 			}
 <a class="jxr_linenumber" name="186" href="#186">186</a> 			
 <a class="jxr_linenumber" name="187" href="#187">187</a> 			@Override
@@ -252,7 +252,7 @@
 <a class="jxr_linenumber" name="242" href="#242">242</a> 			@Override
 <a class="jxr_linenumber" name="243" href="#243">243</a> 			<strong class="jxr_keyword">public</strong> String getParentMenuId()
 <a class="jxr_linenumber" name="244" href="#244">244</a> 			{
-<a class="jxr_linenumber" name="245" href="#245">245</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"importExportMenu"</span>;
+<a class="jxr_linenumber" name="245" href="#245">245</a> 				<strong class="jxr_keyword">return</strong> ApplicationMenus.IMPORT_EXPORT.getMenuId();
 <a class="jxr_linenumber" name="246" href="#246">246</a> 			}
 <a class="jxr_linenumber" name="247" href="#247">247</a> 			
 <a class="jxr_linenumber" name="248" href="#248">248</a> 			@Override
@@ -308,7 +308,7 @@
 <a class="jxr_linenumber" name="298" href="#298">298</a> 			@Override
 <a class="jxr_linenumber" name="299" href="#299">299</a> 			<strong class="jxr_keyword">public</strong> String getParentMenuId()
 <a class="jxr_linenumber" name="300" href="#300">300</a> 			{
-<a class="jxr_linenumber" name="301" href="#301">301</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"panelsMenu"</span>;
+<a class="jxr_linenumber" name="301" href="#301">301</a> 				<strong class="jxr_keyword">return</strong> ApplicationMenus.PANELS.getMenuId();
 <a class="jxr_linenumber" name="302" href="#302">302</a> 			}
 <a class="jxr_linenumber" name="303" href="#303">303</a> 			
 <a class="jxr_linenumber" name="304" href="#304">304</a> 			@Override

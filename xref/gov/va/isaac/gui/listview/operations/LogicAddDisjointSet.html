@@ -102,12 +102,12 @@
 <a class="jxr_linenumber" name="92" href="#92">92</a>  <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.listview.operations.Operation#createTask()</em>
 <a class="jxr_linenumber" name="93" href="#93">93</a>  <em class="jxr_javadoccomment">	 */</em>
 <a class="jxr_linenumber" name="94" href="#94">94</a>  	@Override
-<a class="jxr_linenumber" name="95" href="#95">95</a>  	<strong class="jxr_keyword">public</strong> CustomTask&lt;String&gt; createTask()
+<a class="jxr_linenumber" name="95" href="#95">95</a>  	<strong class="jxr_keyword">public</strong> CustomTask&lt;OperationResult&gt; createTask()
 <a class="jxr_linenumber" name="96" href="#96">96</a>  	{
-<a class="jxr_linenumber" name="97" href="#97">97</a>  		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> CustomTask&lt;String&gt;(LogicAddDisjointSet.<strong class="jxr_keyword">this</strong>)
+<a class="jxr_linenumber" name="97" href="#97">97</a>  		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> CustomTask&lt;OperationResult&gt;(LogicAddDisjointSet.<strong class="jxr_keyword">this</strong>)
 <a class="jxr_linenumber" name="98" href="#98">98</a>  		{
 <a class="jxr_linenumber" name="99" href="#99">99</a>  			@Override
-<a class="jxr_linenumber" name="100" href="#100">100</a> 			<strong class="jxr_keyword">protected</strong> String call() <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="100" href="#100">100</a> 			<strong class="jxr_keyword">protected</strong> <a href="../../../../../../gov/va/isaac/gui/listview/operations/OperationResult.html">OperationResult</a> call() <strong class="jxr_keyword">throws</strong> Exception
 <a class="jxr_linenumber" name="101" href="#101">101</a> 			{
 <a class="jxr_linenumber" name="102" href="#102">102</a> <em class="jxr_comment">//				double i = 0;</em>
 <a class="jxr_linenumber" name="103" href="#103">103</a> <em class="jxr_comment">//				for (SimpleDisplayConcept c : conceptList_)</em>
@@ -134,7 +134,7 @@
 <a class="jxr_linenumber" name="124" href="#124">124</a> <em class="jxr_comment">//				}</em>
 <a class="jxr_linenumber" name="125" href="#125">125</a> <em class="jxr_comment">//				return ParentAddNew.this.getTitle() + " completed - modified 0 concepts";</em>
 <a class="jxr_linenumber" name="126" href="#126">126</a> 				<em class="jxr_comment">//TODO implement LogicAddDisjointSet</em>
-<a class="jxr_linenumber" name="127" href="#127">127</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Not yet implemented"</span>;
+<a class="jxr_linenumber" name="127" href="#127">127</a> 				<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/listview/operations/OperationResult.html">OperationResult</a>();
 <a class="jxr_linenumber" name="128" href="#128">128</a> 			}
 <a class="jxr_linenumber" name="129" href="#129">129</a> 		};
 <a class="jxr_linenumber" name="130" href="#130">130</a> 	}

@@ -30,7 +30,7 @@
 <a class="jxr_linenumber" name="20" href="#20">20</a>  
 <a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.model.InformationModelType;
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.models.InformationModel;
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.models.util.AbstractInformationModel;
+<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.models.util.DefaultInformationModel;
 <a class="jxr_linenumber" name="24" href="#24">24</a>  
 <a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> java.util.List;
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
@@ -44,7 +44,7 @@
 <a class="jxr_linenumber" name="34" href="#34">34</a>  <strong class="jxr_keyword">import</strong> com.google.common.collect.Lists;
 <a class="jxr_linenumber" name="35" href="#35">35</a>  <strong class="jxr_keyword">import</strong> com.google.common.collect.Sets;
 <a class="jxr_linenumber" name="36" href="#36">36</a>  
-<a class="jxr_linenumber" name="37" href="#37">37</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">FHIMInformationModel</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../../gov/va/isaac/models/util/AbstractInformationModel.html">AbstractInformationModel</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> {
+<a class="jxr_linenumber" name="37" href="#37">37</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">FHIMInformationModel</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../../gov/va/isaac/models/util/DefaultInformationModel.html">DefaultInformationModel</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> {
 <a class="jxr_linenumber" name="38" href="#38">38</a>  
 <a class="jxr_linenumber" name="39" href="#39">39</a>      <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="40" href="#40">40</a>  <em class="jxr_javadoccomment">     * For unlimited values, see {@link LiteralUnlimitedNatural}</em>
@@ -224,42 +224,46 @@
 <a class="jxr_linenumber" name="214" href="#214">214</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> List&lt;Dependency&gt; dependencies = Lists.newArrayList();
 <a class="jxr_linenumber" name="215" href="#215">215</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> List&lt;Association&gt; associations = Lists.newArrayList();
 <a class="jxr_linenumber" name="216" href="#216">216</a> 
-<a class="jxr_linenumber" name="217" href="#217">217</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">FHIMInformationModel</a>(String name, UUID uuid) {
-<a class="jxr_linenumber" name="218" href="#218">218</a>         <strong class="jxr_keyword">super</strong>(name, uuid, InformationModelType.FHIM);
-<a class="jxr_linenumber" name="219" href="#219">219</a>     }
+<a class="jxr_linenumber" name="217" href="#217">217</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">FHIMInformationModel</a>(<a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model) {
+<a class="jxr_linenumber" name="218" href="#218">218</a>       <strong class="jxr_keyword">super</strong>(model);
+<a class="jxr_linenumber" name="219" href="#219">219</a>   }
 <a class="jxr_linenumber" name="220" href="#220">220</a> 
-<a class="jxr_linenumber" name="221" href="#221">221</a>     <strong class="jxr_keyword">public</strong> List&lt;Enumeration&gt; getEnumerations() {
-<a class="jxr_linenumber" name="222" href="#222">222</a>         <strong class="jxr_keyword">return</strong> enumerations;
-<a class="jxr_linenumber" name="223" href="#223">223</a>     }
+<a class="jxr_linenumber" name="221" href="#221">221</a>     <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">FHIMInformationModel</a>(String name, UUID uuid) {
+<a class="jxr_linenumber" name="222" href="#222">222</a>       <strong class="jxr_keyword">super</strong>(name, <strong class="jxr_keyword">null</strong>, uuid, InformationModelType.FHIM);
+<a class="jxr_linenumber" name="223" href="#223">223</a>   }
 <a class="jxr_linenumber" name="224" href="#224">224</a> 
-<a class="jxr_linenumber" name="225" href="#225">225</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addEnumeration(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Enumeration</a> enumeration) {
-<a class="jxr_linenumber" name="226" href="#226">226</a>         enumerations.add(enumeration);
+<a class="jxr_linenumber" name="225" href="#225">225</a>     <strong class="jxr_keyword">public</strong> List&lt;Enumeration&gt; getEnumerations() {
+<a class="jxr_linenumber" name="226" href="#226">226</a>         <strong class="jxr_keyword">return</strong> enumerations;
 <a class="jxr_linenumber" name="227" href="#227">227</a>     }
 <a class="jxr_linenumber" name="228" href="#228">228</a> 
-<a class="jxr_linenumber" name="229" href="#229">229</a>     <strong class="jxr_keyword">public</strong> List&lt;Class&gt; getClasses() {
-<a class="jxr_linenumber" name="230" href="#230">230</a>         <strong class="jxr_keyword">return</strong> classes;
+<a class="jxr_linenumber" name="229" href="#229">229</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addEnumeration(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Enumeration</a> enumeration) {
+<a class="jxr_linenumber" name="230" href="#230">230</a>         enumerations.add(enumeration);
 <a class="jxr_linenumber" name="231" href="#231">231</a>     }
 <a class="jxr_linenumber" name="232" href="#232">232</a> 
-<a class="jxr_linenumber" name="233" href="#233">233</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addClass(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Class</a> clazz) {
-<a class="jxr_linenumber" name="234" href="#234">234</a>         classes.add(clazz);
+<a class="jxr_linenumber" name="233" href="#233">233</a>     <strong class="jxr_keyword">public</strong> List&lt;Class&gt; getClasses() {
+<a class="jxr_linenumber" name="234" href="#234">234</a>         <strong class="jxr_keyword">return</strong> classes;
 <a class="jxr_linenumber" name="235" href="#235">235</a>     }
 <a class="jxr_linenumber" name="236" href="#236">236</a> 
-<a class="jxr_linenumber" name="237" href="#237">237</a>     <strong class="jxr_keyword">public</strong> List&lt;Dependency&gt; getDependencies() {
-<a class="jxr_linenumber" name="238" href="#238">238</a>         <strong class="jxr_keyword">return</strong> dependencies;
+<a class="jxr_linenumber" name="237" href="#237">237</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addClass(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Class</a> clazz) {
+<a class="jxr_linenumber" name="238" href="#238">238</a>         classes.add(clazz);
 <a class="jxr_linenumber" name="239" href="#239">239</a>     }
 <a class="jxr_linenumber" name="240" href="#240">240</a> 
-<a class="jxr_linenumber" name="241" href="#241">241</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addDependency(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Dependency</a> dependency) {
-<a class="jxr_linenumber" name="242" href="#242">242</a>         dependencies.add(dependency);
+<a class="jxr_linenumber" name="241" href="#241">241</a>     <strong class="jxr_keyword">public</strong> List&lt;Dependency&gt; getDependencies() {
+<a class="jxr_linenumber" name="242" href="#242">242</a>         <strong class="jxr_keyword">return</strong> dependencies;
 <a class="jxr_linenumber" name="243" href="#243">243</a>     }
 <a class="jxr_linenumber" name="244" href="#244">244</a> 
-<a class="jxr_linenumber" name="245" href="#245">245</a>     <strong class="jxr_keyword">public</strong> List&lt;Association&gt; getAssociations() {
-<a class="jxr_linenumber" name="246" href="#246">246</a>         <strong class="jxr_keyword">return</strong> associations;
+<a class="jxr_linenumber" name="245" href="#245">245</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addDependency(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Dependency</a> dependency) {
+<a class="jxr_linenumber" name="246" href="#246">246</a>         dependencies.add(dependency);
 <a class="jxr_linenumber" name="247" href="#247">247</a>     }
 <a class="jxr_linenumber" name="248" href="#248">248</a> 
-<a class="jxr_linenumber" name="249" href="#249">249</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addAssociation(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Association</a> association) {
-<a class="jxr_linenumber" name="250" href="#250">250</a>         associations.add(association);
+<a class="jxr_linenumber" name="249" href="#249">249</a>     <strong class="jxr_keyword">public</strong> List&lt;Association&gt; getAssociations() {
+<a class="jxr_linenumber" name="250" href="#250">250</a>         <strong class="jxr_keyword">return</strong> associations;
 <a class="jxr_linenumber" name="251" href="#251">251</a>     }
-<a class="jxr_linenumber" name="252" href="#252">252</a> }
+<a class="jxr_linenumber" name="252" href="#252">252</a> 
+<a class="jxr_linenumber" name="253" href="#253">253</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> addAssociation(<a href="../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Association</a> association) {
+<a class="jxr_linenumber" name="254" href="#254">254</a>         associations.add(association);
+<a class="jxr_linenumber" name="255" href="#255">255</a>     }
+<a class="jxr_linenumber" name="256" href="#256">256</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>
