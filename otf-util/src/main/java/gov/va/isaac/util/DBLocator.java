@@ -72,8 +72,9 @@ public class DBLocator
 				//If it is a folder with a '.bdb' at the end of the name, then berkeley-db will be in a sub-folder.
 				if (f.getName().endsWith(".bdb") && f.isDirectory())
 				{
-					LOG.info("BDB Location set to " + inputFolder.getAbsolutePath());
-					return new File(f, "berkeley-db");
+					File berkeley = new File(f, "berkeley-db"); 
+					LOG.info("BDB Location set to " + berkeley.getAbsolutePath());
+					return berkeley;
 				}
 			}
 		}
