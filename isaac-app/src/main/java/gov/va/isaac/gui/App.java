@@ -328,7 +328,13 @@ public class App extends Application implements ApplicationWindowI{
         
         try
         {
-            configDataStorePaths(new File("berkeley-db"));
+            if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
+            {
+                configDataStorePaths(new File(BdbTerminologyStore.DEFAULT_BDB_LOCATION));
+            } else {
+                configDataStorePaths(new File(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY)));
+            }
+
         }
         catch (IOException e)
         {

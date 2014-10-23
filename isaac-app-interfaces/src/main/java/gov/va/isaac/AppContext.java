@@ -25,6 +25,10 @@ import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializer;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +43,9 @@ import org.slf4j.LoggerFactory;
  */
 public class AppContext
 {
+	public static final String READ_INHABITANT_FILES = "gov.va.isaac.AppContext.READ_INHABITANT_FILES";
+	public static final String EXTRA_PACKAGES_TO_SEARCH = "gov.va.isaac.AppContext.EXTRA_PACKAGES_TO_SEARCH";
+
 	private static ServiceLocator serviceLocator_;
 
 	private static Logger log_ = LoggerFactory.getLogger(AppContext.class);
@@ -61,7 +68,16 @@ public class AppContext
 		{
 			throw new RuntimeException("Only one service locator should be set");
 		}
-		serviceLocator_ = HK2RuntimeInitializer.init("ISAAC", false, "gov.va", "org.ihtsdo");
+		ArrayList<String> packagesToSearch = new ArrayList(Arrays.asList("gov.va", "org.ihtsdo"));
+
+		boolean readInhabitantFiles = Boolean.getBoolean(System.getProperty(READ_INHABITANT_FILES, "false"));
+		if (System.getProperty(EXTRA_PACKAGES_TO_SEARCH) != null) {
+			String[] extraPackagesToSearch = System.getProperty(EXTRA_PACKAGES_TO_SEARCH).split(";");
+			for (String packageToSearch: extraPackagesToSearch) {
+				packagesToSearch.add(packageToSearch);
+			}
+		}
+		serviceLocator_ = HK2RuntimeInitializer.init("ISAAC", readInhabitantFiles, packagesToSearch.toArray(new String[]{}));
 	}
 
 	/**
