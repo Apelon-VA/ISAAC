@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.gui.enhancedsearchview;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
@@ -342,7 +343,17 @@ public class SearchConceptHelper {
 			ConceptChronicleBI searchConcept = buildSearchConcept(model, saveConceptFSN, saveConceptPT);
 
 			ExtendedAppContext.getDataStore().addUncommitted(searchConcept);
-			ExtendedAppContext.getDataStore().commit(searchConcept);
+		    try
+			{
+				AppContext.getRuntimeGlobals().disableAllCommitListeners();
+				ExtendedAppContext.getDataStore().commit(searchConcept);
+			} catch (Exception e) {
+				LOG.error("Coudn't Disable WF Init & Commit Creation of Search Concept", e);
+			}
+			finally
+			{
+			    AppContext.getRuntimeGlobals().enableAllCommitListeners();
+			}
 
 		} catch (IOException e) {
 			throw new SearchConceptException(e.getLocalizedMessage(), e);

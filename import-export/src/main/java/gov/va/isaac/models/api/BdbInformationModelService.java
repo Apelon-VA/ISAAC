@@ -537,7 +537,7 @@ public class BdbInformationModelService implements InformationModelService {
 		AppContext.getRuntimeGlobals().disableAllCommitListeners();
 	    WBUtility.commit();
 	} catch (Exception e) {
-		LOG.error("Coudn't Disable WF Init & Commit CEM Information Model Metadata");
+		LOG.error("Coudn't Disable WF Init & Commit CEM Information Model", e);
 	}
 	finally
 	{
@@ -897,7 +897,17 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("    PT = " + WBUtility.getConPrefTerm(relTypeConcept.getNid()));
     LOG.debug("    UUID = " + relTypeConcept.getPrimordialUuid());
     dataStore.addUncommitted(relTypeConcept);
-    dataStore.commit(relTypeConcept);
+    try
+	{
+		AppContext.getRuntimeGlobals().disableAllCommitListeners();
+	    dataStore.commit(relTypeConcept);
+	} catch (Exception e) {
+		LOG.error("Coudn't Disable WF Init & Commit CEM Information Model Metadata", e);
+	}
+	finally
+	{
+	    AppContext.getRuntimeGlobals().enableAllCommitListeners();
+	}
 
   }
 
