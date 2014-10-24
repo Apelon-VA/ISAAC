@@ -532,7 +532,17 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("  add uncommitted");
     WBUtility.addUncommitted(modelConcept);
     LOG.debug("  commit");
-    WBUtility.commit();
+    try
+	{
+		AppContext.getRuntimeGlobals().disableAllCommitListeners();
+	    WBUtility.commit();
+	} catch (Exception e) {
+		LOG.error("Coudn't Disable WF Init & Commit CEM Information Model Metadata");
+	}
+	finally
+	{
+	    AppContext.getRuntimeGlobals().enableAllCommitListeners();
+	}
 
     return modelConcept;
   }
