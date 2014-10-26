@@ -120,6 +120,20 @@
                 </exclusions>
             </dependency>
             
+            <dependency>
+                <groupId>org.ihtsdo.otf</groupId>
+                <artifactId>query-jaxb-objects</artifactId>
+                <version>${otf-query.version}</version>
+                <type>jar</type>
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <!-- The native logback implementation (note, the logback api comes from parent) -->
             <dependency> 
                 <groupId>ch.qos.logback</groupId>
