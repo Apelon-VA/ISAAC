@@ -45,7 +45,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class CredentialsPromptDialog extends Stage
 {
-	private final CredentialsPromptDialogController controller;
+	private CredentialsPromptDialogController controller = null;
 
 	private CredentialsPromptDialog() throws IOException
 	{
