@@ -152,6 +152,10 @@ public class AppController {
                 {
                     menuItem.setGraphic(new ImageView(menuItemsToCreate.getImage()));
                 }
+                if (menuItemsToCreate.getDisableBinding() != null)
+                {
+                    menuItem.disableProperty().bind(menuItemsToCreate.getDisableBinding());
+                }
                 parentMenu.getItems().add(menuItem);
                 //TODO fix this sorting API stuff... supposed to be sorted by the menu order in the menu API - but was never finished... see other TODO below.
                 parentMenu.getItems().sort(new Comparator<MenuItem>() {
