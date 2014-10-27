@@ -1145,6 +1145,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 							}
 						}
 					} catch (Exception ex) {
+						searchRunning.set(false);
 						String title = "Unexpected Search Error";
 						LOG.error(title, ex);
 						AppContext.getCommonDialogs().showErrorDialog(title,
