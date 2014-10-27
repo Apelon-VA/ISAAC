@@ -73,7 +73,7 @@ public class GenerateUsers
 
 	public static void generateUsers() throws InvalidUserException
 	{
-		generateUsers(AppContext.class.getResourceAsStream("/users.xml"));
+		buildMissingUsers(readUserCreationFile());
 	}
 
 	public static void generateUsers(File sourceFile) throws FileNotFoundException, InvalidUserException
@@ -82,6 +82,21 @@ public class GenerateUsers
 	}
 
 	public static void generateUsers(InputStream is) throws InvalidUserException
+	{
+		buildMissingUsers(readUserCreationFile(is));
+	}
+	
+	public static IsaacUserCreation readUserCreationFile() throws InvalidUserException
+	{
+		return readUserCreationFile(AppContext.class.getResourceAsStream("/users.xml"));
+	}
+
+	public static IsaacUserCreation readUserCreationFile(File sourceFile) throws FileNotFoundException, InvalidUserException
+	{
+		return readUserCreationFile(new FileInputStream(sourceFile));
+	}
+	
+	public static IsaacUserCreation readUserCreationFile(InputStream is) throws InvalidUserException
 	{
 		if (is == null)
 		{
@@ -94,8 +109,9 @@ public class GenerateUsers
 			Schema schema = factory.newSchema(new StreamSource(AppContext.class.getResourceAsStream("/xsd/UserGenerationSchema.xsd")));
 			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			jaxbUnmarshaller.setSchema(schema);
-			buildMissingUsers((IsaacUserCreation) jaxbUnmarshaller.unmarshal(is));
+			IsaacUserCreation iuc = (IsaacUserCreation) jaxbUnmarshaller.unmarshal(is);
 			is.close();
+			return iuc;
 		}
 		catch (JAXBException | SAXException | IOException e)
 		{
@@ -223,7 +239,7 @@ public class GenerateUsers
 	}
 
 	/**
-	 * Check if the user already exists in the DB (return false) and if not, validate the incoming parameters, throwing an exception
+	 * Check if the user already exists in the DB (return true) and if not, validate the incoming parameters, throwing an exception
 	 * if anything is amiss with the user definition.
 	 * 
 	 * As a side effect, this populates the UUID field of the incoming user, if it was not yet populated.

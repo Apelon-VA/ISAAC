@@ -197,8 +197,8 @@ public class UserProfileManager implements ServicesToPreloadI
 	}
 
 	/**
-	 * The defaults parameter is optional - if not present, uses hardcoded defaults in {@link UserProfile} for fields that 
-	 * don't come from the {@link User} object.
+	 * The defaults parameter is optional - if not present, first uses defaults supplied in the users.xml file (if present)
+	 * and then uses hardcoded defaults in {@link UserProfile} for fields that don't come from the {@link User} object.
 	 */
 	public void createUserProfile(User user, NewUserDefaults defaults) throws IOException
 	{
@@ -216,8 +216,22 @@ public class UserProfileManager implements ServicesToPreloadI
 		File prefFile = new File(profileFolder, prefsFileName_);
 
 		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword(), UUID.fromString(user.getUUID()));
+
+		if (defaults == null)
+		{
+			try
+			{
+				defaults = GenerateUsers.readUserCreationFile().getNewUserDefaults();
+			}
+			catch (Throwable e)
+			{
+				logger.info("could not locate a default users.xml file to read the NewUserDefaults from");
+			}
+		}
+		
 		if (defaults != null)
 		{
+			
 			if (defaults.getStatedInferredPolicy() != null)
 			{
 				up.setStatedInferredPolicy(defaults.getStatedInferredPolicy());
