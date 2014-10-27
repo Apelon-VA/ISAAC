@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui.util;
 
+import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -53,35 +54,54 @@ import org.apache.commons.lang3.StringUtils;
 public class ErrorMarkerUtils
 {
 	/**
-	 * Setup an 'EXCLAMATION' error marker on the component. Automatically displays anytime that the reasonWhyControlInvalid value
-	 * is not empty. Hides when the reasonWhyControlInvalid is empty.
+	 * @deprecated Use {@link #setupErrorMarker(Control, StackPane, ValidBooleanBinding)} instead
 	 */
 	public static Node setupErrorMarker(Control initialControl, ObservableStringValue reasonWhyControlInvalid)
 	{
 		return setupErrorMarker(initialControl, new StackPane(), reasonWhyControlInvalid);
 	}
-
+	
 	/**
-	 * Setup an 'EXCLAMATION' error marker on the component. Automatically displays anytime that the reasonWhyControlInvalid value
-	 * is not empty. Hides when the reasonWhyControlInvalid is empty.
+	 * @deprecated Use {@link #setupErrorMarker(Control, StackPane, ValidBooleanBinding)} instead
 	 */
 	public static Node setupErrorMarker(Control initialControl, StackPane stackPane, ObservableStringValue reasonWhyControlInvalid)
 	{
+		ValidBooleanBinding binding = new ValidBooleanBinding()
+		{
+			{
+				bind(reasonWhyControlInvalid);
+			}
+			
+			@Override
+			protected boolean computeValue()
+			{
+				if (StringUtils.isNotBlank(reasonWhyControlInvalid.get()))
+				{
+					setInvalidReason(reasonWhyControlInvalid.get());
+					return false;
+				}
+				else
+				{
+					clearInvalidReason();
+					return true;
+				}
+			}
+		};
+		
+		return setupErrorMarker(initialControl, stackPane, binding);
+	}
+
+	/**
+	 * Setup an 'EXCLAMATION' error marker on the component. Automatically displays anytime that the reasonWhyControlInvalid value
+	 * is false. Hides when the isControlCurrentlyValid is true.
+	 */
+	public static Node setupErrorMarker(Node initialNode, StackPane stackPane, ValidBooleanBinding isNodeCurrentlyValid)
+	{
 		ImageView exclamation = Images.EXCLAMATION.createImageView();
 
-		final BooleanProperty showExclamation = new SimpleBooleanProperty(StringUtils.isNotBlank(reasonWhyControlInvalid.get()));
-		reasonWhyControlInvalid.addListener(new ChangeListener<String>()
-		{
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
-			{
-				showExclamation.set(StringUtils.isNotBlank(newValue));
-			}
-		});
-
-		exclamation.visibleProperty().bind(showExclamation);
+		exclamation.visibleProperty().bind(isNodeCurrentlyValid.not());
 		Tooltip tooltip = new Tooltip();
-		tooltip.textProperty().bind(reasonWhyControlInvalid);
+		tooltip.textProperty().bind(isNodeCurrentlyValid.getReasonWhyInvalid());
 		Tooltip.install(exclamation, tooltip);
 		tooltip.setAutoHide(true);
 		
@@ -97,16 +117,16 @@ public class ErrorMarkerUtils
 		});
 
 		stackPane.setMaxWidth(Double.MAX_VALUE);
-		stackPane.getChildren().add(initialControl);
-		StackPane.setAlignment(initialControl, Pos.CENTER_LEFT);
+		stackPane.getChildren().add(initialNode);
+		StackPane.setAlignment(initialNode, Pos.CENTER_LEFT);
 		stackPane.getChildren().add(exclamation);
 		StackPane.setAlignment(exclamation, Pos.CENTER_RIGHT);
 		double insetFromRight;
-		if (initialControl instanceof ComboBox)
+		if (initialNode instanceof ComboBox)
 		{
 			insetFromRight = 30.0;
 		}
-		else if (initialControl instanceof ChoiceBox)
+		else if (initialNode instanceof ChoiceBox)
 		{
 			insetFromRight = 25.0;
 		}
@@ -171,6 +191,21 @@ public class ErrorMarkerUtils
 			StackPane.setMargin(information, new Insets(0.0, insetFromRight, 0.0, 0.0));
 		}
 		return stackPane;
+	}
+	
+	
+	/**
+	 * A convenience method that sets up a new error marker using {@link #swapGridPaneComponents(Node, StackPane, GridPane)} and 
+	 * {@link #setupErrorMarker(Node, StackPane, ValidBooleanBinding)} 
+	 * @param prePlacedNode
+	 * @param whereToPlace
+	 * @param isNodeCurrentlyValid
+	 */
+	public static void setupErrorMarkerAndSwap(Node prePlacedNode, GridPane whereToPlace, ValidBooleanBinding isNodeCurrentlyValid)
+	{
+		StackPane newStack = new StackPane();
+		swapGridPaneComponents(prePlacedNode, newStack, whereToPlace);
+		setupErrorMarker(prePlacedNode, newStack, isNodeCurrentlyValid);
 	}
 
 	/**
