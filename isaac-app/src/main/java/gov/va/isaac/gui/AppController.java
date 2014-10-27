@@ -111,7 +111,7 @@ public class AppController {
             m.setDisable(true);
             m.setMnemonicParsing(false);
             menuBar.getMenus().add(m);
-          //index these for ease in adding module menus
+            //index these for ease in adding module menus
             allMenus_.put(m.getId(), m);
         }
         
