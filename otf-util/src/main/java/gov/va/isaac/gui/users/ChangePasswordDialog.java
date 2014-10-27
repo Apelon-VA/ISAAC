@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.users;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
@@ -31,6 +32,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -117,6 +119,15 @@ public class ChangePasswordDialog extends Stage implements IsaacViewWithMenusI, 
 			public boolean enableMnemonicParsing()
 			{
 				return false;
+			}
+
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.LOCK.getImage();
 			}
 		};
 		result.add(mi);
