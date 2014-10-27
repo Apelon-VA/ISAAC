@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.config.profiles;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.util.PasswordHasher;
@@ -134,6 +135,8 @@ public class UserProfile
 
 	/**
 	 * This call sets both the clearTextPassword field, and the hashedPassword field - hashing as appropriate.
+	 * 
+	 * This call saves the changes to the preferences file.
 	 */
 	public void setPassword(String currentPassword, String newPassword) throws InvalidPasswordException
 	{
@@ -162,6 +165,7 @@ public class UserProfile
 			{
 				setSyncPassword(syncPass);
 			}
+			AppContext.getService(UserProfileManager.class).saveChanges(this);
 		}
 		catch (Exception e)
 		{

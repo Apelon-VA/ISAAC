@@ -178,6 +178,23 @@ public class UserProfileManager implements ServicesToPreloadI
 			}
 		}
 	}
+	
+	/**
+	 * Challenge the currently logged in user for their password
+	 * @param password
+	 * @return true if the password is correct, false otherwise.
+	 */
+	public boolean revalidatePassword(String password)
+	{
+		if (loggedInUser_ == null)
+		{
+			return false;
+		}
+		else
+		{
+			return loggedInUser_.isCorrectPassword(password);
+		}
+	}
 
 	/**
 	 * The defaults parameter is optional - if not present, uses hardcoded defaults in {@link UserProfile} for fields that 
