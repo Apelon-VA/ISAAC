@@ -18,6 +18,9 @@
  */
 package gov.va.isaac.models.hed.importer;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.constants.InformationModels;
 import gov.va.isaac.ie.ImportHandler;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
@@ -25,7 +28,9 @@ import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
 import gov.va.isaac.models.hed.HeDXmlUtils;
 import gov.va.isaac.models.util.ImporterBase;
+import gov.va.isaac.util.WBUtility;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,8 +46,14 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.hl7.cdsdt.r2.CD;
+import org.hl7.knowledgeartifact.r1.ActionBase;
 import org.hl7.knowledgeartifact.r1.ActionGroup;
+import org.hl7.knowledgeartifact.r1.Actor;
+import org.hl7.knowledgeartifact.r1.ClinicalRequest;
+import org.hl7.knowledgeartifact.r1.Condition;
 import org.hl7.knowledgeartifact.r1.Conditions;
+import org.hl7.knowledgeartifact.r1.Expression;
+import org.hl7.knowledgeartifact.r1.ExpressionDef;
 import org.hl7.knowledgeartifact.r1.InlineResource;
 import org.hl7.knowledgeartifact.r1.KnowledgeDocument;
 import org.hl7.knowledgeartifact.r1.KnowledgeDocument.ExternalData;
@@ -58,6 +69,11 @@ import org.hl7.knowledgeartifact.r1.Metadata.RelatedResources;
 import org.hl7.knowledgeartifact.r1.Metadata.TemplateIds;
 import org.hl7.knowledgeartifact.r1.Metadata.UsageTerms;
 import org.hl7.knowledgeartifact.r1.SupportingEvidence;
+import org.hl7.knowledgeartifact.r1.ValueSet;
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -261,6 +277,89 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
     LOG.debug("      actionGroup = " + actionGroup);
     infoModel.setActionGroup(actionGroup);
 
+    handleEnumerations(externalData);
+    handleEnumerations(conditions);
+    handleEnumerations(actionGroup);
+    
     return infoModel;
   }
+
+	private void handleEnumerations(ActionGroup actionGroup) {
+		for (ActionBase subElement : actionGroup.getSubElements().getSimpleActionOrActionGroupOrActionRef()) {
+			handleEnumerations((subElement.getConditions()));
+			
+			if (subElement.getActors() != null) {
+				for (Actor actor : subElement.getActors().getActor()) {
+					handleEnumerations(actor.getActor());
+				}
+			}
+			
+			if (subElement instanceof ActionGroup) {
+				handleEnumerations((ActionGroup)subElement);
+			}
+		}
+		
+	}
+	
+	private void handleEnumerations(Conditions conditions) {
+		if (conditions != null) {
+			for (Condition condition : conditions.getCondition()) {
+				handleEnumerations(condition.getLogic());
+			}
+		}		
+	}
+	
+	private void handleEnumerations(ExternalData externalData) {
+		for (ExpressionDef expDef : externalData.getDef()) {
+			handleEnumerations(expDef.getExpression());
+		}
+		
+	}
+
+	private void handleEnumerations(Expression exp) {
+		if (exp != null) {
+			if (exp instanceof ClinicalRequest) {
+				if (((ClinicalRequest)exp).getCodes() != null && 
+					((ClinicalRequest)exp).getCodes() instanceof ValueSet) {
+					// Have Value Set
+					ValueSet vs = (ValueSet)((ClinicalRequest)exp).getCodes();
+					
+					// Find Values
+					String auth = vs.getAuthority();
+					String id = vs.getId();
+					String vers = vs.getVersion();
+
+					// Create Name
+					String value = auth + "'s " + id + " " + " v" + vers + " HeD Referenced Enumeration";
+			
+					// Only create if doesn't already exist
+					if (!ExtendedAppContext.getDataStore().hasUuid(WBUtility.getUuidForFsn(value, value))) {
+						// Create Refex's Description
+						StringBuilder enumerationDesc = new StringBuilder();
+						enumerationDesc.append("Enumeration Refex for " + auth + "'s " + id);
+						if (vs.getDescription() != null) {
+							enumerationDesc.append("\r\n" + vs.getDescription());
+						}
+						enumerationDesc.append("\r\n");					
+						enumerationDesc.append("Based on version: " + vers);	
+
+						// create Refex
+						try {
+							// Create Enumeration
+							AppContext.getRuntimeGlobals().disableAllCommitListeners();
+							RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, enumerationDesc.toString(), 
+																											 new RefexDynamicColumnInfo[] {},
+																											 InformationModels.HED_ENUMERATIONS.getUuids()[0], 
+																											 false);
+						} catch (IOException | ContradictionException | InvalidCAB
+								| PropertyVetoException e) {
+							LOG.error("Unable to create HED Enumeration for " + value);
+						}
+					}
+
+				}
+			}
+			
+		}
+	}
 }

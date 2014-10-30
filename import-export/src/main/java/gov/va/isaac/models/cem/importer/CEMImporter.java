@@ -267,6 +267,7 @@ public class CEMImporter extends ImporterBase implements ImportHandler,
           CEMConstraint constraint = new CEMConstraint();
           constraint.setPath(path);
           constraint.setValue(value);
+          constraint.handleConstraintEnumerationRefex();
           infoModel.addConstraint(constraint);
           break;
 
