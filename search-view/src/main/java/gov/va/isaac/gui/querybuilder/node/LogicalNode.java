@@ -26,16 +26,27 @@ package gov.va.isaac.gui.querybuilder.node;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 /**
  * LogicalNode
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public abstract class LogicalNode extends DraggableParentNode {
-	protected BooleanProperty isValidProperty = new SimpleBooleanProperty(false);
+public abstract class LogicalNode extends DraggableParentNode implements Invertable {
+	protected final BooleanProperty isValidProperty = new SimpleBooleanProperty(false);
+	protected final BooleanProperty invertProperty = new SimpleBooleanProperty(false);
+	
+	protected final StringProperty descriptionProperty = new SimpleStringProperty(getDescription());
 
 	public int getMinimumChildren() { return 1; }
+
+	{
+		setDescriptionChangeListeners();
+	}
 
 	/**
 	 * 
@@ -50,8 +61,34 @@ public abstract class LogicalNode extends DraggableParentNode {
 	
 	public boolean getIsValid() { return isValidProperty.get(); }
 	public void setIsValid(boolean isValid) { isValidProperty.set(isValid); }
+
+	@Override
+	public BooleanProperty getInvertProperty() { return invertProperty; }
+	@Override
+	public boolean getInvert() { return invertProperty.get(); }
+	@Override
+	public void setInvert(boolean invert) { invertProperty.set(invert); }
+	
+	public StringProperty getDescriptionProperty() { return descriptionProperty; }
+	
+	@Override
+	public String getDescription() {
+		return (invertProperty.get() ? "NOT " : "") + getNodeTypeName();
+	}
+	
+	protected void setDescriptionChangeListeners() {
+		invertProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (oldValue != newValue) {
+					getDescriptionProperty().set(getDescription());
+				}
+			}
+		});
+	}
 	
 	public String toString() {
-		return getClass().getName().replaceAll(".*\\.", "").replaceAll(".*\\$", "");
+		return getDescription();
 	}
 }

@@ -19,58 +19,46 @@
 package gov.va.isaac.gui.querybuilder;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
-import gov.va.isaac.gui.querybuilder.DragAndDropTreeCellExample.TestLeafNode;
-import gov.va.isaac.gui.querybuilder.DragAndDropTreeCellExample.TestParentNode;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
-import gov.va.isaac.gui.querybuilder.node.DraggableNode;
+import gov.va.isaac.gui.querybuilder.node.Invertable;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
-import gov.va.isaac.gui.querybuilder.node.NodeDraggable.DragMode;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.util.WBUtility;
-import javafx.beans.InvalidationListener;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.Separator;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 
 import org.ihtsdo.otf.query.implementation.Query;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -90,7 +78,7 @@ public class QueryBuilderViewController
 	
 	@FXML private BorderPane borderPane;
 	@FXML private Button closeButton;
-	@FXML private ComboBox rootNodeTypeComboBox;
+	@FXML private ComboBox<Object> rootNodeTypeComboBox;
 	//@FXML private TreeView<NodeDraggable> queryNodeTypeTreeView;
 	@FXML private TreeView<NodeDraggable> queryNodeTreeView;
 	@FXML private GridPane nodeEditorGridPane;
@@ -139,7 +127,7 @@ public class QueryBuilderViewController
 		if (treeNode.getValue() == null) {
 			return false;
 		}
-		if (treeNode.getValue() instanceof AssertionNode) {
+		if (treeNode.getValue() instanceof Invertable) {
 			return ((AssertionNode)treeNode.getValue()).getIsValid();
 		} else if (treeNode.getValue() instanceof LogicalNode) {
 			LogicalNode logicalNode = (LogicalNode)treeNode.getValue();
@@ -167,9 +155,9 @@ public class QueryBuilderViewController
 	
 	private void initializeRootNodeTypeComboBox() {
 		rootNodeTypeComboBox.setEditable(false);
-		rootNodeTypeComboBox.setButtonCell(new ListCell<QueryNodeType>() {
+		rootNodeTypeComboBox.setButtonCell(new ListCell<Object>() {
 			@Override
-			protected void updateItem(QueryNodeType t, boolean bln) {
+			protected void updateItem(Object t, boolean bln) {
 				super.updateItem(t, bln); 
 				if (bln) {
 					setText("");
@@ -206,17 +194,16 @@ public class QueryBuilderViewController
 				super(parentTree, cache);
 			}
 
-			protected void updateTextFillColor() {
-				//AssertionNode assertionNode = (AssertionNode)getItem();
+			protected void updateTextFillColor(NodeDraggable node) {
 				Color color = Color.BLACK;
-				if (getItem() != null && getItem().getIsValid()) {
+				if (node != null && node.getIsValid()) {
 					color = Color.BLACK;
 					queryNodeTreeViewIsValidProperty.set(isQueryNodeTreeViewValid());
 				} else {
 					color = Color.RED;
 					queryNodeTreeViewIsValidProperty.set(false);
 				}
-				logger.debug("Setting initial text fill color of cell containing \"{}\" to {}", (getItem() != null ? getItem().getDescription() : null), color);
+				logger.debug("Setting initial text fill color of cell containing \"{}\" to {}", (node != null ? node.getDescription() : null), color);
 				setTextFill(color);
 			}
 
@@ -258,21 +245,12 @@ public class QueryBuilderViewController
 								ObservableValue<? extends Boolean> observable,
 								Boolean oldValue,
 								Boolean newValue) {
-							Color color = Color.BLACK;
-							if (newValue == null || ! newValue) {
-								color = Color.RED;
-								queryNodeTreeViewIsValidProperty.set(false);
-							} else {
-								color = Color.BLACK;
-								queryNodeTreeViewIsValidProperty.set(isQueryNodeTreeViewValid());
-							}
-							logger.debug("assertionNode.getIsValidProperty() handler setting text fill color of cell containing \"{}\" to {}", assertionNode.getDescription(), color);
-							setTextFill(color);
+							updateTextFillColor(assertionNode);
 						}
 					});
 				} else if (getItem() != null && getItem() instanceof LogicalNode) {
 					LogicalNode logicalNode = (LogicalNode)getItem();
-					//this.textProperty().bind(logicalNode.getDescriptionProperty());
+					this.textProperty().bind(logicalNode.getDescriptionProperty());
 					if (getTreeItem().getChildren().size() < logicalNode.getMinimumChildren()
 							|| getTreeItem().getChildren().size() > logicalNode.getMaxChildren()) {
 						logicalNode.setIsValid(false);
@@ -290,7 +268,6 @@ public class QueryBuilderViewController
 								logicalNode.setIsValid(true);
 							}
 						}
-						
 					});
 					logicalNode.getIsValidProperty().addListener(new ChangeListener<Boolean>() {
 						@Override
@@ -298,16 +275,7 @@ public class QueryBuilderViewController
 								ObservableValue<? extends Boolean> observable,
 								Boolean oldValue,
 								Boolean newValue) {
-							Color color = Color.BLACK;
-							if (newValue == null || ! newValue) {
-								color = Color.RED;
-								queryNodeTreeViewIsValidProperty.set(false);
-							} else {
-								color = Color.BLACK;
-								queryNodeTreeViewIsValidProperty.set(isQueryNodeTreeViewValid());
-							}
-							logger.debug("logicalNode.getIsValidProperty() handler setting text fill color of cell containing \"{}\" to {}", logicalNode.getDescription(), color);
-							setTextFill(color);
+							updateTextFillColor(logicalNode);
 						}
 					});
 				}
@@ -337,7 +305,26 @@ public class QueryBuilderViewController
 								//throw new RuntimeException(error);
 							} else {
 								if (draggableNode instanceof LogicalNode) {
+									LogicalNode logicalNode = (LogicalNode)draggableNode;
 									nodeEditorGridPane.getChildren().clear();
+									int rowIndex = 0;
+									nodeEditorGridPane.addRow(rowIndex++, new Label(logicalNode.getNodeTypeName()));
+									
+									CheckBox inversionCheckBox = new CheckBox();
+									inversionCheckBox.setText("Invert (NOT)");
+									inversionCheckBox.setSelected(logicalNode.getInvert());
+									
+									//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
+									inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+										@Override
+										public void changed(
+												ObservableValue<? extends Boolean> observable,
+												Boolean oldValue,
+												Boolean newValue) {
+											logicalNode.setInvert(newValue);
+										}
+									});
+									nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
 								} else if (draggableNode instanceof SingleConceptAssertionNode) {
 									SingleConceptAssertionNode singleConceptAssertionNode = (SingleConceptAssertionNode)draggableNode;
 									nodeEditorGridPane.getChildren().clear();
@@ -468,6 +455,7 @@ public class QueryBuilderViewController
 					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
 					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
 					currentTreeItem.getChildren().add(new TreeItem<>(type.construct()));
+					currentTreeItem.setExpanded(true);
 				}
 			});
 			groupingMenu.getItems().add(menuItem);
@@ -489,6 +477,7 @@ public class QueryBuilderViewController
 					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
 					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
 					currentTreeItem.getChildren().add(new TreeItem<>(type.construct()));
+					currentTreeItem.setExpanded(true);
 				}
 			});
 			assertionMenu.getItems().add(menuItem);
@@ -507,20 +496,20 @@ public class QueryBuilderViewController
 		return null;
 	}
 
-	private static class QueryNodeTypeTreeCell extends DragAndDropTreeCell<NodeDraggable> {
-		public QueryNodeTypeTreeCell(TreeView<NodeDraggable> parentTree,
-				Map<String, NodeDraggable> cache) {
-			super(parentTree, cache);
-		}
-
-		@Override
-		protected void updateItem(NodeDraggable item, boolean empty) {
-			super.updateItem(item, empty);
-			this.item = item;
-			String text = (item == null) ? null : item.toString();
-			setText(text);
-		}
-	}
+//	private static class QueryNodeTypeTreeCell extends DragAndDropTreeCell<NodeDraggable> {
+//		public QueryNodeTypeTreeCell(TreeView<NodeDraggable> parentTree,
+//				Map<String, NodeDraggable> cache) {
+//			super(parentTree, cache);
+//		}
+//
+//		@Override
+//		protected void updateItem(NodeDraggable item, boolean empty) {
+//			super.updateItem(item, empty);
+//			this.item = item;
+//			String text = (item == null) ? null : item.toString();
+//			setText(text);
+//		}
+//	}
 	
 //	private void initializeQueryNodeTypeTreeView() {
 //		//queryNodeTypeTreeView.setEditable(false);

@@ -18,28 +18,26 @@
  */
 
 /**
- * CompoundLogicalNode
+ * Invertable
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 package gov.va.isaac.gui.querybuilder.node;
 
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 
 /**
- * CompoundLogicalNode
+ * Invertable
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class CompoundLogicalNode extends LogicalNode {
-	public int getMinimumChildren() { return 2; }
+public interface Invertable {
 
-	/**
-	 * 
-	 */
-	public CompoundLogicalNode() {
-		super();
-	}
+	public abstract BooleanProperty getInvertProperty();
+
+	public abstract boolean getInvert();
+
+	public abstract void setInvert(boolean invert);
+
 }
