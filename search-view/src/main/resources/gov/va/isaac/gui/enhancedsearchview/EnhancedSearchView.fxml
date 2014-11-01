@@ -113,6 +113,11 @@
                   </Label>
                   <FlowPane alignment="BOTTOM_RIGHT" rowValignment="BOTTOM" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
                      <children>
+                        <Button fx:id="startQueryBuilderButton" mnemonicParsing="false" text="Query Builder">
+                           <FlowPane.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </FlowPane.margin>
+                        </Button>
                         <HBox fx:id="maxResultsHBox" alignment="BOTTOM_RIGHT">
                            <children>
                               <Label fx:id="maxResultsCustomTextFieldLabel">
