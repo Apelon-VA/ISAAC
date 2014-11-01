@@ -91,7 +91,7 @@ public class QueryBuilderViewController
 	@FXML private BorderPane borderPane;
 	@FXML private Button closeButton;
 	@FXML private ComboBox rootNodeTypeComboBox;
-	@FXML private TreeView<NodeDraggable> queryNodeTypeTreeView;
+	//@FXML private TreeView<NodeDraggable> queryNodeTypeTreeView;
 	@FXML private TreeView<NodeDraggable> queryNodeTreeView;
 	@FXML private GridPane nodeEditorGridPane;
 	@FXML private Button buildQueryButton;
@@ -107,7 +107,7 @@ public class QueryBuilderViewController
 	{
 		assert borderPane != null : "fx:id=\"borderPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert closeButton != null : "fx:id=\"closeButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert queryNodeTypeTreeView != null : "fx:id=\"queryNodeTypeTreeView\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		//assert queryNodeTypeTreeView != null : "fx:id=\"queryNodeTypeTreeView\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert queryNodeTreeView != null : "fx:id=\"queryNodeTreeView\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert rootNodeTypeComboBox != null : "fx:id=\"rootNodeTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert nodeEditorGridPane != null : "fx:id=\"nodeEditorGridPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
@@ -116,7 +116,7 @@ public class QueryBuilderViewController
 		AppContext.getServiceLocator().inject(this);
 
 		initializeQueryNodeTreeView();
-		initializeQueryNodeTypeTreeView();
+//		initializeQueryNodeTypeTreeView();
 		initializeRootNodeTypeComboBox();
 
 		closeButton.setOnAction((action) -> {
@@ -207,31 +207,17 @@ public class QueryBuilderViewController
 			}
 
 			protected void updateTextFillColor() {
-				if (getItem() != null && getItem() instanceof AssertionNode) {
-					AssertionNode assertionNode = (AssertionNode)getItem();
-					Color color = Color.BLACK;
-					if (assertionNode.getIsValid()) {
-						color = Color.BLACK;
-						queryNodeTreeViewIsValidProperty.set(isQueryNodeTreeViewValid());
-					} else {
-						color = Color.RED;
-						queryNodeTreeViewIsValidProperty.set(false);
-					}
-					logger.debug("Setting initial text fill color of cell containing \"{}\" to {}", assertionNode.getDescription(), color);
-					setTextFill(color);
-				} else if (getItem() != null && getItem() instanceof LogicalNode) {
-					LogicalNode logicalNode = (LogicalNode)getItem();
-					Color color = Color.BLACK;
-					if (logicalNode.getIsValid()) {
-						color = Color.BLACK;
-						queryNodeTreeViewIsValidProperty.set(isQueryNodeTreeViewValid());
-					} else {
-						color = Color.RED;
-						queryNodeTreeViewIsValidProperty.set(false);
-					}
-					logger.debug("Setting initial text fill color of cell containing \"{}\" to {}", logicalNode.getDescription(), color);
-					setTextFill(color);
+				//AssertionNode assertionNode = (AssertionNode)getItem();
+				Color color = Color.BLACK;
+				if (getItem() != null && getItem().getIsValid()) {
+					color = Color.BLACK;
+					queryNodeTreeViewIsValidProperty.set(isQueryNodeTreeViewValid());
+				} else {
+					color = Color.RED;
+					queryNodeTreeViewIsValidProperty.set(false);
 				}
+				logger.debug("Setting initial text fill color of cell containing \"{}\" to {}", (getItem() != null ? getItem().getDescription() : null), color);
+				setTextFill(color);
 			}
 
 			@Override
@@ -536,72 +522,72 @@ public class QueryBuilderViewController
 		}
 	}
 	
-	private void initializeQueryNodeTypeTreeView() {
-		//queryNodeTypeTreeView.setEditable(false);
-		//queryNodeTypeTreeView.setCellFactory(cellFactory );
-		queryNodeTypeTreeView.setShowRoot(false);
-		
-		queryNodeTypeTreeView.setCellFactory(new Callback<TreeView<NodeDraggable>, TreeCell<NodeDraggable>>() {
-			@Override
-			public TreeCell<NodeDraggable> call(TreeView<NodeDraggable> param) {
-				return new QueryNodeTypeTreeCell(param, nodeDragCache);
-			}
-		});
-		
-		TreeItem<NodeDraggable> rootQueryNodeTypeItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("ROOT"));
-		queryNodeTypeTreeView.setRoot(rootQueryNodeTypeItem);
-		
-		TreeItem<NodeDraggable> groupingRootItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("Grouping"));
-		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.AND)));
-		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.OR)));
-		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.XOR)));
-		rootQueryNodeTypeItem.getChildren().add(groupingRootItem);
-		
-		TreeItem<NodeDraggable> conceptAssertionRootItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("Concept Assertion"));
-		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS)));
-		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS_CHILD_OF)));
-		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS_DESCENDANT_OF)));
-		rootQueryNodeTypeItem.getChildren().add(conceptAssertionRootItem);
-	}
-
-	public static class QueryNodeTypeTreeParentItemData implements ParentNodeDraggable {
-		private final String name;
-
-		public QueryNodeTypeTreeParentItemData(String name) {
-			super();
-			this.name = name;
-		}
-		
-		public String toString() { return name; }
-
-		/* (non-Javadoc)
-		 * @see gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable#canAddChild(gov.va.isaac.gui.querybuilder.node.NodeDraggable)
-		 */
-		@Override
-		public boolean canAddChild(NodeDraggable child) {
-			return false;
-		}
-		
-		public DragMode getDragMode() { return DragMode.NONE; }
-	}
-
-	public static class QueryNodeTypeTreeLeafItemData implements NodeDraggable {
-		private final QueryNodeType nodeType;
-
-		public QueryNodeTypeTreeLeafItemData(QueryNodeType nodeType) {
-			super();
-			this.nodeType = nodeType;
-		}
-
-		public QueryNodeType getNodeType() {
-			return nodeType;
-		}
-		
-		public String toString() { return nodeType.name(); }
-		
-		public DragMode getDragMode() { return DragMode.COPY; }
-		public NodeDraggable getItemToDrop() { return nodeType.construct(); }
-	}
+//	private void initializeQueryNodeTypeTreeView() {
+//		//queryNodeTypeTreeView.setEditable(false);
+//		//queryNodeTypeTreeView.setCellFactory(cellFactory );
+//		queryNodeTypeTreeView.setShowRoot(false);
+//		
+//		queryNodeTypeTreeView.setCellFactory(new Callback<TreeView<NodeDraggable>, TreeCell<NodeDraggable>>() {
+//			@Override
+//			public TreeCell<NodeDraggable> call(TreeView<NodeDraggable> param) {
+//				return new QueryNodeTypeTreeCell(param, nodeDragCache);
+//			}
+//		});
+//		
+//		TreeItem<NodeDraggable> rootQueryNodeTypeItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("ROOT"));
+//		queryNodeTypeTreeView.setRoot(rootQueryNodeTypeItem);
+//		
+//		TreeItem<NodeDraggable> groupingRootItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("Grouping"));
+//		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.AND)));
+//		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.OR)));
+//		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.XOR)));
+//		rootQueryNodeTypeItem.getChildren().add(groupingRootItem);
+//		
+//		TreeItem<NodeDraggable> conceptAssertionRootItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("Concept Assertion"));
+//		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS)));
+//		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS_CHILD_OF)));
+//		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS_DESCENDANT_OF)));
+//		rootQueryNodeTypeItem.getChildren().add(conceptAssertionRootItem);
+//	}
+//
+//	public static class QueryNodeTypeTreeParentItemData implements ParentNodeDraggable {
+//		private final String name;
+//
+//		public QueryNodeTypeTreeParentItemData(String name) {
+//			super();
+//			this.name = name;
+//		}
+//		
+//		public String toString() { return name; }
+//
+//		/* (non-Javadoc)
+//		 * @see gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable#canAddChild(gov.va.isaac.gui.querybuilder.node.NodeDraggable)
+//		 */
+//		@Override
+//		public boolean canAddChild(NodeDraggable child) {
+//			return false;
+//		}
+//		
+//		public DragMode getDragMode() { return DragMode.NONE; }
+//	}
+//
+//	public static class QueryNodeTypeTreeLeafItemData implements NodeDraggable {
+//		private final QueryNodeType nodeType;
+//
+//		public QueryNodeTypeTreeLeafItemData(QueryNodeType nodeType) {
+//			super();
+//			this.nodeType = nodeType;
+//		}
+//
+//		public QueryNodeType getNodeType() {
+//			return nodeType;
+//		}
+//		
+//		public String toString() { return nodeType.name(); }
+//		
+//		public DragMode getDragMode() { return DragMode.COPY; }
+//		public NodeDraggable getItemToDrop() { return nodeType.construct(); }
+//	}
 
 	void setStage(QueryBuilderView stage) {
 		this.stage = stage;

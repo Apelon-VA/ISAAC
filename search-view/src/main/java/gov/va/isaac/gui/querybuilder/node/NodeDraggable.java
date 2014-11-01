@@ -38,4 +38,5 @@ public interface NodeDraggable extends ObjectWithTemporaryUniqueId {
 	public default NodeDraggable getItemToDrop() { return this; }
 	public default String getNodeTypeName() { return getClass().getName().replaceAll(".*\\.", "").replaceAll(".*\\$", ""); }
 	public default String getDescription() { return getNodeTypeName(); }
+	public default boolean getIsValid() { return true; }
 }
