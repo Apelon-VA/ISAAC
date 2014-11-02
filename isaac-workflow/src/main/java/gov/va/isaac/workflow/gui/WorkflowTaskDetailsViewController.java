@@ -118,7 +118,6 @@ public class WorkflowTaskDetailsViewController {
 	@FXML private Label componentIdLabel;
 	
 	@FXML private TextArea instructionsTextArea;
-	@FXML private TextArea commentsTextArea;
 
 	private WorkflowTaskDetailsView workflowTaskDetailsView;
 	private LocalTask task;	
@@ -201,9 +200,6 @@ public class WorkflowTaskDetailsViewController {
 
 		if (task.getInputVariables() != null) {
 			if (task.getInputVariables().size() > 0) {
-				String[] editorComments = null;
-				String[] reviewComments = null;
-				String[] approveComments = null;
 				
 				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
 					
@@ -214,41 +210,10 @@ public class WorkflowTaskDetailsViewController {
 							componentIdLabel.setText(entry.getValue());
 						} else if (entry.getKey().equals("in_instructions")) {
 							instructionsTextArea.setText(entry.getValue());
-						} else if (entry.getKey().equals("editor_comment") && entry.getValue().trim().length() > 0) {
-							editorComments = entry.getValue().split(";");
-						} else if (entry.getKey().equals("review_comment") && entry.getValue().trim().length() > 0) {
-							reviewComments = entry.getValue().split(";");
-						} else if (entry.getKey().equals("approval_comment") && entry.getValue().trim().length() > 0) {
-							approveComments = entry.getValue().split(";");
 						}
 					} else {
 						LOG.debug("Not displaying excluded input variables map entry: {}", entry);
 					}
-				}
-				
-				if (editorComments != null) {
-					StringBuffer str = new StringBuffer();
-					for (int i = 0; i < editorComments.length; i++) {
-						if (i == 0) {
-							str.append(editorComments[0]);
-						} else {
-							str.append("\r\n");
-							str.append(reviewComments[i]);
-						}
-
-						
-						if (reviewComments != null && reviewComments.length < i) {
-							str.append("\r\n");
-							str.append(reviewComments[i]);
-						}
-
-						if (approveComments != null && approveComments.length < i) {
-							str.append("\r\n");
-							str.append(approveComments[i]);
-						}
-					}
-					
-					commentsTextArea.setText(str.toString());
 				}
 			}
 		}

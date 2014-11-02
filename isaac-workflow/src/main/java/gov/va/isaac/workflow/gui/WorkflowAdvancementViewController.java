@@ -67,7 +67,6 @@ public class WorkflowAdvancementViewController
 	private ConceptVersionBI conceptVersion;
 
 	@FXML private BorderPane borderPane;
-	//@FXML private TextArea commentTextField;
 	@FXML private Button closeButton;
 	@FXML private Button advanceButton;
 	@FXML private Label generatedComponentSummary;
