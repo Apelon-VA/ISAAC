@@ -20,15 +20,16 @@ package gov.va.isaac.gui.querybuilder;
 
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
-import gov.va.isaac.gui.querybuilder.node.Invertable;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.util.WBUtility;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,20 +49,25 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
+import org.ihtsdo.otf.query.implementation.Clause;
 import org.ihtsdo.otf.query.implementation.Query;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +82,8 @@ public class QueryBuilderViewController
 {	
 	private final static Logger logger = LoggerFactory.getLogger(QueryBuilderViewController.class);
 	
+	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+	
 	@FXML private BorderPane borderPane;
 	@FXML private Button closeButton;
 	@FXML private ComboBox<Object> rootNodeTypeComboBox;
@@ -83,6 +91,7 @@ public class QueryBuilderViewController
 	@FXML private TreeView<NodeDraggable> queryNodeTreeView;
 	@FXML private GridPane nodeEditorGridPane;
 	@FXML private Button buildQueryButton;
+	@FXML private Button executeQueryButton;
 	
 	private BooleanProperty queryNodeTreeViewIsValidProperty = new SimpleBooleanProperty(false);
 	
@@ -100,6 +109,7 @@ public class QueryBuilderViewController
 		assert rootNodeTypeComboBox != null : "fx:id=\"rootNodeTypeComboBox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert nodeEditorGridPane != null : "fx:id=\"nodeEditorGridPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert buildQueryButton != null : "fx:id=\"buildQueryButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert executeQueryButton != null : "fx:id=\"executeQueryButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		AppContext.getServiceLocator().inject(this);
 
@@ -113,7 +123,12 @@ public class QueryBuilderViewController
 		
 		buildQueryButton.disableProperty().bind(queryNodeTreeViewIsValidProperty.not());
 		buildQueryButton.setOnAction((action) -> {
-			generateQueryFromTree();
+			generateQuery();
+		});
+		
+		executeQueryButton.disableProperty().bind(buildQueryButton.disableProperty());
+		executeQueryButton.setOnAction((action) -> {
+			executeQuery(generateQuery());
 		});
 	}
 
@@ -127,7 +142,7 @@ public class QueryBuilderViewController
 		if (treeNode.getValue() == null) {
 			return false;
 		}
-		if (treeNode.getValue() instanceof Invertable) {
+		if (treeNode.getValue() instanceof AssertionNode) {
 			return ((AssertionNode)treeNode.getValue()).getIsValid();
 		} else if (treeNode.getValue() instanceof LogicalNode) {
 			LogicalNode logicalNode = (LogicalNode)treeNode.getValue();
@@ -168,7 +183,9 @@ public class QueryBuilderViewController
 		});
 		rootNodeTypeComboBox.setOnAction((event) -> {
 			if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() != null) {
-				queryNodeTreeView.setRoot(new TreeItem<>(((QueryNodeType)rootNodeTypeComboBox.getSelectionModel().getSelectedItem()).construct()));
+				queryNodeTreeView.setRoot(new TreeItem<>(((QueryNodeType)rootNodeTypeComboBox.getSelectionModel().getSelectedItem()).constructNode()));
+			
+				queryNodeTreeView.getSelectionModel().select(queryNodeTreeView.getRoot());
 			}
 		});
 
@@ -182,6 +199,8 @@ public class QueryBuilderViewController
 				QueryNodeType.CONCEPT_IS_DESCENDANT_OF);
 	}
 	private void initializeQueryNodeTreeView() {
+		queryNodeTreeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		
 		if (queryNodeTreeView.getContextMenu() == null) {
 			queryNodeTreeView.setContextMenu(new ContextMenu());
 		}
@@ -234,8 +253,6 @@ public class QueryBuilderViewController
 					setContextMenu(null);
 				}
 				
-				updateTextFillColor();
-				
 				if (getItem() != null && getItem() instanceof AssertionNode) {
 					AssertionNode assertionNode = (AssertionNode)getItem();
 					this.textProperty().bind(assertionNode.getDescriptionProperty());
@@ -248,6 +265,10 @@ public class QueryBuilderViewController
 							updateTextFillColor(assertionNode);
 						}
 					});
+
+					updateTextFillColor(assertionNode);
+
+					queryNodeTreeView.getSelectionModel().select(getTreeItem());
 				} else if (getItem() != null && getItem() instanceof LogicalNode) {
 					LogicalNode logicalNode = (LogicalNode)getItem();
 					this.textProperty().bind(logicalNode.getDescriptionProperty());
@@ -278,100 +299,30 @@ public class QueryBuilderViewController
 							updateTextFillColor(logicalNode);
 						}
 					});
+
+					updateTextFillColor(logicalNode);
+
+					queryNodeTreeView.getSelectionModel().select(getTreeItem());
 				}
 			}
 		}
+		queryNodeTreeView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<TreeItem<NodeDraggable>>() {
+			@Override
+			public void onChanged(
+					javafx.collections.ListChangeListener.Change<? extends TreeItem<NodeDraggable>> c) {
+				
+				if (queryNodeTreeView.getSelectionModel().getSelectedItems().size() == 1) {
+					handleItemSelection(queryNodeTreeView.getSelectionModel().getSelectedItems().get(0).getValue());
+				}
+			}
+		});
 		queryNodeTreeView.setCellFactory(new Callback<TreeView<NodeDraggable>, TreeCell<NodeDraggable>>() {
 			@Override
 			public TreeCell<NodeDraggable> call(TreeView<NodeDraggable> param) {
 				final QueryNodeTreeViewTreeCell newCell = new QueryNodeTreeViewTreeCell(param, nodeDragCache);
+				
+				//queryNodeTreeView.getSelectionModel().select(newCell.getTreeItem());
 
-				newCell.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent event) {
-						TreeCell<NodeDraggable> c = (TreeCell<NodeDraggable>) event.getSource();
-						logger.debug("{} single clicked. Cell text: {}", event.getButton(), c.getText());
-
-						if (event.getClickCount() == 1) {
-
-							NodeDraggable draggableNode = c.getItem();
-
-							logger.debug("{} single clicked. Cell contains item: {}", event.getButton(), draggableNode);
-
-							if (draggableNode == null) {
-								String error = "Single-clicked TreeCell has null item";
-								Log.warn(error);
-
-								//throw new RuntimeException(error);
-							} else {
-								if (draggableNode instanceof LogicalNode) {
-									LogicalNode logicalNode = (LogicalNode)draggableNode;
-									nodeEditorGridPane.getChildren().clear();
-									int rowIndex = 0;
-									nodeEditorGridPane.addRow(rowIndex++, new Label(logicalNode.getNodeTypeName()));
-									
-									CheckBox inversionCheckBox = new CheckBox();
-									inversionCheckBox.setText("Invert (NOT)");
-									inversionCheckBox.setSelected(logicalNode.getInvert());
-									
-									//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
-									inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-										@Override
-										public void changed(
-												ObservableValue<? extends Boolean> observable,
-												Boolean oldValue,
-												Boolean newValue) {
-											logicalNode.setInvert(newValue);
-										}
-									});
-									nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
-								} else if (draggableNode instanceof SingleConceptAssertionNode) {
-									SingleConceptAssertionNode singleConceptAssertionNode = (SingleConceptAssertionNode)draggableNode;
-									nodeEditorGridPane.getChildren().clear();
-									int rowIndex = 0;
-									nodeEditorGridPane.addRow(rowIndex++, new Label(draggableNode.getNodeTypeName()));
-									ConceptVersionBI currentConcept = null;
-									if (singleConceptAssertionNode.getNid() != null) {
-										currentConcept = WBUtility.getConceptVersion(singleConceptAssertionNode.getNid());
-									}
-									ConceptNode conceptNode = new ConceptNode(currentConcept, true);
-									conceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
-										@Override
-										public void changed(
-												ObservableValue<? extends ConceptVersionBI> observable,
-												ConceptVersionBI oldValue,
-												ConceptVersionBI newValue) {
-											if (newValue == null) {
-												singleConceptAssertionNode.getNidProperty().set(0);
-											} else {
-												singleConceptAssertionNode.setNid(newValue.getConceptNid());
-											}
-										}
-									});
-									nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), conceptNode.getNode());
-									CheckBox inversionCheckBox = new CheckBox();
-									inversionCheckBox.setText("Invert (NOT)");
-									inversionCheckBox.setSelected(singleConceptAssertionNode.getInvert());
-									
-									//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
-									inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-										@Override
-										public void changed(
-												ObservableValue<? extends Boolean> observable,
-												Boolean oldValue,
-												Boolean newValue) {
-											singleConceptAssertionNode.setInvert(newValue);
-										}
-									});
-									nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
-								}
-							}
-						}
-//						else if (event.getClickCount() > 1) {
-//							logger.debug(event.getButton() + " double clicked. Cell text: " + c.getText());
-//						}
-					}
-				});
 				return newCell;
 			}
 			
@@ -392,6 +343,80 @@ public class QueryBuilderViewController
 		});
 	}
 	
+	private void handleItemSelection(NodeDraggable draggableNode) {
+		logger.debug("Cell selected containing item: {}", draggableNode);
+
+		if (draggableNode == null) {
+			String error = "Selected TreeCell has null item";
+			Log.warn(error);
+		} else {
+			if (draggableNode instanceof LogicalNode) {
+				LogicalNode logicalNode = (LogicalNode)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(logicalNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++);
+				
+				CheckBox inversionCheckBox = new CheckBox();
+				inversionCheckBox.setText("Invert (NOT)");
+				inversionCheckBox.setSelected(logicalNode.getInvert());
+				
+				//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
+				inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue,
+							Boolean newValue) {
+						logicalNode.setInvert(newValue);
+					}
+				});
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof SingleConceptAssertionNode) {
+				SingleConceptAssertionNode singleConceptAssertionNode = (SingleConceptAssertionNode)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(singleConceptAssertionNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++);
+				ConceptVersionBI currentConcept = null;
+				if (singleConceptAssertionNode.getNid() != null) {
+					currentConcept = WBUtility.getConceptVersion(singleConceptAssertionNode.getNid());
+				}
+				ConceptNode conceptNode = new ConceptNode(currentConcept, true);
+				conceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends ConceptVersionBI> observable,
+							ConceptVersionBI oldValue,
+							ConceptVersionBI newValue) {
+						if (newValue == null) {
+							singleConceptAssertionNode.getNidProperty().set(0);
+						} else {
+							singleConceptAssertionNode.setNid(newValue.getConceptNid());
+						}
+					}
+				});
+				nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), conceptNode.getNode());
+				CheckBox inversionCheckBox = new CheckBox();
+				inversionCheckBox.setText("Invert (NOT)");
+				inversionCheckBox.setSelected(singleConceptAssertionNode.getInvert());
+				
+				//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
+				inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue,
+							Boolean newValue) {
+						singleConceptAssertionNode.setInvert(newValue);
+					}
+				});
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			}
+		}
+	}
 //	private static TreeItem<NodeDraggable> findRootNode(TreeItem<NodeDraggable> node) {
 //		if (node.getParent() == null) {
 //			return node;
@@ -454,7 +479,7 @@ public class QueryBuilderViewController
 				{
 					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
 					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-					currentTreeItem.getChildren().add(new TreeItem<>(type.construct()));
+					currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
 					currentTreeItem.setExpanded(true);
 				}
 			});
@@ -476,7 +501,7 @@ public class QueryBuilderViewController
 				{
 					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
 					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-					currentTreeItem.getChildren().add(new TreeItem<>(type.construct()));
+					currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
 					currentTreeItem.setExpanded(true);
 				}
 			});
@@ -488,12 +513,71 @@ public class QueryBuilderViewController
 	private void loadContent()
 	{
 	}
- 
-	private Query generateQueryFromTree() {
-		logger.debug("Generating Query from tree...");
 
-		// TODO: implement generateQueryFromTree()
-		return null;
+	private void executeQuery(Query query) {
+		NativeIdSetBI result = null;
+		try {
+			result = generateQuery().compute();
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			String title = "Query Execution Failed";
+			String msg = "Failed executing Query";
+			String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+		
+			return;
+		}
+		
+		if (result != null) {
+			StringBuilder builder = new StringBuilder();
+			
+			builder.append("Search yielded " + result.size() + " results:\n");
+			if (result.size() >0) {
+				for (int nid : result.getSetValues()) {
+					builder.append("nid=" + nid + "\t\"" + WBUtility.getDescriptionIfConceptExists(nid) + "\"\n");
+				}
+			}
+			AppContext.getCommonDialogs().showInformationDialog("Search Results", builder.toString());
+		}
+	}
+
+	private Query generateQuery() {
+		logger.debug("Generating Query...");
+
+		// This should never happen if Build button is properly disabled
+		if (! isQueryNodeTreeViewValid()) {
+			String error = "Cannot generate Query from invalid clause tree";
+			logger.error(error);
+			throw new RuntimeException(error);
+		}
+
+		ViewCoordinate viewCoordinate = null;
+		try {
+			viewCoordinate = StandardViewCoordinates.getSnomedInferredLatest();
+		} catch (IOException ex) {
+			logger.error("Failed getting default ViewCoordinate. Caught {} \"{}\"", ex.getClass().getName(), ex.getLocalizedMessage());
+		}
+
+		Query syntheticQuery = new Query(viewCoordinate) {
+			
+			@Override
+			protected NativeIdSetBI For() throws IOException {
+				return dataStore.getAllConceptNids();
+			}
+
+			@Override
+			public void Let() throws IOException {
+			}
+
+			@Override
+			public Clause Where() {
+				return ClauseFactory.createClause(this, queryNodeTreeView.getRoot());
+			}
+			
+		};
+		
+		return syntheticQuery;
 	}
 
 //	private static class QueryNodeTypeTreeCell extends DragAndDropTreeCell<NodeDraggable> {

@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder;
 
+import org.apache.lucene.queries.function.valuesource.MultiFunction.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public enum QueryNodeType {
 		this.clazz = clazz;
 	}
 	
-	public NodeDraggable construct() {
+	public NodeDraggable constructNode() {
 		try {
 			return clazz.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
@@ -70,5 +71,15 @@ public enum QueryNodeType {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public static QueryNodeType valueOf(NodeDraggable draggableNode) {
+		for (QueryNodeType type : values()) {
+			if (type.clazz == draggableNode.getClass()) {
+				return type;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unexpected NodeDraggable type " + draggableNode.getClass().getName());
 	}
 }

@@ -19,6 +19,11 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </HBox.margin>
             </Button>
+            <Button fx:id="executeQueryButton" mnemonicParsing="false" text="Execute">
+               <HBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </HBox.margin>
+            </Button>
             <Button fx:id="closeButton" mnemonicParsing="false" text="Close" BorderPane.alignment="CENTER">
       <BorderPane.margin>
       <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
