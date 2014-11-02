@@ -24,8 +24,6 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 
 /**
  * CompoundLogicalNode

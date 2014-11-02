@@ -18,32 +18,36 @@
  */
 
 /**
- * ConceptId
+ * DescriptionRegexMatch
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 package gov.va.isaac.gui.querybuilder.node;
 
 /**
- * ConceptIsChildOf
+ * DescriptionRegexMatch
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class ConceptIsChildOf extends SingleConceptAssertionNode {
+public class DescriptionRegexMatch extends SingleStringAssertionNode {
 	/**
 	 * 
 	 */
-	public ConceptIsChildOf() {
+	public DescriptionRegexMatch() {
 		super();
 	}
-	public ConceptIsChildOf(int nid) {
-		super(nid);
+
+	/**
+	 * @param str
+	 */
+	public DescriptionRegexMatch(String str) {
+		super(str);
 	}
 
 	@Override
 	public String toString() {
-		return "ConceptIsChildOf [nidProperty=" + nidProperty
+		return "DescriptionRegexMatch [stringProperty=" + stringProperty
 				+ ", invertProperty=" + invertProperty + ", isValidProperty="
 				+ isValidProperty + "]";
 	}

@@ -24,27 +24,26 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.util.WBUtility;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
- * SingleConceptAssertionNode
+ * SingleStringAssertionNode
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public abstract class SingleConceptAssertionNode extends AssertionNode {
-	protected final IntegerProperty nidProperty = new SimpleIntegerProperty();
+public abstract class SingleStringAssertionNode extends AssertionNode {
+	protected final StringProperty stringProperty = new SimpleStringProperty();
 
 	protected void setValidationChangeListeners() {
-		nidProperty.addListener(new ChangeListener<Number>() {
+		stringProperty.addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue<? extends Number> observable,
-					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
+				if (newValue != null) {
 					isValidProperty.set(true);
 				} else {
 					isValidProperty.set(false);
@@ -54,10 +53,10 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 	}
 	protected void setDescriptionChangeListeners() {
 		super.setDescriptionChangeListeners();
-		nidProperty.addListener(new ChangeListener<Number>() {
+		stringProperty.addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue<? extends Number> observable,
-					Number oldValue, Number newValue) {
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
 				if (oldValue != newValue) {
 					getDescriptionProperty().set(getDescription());
 				}
@@ -72,25 +71,21 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 	/**
 	 * 
 	 */
-	public SingleConceptAssertionNode() {
+	public SingleStringAssertionNode() {
 	}
-	public SingleConceptAssertionNode(int nid) {
-		nidProperty.set(nid);
+	public SingleStringAssertionNode(String str) {
+		stringProperty.set(str);
 	}
 
-	public IntegerProperty getNidProperty() { return nidProperty; }
+	public StringProperty getStringProperty() { return stringProperty; }
 	
-	public Integer getNid() { return nidProperty != null ? nidProperty.get() : null; }
-	public void setNid(int nid) { nidProperty.set(nid); }
+	public String getString() { return stringProperty != null ? stringProperty.get() : null; }
+	public void setString(String str) { stringProperty.set(str); }
 	
 	@Override
 	public String getDescription() {
-		String conceptDescription = null;
-		if (getNid() != null && getNid() != 0) {
-			conceptDescription = WBUtility.getDescriptionIfConceptExists(getNid());
-		}
-		if (conceptDescription != null) {
-			return (invertProperty.get() ? "NOT " : "") + getNodeTypeName() + " " + conceptDescription;
+		if (getString() != null) {
+			return (invertProperty.get() ? "NOT " : "") + getNodeTypeName() + " \"" + getString() + "\"";
 		} else {
 			return (invertProperty.get() ? "NOT " : "") + getNodeTypeName();
 		}
@@ -98,7 +93,7 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 	
 	@Override
 	public String toString() {
-		return "SingleConceptAssertionNode [nidProperty=" + nidProperty
+		return "SingleStringAssertionNode [stringProperty=" + stringProperty
 				+ ", invertProperty=" + invertProperty + ", isValidProperty="
 				+ isValidProperty + "]";
 	}

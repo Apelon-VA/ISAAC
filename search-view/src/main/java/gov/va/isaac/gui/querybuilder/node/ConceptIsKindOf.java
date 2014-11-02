@@ -25,26 +25,25 @@
 package gov.va.isaac.gui.querybuilder.node;
 
 /**
- * ConceptIsChildOf
+ * ConceptIsKindOf
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class ConceptIsChildOf extends SingleConceptAssertionNode {
+public class ConceptIsKindOf extends SingleConceptAssertionNode {
 	/**
 	 * 
 	 */
-	public ConceptIsChildOf() {
+	public ConceptIsKindOf() {
 		super();
 	}
-	public ConceptIsChildOf(int nid) {
+	public ConceptIsKindOf(int nid) {
 		super(nid);
 	}
 
 	@Override
 	public String toString() {
-		return "ConceptIsChildOf [nidProperty=" + nidProperty
-				+ ", invertProperty=" + invertProperty + ", isValidProperty="
-				+ isValidProperty + "]";
+		return "ConceptIs [nidProperty=" + nidProperty + ", invertProperty="
+				+ invertProperty + ", isValidProperty=" + isValidProperty + "]";
 	}
 }

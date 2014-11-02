@@ -22,11 +22,13 @@ package gov.va.isaac.gui.querybuilder;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
+import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -42,6 +44,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -93,6 +96,8 @@ public class QueryBuilderViewController
 	@FXML private Button buildQueryButton;
 	@FXML private Button executeQueryButton;
 	
+	//private BusyPopover searchRunningPopover;
+
 	private BooleanProperty queryNodeTreeViewIsValidProperty = new SimpleBooleanProperty(false);
 	
 	private QueryBuilderView stage;
@@ -128,7 +133,11 @@ public class QueryBuilderViewController
 		
 		executeQueryButton.disableProperty().bind(buildQueryButton.disableProperty());
 		executeQueryButton.setOnAction((action) -> {
-			executeQuery(generateQuery());
+			try {
+				executeQuery(generateQuery());
+			} catch (Exception e) {
+				
+			}
 		});
 	}
 
@@ -196,7 +205,10 @@ public class QueryBuilderViewController
 				new Separator(),
 				QueryNodeType.CONCEPT_IS,
 				QueryNodeType.CONCEPT_IS_CHILD_OF,
-				QueryNodeType.CONCEPT_IS_DESCENDANT_OF);
+				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
+				QueryNodeType.CONCEPT_IS_KIND_OF,
+				new Separator(),
+				QueryNodeType.DESCRIPTION_REGEX_MATCH);
 	}
 	private void initializeQueryNodeTreeView() {
 		queryNodeTreeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -234,9 +246,6 @@ public class QueryBuilderViewController
 				this.textProperty().unbind();
 				setText(text);
 				if (item != null) {
-					//TreeItem<NodeDraggable> currentTreeItem = search(item);
-					
-					//Label graphic = new Label(item.getDescription());
 					if (getContextMenu() == null) {
 						setContextMenu(new ContextMenu());
 					}
@@ -320,8 +329,6 @@ public class QueryBuilderViewController
 			@Override
 			public TreeCell<NodeDraggable> call(TreeView<NodeDraggable> param) {
 				final QueryNodeTreeViewTreeCell newCell = new QueryNodeTreeViewTreeCell(param, nodeDragCache);
-				
-				//queryNodeTreeView.getSelectionModel().select(newCell.getTreeItem());
 
 				return newCell;
 			}
@@ -414,6 +421,39 @@ public class QueryBuilderViewController
 					}
 				});
 				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof SingleStringAssertionNode) {
+				SingleStringAssertionNode singleStringAssertionNode = (SingleStringAssertionNode)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(singleStringAssertionNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++);
+				
+				TextField stringNode = singleStringAssertionNode != null ? new TextField(singleStringAssertionNode.getString()) : new TextField();
+				stringNode.textProperty().addListener(new ChangeListener<String>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends String> observable,
+							String oldValue,
+							String newValue) {
+						singleStringAssertionNode.setString(newValue);
+					}
+				});
+				nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), stringNode);
+				CheckBox inversionCheckBox = new CheckBox();
+				inversionCheckBox.setText("Invert (NOT)");
+				inversionCheckBox.setSelected(singleStringAssertionNode.getInvert());
+				
+				inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue,
+							Boolean newValue) {
+						singleStringAssertionNode.setInvert(newValue);
+					}
+				});
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
 			}
 		}
 	}
@@ -487,13 +527,14 @@ public class QueryBuilderViewController
 		}
 		menu.getItems().add(groupingMenu);
 
-		Menu assertionMenu = new Menu("Concept Assertion");
-		QueryNodeType[] supportedAssertionNodes = new QueryNodeType[] {
+		Menu conceptAssertionMenu = new Menu("Concept Assertion");
+		QueryNodeType[] supportedConceptAssertionNodes = new QueryNodeType[] {
 				QueryNodeType.CONCEPT_IS,
 				QueryNodeType.CONCEPT_IS_CHILD_OF,
-				QueryNodeType.CONCEPT_IS_DESCENDANT_OF
+				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
+				QueryNodeType.CONCEPT_IS_KIND_OF
 		};
-		for (QueryNodeType type : supportedAssertionNodes) {
+		for (QueryNodeType type : supportedConceptAssertionNodes) {
 			MenuItem menuItem = new MenuItem(type.name());
 			menuItem.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
@@ -505,9 +546,29 @@ public class QueryBuilderViewController
 					currentTreeItem.setExpanded(true);
 				}
 			});
-			assertionMenu.getItems().add(menuItem);
+			conceptAssertionMenu.getItems().add(menuItem);
 		}
-		menu.getItems().add(assertionMenu);
+		menu.getItems().add(conceptAssertionMenu);
+		
+		Menu stringAssertionMenu = new Menu("Concept Assertion");
+		QueryNodeType[] supportedStringAssertionNodes = new QueryNodeType[] {
+				QueryNodeType.DESCRIPTION_REGEX_MATCH
+		};
+		for (QueryNodeType type : supportedStringAssertionNodes) {
+			MenuItem menuItem = new MenuItem(type.name());
+			menuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
+					currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
+					currentTreeItem.setExpanded(true);
+				}
+			});
+			stringAssertionMenu.getItems().add(menuItem);
+		}
+		menu.getItems().add(stringAssertionMenu);
 	}
 
 	private void loadContent()

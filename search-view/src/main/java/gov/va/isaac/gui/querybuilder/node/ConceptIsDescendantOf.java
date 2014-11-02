@@ -25,7 +25,7 @@
 package gov.va.isaac.gui.querybuilder.node;
 
 /**
- * ConceptId
+ * ConceptIsDescendantOf
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *

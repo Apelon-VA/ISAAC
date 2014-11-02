@@ -28,6 +28,8 @@ import gov.va.isaac.gui.querybuilder.node.And;
 import gov.va.isaac.gui.querybuilder.node.ConceptIs;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsChildOf;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsDescendantOf;
+import gov.va.isaac.gui.querybuilder.node.ConceptIsKindOf;
+import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
 import gov.va.isaac.gui.querybuilder.node.Xor;
@@ -35,7 +37,6 @@ import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javafx.scene.control.TreeItem;
 
@@ -171,8 +172,36 @@ public class ClauseFactory {
 			}
 		}
 
+		case CONCEPT_IS_KIND_OF: {
+			ConceptIsKindOf node = (ConceptIsKindOf)treeItem.getValue();
+			ConceptVersionBI concept = WBUtility.getConceptVersion(node.getNid());
+			final String conceptSpecKey = "UUIDKeyFor" + node.getTemporaryUniqueId();
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(conceptSpecKey, new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.ConceptIsKindOf(query, conceptSpecKey, vcKey);
+			if (! node.getInvert()) {
+				return clause;
+			} else {
+				return new org.ihtsdo.otf.query.implementation.Not(query, clause);
+			}
+		}
+		
+		case DESCRIPTION_REGEX_MATCH: {
+			DescriptionRegexMatch node = (DescriptionRegexMatch)treeItem.getValue();
+			final String stringMatchKey = "StringMatchKeyFor" + node.getTemporaryUniqueId();
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(stringMatchKey, node.getString());
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch(query, stringMatchKey, vcKey);
+			if (! node.getInvert()) {
+				return clause;
+			} else {
+				return new org.ihtsdo.otf.query.implementation.Not(query, clause);
+			}
+		}
 		default:
-			throw new RuntimeException("Unsupperted QueryNodeType " + itemType);
+			throw new RuntimeException("Unsupported QueryNodeType " + itemType);
 		}
 	}
 }
