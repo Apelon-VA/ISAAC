@@ -176,18 +176,16 @@ public class WorkflowInitiationViewController {
 	}
 
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		
-		return "A test promotion path coordinate";
-//		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
-//		if (promotionPathUUID == null)
-//		{
-//			return "";
-//		}
-//		try {
-//			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
-//		} catch (IOException | ContradictionException e) {
-//			return "";
-//		}
+		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
+		if (promotionPathUUID == null)
+		{
+			return "";
+		}
+		try {
+			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
+		} catch (IOException | ContradictionException e) {
+			return "";
+		}
 	}
 
 	// Private helper method to test validity of data required for save
