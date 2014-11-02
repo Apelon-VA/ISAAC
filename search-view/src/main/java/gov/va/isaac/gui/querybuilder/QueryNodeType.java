@@ -29,11 +29,13 @@ import gov.va.isaac.gui.querybuilder.node.ConceptIs;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsChildOf;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsDescendantOf;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsKindOf;
+import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 
+import org.ihtsdo.otf.query.implementation.Clause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,40 +76,53 @@ public enum QueryNodeType {
 	 */
 
 	// Grouping
-	AND(And.class),
-	OR(Or.class),
-	XOR(Xor.class),
-	
+	AND(And.class, org.ihtsdo.otf.query.implementation.And.class),
+	OR(Or.class, org.ihtsdo.otf.query.implementation.Or.class),
+	XOR(Xor.class, org.ihtsdo.otf.query.implementation.Xor.class),
+	NOT(null, org.ihtsdo.otf.query.implementation.Not.class), // No Not LogicalNode
+
 	// Concept
-	CONCEPT_IS(ConceptIs.class),
-	CONCEPT_IS_CHILD_OF(ConceptIsChildOf.class),
-	CONCEPT_IS_DESCENDANT_OF(ConceptIsDescendantOf.class),
-	CONCEPT_IS_KIND_OF(ConceptIsKindOf.class),
+	CONCEPT_IS(ConceptIs.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIs.class),
+	CONCEPT_IS_CHILD_OF(ConceptIsChildOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsChildOf.class),
+	CONCEPT_IS_DESCENDANT_OF(ConceptIsDescendantOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsDescendentOf.class),
+	CONCEPT_IS_KIND_OF(ConceptIsKindOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsKindOf.class),
 	
 	// String
-	DESCRIPTION_REGEX_MATCH(DescriptionRegexMatch.class);
+	DESCRIPTION_LUCENE_MATCH(DescriptionLuceneMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionLuceneMatch.class),
+	DESCRIPTION_REGEX_MATCH(DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class);
 
 	private final static Logger logger = LoggerFactory.getLogger(QueryNodeType.class);
 	
-	private final Class<? extends NodeDraggable> clazz;
+	private final Class<? extends NodeDraggable> nodeClass;
+	private final Class<? extends Clause> clauseClass;
 	
-	private QueryNodeType(Class<? extends NodeDraggable> clazz) {
-		this.clazz = clazz;
+	private QueryNodeType(Class<? extends NodeDraggable> nodeClass, Class<? extends Clause> clauseClass) {
+		this.nodeClass = nodeClass;
+		this.clauseClass = clauseClass;
 	}
 	
 	public NodeDraggable constructNode() {
 		try {
-			return clazz.newInstance();
+			return nodeClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			logger.error("Failed constructing {} instance. Caught {} {}", clazz.getName(), e.getClass().getName(), e.getLocalizedMessage());
+			logger.error("Failed constructing {} instance. Caught {} {}", nodeClass.getName(), e.getClass().getName(), e.getLocalizedMessage());
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
 	
+	public static QueryNodeType valueOf(Clause clause) {
+		for (QueryNodeType type : values()) {
+			if (type.clauseClass == clause.getClass()) {
+				return type;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unexpected Clause type " + clause.getClass().getName());
+	}
 	public static QueryNodeType valueOf(NodeDraggable draggableNode) {
 		for (QueryNodeType type : values()) {
-			if (type.clazz == draggableNode.getClass()) {
+			if (type.nodeClass != null && type.nodeClass == draggableNode.getClass()) {
 				return type;
 			}
 		}
