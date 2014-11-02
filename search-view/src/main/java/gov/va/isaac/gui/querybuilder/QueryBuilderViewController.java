@@ -32,7 +32,9 @@ import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
@@ -208,6 +210,7 @@ public class QueryBuilderViewController
 				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
 				QueryNodeType.CONCEPT_IS_KIND_OF,
 				new Separator(),
+				QueryNodeType.DESCRIPTION_LUCENE_MATCH,
 				QueryNodeType.DESCRIPTION_REGEX_MATCH);
 	}
 	private void initializeQueryNodeTreeView() {
@@ -552,6 +555,7 @@ public class QueryBuilderViewController
 		
 		Menu stringAssertionMenu = new Menu("Concept Assertion");
 		QueryNodeType[] supportedStringAssertionNodes = new QueryNodeType[] {
+				QueryNodeType.DESCRIPTION_LUCENE_MATCH,
 				QueryNodeType.DESCRIPTION_REGEX_MATCH
 		};
 		for (QueryNodeType type : supportedStringAssertionNodes) {
@@ -574,6 +578,33 @@ public class QueryBuilderViewController
 	private void loadContent()
 	{
 	}
+	
+	private static class Node<T> {
+        private final T data;
+        private final Node<T> parent;
+        private final List<Node<T>> children = new ArrayList<>();
+        
+        public Node(T data) {
+        	this(null, data);
+        }
+        public Node(Node<T> parent, T data) {
+        	this.parent = parent;
+        	this.data = data;
+        }
+        public Node(Node<T> parent, T data, List<Node<T>> children) {
+        	this.parent = parent;
+        	this.data = data;
+        	this.children.clear();
+        	this.children.addAll(children);
+        }
+    }
+//	private NodeDraggable createTreeNodeFromClause(Clause clause) {
+//		
+//	}
+	private void displayQuery(Query query) {
+		
+	}
+	
 
 	private void executeQuery(Query query) {
 		NativeIdSetBI result = null;
@@ -596,7 +627,15 @@ public class QueryBuilderViewController
 			builder.append("Search yielded " + result.size() + " results:\n");
 			if (result.size() >0) {
 				for (int nid : result.getSetValues()) {
-					builder.append("nid=" + nid + "\t\"" + WBUtility.getDescriptionIfConceptExists(nid) + "\"\n");
+					String conceptDescription = WBUtility.getDescriptionIfConceptExists(nid);
+					if (conceptDescription == null) {
+						conceptDescription = WBUtility.getConPrefTerm(nid);
+					}
+					if (conceptDescription != null) {
+						builder.append("nid=" + nid + "\t\"" + conceptDescription + "\"\n");
+					} else {
+						builder.append("nid=" + nid);
+					}
 				}
 			}
 			AppContext.getCommonDialogs().showInformationDialog("Search Results", builder.toString());
