@@ -285,20 +285,21 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
   }
 
 	private void handleEnumerations(ActionGroup actionGroup) {
-		for (ActionBase subElement : actionGroup.getSubElements().getSimpleActionOrActionGroupOrActionRef()) {
-			handleEnumerations((subElement.getConditions()));
-			
-			if (subElement.getActors() != null) {
-				for (Actor actor : subElement.getActors().getActor()) {
-					handleEnumerations(actor.getActor());
+		if (actionGroup != null) {
+			for (ActionBase subElement : actionGroup.getSubElements().getSimpleActionOrActionGroupOrActionRef()) {
+				handleEnumerations((subElement.getConditions()));
+				
+				if (subElement.getActors() != null) {
+					for (Actor actor : subElement.getActors().getActor()) {
+						handleEnumerations(actor.getActor());
+					}
+				}
+				
+				if (subElement instanceof ActionGroup) {
+					handleEnumerations((ActionGroup)subElement);
 				}
 			}
-			
-			if (subElement instanceof ActionGroup) {
-				handleEnumerations((ActionGroup)subElement);
-			}
-		}
-		
+		}		
 	}
 	
 	private void handleEnumerations(Conditions conditions) {
@@ -310,10 +311,11 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 	}
 	
 	private void handleEnumerations(ExternalData externalData) {
-		for (ExpressionDef expDef : externalData.getDef()) {
-			handleEnumerations(expDef.getExpression());
-		}
-		
+		if (externalData != null && externalData.getDef() != null) {
+			for (ExpressionDef expDef : externalData.getDef()) {
+				handleEnumerations(expDef.getExpression());
+			}
+		}		
 	}
 
 	private void handleEnumerations(Expression exp) {
