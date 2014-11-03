@@ -63,6 +63,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -977,29 +979,37 @@ public class WBUtility {
 		editCoord.setEditPathListSpecs(editPaths);
 		
 		
-		// Create new version of Component
-		ComponentVersionBI comp = getComponentVersion(compUuid);
-		ComponentType type = ComponentTypeHelper.getComponentType(comp);
-		ComponentChronicleBI<?> cbi = null;
+		// Create new version of all uncommitted components in concept
+		ConceptVersionBI conceptWithComp = WBUtility.getConceptVersion(getComponentVersion(compUuid).getConceptNid());
+		Set<ComponentVersionBI> componentsInConcept = getConceptComponents(conceptWithComp);
+
+		int devPathNid = ExtendedAppContext.getDataStore().getNidForUuids(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()));
 		
-		if (type == ComponentType.Concept) {
-			ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.Description) {
-			DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.Relationship) {
-			RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.Refex) {
-			RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.RefexDynamic) {
-			RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
+		for (ComponentVersionBI comp : componentsInConcept) {
+			if (comp.getPathNid() == devPathNid) {
+				ComponentType type = ComponentTypeHelper.getComponentType(comp);
+				ComponentChronicleBI<?> cbi = null;
+	
+				if (type == ComponentType.Concept) {
+					ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.Description) {
+					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.Relationship) {
+					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.Refex) {
+					RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.RefexDynamic) {
+					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				}
+			}	
 		}
 		
-		commit(cbi.getEnclosingConcept().getVersion(vc));
+		commit(conceptWithComp.getVersion(vc));
 		
 		// Revert to original Edit path
 		editPaths.clear();
@@ -1008,6 +1018,31 @@ public class WBUtility {
 	}
 	
 	
+	public static Set<ComponentVersionBI> getConceptComponents(
+			ConceptVersionBI conceptWithComp) throws IOException, ContradictionException {
+		Set<ComponentVersionBI> retSet = new HashSet();
+		
+		retSet.add(conceptWithComp);
+		
+		for(DescriptionChronicleBI desc : conceptWithComp.getDescriptions()) {
+			retSet.add(desc.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		for(RelationshipChronicleBI rel : conceptWithComp.getRelationshipsOutgoing()) {
+			retSet.add(rel.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		for(RefexChronicleBI<?> refsetMember : conceptWithComp.getRefsetMembers()) {
+			retSet.add(refsetMember.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		for(RefexDynamicChronicleBI<?> dynRef : conceptWithComp.getRefexesDynamic()) {
+			retSet.add(dynRef.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		return retSet;
+	}
+
 	/**
 	 * Returns the uuid for fsn and pt based on the ConceptCB assignment algorithm.
 	 *
