@@ -203,7 +203,7 @@ public class QueryBuilderViewController
 			}
 		});
 		rootNodeTypeComboBox.setOnAction((event) -> {
-			if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() != null) {
+			if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() != null && ! (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() instanceof Separator)) {
 				queryNodeTreeView.setRoot(new TreeItem<>(((QueryNodeType)rootNodeTypeComboBox.getSelectionModel().getSelectedItem()).constructNode()));
 			
 				queryNodeTreeView.getSelectionModel().select(queryNodeTreeView.getRoot());
