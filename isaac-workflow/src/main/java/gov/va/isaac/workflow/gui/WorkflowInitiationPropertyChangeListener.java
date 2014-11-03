@@ -195,10 +195,10 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 			
 			try {
 				UUID componentId = WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
-				List<LocalTask> openTaskList = localTasksService.getOpenOwnedTasksByComponentId(componentId);
-				List<ProcessInstanceCreationRequestI> reqList = processService.getRequestsByComponentId(componentId);
+				int currentConNid = WBUtility.getComponentVersion(componentId).getConceptNid();
 				
-				if (reqList.isEmpty() && openTaskList.isEmpty() && componentNid != 0) {
+				
+				if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && componentNid != 0) {
 					componentsToWf.add(componentNid);
 				}
 			} catch (DatastoreException e) {
@@ -209,6 +209,50 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 		return componentsToWf;
 	}
 	
+	private boolean conceptWithComponentInOpenRequest(int currentConNid) throws DatastoreException {
+		List<ProcessInstanceCreationRequestI> openReqList = processService.getRequests();
+
+		// If have open task, assume that they are working within Workflow
+		for (ProcessInstanceCreationRequestI t : openReqList) {
+			UUID taskCompUuid = UUID.fromString(t.getComponentId());
+			
+			try {
+				int taskConNid = WBUtility.getComponentChronicle(taskCompUuid).getConceptNid();
+		
+				if (taskConNid == currentConNid) {
+					return true;
+				}
+			} catch (Exception e) {
+				LOG.info("Have to handle when concept is not in DB.  Can happen if WF sync not in line with ISAAC new component");
+			}
+		}
+
+		return false;
+	}
+
+
+	private boolean conceptWithComponentInOwnedTask(int currentConNid) throws DatastoreException {
+		List<LocalTask> openTaskList = localTasksService.getOpenOwnedTasks();
+
+		// If have open task, assume that they are working within Workflow
+		for (LocalTask t : openTaskList) {
+			UUID taskCompUuid = UUID.fromString(t.getComponentId());
+			
+			try {
+				int taskConNid = WBUtility.getComponentChronicle(taskCompUuid).getConceptNid();
+		
+				if (taskConNid == currentConNid) {
+					return true;
+				}
+			} catch (Exception e) {
+				LOG.info("Have to handle when concept is not in DB.  Can happen if WF sync not in line with ISAAC new component");
+			}
+		}
+
+		return false;
+	}
+
+
 	/**
 	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
 	 */
