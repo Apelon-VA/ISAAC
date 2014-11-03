@@ -28,6 +28,7 @@ import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 
 import java.util.Map;
@@ -197,6 +198,11 @@ public class WorkflowTaskDetailsViewController {
 		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
 
 		taskIdLabel.setText(Long.toString(task.getId()));
+
+		if (task.getActionStatus() == TaskActionStatus.Pending) {
+			advanceWfButton.setDisable(true);
+			releaseTaskButton.setDisable(true);
+		}
 
 		if (task.getInputVariables() != null) {
 			if (task.getInputVariables().size() > 0) {
