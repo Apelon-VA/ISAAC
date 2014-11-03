@@ -29,6 +29,7 @@ import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.WBUtility;
 
@@ -203,10 +204,37 @@ public class QueryBuilderViewController
 			}
 		});
 		rootNodeTypeComboBox.setOnAction((event) -> {
-			if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() != null && ! (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() instanceof Separator)) {
-				queryNodeTreeView.setRoot(new TreeItem<>(((QueryNodeType)rootNodeTypeComboBox.getSelectionModel().getSelectedItem()).constructNode()));
-			
-				queryNodeTreeView.getSelectionModel().select(queryNodeTreeView.getRoot());
+			if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() != null
+					&& ! (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() instanceof Separator)) {
+				if (queryNodeTreeView.getRoot() != null && rootNodeTypeComboBox.getSelectionModel().getSelectedItem() instanceof QueryNodeType) {
+					QueryNodeType selectedType = (QueryNodeType)rootNodeTypeComboBox.getSelectionModel().getSelectedItem();
+					
+					if (selectedType.getNodeClass() == queryNodeTreeView.getRoot().getClass()) {
+						// Don't reset root node of same type
+						
+						return;
+					}
+				}
+				
+				boolean resetRoot = true;
+				if (queryNodeTreeView.getRoot() != null && queryNodeTreeView.getRoot().getChildren().size() > 0) {
+					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Root Expression Change Confirmation", "Are you sure you want to reset root expression with " + queryNodeTreeView.getRoot().getChildren().size() + " child expressions from " + QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()) + " to " + rootNodeTypeComboBox.getSelectionModel().getSelectedItem() + "?\nAll child expressions will be deleted");
+					if (response == DialogResponse.YES) {
+						resetRoot = true;
+					} else {
+						resetRoot = false;
+					}
+				}
+
+				if (resetRoot) {
+					queryNodeTreeView.setRoot(new TreeItem<>(((QueryNodeType)rootNodeTypeComboBox.getSelectionModel().getSelectedItem()).constructNode()));
+
+					queryNodeTreeView.getSelectionModel().select(queryNodeTreeView.getRoot());
+				} else {
+					//rootNodeTypeComboBox.getButtonCell().setText(QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()).name());
+					rootNodeTypeComboBox.getSelectionModel().clearSelection();
+					//rootNodeTypeComboBox.getSelectionModel().select(QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()));
+				}
 			}
 		});
 

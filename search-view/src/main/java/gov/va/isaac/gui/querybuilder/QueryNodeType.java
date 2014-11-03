@@ -109,6 +109,8 @@ public enum QueryNodeType {
 		this.clauseClass = clauseClass;
 	}
 	
+	public Class<? extends NodeDraggable> getNodeClass() { return nodeClass; }
+	
 	public NodeDraggable constructNode() {
 		try {
 			return nodeClass.newInstance();
