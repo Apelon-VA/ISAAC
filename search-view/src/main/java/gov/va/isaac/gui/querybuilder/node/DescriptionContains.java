@@ -24,7 +24,6 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.gui.querybuilder.RestrictedTextField;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
