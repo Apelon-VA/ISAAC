@@ -40,10 +40,4 @@ public class ConceptIs extends SingleConceptAssertionNode {
 	public ConceptIs(int nid) {
 		super(nid);
 	}
-
-	@Override
-	public String toString() {
-		return "ConceptIs [nidProperty=" + nidProperty + ", invertProperty="
-				+ invertProperty + ", isValidProperty=" + isValidProperty + "]";
-	}
 }

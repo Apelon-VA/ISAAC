@@ -40,10 +40,4 @@ public class ConceptIsKindOf extends SingleConceptAssertionNode {
 	public ConceptIsKindOf(int nid) {
 		super(nid);
 	}
-
-	@Override
-	public String toString() {
-		return "ConceptIs [nidProperty=" + nidProperty + ", invertProperty="
-				+ invertProperty + ", isValidProperty=" + isValidProperty + "]";
-	}
 }

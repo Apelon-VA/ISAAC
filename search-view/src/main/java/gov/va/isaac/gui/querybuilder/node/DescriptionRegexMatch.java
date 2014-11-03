@@ -44,11 +44,4 @@ public class DescriptionRegexMatch extends SingleStringAssertionNode {
 	public DescriptionRegexMatch(String str) {
 		super(str);
 	}
-
-	@Override
-	public String toString() {
-		return "DescriptionRegexMatch [stringProperty=" + stringProperty
-				+ ", invertProperty=" + invertProperty + ", isValidProperty="
-				+ isValidProperty + "]";
-	}
 }

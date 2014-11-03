@@ -29,6 +29,7 @@ import gov.va.isaac.gui.querybuilder.node.ConceptIs;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsChildOf;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsDescendantOf;
 import gov.va.isaac.gui.querybuilder.node.ConceptIsKindOf;
+import gov.va.isaac.gui.querybuilder.node.DescriptionContains;
 import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
@@ -88,6 +89,9 @@ public enum QueryNodeType {
 	CONCEPT_IS_KIND_OF(ConceptIsKindOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsKindOf.class),
 	
 	// String
+		// DESCRIPTION_CONTAINS id associated with DescriptionActiveLuceneMatch
+	DESCRIPTION_CONTAINS(DescriptionContains.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionActiveLuceneMatch.class),
+
 	DESCRIPTION_LUCENE_MATCH(DescriptionLuceneMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionLuceneMatch.class),
 	DESCRIPTION_REGEX_MATCH(DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class);
 

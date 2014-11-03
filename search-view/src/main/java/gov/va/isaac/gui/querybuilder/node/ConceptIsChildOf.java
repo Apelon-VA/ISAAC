@@ -40,11 +40,4 @@ public class ConceptIsChildOf extends SingleConceptAssertionNode {
 	public ConceptIsChildOf(int nid) {
 		super(nid);
 	}
-
-	@Override
-	public String toString() {
-		return "ConceptIsChildOf [nidProperty=" + nidProperty
-				+ ", invertProperty=" + invertProperty + ", isValidProperty="
-				+ isValidProperty + "]";
-	}
 }

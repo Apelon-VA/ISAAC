@@ -98,7 +98,7 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 	
 	@Override
 	public String toString() {
-		return "SingleConceptAssertionNode [nidProperty=" + nidProperty
+		return getNodeTypeName() + " [nidProperty=" + nidProperty
 				+ ", invertProperty=" + invertProperty + ", isValidProperty="
 				+ isValidProperty + "]";
 	}

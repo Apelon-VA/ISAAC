@@ -33,6 +33,7 @@ import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
+import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 import gov.va.isaac.util.WBUtility;
 
@@ -188,6 +189,19 @@ public class ClauseFactory {
 			}
 		}
 
+		case DESCRIPTION_CONTAINS: {
+			SingleStringAssertionNode node = (SingleStringAssertionNode)treeItem.getValue();
+			final String stringMatchKey = "StringMatchKeyFor" + node.getTemporaryUniqueId();
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(stringMatchKey, node.getString());
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.DescriptionActiveLuceneMatch(query, stringMatchKey, vcKey);
+			if (! node.getInvert()) {
+				return clause;
+			} else {
+				return new org.ihtsdo.otf.query.implementation.Not(query, clause);
+			}
+		}
 		case DESCRIPTION_LUCENE_MATCH: {
 			DescriptionLuceneMatch node = (DescriptionLuceneMatch)treeItem.getValue();
 			final String stringMatchKey = "StringMatchKeyFor" + node.getTemporaryUniqueId();

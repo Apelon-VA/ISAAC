@@ -40,11 +40,4 @@ public class ConceptIsDescendantOf extends SingleConceptAssertionNode {
 	public ConceptIsDescendantOf(int nid) {
 		super(nid);
 	}
-
-	@Override
-	public String toString() {
-		return "ConceptIsDescendantOf [nidProperty=" + nidProperty
-				+ ", invertProperty=" + invertProperty + ", isValidProperty="
-				+ isValidProperty + "]";
-	}
 }

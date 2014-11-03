@@ -22,13 +22,13 @@ package gov.va.isaac.gui.querybuilder;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
-import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
+import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -39,6 +39,7 @@ import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -68,6 +69,7 @@ import javafx.util.Callback;
 
 import org.ihtsdo.otf.query.implementation.Clause;
 import org.ihtsdo.otf.query.implementation.Query;
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -138,7 +140,14 @@ public class QueryBuilderViewController
 			try {
 				executeQuery(generateQuery());
 			} catch (Exception e) {
-				
+				logger.error("Failed executing query.  Caught {} {}.", e.getClass().getName(), e.getLocalizedMessage());
+
+				e.printStackTrace();
+			
+				String title = "Query Execution Failed";
+				String msg = "Failed executing Query";
+				String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 			}
 		});
 	}
@@ -210,8 +219,10 @@ public class QueryBuilderViewController
 				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
 				QueryNodeType.CONCEPT_IS_KIND_OF,
 				new Separator(),
-				QueryNodeType.DESCRIPTION_LUCENE_MATCH,
-				QueryNodeType.DESCRIPTION_REGEX_MATCH);
+				QueryNodeType.DESCRIPTION_CONTAINS
+				//QueryNodeType.DESCRIPTION_LUCENE_MATCH,
+				//QueryNodeType.DESCRIPTION_REGEX_MATCH,
+				);
 	}
 	private void initializeQueryNodeTreeView() {
 		queryNodeTreeView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -432,16 +443,12 @@ public class QueryBuilderViewController
 				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
 				nodeEditorGridPane.addRow(rowIndex++);
 				
-				TextField stringNode = singleStringAssertionNode != null ? new TextField(singleStringAssertionNode.getString()) : new TextField();
-				stringNode.textProperty().addListener(new ChangeListener<String>() {
-					@Override
-					public void changed(
-							ObservableValue<? extends String> observable,
-							String oldValue,
-							String newValue) {
-						singleStringAssertionNode.setString(newValue);
-					}
-				});
+				TextField stringNode = ((SingleStringAssertionNode)draggableNode).getStringInputField();
+				
+				if (singleStringAssertionNode != null) {
+					stringNode.setText(singleStringAssertionNode.getString());
+				}
+
 				nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), stringNode);
 				CheckBox inversionCheckBox = new CheckBox();
 				inversionCheckBox.setText("Invert (NOT)");
@@ -553,10 +560,11 @@ public class QueryBuilderViewController
 		}
 		menu.getItems().add(conceptAssertionMenu);
 		
-		Menu stringAssertionMenu = new Menu("Concept Assertion");
+		Menu stringAssertionMenu = new Menu("String Assertion");
 		QueryNodeType[] supportedStringAssertionNodes = new QueryNodeType[] {
-				QueryNodeType.DESCRIPTION_LUCENE_MATCH,
-				QueryNodeType.DESCRIPTION_REGEX_MATCH
+				QueryNodeType.DESCRIPTION_CONTAINS
+				//QueryNodeType.DESCRIPTION_LUCENE_MATCH
+				//,QueryNodeType.DESCRIPTION_REGEX_MATCH
 		};
 		for (QueryNodeType type : supportedStringAssertionNodes) {
 			MenuItem menuItem = new MenuItem(type.name());
@@ -611,6 +619,8 @@ public class QueryBuilderViewController
 		try {
 			result = generateQuery().compute();
 		} catch (Exception e) {
+			logger.error("Failed executing query.  Caught {} {}.", e.getClass().getName(), e.getLocalizedMessage());
+
 			e.printStackTrace();
 			
 			String title = "Query Execution Failed";
@@ -627,14 +637,25 @@ public class QueryBuilderViewController
 			builder.append("Search yielded " + result.size() + " results:\n");
 			if (result.size() >0) {
 				for (int nid : result.getSetValues()) {
-					String conceptDescription = WBUtility.getDescriptionIfConceptExists(nid);
-					if (conceptDescription == null) {
-						conceptDescription = WBUtility.getConPrefTerm(nid);
+					String componentDescription = null;
+					ComponentVersionBI component = WBUtility.getComponentVersion(nid);
+					if (component != null) {
+						componentDescription = ComponentDescriptionHelper.getComponentDescription(component);
 					}
-					if (conceptDescription != null) {
-						builder.append("nid=" + nid + "\t\"" + conceptDescription + "\"\n");
+					if (componentDescription == null) {
+						componentDescription = WBUtility.getDescriptionIfConceptExists(nid);
+					}
+					if (componentDescription == null) {
+						try {
+							componentDescription = WBUtility.getConPrefTerm(nid);
+						} catch (Exception e) {
+							//
+						}
+					}
+					if (componentDescription != null) {
+						builder.append("nid=" + nid + "\t\"" + componentDescription.replaceAll("\n", " ") + "\"\n");
 					} else {
-						builder.append("nid=" + nid);
+						builder.append("nid=" + nid + "\n");
 					}
 				}
 			}

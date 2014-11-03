@@ -44,11 +44,4 @@ public class DescriptionLuceneMatch extends SingleStringAssertionNode {
 	public DescriptionLuceneMatch(String str) {
 		super(str);
 	}
-
-	@Override
-	public String toString() {
-		return "DescriptionLuceneMatch [stringProperty=" + stringProperty
-				+ ", invertProperty=" + invertProperty + ", isValidProperty="
-				+ isValidProperty + "]";
-	}
 }

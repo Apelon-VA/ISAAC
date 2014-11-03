@@ -28,6 +28,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.TextField;
 
 /**
  * SingleStringAssertionNode
@@ -37,6 +38,7 @@ import javafx.beans.value.ObservableValue;
  */
 public abstract class SingleStringAssertionNode extends AssertionNode {
 	protected final StringProperty stringProperty = new SimpleStringProperty();
+	protected TextField stringInputField = null;
 
 	protected void setValidationChangeListeners() {
 		stringProperty.addListener(new ChangeListener<String>() {
@@ -90,11 +92,36 @@ public abstract class SingleStringAssertionNode extends AssertionNode {
 			return (invertProperty.get() ? "NOT " : "") + getNodeTypeName();
 		}
 	}
-	
+
 	@Override
 	public String toString() {
-		return "SingleStringAssertionNode [stringProperty=" + stringProperty
+		return getNodeTypeName() + " [stringProperty=" + stringProperty
 				+ ", invertProperty=" + invertProperty + ", isValidProperty="
 				+ isValidProperty + "]";
+	}
+	
+	protected TextField constructNewStringInputField() {
+		TextField newTextField = new TextField();
+		
+		return newTextField;
+	}
+	public TextField getStringInputField() {
+		if (stringInputField != null) {
+			return stringInputField;
+		} else {
+			stringInputField = constructNewStringInputField();
+
+			stringInputField.textProperty().addListener(new ChangeListener<String>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends String> observable,
+						String oldValue,
+						String newValue) {
+					SingleStringAssertionNode.this.setString(newValue);
+				}
+			});
+			
+			return stringInputField;
+		}
 	}
 }
