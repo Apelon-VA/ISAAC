@@ -36,20 +36,6 @@ import javafx.scene.control.TextField;
  *
  */
 public class DescriptionContains extends SingleStringAssertionNode {
-	protected void setValidationChangeListeners() {
-		stringProperty.addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue<? extends String> observable,
-					String oldValue, String newValue) {
-				if (newValue != null && newValue.matches("[a-zA-Z0-9]*")) {
-					isValidProperty.set(true);
-				} else {
-					isValidProperty.set(false);
-				}
-			}
-		});
-	}
-	
 	/**
 	 * 
 	 */
@@ -64,6 +50,20 @@ public class DescriptionContains extends SingleStringAssertionNode {
 		super(str);
 	}
 
+	protected void setValidationChangeListeners() {
+		stringProperty.addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
+				if (newValue != null && newValue.matches("[a-zA-Z0-9]*")) {
+					isValidProperty.set(true);
+				} else {
+					isValidProperty.set(false);
+				}
+			}
+		});
+	}
+	
 	protected TextField constructNewStringInputField() {
 		TextField newTextField = new TextField();
 		newTextField.textProperty().addListener(

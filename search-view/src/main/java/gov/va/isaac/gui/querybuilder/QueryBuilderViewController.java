@@ -26,6 +26,7 @@ import gov.va.isaac.gui.querybuilder.node.AssertionNode;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
+import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.util.ComponentDescriptionHelper;
@@ -194,7 +195,7 @@ public class QueryBuilderViewController
 			@Override
 			protected void updateItem(Object t, boolean bln) {
 				super.updateItem(t, bln); 
-				if (bln) {
+				if (bln || t instanceof Separator) {
 					setText("");
 				} else {
 					setText(t.toString());
@@ -219,9 +220,11 @@ public class QueryBuilderViewController
 				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
 				QueryNodeType.CONCEPT_IS_KIND_OF,
 				new Separator(),
-				QueryNodeType.DESCRIPTION_CONTAINS
+				QueryNodeType.DESCRIPTION_CONTAINS,
 				//QueryNodeType.DESCRIPTION_LUCENE_MATCH,
 				//QueryNodeType.DESCRIPTION_REGEX_MATCH,
+				new Separator(),
+				QueryNodeType.REL_TYPE
 				);
 	}
 	private void initializeQueryNodeTreeView() {
@@ -464,6 +467,90 @@ public class QueryBuilderViewController
 					}
 				});
 				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof RelType) {
+				RelType relTypeNode = (RelType)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(relTypeNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++);
+				
+				{
+					ConceptVersionBI currentRelTypeConcept = null;
+					if (relTypeNode.getRelTypeConceptNid() != null) {
+						currentRelTypeConcept = WBUtility.getConceptVersion(relTypeNode.getRelTypeConceptNid());
+					}
+					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
+					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								relTypeNode.setRelTypeConceptNid(0);
+							} else {
+								relTypeNode.setRelTypeConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("RelType Concept"), relTypeConceptNode.getNode());
+				}
+				{
+					ConceptVersionBI currentTargetConcept = null;
+					if (relTypeNode.getTargetConceptNid() != null) {
+						currentTargetConcept = WBUtility.getConceptVersion(relTypeNode.getTargetConceptNid());
+					}
+					ConceptNode targetConceptNode = new ConceptNode(currentTargetConcept, true);
+					targetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								relTypeNode.setTargetConceptNid(0);
+							} else {
+								relTypeNode.setTargetConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Target Concept"), targetConceptNode.getNode());
+				}
+				{
+					CheckBox subsumptionCheckBox = new CheckBox();
+					subsumptionCheckBox.setText("Use Subsumption");
+					subsumptionCheckBox.setSelected(relTypeNode.getUseSubsumption());
+					
+					//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
+					subsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends Boolean> observable,
+								Boolean oldValue,
+								Boolean newValue) {
+							relTypeNode.setUseSubsumption(newValue);
+						}
+					});
+
+					nodeEditorGridPane.addRow(rowIndex++, subsumptionCheckBox);
+				}
+				
+				CheckBox inversionCheckBox = new CheckBox();
+				inversionCheckBox.setText("Invert (NOT)");
+				inversionCheckBox.setSelected(relTypeNode.getInvert());
+				
+				//singleConceptAssertionNode.getInvertProperty().bind(inversionCheckBox.selectedProperty());
+				inversionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue,
+							Boolean newValue) {
+						relTypeNode.setInvert(newValue);
+					}
+				});
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
 			}
 		}
 	}
@@ -515,72 +602,99 @@ public class QueryBuilderViewController
 
 		logger.debug("Configuring parent node context menu for {}", ownerNode.getClass().getName());
 
-		Menu groupingMenu = new Menu("Grouping");
-		QueryNodeType[] supportedGroupingNodes = new QueryNodeType[] {
-				QueryNodeType.AND,
-				QueryNodeType.OR,
-				QueryNodeType.XOR
-		};
-		for (QueryNodeType type : supportedGroupingNodes) {
-			MenuItem menuItem = new MenuItem(type.name());
-			menuItem.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event)
-				{
-					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-					currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-					currentTreeItem.setExpanded(true);
-				}
-			});
-			groupingMenu.getItems().add(menuItem);
+		{
+			Menu groupingMenu = new Menu("Grouping");
+			QueryNodeType[] supportedGroupingNodes = new QueryNodeType[] {
+					QueryNodeType.AND,
+					QueryNodeType.OR,
+					QueryNodeType.XOR
+			};
+			for (QueryNodeType type : supportedGroupingNodes) {
+				MenuItem menuItem = new MenuItem(type.name());
+				menuItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
+						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
+						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
+						currentTreeItem.setExpanded(true);
+					}
+				});
+				groupingMenu.getItems().add(menuItem);
+			}
+			menu.getItems().add(groupingMenu);
 		}
-		menu.getItems().add(groupingMenu);
 
-		Menu conceptAssertionMenu = new Menu("Concept Assertion");
-		QueryNodeType[] supportedConceptAssertionNodes = new QueryNodeType[] {
-				QueryNodeType.CONCEPT_IS,
-				QueryNodeType.CONCEPT_IS_CHILD_OF,
-				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
-				QueryNodeType.CONCEPT_IS_KIND_OF
-		};
-		for (QueryNodeType type : supportedConceptAssertionNodes) {
-			MenuItem menuItem = new MenuItem(type.name());
-			menuItem.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event)
-				{
-					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-					currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-					currentTreeItem.setExpanded(true);
-				}
-			});
-			conceptAssertionMenu.getItems().add(menuItem);
+		{
+			Menu conceptAssertionMenu = new Menu("Concept Assertion");
+			QueryNodeType[] supportedConceptAssertionNodes = new QueryNodeType[] {
+					QueryNodeType.CONCEPT_IS,
+					QueryNodeType.CONCEPT_IS_CHILD_OF,
+					QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
+					QueryNodeType.CONCEPT_IS_KIND_OF
+			};
+			for (QueryNodeType type : supportedConceptAssertionNodes) {
+				MenuItem menuItem = new MenuItem(type.name());
+				menuItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
+						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
+						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
+						currentTreeItem.setExpanded(true);
+					}
+				});
+				conceptAssertionMenu.getItems().add(menuItem);
+			}
+			menu.getItems().add(conceptAssertionMenu);
 		}
-		menu.getItems().add(conceptAssertionMenu);
-		
-		Menu stringAssertionMenu = new Menu("String Assertion");
-		QueryNodeType[] supportedStringAssertionNodes = new QueryNodeType[] {
-				QueryNodeType.DESCRIPTION_CONTAINS
-				//QueryNodeType.DESCRIPTION_LUCENE_MATCH
-				//,QueryNodeType.DESCRIPTION_REGEX_MATCH
-		};
-		for (QueryNodeType type : supportedStringAssertionNodes) {
-			MenuItem menuItem = new MenuItem(type.name());
-			menuItem.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event)
-				{
-					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-					currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-					currentTreeItem.setExpanded(true);
-				}
-			});
-			stringAssertionMenu.getItems().add(menuItem);
+		{
+			Menu stringAssertionMenu = new Menu("String Assertion");
+			QueryNodeType[] supportedStringAssertionNodes = new QueryNodeType[] {
+					QueryNodeType.DESCRIPTION_CONTAINS
+					//QueryNodeType.DESCRIPTION_LUCENE_MATCH
+					//,QueryNodeType.DESCRIPTION_REGEX_MATCH
+			};
+			for (QueryNodeType type : supportedStringAssertionNodes) {
+				MenuItem menuItem = new MenuItem(type.name());
+				menuItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
+						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
+						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
+						currentTreeItem.setExpanded(true);
+					}
+				});
+				stringAssertionMenu.getItems().add(menuItem);
+			}
+			menu.getItems().add(stringAssertionMenu);
 		}
-		menu.getItems().add(stringAssertionMenu);
+
+		{
+			Menu relAssertionMenu = new Menu("Relationship Assertion");
+			QueryNodeType[] supportedRelAssertionNodes = new QueryNodeType[] {
+					QueryNodeType.REL_TYPE
+			};
+			for (QueryNodeType type : supportedRelAssertionNodes) {
+				MenuItem menuItem = new MenuItem(type.name());
+				menuItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
+						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
+						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
+						currentTreeItem.setExpanded(true);
+					}
+				});
+				relAssertionMenu.getItems().add(menuItem);
+			}
+			menu.getItems().add(relAssertionMenu);
+		}
 	}
 
 	private void loadContent()

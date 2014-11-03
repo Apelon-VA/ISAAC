@@ -33,6 +33,7 @@ import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
+import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 import gov.va.isaac.util.WBUtility;
@@ -229,6 +230,36 @@ public class ClauseFactory {
 				return new org.ihtsdo.otf.query.implementation.Not(query, clause);
 			}
 		}
+		
+
+		case REL_TYPE: {
+			RelType node = (RelType)treeItem.getValue();
+			
+			final ConceptVersionBI relTypeConcept = WBUtility.getConceptVersion(node.getRelTypeConceptNid());
+			final String relTypeConceptSpecKey = "RelTypeConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(relTypeConceptSpecKey, new ConceptSpec(WBUtility.getDescription(relTypeConcept), relTypeConcept.getPrimordialUuid()));
+
+			final ConceptVersionBI targetConcept = WBUtility.getConceptVersion(node.getTargetConceptNid());
+			final String targetConceptSpecKey = "TargetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
+
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.RelType(
+				/* Query */		query,
+				/* String */	relTypeConceptSpecKey,
+				/* String */	targetConceptSpecKey,
+				/* String */	vcKey,
+				/* Boolean */	node.getUseSubsumption());
+
+			if (! node.getInvert()) {
+				return clause;
+			} else {
+				return new org.ihtsdo.otf.query.implementation.Not(query, clause);
+			}
+		}
+
 		default:
 			throw new RuntimeException("Unsupported QueryNodeType " + itemType);
 		}

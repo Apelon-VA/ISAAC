@@ -38,7 +38,24 @@ import javafx.beans.value.ObservableValue;
  */
 public abstract class SingleConceptAssertionNode extends AssertionNode {
 	protected final IntegerProperty nidProperty = new SimpleIntegerProperty();
+	
+	{
+		setValidationChangeListeners();
+		setDescriptionChangeListeners();
+	}
+	/**
+	 * 
+	 */
+	public SingleConceptAssertionNode() {
+	}
+	public SingleConceptAssertionNode(int nid) {
+		nidProperty.set(nid);
+	}
 
+	public IntegerProperty getNidProperty() { return nidProperty; }
+	
+	public Integer getNid() { return nidProperty != null ? nidProperty.get() : null; }
+	public void setNid(int nid) { nidProperty.set(nid); }
 	protected void setValidationChangeListeners() {
 		nidProperty.addListener(new ChangeListener<Number>() {
 			@Override
@@ -65,24 +82,6 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 		});
 	}
 
-	{
-		setValidationChangeListeners();
-		setDescriptionChangeListeners();
-	}
-	/**
-	 * 
-	 */
-	public SingleConceptAssertionNode() {
-	}
-	public SingleConceptAssertionNode(int nid) {
-		nidProperty.set(nid);
-	}
-
-	public IntegerProperty getNidProperty() { return nidProperty; }
-	
-	public Integer getNid() { return nidProperty != null ? nidProperty.get() : null; }
-	public void setNid(int nid) { nidProperty.set(nid); }
-	
 	@Override
 	public String getDescription() {
 		String conceptDescription = null;

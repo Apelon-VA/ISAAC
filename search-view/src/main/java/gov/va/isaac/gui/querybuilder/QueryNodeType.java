@@ -34,6 +34,7 @@ import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
+import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 
 import org.ihtsdo.otf.query.implementation.Clause;
@@ -91,9 +92,12 @@ public enum QueryNodeType {
 	// String
 		// DESCRIPTION_CONTAINS id associated with DescriptionActiveLuceneMatch
 	DESCRIPTION_CONTAINS(DescriptionContains.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionActiveLuceneMatch.class),
-
+		// Currently unsupported
 	DESCRIPTION_LUCENE_MATCH(DescriptionLuceneMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionLuceneMatch.class),
-	DESCRIPTION_REGEX_MATCH(DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class);
+		// Currently unsupported
+	DESCRIPTION_REGEX_MATCH(DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class),
+	
+	REL_TYPE(RelType.class, org.ihtsdo.otf.query.implementation.clauses.RelType.class);
 
 	private final static Logger logger = LoggerFactory.getLogger(QueryNodeType.class);
 	
