@@ -30,16 +30,29 @@ public class MergeFailure extends Exception
 {
 	private static final long serialVersionUID = 1L;
 	private Set<String> filesWithMergeFailures_;
+	private Set<String> filesChangedDuringMergeAttempt_;
 	
-	public MergeFailure(Set<String> filesWithMergeFailures)
+	public MergeFailure(Set<String> filesWithMergeFailures, Set<String> filesChangedDuringMergeAttempt)
 	{
 		super("Merge Failure");
 		filesWithMergeFailures_ = filesWithMergeFailures;
+		filesChangedDuringMergeAttempt_ = filesChangedDuringMergeAttempt;
 	}
 	
+	/**
+	 * @return The files that were left in a conflicted, unusable state - much be corrected with a call to resolveMergeFailures.
+	 */
 	public Set<String> getMergeFailures()
 	{
 		return filesWithMergeFailures_;
+	}
+	
+	/**
+	 * @return All files that were changed (successfully or not) during the merge.
+	 */
+	public Set<String> getFilesChangedDuringMergeAttempt()
+	{
+		return filesChangedDuringMergeAttempt_;
 	}
 
 	/**
@@ -48,6 +61,6 @@ public class MergeFailure extends Exception
 	@Override
 	public String getLocalizedMessage()
 	{
-		return super.getLocalizedMessage() + " on " + filesWithMergeFailures_;
+		return super.getLocalizedMessage() + " on " + filesWithMergeFailures_ + " while updating the files " + filesChangedDuringMergeAttempt_;
 	}
 }

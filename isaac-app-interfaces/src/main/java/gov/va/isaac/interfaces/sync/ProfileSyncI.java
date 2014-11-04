@@ -136,6 +136,8 @@ public interface ProfileSyncI
 	 * required resolution.  May be null to request that all tracked files with changes be committed and pushed.
 	 * @throws IllegalArgumentException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IOException - if the passed parameters are invalid
+	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
+	 * update attempt.
 	 * @return The set of files that changed during the pull from the server.
 	 */
 	public Set<String> updateCommitAndPush(File localFolder, String commitMessage, String username, String password, MergeFailOption mergeFailOption, String ... files) 
@@ -149,6 +151,8 @@ public interface ProfileSyncI
 	 * @param mergeFailOption - (optional - defaults to {@link MergeFailOption#FAIL}) - the action to take if the required update results in a merge conflit.
 	 * @throws IllegalArgumentException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IOException - if the passed parameters are invalid
+	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
+	 * update attempt.
 	 * @return The set of files that changed during the pull from the server.
 	 */
 	public Set<String> updateFromRemote(File localFolder, String username, String password, MergeFailOption mergeFailOption) 
@@ -165,8 +169,10 @@ public interface ProfileSyncI
 	 * the action that should be taken to resolve the issue.  Note that {@link MergeFailOption#FAIL} it not a valid option.
 	 * @throws IllegalArgumentException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IOException - if the passed parameters are invalid
+	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
+	 * update attempt.
 	 * @return The complete set of files that changed during the pull from the server that led to the merge failure.
 	 */
-	public Set<String> resolveMergeFailures(File localFolder, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException;
+	public Set<String> resolveMergeFailures(File localFolder, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
 	
 }
