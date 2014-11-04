@@ -39,14 +39,14 @@ public interface ProfileSyncI
 {
 	/**
 	 * Connect to remote service - pull down any existing files in the remote service.
-	 * 
+	 * <br><br>
 	 * In general, this operation should not result in any add / commit operations (though implementations may add/commit a 'README' file
 	 * if necessary to complete the linkage in the case of empty repositories - in fact, are encouraged to ensure that a reasonable README
 	 * file exists on both the client and the server at the end of this operation)
-	 * 
+	 * <br><br>
 	 * This is NOT intended to be called from a running application - rather - it should only be called during the initial configuration 
 	 * (typically done during the build sequence) as it doesn't provide any feedback as to what local files changed, during its operations.
-	 * 
+	 * <pre>
 	 * Implementers should handle the following cases:
 	 * 
 	 *  * Remote repository exists, but is empty
@@ -74,7 +74,7 @@ public interface ProfileSyncI
 	 *          If the client repository is found to be incompatible with the server repository - then the client state should be discarded - and a new checkout 
 	 *          should be done from the server.  Any local files which have naming collisions with server files should be PRESERVED during the checkout - not 
 	 *          overwritten - leaving them in a MODIFIED state, if they happen to differ from the files that were on the server.
-	 *   
+	 * </pre>
 	 * @param localFolder - full path the the folder that should be synchronizable
 	 * @param remoteAddress - the URL to the remote server
 	 * @param username - The username to use for remote operations

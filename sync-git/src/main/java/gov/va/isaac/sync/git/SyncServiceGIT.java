@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -91,6 +90,8 @@ public class SyncServiceGIT implements ProfileSyncI
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE = "Conflicted merge happened during remote merge";
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_STASH = "Conflicted merge happened during stash merge";
 	private final String STASH_MARKER = ":STASH-";
+	
+	//TODO figure out alt method of handling credentials on maestrodev?
 
 	private SyncServiceGIT()
 	{
