@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *		 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,11 +21,9 @@ package gov.va.isaac.config;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.UUID;
-
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -33,7 +31,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppConfigI
 {
 	
-	/**  The log_. */
+	/**	The log_. */
 	private static Logger log_ = LoggerFactory.getLogger(IsaacAppConfigWrapper.class);
 	
 	/**
@@ -96,7 +93,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	private void copyHack(IsaacAppConfig read)
 	{
 		//TODO we will need a way for the user to change some of these parameters later (and a place to save them) like the two 
-		//workflow ones.  where and how?
+		//workflow ones.	where and how?
 		if (read.getApplicationTitle() != null && read.getApplicationTitle().length() > 0)
 		{
 			setApplicationTitle(read.getApplicationTitle());
@@ -116,13 +113,14 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setDbGroupId(read.getDbGroupId());
 		setDbArtifactId(read.getDbArtifactId());
 		setDbVersion(read.getDbVersion());
-        setDbClassifier(read.getDbClassifier());
-        setDbType(read.getDbType());
+		setDbClassifier(read.getDbClassifier());
+		setDbType(read.getDbType());
 		setApplicationTitle(read.getApplicationTitle());
 		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
 		setReleaseVersion(read.getReleaseVersion());
 		setExtensionNamespace(read.getExtensionNamespace());
 		setChangeSetUrl(read.getChangeSetUrl());
+		setChangeSetUrlType(read.getChangeSetUrlType());
 		setAppSchemaLocation(read.getAppSchemaLocation());
 		setUserSchemaLocation(read.getUserSchemaLocation());
 		setWorkflowServerUrl(read.getWorkflowServerUrl());
@@ -135,52 +133,60 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setWorkflowPromotionPathUuid(read.getWorkflowPromotionPathUuid());
 	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrlAsURL()
-   */
-  @Override
-  public URL getWorkflowServerUrlAsURL() {
-    return IsaacAppConfigI.getUrlForString(getWorkflowServerUrl());
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrlAsURL()
+	 */
+	@Override
+	public URL getWorkflowServerUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getWorkflowServerUrl());
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrlAsURL()
-   */
-  @Override
-  public URL getScmUrlAsURL() {
-    return IsaacAppConfigI.getUrlForString(getScmUrl());
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrlAsURL()
+	 */
+	@Override
+	public URL getScmUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getScmUrl());
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposUrlAsURL()
-   */
-  @Override
-  public URL getDistReposUrlAsURL() {
-    return IsaacAppConfigI.getUrlForString(getDistReposUrl());
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposUrlAsURL()
+	 */
+	@Override
+	public URL getDistReposUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getDistReposUrl());
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapUrlAsURL()
-   */
-  @Override
-  public URL getDistReposSnapUrlAsURL() {
-    return IsaacAppConfigI.getUrlForString(getDistReposSnapUrl());
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapUrlAsURL()
+	 */
+	@Override
+	public URL getDistReposSnapUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getDistReposSnapUrl());
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
-   */
-  @Override
-  public URL getChangeSetUrlAsURL() {
-    return IsaacAppConfigI.getUrlForString(getChangeSetUrl());
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
+	 */
+	@Override
+	public URL getChangeSetUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getChangeSetUrl());
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
-   */
-  @Override
-  public UUID getWorkflowPromotionPathUuidAsUUID() {
-    return IsaacAppConfigI.getUuidForString(getWorkflowPromotionPathUuid());
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
+	 */
+	@Override
+	public UUID getWorkflowPromotionPathUuidAsUUID() {
+		return IsaacAppConfigI.getUuidForString(getWorkflowPromotionPathUuid());
+	}
 
+	/*
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlTypeName()
+	 */
+	@Override
+	public String getChangeSetUrlTypeName()
+	{
+		return getChangeSetUrlType().name();
+	}
 }

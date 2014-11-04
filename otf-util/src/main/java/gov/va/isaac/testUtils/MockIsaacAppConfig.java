@@ -20,9 +20,7 @@ package gov.va.isaac.testUtils;
 
 import java.net.URL;
 import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Service;
-
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
 // TODO: Auto-generated Javadoc
@@ -420,6 +418,14 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 
   @Override
   public String getDbType() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
+  @Override
+  public String getChangeSetUrlTypeName()
+  {
     // TODO Auto-generated method stub
     return null;
   }
