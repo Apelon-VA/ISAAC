@@ -41,7 +41,6 @@ import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -49,7 +48,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -60,6 +58,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -203,6 +202,7 @@ public class QueryBuilderViewController
 				}
 			}
 		});
+
 		rootNodeTypeComboBox.setOnAction((event) -> {
 			if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() != null
 					&& ! (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() instanceof Separator)) {
@@ -212,13 +212,16 @@ public class QueryBuilderViewController
 					if (selectedType.getNodeClass() == queryNodeTreeView.getRoot().getClass()) {
 						// Don't reset root node of same type
 						
+						event.consume();
 						return;
 					}
 				}
 				
 				boolean resetRoot = true;
-				if (queryNodeTreeView.getRoot() != null && queryNodeTreeView.getRoot().getChildren().size() > 0) {
-					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Root Expression Change Confirmation", "Are you sure you want to reset root expression with " + queryNodeTreeView.getRoot().getChildren().size() + " child expressions from " + QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()) + " to " + rootNodeTypeComboBox.getSelectionModel().getSelectedItem() + "?\nAll child expressions will be deleted");
+				if (queryNodeTreeView.getRoot() != null
+						&& queryNodeTreeView.getRoot().getChildren().size() > 0
+						|| (queryNodeTreeView.getRoot() != null && queryNodeTreeView.getRoot().getValue() != null && (queryNodeTreeView.getRoot().getValue() instanceof AssertionNode) && queryNodeTreeView.getRoot().getValue().getIsValid())) {
+					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Root Expression Change Confirmation", "Are you sure you want to reset root expression from " + QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()) + " to " + rootNodeTypeComboBox.getSelectionModel().getSelectedItem() + "?" + (queryNodeTreeView.getRoot().getChildren().size() > 0 ? ("\n\n" + queryNodeTreeView.getRoot().getChildren().size() + " child expression(s) will be deleted") : ""));
 					if (response == DialogResponse.YES) {
 						resetRoot = true;
 					} else {
@@ -231,9 +234,19 @@ public class QueryBuilderViewController
 
 					queryNodeTreeView.getSelectionModel().select(queryNodeTreeView.getRoot());
 				} else {
-					//rootNodeTypeComboBox.getButtonCell().setText(QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()).name());
-					rootNodeTypeComboBox.getSelectionModel().clearSelection();
-					//rootNodeTypeComboBox.getSelectionModel().select(QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()));
+					// TODO: This is a hack to display value of current node without triggering selection listeners
+					ListCell<Object> test = new ListCell<Object>() {
+						@Override
+						protected void updateItem(Object t, boolean bln) {
+							super.updateItem(t, bln); 
+							if (bln || t instanceof Separator) {
+								setText("");
+							} else {
+								setText(QueryNodeType.valueOf(queryNodeTreeView.getRoot().getValue()).displayName());
+							}
+						}
+					};
+					rootNodeTypeComboBox.setButtonCell(test);
 				}
 			}
 		});
@@ -408,7 +421,7 @@ public class QueryBuilderViewController
 				int rowIndex = 0;
 				Label nodeEditorLabel = new Label(logicalNode.getNodeTypeName());
 				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
-				nodeEditorGridPane.addRow(rowIndex++);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
 				
 				CheckBox inversionCheckBox = new CheckBox();
 				inversionCheckBox.setText("Invert (NOT)");
@@ -431,7 +444,7 @@ public class QueryBuilderViewController
 				int rowIndex = 0;
 				Label nodeEditorLabel = new Label(singleConceptAssertionNode.getNodeTypeName());
 				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
-				nodeEditorGridPane.addRow(rowIndex++);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
 				ConceptVersionBI currentConcept = null;
 				if (singleConceptAssertionNode.getNid() != null) {
 					currentConcept = WBUtility.getConceptVersion(singleConceptAssertionNode.getNid());
@@ -472,7 +485,7 @@ public class QueryBuilderViewController
 				int rowIndex = 0;
 				Label nodeEditorLabel = new Label(singleStringAssertionNode.getNodeTypeName());
 				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
-				nodeEditorGridPane.addRow(rowIndex++);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
 				
 				TextField stringNode = ((SingleStringAssertionNode)draggableNode).getStringInputField();
 				
@@ -501,7 +514,7 @@ public class QueryBuilderViewController
 				int rowIndex = 0;
 				Label nodeEditorLabel = new Label(relTypeNode.getNodeTypeName());
 				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
-				nodeEditorGridPane.addRow(rowIndex++);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
 				
 				{
 					ConceptVersionBI currentRelTypeConcept = null;
@@ -589,6 +602,21 @@ public class QueryBuilderViewController
 //			return findRootNode(node.getParent());
 //		}
 //	}
+	
+	private boolean shouldDeleteNode(TreeItem<NodeDraggable> node) {
+		boolean delete = true;
+		if (node.getChildren().size() > 0
+				|| (node.getValue() != null && (node.getValue() instanceof AssertionNode) && node.getValue().getIsValid())) {
+			DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Expression Deletion Confirmation", "Are you sure you want to delete expression " + QueryNodeType.valueOf(node.getValue()) + "?" + (node.getChildren().size() > 0 ? ("\n\n" + node.getChildren().size() + " child expression(s) will also be deleted") : ""));
+			if (response == DialogResponse.YES) {
+				delete = true;
+			} else {
+				delete = false;
+			}
+		}
+		
+		return delete;
+	}
 	private void addDeleteMenuItem(ContextMenu menu, TreeCell<NodeDraggable> currentTreeCell) {
 		TreeItem<NodeDraggable> currentTreeItem = currentTreeCell.getTreeItem();
 		MenuItem deleteMenuItem = new MenuItem("Delete");
@@ -596,18 +624,18 @@ public class QueryBuilderViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				if (currentTreeItem.getParent() == null) {
-					queryNodeTreeView.setRoot(null);
-					rootNodeTypeComboBox.getSelectionModel().clearSelection();
+				if (shouldDeleteNode(currentTreeItem)) {
+					if (currentTreeItem.getParent() == null) {
+						queryNodeTreeView.setRoot(null);
+						rootNodeTypeComboBox.getSelectionModel().clearSelection();
 
-					nodeEditorGridPane.getChildren().clear();
-				} else {
-					currentTreeItem.getParent().getChildren().remove(currentTreeItem);
+						nodeEditorGridPane.getChildren().clear();
+					} else {
+						currentTreeItem.getParent().getChildren().remove(currentTreeItem);
 
-					nodeEditorGridPane.getChildren().clear();
-				}	
-				//currentTreeCell.setContextMenu(null);
-				//currentTreeCell.setDisable(true);
+						nodeEditorGridPane.getChildren().clear();
+					}	
+				}
 			}
 		});
 		menu.getItems().add(deleteMenuItem);
@@ -638,7 +666,7 @@ public class QueryBuilderViewController
 					QueryNodeType.XOR
 			};
 			for (QueryNodeType type : supportedGroupingNodes) {
-				MenuItem menuItem = new MenuItem(type.name());
+				MenuItem menuItem = new MenuItem(type.displayName());
 				menuItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event)
@@ -663,7 +691,7 @@ public class QueryBuilderViewController
 					QueryNodeType.CONCEPT_IS_KIND_OF
 			};
 			for (QueryNodeType type : supportedConceptAssertionNodes) {
-				MenuItem menuItem = new MenuItem(type.name());
+				MenuItem menuItem = new MenuItem(type.displayName());
 				menuItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event)
@@ -686,7 +714,7 @@ public class QueryBuilderViewController
 					//,QueryNodeType.DESCRIPTION_REGEX_MATCH
 			};
 			for (QueryNodeType type : supportedStringAssertionNodes) {
-				MenuItem menuItem = new MenuItem(type.name());
+				MenuItem menuItem = new MenuItem(type.displayName());
 				menuItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event)
@@ -708,7 +736,7 @@ public class QueryBuilderViewController
 					QueryNodeType.REL_TYPE
 			};
 			for (QueryNodeType type : supportedRelAssertionNodes) {
-				MenuItem menuItem = new MenuItem(type.name());
+				MenuItem menuItem = new MenuItem(type.displayName());
 				menuItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event)
@@ -919,7 +947,7 @@ public class QueryBuilderViewController
 //			return nodeType;
 //		}
 //		
-//		public String toString() { return nodeType.name(); }
+//		public String toString() { return nodeType.displayName(); }
 //		
 //		public DragMode getDragMode() { return DragMode.COPY; }
 //		public NodeDraggable getItemToDrop() { return nodeType.construct(); }

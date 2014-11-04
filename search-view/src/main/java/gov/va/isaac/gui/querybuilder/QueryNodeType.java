@@ -78,36 +78,40 @@ public enum QueryNodeType {
 	 */
 
 	// Grouping
-	AND(And.class, org.ihtsdo.otf.query.implementation.And.class),
-	OR(Or.class, org.ihtsdo.otf.query.implementation.Or.class),
-	XOR(Xor.class, org.ihtsdo.otf.query.implementation.Xor.class),
-	NOT(null, org.ihtsdo.otf.query.implementation.Not.class), // No Not LogicalNode
+	AND("And", And.class, org.ihtsdo.otf.query.implementation.And.class),
+	OR("Or", Or.class, org.ihtsdo.otf.query.implementation.Or.class),
+	XOR("Xor", Xor.class, org.ihtsdo.otf.query.implementation.Xor.class),
+	NOT("Not", null, org.ihtsdo.otf.query.implementation.Not.class), // No Not LogicalNode
 
 	// Concept
-	CONCEPT_IS(ConceptIs.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIs.class),
-	CONCEPT_IS_CHILD_OF(ConceptIsChildOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsChildOf.class),
-	CONCEPT_IS_DESCENDANT_OF(ConceptIsDescendantOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsDescendentOf.class),
-	CONCEPT_IS_KIND_OF(ConceptIsKindOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsKindOf.class),
+	CONCEPT_IS("Concept is", ConceptIs.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIs.class),
+	CONCEPT_IS_CHILD_OF("Concept is child of", ConceptIsChildOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsChildOf.class),
+	CONCEPT_IS_DESCENDANT_OF("Concept is descendant of", ConceptIsDescendantOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsDescendentOf.class),
+	CONCEPT_IS_KIND_OF("Concept is kind of", ConceptIsKindOf.class, org.ihtsdo.otf.query.implementation.clauses.ConceptIsKindOf.class),
 	
 	// String
 		// DESCRIPTION_CONTAINS id associated with DescriptionActiveLuceneMatch
-	DESCRIPTION_CONTAINS(DescriptionContains.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionActiveLuceneMatch.class),
+	DESCRIPTION_CONTAINS("Description contains", DescriptionContains.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionActiveLuceneMatch.class),
 		// Currently unsupported
-	DESCRIPTION_LUCENE_MATCH(DescriptionLuceneMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionLuceneMatch.class),
+	DESCRIPTION_LUCENE_MATCH("Description Lucene match", DescriptionLuceneMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionLuceneMatch.class),
 		// Currently unsupported
-	DESCRIPTION_REGEX_MATCH(DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class),
+	DESCRIPTION_REGEX_MATCH("Description regex match", DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class),
 	
-	REL_TYPE(RelType.class, org.ihtsdo.otf.query.implementation.clauses.RelType.class);
+	REL_TYPE("Relationship type", RelType.class, org.ihtsdo.otf.query.implementation.clauses.RelType.class);
 
 	private final static Logger logger = LoggerFactory.getLogger(QueryNodeType.class);
 	
+	private final String displayName;
 	private final Class<? extends NodeDraggable> nodeClass;
 	private final Class<? extends Clause> clauseClass;
 	
-	private QueryNodeType(Class<? extends NodeDraggable> nodeClass, Class<? extends Clause> clauseClass) {
+	private QueryNodeType(String displayName, Class<? extends NodeDraggable> nodeClass, Class<? extends Clause> clauseClass) {
 		this.nodeClass = nodeClass;
 		this.clauseClass = clauseClass;
+		this.displayName = displayName;
 	}
+	
+	public String displayName() { return displayName; }
 	
 	public Class<? extends NodeDraggable> getNodeClass() { return nodeClass; }
 	
@@ -139,4 +143,6 @@ public enum QueryNodeType {
 		
 		throw new IllegalArgumentException("Unexpected NodeDraggable type " + draggableNode.getClass().getName());
 	}
+	
+	public String toString() { return displayName; }
 }
