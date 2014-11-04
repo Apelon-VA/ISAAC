@@ -27,16 +27,16 @@ package gov.va.isaac.interfaces.gui.views;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * QueryBuilderViewI
+ * RefsetSearchViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
- * An interface that allows the creation of a QueryBuilderView implementation,
+ * An interface that allows the creation of a RefsetSearchViewI implementation,
  * which will be a JavaFX component that extends/implements {@link PopupViewI}.
  * This popup panel is intended to allow creation, modification and display
- * of a Query
+ * of a Query for refsets
  * 
  */
 @Contract
-public interface QueryBuilderViewI extends PopupViewI {
+public interface RefsetSearchViewI extends PopupViewI {
 }

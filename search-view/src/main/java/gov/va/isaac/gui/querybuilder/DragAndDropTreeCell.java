@@ -27,6 +27,7 @@ package gov.va.isaac.gui.querybuilder;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable.DragMode;
+import gov.va.isaac.util.TemporaryUniqueIdCache;
 
 import java.util.Map;
 

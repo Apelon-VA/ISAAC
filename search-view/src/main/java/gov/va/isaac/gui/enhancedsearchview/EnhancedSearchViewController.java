@@ -39,6 +39,7 @@ import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFil
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
+import gov.va.isaac.interfaces.gui.views.RefsetSearchViewI;
 import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -230,9 +231,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private TextField searchSaveDescriptionTextField;
 	@FXML private TextField droolsExprTextField;
 	
-	@FXML private Button startQueryBuilderButton;
+	@FXML private Button openQueryBuilderViewButton;
+	@FXML private Button openRefsetSearchViewButton;
 
-	private QueryBuilderViewI queryBuilder;
+	private QueryBuilderViewI queryBuilderView;
+	private RefsetSearchViewI refsetSearchView;
 	
 	final private SearchViewModel searchViewModel = new SearchViewModel();
 
@@ -278,7 +281,8 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
-		assert startQueryBuilderButton != null : "fx:id=\"startQueryBuilderButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert openQueryBuilderViewButton != null : "fx:id=\"startQueryBuilderButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert openRefsetSearchViewButton != null : "fx:id=\"openRefsetSearchViewButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
@@ -311,11 +315,18 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 			}
 		});
 		
-		startQueryBuilderButton.setOnAction(new EventHandler<ActionEvent>() {
+		openQueryBuilderViewButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				queryBuilder = AppContext.getService(QueryBuilderViewI.class);
-				queryBuilder.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+				queryBuilderView = AppContext.getService(QueryBuilderViewI.class);
+				queryBuilderView.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+		});
+		openRefsetSearchViewButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				refsetSearchView = AppContext.getService(RefsetSearchViewI.class);
+				refsetSearchView.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 			}
 		});
 		

@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.gui.querybuilder.ObjectWithTemporaryUniqueId;
+import gov.va.isaac.util.ObjectWithTemporaryUniqueId;
 
 /**
  * NodeDraggable

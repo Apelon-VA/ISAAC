@@ -55,7 +55,7 @@ public class DescriptionContains extends SingleStringAssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends String> observable,
 					String oldValue, String newValue) {
-				if (newValue != null && newValue.matches("[a-zA-Z0-9]*")) {
+				if (newValue != null && newValue.matches("[a-zA-Z0-9][a-zA-Z0-9]*")) {
 					isValidProperty.set(true);
 				} else {
 					isValidProperty.set(false);
