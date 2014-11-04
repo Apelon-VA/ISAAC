@@ -164,6 +164,9 @@ public interface ProfileSyncI
 	 * 
 	 * After calling this, you may call {@link #updateCommitAndPush(File, String, String, String, MergeFailOption, String...) again.
 	 * 
+	 * Note - some implementations (specifically GI) may throw another {@link MergeFailure} during this operation - this is a secondary merge failure
+	 * which will also have to be resolved by the user (by calling this method again) before you can commit and push.
+	 * 
 	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @param resolutions - A map where each key is a relative file name of a file that had a mergeFailure, and the corresponding value is
 	 * the action that should be taken to resolve the issue.  Note that {@link MergeFailOption#FAIL} it not a valid option.
