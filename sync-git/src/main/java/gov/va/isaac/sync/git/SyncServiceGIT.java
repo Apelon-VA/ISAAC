@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.StashApplyFailureException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -52,6 +54,7 @@ import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.LargeObjectException;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.AnyObjectId;
 import org.eclipse.jgit.lib.ObjectId;
@@ -87,6 +90,7 @@ public class SyncServiceGIT implements ProfileSyncI
 	
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE = "Conflicted merge happened during remote merge";
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_STASH = "Conflicted merge happened during stash merge";
+	private final String STASH_MARKER = ":STASH-";
 
 	private SyncServiceGIT()
 	{
@@ -311,7 +315,8 @@ public class SyncServiceGIT implements ProfileSyncI
 			
 			if (git.status().call().getConflicting().size() > 0)
 			{
-				throw new MergeFailure(git.status().call().getConflicting());
+				log.info("Previous merge failure not yet resolved");
+				throw new MergeFailure(git.status().call().getConflicting(), new HashSet<>());
 			}
 			
 			if (files == null)
@@ -374,14 +379,21 @@ public class SyncServiceGIT implements ProfileSyncI
 	public Set<String> updateFromRemote(File localFolder, String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException,
 			MergeFailure
 	{
-		HashSet<String> filesChangedDuringPull;
+		Set<String> filesChangedDuringPull;
 		try
 		{
 			log.info("update from remote called ");
 
 			Git git = getGit(localFolder);
-
+			
 			log.debug("Fetching from remote");
+			
+			if (git.status().call().getConflicting().size() > 0)
+			{
+				log.info("Previous merge failure not yet resolved");
+				throw new MergeFailure(git.status().call().getConflicting(), new HashSet<>());
+			}
+			
 			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, password);
 			log.debug("Fetch Message" + git.fetch().setCredentialsProvider(cp).call().getMessages());
 			
@@ -406,40 +418,39 @@ public class SyncServiceGIT implements ProfileSyncI
 				
 				if (!mr.getMergeStatus().isSuccessful())
 				{
-					HashMap<String, MergeFailOption> resolutions = new HashMap<>();
-					
 					if (mergeFailOption == null || MergeFailOption.FAIL == mergeFailOption)
 					{
-						addNote(NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE, git);
-						throw new MergeFailure(mr.getConflicts().keySet());
+						addNote(NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE + (stash == null ? ":NO_STASH" : STASH_MARKER + stash.getName()), git);
+						//We can use the status here - because we already stashed the stuff that they had uncommitted above.
+						throw new MergeFailure(mr.getConflicts().keySet(), git.status().call().getUncommittedChanges());
 					}
 					else if (MergeFailOption.KEEP_LOCAL == mergeFailOption || MergeFailOption.KEEP_REMOTE == mergeFailOption)
 					{
+						HashMap<String, MergeFailOption> resolutions = new HashMap<>();
 						for (String s : mr.getConflicts().keySet())
 						{
 							resolutions.put(s, mergeFailOption);
 						}
+						log.debug("Resolving merge failures with option {}", mergeFailOption);
+						filesChangedDuringPull = resolveMergeFailures(localFolder, MergeFailType.REMOTE_TO_LOCAL, (stash == null ? null : stash.getName()), resolutions);
 					}
 					else
 					{
 						throw new IllegalArgumentException("Unexpected option");
 					}
-					
-					log.debug("Resolving merge failures with option {}", mergeFailOption);
-					resolveMergeFailures(localFolder, MergeFailType.REMOTE_TO_LOCAL, resolutions);
-					RevCommit rc = git.commit().setAuthor(username, "42")
-							.setMessage("Merging with user specified merge failure resolution for files " + mr.getConflicts().keySet()).call();
-					headAfterMergeID = rc;
-				}
-				
-				if (masterIdBeforeMerge.getName().equals(headAfterMergeID.getName()))
-				{
-					log.debug("Merge didn't result in a commit - no incoming changes");
-					filesChangedDuringPull = new HashSet<>();
 				}
 				else
 				{
-					filesChangedDuringPull = listFilesChangedInCommit(git.getRepository(), headAfterMergeID);
+					//Conflict free merge - or perhaps, no merge at all.
+					if (masterIdBeforeMerge.getName().equals(headAfterMergeID.getName()))
+					{
+						log.debug("Merge didn't result in a commit - no incoming changes");
+						filesChangedDuringPull = new HashSet<>();
+					}
+					else
+					{
+						filesChangedDuringPull = listFilesChangedInCommit(git.getRepository(), headAfterMergeID);
+					}
 				}
 			}
 
@@ -455,31 +466,44 @@ public class SyncServiceGIT implements ProfileSyncI
 				catch (StashApplyFailureException e)
 				{
 					log.debug("Stash failed to merge");
-					HashMap<String, MergeFailOption> resolutions = new HashMap<>();
 					if (mergeFailOption == null || MergeFailOption.FAIL == mergeFailOption)
 					{
 						addNote(NOTE_FAILED_MERGE_HAPPENED_ON_STASH, git);
-						throw new MergeFailure(git.status().call().getConflicting());
+						throw new MergeFailure(git.status().call().getConflicting(), filesChangedDuringPull);
 					}
 					
 					else if (MergeFailOption.KEEP_LOCAL == mergeFailOption || MergeFailOption.KEEP_REMOTE == mergeFailOption)
 					{
+						HashMap<String, MergeFailOption> resolutions = new HashMap<>();
 						for (String s : git.status().call().getConflicting())
 						{
 							resolutions.put(s, mergeFailOption);
+						}
+						log.debug("Resolving stash apply merge failures with option {}", mergeFailOption);
+						resolveMergeFailures(localFolder, MergeFailType.STASH_TO_LOCAL, null, resolutions);
+						//When we auto resolve to KEEP_LOCAL - these files won't have really changed, even though we recorded a change above.
+						for (Entry<String, MergeFailOption> r : resolutions.entrySet())
+						{
+							if (MergeFailOption.KEEP_LOCAL == r.getValue())
+							{
+								filesChangedDuringPull.remove(r.getKey());
+							}
 						}
 					}
 					else
 					{
 						throw new IllegalArgumentException("Unexpected option");
 					}
-					
-					log.debug("Resolving stash apply merge failures with option {}", mergeFailOption);
-					resolveMergeFailures(localFolder, MergeFailType.STASH_TO_LOCAL, resolutions);
 				}
 			}
 			log.info("Files changed during updateFromRemote: {}", filesChangedDuringPull);
 			return filesChangedDuringPull;
+		}
+		catch (CheckoutConflictException e)
+		{
+			log.error("Unexpected", e);
+			throw new IOException("A local file exists (but is not yet added to source control) which conflicts with a file from the server."
+					+ "  Either delete the local file, or call addFile(...) on the offending file prior to attempting to update from remote.", e);
 		}
 		catch (GitAPIException e)
 		{
@@ -489,10 +513,12 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 	
 	/**
+	 * @throws MergeFailure 
+	 * @throws NoWorkTreeException 
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#resolveMergeFailures(java.io.File, java.util.Map)
 	 */
 	@Override
-	public Set<String> resolveMergeFailures(File localFolder, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException
+	public Set<String> resolveMergeFailures(File localFolder, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, NoWorkTreeException, MergeFailure
 	{
 		log.info("resolve merge failures called - resolutions: {}", resolutions);
 		try
@@ -500,6 +526,24 @@ public class SyncServiceGIT implements ProfileSyncI
 			Git git = getGit(localFolder);
 			
 			List<Note> notes = git.notesList().call();
+			
+			Set<String> conflicting = git.status().call().getConflicting();
+			if (conflicting.size() == 0)
+			{
+				throw new IllegalArgumentException("You do not appear to have any conflicting files");
+			}
+			if (conflicting.size() !=  resolutions.size())
+			{
+				throw new IllegalArgumentException("You must provide a resolution for each conflicting file.  Files in conflict: " + conflicting);
+			}
+			for (String s : conflicting)
+			{
+				if (!resolutions.containsKey(s))
+				{
+					throw new IllegalArgumentException("No conflit resolution specified for file " + s + ".  Resolutions must be specified for all files");
+				}
+			}
+			
 			if (notes == null || notes.size() == 0)
 			{
 				throw new IllegalArgumentException("The 'note' that is required for tracking state is missing.  This merge failure must be resolved on the command line");
@@ -508,11 +552,11 @@ public class SyncServiceGIT implements ProfileSyncI
 			String noteValue = new String(git.getRepository().open(notes.get(0).getData()).getBytes());
 			
 			MergeFailType mergeFailType;
-			if (NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE.equals(noteValue))
+			if (noteValue.startsWith(NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE))
 			{
 				mergeFailType = MergeFailType.REMOTE_TO_LOCAL;
 			}
-			else if (NOTE_FAILED_MERGE_HAPPENED_ON_STASH.equals(noteValue))
+			else if (noteValue.startsWith(NOTE_FAILED_MERGE_HAPPENED_ON_STASH))
 			{
 				mergeFailType = MergeFailType.STASH_TO_LOCAL;
 			}
@@ -520,8 +564,13 @@ public class SyncServiceGIT implements ProfileSyncI
 			{
 				throw new IllegalArgumentException("The 'note' that is required for tracking state contains an unexpected value of '" + noteValue + "'");
 			}
+			String stashIdToApply = null;
+			if (noteValue.contains(STASH_MARKER))
+			{
+				stashIdToApply = noteValue.substring(noteValue.indexOf(STASH_MARKER) + STASH_MARKER.length());
+			}
 			
-			return resolveMergeFailures(localFolder, mergeFailType, resolutions);
+			return resolveMergeFailures(localFolder, mergeFailType, stashIdToApply, resolutions);
 		}
 		catch (GitAPIException | LargeObjectException e)
 		{
@@ -531,9 +580,10 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 
 	
-	private Set<String> resolveMergeFailures(File localFolder, MergeFailType mergeFailType, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException
+	private Set<String> resolveMergeFailures(File localFolder, MergeFailType mergeFailType, String stashIDToApply, Map<String, MergeFailOption> resolutions) 
+			throws IllegalArgumentException, IOException, MergeFailure
 	{
-		log.debug("resolve merge failures called - mergeFailType {} - resolutions: {}", mergeFailType, resolutions);
+		log.debug("resolve merge failures called - mergeFailType: {} stashIDToApply: {} resolutions: {}", mergeFailType, stashIDToApply, resolutions);
 		try
 		{
 			Git git = getGit(localFolder);
@@ -580,12 +630,43 @@ public class SyncServiceGIT implements ProfileSyncI
 			
 			log.info("resolve merge failures Complete.  Current status: " + statusToString(git.status().call()));
 			
-			//TODO see what author this comes up with
 			RevCommit rc = git.commit().setMessage("Merging with user specified merge failure resolution for files " + resolutions.keySet()).call();
 			
-			//TODO see if this fails when there is no note
 			git.notesRemove().setObjectId(commitWithPotentialNote).call();
-			return listFilesChangedInCommit(git.getRepository(), rc);
+			Set<String> filesChangedInCommit = listFilesChangedInCommit(git.getRepository(), rc);
+			
+			//When we auto resolve to KEEP_REMOTE - these will have changed - make sure they are in the list.
+			//TODO seems like this shouldn't really be necessary - need to look into the listFilesChangedInCommit algorithm closer.
+			for (Entry<String, MergeFailOption> r : resolutions.entrySet())
+			{
+				if (MergeFailOption.KEEP_REMOTE == r.getValue())
+				{
+					filesChangedInCommit.add(r.getKey());
+				}
+				if (MergeFailOption.KEEP_LOCAL == r.getValue())
+				{
+					filesChangedInCommit.remove(r.getKey());
+				}
+			}
+			
+			if (!StringUtils.isEmptyOrNull(stashIDToApply))
+			{
+				log.info("Replaying stash identified in note");
+				try
+				{
+					git.stashApply().setStashRef(stashIDToApply).call();
+					log.debug("stash applied cleanly, dropping stash");
+					git.stashDrop().call();
+				}
+				catch (StashApplyFailureException e)
+				{
+					log.debug("Stash failed to merge");
+					addNote(NOTE_FAILED_MERGE_HAPPENED_ON_STASH, git);
+					throw new MergeFailure(git.status().call().getConflicting(), filesChangedInCommit);
+				}
+			}
+			
+			return filesChangedInCommit;
 		}
 		catch (GitAPIException e)
 		{
