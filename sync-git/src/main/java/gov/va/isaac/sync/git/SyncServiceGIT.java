@@ -23,7 +23,6 @@ import gov.va.isaac.interfaces.sync.MergeFailure;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
@@ -66,7 +65,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.StringUtils;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.jvnet.hk2.annotations.Service;
@@ -92,6 +90,7 @@ public class SyncServiceGIT implements ProfileSyncI
 	private final String STASH_MARKER = ":STASH-";
 	
 	//TODO figure out alt method of handling credentials on maestrodev?
+	//TODO figure out how we handle prompts for things.  GUI vs no GUI... etc.
 
 	private SyncServiceGIT()
 	{
@@ -99,12 +98,12 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.net.URL, java.lang.String, java.lang.String)
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void linkAndFetchFromRemote(File localFolder, URL remoteAddress, String userName, String password) throws IllegalArgumentException, IOException
+	public void linkAndFetchFromRemote(File localFolder, String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException
 	{
-		log.info("linkAndFetchFromRemote called - folder: {}, remoteURL: {}, username: {}", localFolder, remoteAddress, userName);
+		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder, remoteAddress, userName);
 		try
 		{
 			if (!localFolder.isDirectory())
@@ -126,14 +125,14 @@ public class SyncServiceGIT implements ProfileSyncI
 
 			Git git = new Git(r);
 
-			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(userName, password);
+			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(userName, password);
 
 			log.debug("Fetching");
 			FetchResult fr = git.fetch().setCheckFetchedObjects(true).setCredentialsProvider(cp).call();
 			log.debug("Fetch messages: {}", fr.getMessages());
 
 			boolean remoteHasMaster = false;
-			Collection<Ref> refs = git.lsRemote().call();
+			Collection<Ref> refs = git.lsRemote().setCredentialsProvider(cp).call();
 			for (Ref ref : refs)
 			{
 				if ("refs/heads/master".equals(ref.getName()))
@@ -203,14 +202,14 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 	
 	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.net.URL)
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.lang.String)
 	 */
 	@Override
-	public void relinkRemote(File localFolder, URL remoteAddress) throws IllegalArgumentException, IOException
+	public void relinkRemote(File localFolder, String remoteAddress) throws IllegalArgumentException, IOException
 	{
 		log.debug("Configuring remote URL and fetch defaults to {}", remoteAddress);
 		StoredConfig sc = getGit(localFolder).getRepository().getConfig();
-		sc.setString("remote", "origin", "url", remoteAddress.toExternalForm());
+		sc.setString("remote", "origin", "url", remoteAddress);
 		sc.setString("remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*");
 		sc.save();
 	}
@@ -349,7 +348,7 @@ public class SyncServiceGIT implements ProfileSyncI
 			Set<String> result = updateFromRemote(localFolder, username, password, mergeFailOption);
 
 			log.debug("Pushing");
-			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, password);
+			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
 
 			Iterable<PushResult> pr = git.push().setCredentialsProvider(cp).call();
 			pr.forEach(new Consumer<PushResult>()
@@ -395,7 +394,7 @@ public class SyncServiceGIT implements ProfileSyncI
 				throw new MergeFailure(git.status().call().getConflicting(), new HashSet<>());
 			}
 			
-			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, password);
+			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
 			log.debug("Fetch Message" + git.fetch().setCredentialsProvider(cp).call().getMessages());
 			
 			ObjectId masterIdBeforeMerge = git.getRepository().getRef("master").getObjectId();

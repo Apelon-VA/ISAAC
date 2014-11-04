@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.sync.MergeFailOption;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import java.io.File;
-import java.net.URL;
 import java.util.HashMap;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -44,7 +43,8 @@ public class SyncTesting
 		String username = "username";
 		String password = "password";
 
-		ssg.linkAndFetchFromRemote(localFolder, new URL("https://github.com/" + username + "/test.git"), username, password);
+		ssg.linkAndFetchFromRemote(localFolder, "https://github.com/" + username + "/test.git", username, password);
+		ssg.linkAndFetchFromRemote(localFolder, "ssh://" + username + "@csfe.aceworkspace.net:29418/testrepo", username, password);
 		ssg.addUntrackedFiles(localFolder);
 		System.out.println("UpdateCommitAndPush result: " + ssg.updateCommitAndPush(localFolder, "mergetest2", username, password, MergeFailOption.FAIL, (String[])null));
 
@@ -53,7 +53,7 @@ public class SyncTesting
 		System.out.println("Update from remote result: " + ssg.updateFromRemote(localFolder, username, password, MergeFailOption.FAIL));
 
 		HashMap<String, MergeFailOption> resolutions = new HashMap<>();
-		resolutions.put("d", MergeFailOption.KEEP_LOCAL);
+		resolutions.put("b", MergeFailOption.KEEP_REMOTE);
 		System.out.println("resolve merge failures result: " + ssg.resolveMergeFailures(localFolder, resolutions));
 		System.out.println("UpdateCommitAndPush result: " + ssg.updateCommitAndPush(localFolder, "mergetest2", username, password, MergeFailOption.FAIL, (String[])null));
 	}

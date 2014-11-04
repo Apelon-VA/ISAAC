@@ -20,7 +20,6 @@ package gov.va.isaac.interfaces.sync;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import org.jvnet.hk2.annotations.Contract;
@@ -82,7 +81,7 @@ public interface ProfileSyncI
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void linkAndFetchFromRemote(File localFolder, URL remoteAddress, String username, String password) throws IllegalArgumentException, IOException;
+	public void linkAndFetchFromRemote(File localFolder, String remoteAddress, String username, String password) throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Fix the URL to the remote service.  This call should only be used when both the local and remote repositories exist, and are a proper pair - 
@@ -95,7 +94,7 @@ public interface ProfileSyncI
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void relinkRemote(File localFolder, URL remoteAddress) throws IllegalArgumentException, IOException;
+	public void relinkRemote(File localFolder, String remoteAddress) throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Mark the specified files as files that should be synchronized.  This is a local operation only - does not push to the server.
