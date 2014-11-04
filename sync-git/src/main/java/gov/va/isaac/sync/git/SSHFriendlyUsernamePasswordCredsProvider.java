@@ -45,7 +45,7 @@ public class SSHFriendlyUsernamePasswordCredsProvider extends CredentialsProvide
 	 * @param password
 	 */
 	public SSHFriendlyUsernamePasswordCredsProvider(String username, String password) {
-		this(username, password.toCharArray());
+		this(username, (password == null ? null : password.toCharArray()));
 	}
 
 	/**
@@ -71,7 +71,16 @@ public class SSHFriendlyUsernamePasswordCredsProvider extends CredentialsProvide
 				continue;
 
 			else if (i instanceof CredentialItem.Password)
-				continue;
+			{
+				if (password == null)
+				{
+					return false;
+				}
+				else
+				{
+					continue;
+				}
+			}
 			
 			else if (i instanceof CredentialItem.YesNoType)
 				continue;
@@ -91,8 +100,15 @@ public class SSHFriendlyUsernamePasswordCredsProvider extends CredentialsProvide
 				continue;
 			}
 			if (i instanceof CredentialItem.Password) {
-				((CredentialItem.Password) i).setValue(password);
-				continue;
+				if (password == null)
+				{
+					throw new UnsupportedCredentialItem(uri, "No password was set into the credentials provider");
+				}
+				else
+				{
+					((CredentialItem.Password) i).setValue(password);
+					continue;
+				}
 			}
 			if (i instanceof CredentialItem.StringType) {
 				if (i.getPromptText().equals("Password: ")) { //$NON-NLS-1$
