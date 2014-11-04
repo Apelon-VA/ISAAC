@@ -19,19 +19,21 @@
 package gov.va.isaac.mojos.profileSync;
 
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
-import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * Goal which reads a app.xml file to find the specified SCM URL and type for the profiles / changeset
  * syncing service - and pulls down any existing profiles - if present.
  * 
- * See {@link ProfileSyncI#linkAndFetchFromRemote(File, String, String, String)} for specific details on the
+ * See {@link ProfileSyncI#linkAndFetchFromRemote(String, String, String)} for specific details on the
  * behavior of this linking process.
+ * 
+ * See {@link ProfilesMojoBase} for details on how credentials are handled.
  * 
  * @goal get-and-link-profile-scm
  * 
- * @phase process-sources
+ * Keep this in a phase earlier than GenerateUsersMojo
+ * @phase generate-sources
  */
 //TODO figure out phase
 public class LinkProfilesToSCMMojo extends ProfilesMojoBase
@@ -51,7 +53,7 @@ public class LinkProfilesToSCMMojo extends ProfilesMojoBase
 		{
 			getLog().info("Configuring " +profilesFolder.getAbsolutePath() + " for SCM management");
 			
-			//TODO implement
+			getProfileSyncImpl().linkAndFetchFromRemote(getURL(), getUsername(), getPassword());
 
 			getLog().info("Done Configuring SCM for profiles");
 		}

@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.mojos.profileSync;
 
+import gov.va.isaac.interfaces.sync.MergeFailOption;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -34,9 +35,9 @@ import org.apache.maven.plugin.MojoExecutionException;
  * 
  * @goal add-commit-and-push-profile-scm
  * 
- * @phase process-sources
+ * Keep this in a phase later than GenerateUsersMojo
+ * @phase process-resources
  */
-//TODO figure out phase
 public class AddCommitAndPushProfilesToSCMMojo extends ProfilesMojoBase
 {
 	/**
@@ -54,7 +55,9 @@ public class AddCommitAndPushProfilesToSCMMojo extends ProfilesMojoBase
 		{
 			getLog().info("Committing " +profilesFolder.getAbsolutePath() + " for SCM management");
 			
-			//TODO implement
+			getProfileSyncImpl().addUntrackedFiles();
+			getProfileSyncImpl().updateCommitAndPush("Adding profiles after executing GenerateUsersMojo", getUsername(), getPassword(), MergeFailOption.KEEP_REMOTE, 
+					(String[])null);
 
 			getLog().info("Done Committing SCM for profiles");
 		}

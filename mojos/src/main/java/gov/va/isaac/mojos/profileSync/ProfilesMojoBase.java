@@ -19,22 +19,46 @@
 package gov.va.isaac.mojos.profileSync;
 
 import gov.va.isaac.config.IsaacAppConfigWrapper;
+import gov.va.isaac.config.generated.ChangeSetSCMType;
 import gov.va.isaac.config.generated.IsaacAppConfig;
+import gov.va.isaac.interfaces.sync.ProfileSyncI;
+import gov.va.isaac.sync.git.SyncServiceGIT;
+import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import javax.xml.bind.JAXBException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.xml.sax.SAXException;
 
 /**
  * {@link ProfilesMojoBase}
+ * 
+ * This allows authentication to be passed in via system property, parameter, or, will 
+ * prompt for the username/password (if allowed by the system property 'profileSyncNoPrompt')
+ * IN THAT ORDER.  System properties have the highest priority.
+ * 
+ * To prevent prompting during automated runs - set the system property 'profileSyncNoPrompt=true'
+ * To set the username via system property - set 'profileSyncUsername=username'
+ * To set the password via system property - set 'profileSyncPassword=password'
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 public abstract class ProfilesMojoBase extends AbstractMojo
 {
+	// For preventing command line prompts for credentials during automated runs - set this system property to true.
+	public static final String PROFILE_SYNC_NO_PROMPTS = "profileSyncNoPrompt";
+	
+	// Allow setting the username via a system property
+	public static final String PROFILE_SYNC_USERNAME_PROPERTY = "profileSyncUsername";
+	
+	// Allow setting the password via a system property
+	public static final String PROFILE_SYNC_PASSWORD_PROPERTY = "profileSyncPassword";
+	
 	
 	/**
 	 * The location of the (already existing) profiles folder which should be shared via SCM.
@@ -50,7 +74,23 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	 */
 	File appXMLFile = null;
 	
+	/**
+	 * The username to use for remote operations
+	 * @parameter
+	 * @optional
+	 */
+	private String profileSyncUsername = null;
+	
+	/**
+	 * The password to use for remote operations
+	 * @parameter
+	 * @optional
+	 */
+	private String profileSyncPassword = null;
+	
 	private IsaacAppConfig config_;
+	private String username = null;
+	private String password = null;
 
 	public ProfilesMojoBase() throws MojoExecutionException
 	{
@@ -66,13 +106,94 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 		}
 	}
 	
+	protected ProfileSyncI getProfileSyncImpl() throws MojoExecutionException
+	{
+		if (config_.getChangeSetUrlType() == ChangeSetSCMType.GIT)
+		{
+			return new SyncServiceGIT(profilesFolder);
+		}
+		else if (config_.getChangeSetUrlType() == ChangeSetSCMType.SVN)
+		{
+			throw new MojoExecutionException("SVN not supported yet");
+		}
+		else
+		{
+			throw new MojoExecutionException("Unsupported change set URL Type");
+		}
+	}
+	
 	protected String getURL()
 	{
 		return config_.getChangeSetUrl();
 	}
 	
-	protected String getURLType()
+	protected String getUsername() throws MojoExecutionException
 	{
-		return config_.getChangeSetUrlType().name();
+		try
+		{
+			if (username == null)
+			{
+				username = System.getProperty(PROFILE_SYNC_USERNAME_PROPERTY);
+				
+				//still blank, try property
+				if (StringUtils.isBlank(username))
+				{
+					username = profileSyncUsername;
+				}
+				
+				//still no username, prompt if allowed
+				if (StringUtils.isBlank(username) && !Boolean.getBoolean(PROFILE_SYNC_NO_PROMPTS))
+				{
+					System.out.print("Enter the " + config_.getChangeSetUrlType().name() + " username for the Profiles/Changset remote store:");
+					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+					username = br.readLine();
+				}
+			}
+			return username;
+		}
+		catch (IOException e)
+		{
+			throw new MojoExecutionException("Error reading username from console");
+		}
+	}
+	
+	protected String getPassword() throws MojoExecutionException
+	{
+		try
+		{
+			if (password == null)
+			{
+				password = System.getProperty(PROFILE_SYNC_PASSWORD_PROPERTY);
+				
+				//still blank, try the passed in param
+				if (StringUtils.isBlank(password))
+				{
+					password = profileSyncPassword;
+				}
+				
+				//still no password, prompt if allowed
+				if (StringUtils.isBlank(password) && !Boolean.getBoolean(PROFILE_SYNC_NO_PROMPTS))
+				{
+					System.out.print("Enter the " + config_.getChangeSetUrlType().name() + " password for the Profiles/Changset remote store:");
+					
+					//Use console if available, for password masking
+					Console console = System.console();
+					if (console != null)
+					{
+						password = new String(console.readPassword());
+					}
+					else
+					{
+						BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+						password = br.readLine();
+					}
+				}
+			}
+			return password;
+		}
+		catch (IOException e)
+		{
+			throw new MojoExecutionException("Error reading password from console");
+		}
 	}
 }
