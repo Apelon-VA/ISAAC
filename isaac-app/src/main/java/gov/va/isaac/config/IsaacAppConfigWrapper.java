@@ -21,12 +21,14 @@ package gov.va.isaac.config;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.UUID;
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -34,6 +36,7 @@ import javax.xml.validation.SchemaFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 /**
  * {@link IsaacAppConfigWrapper}
@@ -47,15 +50,11 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppConfigI
 {
-	
-	/**	The log_. */
 	private static Logger log_ = LoggerFactory.getLogger(IsaacAppConfigWrapper.class);
 	
-	/**
-	 * Instantiates an empty {@link IsaacAppConfigWrapper}.
-	 */
-	public IsaacAppConfigWrapper()
+	private IsaacAppConfigWrapper()
 	{
+		//This is contructed by HK2
 		//Default values
 		setApplicationTitle("Default (unbranded) ISAAC Application");
 		
@@ -64,14 +63,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 			InputStream in = AppContext.class.getResourceAsStream("/app.xml");
 			if (in != null)
 			{
-				JAXBContext jaxbContext = JAXBContext.newInstance(IsaacAppConfig.class);
-				SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-				Schema schema = factory.newSchema(new StreamSource(AppContext.class.getResourceAsStream("/xsd/AppConfigSchema.xsd")));
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-				jaxbUnmarshaller.setSchema(schema);
-				IsaacAppConfig temp = (IsaacAppConfig) jaxbUnmarshaller.unmarshal(in);
+				IsaacAppConfig temp = unmarshallStream(in);
 				copyHack(temp);
-				in.close();
 			}
 			else
 			{
@@ -83,6 +76,27 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		{
 			log_.warn("Unexpected error reading app configuration file, using defaults", ex);
 		}
+	}
+	
+	/**
+	 * Exposed publicly as a utility method, for reuse in MOJO classes that need to read the app.xml file when the 
+	 * rest of the application is not running.
+	 * @param in - A stream that will read app.xml - validating to AppConfigSchema.xsd.
+	 * @return - The parsed java representation
+	 * @throws IOException
+	 * @throws JAXBException
+	 * @throws SAXException
+	 */
+	public static IsaacAppConfig unmarshallStream(InputStream in) throws IOException, JAXBException, SAXException
+	{
+		JAXBContext jaxbContext = JAXBContext.newInstance(IsaacAppConfig.class);
+		SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = factory.newSchema(new StreamSource(AppContext.class.getResourceAsStream("/xsd/AppConfigSchema.xsd")));
+		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+		jaxbUnmarshaller.setSchema(schema);
+		IsaacAppConfig temp = (IsaacAppConfig) jaxbUnmarshaller.unmarshal(in);
+		in.close();
+		return temp;
 	}
 
 	/**
