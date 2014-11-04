@@ -37,6 +37,15 @@ import org.jvnet.hk2.annotations.Contract;
 public interface ProfileSyncI
 {
 	/**
+	 * Set the base folder that should be used in this instance of Profile Sync.  Necessary for HK2 style 
+	 * init where it can't be passed in via the constructor.
+	 * 
+	 * @param localFolder - full path the the folder that should be synchronizable
+	 * @throws IllegalArgumentException - if the passed in file is not a folder, or does not exist.
+	 */
+	public abstract void setRootLocation(File localFolder) throws IllegalArgumentException;
+	
+	/**
 	 * Connect to remote service - pull down any existing files in the remote service.
 	 * <br><br>
 	 * In general, this operation should not result in any add / commit operations (though implementations may add/commit a 'README' file
@@ -74,59 +83,53 @@ public interface ProfileSyncI
 	 *          should be done from the server.  Any local files which have naming collisions with server files should be PRESERVED during the checkout - not 
 	 *          overwritten - leaving them in a MODIFIED state, if they happen to differ from the files that were on the server.
 	 * </pre>
-	 * @param localFolder - full path the the folder that should be synchronizable
 	 * @param remoteAddress - the URL to the remote server
 	 * @param username - The username to use for remote operations
 	 * @param password - The password to use for remote operations
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void linkAndFetchFromRemote(File localFolder, String remoteAddress, String username, String password) throws IllegalArgumentException, IOException;
+	public void linkAndFetchFromRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Fix the URL to the remote service.  This call should only be used when both the local and remote repositories exist, and are a proper pair - 
 	 * but the URL for the remote service needs to be corrected, for whatever reason (for example, the domain name changed)
 	 * 
 	 * Has no impact on any local files.
-
-	 * @param localFolder - full path the the folder that should be synchronizable
+	 *
 	 * @param remoteAddress - the URL to the remote server
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void relinkRemote(File localFolder, String remoteAddress) throws IllegalArgumentException, IOException;
+	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Mark the specified files as files that should be synchronized.  This is a local operation only - does not push to the server.
-	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @param files - The relative path of each file that should be added (relative to the localFolder)
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void addFiles(File localFolder, String ... files) throws IllegalArgumentException, IOException;
+	public void addFiles(String ... files) throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Equivalent of calling {@link #addFiles(File, Set)} for each file in the localFolder which is currently unmanaged.
-	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void addUntrackedFiles(File localFolder) throws IllegalArgumentException, IOException;
+	public void addUntrackedFiles() throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Mark the specified files as files that should be removed from the server.  This is a local operation only - does not push to the server.
 	 * If the file exists locally, it will be removed by this operation.
-	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @param files - The relative path of each file that should be removed (deleted) (relative to the localFolder)
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
 	 */
-	public void removeFiles(File localFolder, String ... files) throws IllegalArgumentException, IOException;
+	public void removeFiles(String ... files) throws IllegalArgumentException, IOException;
 	
 	/**
 	 * Update (all), commit and push the specified files to the remote server.  This can include files that have been modified, added or removed.
 	 * Assuming that the status call reflects that state.  The implementation will also perform an update from remote as part of this operation.
-	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @param commitMessage - the message to attach to this commit
 	 * @param username - the username to use to push the commit remotely
 	 * @param password - The password to use to push the commit remotely
@@ -139,12 +142,11 @@ public interface ProfileSyncI
 	 * update attempt.
 	 * @return The set of files that changed during the pull from the server.
 	 */
-	public Set<String> updateCommitAndPush(File localFolder, String commitMessage, String username, String password, MergeFailOption mergeFailOption, String ... files) 
+	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String ... files) 
 			throws IllegalArgumentException, IOException, MergeFailure;
 	
 	/**
 	 * Get the latest files from the server.  
-	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @param username - the username to use to pull the updates
 	 * @param password - The password to use to pull the updates
 	 * @param mergeFailOption - (optional - defaults to {@link MergeFailOption#FAIL}) - the action to take if the required update results in a merge conflit.
@@ -154,7 +156,7 @@ public interface ProfileSyncI
 	 * update attempt.
 	 * @return The set of files that changed during the pull from the server.
 	 */
-	public Set<String> updateFromRemote(File localFolder, String username, String password, MergeFailOption mergeFailOption) 
+	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) 
 			throws IllegalArgumentException, IOException, MergeFailure;
 
 	/**
@@ -166,7 +168,6 @@ public interface ProfileSyncI
 	 * Note - some implementations (specifically GI) may throw another {@link MergeFailure} during this operation - this is a secondary merge failure
 	 * which will also have to be resolved by the user (by calling this method again) before you can commit and push.
 	 * 
-	 * @param localFolder - full path to the local folder that is configured for remote sync.
 	 * @param resolutions - A map where each key is a relative file name of a file that had a mergeFailure, and the corresponding value is
 	 * the action that should be taken to resolve the issue.  Note that {@link MergeFailOption#FAIL} it not a valid option.
 	 * @throws IllegalArgumentException - Thrown if an error occurs accessing local or remote resources
@@ -175,6 +176,6 @@ public interface ProfileSyncI
 	 * update attempt.
 	 * @return The complete set of files that changed during the pull from the server that led to the merge failure.
 	 */
-	public Set<String> resolveMergeFailures(File localFolder, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
+	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
 	
 }

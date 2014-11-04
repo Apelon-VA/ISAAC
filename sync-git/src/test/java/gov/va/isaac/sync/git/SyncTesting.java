@@ -39,22 +39,23 @@ public class SyncTesting
 		AppContext.setup();
 		ProfileSyncI ssg = AppContext.getService(SyncServiceGIT.class);
 		File localFolder = new File("/mnt/SSD/scratch/gitTesting");
+		ssg.setRootLocation(localFolder);
 		
 		String username = "username";
 		String password = "password";
 
-		ssg.linkAndFetchFromRemote(localFolder, "https://github.com/" + username + "/test.git", username, password);
-		ssg.linkAndFetchFromRemote(localFolder, "ssh://" + username + "@csfe.aceworkspace.net:29418/testrepo", username, password);
-		ssg.addUntrackedFiles(localFolder);
-		System.out.println("UpdateCommitAndPush result: " + ssg.updateCommitAndPush(localFolder, "mergetest2", username, password, MergeFailOption.FAIL, (String[])null));
+		ssg.linkAndFetchFromRemote("https://github.com/" + username + "/test.git", username, password);
+		ssg.linkAndFetchFromRemote("ssh://" + username + "@csfe.aceworkspace.net:29418/testrepo", username, password);
+		ssg.addUntrackedFiles();
+		System.out.println("UpdateCommitAndPush result: " + ssg.updateCommitAndPush("mergetest2", username, password, MergeFailOption.FAIL, (String[])null));
 
-		ssg.removeFiles(localFolder, "b");
+		ssg.removeFiles("b");
 
-		System.out.println("Update from remote result: " + ssg.updateFromRemote(localFolder, username, password, MergeFailOption.FAIL));
+		System.out.println("Update from remote result: " + ssg.updateFromRemote(username, password, MergeFailOption.FAIL));
 
 		HashMap<String, MergeFailOption> resolutions = new HashMap<>();
 		resolutions.put("b", MergeFailOption.KEEP_REMOTE);
-		System.out.println("resolve merge failures result: " + ssg.resolveMergeFailures(localFolder, resolutions));
-		System.out.println("UpdateCommitAndPush result: " + ssg.updateCommitAndPush(localFolder, "mergetest2", username, password, MergeFailOption.FAIL, (String[])null));
+		System.out.println("resolve merge failures result: " + ssg.resolveMergeFailures(resolutions));
+		System.out.println("UpdateCommitAndPush result: " + ssg.updateCommitAndPush("mergetest2", username, password, MergeFailOption.FAIL, (String[])null));
 	}
 }

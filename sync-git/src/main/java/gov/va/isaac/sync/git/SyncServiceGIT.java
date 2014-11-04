@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.inject.Singleton;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand.Stage;
 import org.eclipse.jgit.api.CommitCommand;
@@ -67,6 +66,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.util.StringUtils;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,39 +79,57 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Service(name = "GIT")
-@Singleton
+@PerLookup
 public class SyncServiceGIT implements ProfileSyncI
 {
-	Logger log = LoggerFactory.getLogger(SyncServiceGIT.class);
-	private String eol = System.getProperty("line.separator");
-	
+	private static Logger log = LoggerFactory.getLogger(SyncServiceGIT.class);
+
+	private final String eol = System.getProperty("line.separator");
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE = "Conflicted merge happened during remote merge";
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_STASH = "Conflicted merge happened during stash merge";
 	private final String STASH_MARKER = ":STASH-";
 	
-	//TODO figure out alt method of handling credentials on maestrodev?
+	private File localFolder = null;
+	
 	//TODO figure out how we handle prompts for things.  GUI vs no GUI... etc.
+	public SyncServiceGIT(File localFolder)
+	{
+		setRootLocation(localFolder);
+	}
 
+	@SuppressWarnings("unused")
 	private SyncServiceGIT()
 	{
 		//For HK2
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#setRootLocation(java.io.File)
+	 */
+	@Override
+	public void setRootLocation(File localFolder) throws IllegalArgumentException
+	{
+		if (localFolder == null)
+		{
+			throw new IllegalArgumentException("The localFolder is required");
+		}
+		if (!localFolder.isDirectory())
+		{
+			log.error("The passed in local folder '{}' didn't exist", localFolder);
+			throw new IllegalArgumentException("The localFolder must be a folder, and must exist");
+		}
+		this.localFolder = localFolder;
 	}
 
 	/**
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void linkAndFetchFromRemote(File localFolder, String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException
+	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException
 	{
 		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder, remoteAddress, userName);
 		try
 		{
-			if (!localFolder.isDirectory())
-			{
-				log.error("The passed in local folder '{}' didn't exist", localFolder);
-				throw new IllegalArgumentException("The localFolder must be a folder, and must exist");
-			}
-
 			File gitFolder = new File(localFolder, ".git");
 			Repository r = new FileRepository(gitFolder);
 
@@ -121,7 +139,7 @@ public class SyncServiceGIT implements ProfileSyncI
 				r.create();
 			}
 
-			relinkRemote(localFolder, remoteAddress);
+			relinkRemote(remoteAddress);
 
 			Git git = new Git(r);
 
@@ -205,10 +223,10 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.lang.String)
 	 */
 	@Override
-	public void relinkRemote(File localFolder, String remoteAddress) throws IllegalArgumentException, IOException
+	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException
 	{
 		log.debug("Configuring remote URL and fetch defaults to {}", remoteAddress);
-		StoredConfig sc = getGit(localFolder).getRepository().getConfig();
+		StoredConfig sc = getGit().getRepository().getConfig();
 		sc.setString("remote", "origin", "url", remoteAddress);
 		sc.setString("remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*");
 		sc.save();
@@ -218,12 +236,12 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#addFiles(java.io.File, java.util.Set)
 	 */
 	@Override
-	public void addFiles(File localFolder, String... files) throws IllegalArgumentException, IOException
+	public void addFiles(String... files) throws IllegalArgumentException, IOException
 	{
 		try
 		{
 			log.info("Add Files called {}", Arrays.toString(files));
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			if (files.length == 0)
 			{
 				log.debug("No files to add");
@@ -250,12 +268,12 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#removeFiles(java.io.File, java.util.Set)
 	 */
 	@Override
-	public void removeFiles(File localFolder, String... files) throws IllegalArgumentException, IOException
+	public void removeFiles(String... files) throws IllegalArgumentException, IOException
 	{
 		try
 		{
 			log.info("Remove Files called {}", Arrays.toString(files));
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			if (files.length == 0)
 			{
 				log.debug("No files to remove");
@@ -282,15 +300,15 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#addUntrackedFiles(java.io.File)
 	 */
 	@Override
-	public void addUntrackedFiles(File localFolder) throws IllegalArgumentException, IOException
+	public void addUntrackedFiles() throws IllegalArgumentException, IOException
 	{
 		log.info("Add Untracked files called");
 		try
 		{
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			Status s = git.status().call();
 
-			addFiles(localFolder, s.getUntracked().toArray(new String[s.getUntracked().size()]));
+			addFiles(s.getUntracked().toArray(new String[s.getUntracked().size()]));
 		}
 		catch (GitAPIException e)
 		{
@@ -305,13 +323,13 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * java.lang.String[])
 	 */
 	@Override
-	public Set<String> updateCommitAndPush(File localFolder, String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... files)
+	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... files)
 			throws IllegalArgumentException, IOException, MergeFailure
 	{
 		try
 		{
 			log.info("Commit Files called {}", (files == null ? "-null-" : Arrays.toString(files)));
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			
 			if (git.status().call().getConflicting().size() > 0)
 			{
@@ -345,7 +363,7 @@ public class SyncServiceGIT implements ProfileSyncI
 			}
 
 			//need to merge origin/master into master now, prior to push
-			Set<String> result = updateFromRemote(localFolder, username, password, mergeFailOption);
+			Set<String> result = updateFromRemote(username, password, mergeFailOption);
 
 			log.debug("Pushing");
 			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
@@ -376,7 +394,7 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * gov.va.isaac.interfaces.sync.MergeFailOption)
 	 */
 	@Override
-	public Set<String> updateFromRemote(File localFolder, String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException,
+	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException,
 			MergeFailure
 	{
 		Set<String> filesChangedDuringPull;
@@ -384,7 +402,7 @@ public class SyncServiceGIT implements ProfileSyncI
 		{
 			log.info("update from remote called ");
 
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			
 			log.debug("Fetching from remote");
 			
@@ -432,7 +450,7 @@ public class SyncServiceGIT implements ProfileSyncI
 							resolutions.put(s, mergeFailOption);
 						}
 						log.debug("Resolving merge failures with option {}", mergeFailOption);
-						filesChangedDuringPull = resolveMergeFailures(localFolder, MergeFailType.REMOTE_TO_LOCAL, (stash == null ? null : stash.getName()), resolutions);
+						filesChangedDuringPull = resolveMergeFailures(MergeFailType.REMOTE_TO_LOCAL, (stash == null ? null : stash.getName()), resolutions);
 					}
 					else
 					{
@@ -480,7 +498,7 @@ public class SyncServiceGIT implements ProfileSyncI
 							resolutions.put(s, mergeFailOption);
 						}
 						log.debug("Resolving stash apply merge failures with option {}", mergeFailOption);
-						resolveMergeFailures(localFolder, MergeFailType.STASH_TO_LOCAL, null, resolutions);
+						resolveMergeFailures(MergeFailType.STASH_TO_LOCAL, null, resolutions);
 						//When we auto resolve to KEEP_LOCAL - these files won't have really changed, even though we recorded a change above.
 						for (Entry<String, MergeFailOption> r : resolutions.entrySet())
 						{
@@ -518,12 +536,12 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#resolveMergeFailures(java.io.File, java.util.Map)
 	 */
 	@Override
-	public Set<String> resolveMergeFailures(File localFolder, Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, NoWorkTreeException, MergeFailure
+	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, NoWorkTreeException, MergeFailure
 	{
 		log.info("resolve merge failures called - resolutions: {}", resolutions);
 		try
 		{
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			
 			List<Note> notes = git.notesList().call();
 			
@@ -570,7 +588,7 @@ public class SyncServiceGIT implements ProfileSyncI
 				stashIdToApply = noteValue.substring(noteValue.indexOf(STASH_MARKER) + STASH_MARKER.length());
 			}
 			
-			return resolveMergeFailures(localFolder, mergeFailType, stashIdToApply, resolutions);
+			return resolveMergeFailures(mergeFailType, stashIdToApply, resolutions);
 		}
 		catch (GitAPIException | LargeObjectException e)
 		{
@@ -580,13 +598,13 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 
 	
-	private Set<String> resolveMergeFailures(File localFolder, MergeFailType mergeFailType, String stashIDToApply, Map<String, MergeFailOption> resolutions) 
+	private Set<String> resolveMergeFailures(MergeFailType mergeFailType, String stashIDToApply, Map<String, MergeFailOption> resolutions) 
 			throws IllegalArgumentException, IOException, MergeFailure
 	{
 		log.debug("resolve merge failures called - mergeFailType: {} stashIDToApply: {} resolutions: {}", mergeFailType, stashIDToApply, resolutions);
 		try
 		{
-			Git git = getGit(localFolder);
+			Git git = getGit();
 			
 			//We unfortunately, must know the mergeFailType option, because the resolution mechanism here uses OURS and THEIRS - but the 
 			//meaning of OURS and THEIRS reverse, depending on if you are recovering from a merge failure, or a stash apply failure.
@@ -704,8 +722,12 @@ public class SyncServiceGIT implements ProfileSyncI
 		return result;
 	}
 
-	private Git getGit(File localFolder) throws IOException, IllegalArgumentException
+	private Git getGit() throws IOException, IllegalArgumentException
 	{
+		if (localFolder == null)
+		{
+			throw new IllegalArgumentException("localFolder has not yet been set - please call setRootLocation(...)");
+		}
 		if (!localFolder.isDirectory())
 		{
 			log.error("The passed in local folder '{}' didn't exist", localFolder);
