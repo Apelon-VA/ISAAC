@@ -45,4 +45,11 @@ public class InformationModels
 
 	public static ConceptSpec HED = new ConceptSpec("Health eDecision", UUID.fromString("1cdae521-c637-526a-bf88-134de474f824"),
 			INFORMATION_MODELS);
+	
+	public static ConceptSpec CEM_ENUMERATIONS = new ConceptSpec("Clinical Element Model Enumerations", UUID.fromString("ee5da47f-562f-555d-b7dd-e18697e11ece"), CEM);	
+
+	public static ConceptSpec FHIM_ENUMERATIONS= new ConceptSpec("Federal Health Information Model Enumerations",  UUID.fromString("78e5feff-faf7-5666-a2e1-21bdfe688e13"), FHIM);
+			
+	public static ConceptSpec HED_ENUMERATIONS = new ConceptSpec("Health eDecision Enumerations",  UUID.fromString("5f4cf488-38bd-54b0-8d08-809599d6db82"), HED);
+	
 }

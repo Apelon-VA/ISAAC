@@ -172,7 +172,6 @@ public class WorkflowHistoryHelper {
 		int counter = 0;
 		for (Map<String, String> historyEntryMap : historyEntryMaps) {
 			String owner = "Owner unset";
-			String action = "Action unset";
 			String timestamp = "Timestamp unset";
 			String comment = "Comment unset";
 			String taskName = "Task name unset";
@@ -180,12 +179,6 @@ public class WorkflowHistoryHelper {
 			for (String key : historyEntryMap.keySet()) {
 				if (key.equals(WorkflowHistoryVariable.wf_hist_action_owner.toString())) {
 					owner = historyEntryMap.get(key);
-				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action.toString())) {
-					action = historyEntryMap.get(key);
-					
-					if (action.equalsIgnoreCase("None")) {
-						action = "Initialize Workflow";
-					}
 				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action_time.toString())) {
 					Long time = Long.parseLong(historyEntryMap.get(key));
 					
@@ -201,14 +194,12 @@ public class WorkflowHistoryHelper {
 			ownerLabel.setFont(new Font("System Bold", 14));
 			Label taskNameLabel = new Label(taskName);
 			taskNameLabel.setFont(new Font("System Bold", 14));
-			Label actionLabel = new Label(action);
-			actionLabel.setFont(new Font("System Bold", 14));
 			Label timeLabel = new Label(timestamp);
 			timeLabel.setFont(new Font("System Bold", 14));
 			Label commentLabel = new Label(comment);
 			commentLabel.setFont(new Font("System Bold", 14));
 
-			gp.addRow(counter++, ownerLabel, taskNameLabel, actionLabel, timeLabel, commentLabel);
+			gp.addRow(counter++, ownerLabel, taskNameLabel, timeLabel, commentLabel);
 		}
 	}
 }

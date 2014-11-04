@@ -22,11 +22,7 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.workflow;
-
-import gov.va.isaac.util.ComponentType;
-import gov.va.isaac.util.ComponentTypeHelper;
-import gov.va.isaac.util.WBUtility;
+package gov.va.isaac.util;
 
 import java.util.UUID;
 

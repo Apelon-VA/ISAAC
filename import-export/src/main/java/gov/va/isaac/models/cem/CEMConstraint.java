@@ -1,10 +1,27 @@
 
 package gov.va.isaac.models.cem;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.constants.InformationModels;
+import gov.va.isaac.util.WBUtility;
+
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.UUID;
+
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Represents a CEM constraint.
  */
 public class CEMConstraint {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WBUtility.class);
 
   /**  The path. */
   private String path;
@@ -101,6 +118,29 @@ public class CEMConstraint {
       return false;
     return true;
   }
-
-
+  
+	public void handleConstraintEnumerationRefex() {
+		if (value.endsWith("_VALUESET_CODE")) {
+			if (!valueSetExists()) {
+				try {
+					// Create Enumeration
+					AppContext.getRuntimeGlobals().disableAllCommitListeners();
+					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, "Value Set Refex for " + value, 
+																									 new RefexDynamicColumnInfo[] {},
+																									 InformationModels.CEM_ENUMERATIONS.getUuids()[0], false);
+				} catch (IOException | ContradictionException | InvalidCAB
+						| PropertyVetoException e) {
+					LOGGER.error("Unable to create CEM enumeration for " + value);
+				}
+			}
+		}
+	}
+	
+	private boolean valueSetExists() {
+			// Get UUID
+			UUID uuid = WBUtility.getUuidForFsn(value, value);
+//			UUID uuid = UuidT5Generator.get(UUID PATH_ID_FROM_FS_DESC, value);
+	
+			return ExtendedAppContext.getDataStore().hasUuid(uuid);
+	}
 }

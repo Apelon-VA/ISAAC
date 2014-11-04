@@ -38,6 +38,8 @@ import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.interfaces.gui.TaxonomyViewI;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
+import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
@@ -227,7 +229,11 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	@FXML private TextField searchSaveNameTextField;
 	@FXML private TextField searchSaveDescriptionTextField;
 	@FXML private TextField droolsExprTextField;
+	
+	@FXML private Button startQueryBuilderButton;
 
+	private QueryBuilderViewI queryBuilder;
+	
 	final private SearchViewModel searchViewModel = new SearchViewModel();
 
 	private TaxonomyViewI taxonomyView = null;
@@ -272,6 +278,7 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 		assert searchTypeControlsHbox != null : "fx:id=\"searchTypeControlsHbox\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert exportResultsToSearchTaxonomyPanelButton != null : "fx:id=\"exportResultsToSearchTaxonomyPanelButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 		assert searchResultsAndTaxonomySplitPane != null : "fx:id=\"searchResultsAndTaxonomySplitPane\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
+		assert startQueryBuilderButton != null : "fx:id=\"startQueryBuilderButton\" was not injected: check your FXML file 'EnhancedSearchView.fxml'.";
 
 		String styleSheet = EnhancedSearchViewController.class.getResource("/isaac-shared-styles.css").toString();
 		if (! searchResultsAndTaxonomySplitPane.getStylesheets().contains(styleSheet)) {
@@ -301,6 +308,14 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 				IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
 				addSearchFilter(newFilter);
 				searchViewModel.getFilters().add(newFilter);
+			}
+		});
+		
+		startQueryBuilderButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				queryBuilder = AppContext.getService(QueryBuilderViewI.class);
+				queryBuilder.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 			}
 		});
 		
