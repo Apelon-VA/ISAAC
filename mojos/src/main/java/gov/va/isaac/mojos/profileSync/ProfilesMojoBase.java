@@ -50,6 +50,9 @@ import org.xml.sax.SAXException;
  */
 public abstract class ProfilesMojoBase extends AbstractMojo
 {
+	// For disabling Profile Sync entirely
+	public static final String PROFILE_SYNC_DISABLE = "profileSyncDisable";
+	
 	// For preventing command line prompts for credentials during automated runs - set this system property to true.
 	public static final String PROFILE_SYNC_NO_PROMPTS = "profileSyncNoPrompt";
 	
@@ -127,6 +130,10 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 
 	protected boolean skipRun()
 	{
+		if (Boolean.getBoolean(PROFILE_SYNC_DISABLE))
+		{
+			return true;
+		}
 		if (StringUtils.isBlank(config_.getChangeSetUrl()))
 		{
 			getLog().info("No SCM configuration will be done - no 'changeSetUrl' parameter was provided");
