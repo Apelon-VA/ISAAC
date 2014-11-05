@@ -34,6 +34,7 @@ import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 
@@ -97,6 +98,8 @@ public enum QueryNodeType {
 		// Currently unsupported
 	DESCRIPTION_REGEX_MATCH("Description regex match", DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class),
 	
+	REFSET_CONTAINS_CONCEPT("Refset contains concept", RefsetContainsConcept.class, org.ihtsdo.otf.query.implementation.clauses.RefsetContainsConcept.class),
+
 	REL_TYPE("Relationship type", RelType.class, org.ihtsdo.otf.query.implementation.clauses.RelType.class);
 
 	private final static Logger logger = LoggerFactory.getLogger(QueryNodeType.class);

@@ -17,17 +17,14 @@
  * limitations under the License.
  */
 
-/**
- * ObjectWIthGeneratedUniqueId
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- */
 package gov.va.isaac.util;
 
 /**
  * ObjectWithTemporaryUniqueId
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
+ * 
+ * The unique String id generated and cached for this object is not meant to be persisted
  *
  */
 public interface ObjectWithTemporaryUniqueId {

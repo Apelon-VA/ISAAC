@@ -87,23 +87,23 @@ public class TemporaryUniqueIdCache {
 		return idPrefix + UUID.randomUUID().toString();
 	}
 	
-	public static boolean isValidTemporaryUniqueIdString(String str) {
-		if (str.startsWith(idPrefix)) {
-			String uuidPortion = str.replaceFirst(idPrefix, "");
-			UUID uuid = null;
-			try {
-				uuid = UUID.fromString(uuidPortion);
-			} catch (Throwable t) {
-				//
-			}
-			
-			if (uuid != null) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
+//	public static boolean isValidTemporaryUniqueIdString(String str) {
+//		if (str.startsWith(idPrefix)) {
+//			String uuidPortion = str.replaceFirst(idPrefix, "");
+//			UUID uuid = null;
+//			try {
+//				uuid = UUID.fromString(uuidPortion);
+//			} catch (Throwable t) {
+//				//
+//			}
+//			
+//			if (uuid != null) {
+//				return true;
+//			} else {
+//				return false;
+//			}
+//		} else {
+//			return false;
+//		}
+//	}
 }
