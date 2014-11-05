@@ -27,6 +27,8 @@ package gov.va.isaac.gui.querybuilder.node;
 import gov.va.isaac.util.WBUtility;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -38,17 +40,17 @@ import javafx.beans.value.ObservableValue;
  * RelType(
  * 		Query enclosingQuery,
  * 		String refsetConceptSpecKey,
- * 		String conceptSpecKey,
+ * 		String queryTextKey,
  * 		String viewCoordinateKey)
  */
-public class RefsetContainsConcept extends AssertionNode {
+public class RefsetContainsString extends AssertionNode {
 	private IntegerProperty refsetConceptNidIntegerProperty = new SimpleIntegerProperty();
-	private IntegerProperty conceptNidIntegerProperty = new SimpleIntegerProperty();
+	private StringProperty queryTextStringProperty = new SimpleStringProperty();
 
 	/**
 	 * 
 	 */
-	public RefsetContainsConcept() {
+	public RefsetContainsString() {
 		super();
 		getDescriptionProperty().set(getDescription());
 		
@@ -59,7 +61,7 @@ public class RefsetContainsConcept extends AssertionNode {
 	private boolean isNodeValid() {
 		if (refsetConceptNidIntegerProperty == null || WBUtility.getConceptVersion(refsetConceptNidIntegerProperty.get()) == null) {
 			return false;
-		} else if (conceptNidIntegerProperty == null || WBUtility.getConceptVersion(conceptNidIntegerProperty.get()) == null) {
+		} else if (queryTextStringProperty == null || queryTextStringProperty.get() == null || queryTextStringProperty.get().length() < 1) {
 			return false;
 		} else {
 			return true;
@@ -70,9 +72,9 @@ public class RefsetContainsConcept extends AssertionNode {
 	public Integer getRefsetConceptNid() { return refsetConceptNidIntegerProperty != null ? refsetConceptNidIntegerProperty.get() : null; }
 	public void setRefsetConceptNid(int nid) { refsetConceptNidIntegerProperty.set(nid); }
 
-	public IntegerProperty getConceptNidIntegerProperty() { return conceptNidIntegerProperty; }
-	public Integer getConceptNid() { return conceptNidIntegerProperty != null ? conceptNidIntegerProperty.get() : null; }
-	public void setConceptNid(int nid) { conceptNidIntegerProperty.set(nid); }
+	public StringProperty getQueryTextStringProperty() { return queryTextStringProperty; }
+	public String getQueryText() { return queryTextStringProperty != null ? queryTextStringProperty.get() : null; }
+	public void setQueryText(String queryText) { queryTextStringProperty.set(queryText); }
 	
 	protected void setValidationChangeListeners() {
 		refsetConceptNidIntegerProperty.addListener(new ChangeListener<Number>() {
@@ -86,11 +88,11 @@ public class RefsetContainsConcept extends AssertionNode {
 				}
 			}
 		});
-		conceptNidIntegerProperty.addListener(new ChangeListener<Number>() {
+		queryTextStringProperty.addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue<? extends Number> observable,
-					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
+				if (newValue != null && newValue.length() > 0) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -118,10 +120,10 @@ public class RefsetContainsConcept extends AssertionNode {
 				}
 			}
 		});
-		conceptNidIntegerProperty.addListener(new ChangeListener<Number>() {
+		queryTextStringProperty.addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(ObservableValue<? extends Number> observable,
-					Number oldValue, Number newValue) {
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
 				if (oldValue != newValue) {
 					getDescriptionProperty().set(getDescription());
 				}
@@ -136,11 +138,8 @@ public class RefsetContainsConcept extends AssertionNode {
 			refsetConceptDescription = WBUtility.getDescriptionIfConceptExists(getRefsetConceptNid());
 		}
 
-		String conceptDescription = null;
-		if (getConceptNid() != null && getConceptNid() != 0) {
-			conceptDescription = WBUtility.getDescriptionIfConceptExists(getConceptNid());
-		}
+		String queryText = getQueryText() != null ? "\"" + getQueryText() + "\"" : null;
 		
-		return (invertProperty.get() ? "NOT " : "") + getNodeTypeName() + " refset=" + refsetConceptDescription + ", concept=" + conceptDescription;
+		return (invertProperty.get() ? "NOT " : "") + getNodeTypeName() + " refset=" + refsetConceptDescription + ", query=" + queryText;
 	}
 }

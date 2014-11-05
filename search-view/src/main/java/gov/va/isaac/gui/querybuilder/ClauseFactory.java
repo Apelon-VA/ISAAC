@@ -28,6 +28,8 @@ import gov.va.isaac.gui.querybuilder.node.Invertable;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
@@ -186,6 +188,55 @@ public class ClauseFactory {
 				/* Query */		query,
 				/* String */	refsetConceptSpecKey,
 				/* String */	targetConceptSpecKey,
+				/* String */	vcKey);
+
+			logger.debug("Constructed {} clause for {}", clause.getClass().getName(), node.getDescription());
+
+			return addInversionClauseIfNecessary(query, node, clause);
+		}
+		
+		case REFSET_CONTAINS_KIND_OF_CONCEPT: {
+			RefsetContainsKindOfConcept node = (RefsetContainsKindOfConcept)treeItem.getValue();
+			
+			final ConceptVersionBI refsetConcept = WBUtility.getConceptVersion(node.getRefsetConceptNid());
+			final String refsetConceptSpecKey = "RefsetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
+
+			final ConceptVersionBI targetConcept = WBUtility.getConceptVersion(node.getConceptNid());
+			final String targetConceptSpecKey = "TargetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
+
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.RefsetContainsKindOfConcept(
+				/* Query */		query,
+				/* String */	refsetConceptSpecKey,
+				/* String */	targetConceptSpecKey,
+				/* String */	vcKey);
+
+			logger.debug("Constructed {} clause for {}", clause.getClass().getName(), node.getDescription());
+
+			return addInversionClauseIfNecessary(query, node, clause);
+		}
+		case REFSET_CONTAINS_STRING: {
+			RefsetContainsString node = (RefsetContainsString)treeItem.getValue();
+			
+			final ConceptVersionBI refsetConcept = WBUtility.getConceptVersion(node.getRefsetConceptNid());
+			final String refsetConceptSpecKey = "RefsetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
+
+			final String queryText = node.getQueryText();
+			final String queryTextKey = "QueryTextKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(queryTextKey, queryText);
+
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.RefsetContainsString(
+				/* Query */		query,
+				/* String */	refsetConceptSpecKey,
+				/* String */	queryTextKey,
 				/* String */	vcKey);
 
 			logger.debug("Constructed {} clause for {}", clause.getClass().getName(), node.getDescription());

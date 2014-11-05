@@ -36,6 +36,9 @@ import gov.va.isaac.gui.querybuilder.node.AssertionNode;
 import gov.va.isaac.gui.querybuilder.node.Invertable;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
@@ -280,6 +283,162 @@ public class QueryBuilderHelper {
 				}
 
 				CheckBox inversionCheckBox = createInversionCheckBox(relTypeNode);
+
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof RefsetContainsConcept) {
+				RefsetContainsConcept refsetContainsConceptNode = (RefsetContainsConcept)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(refsetContainsConceptNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
+				
+				{
+					ConceptVersionBI currentRelTypeConcept = null;
+					if (refsetContainsConceptNode.getRefsetConceptNid() != null) {
+						currentRelTypeConcept = WBUtility.getConceptVersion(refsetContainsConceptNode.getRefsetConceptNid());
+					}
+					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
+					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								refsetContainsConceptNode.setRefsetConceptNid(0);
+							} else {
+								refsetContainsConceptNode.setRefsetConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Refset Concept"), relTypeConceptNode.getNode());
+				}
+				{
+					ConceptVersionBI currentTargetConcept = null;
+					if (refsetContainsConceptNode.getConceptNid() != null) {
+						currentTargetConcept = WBUtility.getConceptVersion(refsetContainsConceptNode.getConceptNid());
+					}
+					ConceptNode targetConceptNode = new ConceptNode(currentTargetConcept, true);
+					targetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								refsetContainsConceptNode.setConceptNid(0);
+							} else {
+								refsetContainsConceptNode.setConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), targetConceptNode.getNode());
+				}
+				
+				CheckBox inversionCheckBox = createInversionCheckBox(refsetContainsConceptNode);
+
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof RefsetContainsKindOfConcept) {
+				RefsetContainsKindOfConcept refsetContainsKindOfConceptNode = (RefsetContainsKindOfConcept)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(refsetContainsKindOfConceptNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
+				
+				{
+					ConceptVersionBI currentRelTypeConcept = null;
+					if (refsetContainsKindOfConceptNode.getRefsetConceptNid() != null) {
+						currentRelTypeConcept = WBUtility.getConceptVersion(refsetContainsKindOfConceptNode.getRefsetConceptNid());
+					}
+					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
+					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								refsetContainsKindOfConceptNode.setRefsetConceptNid(0);
+							} else {
+								refsetContainsKindOfConceptNode.setRefsetConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Refset Concept"), relTypeConceptNode.getNode());
+				}
+				{
+					ConceptVersionBI currentTargetConcept = null;
+					if (refsetContainsKindOfConceptNode.getConceptNid() != null) {
+						currentTargetConcept = WBUtility.getConceptVersion(refsetContainsKindOfConceptNode.getConceptNid());
+					}
+					ConceptNode targetConceptNode = new ConceptNode(currentTargetConcept, true);
+					targetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								refsetContainsKindOfConceptNode.setConceptNid(0);
+							} else {
+								refsetContainsKindOfConceptNode.setConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), targetConceptNode.getNode());
+				}
+				
+				CheckBox inversionCheckBox = createInversionCheckBox(refsetContainsKindOfConceptNode);
+
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof RefsetContainsString) {
+				RefsetContainsString refsetContainsKindOfConceptNode = (RefsetContainsString)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(refsetContainsKindOfConceptNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
+				
+				{
+					ConceptVersionBI refsetConcept = null;
+					if (refsetContainsKindOfConceptNode.getRefsetConceptNid() != null) {
+						refsetConcept = WBUtility.getConceptVersion(refsetContainsKindOfConceptNode.getRefsetConceptNid());
+					}
+					ConceptNode refsetConceptNode = new ConceptNode(refsetConcept, true);
+					refsetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								refsetContainsKindOfConceptNode.setRefsetConceptNid(0);
+							} else {
+								refsetContainsKindOfConceptNode.setRefsetConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Refset Concept"), refsetConceptNode.getNode());
+				}
+				{
+					String queryText = refsetContainsKindOfConceptNode.getQueryText();
+					
+					TextField queryTextField = new TextField(queryText);
+					queryTextField.textProperty().addListener(new ChangeListener<String>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends String> observable,
+								String oldValue,
+								String newValue) {
+							refsetContainsKindOfConceptNode.setQueryText(newValue);;
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Query"), queryTextField);
+				}
+				
+				CheckBox inversionCheckBox = createInversionCheckBox(refsetContainsKindOfConceptNode);
 
 				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
 			}

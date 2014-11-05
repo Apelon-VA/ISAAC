@@ -20,36 +20,29 @@ package gov.va.isaac.gui.querybuilder;
 
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
-import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.interfaces.utility.DialogResponse;
-import gov.va.isaac.util.ComponentDescriptionHelper;
-import gov.va.isaac.util.WBUtility;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeCell;
@@ -58,16 +51,8 @@ import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
-import org.ihtsdo.otf.query.implementation.Clause;
-import org.ihtsdo.otf.query.implementation.Query;
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
-import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
-import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +66,7 @@ public class QueryBuilderViewController
 {	
 	final static Logger logger = LoggerFactory.getLogger(QueryBuilderViewController.class);
 	
-	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+	//private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 	
 	@FXML private BorderPane borderPane;
 	@FXML private Button closeButton;
@@ -92,8 +77,6 @@ public class QueryBuilderViewController
 	@FXML private Button buildQueryButton;
 	@FXML private Button executeQueryButton;
 	
-	//private BusyPopover searchRunningPopover;
-
 	private BooleanProperty queryNodeTreeViewIsValidProperty = new SimpleBooleanProperty(false);
 	
 	private QueryBuilderView stage;
@@ -231,6 +214,7 @@ public class QueryBuilderViewController
 			queryNodeTreeView.setContextMenu(new ContextMenu());
 		}
 		queryNodeTreeView.getContextMenu().getItems().clear();
+		addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
 
 		queryNodeTreeView.rootProperty().addListener(new ChangeListener<TreeItem<NodeDraggable>>() {
 			@Override
@@ -240,8 +224,12 @@ public class QueryBuilderViewController
 					TreeItem<NodeDraggable> newValue) {
 				if (newValue == null) {
 					rootNodeTypeComboBox.getButtonCell().setText("");
+					addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
+					queryNodeTreeView.setTooltip(new Tooltip("Right-click on TreeView or left-click ComboBox to select root expression"));
 				} else {
 					rootNodeTypeComboBox.getButtonCell().setText(QueryNodeType.valueOf(observable.getValue().getValue()).displayName());
+					queryNodeTreeView.getContextMenu().getItems().clear();
+					queryNodeTreeView.setTooltip(null);
 				}
 			}
 		});
@@ -304,50 +292,83 @@ public class QueryBuilderViewController
 		menu.getItems().add(deleteMenuItem);
 	}
 	private void addNewParentContextMenu(ContextMenu menu, TreeCell<NodeDraggable> ownerNode) {
-		{
-			Menu newParentMenu = new Menu("New Parent");
-			QueryNodeType[] supportedNewParentNodes = new QueryNodeType[] {
-					QueryNodeType.AND,
-					QueryNodeType.OR,
-					QueryNodeType.XOR
-			};
-			for (QueryNodeType type : supportedNewParentNodes) {
-				MenuItem menuItem = new MenuItem(type.displayName());
-				menuItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
+
+		Menu newParentMenu = new Menu("New Parent");
+		QueryNodeType[] supportedNewParentNodes = new QueryNodeType[] {
+				QueryNodeType.AND,
+				QueryNodeType.OR,
+				QueryNodeType.XOR
+		};
+		for (QueryNodeType type : supportedNewParentNodes) {
+			MenuItem menuItem = new MenuItem(type.displayName());
+			menuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+					TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
+
+					TreeItem<NodeDraggable> newParent = new TreeItem<>(type.constructNode());
+
+					if (currentTreeItem.getParent() == null) {
+						queryNodeTreeView.setRoot(newParent);
+						newParent.getChildren().add(currentTreeItem);
+					} else {
+						TreeItem<NodeDraggable> oldParent = currentTreeItem.getParent();
+						oldParent.getChildren().remove(currentTreeItem);
+						newParent.getChildren().add(currentTreeItem);
+						oldParent.getChildren().add(newParent);
+						oldParent.setExpanded(true);
+					}
+
+					queryNodeTreeView.getSelectionModel().select(newParent);
+					newParent.setExpanded(true);
+				}
+			});
+			newParentMenu.getItems().add(menuItem);
+		}
+		menu.getItems().add(newParentMenu);
+	}
+
+	private void addSubMenu(ContextMenu menu, Node ownerNode, String subMenuName, QueryNodeType...nodeTypes) {
+		Menu groupingMenu = new Menu(subMenuName);
+		
+		for (QueryNodeType type : nodeTypes) {
+			MenuItem menuItem = new MenuItem(type.displayName());
+			menuItem.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event)
+				{
+					if (ownerNode instanceof TreeView) {
+						((TreeView<NodeDraggable>)ownerNode).setRoot(new TreeItem<>(type.constructNode()));
+					} else if (ownerNode instanceof TreeCell) {
 						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
 						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-						
-						TreeItem<NodeDraggable> newParent = new TreeItem<>(type.constructNode());
+						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
+						currentTreeItem.setExpanded(true);
+					} else {
+						String error = 	"Unexpected/innappropriate ContextMenu owner of type " + ownerNode.getClass().getName() + ": " + ownerNode;
 
-						if (currentTreeItem.getParent() == null) {
-							queryNodeTreeView.setRoot(newParent);
-							newParent.getChildren().add(currentTreeItem);
-						} else {
-							TreeItem<NodeDraggable> oldParent = currentTreeItem.getParent();
-							oldParent.getChildren().remove(currentTreeItem);
-							newParent.getChildren().add(currentTreeItem);
-							oldParent.getChildren().add(newParent);
-							oldParent.setExpanded(true);
-						}
+						logger.error(error);
 
-						queryNodeTreeView.getSelectionModel().select(newParent);
-						newParent.setExpanded(true);
+						throw new IllegalArgumentException(error);
 					}
-				});
-				newParentMenu.getItems().add(menuItem);
-			}
-			menu.getItems().add(newParentMenu);
+				}
+			});
+			groupingMenu.getItems().add(menuItem);
 		}
+		menu.getItems().add(groupingMenu);
 	}
-	private void addContextMenus(ContextMenu menu, TreeCell<NodeDraggable> ownerNode) {
+
+	private void addContextMenus(ContextMenu menu, Node ownerNode) {
 		TreeItem<NodeDraggable> currentTreeItem = null;
 		NodeDraggable currentNode = null;
-		if ((currentTreeItem = ((TreeCell<NodeDraggable>)ownerNode).getTreeItem()) != null
+		if (ownerNode instanceof TreeCell
+				&& (currentTreeItem = ((TreeCell<NodeDraggable>)ownerNode).getTreeItem()) != null
 				&& (currentNode = currentTreeItem.getValue()) != null
 				&& currentNode instanceof ParentNodeDraggable) {
+			// ok
+		} else if (ownerNode instanceof TreeView) {
 			// ok
 		} else {
 			// bad
@@ -360,219 +381,59 @@ public class QueryBuilderViewController
 
 		logger.debug("Configuring parent node context menu for {}", ownerNode.getClass().getName());
 		
+		addSubMenu(menu, ownerNode, "Grouping",
+				QueryNodeType.AND,
+				QueryNodeType.OR,
+				QueryNodeType.XOR);
 		
-		{
-			Menu groupingMenu = new Menu("Grouping");
-			QueryNodeType[] supportedGroupingNodes = new QueryNodeType[] {
-					QueryNodeType.AND,
-					QueryNodeType.OR,
-					QueryNodeType.XOR
-			};
-			for (QueryNodeType type : supportedGroupingNodes) {
-				MenuItem menuItem = new MenuItem(type.displayName());
-				menuItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
-						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-						currentTreeItem.setExpanded(true);
-					}
-				});
-				groupingMenu.getItems().add(menuItem);
-			}
-			menu.getItems().add(groupingMenu);
-		}
-
-		{
-			Menu conceptAssertionMenu = new Menu("Concept Assertion");
-			QueryNodeType[] supportedConceptAssertionNodes = new QueryNodeType[] {
-					QueryNodeType.CONCEPT_IS,
-					QueryNodeType.CONCEPT_IS_CHILD_OF,
-					QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
-					QueryNodeType.CONCEPT_IS_KIND_OF
-			};
-			for (QueryNodeType type : supportedConceptAssertionNodes) {
-				MenuItem menuItem = new MenuItem(type.displayName());
-				menuItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
-						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-						currentTreeItem.setExpanded(true);
-					}
-				});
-				conceptAssertionMenu.getItems().add(menuItem);
-			}
-			menu.getItems().add(conceptAssertionMenu);
-		}
-		{
-			Menu stringAssertionMenu = new Menu("String Assertion");
-			QueryNodeType[] supportedStringAssertionNodes = new QueryNodeType[] {
-					QueryNodeType.DESCRIPTION_CONTAINS
-					//QueryNodeType.DESCRIPTION_LUCENE_MATCH
-					//,QueryNodeType.DESCRIPTION_REGEX_MATCH
-			};
-			for (QueryNodeType type : supportedStringAssertionNodes) {
-				MenuItem menuItem = new MenuItem(type.displayName());
-				menuItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
-						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-						currentTreeItem.setExpanded(true);
-					}
-				});
-				stringAssertionMenu.getItems().add(menuItem);
-			}
-			menu.getItems().add(stringAssertionMenu);
-		}
-
-		{
-			Menu relAssertionMenu = new Menu("Relationship Assertion");
-			QueryNodeType[] supportedRelAssertionNodes = new QueryNodeType[] {
-					QueryNodeType.REL_TYPE
-			};
-			for (QueryNodeType type : supportedRelAssertionNodes) {
-				MenuItem menuItem = new MenuItem(type.displayName());
-				menuItem.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event)
-					{
-						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
-						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
-						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
-						currentTreeItem.setExpanded(true);
-					}
-				});
-				relAssertionMenu.getItems().add(menuItem);
-			}
-			menu.getItems().add(relAssertionMenu);
-		}
-	}
-
-	private void loadContent()
-	{
+		addSubMenu(menu, ownerNode, "Concept Assertion",
+				QueryNodeType.CONCEPT_IS,
+				QueryNodeType.CONCEPT_IS_CHILD_OF,
+				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
+				QueryNodeType.CONCEPT_IS_KIND_OF);
+		
+		addSubMenu(menu, ownerNode, "String Assertion",
+				QueryNodeType.DESCRIPTION_CONTAINS);
+				//QueryNodeType.DESCRIPTION_LUCENE_MATCH
+				//,QueryNodeType.DESCRIPTION_REGEX_MATCH
+		
+		addSubMenu(menu, ownerNode, "Relationship Assertion",
+				QueryNodeType.REL_TYPE);
+		
+		addSubMenu(menu, ownerNode, "Refset Assertion",
+				QueryNodeType.REFSET_CONTAINS_CONCEPT,
+				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
+				QueryNodeType.REFSET_CONTAINS_STRING);
 	}
 	
-	private static class Node<T> {
-        private final T data;
-        private final Node<T> parent;
-        private final List<Node<T>> children = new ArrayList<>();
-        
-        public Node(T data) {
-        	this(null, data);
-        }
-        public Node(Node<T> parent, T data) {
-        	this.parent = parent;
-        	this.data = data;
-        }
-        public Node(Node<T> parent, T data, List<Node<T>> children) {
-        	this.parent = parent;
-        	this.data = data;
-        	this.children.clear();
-        	this.children.addAll(children);
-        }
-    }
+//	private static class Node<T> {
+//        private final T data;
+//        private final Node<T> parent;
+//        private final List<Node<T>> children = new ArrayList<>();
+//        
+//        public Node(T data) {
+//        	this(null, data);
+//        }
+//        public Node(Node<T> parent, T data) {
+//        	this.parent = parent;
+//        	this.data = data;
+//        }
+//        public Node(Node<T> parent, T data, List<Node<T>> children) {
+//        	this.parent = parent;
+//        	this.data = data;
+//        	this.children.clear();
+//        	this.children.addAll(children);
+//        }
+//    }
 //	private NodeDraggable createTreeNodeFromClause(Clause clause) {
 //		
-//	}
-	private void displayQuery(Query query) {
-		
-	}
-	
-
-	
-
-//	private static class QueryNodeTypeTreeCell extends DragAndDropTreeCell<NodeDraggable> {
-//		public QueryNodeTypeTreeCell(TreeView<NodeDraggable> parentTree,
-//				Map<String, NodeDraggable> cache) {
-//			super(parentTree, cache);
-//		}
-//
-//		@Override
-//		protected void updateItem(NodeDraggable item, boolean empty) {
-//			super.updateItem(item, empty);
-//			this.item = item;
-//			String text = (item == null) ? null : item.toString();
-//			setText(text);
-//		}
-//	}
-	
-//	private void initializeQueryNodeTypeTreeView() {
-//		//queryNodeTypeTreeView.setEditable(false);
-//		//queryNodeTypeTreeView.setCellFactory(cellFactory );
-//		queryNodeTypeTreeView.setShowRoot(false);
-//		
-//		queryNodeTypeTreeView.setCellFactory(new Callback<TreeView<NodeDraggable>, TreeCell<NodeDraggable>>() {
-//			@Override
-//			public TreeCell<NodeDraggable> call(TreeView<NodeDraggable> param) {
-//				return new QueryNodeTypeTreeCell(param, nodeDragCache);
-//			}
-//		});
-//		
-//		TreeItem<NodeDraggable> rootQueryNodeTypeItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("ROOT"));
-//		queryNodeTypeTreeView.setRoot(rootQueryNodeTypeItem);
-//		
-//		TreeItem<NodeDraggable> groupingRootItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("Grouping"));
-//		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.AND)));
-//		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.OR)));
-//		groupingRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.XOR)));
-//		rootQueryNodeTypeItem.getChildren().add(groupingRootItem);
-//		
-//		TreeItem<NodeDraggable> conceptAssertionRootItem = new TreeItem<NodeDraggable>(new QueryNodeTypeTreeParentItemData("Concept Assertion"));
-//		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS)));
-//		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS_CHILD_OF)));
-//		conceptAssertionRootItem.getChildren().add(new TreeItem<NodeDraggable>(new QueryNodeTypeTreeLeafItemData(QueryNodeType.CONCEPT_IS_DESCENDANT_OF)));
-//		rootQueryNodeTypeItem.getChildren().add(conceptAssertionRootItem);
-//	}
-//
-//	public static class QueryNodeTypeTreeParentItemData implements ParentNodeDraggable {
-//		private final String name;
-//
-//		public QueryNodeTypeTreeParentItemData(String name) {
-//			super();
-//			this.name = name;
-//		}
-//		
-//		public String toString() { return name; }
-//
-//		/* (non-Javadoc)
-//		 * @see gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable#canAddChild(gov.va.isaac.gui.querybuilder.node.NodeDraggable)
-//		 */
-//		@Override
-//		public boolean canAddChild(NodeDraggable child) {
-//			return false;
-//		}
-//		
-//		public DragMode getDragMode() { return DragMode.NONE; }
-//	}
-//
-//	public static class QueryNodeTypeTreeLeafItemData implements NodeDraggable {
-//		private final QueryNodeType nodeType;
-//
-//		public QueryNodeTypeTreeLeafItemData(QueryNodeType nodeType) {
-//			super();
-//			this.nodeType = nodeType;
-//		}
-//
-//		public QueryNodeType getNodeType() {
-//			return nodeType;
-//		}
-//		
-//		public String toString() { return nodeType.displayName(); }
-//		
-//		public DragMode getDragMode() { return DragMode.COPY; }
-//		public NodeDraggable getItemToDrop() { return nodeType.construct(); }
 //	}
 
 	void setStage(QueryBuilderView stage) {
 		this.stage = stage;
+	}
+	QueryBuilderView getStage() {
+		return stage;
 	}
 
 	public Region getRootNode() {

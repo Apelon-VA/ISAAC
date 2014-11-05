@@ -31,7 +31,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
- * RefsetContainsConcept
+ * RefsetContainsKindOfConcept
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
@@ -41,14 +41,14 @@ import javafx.beans.value.ObservableValue;
  * 		String conceptSpecKey,
  * 		String viewCoordinateKey)
  */
-public class RefsetContainsConcept extends AssertionNode {
+public class RefsetContainsKindOfConcept extends AssertionNode {
 	private IntegerProperty refsetConceptNidIntegerProperty = new SimpleIntegerProperty();
 	private IntegerProperty conceptNidIntegerProperty = new SimpleIntegerProperty();
 
 	/**
 	 * 
 	 */
-	public RefsetContainsConcept() {
+	public RefsetContainsKindOfConcept() {
 		super();
 		getDescriptionProperty().set(getDescription());
 		
