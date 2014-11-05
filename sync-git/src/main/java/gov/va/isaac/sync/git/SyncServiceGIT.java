@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -180,11 +181,11 @@ public class SyncServiceGIT implements ProfileSyncI
 					git.checkout().addPath(missing).call();
 				}
 
-				if (makeReadMeIfNecessary(localFolder))
+				for (String newFile : makeInitialFilesAsNecessary(localFolder))
 				{
-					log.debug("Adding and committing README.md");
-					git.add().addFilepattern("README.md").call();
-					git.commit().setMessage("Adding readme file").setAuthor(userName, "42").call();
+					log.debug("Adding and committing {}", newFile);
+					git.add().addFilepattern(newFile).call();
+					git.commit().setMessage("Adding " + newFile).setAuthor(userName, "42").call();
 
 					for (PushResult pr : git.push().setCredentialsProvider(cp).call())
 					{
@@ -196,10 +197,10 @@ public class SyncServiceGIT implements ProfileSyncI
 			{
 				//just push
 				//make sure we have something to push
-				if (makeReadMeIfNecessary(localFolder))
+				for (String newFile : makeInitialFilesAsNecessary(localFolder))
 				{
-					log.debug("Adding and committing README.md");
-					git.add().addFilepattern("README.md").call();
+					log.debug("Adding and committing {}", newFile);
+					git.add().addFilepattern(newFile).call();
 					git.commit().setMessage("Adding readme file").setAuthor(userName, "42").call();
 				}
 
@@ -761,21 +762,44 @@ public class SyncServiceGIT implements ProfileSyncI
 		return sb.toString();
 	}
 
-	private boolean makeReadMeIfNecessary(File containingFolder) throws IOException
+	/**
+	 * returns a list of newly created files and files that were modified.
+	 */
+	private List<String> makeInitialFilesAsNecessary(File containingFolder) throws IOException
 	{
+		ArrayList<String> result = new ArrayList<>();
 		File readme = new File(containingFolder, "README.md");
 		if (!readme.isFile())
 		{
-			log.debug("Creating README.md");
+			log.debug("Creating {}", readme.getAbsolutePath());
 			Files.write(readme.toPath(), new String("ISAAC Profiles Storage \r" + "=== \r" + "This is a repository for storing ISAAC profiles and changesets.\r"
 					+ "It is highly recommended that you do not make changes to this repository manually - ISAAC interfaces with this.").getBytes(),
 					StandardOpenOption.CREATE_NEW);
-			return true;
+			result.add(readme.getName());
 		}
 		else
 		{
 			log.debug("README.md already exists");
-			return false;
 		}
+		
+		File ignore = new File(containingFolder, ".gitignore");
+		if (!ignore.isFile())
+		{
+			log.debug("Creating {}", ignore.getAbsolutePath());
+			Files.write(ignore.toPath(), new String("lastUser.txt\r\n").getBytes(), StandardOpenOption.CREATE_NEW);
+			result.add(ignore.getName());
+		}
+		else
+		{
+			log.debug(".gitignore already exists");
+			
+			if (!new String(Files.readAllBytes(ignore.toPath())).contains("lastUser.txt"))
+			{
+				log.debug("Appending onto existing .gitignore file");
+				Files.write(ignore.toPath(), new String("\r\nlastUser.txt\r\n").getBytes(), StandardOpenOption.APPEND);
+				result.add(ignore.getName());
+			}
+		}
+		return result;
 	}
 }
