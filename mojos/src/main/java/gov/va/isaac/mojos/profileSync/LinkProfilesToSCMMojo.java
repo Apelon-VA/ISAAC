@@ -29,10 +29,9 @@ import org.apache.maven.plugin.MojoExecutionException;
  * behavior of this linking process.
  * 
  * See {@link ProfilesMojoBase} for details on how credentials are handled.
+ * Keep this in a phase earlier than GenerateUsersMojo
  * 
  * @goal get-and-link-profile-scm
- * 
- * Keep this in a phase earlier than GenerateUsersMojo
  * @phase generate-sources
  */
 //TODO figure out phase
@@ -49,6 +48,7 @@ public class LinkProfilesToSCMMojo extends ProfilesMojoBase
 	@Override
 	public void execute() throws MojoExecutionException
 	{
+		super.execute();
 		if (skipRun())
 		{
 			return;
@@ -56,8 +56,9 @@ public class LinkProfilesToSCMMojo extends ProfilesMojoBase
 		
 		try
 		{
-			getLog().info("Configuring " +profilesFolder.getAbsolutePath() + " for SCM management");
+			getLog().info("Configuring " +userProfileFolderLocation.getAbsolutePath() + " for SCM management");
 			
+			userProfileFolderLocation.mkdirs();
 			getProfileSyncImpl().linkAndFetchFromRemote(getURL(), getUsername(), getPassword());
 
 			getLog().info("Done Configuring SCM for profiles");

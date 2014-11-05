@@ -65,7 +65,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	 * @parameter
 	 * @required
 	 */
-	File profilesFolder = null;
+	File userProfileFolderLocation = null;
 	
 	/**
 	 * The location of the (already existing) app.xml file which contains the SCM connection information.
@@ -89,12 +89,24 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	private String profileSyncPassword = null;
 	
 	private IsaacAppConfig config_;
-	private String username = null;
-	private String password = null;
+	private static String username = null;
+	private static String password = null;
 
 	public ProfilesMojoBase() throws MojoExecutionException
 	{
 		super();
+	}
+	
+	/**
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	@Override
+	public void execute() throws MojoExecutionException
+	{
+		if (appXMLFile == null || !appXMLFile.isFile())
+		{
+			throw new MojoExecutionException("The file specified in the appXMLFile parameter must exist, and the parameter must be specified.");
+		}
 		
 		try
 		{
@@ -112,7 +124,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 			}
 		}
 	}
-	
+
 	protected boolean skipRun()
 	{
 		if (StringUtils.isBlank(config_.getChangeSetUrl()))
@@ -130,7 +142,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	{
 		if (config_.getChangeSetUrlType() == ChangeSetSCMType.GIT)
 		{
-			return new SyncServiceGIT(profilesFolder);
+			return new SyncServiceGIT(userProfileFolderLocation);
 		}
 		else if (config_.getChangeSetUrlType() == ChangeSetSCMType.SVN)
 		{
@@ -142,9 +154,21 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 		}
 	}
 	
-	protected String getURL()
+	/**
+	 * Does the necessary substitution to put the contents of getUserName() into the URL, if a known pattern needing substitution is found.
+	 *  ssh://someuser@csfe.aceworkspace.net:29418/... for example needs to become:
+	 *  ssh://<getUsername()>@csfe.aceworkspace.net:29418/...
+	 * @throws MojoExecutionException 
+	 */
+	protected String getURL() throws MojoExecutionException
 	{
-		return config_.getChangeSetUrl();
+		String url = config_.getChangeSetUrl();
+		if (url.startsWith("ssh://") && url.contains("@"))
+		{
+			int index = url.indexOf("@");
+			url = "ssh://" + getUsername() + url.substring(index);
+		}
+		return url;
 	}
 	
 	protected String getUsername() throws MojoExecutionException
@@ -164,7 +188,8 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 				//still no username, prompt if allowed
 				if (StringUtils.isBlank(username) && !Boolean.getBoolean(PROFILE_SYNC_NO_PROMPTS))
 				{
-					System.out.print("Enter the " + config_.getChangeSetUrlType().name() + " username for the Profiles/Changset remote store:");
+					System.out.println("Enter the " + config_.getChangeSetUrlType().name() + " username for the Profiles/Changset remote store (" +
+							config_.getChangeSetUrl() + "):");
 					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 					username = br.readLine();
 				}
@@ -194,7 +219,8 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 				//still no password, prompt if allowed
 				if (StringUtils.isBlank(password) && !Boolean.getBoolean(PROFILE_SYNC_NO_PROMPTS))
 				{
-					System.out.print("Enter the " + config_.getChangeSetUrlType().name() + " password for the Profiles/Changset remote store:");
+					System.out.println("Enter the " + config_.getChangeSetUrlType().name() + " password for the Profiles/Changset remote store: (" +
+							config_.getChangeSetUrl() + "):");
 					
 					//Use console if available, for password masking
 					Console console = System.console();

@@ -32,10 +32,9 @@ import org.apache.maven.plugin.MojoExecutionException;
  * 
  * 
  * See the above references for specific details on the behavior of this commit process
+ * Keep this in a phase later than GenerateUsersMojo
  * 
  * @goal add-commit-and-push-profile-scm
- * 
- * Keep this in a phase later than GenerateUsersMojo
  * @phase process-resources
  */
 public class AddCommitAndPushProfilesToSCMMojo extends ProfilesMojoBase
@@ -51,13 +50,14 @@ public class AddCommitAndPushProfilesToSCMMojo extends ProfilesMojoBase
 	@Override
 	public void execute() throws MojoExecutionException
 	{
+		super.execute();
 		if (skipRun())
 		{
 			return;
 		}
 		try
 		{
-			getLog().info("Committing " +profilesFolder.getAbsolutePath() + " for SCM management");
+			getLog().info("Committing " +userProfileFolderLocation.getAbsolutePath() + " for SCM management");
 			
 			getProfileSyncImpl().addUntrackedFiles();
 			getProfileSyncImpl().updateCommitAndPush("Adding profiles after executing GenerateUsersMojo", getUsername(), getPassword(), MergeFailOption.KEEP_REMOTE, 
