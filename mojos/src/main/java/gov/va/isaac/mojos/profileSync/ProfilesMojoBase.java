@@ -104,6 +104,26 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 		{
 			throw new MojoExecutionException("Failure reading " + appXMLFile, e);
 		}
+		if (StringUtils.isNotBlank(config_.getChangeSetUrl()))
+		{
+			if (config_.getChangeSetUrlType() == null)
+			{
+				throw new MojoExecutionException("If the 'changeSetUrl' parameter is provided, then you must provide the 'changeSetUrlType' parameter");
+			}
+		}
+	}
+	
+	protected boolean skipRun()
+	{
+		if (StringUtils.isBlank(config_.getChangeSetUrl()))
+		{
+			getLog().info("No SCM configuration will be done - no 'changeSetUrl' parameter was provided");
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	protected ProfileSyncI getProfileSyncImpl() throws MojoExecutionException

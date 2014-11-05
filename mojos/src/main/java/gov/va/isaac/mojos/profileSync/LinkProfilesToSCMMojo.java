@@ -49,6 +49,11 @@ public class LinkProfilesToSCMMojo extends ProfilesMojoBase
 	@Override
 	public void execute() throws MojoExecutionException
 	{
+		if (skipRun())
+		{
+			return;
+		}
+		
 		try
 		{
 			getLog().info("Configuring " +profilesFolder.getAbsolutePath() + " for SCM management");

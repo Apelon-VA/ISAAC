@@ -51,6 +51,10 @@ public class AddCommitAndPushProfilesToSCMMojo extends ProfilesMojoBase
 	@Override
 	public void execute() throws MojoExecutionException
 	{
+		if (skipRun())
+		{
+			return;
+		}
 		try
 		{
 			getLog().info("Committing " +profilesFolder.getAbsolutePath() + " for SCM management");
