@@ -32,7 +32,7 @@ package gov.va.isaac.gui.querybuilder.node;
  *
  */
 public class CompoundLogicalNode extends LogicalNode {
-	public int getMinimumChildren() { return 2; }
+	public int getMinimumChildren() { return 1; }
 
 	/**
 	 * 

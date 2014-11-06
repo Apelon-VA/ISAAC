@@ -34,6 +34,9 @@ import gov.va.isaac.gui.querybuilder.node.DescriptionLuceneMatch;
 import gov.va.isaac.gui.querybuilder.node.DescriptionRegexMatch;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.Or;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
+import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 
@@ -97,6 +100,12 @@ public enum QueryNodeType {
 		// Currently unsupported
 	DESCRIPTION_REGEX_MATCH("Description regex match", DescriptionRegexMatch.class, org.ihtsdo.otf.query.implementation.clauses.DescriptionRegexMatch.class),
 	
+		// Refset
+	REFSET_CONTAINS_CONCEPT("Refset contains concept", RefsetContainsConcept.class, org.ihtsdo.otf.query.implementation.clauses.RefsetContainsConcept.class),
+	REFSET_CONTAINS_KIND_OF_CONCEPT("Refset contains kind of concept", RefsetContainsKindOfConcept.class, org.ihtsdo.otf.query.implementation.clauses.RefsetContainsKindOfConcept.class),
+	REFSET_CONTAINS_STRING("Refset contains string", RefsetContainsString.class, org.ihtsdo.otf.query.implementation.clauses.RefsetContainsString.class),
+
+		// Relationship
 	REL_TYPE("Relationship type", RelType.class, org.ihtsdo.otf.query.implementation.clauses.RelType.class);
 
 	private final static Logger logger = LoggerFactory.getLogger(QueryNodeType.class);
