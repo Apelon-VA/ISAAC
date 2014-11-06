@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand.Stage;
@@ -71,6 +72,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.jcraft.jsch.JSch;
 
 /**
  * {@link SyncServiceGIT}
@@ -94,14 +96,44 @@ public class SyncServiceGIT implements ProfileSyncI
 	
 	//TODO figure out how we handle prompts for things.  GUI vs no GUI... etc.
 	public SyncServiceGIT(File localFolder)
-	{
+	{	
+		this();
 		setRootLocation(localFolder);
 	}
 
-	@SuppressWarnings("unused")
 	private SyncServiceGIT()
 	{
 		//For HK2
+		JSch.setLogger(new com.jcraft.jsch.Logger()
+		{
+			private HashMap<Integer, Consumer<String>> logMap = new HashMap<>();
+			private HashMap<Integer, BooleanSupplier> enabledMap = new HashMap<>();
+			
+			{
+				logMap.put(com.jcraft.jsch.Logger.DEBUG, log::info);  //TODO change this
+				logMap.put(com.jcraft.jsch.Logger.ERROR, log::error);
+				logMap.put(com.jcraft.jsch.Logger.FATAL, log::error);
+				logMap.put(com.jcraft.jsch.Logger.INFO, log::info);
+				logMap.put(com.jcraft.jsch.Logger.WARN, log::warn);
+				
+				enabledMap.put(com.jcraft.jsch.Logger.DEBUG, log::isInfoEnabled);  //TODO change this
+				enabledMap.put(com.jcraft.jsch.Logger.ERROR, log::isErrorEnabled);
+				enabledMap.put(com.jcraft.jsch.Logger.FATAL, log::isErrorEnabled);
+				enabledMap.put(com.jcraft.jsch.Logger.INFO, log::isInfoEnabled);
+				enabledMap.put(com.jcraft.jsch.Logger.WARN, log::isWarnEnabled);
+			}
+			@Override
+			public void log(int level, String message)
+			{
+				logMap.get(level).accept(message);
+			}
+			
+			@Override
+			public boolean isEnabled(int level)
+			{
+				return enabledMap.get(level).getAsBoolean();
+			}
+		});
 	}
 	
 	/**
