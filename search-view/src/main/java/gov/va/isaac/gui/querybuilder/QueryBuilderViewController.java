@@ -21,6 +21,7 @@ package gov.va.isaac.gui.querybuilder;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
+import gov.va.isaac.gui.querybuilder.node.CompoundLogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
 import gov.va.isaac.interfaces.utility.DialogResponse;
@@ -129,6 +130,7 @@ public class QueryBuilderViewController
 	
 	private void initializeRootNodeTypeComboBox() {
 		rootNodeTypeComboBox.setEditable(false);
+		rootNodeTypeComboBox.setPromptText("Click to set root expression");
 		rootNodeTypeComboBox.setButtonCell(new ListCell<Object>() {
 			@Override
 			protected void updateItem(Object t, boolean bln) {
@@ -203,7 +205,11 @@ public class QueryBuilderViewController
 				//QueryNodeType.DESCRIPTION_LUCENE_MATCH,
 				//QueryNodeType.DESCRIPTION_REGEX_MATCH,
 				new Separator(),
-				QueryNodeType.REL_TYPE
+				QueryNodeType.REL_TYPE,
+				new Separator(),
+				QueryNodeType.REFSET_CONTAINS_CONCEPT,
+				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
+				QueryNodeType.REFSET_CONTAINS_STRING
 				);
 	}
 
@@ -216,6 +222,9 @@ public class QueryBuilderViewController
 		queryNodeTreeView.getContextMenu().getItems().clear();
 		addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
 
+		final Tooltip emptyTreeTooltip = new Tooltip("Right-click on TreeView or left-click ComboBox to select root expression");
+		queryNodeTreeView.setTooltip(emptyTreeTooltip);
+		
 		queryNodeTreeView.rootProperty().addListener(new ChangeListener<TreeItem<NodeDraggable>>() {
 			@Override
 			public void changed(
@@ -225,7 +234,7 @@ public class QueryBuilderViewController
 				if (newValue == null) {
 					rootNodeTypeComboBox.getButtonCell().setText("");
 					addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
-					queryNodeTreeView.setTooltip(new Tooltip("Right-click on TreeView or left-click ComboBox to select root expression"));
+					queryNodeTreeView.setTooltip(emptyTreeTooltip);
 				} else {
 					rootNodeTypeComboBox.getButtonCell().setText(QueryNodeType.valueOf(observable.getValue().getValue()).displayName());
 					queryNodeTreeView.getContextMenu().getItems().clear();
@@ -292,7 +301,6 @@ public class QueryBuilderViewController
 		menu.getItems().add(deleteMenuItem);
 	}
 	private void addNewParentContextMenu(ContextMenu menu, TreeCell<NodeDraggable> ownerNode) {
-
 		Menu newParentMenu = new Menu("New Parent");
 		QueryNodeType[] supportedNewParentNodes = new QueryNodeType[] {
 				QueryNodeType.AND,
@@ -330,33 +338,42 @@ public class QueryBuilderViewController
 		menu.getItems().add(newParentMenu);
 	}
 
-	private void addSubMenu(ContextMenu menu, Node ownerNode, String subMenuName, QueryNodeType...nodeTypes) {
+	private void addNewNodeSubMenu(ContextMenu menu, Node ownerNode, String subMenuName, QueryNodeType...nodeTypes) {
 		Menu groupingMenu = new Menu(subMenuName);
 		
 		for (QueryNodeType type : nodeTypes) {
 			MenuItem menuItem = new MenuItem(type.displayName());
-			menuItem.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event)
-				{
-					if (ownerNode instanceof TreeView) {
+
+			if (ownerNode instanceof TreeView) {
+				menuItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
 						((TreeView<NodeDraggable>)ownerNode).setRoot(new TreeItem<>(type.constructNode()));
-					} else if (ownerNode instanceof TreeCell) {
+					}
+				});
+			} else if (ownerNode instanceof TreeCell) {
+				menuItem.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event)
+					{
 						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
 						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
 						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
 						currentTreeItem.setExpanded(true);
-					} else {
-						String error = 	"Unexpected/innappropriate ContextMenu owner of type " + ownerNode.getClass().getName() + ": " + ownerNode;
-
-						logger.error(error);
-
-						throw new IllegalArgumentException(error);
 					}
-				}
-			});
+				});
+			} else {
+				String error = 	"Unexpected/innappropriate ContextMenu owner of type " + ownerNode.getClass().getName() + ": " + ownerNode;
+
+				logger.error(error);
+
+				throw new IllegalArgumentException(error);
+			}
+
 			groupingMenu.getItems().add(menuItem);
 		}
+
 		menu.getItems().add(groupingMenu);
 	}
 
@@ -367,9 +384,10 @@ public class QueryBuilderViewController
 				&& (currentTreeItem = ((TreeCell<NodeDraggable>)ownerNode).getTreeItem()) != null
 				&& (currentNode = currentTreeItem.getValue()) != null
 				&& currentNode instanceof ParentNodeDraggable) {
-			// ok
+			logger.debug("Configuring context menu for {}: {}", ownerNode.getClass().getName());
+
 		} else if (ownerNode instanceof TreeView) {
-			// ok
+			logger.debug("Configuring context menu for {}", currentNode);
 		} else {
 			// bad
 			String error = 	"Unexpected/innappropriate ContextMenu owner of type " + ownerNode.getClass().getName() + ": " + ownerNode + " with currentTreeItem=" + currentTreeItem + " and currentNode=" + currentNode;
@@ -378,29 +396,27 @@ public class QueryBuilderViewController
 
 			throw new IllegalArgumentException(error);
 		}
-
-		logger.debug("Configuring parent node context menu for {}", ownerNode.getClass().getName());
 		
-		addSubMenu(menu, ownerNode, "Grouping",
+		addNewNodeSubMenu(menu, ownerNode, "New Grouping",
 				QueryNodeType.AND,
 				QueryNodeType.OR,
 				QueryNodeType.XOR);
 		
-		addSubMenu(menu, ownerNode, "Concept Assertion",
+		addNewNodeSubMenu(menu, ownerNode, "New Concept Assertion",
 				QueryNodeType.CONCEPT_IS,
 				QueryNodeType.CONCEPT_IS_CHILD_OF,
 				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
 				QueryNodeType.CONCEPT_IS_KIND_OF);
 		
-		addSubMenu(menu, ownerNode, "String Assertion",
+		addNewNodeSubMenu(menu, ownerNode, "New String Assertion",
 				QueryNodeType.DESCRIPTION_CONTAINS);
 				//QueryNodeType.DESCRIPTION_LUCENE_MATCH
 				//,QueryNodeType.DESCRIPTION_REGEX_MATCH
 		
-		addSubMenu(menu, ownerNode, "Relationship Assertion",
+		addNewNodeSubMenu(menu, ownerNode, "New Relationship Assertion",
 				QueryNodeType.REL_TYPE);
 		
-		addSubMenu(menu, ownerNode, "Refset Assertion",
+		addNewNodeSubMenu(menu, ownerNode, "New Refset Assertion",
 				QueryNodeType.REFSET_CONTAINS_CONCEPT,
 				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
 				QueryNodeType.REFSET_CONTAINS_STRING);

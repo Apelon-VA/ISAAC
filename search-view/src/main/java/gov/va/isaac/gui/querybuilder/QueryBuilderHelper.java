@@ -91,7 +91,7 @@ public class QueryBuilderHelper {
 				|| (node.getValue() != null && (node.getValue() instanceof AssertionNode) && node.getValue().getIsValid())) {
 			int numDescendants = QueryBuilderHelper.getDescendants(node).size();
 
-			DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Expression Deletion Confirmation", "Are you sure you want to delete expression " + QueryNodeType.valueOf(node.getValue()) + "?" + (numDescendants > 0 ? ("\n\n" + numDescendants + " descendent expression(s) will also be deleted") : ""));
+			DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Expression Deletion Confirmation", "Are you sure you want to delete expression\n" + node.getValue().getDescription() + "?" + (numDescendants > 0 ? ("\n\n" + numDescendants + " descendent expression(s) will also be deleted") : ""));
 			if (response == DialogResponse.YES) {
 				delete = true;
 			} else {
