@@ -39,6 +39,7 @@ import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
+import gov.va.isaac.gui.querybuilder.node.RelRestriction;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
@@ -212,6 +213,115 @@ public class QueryBuilderHelper {
 				nodeEditorGridPane.addRow(rowIndex++, new Label("Concept"), stringNode);
 
 				CheckBox inversionCheckBox = createInversionCheckBox(singleStringAssertionNode);
+
+				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
+			} else if (draggableNode instanceof RelRestriction) {
+				RelRestriction relRestrictionNode = (RelRestriction)draggableNode;
+				nodeEditorGridPane.getChildren().clear();
+				int rowIndex = 0;
+				Label nodeEditorLabel = new Label(relRestrictionNode.getNodeTypeName());
+				nodeEditorGridPane.addRow(rowIndex++, nodeEditorLabel);
+				nodeEditorGridPane.addRow(rowIndex++, new Label());
+				
+				{
+					ConceptVersionBI currentRelRestrictionConcept = null;
+					if (relRestrictionNode.getRelRestrictionConceptNid() != null) {
+						currentRelRestrictionConcept = WBUtility.getConceptVersion(relRestrictionNode.getRelRestrictionConceptNid());
+					}
+					ConceptNode relRestrictionConceptNode = new ConceptNode(currentRelRestrictionConcept, true);
+					relRestrictionConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								relRestrictionNode.setRelRestrictionConceptNid(0);
+							} else {
+								relRestrictionNode.setRelRestrictionConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Restriction Concept"), relRestrictionConceptNode.getNode());
+				}
+				{
+					ConceptVersionBI currentRelTypeConcept = null;
+					if (relRestrictionNode.getRelTypeConceptNid() != null) {
+						currentRelTypeConcept = WBUtility.getConceptVersion(relRestrictionNode.getRelTypeConceptNid());
+					}
+					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
+					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								relRestrictionNode.setRelTypeConceptNid(0);
+							} else {
+								relRestrictionNode.setRelTypeConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("RelType Concept"), relTypeConceptNode.getNode());
+				}
+				{
+					ConceptVersionBI currentSourceConcept = null;
+					if (relRestrictionNode.getSourceConceptNid() != null) {
+						currentSourceConcept = WBUtility.getConceptVersion(relRestrictionNode.getSourceConceptNid());
+					}
+					ConceptNode sourceConceptNode = new ConceptNode(currentSourceConcept, true);
+					sourceConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends ConceptVersionBI> observable,
+								ConceptVersionBI oldValue,
+								ConceptVersionBI newValue) {
+							if (newValue == null) {
+								relRestrictionNode.setSourceConceptNid(0);
+							} else {
+								relRestrictionNode.setSourceConceptNid(newValue.getConceptNid());
+							}
+						}
+					});
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Source Concept"), sourceConceptNode.getNode());
+				}
+				{
+					CheckBox destinationSubsumptionCheckBox = new CheckBox();
+					destinationSubsumptionCheckBox.setText("Use Destination Subsumption");
+					destinationSubsumptionCheckBox.setSelected(relRestrictionNode.getUseDestinationSubsumption());
+
+					destinationSubsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends Boolean> observable,
+								Boolean oldValue,
+								Boolean newValue) {
+							relRestrictionNode.setUseDestinationSubsumption(newValue);
+						}
+					});
+
+					nodeEditorGridPane.addRow(rowIndex++, destinationSubsumptionCheckBox);
+				}
+				{
+					CheckBox relTypeSubsumptionCheckBox = new CheckBox();
+					relTypeSubsumptionCheckBox.setText("Use RelType Subsumption");
+					relTypeSubsumptionCheckBox.setSelected(relRestrictionNode.getUseRelTypeSubsumption());
+
+					relTypeSubsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends Boolean> observable,
+								Boolean oldValue,
+								Boolean newValue) {
+							relRestrictionNode.setUseRelTypeSubsumption(newValue);
+						}
+					});
+
+					nodeEditorGridPane.addRow(rowIndex++, relTypeSubsumptionCheckBox);
+				}
+
+				CheckBox inversionCheckBox = createInversionCheckBox(relRestrictionNode);
 
 				nodeEditorGridPane.addRow(rowIndex++, inversionCheckBox);
 			} else if (draggableNode instanceof RelType) {

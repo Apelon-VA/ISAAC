@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.QueryNodeTypeI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -40,4 +41,5 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface QueryBuilderViewI extends PopupViewI {
+	public void setUnsupportedQueryNodeTypes(QueryNodeTypeI...nodeTypes);
 }
