@@ -31,7 +31,7 @@ import org.jvnet.hk2.annotations.Contract;
  * {@link TaxonomyViewI}
  * 
  * An interface that specifies the methods that a TaxonomyViewer should implement
- * to be useful for other parts of the appliation.
+ * to be useful for other parts of the application.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
