@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.querybuilder;
 
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.QueryNodeTypeI;
 import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
 
 import java.io.IOException;
@@ -85,9 +86,16 @@ public class QueryBuilderView extends Stage implements QueryBuilderViewI
 			initOwner(parent);
 			initModality(Modality.NONE);
 			initStyle(StageStyle.DECORATED);
+			
+			controller_.loadMenus();
 		}
 
 		logger.debug("Showing Query Builder View");
 		show();
+	}
+
+	@Override
+	public void setUnsupportedQueryNodeTypes(QueryNodeTypeI... nodeTypes) {
+		controller_.setUnsupportedQueryNodeTypes(nodeTypes);
 	}
 }

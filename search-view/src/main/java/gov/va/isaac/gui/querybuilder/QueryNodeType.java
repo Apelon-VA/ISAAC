@@ -39,6 +39,7 @@ import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.Xor;
+import gov.va.isaac.interfaces.QueryNodeTypeI;
 
 import org.ihtsdo.otf.query.implementation.Clause;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public enum QueryNodeType {
+public enum QueryNodeType implements QueryNodeTypeI {
 	/*
 	 * And(Query enclosingQuery, Clause... clauses)
 	 * Or(Query enclosingQuery, Clause... clauses)
@@ -121,9 +122,9 @@ public enum QueryNodeType {
 	}
 	
 	public String displayName() { return displayName; }
-	
+
 	public Class<? extends NodeDraggable> getNodeClass() { return nodeClass; }
-	
+
 	public NodeDraggable constructNode() {
 		try {
 			return nodeClass.newInstance();

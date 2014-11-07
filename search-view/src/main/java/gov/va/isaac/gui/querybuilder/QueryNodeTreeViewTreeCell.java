@@ -45,7 +45,7 @@ import javafx.beans.property.BooleanProperty;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-class QueryNodeTreeViewTreeCell extends DragAndDropTreeCell<NodeDraggable> {
+public class QueryNodeTreeViewTreeCell extends DragAndDropTreeCell<NodeDraggable> {
 	private final BooleanProperty queryNodeTreeViewIsValidProperty;
 	
 	public QueryNodeTreeViewTreeCell(
