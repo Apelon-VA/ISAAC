@@ -49,7 +49,7 @@ public class InfoModelMetadata extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     try {
       getLog().info("Creating metadata");
-      BdbPathManager.get().resetPathMap();
+      BdbPathManager.get().resetPathMap();  //TODO dan doesn't know what this does... really the only thing preventing the killing of this mojo.
       createMetadata();
       getLog().info("Done creating new path.");
     } catch (Exception e) {
@@ -70,6 +70,8 @@ public class InfoModelMetadata extends AbstractMojo {
     dataStore = AppContext.getService(TerminologyStoreDI.class);
     BdbInformationModelService service = new BdbInformationModelService(
         dataStore);
+    //TODO kill this MOJO - it is no longer necessary.  The metadata should be properly defined in isaac-constants, within the InformationModels class.
+    //This would also let us get rid of the pom-level dependency on the import-export module.
     service.createMetadataConcepts();
   }
 }

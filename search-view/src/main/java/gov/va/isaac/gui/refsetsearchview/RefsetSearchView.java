@@ -16,11 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.querybuilder;
+package gov.va.isaac.gui.refsetsearchview;
 
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.QueryNodeTypeI;
-import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
+import gov.va.isaac.interfaces.gui.views.RefsetSearchViewI;
 
 import java.io.IOException;
 import java.net.URL;
@@ -38,35 +37,35 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
- * QueryBuilder
+ * RefsetSearchView
  *
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a> 
  */
 @Service
 @PerLookup
-public class QueryBuilderView extends Stage implements QueryBuilderViewI
+public class RefsetSearchView extends Stage implements RefsetSearchViewI
 {
-	private final Logger logger = LoggerFactory.getLogger(QueryBuilderView.class);
+	private final Logger logger = LoggerFactory.getLogger(RefsetSearchView.class);
 
-	private QueryBuilderViewController controller_;
+	private RefsetSearchViewController controller_;
 
 	private boolean shown = false;
 	
-	private QueryBuilderView() throws IOException
+	private RefsetSearchView() throws IOException
 	{
 		super();
 
-		URL resource = this.getClass().getResource("QueryBuilderView.fxml");
+		URL resource = this.getClass().getResource("RefsetSearchView.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		setScene(new Scene(root));
-		getScene().getStylesheets().add(QueryBuilderView.class.getResource("/isaac-shared-styles.css").toString());
+		getScene().getStylesheets().add(RefsetSearchView.class.getResource("/isaac-shared-styles.css").toString());
 		getIcons().add(Images.SEARCH.getImage());
 
 		controller_ = loader.getController();
 		controller_.setStage(this);
 		
-		setTitle("Query Builder");
+		setTitle("Refset Search");
 		setResizable(true);
 
 		setWidth(600);
@@ -86,16 +85,9 @@ public class QueryBuilderView extends Stage implements QueryBuilderViewI
 			initOwner(parent);
 			initModality(Modality.NONE);
 			initStyle(StageStyle.DECORATED);
-			
-			controller_.loadMenus();
 		}
 
-		logger.debug("Showing Query Builder View");
+		logger.debug("Showing Refset Search View");
 		show();
-	}
-
-	@Override
-	public void setUnsupportedQueryNodeTypes(QueryNodeTypeI... nodeTypes) {
-		controller_.setUnsupportedQueryNodeTypes(nodeTypes);
 	}
 }

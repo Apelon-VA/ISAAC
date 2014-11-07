@@ -328,6 +328,7 @@
         <module>concept-wizard-view</module>
         <module>isaac-constants</module>
         <module>isaac-drools</module>
+        <module>sync-git</module>
     </modules>
 
     <reporting>

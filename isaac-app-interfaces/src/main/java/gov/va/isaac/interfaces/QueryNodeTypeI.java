@@ -18,25 +18,17 @@
  */
 
 /**
- * NodeDraggable
+ * QueryNodeTypeI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.querybuilder.node;
-
-import gov.va.isaac.util.ObjectWithTemporaryUniqueId;
+package gov.va.isaac.interfaces;
 
 /**
- * NodeDraggable
+ * QueryNodeTypeI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public interface NodeDraggable extends ObjectWithTemporaryUniqueId {
-	enum DragMode { NONE, COPY, MOVE }
-	public default DragMode getDragMode() { return DragMode.MOVE; }
-	public default NodeDraggable getItemToDrop() { return this; }
-	public default String getNodeTypeName() { return getClass().getName().replaceAll(".*\\.", "").replaceAll(".*\\$", ""); }
-	public default String getDescription() { return getNodeTypeName(); }
-	public default boolean getIsValid() { return true; }
+public interface QueryNodeTypeI {
 }

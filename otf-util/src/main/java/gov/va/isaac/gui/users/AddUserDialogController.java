@@ -81,7 +81,7 @@ public class AddUserDialogController
 		
 		for (RoleOption ro : RoleOption.values())
 		{
-			roles.getItems().add(ro.name());
+			roles.getItems().add(ro.value());
 		}
 
 		upm_ = AppContext.getService(UserProfileManager.class);

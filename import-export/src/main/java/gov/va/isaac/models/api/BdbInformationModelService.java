@@ -829,7 +829,12 @@ public class BdbInformationModelService implements InformationModelService {
   public void createMetadataConcepts() throws IOException, InvalidCAB,
     ContradictionException, PropertyVetoException {
     LOG.info("Create information models metadata concepts");
+    
+    //TODO Dan notes - this should be moved to the InformationModels class in isaac-constants.
+    //None of this building code is necessary - dynamic refexes that are properly specified as ConceptSpec entries are automatically created during the DB build.
 
+    //TODO Dan asks - when are we doing all of this work, instead of just checking to see if it already exists up front?
+    
     // Create columns for dynamic refsets
     String[] columnNames =
         new String[] {
@@ -850,6 +855,7 @@ public class BdbInformationModelService implements InformationModelService {
             "Used to capture the cardinality upper limit in the model",
             "Used to capture the property visibility in the model"
         };
+    //TODO Dan notes - this was never tested to see what it does when you ask it to recreate column concepts that already exist... its probably doing the wrong thing.
     List<RefexDynamicColumnInfo> columns = new ArrayList<>();
     for (int i = 0; i < columnNames.length; i++) {
       LOG.debug("  Attempting to create COLUMN " + columnNames[i]);
@@ -870,7 +876,7 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("  Attempting to create info model property refset");
     RefexDynamicUsageDescription refex =
         RefexDynamicUsageDescriptionBuilder
-            .createNewRefexDynamicUsageDescriptionConcept(
+            .createNewRefexDynamicUsageDescriptionConcept(  //TODO Dan notes this also doesn't check to see if it already exists - not sure what it does in that case 
                 "Information model property refset",
                 "Information model property refset",
                 "Used to capture information about information model properties",
@@ -898,16 +904,18 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.debug("    UUID = " + relTypeConcept.getPrimordialUuid());
     dataStore.addUncommitted(relTypeConcept);
     try
-	{
-		AppContext.getRuntimeGlobals().disableAllCommitListeners();
-	    dataStore.commit(relTypeConcept);
-	} catch (Exception e) {
-		LOG.error("Coudn't Disable WF Init & Commit CEM Information Model Metadata", e);
-	}
-	finally
-	{
-	    AppContext.getRuntimeGlobals().enableAllCommitListeners();
-	}
+    {
+        //TODO Dan notes - pretty sure this is in the wrong place.  There are other commits above.... such as RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept
+        //Not sure what was intended here....
+        AppContext.getRuntimeGlobals().disableAllCommitListeners();
+        dataStore.commit(relTypeConcept);
+    } catch (Exception e) {
+        LOG.error("Coudn't Disable WF Init & Commit CEM Information Model Metadata", e);
+    }
+    finally
+    {
+        AppContext.getRuntimeGlobals().enableAllCommitListeners();
+    }
 
   }
 

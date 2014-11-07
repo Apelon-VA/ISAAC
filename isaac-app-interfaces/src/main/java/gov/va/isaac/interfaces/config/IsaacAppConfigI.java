@@ -244,6 +244,13 @@ public interface IsaacAppConfigI {
    * 
    */
   public URL getChangeSetUrlAsURL();
+  
+  /**
+   * The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.  With SSH urls, such as
+   * "ssh://someuser@csfe.aceworkspace.net..." the contents between 'ssh://' and '@' should be replaced with the currently logged in user's
+   * syncUserName - as specified in that users profile before using this value.
+   */
+  public String getChangeSetUrlTypeName();
 
   /**
    * Default edit path name.

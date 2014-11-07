@@ -16,22 +16,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.querybuilder;
-
+package gov.va.isaac.gui.refsetsearchview;
+/**
+ * Copyright Notice
+ *
+ * This is a work of the U.S. Government and is not subject to copyright
+ * protection in the United States. Foreign copyrights may apply.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.querybuilder.QueryBuilderHelper;
+import gov.va.isaac.gui.querybuilder.QueryNodeTreeViewTreeCell;
+import gov.va.isaac.gui.querybuilder.QueryNodeType;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
+import gov.va.isaac.gui.querybuilder.node.CompoundLogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
-import gov.va.isaac.interfaces.QueryNodeTypeI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -63,13 +79,13 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * QueryBuilder
+ * RefsetSearch
  *
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a> 
  */
-public class QueryBuilderViewController
+public class RefsetSearchViewController
 {	
-	final static Logger logger = LoggerFactory.getLogger(QueryBuilderViewController.class);
+	final static Logger logger = LoggerFactory.getLogger(RefsetSearchViewController.class);
 	
 	//private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 	
@@ -84,10 +100,8 @@ public class QueryBuilderViewController
 	
 	private BooleanProperty queryNodeTreeViewIsValidProperty = new SimpleBooleanProperty(false);
 	
-	private QueryBuilderView stage;
+	private RefsetSearchView stage;
 	private Map<String, NodeDraggable> nodeDragCache = new HashMap<>();
-	
-	private List<QueryNodeTypeI> unsupportedQueryNodeTypes = new Vector<>();
 	
 	// Initialize GUI (invoked by FXML)
 	@FXML
@@ -134,11 +148,6 @@ public class QueryBuilderViewController
 		});
 	}
 	
-	public void setUnsupportedQueryNodeTypes(QueryNodeTypeI...nodeTypes){
-		unsupportedQueryNodeTypes.clear();
-		unsupportedQueryNodeTypes.addAll(Arrays.asList(nodeTypes));
-	}
-
 	private void initializeRootNodeTypeComboBox() {
 		rootNodeTypeComboBox.setEditable(false);
 		rootNodeTypeComboBox.setPromptText("Click to set root expression");
@@ -202,101 +211,29 @@ public class QueryBuilderViewController
 			}
 		});
 
-	}
-
-	private List<QueryNodeType> getSupportedQueryNodeTypes(QueryNodeType...nodeTypes) {
-		ArrayList<QueryNodeType> supportedNodeTypes = new ArrayList<>();
-		
-		for (QueryNodeType nodeType : nodeTypes) {
-			if (! unsupportedQueryNodeTypes.contains(nodeType)) {
-				supportedNodeTypes.add(nodeType);
-			}
-		}
-		
-		return supportedNodeTypes;
-	}
-
-	protected void loadMenus() {
-		List<QueryNodeType> groupingNodeTypes = getSupportedQueryNodeTypes(
+		rootNodeTypeComboBox.getItems().addAll(
 				QueryNodeType.AND,
 				QueryNodeType.OR,
-				QueryNodeType.XOR);
-		
-		List<QueryNodeType> conceptAssertionNodeTypes = getSupportedQueryNodeTypes(
+				QueryNodeType.XOR,
+				new Separator(),
 				QueryNodeType.CONCEPT_IS,
 				QueryNodeType.CONCEPT_IS_CHILD_OF,
 				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
-				QueryNodeType.CONCEPT_IS_KIND_OF);
-		
-		List<QueryNodeType> descriptionAssertionNodeTypes = getSupportedQueryNodeTypes(
-				QueryNodeType.DESCRIPTION_CONTAINS
-				);
-		
-		List<QueryNodeType> relationshipAssertionNodeTypes = getSupportedQueryNodeTypes(
-				QueryNodeType.REL_RESTRICTION,
+				QueryNodeType.CONCEPT_IS_KIND_OF,
+				new Separator(),
+				QueryNodeType.DESCRIPTION_CONTAINS,
+				//QueryNodeType.DESCRIPTION_LUCENE_MATCH,
+				//QueryNodeType.DESCRIPTION_REGEX_MATCH,
+				new Separator(),
 				QueryNodeType.REL_TYPE
-				);
-		
-		List<QueryNodeType> refsetAssertionNodeTypes = getSupportedQueryNodeTypes(
-				QueryNodeType.REFSET_CONTAINS_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_STRING
-				);
-		
-		// Add to dropdown
-		boolean separatorNeeded = false;
-		if (groupingNodeTypes.size() > 0) {
-			rootNodeTypeComboBox.getItems().addAll(groupingNodeTypes);
-			separatorNeeded = true;
-		}
-		if (conceptAssertionNodeTypes.size() > 0) {
-			if (separatorNeeded) {
-				rootNodeTypeComboBox.getItems().add(new Separator());
-			}
-			rootNodeTypeComboBox.getItems().addAll(conceptAssertionNodeTypes);
-		}
-		if (descriptionAssertionNodeTypes.size() > 0) {
-			if (separatorNeeded) {
-				rootNodeTypeComboBox.getItems().add(new Separator());
-			}
-			rootNodeTypeComboBox.getItems().addAll(descriptionAssertionNodeTypes);
-		}
-		if (relationshipAssertionNodeTypes.size() > 0) {
-			if (separatorNeeded) {
-				rootNodeTypeComboBox.getItems().add(new Separator());
-			}
-			rootNodeTypeComboBox.getItems().addAll(relationshipAssertionNodeTypes);
-		}
-		if (refsetAssertionNodeTypes.size() > 0) {
-			if (separatorNeeded) {
-				rootNodeTypeComboBox.getItems().add(new Separator());
-			}
-			rootNodeTypeComboBox.getItems().addAll(refsetAssertionNodeTypes);
-		}
-//		rootNodeTypeComboBox.getItems().addAll(
-//				QueryNodeType.AND,
-//				QueryNodeType.OR,
-//				QueryNodeType.XOR,
-//				new Separator(),
-//				QueryNodeType.CONCEPT_IS,
-//				QueryNodeType.CONCEPT_IS_CHILD_OF,
-//				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
-//				QueryNodeType.CONCEPT_IS_KIND_OF,
-//				new Separator(),
-//				QueryNodeType.DESCRIPTION_CONTAINS,
-//				//QueryNodeType.DESCRIPTION_LUCENE_MATCH,
-//				//QueryNodeType.DESCRIPTION_REGEX_MATCH,
-//				new Separator(),
-//				QueryNodeType.REL_TYPE,
+//				,
 //				new Separator(),
 //				QueryNodeType.REFSET_CONTAINS_CONCEPT,
 //				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
 //				QueryNodeType.REFSET_CONTAINS_STRING
-//				);
-		
-		addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
+				);
 	}
-	
+
 	private void initializeQueryNodeTreeView() {
 		QueryBuilderHelper.initializeQueryNodeTreeView(queryNodeTreeView, nodeEditorGridPane, queryNodeTreeViewIsValidProperty);
 		
@@ -304,6 +241,7 @@ public class QueryBuilderViewController
 			queryNodeTreeView.setContextMenu(new ContextMenu());
 		}
 		queryNodeTreeView.getContextMenu().getItems().clear();
+		addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
 
 		final Tooltip emptyTreeTooltip = new Tooltip("Right-click on TreeView or left-click ComboBox to select root expression");
 		queryNodeTreeView.setTooltip(emptyTreeTooltip);
@@ -391,9 +329,6 @@ public class QueryBuilderViewController
 				QueryNodeType.XOR
 		};
 		for (QueryNodeType type : supportedNewParentNodes) {
-			if (unsupportedQueryNodeTypes.contains(type)) {
-				continue;
-			}
 			MenuItem menuItem = new MenuItem(type.displayName());
 			menuItem.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
@@ -421,20 +356,13 @@ public class QueryBuilderViewController
 			});
 			newParentMenu.getItems().add(menuItem);
 		}
-		
-		if (newParentMenu.getItems().size() > 0) {
-			menu.getItems().add(newParentMenu);
-		}
+		menu.getItems().add(newParentMenu);
 	}
 
 	private void addNewNodeSubMenu(ContextMenu menu, Node ownerNode, String subMenuName, QueryNodeType...nodeTypes) {
-		Menu subMenu = new Menu(subMenuName);
+		Menu groupingMenu = new Menu(subMenuName);
 		
 		for (QueryNodeType type : nodeTypes) {
-			if (unsupportedQueryNodeTypes.contains(type)) {
-				continue;
-			}
-
 			MenuItem menuItem = new MenuItem(type.displayName());
 
 			if (ownerNode instanceof TreeView) {
@@ -464,12 +392,10 @@ public class QueryBuilderViewController
 				throw new IllegalArgumentException(error);
 			}
 
-			subMenu.getItems().add(menuItem);
+			groupingMenu.getItems().add(menuItem);
 		}
 
-		if (subMenu.getItems().size() > 0) {
-			menu.getItems().add(subMenu);
-		}
+		menu.getItems().add(groupingMenu);
 	}
 
 	private void addContextMenus(ContextMenu menu, Node ownerNode) {
@@ -509,13 +435,12 @@ public class QueryBuilderViewController
 				//,QueryNodeType.DESCRIPTION_REGEX_MATCH
 		
 		addNewNodeSubMenu(menu, ownerNode, "New Relationship Assertion",
-				QueryNodeType.REL_RESTRICTION,
 				QueryNodeType.REL_TYPE);
 		
-		addNewNodeSubMenu(menu, ownerNode, "New Refset Assertion",
-				QueryNodeType.REFSET_CONTAINS_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_STRING);
+//		addNewNodeSubMenu(menu, ownerNode, "New Refset Assertion",
+//				QueryNodeType.REFSET_CONTAINS_CONCEPT,
+//				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
+//				QueryNodeType.REFSET_CONTAINS_STRING);
 	}
 	
 //	private static class Node<T> {
@@ -541,10 +466,10 @@ public class QueryBuilderViewController
 //		
 //	}
 
-	void setStage(QueryBuilderView stage) {
+	void setStage(RefsetSearchView stage) {
 		this.stage = stage;
 	}
-	QueryBuilderView getStage() {
+	RefsetSearchView getStage() {
 		return stage;
 	}
 

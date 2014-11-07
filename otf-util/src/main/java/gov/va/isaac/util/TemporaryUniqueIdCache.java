@@ -22,10 +22,9 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.querybuilder;
+package gov.va.isaac.util;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -37,7 +36,7 @@ import java.util.WeakHashMap;
  *
  */
 public class TemporaryUniqueIdCache {
-	private final static Map<Object, String> temporaryUniqueIdCache = Collections.synchronizedMap(new WeakHashMap<>());
+	private final static Map<ObjectWithTemporaryUniqueId, String> temporaryUniqueIdCache = Collections.synchronizedMap(new WeakHashMap<>());
 
 	private final static String idPrefix = "TempUniqueId";
 	/**
@@ -46,8 +45,8 @@ public class TemporaryUniqueIdCache {
 	private TemporaryUniqueIdCache() {
 	}
 	
-	public static synchronized String getTemporaryUniqueId(Object obj) {
-		for (Map.Entry<Object, String> entry: temporaryUniqueIdCache.entrySet()) {
+	public static synchronized String getTemporaryUniqueId(ObjectWithTemporaryUniqueId obj) {
+		for (Map.Entry<ObjectWithTemporaryUniqueId, String> entry: temporaryUniqueIdCache.entrySet()) {
 			if (entry.getKey() == obj) {
 				return entry.getValue();
 			}
@@ -64,20 +63,20 @@ public class TemporaryUniqueIdCache {
 		return newId;
 	}
 	
-	public static synchronized Object getObjectByUniqueId(String id) {
-		for (Map.Entry<Object, String> entry: temporaryUniqueIdCache.entrySet()) {
+	public static synchronized ObjectWithTemporaryUniqueId getObjectByUniqueId(String id) {
+		for (Map.Entry<ObjectWithTemporaryUniqueId, String> entry: temporaryUniqueIdCache.entrySet()) {
 			if (entry.getValue() == id || entry.getValue().equals(id)) {
-				return temporaryUniqueIdCache.get(entry.getKey());
+				return entry.getKey();
 			}
 		}
 		
 		return null;
 	}
-	public static synchronized void removeUniqueIdByObject(Object obj) {
+	public static synchronized void removeUniqueIdByObject(ObjectWithTemporaryUniqueId obj) {
 		temporaryUniqueIdCache.remove(obj);
 	}
 	public static synchronized void removeUniqueIdById(String id) {
-		for (Map.Entry<Object, String> entry: temporaryUniqueIdCache.entrySet()) {
+		for (Map.Entry<ObjectWithTemporaryUniqueId, String> entry: temporaryUniqueIdCache.entrySet()) {
 			if (entry.getValue() == id || entry.getValue().equals(id)) {
 				temporaryUniqueIdCache.remove(entry.getValue());
 			}
@@ -88,23 +87,23 @@ public class TemporaryUniqueIdCache {
 		return idPrefix + UUID.randomUUID().toString();
 	}
 	
-	public static boolean isValidTemporaryUniqueIdString(String str) {
-		if (str.startsWith(idPrefix)) {
-			String uuidPortion = str.replaceFirst(idPrefix, "");
-			UUID uuid = null;
-			try {
-				uuid = UUID.fromString(uuidPortion);
-			} catch (Throwable t) {
-				//
-			}
-			
-			if (uuid != null) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
+//	public static boolean isValidTemporaryUniqueIdString(String str) {
+//		if (str.startsWith(idPrefix)) {
+//			String uuidPortion = str.replaceFirst(idPrefix, "");
+//			UUID uuid = null;
+//			try {
+//				uuid = UUID.fromString(uuidPortion);
+//			} catch (Throwable t) {
+//				//
+//			}
+//			
+//			if (uuid != null) {
+//				return true;
+//			} else {
+//				return false;
+//			}
+//		} else {
+//			return false;
+//		}
+//	}
 }
