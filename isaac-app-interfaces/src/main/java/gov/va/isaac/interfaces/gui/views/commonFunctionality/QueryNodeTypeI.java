@@ -16,13 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//TODO wrong place
+
 /**
  * QueryNodeTypeI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
 /**
  * QueryNodeTypeI

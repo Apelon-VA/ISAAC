@@ -40,8 +40,7 @@ import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
 import gov.va.isaac.gui.querybuilder.node.RelRestriction;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.Xor;
-import gov.va.isaac.interfaces.QueryNodeTypeI;
-
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.QueryNodeTypeI;
 import org.ihtsdo.otf.query.implementation.Clause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

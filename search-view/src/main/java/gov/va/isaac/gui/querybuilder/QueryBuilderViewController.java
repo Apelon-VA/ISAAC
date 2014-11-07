@@ -23,16 +23,14 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
-import gov.va.isaac.interfaces.QueryNodeTypeI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.QueryNodeTypeI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -57,7 +55,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
