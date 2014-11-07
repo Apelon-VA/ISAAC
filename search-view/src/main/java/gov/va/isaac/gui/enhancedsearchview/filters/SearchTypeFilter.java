@@ -24,6 +24,8 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
+
 /**
  * SearchTypeFilter
  * 
@@ -31,5 +33,5 @@ package gov.va.isaac.gui.enhancedsearchview.filters;
  *
  */
 public interface SearchTypeFilter<T extends SearchTypeFilter<T>> extends Filter<T> {
-	SearchType getSearchType();
+	ComponentSearchType getSearchType();
 }

@@ -18,20 +18,15 @@
  */
 package gov.va.isaac.gui.querybuilder;
 
-import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.UUID;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -81,7 +76,6 @@ public class QueryBuilderView extends Stage implements QueryBuilderViewI
 	 * 
 	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
-	@Override
 	public void showView(Window parent)
 	{
 		if (! shown) {

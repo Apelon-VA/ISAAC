@@ -1,185 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
-<?import java.util.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
 
-<SplitPane fx:id="searchResultsAndTaxonomySplitPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
+<SplitPane fx:id="searchAndTaxonomySplitPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
    <items>
-      <BorderPane fx:id="pane" styleClass="defaultBackgroundColor">
+      <BorderPane fx:id="searchBorderPane" styleClass="defaultBackgroundColor">
         <stylesheets>
           <URL value="@EnhancedSearchView.css" />
         </stylesheets>
-         <center>
-            <StackPane>
-               <children>
-                  <TableView fx:id="searchResultsTable" BorderPane.alignment="CENTER" />
-               </children>
-            </StackPane>
-         </center>
-         <top>
-            <HBox>
-               <children>
-                  <VBox HBox.hgrow="ALWAYS">
-                     <children>
-                        <HBox>
-                           <children>
-                              <HBox fx:id="searchTypeControlsHbox" alignment="CENTER">
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </HBox.margin>
-                              </HBox>
-                              <ComboBox fx:id="searchTypeComboBox" nodeOrientation="LEFT_TO_RIGHT">
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </VBox.margin>
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </HBox.margin>
-                              </ComboBox>
-                           </children>
-                        </HBox>
-                        <GridPane fx:id="searchFilterGridPane" prefHeight="70.0" prefWidth="248.0" HBox.hgrow="SOMETIMES" VBox.vgrow="ALWAYS">
-                          <columnConstraints>
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                          </columnConstraints>
-                          <rowConstraints>
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                          </rowConstraints>
-                           <VBox.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </VBox.margin>
-                        </GridPane>
-                     </children>
-                  </VBox>
-                  <FlowPane BorderPane.alignment="CENTER">
-                     <children>
-                   <Button fx:id="searchButton" mnemonicParsing="false" text="Search" textAlignment="CENTER" />
-                        <HBox alignment="CENTER">
-                           <children>
-                              <Label text="Searches">
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" top="5.0" />
-                                 </HBox.margin>
-                              </Label>
-                              <ComboBox fx:id="savedSearchesComboBox" prefWidth="150.0">
-                                 <FlowPane.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </FlowPane.margin>
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </HBox.margin>
-                              </ComboBox>
-                           </children>
-                        </HBox>
-                        <Button fx:id="saveSearchButton" mnemonicParsing="false" text="Save Search Criteria">
+<left>
+                        <Button fx:id="startQueryBuilderButton" mnemonicParsing="false" text="Query Builder" BorderPane.alignment="CENTER">
                            <FlowPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </FlowPane.margin>
                         </Button>
-                     </children>
-                  </FlowPane>
-               </children>
-            </HBox>
-         </top>
-         <bottom>
-            <GridPane BorderPane.alignment="CENTER">
-              <columnConstraints>
-                <ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" percentWidth="50.0" />
-                <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="SOMETIMES" percentWidth="50.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints vgrow="SOMETIMES" />
-                  <RowConstraints vgrow="SOMETIMES" />
-              </rowConstraints>
-               <children>
-                  <Label fx:id="totalResultsDisplayedLabel" GridPane.halignment="LEFT">
-                     <GridPane.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </GridPane.margin>
-                  </Label>
-                  <Label fx:id="totalResultsSelectedLabel" wrapText="true" GridPane.columnIndex="1">
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
-                     <GridPane.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </GridPane.margin>
-                  </Label>
-                  <FlowPane alignment="BOTTOM_RIGHT" rowValignment="BOTTOM" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
-                     <children>
-                        <Button fx:id="startQueryBuilderButton" mnemonicParsing="false" text="Query Builder">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-                        <HBox fx:id="maxResultsHBox" alignment="BOTTOM_RIGHT">
-                           <children>
-                              <Label fx:id="maxResultsCustomTextFieldLabel">
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                 </HBox.margin>
-                              </Label>
-                           </children>
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </HBox>
-                        <ComboBox fx:id="aggregationTypeComboBox" promptText="Display Type">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </ComboBox>
-                        <Button fx:id="resetDefaultsButton" mnemonicParsing="false" text="Reset Defaults">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-                     </children>
-                     <GridPane.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </GridPane.margin>
-                  </FlowPane>
-                  <FlowPane alignment="BOTTOM_LEFT" nodeOrientation="LEFT_TO_RIGHT" rowValignment="BOTTOM" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="BOTTOM">
-                     <children>
-                        <Label text="Export">
-                           <FlowPane.margin>
-                              <Insets bottom="10.0" left="5.0" right="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </Label>
-                        <Button fx:id="exportSearchResultsAsTabDelimitedValuesButton" mnemonicParsing="false" text="File">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-                        <Button fx:id="exportSearchResultsToListBatchViewButton" mnemonicParsing="false" text="List">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-                        <Button fx:id="exportResultsToSearchTaxonomyPanelButton" mnemonicParsing="false" text="Taxonomy">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-                        <Button fx:id="exportSearchResultsToWorkflowButton" mnemonicParsing="false" text="Workflow">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-                     </children>
-                     <GridPane.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </GridPane.margin>
-                  </FlowPane>
-               </children>
-            </GridPane>
-         </bottom>
+</left>
       </BorderPane>
    </items>
 </SplitPane>
