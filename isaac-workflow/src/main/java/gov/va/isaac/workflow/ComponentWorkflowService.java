@@ -59,6 +59,9 @@ public class ComponentWorkflowService implements ComponentWorkflowServiceI {
 	@Inject
 	private ProcessInstanceServiceBI pis_;
 	
+	@Inject
+	private LocalTasksServiceBI lts_;
+	
 	private ComponentWorkflowService() 
 	{
 		//For HK2 to construct
@@ -108,5 +111,22 @@ public class ComponentWorkflowService implements ComponentWorkflowServiceI {
 		{
 			throw new IOException("Error creating request", e);
 		}
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI#releaseTask(java.lang.Long)
+	 */
+	@Override
+	public void releaseTask(Long taskId) throws IOException
+	{
+		try
+		{
+			lts_.releaseTask(taskId);
+		}
+		catch (DatastoreException e)
+		{
+			throw new IOException(e);
+		}
+		
 	}
 }

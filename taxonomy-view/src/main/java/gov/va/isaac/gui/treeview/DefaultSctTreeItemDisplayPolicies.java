@@ -26,8 +26,8 @@ package gov.va.isaac.gui.treeview;
 
 import javafx.scene.Node;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
-import gov.va.isaac.interfaces.treeview.SctTreeItemI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 
 /**
  * DefaultSctTreeItemDisplayPolicies

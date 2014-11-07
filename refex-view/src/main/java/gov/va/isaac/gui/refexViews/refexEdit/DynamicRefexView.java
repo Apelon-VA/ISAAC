@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.RefexViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
@@ -476,7 +476,7 @@ public class DynamicRefexView implements RefexViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
 	 */
 	@Override
 	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 

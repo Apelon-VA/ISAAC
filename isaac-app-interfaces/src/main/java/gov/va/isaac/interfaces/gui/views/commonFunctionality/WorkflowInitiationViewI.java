@@ -22,10 +22,10 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**

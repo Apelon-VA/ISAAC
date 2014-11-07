@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
-import gov.va.isaac.interfaces.gui.views.RefexCreationViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexCreationViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

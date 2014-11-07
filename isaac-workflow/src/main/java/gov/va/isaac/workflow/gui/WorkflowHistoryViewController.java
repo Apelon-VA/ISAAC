@@ -18,12 +18,10 @@
  */
 package gov.va.isaac.workflow.gui;
 
-
 import gov.va.isaac.AppContext;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.persistence.WorkflowHistoryHelper;
 
 import java.util.UUID;

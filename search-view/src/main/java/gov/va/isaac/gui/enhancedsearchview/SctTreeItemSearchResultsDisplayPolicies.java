@@ -29,8 +29,8 @@ import java.util.Set;
 
 import javafx.scene.Node;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
-import gov.va.isaac.interfaces.treeview.SctTreeItemI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.layout.HBox;

@@ -19,8 +19,8 @@
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -51,8 +51,7 @@ public class EnhancedConceptViewRunner extends Application
 	{
 		primaryStage.setTitle("New Concept Panel");
 
-		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
-//		EnhancedConceptView conView = AppContext.getService(EnhancedConceptView.class);
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.MODERN_STYLE);
 
 		primaryStage.setScene(new Scene(new Label("hello world"), 200, 100));
 		primaryStage.show();

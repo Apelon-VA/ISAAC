@@ -29,6 +29,7 @@ import org.jvnet.hk2.annotations.Contract;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
+
 @Contract
 public abstract interface IsaacViewWithMenusI extends IsaacViewI
 {

@@ -16,27 +16,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
-/**
- * WorkflowInitiationViewI
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- */
-package gov.va.isaac.interfaces.gui.views;
-
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * QueryBuilderViewI
+ * InfoModelViewI
  * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- *
- * An interface that allows the creation of a QueryBuilderView implementation,
- * which will be a JavaFX component that extends/implements {@link PopupViewI}.
- * This popup panel is intended to allow creation, modification and display
- * of a Query
+ * An interface that allows the creation of a InfoModelView implementation, which
+ * will be a JavaFX component pops up and shows a view of the InfoModel.
  * 
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Contract
-public interface QueryBuilderViewI extends PopupViewI {
+public interface InfoModelViewI extends PopupViewI
+{
+	/**
+	 * Initialize this view with a particular concept.  This should be called before showView.
+	 */
+	public void setConcept(UUID conceptID);
 }

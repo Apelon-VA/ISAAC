@@ -26,7 +26,8 @@ import gov.va.isaac.gui.listview.operations.CustomTask;
 import gov.va.isaac.gui.listview.operations.OperationResult;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
@@ -186,7 +187,7 @@ public class ListBatchViewController
 	@FXML
 	public void initialize()
 	{
-		conceptView = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		conceptView = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.MODERN_STYLE);
 		
 		operationsList.getChildren().add(new OperationNode(this));
 
@@ -325,7 +326,7 @@ public class ListBatchViewController
 //					@Override
 //					public void handle(ActionEvent event)
 //					{
-//						PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+//						PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.MODERN_STYLE);
 //						cv.setConcept(row.getItem().getNid());
 //						cv.showView(rootPane.getScene().getWindow());
 //					}
@@ -1022,16 +1023,18 @@ public class ListBatchViewController
 			}
 		} else {
 			//TODO this should be shown to the user, not silently logged
-			try {
-				ExtendedAppContext.getDataStore().forget(con);
-				newCon.setUncommitted(false);
-
-				if (!isUncommitted && oldCon.isUncommitted()) {
-					uncommittedCount--;
-				}
-			} catch (IOException e) {
-				logger_.error("Unable to cancel concept: " + con.getNid(), e);
-			}
+			//TODO Jesse - this is broken, and I have no idea why it is being called here.  I don't know why the above code is doing things with 
+			//committed / uncommitted either... all very strange.
+//			try {
+//				ExtendedAppContext.getDataStore().forget(con);
+//				newCon.setUncommitted(false);
+//
+//				if (!isUncommitted && oldCon.isUncommitted()) {
+//					uncommittedCount--;
+//				}
+//			} catch (IOException e) {
+//				logger_.error("Unable to cancel concept: " + con.getNid(), e);
+//			}
 		}
 
 		if (idx >= 0) {

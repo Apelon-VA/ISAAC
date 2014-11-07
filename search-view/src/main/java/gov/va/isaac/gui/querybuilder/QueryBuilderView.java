@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.querybuilder;
 
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.QueryBuilderViewI;
 
 import java.io.IOException;
 import java.net.URL;

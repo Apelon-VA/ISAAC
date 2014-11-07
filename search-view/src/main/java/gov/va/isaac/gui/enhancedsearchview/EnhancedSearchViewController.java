@@ -31,16 +31,16 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
-import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
-import gov.va.isaac.interfaces.gui.views.RefsetSearchViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.QueryBuilderViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefsetSearchViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
@@ -104,7 +104,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableCell;
@@ -126,7 +125,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Window;
 import javafx.util.Callback;
-
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -1125,9 +1123,9 @@ public class EnhancedSearchViewController implements TaskCompleteCallback {
 	}
 
 	private void exportSearchResultsToListBatchView() {
-		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
+		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class, SharedServiceNames.DOCKED);
 
-		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI)lv);
 
 		List<Integer> nids = new ArrayList<>();
 		for (CompositeSearchResult result : searchResultsTable.getItems()) {

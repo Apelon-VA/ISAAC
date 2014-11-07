@@ -49,4 +49,6 @@ public interface ComponentWorkflowServiceI {
 			UUID UUID,
 			String processName,
 			Map<String,String> variables) throws IOException;
+	
+	public abstract void releaseTask(Long taskId) throws IOException;
 }

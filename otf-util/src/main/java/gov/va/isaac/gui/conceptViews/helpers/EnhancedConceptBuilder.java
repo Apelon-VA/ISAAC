@@ -10,11 +10,12 @@ import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
-
+import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -287,8 +288,8 @@ public class EnhancedConceptBuilder {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
-				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class, SharedServiceNames.DOCKED);
+				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI)lv);
 				List<Integer> nidList = new ArrayList<>();
 				nidList.add(con.getNid());
 				lv.addConcepts(nidList);		
@@ -301,7 +302,7 @@ public class EnhancedConceptBuilder {
 			@Override
 			public void handle(ActionEvent event)
 			{
-				AppContext.getService(TaxonomyViewI.class).locateConcept(con.getNid(), null);			
+				AppContext.getService(TaxonomyViewI.class, SharedServiceNames.DOCKED).locateConcept(con.getNid(), null);			
 			}
 		});
 

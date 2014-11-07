@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.refsetsearchview;
 
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.RefsetSearchViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefsetSearchViewI;
 
 import java.io.IOException;
 import java.net.URL;

@@ -16,20 +16,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
-import org.jvnet.hk2.annotations.Contract;
+import java.util.UUID;
 
 /**
- * {@link WorkflowHistoryViewI}
+ * {@link WorkflowTaskWithConceptI}
  * 
- * An interface that allows the creation of an WorkflowHistoryViewI implementation,
- * which will be a JavaFX component that extends/implements {@link PopupTaskWithConceptViewI}.
- * This popup panel is intended to allow display component's Workflow History
- *
- * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a> 
+ * An interface that adds concept API for reuse by subtasks - extends {@link WorkflowTaskI}.
+ * 
+ * @author <a href="mailto:jkniaz@apelon.com">Joel Kniaz</a> 
  */
-@Contract
-public interface WorkflowHistoryViewI extends PopupTaskWithConceptViewI
+
+//Note, this one is not Contract annotated, as it should never be requested by itself - only sub interfaces.
+public abstract interface WorkflowTaskWithConceptI extends WorkflowTaskI
 {
+	/**
+	 * Get the selected concept as UUID.
+	 * @return conceptUuid the selected concept as UUID
+	 */
+	public UUID getConceptUuid();
+	
+	/**
+	 * Get the selected concept as int.
+	 * @return conceptUuid the selected concept as int
+	 */
+	public int getConceptNid();
 }

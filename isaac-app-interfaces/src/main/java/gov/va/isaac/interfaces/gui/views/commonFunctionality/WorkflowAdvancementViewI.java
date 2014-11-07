@@ -16,21 +16,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link PopupTaskWithConceptViewI}
+ * {@link WorkflowAdvancementViewI}
  * 
- * An interface that allows the creation of an PopupTaskWithConceptViewI implementation,
- * which will be a JavaFX component that extends/implements both {@link TaskWithConceptViewI}
- * and {@link PopupViewI}.  This popup panel is intended to allow display and manipulation of
+ * An interface that allows the creation of an WorkflowAdvancementViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link PopupTaskWithConceptViewI}.
+ * This popup panel is intended to allow display and manipulation of
  * a specified existing workflow task, which itself contains a displayable concept
  *
- * @author <a href="jkniaz@apelon.com">Joel Kniaz</a>
+ * @author <a href="mailto:jkniaz@gmail.com">Joel Kniaz</a> 
  */
 @Contract
-public interface PopupTaskWithConceptViewI extends TaskWithConceptViewI, PopupViewI
+public interface WorkflowAdvancementViewI extends WorkflowTaskWithConceptI, PopupViewI
 {
 }

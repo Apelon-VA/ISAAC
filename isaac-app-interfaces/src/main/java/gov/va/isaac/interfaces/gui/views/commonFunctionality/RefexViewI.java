@@ -16,8 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.gui.views.EmbeddableViewI;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.layout.Region;
 import org.jvnet.hk2.annotations.Contract;
@@ -33,7 +34,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface RefexViewI extends ViewI
+public interface RefexViewI extends EmbeddableViewI
 {
 	/**
 	 * Tell this view to display the refexes for a particular component (typically, a concept, but could also 

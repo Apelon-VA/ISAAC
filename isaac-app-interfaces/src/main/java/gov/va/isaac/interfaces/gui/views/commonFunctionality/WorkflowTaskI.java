@@ -22,34 +22,26 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
-import java.io.IOException;
-import org.jvnet.hk2.annotations.Contract;
 
 /**
  * WorkflowTaskViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
- * An interface that allows the creation of an WorkflowTaskViewI implementation,
- * which will be a JavaFX component that extends/implements {@link PopupViewI}.
- * This popup panel is intended to allow display of characteristics and details
- * of a specified existing workflow task
+ * An interface that allows that specifies task IDs for reuse in sub interfaces.
  * 
  */
-@Contract
-public interface WorkflowTaskViewI extends PopupViewI {
+// No contract annotation here - this should never be requested by itself - only sub implementations
+public abstract interface WorkflowTaskI {
 	/**
-	 * @param taskId the long workflow task id of the task,
-	 * the details of which are to be displayed
+	 * @param taskId the long workflow task id of the task, the details of which are to be displayed
 	 */
 	public void setTask(long taskId);
+	
 	/**
-	 * @return Long workflow task id of the task,
-	 * the details of which are displayed
+	 * @return workflow task id of the task, which is being displayed
 	 */
 	public Long getTask();
-	
-	public void releaseTask(long taskId) throws IOException;
 }

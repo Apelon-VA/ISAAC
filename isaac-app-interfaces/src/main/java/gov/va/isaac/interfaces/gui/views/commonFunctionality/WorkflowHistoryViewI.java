@@ -16,21 +16,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link RefexCreationViewI}
+ * {@link WorkflowHistoryViewI}
  * 
- * An interface that allows the creation of a RefexCreationView implementation, which 
- * will be a JavaFX component that extends {@link PopupViewI}.  The popup is intended
- * to be a wizard style window that will guide the user through the creation of a new refex.
+ * An interface that allows the creation of an WorkflowHistoryViewI implementation,
+ * which will be a JavaFX component that extends/implements {@link PopupTaskWithConceptViewI}.
+ * This popup panel is intended to allow display component's Workflow History
  *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ * @author <a href="mailto:jefron@apelon.com">Jesse Efron</a> 
  */
 @Contract
-public interface RefexCreationViewI extends PopupViewI
+public interface WorkflowHistoryViewI extends WorkflowTaskWithConceptI, PopupViewI
 {
-
 }

@@ -16,11 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.util.function.Supplier;
 import org.jvnet.hk2.annotations.Contract;
-import javafx.stage.Window;
 
 
 /**
@@ -34,7 +34,7 @@ import javafx.stage.Window;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface XMLViewI extends IsaacViewI
+public interface XMLViewI extends PopupViewI
 {
 	/**
 	 * Display this popup view to the user in front of the specified parent window.
@@ -44,5 +44,5 @@ public interface XMLViewI extends IsaacViewI
 	 * The content is passed in via the Supplier interface, so that if gathering the XML is expensive, 
 	 * good implementations can background thread this job.
 	 */
-	public Window showView(Window parent, String title, Supplier<String> xmlContent, int width, int height);
+	public void setParameters(String title, Supplier<String> xmlContent, int width, int height);
 }

@@ -22,8 +22,9 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -56,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  * @author <a href="jefron@apelon.com">Jesse Efron</a>
  */
-@Service @Named(value="ModernStyle")
+@Service @Named(value=SharedServiceNames.MODERN_STYLE)
 @PerLookup
 public class EnhancedConceptView implements PopupConceptViewI {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());

@@ -20,8 +20,8 @@ package gov.va.isaac.gui.conceptCreation;
 
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.ConceptCreationViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptCreationViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

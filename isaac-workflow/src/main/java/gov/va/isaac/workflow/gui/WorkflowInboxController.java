@@ -21,7 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusTaskIdProvider;
@@ -387,7 +387,7 @@ public class WorkflowInboxController
 							int cellIndex = c.getIndex();
 							LocalTask task = taskTable.getItems().get(cellIndex);
 
-							WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+							WorkflowTaskDetailsViewI view = AppContext.getService(WorkflowTaskDetailsViewI.class);
 							view.setTask(task.getId());
 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 						}

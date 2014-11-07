@@ -16,21 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.constants;
 
-import org.jvnet.hk2.annotations.Contract;
-
-/**
- * {@link RefexDefinitionViewI}
- * 
- * An interface that allows the creation of a RefexDefinitionView implementation, which 
- * will be a JavaFX component that extends {@link DockedViewI}.  This docked view is intended 
- * to let the user browse and/or filter the Refexes in the system
- *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
- */
-@Contract
-public interface RefexDefinitionViewI extends DockedViewI
-{
-
+public enum ConceptViewMode {
+	SIMPLE_VIEW, DETAIL_VIEW, HISTORICAL_VIEW;
 }
