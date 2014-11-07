@@ -37,6 +37,7 @@ import gov.va.isaac.gui.querybuilder.node.Or;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
+import gov.va.isaac.gui.querybuilder.node.RelRestriction;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.Xor;
 import gov.va.isaac.interfaces.QueryNodeTypeI;
@@ -107,6 +108,7 @@ public enum QueryNodeType implements QueryNodeTypeI {
 	REFSET_CONTAINS_STRING("Refset contains string", RefsetContainsString.class, org.ihtsdo.otf.query.implementation.clauses.RefsetContainsString.class),
 
 		// Relationship
+	REL_RESTRICTION("Relationship restriction", RelRestriction.class, org.ihtsdo.otf.query.implementation.clauses.RelRestriction.class),
 	REL_TYPE("Relationship type", RelType.class, org.ihtsdo.otf.query.implementation.clauses.RelType.class);
 
 	private final static Logger logger = LoggerFactory.getLogger(QueryNodeType.class);

@@ -233,6 +233,7 @@ public class QueryBuilderViewController
 				);
 		
 		List<QueryNodeType> relationshipAssertionNodeTypes = getSupportedQueryNodeTypes(
+				QueryNodeType.REL_RESTRICTION,
 				QueryNodeType.REL_TYPE
 				);
 		
@@ -508,6 +509,7 @@ public class QueryBuilderViewController
 				//,QueryNodeType.DESCRIPTION_REGEX_MATCH
 		
 		addNewNodeSubMenu(menu, ownerNode, "New Relationship Assertion",
+				QueryNodeType.REL_RESTRICTION,
 				QueryNodeType.REL_TYPE);
 		
 		addNewNodeSubMenu(menu, ownerNode, "New Refset Assertion",

@@ -33,6 +33,7 @@ import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.paint.Color;
@@ -85,6 +86,10 @@ public class QueryNodeTreeViewTreeCell extends DragAndDropTreeCell<NodeDraggable
 		if (getItem() != null && getItem() instanceof AssertionNode) {
 			AssertionNode assertionNode = (AssertionNode)getItem();
 			this.textProperty().bind(assertionNode.getDescriptionProperty());
+			if (this.getTooltip() == null) {
+				this.setTooltip(new Tooltip());
+			}
+			this.getTooltip().textProperty().bind(assertionNode.getDescriptionProperty());
 			assertionNode.getIsValidProperty().addListener(new ChangeListener<Boolean>() {
 				@Override
 				public void changed(

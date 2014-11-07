@@ -30,6 +30,7 @@ import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsKindOfConcept;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsString;
+import gov.va.isaac.gui.querybuilder.node.RelRestriction;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
@@ -238,6 +239,44 @@ public class ClauseFactory {
 				/* String */	refsetConceptSpecKey,
 				/* String */	queryTextKey,
 				/* String */	vcKey);
+
+			logger.debug("Constructed {} clause for {}", clause.getClass().getName(), node.getDescription());
+
+			return addInversionClauseIfNecessary(query, node, clause);
+		}
+
+		case REL_RESTRICTION: {
+			RelRestriction node = (RelRestriction)treeItem.getValue();
+			
+			final ConceptVersionBI relRestrictionConcept = WBUtility.getConceptVersion(node.getRelRestrictionConceptNid());
+			final String relRestrictionConceptSpecKey = "RelRestrictionConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(relRestrictionConceptSpecKey, new ConceptSpec(WBUtility.getDescription(relRestrictionConcept), relRestrictionConcept.getPrimordialUuid()));
+			
+			final ConceptVersionBI relTypeConcept = WBUtility.getConceptVersion(node.getRelTypeConceptNid());
+			final String relTypeConceptSpecKey = "RelTypeConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(relTypeConceptSpecKey, new ConceptSpec(WBUtility.getDescription(relTypeConcept), relTypeConcept.getPrimordialUuid()));
+
+			final ConceptVersionBI sourceConcept = WBUtility.getConceptVersion(node.getSourceConceptNid());
+			final String sourceConceptSpecKey = "SourceConceptUUIDKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(sourceConceptSpecKey, new ConceptSpec(WBUtility.getDescription(sourceConcept), sourceConcept.getPrimordialUuid()));
+
+			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
+			
+			final String useDestinationSubsumptionKey = "UseDestinationSubsumptionBooleanKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(useDestinationSubsumptionKey, node.getUseDestinationSubsumption());
+			
+			final String useRelTypeSubsumptionKey = "UseRelTypeSubsumptionBooleanKeyFor" + node.getTemporaryUniqueId();
+			query.getLetDeclarations().put(useRelTypeSubsumptionKey, node.getUseRelTypeSubsumption());
+
+			Clause clause = new org.ihtsdo.otf.query.implementation.clauses.RelRestriction(
+				/* Query */		query,
+				/* String */	relRestrictionConceptSpecKey,
+				/* String */	relTypeConceptSpecKey,
+				/* String */	sourceConceptSpecKey,
+				/* String */	vcKey,
+				/* String */	useDestinationSubsumptionKey,
+				/* String */	useRelTypeSubsumptionKey);
 
 			logger.debug("Constructed {} clause for {}", clause.getClass().getName(), node.getDescription());
 
