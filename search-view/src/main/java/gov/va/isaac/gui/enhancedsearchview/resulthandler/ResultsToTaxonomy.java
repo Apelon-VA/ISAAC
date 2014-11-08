@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.enhancedsearchview.results;
+package gov.va.isaac.gui.enhancedsearchview.resulthandler;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SctTreeItemSearchResultsDisplayPolicies;

@@ -26,13 +26,14 @@ package gov.va.isaac.gui.querybuilder.node;
 
 import javafx.beans.property.BooleanProperty;
 
+
 /**
  * Invertable
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public interface Invertable {
+public interface InvertableNode {
 
 	public abstract BooleanProperty getInvertProperty();
 

@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder;
 
-import gov.va.isaac.gui.querybuilder.node.Invertable;
+import gov.va.isaac.gui.querybuilder.node.InvertableNode;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
@@ -314,7 +314,7 @@ public class ClauseFactory {
 		}
 	}
 
-	private static Clause addInversionClauseIfNecessary(Query query, Invertable node, Clause clause) {
+	private static Clause addInversionClauseIfNecessary(Query query, InvertableNode node, Clause clause) {
 		if (! node.getInvert()) {
 			return clause;
 		} else {

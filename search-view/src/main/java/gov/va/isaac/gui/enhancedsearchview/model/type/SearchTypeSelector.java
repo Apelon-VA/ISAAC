@@ -1,8 +1,11 @@
-package gov.va.isaac.gui.enhancedsearchview.type;
+package gov.va.isaac.gui.enhancedsearchview.model.type;
 
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
-import gov.va.isaac.gui.enhancedsearchview.model.ComponentContentSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeView;
+import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,13 +13,14 @@ import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
 public class SearchTypeSelector {
 	private static ComboBox<SearchType> searchTypeSelector = new ComboBox<SearchType>();
 	private static Map<SearchType, SearchTypeSpecificView> typeSpecificViewMap = new HashMap<SearchType, SearchTypeSpecificView>();
 	private static Map<SearchType, SearchTypeModel> typeSpecificModelMap = new HashMap<SearchType, SearchTypeModel>();
 
-	private static Pane resultsPane;
+	private static StackPane criteriaPane = new StackPane();
 	private static SearchType currentType;
 	
 	static {
@@ -39,17 +43,20 @@ public class SearchTypeSelector {
 		
 		currentType = selection;
 		searchTypeSelector.getSelectionModel().select(selection);
-		resultsPane = typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection));
+		setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 	}
 
 	public void setSearchTypePane(SearchType type) {
 		currentType = type;
 		searchTypeSelector.getSelectionModel().select(type);
-		resultsPane = typeSpecificViewMap.get(type).setContents(typeSpecificModelMap.get(type));
 	}
 	
-	public void setCriteriaPane(Pane pane) {
-		resultsPane = pane;
+	public static void setCriteriaPane(Pane pane) {
+		if (!criteriaPane.getChildren().isEmpty()) {
+			criteriaPane.getChildren().remove(0);
+		}
+
+		criteriaPane.getChildren().add(0, pane);
 	}
 
 	public SearchType getCurrentType() {
@@ -65,6 +72,6 @@ public class SearchTypeSelector {
 	}
 	
 	public Pane getResultsPane() {
-		return resultsPane;
+		return criteriaPane;
 	}
 }

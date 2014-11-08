@@ -26,6 +26,7 @@ package gov.va.isaac.gui.enhancedsearchview.filters;
 
 import javafx.beans.property.BooleanProperty;
 
+
 /**
  * Invertable
  * 

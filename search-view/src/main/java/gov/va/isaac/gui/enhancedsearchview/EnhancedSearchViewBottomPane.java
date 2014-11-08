@@ -3,9 +3,9 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.model.EnhancedSavedSearch;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
-import gov.va.isaac.gui.enhancedsearchview.results.ResultsToReport;
-import gov.va.isaac.gui.enhancedsearchview.results.ResultsToTaxonomy;
-import gov.va.isaac.gui.enhancedsearchview.results.ResultsToWorkflow;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToReport;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToWorkflow;
 import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 

@@ -2,8 +2,8 @@ package gov.va.isaac.gui.enhancedsearchview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
-import gov.va.isaac.gui.enhancedsearchview.model.ComponentContentSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
 
 import org.apache.mahout.math.Arrays;
 import org.slf4j.Logger;

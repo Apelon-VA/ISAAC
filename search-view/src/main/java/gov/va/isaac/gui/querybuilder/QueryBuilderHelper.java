@@ -33,7 +33,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
-import gov.va.isaac.gui.querybuilder.node.Invertable;
+import gov.va.isaac.gui.querybuilder.node.InvertableNode;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
@@ -131,7 +131,7 @@ public class QueryBuilderHelper {
 		});
 	}
 	
-	private static CheckBox createInversionCheckBox(Invertable node) {
+	private static CheckBox createInversionCheckBox(InvertableNode node) {
 		CheckBox inversionCheckBox = new CheckBox();
 		inversionCheckBox.setText("Invert (NOT)");
 		inversionCheckBox.setSelected(node.getInvert());

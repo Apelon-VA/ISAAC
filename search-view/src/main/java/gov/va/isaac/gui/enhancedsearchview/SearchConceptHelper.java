@@ -36,10 +36,10 @@ import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
-import gov.va.isaac.gui.enhancedsearchview.model.ComponentContentSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
-import gov.va.isaac.gui.enhancedsearchview.type.ComponentContentSearchTypeView;
+import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeView;
 import gov.va.isaac.util.WBUtility;
 
 import java.beans.PropertyVetoException;

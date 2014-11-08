@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.enhancedsearchview.type;
+package gov.va.isaac.gui.enhancedsearchview.model.type.component;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
@@ -11,9 +11,9 @@ import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
-import gov.va.isaac.gui.enhancedsearchview.model.ComponentContentSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSpecificView;
 import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentContentSearchTypeView.class);
 
-	private static VBox componentContentPane = new VBox(5);
+	private static VBox componentContentParentPane = new VBox(5);
 	SearchModel searchModel = new SearchModel();
 	
 	public ComponentContentSearchTypeView() {
@@ -60,8 +60,8 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 		controlAndTypePart.getChildren().add(componentSearchTypeControlsHbox);
 		controlAndTypePart.getChildren().add(componentSearchTypeComboBox);
 		
-		componentContentPane.getChildren().add(controlAndTypePart);
-		componentContentPane.getChildren().add(searchFilterGridPane);
+		componentContentParentPane.getChildren().add(controlAndTypePart);
+		componentContentParentPane.getChildren().add(searchFilterGridPane);
 	}
 
 	@Override
@@ -191,7 +191,7 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.values()));
 		componentSearchTypeComboBox.getSelectionModel().select(ComponentSearchType.LUCENE);
 
-		return componentContentPane;
+		return componentContentParentPane;
 	}
 
 	private void addSearchFilter(final NonSearchTypeFilter<?> filter, ComponentContentSearchTypeModel model) {

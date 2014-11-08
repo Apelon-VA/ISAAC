@@ -5,7 +5,7 @@ import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.Tasks;
-import gov.va.isaac.gui.enhancedsearchview.results.ResultsToTaxonomy;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.util.TaskCompleteCallback;
@@ -51,10 +51,9 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 	protected BooleanProperty searchRunning = new SimpleBooleanProperty(false);
 
 
-	abstract public boolean isValid();
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
-	abstract protected boolean valideSearchTypeSpecificModel(String errorDialogTitle);
+	abstract protected boolean isValidTypeModel(String errorDialogTitle);
 	abstract public void executeSearch(ResultsType resultsType, String modelMaxResults);
 
 	
@@ -66,7 +65,7 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchRunnableProperty.set(isValid());
+				isSearchRunnableProperty.set(isValidTypeModel(null));
 			}
 		});
 
@@ -147,7 +146,7 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 
 			return false;
 		} else {
-			return valideSearchTypeSpecificModel(errorDialogTitle);
+			return isValidTypeModel(errorDialogTitle);
 		}
 	}
 	

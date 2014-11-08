@@ -38,7 +38,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public abstract class AssertionNode extends DraggableNode implements Invertable {
+public abstract class AssertionNode extends DraggableNode implements InvertableNode {
 	protected final BooleanProperty invertProperty = new SimpleBooleanProperty(false);
 	protected final BooleanProperty isValidProperty = new SimpleBooleanProperty(false);
 

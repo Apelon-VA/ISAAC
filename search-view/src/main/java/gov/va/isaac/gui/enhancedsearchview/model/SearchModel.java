@@ -29,7 +29,7 @@ import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
-import gov.va.isaac.gui.enhancedsearchview.type.SearchTypeSelector;
+import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSelector;
 import gov.va.isaac.search.SearchHandle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -178,6 +178,6 @@ public class SearchModel {
 	}
 
 	public void setInitialCriteriaPane() {
-		searchTypeSelector.setSearchTypePane(SearchType.COMPONENT_CONTENT);
+		searchTypeSelector.setSearchTypePane(SearchType.REFSET_SPEC);
 	}
 }

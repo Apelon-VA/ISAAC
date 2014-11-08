@@ -2,7 +2,6 @@
 
 <?import java.lang.*?>
 <?import java.net.*?>
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -12,13 +11,6 @@
         <stylesheets>
           <URL value="@EnhancedSearchView.css" />
         </stylesheets>
-<left>
-                        <Button fx:id="startQueryBuilderButton" mnemonicParsing="false" text="Query Builder" BorderPane.alignment="CENTER">
-                           <FlowPane.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </FlowPane.margin>
-                        </Button>
-</left>
       </BorderPane>
    </items>
 </SplitPane>

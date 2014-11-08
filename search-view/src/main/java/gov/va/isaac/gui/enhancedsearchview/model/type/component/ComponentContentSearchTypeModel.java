@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.enhancedsearchview.model;
+package gov.va.isaac.gui.enhancedsearchview.model.type.component;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
@@ -7,6 +7,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandler;
@@ -39,7 +40,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 			public void changed(
 					ObservableValue<? extends SearchTypeFilter> observable,
 					SearchTypeFilter oldValue, SearchTypeFilter newValue) {
-				isSearchRunnableProperty.set(isValid());
+				isSearchRunnableProperty.set(isValidTypeModel(null));
 			}
 		});
 
@@ -47,7 +48,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 			@Override
 			public void onChanged(
 					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
-				isSearchRunnableProperty.set(isValid());
+				isSearchRunnableProperty.set(isValidTypeModel(null));
 			}
 		});
 	}
@@ -86,21 +87,6 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 		return Collections.unmodifiableCollection(invalidFilters);
 	}
 
-	public  boolean isValid() {
-		if (getInvalidFilters().size() > 0) {
-			return false;
-		}
-
-		if (viewCoordinateProperty.get() == null) {
-			return false;
-		}
-		
-		if (searchTypeFilterProperty.get() == null || ! searchTypeFilterProperty.get().isValid()) {
-			return false;
-		}
-		
-		return true;
-	}
 	@Override
 	public void typeSpecificCopy(SearchTypeModel other) {
 		filters.clear();
@@ -115,7 +101,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 	}
 	
 	@Override
-	protected boolean valideSearchTypeSpecificModel(String errorDialogTitle) {
+	protected boolean isValidTypeModel(String errorDialogTitle) {
 		if (getSearchType() == null) {
 			String details = "No SearchTypeFilter specified: " + this;
 			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
@@ -135,7 +121,17 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 
 			return false;
 		}
+		if (searchTypeFilterProperty.get() == null || ! searchTypeFilterProperty.get().isValid()) {
+			String details = "Found Null or invalid searchTypeFilterProperty: " + getSearchType().getSearchType();
+			LOG.warn("Found Null or invalid searchTypeFilterProperty in search model (name=" + getName() + "). " + details);
 
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		}
+		
 		return true;
 	}
 	
