@@ -19,8 +19,8 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
-import gov.va.isaac.interfaces.treeview.SctTreeItemI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.WBUtility;
 

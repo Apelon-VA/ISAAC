@@ -16,27 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView;
 
-import gov.va.isaac.interfaces.gui.views.ViewI;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
-
+import gov.va.isaac.interfaces.gui.views.EmbeddableViewI;
 import java.util.UUID;
-
 import javafx.beans.property.BooleanProperty;
-
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * {@link TaxonomyViewI}
  * 
  * An interface that specifies the methods that a TaxonomyViewer should implement
- * to be useful for other parts of the appliation.
+ * to be useful for other parts of the application.
  * 
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 @Contract
-public interface TaxonomyViewI extends ViewI
+public interface TaxonomyViewI extends EmbeddableViewI
 {
 	/**
 	 * Locate and highlight the requested concept in the taxonomy view

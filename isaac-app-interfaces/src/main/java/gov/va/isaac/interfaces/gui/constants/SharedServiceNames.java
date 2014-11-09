@@ -16,18 +16,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
-
-import org.jvnet.hk2.annotations.Contract;
+package gov.va.isaac.interfaces.gui.constants;
 
 /**
- * {@link PopupConceptViewI}
+ * {@link SharedServiceNames}
  * 
- * An interface that requests a pop up window that displays the details of a concept.
+ * These values are used as the @Named annotation on some service implementations - they are useful while distinguishing
+ * when there are multiple implementations of a particular service - for example - a docked view, and a stand-along popup 
+ * view.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Contract
-public interface PopupConceptViewI extends PopupViewI, ConceptViewI
+public class SharedServiceNames
 {
+	public static final String DOCKED = "Docked";
+	public static final String MODERN_STYLE = "ModernStyle";
+	public static final String LEGACY_STYLE = "LegacyStyle";
 }

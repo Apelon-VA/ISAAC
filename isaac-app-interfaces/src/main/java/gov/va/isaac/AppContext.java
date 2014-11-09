@@ -22,12 +22,14 @@ import gov.va.isaac.interfaces.RuntimeGlobalsI;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.oia.HK2Utilities.HK2RuntimeInitializer;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +86,7 @@ public class AppContext
 	 */
 	public static IsaacAppConfigI getAppConfiguration()
 	{
-		return serviceLocator_.getService(IsaacAppConfigI.class);
+		return getService(IsaacAppConfigI.class);
 	}
 
 	public static ServiceLocator getServiceLocator()
@@ -92,9 +94,21 @@ public class AppContext
 		return serviceLocator_;
 	}
 
-	public static <T> T getService(Class<T> contractOrService, Annotation... qualifiers)
+	public static <T> T getService(Class<T> contractOrService)
 	{
-		return serviceLocator_.getService(contractOrService, qualifiers);
+		List<ServiceHandle<T>> handles = serviceLocator_.getAllServiceHandles(contractOrService);
+		
+		for (ServiceHandle<T> handle : handles)
+		{
+			if (handle.getActiveDescriptor().getName() == null || handle.getActiveDescriptor().getName().length() == 0)
+			{
+				//prefer this un-named one
+				return handle.getService();
+			}
+		}
+		
+		//couldn't find an un-named one - just return the default from HK2 (which still may be null)
+		return serviceLocator_.getService(contractOrService);
 	}
 
 	/**
@@ -105,13 +119,13 @@ public class AppContext
 	 * @param qualifiers The set of qualifiers that must match this service definition
 	 * @return
 	 */
-	public static <T> T getService(Class<T> contractOrService, String name, Annotation... qualifiers)
+	public static <T> T getService(Class<T> contractOrService, String name)
 	{
-		T service = serviceLocator_.getService(contractOrService, name, qualifiers);
+		T service = serviceLocator_.getService(contractOrService, name);
 		if (service == null && name != null)
 		{
 			log_.info("Requested service '" + name + "' was not available, returning arbitrary service " + "which matches the contract (if any)");
-			return serviceLocator_.getService(contractOrService, qualifiers);
+			return serviceLocator_.getService(contractOrService);
 		}
 		return service;
 	}
@@ -133,6 +147,6 @@ public class AppContext
 
 	public static PopupConceptViewI createConceptViewWindow()
 	{
-		return getService(PopupConceptViewI.class, "LegacyStyle");
+		return getService(PopupConceptViewI.class, SharedServiceNames.LEGACY_STYLE);
 	}
 }

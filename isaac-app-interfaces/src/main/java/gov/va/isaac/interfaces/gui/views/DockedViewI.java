@@ -32,7 +32,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface DockedViewI extends ViewI, IsaacViewWithMenusI
+public interface DockedViewI extends EmbeddableViewI, IsaacViewWithMenusI
 {
 	/**
 	 * Get a reference to the MenuItemI spec that should be used to create the menu that will show this view.

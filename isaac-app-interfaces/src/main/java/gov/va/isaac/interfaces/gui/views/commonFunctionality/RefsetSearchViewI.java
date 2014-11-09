@@ -22,34 +22,22 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
-import java.io.IOException;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * WorkflowTaskViewI
+ * RefsetSearchViewI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
- * An interface that allows the creation of an WorkflowTaskViewI implementation,
+ * An interface that allows the creation of a RefsetSearchViewI implementation,
  * which will be a JavaFX component that extends/implements {@link PopupViewI}.
- * This popup panel is intended to allow display of characteristics and details
- * of a specified existing workflow task
+ * This popup panel is intended to allow creation, modification and display
+ * of a Query for refsets
  * 
  */
 @Contract
-public interface WorkflowTaskViewI extends PopupViewI {
-	/**
-	 * @param taskId the long workflow task id of the task,
-	 * the details of which are to be displayed
-	 */
-	public void setTask(long taskId);
-	/**
-	 * @return Long workflow task id of the task,
-	 * the details of which are displayed
-	 */
-	public Long getTask();
-	
-	public void releaseTask(long taskId) throws IOException;
+public interface RefsetSearchViewI extends PopupViewI {
 }

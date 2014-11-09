@@ -20,8 +20,8 @@ package gov.va.isaac.gui.infoModelView;
 
 import gov.va.isaac.gui.refsetview.RefsetView;
 import gov.va.isaac.gui.util.DragResizer;
-import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -93,7 +93,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.InfoModelViewI#setConcept(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI#setConcept(java.util.UUID)
 	 */
 	@Override
 	public void setConcept(UUID conceptID)

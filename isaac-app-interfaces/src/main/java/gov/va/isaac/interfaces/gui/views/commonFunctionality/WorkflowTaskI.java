@@ -16,24 +16,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
-
-import java.util.UUID;
-import org.jvnet.hk2.annotations.Contract;
 
 /**
- * InfoModelViewI
+ * WorkflowInitiationViewI
  * 
- * An interface that allows the creation of a InfoModelView implementation, which
- * will be a JavaFX component pops up and shows a view of the InfoModel.
- * 
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
+ * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-@Contract
-public interface InfoModelViewI extends PopupViewI
-{
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
+
+
+/**
+ * WorkflowTaskViewI
+ * 
+ * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
+ *
+ * An interface that allows that specifies task IDs for reuse in sub interfaces.
+ * 
+ */
+// No contract annotation here - this should never be requested by itself - only sub implementations
+public abstract interface WorkflowTaskI {
 	/**
-	 * Initialize this view with a particular concept.  This should be called before showView.
+	 * @param taskId the long workflow task id of the task, the details of which are to be displayed
 	 */
-	public void setConcept(UUID conceptID);
+	public void setTask(long taskId);
+	
+	/**
+	 * @return workflow task id of the task, which is being displayed
+	 */
+	public Long getTask();
 }

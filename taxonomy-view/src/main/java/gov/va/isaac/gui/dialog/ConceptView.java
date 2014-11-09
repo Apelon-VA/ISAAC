@@ -22,8 +22,9 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
@@ -55,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  * @author ocarlsen
  */
-@Service @Named(value="LegacyStyle")
+@Service @Named(value=SharedServiceNames.LEGACY_STYLE)
 @PerLookup
 public class ConceptView implements PopupConceptViewI {
 
@@ -80,7 +81,7 @@ public class ConceptView implements PopupConceptViewI {
 	}
 	
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#setConcept(java.util.UUID)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptViewI#setConcept(java.util.UUID)
 	 */
 	@Override
 	public void setConcept(UUID conceptUUID)
@@ -136,7 +137,7 @@ public class ConceptView implements PopupConceptViewI {
 	//TODO is also seems to fall into infinite loops at times...
 	
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.ConceptViewI#setConcept(int)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptViewI#setConcept(int)
 	 */
 	@Override
 	public void setConcept(int conceptNid)

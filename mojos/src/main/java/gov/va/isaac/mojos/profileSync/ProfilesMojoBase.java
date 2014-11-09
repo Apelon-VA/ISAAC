@@ -62,6 +62,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	// Allow setting the password via a system property
 	public static final String PROFILE_SYNC_PASSWORD_PROPERTY = "profileSyncPassword";
 	
+	private boolean disableHintGiven = false;
 	
 	/**
 	 * The location of the (already existing) profiles folder which should be shared via SCM.
@@ -195,6 +196,12 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 				//still no username, prompt if allowed
 				if (StringUtils.isBlank(username) && !Boolean.getBoolean(PROFILE_SYNC_NO_PROMPTS))
 				{
+					if (!disableHintGiven)
+					{
+						System.out.println("To disable remote sync during build, add '-D" + PROFILE_SYNC_DISABLE + "=true' to your maven command");
+						disableHintGiven = true;
+					}
+					
 					System.out.println("Enter the " + config_.getChangeSetUrlType().name() + " username for the Profiles/Changset remote store (" +
 							config_.getChangeSetUrl() + "):");
 					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -226,6 +233,11 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 				//still no password, prompt if allowed
 				if (StringUtils.isBlank(password) && !Boolean.getBoolean(PROFILE_SYNC_NO_PROMPTS))
 				{
+					if (!disableHintGiven)
+					{
+						System.out.println("To disable remote sync during build, add '-D" + PROFILE_SYNC_DISABLE + "=true' to your maven command");
+						disableHintGiven = true;
+					}
 					System.out.println("Enter the " + config_.getChangeSetUrlType().name() + " password for the Profiles/Changset remote store: (" +
 							config_.getChangeSetUrl() + "):");
 					

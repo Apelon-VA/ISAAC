@@ -18,17 +18,23 @@
  */
 
 /**
- * QueryNodeTypeI
+ * SctTreeItemI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.interfaces;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView;
 
 /**
- * QueryNodeTypeI
+ * SctTreeItemI
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- *
  */
-public interface QueryNodeTypeI {
+public interface SctTreeItemI {
+	public boolean isRoot();
+	public boolean isDefined();
+	public boolean isMultiParent();
+	public boolean isSecondaryParentOpened();
+	public Integer getConceptNid();
+	
+	public int getMultiParentDepth();
 }

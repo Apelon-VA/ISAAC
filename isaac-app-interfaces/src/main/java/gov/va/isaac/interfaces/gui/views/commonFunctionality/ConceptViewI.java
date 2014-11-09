@@ -16,8 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
+import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.views.EmbeddableViewI;
 import java.util.UUID;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -29,8 +31,8 @@ import org.jvnet.hk2.annotations.Contract;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ConceptViewI extends ViewI
-{   
+public interface ConceptViewI extends EmbeddableViewI
+{
 	/**
 	 * Update the view to show the selected concept.
 	 * @param conceptUuid the selected concept as UUID

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
 import org.jvnet.hk2.annotations.Contract;
 
@@ -27,20 +27,21 @@ import org.jvnet.hk2.annotations.Contract;
  */
 
 
+import gov.va.isaac.interfaces.gui.views.EmbeddableViewI;
 import java.util.List;
 
 /**
  * {@link ListBatchViewI}
  * 
  * An interface that allows the creation of an ListBatchViewI implementation, which 
- * will be a JavaFX component that extends {@link DockedViewI}.  The docked ISAAC panel
+ * will be a JavaFX component that extends {@link EmbeddableViewI}.  The resulting ISAAC panel
  * is intended to allow importation into, display and manipulation of concepts to and
  * from other ISAAC panels
  *
  * @author <a href="jkniaz@apelon.com">Joel Kniaz</a>
  */
 @Contract
-public interface ListBatchViewI extends DockedViewI {
+public interface ListBatchViewI extends EmbeddableViewI {
 	/**
 	 * Update the view to show the specified concepts
 	 * @param List<Integer> the list of specified concepts as int NID

@@ -16,24 +16,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.views;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
-import javafx.scene.layout.Region;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * ViewI
- *
- * Extends the basic IsaacViewI (which only provides menu hooks) to add a Region view area, 
- * which could be embedded into another view. 
+ * {@link RefexCreationViewI}
+ * 
+ * An interface that allows the creation of a RefexCreationView implementation, which 
+ * will be a JavaFX component that extends {@link PopupViewI}.  The popup is intended
+ * to be a wizard style window that will guide the user through the creation of a new refex.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public interface ViewI extends IsaacViewI
+public interface RefexCreationViewI extends PopupViewI
 {
-	/**
-	 * Get a reference to the JavaFX Region component that is created by this view.
-	 */
-	public Region getView();
+
 }

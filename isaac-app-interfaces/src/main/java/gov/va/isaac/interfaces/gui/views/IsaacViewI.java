@@ -20,15 +20,17 @@ package gov.va.isaac.interfaces.gui.views;
 
 import org.jvnet.hk2.annotations.Contract;
 
+
 /**
  * IsaacViewI
  * 
- * The lowest level of a View - only provides menu options.  No view display hooks.
+ * The lowest level of a Viewable Isaac component - doesn't actually provide any specific 
+ * hooks.  All components should implement a sub-interface of this.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
 public abstract interface IsaacViewI
 {
-	
+
 }

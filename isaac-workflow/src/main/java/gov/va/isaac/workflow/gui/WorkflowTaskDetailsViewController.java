@@ -19,10 +19,11 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowHistoryViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
@@ -48,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Controller class for {@link WorkflowTaskViewI}
+ * Controller class for {@link WorkflowTaskDetailsViewI}
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -242,7 +243,7 @@ public class WorkflowTaskDetailsViewController {
 	}
 	
 	private void openConceptPanel() {
-		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.MODERN_STYLE);
 		cv.setConcept(conceptId);
 		cv.showView(null);
 	}
