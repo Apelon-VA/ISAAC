@@ -86,7 +86,7 @@ public class AppContext
 	 */
 	public static IsaacAppConfigI getAppConfiguration()
 	{
-		return serviceLocator_.getService(IsaacAppConfigI.class);
+		return getService(IsaacAppConfigI.class);
 	}
 
 	public static ServiceLocator getServiceLocator()
