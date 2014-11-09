@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.enhancedsearchview.model.type;
 
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.control.ComboBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
@@ -22,6 +24,9 @@ public class SearchTypeSelector {
 
 	private static StackPane criteriaPane = new StackPane();
 	private static SearchType currentType;
+
+	private static ComboBox<ResultsType> resultsTypeField;
+	private static HBox maxResultsField;
 	
 	static {
 		typeSpecificViewMap.put(SearchType.COMPONENT_CONTENT,  new ComponentContentSearchTypeView());
@@ -34,6 +39,7 @@ public class SearchTypeSelector {
 
 		searchTypeSelector.setOnAction((e) -> changeSearchType());
 	}
+	
 	public ComboBox<SearchType> getSearchTypeComboBox() {
 		return searchTypeSelector;
 	}
@@ -43,6 +49,18 @@ public class SearchTypeSelector {
 		
 		currentType = selection;
 		searchTypeSelector.getSelectionModel().select(selection);
+		
+		if (maxResultsField != null && resultsTypeField != null) {
+			if (selection == SearchType.REFSET_SPEC){
+				maxResultsField.setVisible(false);
+				resultsTypeField.setVisible(false);
+				resultsTypeField.getSelectionModel().select(ResultsType.CONCEPT);
+			} else {
+				maxResultsField.setVisible(true);
+				resultsTypeField.setVisible(true);
+			}
+		}
+		
 		setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 	}
 
@@ -74,4 +92,12 @@ public class SearchTypeSelector {
 	public Pane getResultsPane() {
 		return criteriaPane;
 	}
+	
+	public void setResultTypeField(ComboBox<ResultsType> comboBox) {
+		this.resultsTypeField = comboBox;
+	}
+
+	public void setMaxResultsField(HBox hBox) {
+		this.maxResultsField = hBox;
+	}	
 }

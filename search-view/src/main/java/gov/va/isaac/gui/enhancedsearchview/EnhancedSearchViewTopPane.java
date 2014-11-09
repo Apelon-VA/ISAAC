@@ -54,7 +54,7 @@ public class EnhancedSearchViewTopPane {
 		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), searchButton);
 		topPanelVBox.getChildren().add(staticTopPanePortionGridPane);
 
-		searchModel.setInitialCriteriaPane();
+		searchModel.initializeCriteriaPane(maxResultsHBox, searchModel.getResultsTypeComboBox());
 		topPanelVBox.getChildren().add(searchModel.getSearchTypeSelector().getResultsPane());
 	}
 

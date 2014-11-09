@@ -9,8 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.BorderPane;
@@ -23,8 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
-	private Button buildQueryButton;
-	private Button executeQueryButton;
 	private BorderPane refsetSpecParentPane = new BorderPane();
 
 	private Font boldFont = new Font("System Bold", 13.0);
@@ -40,7 +39,13 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 		refsetSpecParentPane.setTop(topPane);
 		refsetSpecParentPane.setCenter(refsetSpecModel .getQueryNodeTreeView());
 		refsetSpecParentPane.setRight(refsetSpecModel.getNodeEditorGridPane());
-
+		
+		refsetSpecParentPane.setPrefHeight(200);
+		refsetSpecParentPane.setMinHeight(200);
+		refsetSpecParentPane.setMaxHeight(200);
+		refsetSpecParentPane.setMargin(refsetSpecModel.getNodeEditorGridPane(), new Insets(10));
+		refsetSpecParentPane.setAlignment(refsetSpecModel.getNodeEditorGridPane(), Pos.CENTER_LEFT);
+		
 		loadMenus(refsetSpecModel);
 		
 		return refsetSpecParentPane;
@@ -51,11 +56,15 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 		rootExp.setFont(boldFont);
 		
 		GridPane topLevelGridPane = new GridPane();
+
+		topLevelGridPane.setHgap(15);
+		topLevelGridPane.setPadding(new Insets(15));
+
 		topLevelGridPane.setConstraints(rootExp,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		topLevelGridPane.setConstraints(refsetSpecModel.getRootNodeTypeComboBox(),  1,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		topLevelGridPane.addRow(0, rootExp, refsetSpecModel.getRootNodeTypeComboBox());
 
-		return null;
+		return topLevelGridPane;
 	}
 
 	/*
@@ -102,13 +111,6 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 				QueryNodeType.REL_TYPE
 				);
 		
-		List<QueryNodeType> refsetAssertionNodeTypes = getSupportedQueryNodeTypes(
-				refsetSpecModel.getUnsupportedQueryNodeTypes(),
-				QueryNodeType.REFSET_CONTAINS_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_STRING
-				);
-		
 		// Add to dropdown
 		boolean separatorNeeded = false;
 		if (groupingNodeTypes.size() > 0) {
@@ -133,33 +135,6 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 			}
 			refsetSpecModel.getRootNodeTypeComboBox().getItems().addAll(relationshipAssertionNodeTypes);
 		}
-		if (refsetAssertionNodeTypes.size() > 0) {
-			if (separatorNeeded) {
-				refsetSpecModel.getRootNodeTypeComboBox().getItems().add(new Separator());
-			}
-			refsetSpecModel.getRootNodeTypeComboBox().getItems().addAll(refsetAssertionNodeTypes);
-		}
-//		refsetSpecModel.getRootNodeTypeComboBox().getItems().addAll(
-//				QueryNodeType.AND,
-//				QueryNodeType.OR,
-//				QueryNodeType.XOR,
-//				new Separator(),
-//				QueryNodeType.CONCEPT_IS,
-//				QueryNodeType.CONCEPT_IS_CHILD_OF,
-//				QueryNodeType.CONCEPT_IS_DESCENDANT_OF,
-//				QueryNodeType.CONCEPT_IS_KIND_OF,
-//				new Separator(),
-//				QueryNodeType.DESCRIPTION_CONTAINS,
-//				//QueryNodeType.DESCRIPTION_LUCENE_MATCH,
-//				//QueryNodeType.DESCRIPTION_REGEX_MATCH,
-//				new Separator(),
-//				QueryNodeType.REL_TYPE,
-//				new Separator(),
-//				QueryNodeType.REFSET_CONTAINS_CONCEPT,
-//				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
-//				QueryNodeType.REFSET_CONTAINS_STRING
-//				);
-		
 		refsetSpecModel.addContextMenus(refsetSpecModel.getQueryNodeTreeView().getContextMenu(), refsetSpecModel.getQueryNodeTreeView());
 	}
 

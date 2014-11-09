@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
-import gov.va.isaac.interfaces.gui.views.QueryBuilderViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 
 import java.io.IOException;
@@ -30,14 +29,12 @@ import java.net.URL;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +79,7 @@ public class EnhancedSearchViewController {
 		}
 
 		topPane = new EnhancedSearchViewTopPane();
-		bottomPane = new EnhancedSearchViewBottomPane();
+		bottomPane = new EnhancedSearchViewBottomPane(AppContext.getMainApplicationWindow().getPrimaryStage());
 		
 		searchModel.getSearchRunning().addListener(new ChangeListener<Boolean>() {
 			@Override

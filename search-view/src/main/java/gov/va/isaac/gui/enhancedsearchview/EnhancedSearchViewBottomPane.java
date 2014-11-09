@@ -3,6 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.model.EnhancedSavedSearch;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToRefset;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToReport;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToWorkflow;
@@ -30,6 +31,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,7 @@ public class EnhancedSearchViewBottomPane {
 	private Button resultsToListButton = new Button("List");
 	private Button resultsToWorkflowButton = new Button("Workflow");
 	private Button resultsToTaxonomyButton = new Button("Taxonomy");
+	private Button resultsToSememeButton = new Button("Sememe");
 	
 	private Button resetDefaultsButton;
 
@@ -58,7 +61,7 @@ public class EnhancedSearchViewBottomPane {
 	private Font boldFont = new Font("System Bold", 13.0);
 	private BorderStroke borderStroke = new BorderStroke(Paint.valueOf("BLACK"), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1), new Insets(5));
 
-	public EnhancedSearchViewBottomPane() {
+	public EnhancedSearchViewBottomPane(Stage stage) {
 		bottomPanelGridPane = new GridPane();
 		bottomPanelGridPane.setHgap(30);
 		bottomPanelGridPane.setAlignment(Pos.CENTER);
@@ -68,7 +71,7 @@ public class EnhancedSearchViewBottomPane {
 		initializeResultLabels();
 
 		// Handle Results
-		initializeResultsOptions();
+		initializeResultsOptions(stage);
 		
 		// Handle Save Search 
 		initializeSaveSearchOptions();
@@ -122,13 +125,18 @@ public class EnhancedSearchViewBottomPane {
 	}
 
 	public void refreshBottomPanel() {
-		if (searchModel.getSearchResultsTable().getResults().getItems().size() == 1) {
-			totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entry displayed");
+		if (searchModel.getSearchResultsTable().getResults().getItems().size() == 0) {
+			disableButtons(true);		
 		} else {
-			totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entries displayed");
+			disableButtons(false);		
+			if (searchModel.getSearchResultsTable().getResults().getItems().size() == 1) {
+				totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entry displayed");
+			} else {
+				totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entries displayed");
+			}
 		}
 
-		disableButtons(true);		
+		disableButtons(false);		
 	}
 
 
@@ -150,14 +158,14 @@ public class EnhancedSearchViewBottomPane {
 	}
 
 	private void initializeDefaultOptions() {
-		resetDefaultsButton = new Button("Reset Defaults");
+		resetDefaultsButton = new Button("Reset Display Table");
 		resetDefaultsButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resetDefaultsButton.setMinWidth(Control.USE_PREF_SIZE);
 		resetDefaultsButton.setOnAction((e) -> resetDefaults());
 	}
 
-	private void initializeResultsOptions() {
-		initializeButtons();
+	private void initializeResultsOptions(Stage stage) {
+		initializeButtons(stage);
 		ResultsToTaxonomy.initializeTaxonomyPanel();
 
 		resultsVBox = new VBox(15);
@@ -173,6 +181,7 @@ public class EnhancedSearchViewBottomPane {
 		resultsButtonHBox.getChildren().add(resultsToListButton);
 		resultsButtonHBox.getChildren().add(resultsToWorkflowButton);
 		resultsButtonHBox.getChildren().add(resultsToTaxonomyButton);
+		resultsButtonHBox.getChildren().add(resultsToSememeButton); 
 		
 //		resultsLabel.setPadding(new Insets(5,0,0,0));
 //		resultsToReportButton.setPadding(new Insets(0, 0, 5, 5));
@@ -182,26 +191,40 @@ public class EnhancedSearchViewBottomPane {
 		resultsVBox.getChildren().add(resultsButtonHBox);
 	}
 
-	private void initializeButtons() {
+	private void initializeButtons(Stage stage) {
 		// TODO: either fix or remove exportSearchResultsToWorkflow
 		resultsToListButton.setOnAction((e) -> resultsToList());
 		resultsToReportButton.setOnAction((e) -> ResultsToReport.resultsToReport());
 		resultsToWorkflowButton.setOnAction((e) -> ResultsToWorkflow.multipleResultsToWorkflow());
 		resultsToTaxonomyButton.setOnAction((e) -> ResultsToTaxonomy.resultsToSearchTaxonomy());
+		resultsToSememeButton.setOnAction((e) -> createSememe(stage));
 		
 		resultsToListButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToReportButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToWorkflowButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToTaxonomyButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+		resultsToSememeButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 
 		resultsToListButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToReportButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToWorkflowButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToTaxonomyButton.setMinWidth(Control.USE_PREF_SIZE);
-
+		resultsToSememeButton.setMinWidth(Control.USE_PREF_SIZE);
 		disableButtons(true);	
 }
 
+
+	private void createSememe(Stage stage) {
+		try {
+			String refexName = ResultsToRefset.resultsToRefset(stage, searchModel.getSearchResultsTable().getResults());
+			
+			if (refexName != null) {
+				AppContext.getCommonDialogs().showInformationDialog("Sememe Successfully Created", "Created and populated new Sememe (" + refexName + ") with all values in results table");
+			}
+		} catch (Exception e) {
+			AppContext.getCommonDialogs().showErrorDialog("Sememe Creation Failure", "Sememe Creation Failure", "Failed to create and populate Sememe with values in results table"); 
+		}
+	}
 
 	private void resultsToList() {
 		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
@@ -224,9 +247,7 @@ public class EnhancedSearchViewBottomPane {
 	}
 	private void resetDefaults() {
 
-		searchModel.getMaxResultsCustomTextField().setText("");
 		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
-		disableButtons(true);		
 	}
 
 	private void disableButtons(boolean val) {
@@ -234,6 +255,7 @@ public class EnhancedSearchViewBottomPane {
 		resultsToListButton.setDisable(val);
 		resultsToWorkflowButton.setDisable(val);
 		resultsToTaxonomyButton.setDisable(val);
+		resultsToSememeButton.setDisable(val);
 	}
 
 }

@@ -8,18 +8,22 @@ import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
 import gov.va.isaac.search.SearchBuilder;
+import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
+import gov.va.isaac.util.TaskCompleteCallback;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -30,9 +34,10 @@ import javafx.collections.ObservableList;
 
 import org.apache.mahout.math.Arrays;
 
-public class ComponentContentSearchTypeModel extends SearchTypeModel {
+public class ComponentContentSearchTypeModel extends SearchTypeModel implements TaskCompleteCallback {
 	private final ObjectProperty<SearchTypeFilter> searchTypeFilterProperty = new SimpleObjectProperty();
 	private final ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> filters = FXCollections.observableArrayList();
+	private SearchHandle ssh = null;
 
 	public ComponentContentSearchTypeModel() {
 		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter>() {
@@ -40,7 +45,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 			public void changed(
 					ObservableValue<? extends SearchTypeFilter> observable,
 					SearchTypeFilter oldValue, SearchTypeFilter newValue) {
-				isSearchRunnableProperty.set(isValidTypeModel(null));
+				isSearchRunnableProperty.set(isCriteriaPanelValid());
 			}
 		});
 
@@ -48,7 +53,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 			@Override
 			public void onChanged(
 					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
-				isSearchRunnableProperty.set(isValidTypeModel(null));
+				isSearchRunnableProperty.set(isCriteriaPanelValid());
 			}
 		});
 	}
@@ -88,6 +93,23 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 	}
 
 	@Override
+	public  boolean isCriteriaPanelValid() {
+		if (getInvalidFilters().size() > 0) {
+			return false;
+		}
+
+		if (viewCoordinateProperty.get() == null) {
+			return false;
+		}
+		
+		if (searchTypeFilterProperty.get() == null || ! searchTypeFilterProperty.get().isValid()) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	@Override
 	public void typeSpecificCopy(SearchTypeModel other) {
 		filters.clear();
 		filters.addAll(((ComponentContentSearchTypeModel)other).getFilters());
@@ -101,7 +123,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 	}
 	
 	@Override
-	protected boolean isValidTypeModel(String errorDialogTitle) {
+	protected boolean isValidSearch(String errorDialogTitle) {
 		if (getSearchType() == null) {
 			String details = "No SearchTypeFilter specified: " + this;
 			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
@@ -114,16 +136,6 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 		} else if (getInvalidFilters().size() > 0) {
 			String details = "Found " + getInvalidFilters().size() + " invalid filter: " + Arrays.toString(getFilters().toArray());
 			LOG.warn("Invalid filter in search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
-		}
-		if (searchTypeFilterProperty.get() == null || ! searchTypeFilterProperty.get().isValid()) {
-			String details = "Found Null or invalid searchTypeFilterProperty: " + getSearchType().getSearchType();
-			LOG.warn("Found Null or invalid searchTypeFilterProperty in search model (name=" + getName() + "). " + details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -174,6 +186,7 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 				AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 
 				ssh.cancel();
+				taskComplete(0, null);
 
 				return;
 			}
@@ -226,4 +239,39 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel {
 				break;
 			}
 		}
+	public void taskComplete(long taskStartTime, Integer taskId) {
+		if (taskId == Tasks.SEARCH.ordinal()) {
+			// Run on JavaFX thread.
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						if (! ssh.isCancelled()) {
+							resultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
+							
+							bottomPane.refreshBottomPanel();
+							bottomPane.refreshTotalResultsSelectedLabel();
+							
+							if (splitPane.getItems().contains(taxonomyPane)) {
+								ResultsToTaxonomy.resultsToSearchTaxonomy();
+							}
+						}
+					} catch (Exception ex) {
+						searchRunning.set(false);
+						String title = "Unexpected Search Error";
+						LOG.error(title, ex);
+						AppContext.getCommonDialogs().showErrorDialog(title,
+								"There was an unexpected error running the search",
+								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
+						//searchResultsTable.getItems().clear();
+						bottomPane.refreshBottomPanel();
+						bottomPane.refreshTotalResultsSelectedLabel();
+					} finally {
+						searchRunning.set(false);
+					}
+				}
+			});
+		}
+	}
+
 }

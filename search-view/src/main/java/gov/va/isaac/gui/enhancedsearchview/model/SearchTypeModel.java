@@ -30,10 +30,10 @@ import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SearchTypeModel implements TaskCompleteCallback {
+public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	private TableView<CompositeSearchResult> resultsTable;
+	protected TableView<CompositeSearchResult> resultsTable;
 
 	protected static EnhancedSearchViewBottomPane bottomPane;
 	protected static SplitPane splitPane;
@@ -47,15 +47,14 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
 
-	protected SearchHandle ssh = null;
 	protected BooleanProperty searchRunning = new SimpleBooleanProperty(false);
 
 
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
-	abstract protected boolean isValidTypeModel(String errorDialogTitle);
+	abstract protected boolean isValidSearch(String errorDialogTitle);
 	abstract public void executeSearch(ResultsType resultsType, String modelMaxResults);
-
+	abstract protected boolean isCriteriaPanelValid();
 	
 	protected SearchTypeModel() {
 		viewCoordinateProperty.set(WBUtility.getViewCoordinate());
@@ -65,7 +64,7 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchRunnableProperty.set(isValidTypeModel(null));
+				isSearchRunnableProperty.set(isCriteriaPanelValid());
 			}
 		});
 
@@ -146,45 +145,10 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 
 			return false;
 		} else {
-			return isValidTypeModel(errorDialogTitle);
+			return isValidSearch(errorDialogTitle);
 		}
 	}
 	
-	public void taskComplete(long taskStartTime, Integer taskId) {
-		if (taskId == Tasks.SEARCH.ordinal()) {
-			// Run on JavaFX thread.
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						if (! ssh.isCancelled()) {
-							resultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
-							
-							bottomPane.refreshBottomPanel();
-							bottomPane.refreshTotalResultsSelectedLabel();
-							
-							if (splitPane.getItems().contains(taxonomyPane)) {
-								ResultsToTaxonomy.resultsToSearchTaxonomy();
-							}
-						}
-					} catch (Exception ex) {
-						searchRunning.set(false);
-						String title = "Unexpected Search Error";
-						LOG.error(title, ex);
-						AppContext.getCommonDialogs().showErrorDialog(title,
-								"There was an unexpected error running the search",
-								ex.toString(), AppContext.getMainApplicationWindow().getPrimaryStage());
-						//searchResultsTable.getItems().clear();
-						bottomPane.refreshBottomPanel();
-						bottomPane.refreshTotalResultsSelectedLabel();
-					} finally {
-						searchRunning.set(false);
-					}
-				}
-			});
-		}
-	}
-
 
 	public synchronized void search(TableView<CompositeSearchResult> results, ResultsType resultsType, IntegerField maxRequestedResults ) {
 		// Sanity check if search already running.
@@ -210,8 +174,6 @@ public abstract class SearchTypeModel implements TaskCompleteCallback {
 		} catch (Exception e) {
 			LOG.error("Search failed unexpectedly...", e);
 			searchRunning.set(false);
-			ssh = null;  //force a null ptr in taskComplete, so an error is displayed.
-			taskComplete(0, null);
 		}
 	}
 	public static void setPanes(EnhancedSearchViewBottomPane bottomPane, SplitPane splitPane, BorderPane taxonomyPane) {

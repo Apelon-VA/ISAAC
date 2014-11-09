@@ -3,6 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview.model.type.refspec;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.querybuilder.QueryBuilderHelper;
 import gov.va.isaac.gui.querybuilder.QueryNodeTreeViewTreeCell;
 import gov.va.isaac.gui.querybuilder.QueryNodeType;
@@ -21,6 +22,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -39,6 +41,7 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,11 +228,6 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 		addNewNodeSubMenu(menu, ownerNode, "New Relationship Assertion",
 				QueryNodeType.REL_RESTRICTION,
 				QueryNodeType.REL_TYPE);
-		
-		addNewNodeSubMenu(menu, ownerNode, "New Refset Assertion",
-				QueryNodeType.REFSET_CONTAINS_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_KIND_OF_CONCEPT,
-				QueryNodeType.REFSET_CONTAINS_STRING);
 	}
 	private void addNewNodeSubMenu(ContextMenu menu, Node ownerNode, String subMenuName, QueryNodeType...nodeTypes) {
 		Menu subMenu = new Menu(subMenuName);
@@ -407,6 +405,12 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 	public void executeSearch(ResultsType resultsType, String modelMaxResults) {
 		try {
 			QueryBuilderHelper.executeQuery(QueryBuilderHelper.generateQuery(queryNodeTreeView), queryNodeTreeView);
+
+			resultsTable.setItems(FXCollections.observableArrayList(QueryBuilderHelper.getResults()));
+			
+			if (splitPane.getItems().contains(taxonomyPane)) {
+				ResultsToTaxonomy.resultsToSearchTaxonomy();
+			}
 		} catch (Exception e) {
 			logger.error("Failed executing query.  Caught {} {}.", e.getClass().getName(), e.getLocalizedMessage());
 
@@ -416,11 +420,24 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 			String msg = "Failed executing Query";
 			String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+		} finally {
+			searchRunning.set(false);
+			bottomPane.refreshBottomPanel();
+			bottomPane.refreshTotalResultsSelectedLabel();
 		}
 	}
 
 	@Override
-	protected boolean isValidTypeModel(String errorDialogTitle) {
+	public  boolean isCriteriaPanelValid() {
+		if (viewCoordinateProperty.get() == null) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	@Override
+	protected boolean isValidSearch(String errorDialogTitle) {
 		if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() == null) {
 			String details = "No Root Node specified: " + this;
 			LOG.warn("Invalid search model (name=" + getName() + "). " + details);

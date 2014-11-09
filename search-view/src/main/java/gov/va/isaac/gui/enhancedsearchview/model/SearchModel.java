@@ -38,6 +38,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
 import org.slf4j.Logger;
@@ -177,7 +178,9 @@ public class SearchModel {
 		SearchTypeModel.setPanes(bottomPane, splitPane, taxonomyPane);
 	}
 
-	public void setInitialCriteriaPane() {
-		searchTypeSelector.setSearchTypePane(SearchType.REFSET_SPEC);
+	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox) {
+		searchTypeSelector.setSearchTypePane(SearchType.COMPONENT_CONTENT);
+		searchTypeSelector.setMaxResultsField(maxResultsHBox);
+		searchTypeSelector.setResultTypeField(comboBox);
 	}
 }
