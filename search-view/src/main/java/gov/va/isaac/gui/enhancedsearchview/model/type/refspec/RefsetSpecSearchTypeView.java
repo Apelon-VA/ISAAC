@@ -3,7 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview.model.type.refspec;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSpecificView;
 import gov.va.isaac.gui.querybuilder.QueryNodeType;
-import gov.va.isaac.interfaces.QueryNodeTypeI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.QueryNodeTypeI;
 
 import java.util.ArrayList;
 import java.util.List;

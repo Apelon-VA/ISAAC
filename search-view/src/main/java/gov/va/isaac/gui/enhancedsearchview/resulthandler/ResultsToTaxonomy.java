@@ -4,7 +4,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SctTreeItemSearchResultsDisplayPolicies;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.TaxonomyViewMode;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;

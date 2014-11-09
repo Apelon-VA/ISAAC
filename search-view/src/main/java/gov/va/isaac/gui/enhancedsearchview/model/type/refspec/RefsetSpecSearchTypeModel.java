@@ -10,7 +10,7 @@ import gov.va.isaac.gui.querybuilder.QueryNodeType;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.ParentNodeDraggable;
-import gov.va.isaac.interfaces.QueryNodeTypeI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.QueryNodeTypeI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 
 import java.util.HashMap;
@@ -41,7 +41,6 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

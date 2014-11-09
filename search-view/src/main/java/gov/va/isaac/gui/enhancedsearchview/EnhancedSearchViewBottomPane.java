@@ -7,7 +7,9 @@ import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToRefset;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToReport;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToWorkflow;
-import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 
 import java.util.ArrayList;
@@ -227,9 +229,8 @@ public class EnhancedSearchViewBottomPane {
 	}
 
 	private void resultsToList() {
-		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
-
-		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+		ListBatchViewI lv = AppContext.getService(ListBatchViewI.class, SharedServiceNames.DOCKED);
+		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI) lv);
 
 		List<Integer> nids = new ArrayList<>();
 		for (CompositeSearchResult result : searchModel.getSearchResultsTable().getResults().getItems()) {
