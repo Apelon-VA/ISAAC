@@ -37,9 +37,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
-import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
-import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeView;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.util.WBUtility;
 
 import java.beans.PropertyVetoException;
@@ -195,8 +193,8 @@ public class SearchConceptHelper {
 				builder.construct(globalAttributesCAB);
 			}
 
-			if (model.getSearchTypeSelector().getCurrentType() == SearchType.COMPONENT_CONTENT) {
-				ComponentContentSearchTypeModel compModel = (ComponentContentSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+			if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+				TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
 				
 				// Add search type filter as index 0
 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
@@ -494,8 +492,8 @@ public class SearchConceptHelper {
 						return null;
 					}
 
-					if (model.getSearchTypeSelector().getCurrentType() == SearchType.COMPONENT_CONTENT) {
-						ComponentContentSearchTypeModel compModel = (ComponentContentSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+					if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+						TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
 						
 						if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
 							// handle "Search Global Attributes"

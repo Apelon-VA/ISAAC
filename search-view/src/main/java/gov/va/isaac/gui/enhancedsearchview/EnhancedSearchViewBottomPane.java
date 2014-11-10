@@ -3,6 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.model.EnhancedSavedSearch;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToDrools;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToRefset;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToReport;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
@@ -49,6 +50,7 @@ public class EnhancedSearchViewBottomPane {
 	private Button resultsToWorkflowButton = new Button("Workflow");
 	private Button resultsToTaxonomyButton = new Button("Taxonomy");
 	private Button resultsToSememeButton = new Button("Sememe");
+	private Button resultsToDroolsButton = new Button("Drools");
 	
 	private Button resetDefaultsButton;
 
@@ -108,20 +110,17 @@ public class EnhancedSearchViewBottomPane {
 		EnhancedSavedSearch savedSearch = new EnhancedSavedSearch();
 		saveSearchContainerVBox = new VBox(15);
 		saveSearchContainerVBox.setAlignment(Pos.CENTER);
+		saveSearchContainerVBox.setPadding(new Insets(10));
 		saveSearchContainerVBox.setBorder(new Border(borderStroke ));
-		
-		Label saveSearchLabel = new Label("Save/Restore Searches");
+
+		Label saveSearchLabel = new Label("Restore Searches");
 		saveSearchLabel.setFont(boldFont);
 		
 		HBox saveSearchHBox = new HBox(15);
 		saveSearchHBox.setAlignment(Pos.CENTER);
 
-//		saveSearchLabel.setPadding(new Insets(5,0,0,0));
-//		savedSearch.getSavedSearchesComboBox().setPadding(new Insets(0, 0, 5, 5));
-//		savedSearch.getSaveButton().setPadding(new Insets(0, 5, 5, 0));
-
 		saveSearchHBox.getChildren().add(savedSearch.getSavedSearchesComboBox());
-		saveSearchHBox.getChildren().add(savedSearch.getSaveButton());
+		saveSearchHBox.getChildren().add(savedSearch.getRestoreSearchButton());
 		saveSearchContainerVBox.getChildren().add(saveSearchLabel);
 		saveSearchContainerVBox.getChildren().add(saveSearchHBox);
 	}
@@ -172,6 +171,7 @@ public class EnhancedSearchViewBottomPane {
 
 		resultsVBox = new VBox(15);
 		resultsVBox.setAlignment(Pos.CENTER);
+		resultsVBox.setPadding(new Insets(10));
 		resultsVBox.setBorder(new Border(borderStroke));
 		
 		Label resultsLabel = new Label("Handle Results");
@@ -184,10 +184,7 @@ public class EnhancedSearchViewBottomPane {
 		resultsButtonHBox.getChildren().add(resultsToWorkflowButton);
 		resultsButtonHBox.getChildren().add(resultsToTaxonomyButton);
 		resultsButtonHBox.getChildren().add(resultsToSememeButton); 
-		
-//		resultsLabel.setPadding(new Insets(5,0,0,0));
-//		resultsToReportButton.setPadding(new Insets(0, 0, 5, 5));
-//		resultsToTaxonomyButton.setPadding(new Insets(0, 5, 5, 0));
+		resultsButtonHBox.getChildren().add(resultsToDroolsButton); 
 
 		resultsVBox.getChildren().add(resultsLabel);
 		resultsVBox.getChildren().add(resultsButtonHBox);
@@ -200,18 +197,21 @@ public class EnhancedSearchViewBottomPane {
 		resultsToWorkflowButton.setOnAction((e) -> ResultsToWorkflow.multipleResultsToWorkflow());
 		resultsToTaxonomyButton.setOnAction((e) -> ResultsToTaxonomy.resultsToSearchTaxonomy());
 		resultsToSememeButton.setOnAction((e) -> createSememe(stage));
+		resultsToDroolsButton.setOnAction((e) -> ResultsToDrools.createDroolsOnClipboard());
 		
 		resultsToListButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToReportButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToWorkflowButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToTaxonomyButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToSememeButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+		resultsToDroolsButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 
 		resultsToListButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToReportButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToWorkflowButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToTaxonomyButton.setMinWidth(Control.USE_PREF_SIZE);
 		resultsToSememeButton.setMinWidth(Control.USE_PREF_SIZE);
+		resultsToDroolsButton.setMinWidth(Control.USE_PREF_SIZE);
 		disableButtons(true);	
 }
 
@@ -248,7 +248,7 @@ public class EnhancedSearchViewBottomPane {
 	}
 	private void resetDefaults() {
 
-		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getSearchTypeSelector().getCurrentType(), searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
 	}
 
 	private void disableButtons(boolean val) {
@@ -257,6 +257,7 @@ public class EnhancedSearchViewBottomPane {
 		resultsToWorkflowButton.setDisable(val);
 		resultsToTaxonomyButton.setDisable(val);
 		resultsToSememeButton.setDisable(val);
+		resultsToDroolsButton.setDisable(val);
 	}
 
 }

@@ -6,6 +6,7 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
@@ -51,8 +52,12 @@ public class SearchResultsTable  {
 	private ResultsType selectedResultsType;
 	private EnhancedSearchViewBottomPane bottomPane;
 
-	public void initializeSearchResultsTable(ResultsType selectedResultsType) {
+	private SearchType selectedSearchType;
+
+	public void initializeSearchResultsTable(SearchType selectedSearchType, ResultsType selectedResultsType) {
 		this.selectedResultsType = selectedResultsType;
+		this.selectedSearchType = selectedSearchType;
+		
 		// Enable selection of multiple rows.  Context menu handlers are coded to send collections.
 		results.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 

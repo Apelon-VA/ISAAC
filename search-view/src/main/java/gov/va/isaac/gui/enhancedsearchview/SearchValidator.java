@@ -3,7 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
-import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 
 import org.apache.mahout.math.Arrays;
 import org.slf4j.Logger;
@@ -22,8 +22,8 @@ public class SearchValidator {
 			}
 
 			return false;
-		} else if (model.getSearchTypeSelector().getCurrentType() == SearchType.COMPONENT_CONTENT) {
-			ComponentContentSearchTypeModel typeModel = (ComponentContentSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+		} else if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+			TextSearchTypeModel typeModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
 			if (typeModel.getSearchType() == null) {
 				String details = "No SearchTypeFilter specified: " + model;
 				LOG.warn("Invalid search model (name=" + model.getSearchTypeSelector().getTypeSpecificModel().getName() + "). " + details);

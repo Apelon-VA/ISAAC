@@ -1,9 +1,10 @@
-package gov.va.isaac.gui.enhancedsearchview.model.type.component;
+package gov.va.isaac.gui.enhancedsearchview.model.type.text;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.FilterType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
@@ -44,29 +45,40 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
+public class TextSearchTypeView implements SearchTypeSpecificView {
 	private static HBox componentSearchTypeControlsHbox = new HBox();
 	private static ComboBox<ComponentSearchType> componentSearchTypeComboBox = new ComboBox<ComponentSearchType>();
 	private static GridPane searchFilterGridPane = new GridPane();
 	private static Button addIsDescendantOfFilterButton;
-
-	private static final Logger LOG = LoggerFactory.getLogger(ComponentContentSearchTypeView.class);
+	private static boolean beenSet = false;
+	private static ComponentSearchType previousSearchType = ComponentSearchType.LUCENE;
+	
+	private static final Logger LOG = LoggerFactory.getLogger(TextSearchTypeView.class);
 
 	private static VBox componentContentParentPane = new VBox(5);
 	SearchModel searchModel = new SearchModel();
+
+	static {
+		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.values()));
+		componentSearchTypeComboBox.getSelectionModel().select(ComponentSearchType.LUCENE);
+	}
 	
-	public ComponentContentSearchTypeView() {
+	@Override
+	public Pane setContents(SearchTypeModel typeModel) {
+		if (!componentContentParentPane.getChildren().isEmpty()) {
+			componentContentParentPane.getChildren().clear();
+		}
+		
 		HBox controlAndTypePart = new HBox(5);
+
 		controlAndTypePart.getChildren().add(componentSearchTypeControlsHbox);
 		controlAndTypePart.getChildren().add(componentSearchTypeComboBox);
 		
 		componentContentParentPane.getChildren().add(controlAndTypePart);
 		componentContentParentPane.getChildren().add(searchFilterGridPane);
-	}
 
-	@Override
-	public Pane setContents(SearchTypeModel typeModel) {
-		ComponentContentSearchTypeModel componentContentModel = (ComponentContentSearchTypeModel)typeModel;
+		
+		TextSearchTypeModel componentContentModel = (TextSearchTypeModel)typeModel;
 		if (addIsDescendantOfFilterButton == null) {
 			addIsDescendantOfFilterButton = new Button("Add Filter");
 		}
@@ -98,17 +110,22 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 			return cell;
 		});
 		componentSearchTypeComboBox.setButtonCell(new ListCell<ComponentSearchType>() {
-			@Override
-			protected void updateItem(ComponentSearchType ComponentSearchType, boolean bln) {
-				super.updateItem(ComponentSearchType, bln); 
-				if (bln) {
+
+		@Override
+			protected void updateItem(ComponentSearchType componentSearchType, boolean bln) {
+				super.updateItem(componentSearchType, bln); 
+				if (bln && !beenSet) {
 					setText("");
 					this.setGraphic(null);
 					componentSearchTypeControlsHbox.getChildren().clear();
 					componentSearchTypeControlsHbox.setUserData(null);
 					componentContentModel.setSearchType(null);
 				} else {
-					setText(ComponentSearchType.toString() + " Search");
+					if (componentSearchType == null) {
+						componentSearchType = previousSearchType;
+					}
+					beenSet = true;
+					setText(componentSearchType.toString() + " Search");
 					this.setGraphic(null);
 
 					componentSearchTypeControlsHbox.getChildren().clear();
@@ -116,7 +133,7 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 					SearchTypeFilter<?> filter = null;
 
 					componentSearchTypeControlsHbox.getChildren().add(addIsDescendantOfFilterButton);
-					if (ComponentSearchType == ComponentSearchType.LUCENE) {
+					if (componentSearchType == componentSearchType.LUCENE) {
 						LuceneSearchTypeFilter displayableLuceneFilter = null;
 
 						Label searchParamLabel = new Label("Lucene Param");
@@ -124,7 +141,7 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 
 						TextField searchParamTextField = new TextField();
 
-						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getSearchType() == ComponentSearchType) {
+						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getSearchType() == componentSearchType) {
 							searchParamTextField.setText(((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().get());
 							displayableLuceneFilter = ((LuceneSearchTypeFilter)componentContentModel.getSearchType());
 						} else {
@@ -174,7 +191,8 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 //						searchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
 //					}
 					else {
-						throw new RuntimeException("Unsupported ComponentSearchType " + ComponentSearchType);
+						System.out.println("Regex Unsupported");
+//						throw new RuntimeException("Unsupported ComponentSearchType " + componentSearchType);
 					}
 
 					componentSearchTypeControlsHbox.setUserData(filter);
@@ -185,16 +203,14 @@ public class ComponentContentSearchTypeView implements SearchTypeSpecificView {
 			LOG.trace("searchModel.getResultsTypeComboBox() event (selected: " + searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem() + ")");
 
 			searchModel.getSearchResultsTable().getResults().getItems().clear();
-			searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+			searchModel.getSearchResultsTable().initializeSearchResultsTable(SearchType.TEXT, searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+			previousSearchType = componentSearchTypeComboBox.getSelectionModel().getSelectedItem();
 		});
-
-		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.values()));
-		componentSearchTypeComboBox.getSelectionModel().select(ComponentSearchType.LUCENE);
 
 		return componentContentParentPane;
 	}
 
-	private void addSearchFilter(final NonSearchTypeFilter<?> filter, ComponentContentSearchTypeModel model) {
+	private void addSearchFilter(final NonSearchTypeFilter<?> filter, TextSearchTypeModel model) {
 		final int index = searchFilterGridPane.getChildren().size();
 
 		HBox row = new HBox();

@@ -1,7 +1,6 @@
 package gov.va.isaac.gui.enhancedsearchview.resulthandler;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.FxUtils;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -10,9 +9,7 @@ import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -22,13 +19,11 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class RefsetDefinitionPrompt {
-	public enum Response { COMMIT, CANCEL };
+public class SaveSearchPrompt {
+	public enum Response { SAVE, CANCEL };
 
 	private static TextField nameTextField = new TextField();
 	private static TextField descTextField = new TextField();
-	private static RadioButton annot = new RadioButton ("Annotation");
-	private static ConceptNode parentConcept = new ConceptNode(null, true);
 
 	private static Response buttonSelected = Response.CANCEL;
 
@@ -64,11 +59,11 @@ public class RefsetDefinitionPrompt {
 	    vb.setSpacing( 10 );
 	    
 	    
-	    Button commitButton = new Button( "Commit" );
+	    Button commitButton = new Button( "Save" );
 	    commitButton.setOnAction((e) -> {
 	    		if (allValuesFilledIn()) {
 		            prompt.close();
-		            buttonSelected = Response.COMMIT;
+		            buttonSelected = Response.SAVE;
 	    		} else {
 	    			AppContext.getCommonDialogs().showInformationDialog("Missing Information", "Must select value for each field");
 	    		}
@@ -93,8 +88,7 @@ public class RefsetDefinitionPrompt {
 	
 	private static boolean allValuesFilledIn() {
 		return !nameTextField.getText().isEmpty() && 
-			   !descTextField.getText().isEmpty() &&
-			   parentConcept.isValid().get();
+			   !descTextField.getText().isEmpty() ;
 	}
 
 	private static GridPane createGridPane() {
@@ -105,31 +99,16 @@ public class RefsetDefinitionPrompt {
 		
 		Label name = createLabel("Name");
 		Label desc = createLabel("Description");
-		Label type = createLabel("Type");
-		Label parent = createLabel("Sememe Parent Concept");
 
 		nameTextField.clear();
 		descTextField.clear();
-	    parentConcept.clear();
 	    
-		ToggleGroup typeGroup = new ToggleGroup();
-		RadioButton memberList = new RadioButton("Member List");
-		annot.setToggleGroup(typeGroup);
-		memberList.setToggleGroup(typeGroup);
-		memberList.setSelected(true);
-		HBox typeHBox = new HBox(5);
-		typeHBox.getChildren().addAll(annot, memberList);
-
-		HBox parentConceptHBox = new HBox();
-		parentConceptHBox.getChildren().add(parentConcept.getNode());
 
 		gp.setConstraints(currentMaxLabel,  0,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		gp.setConstraints(descTextField,  1,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
 
 		gp.addRow(0, name, nameTextField);
 		gp.addRow(1, desc, descTextField);
-		gp.addRow(2, type, typeHBox);
-		gp.addRow(3, parent, parentConceptHBox);
 
 		return gp ;
 	}
@@ -153,14 +132,6 @@ public class RefsetDefinitionPrompt {
 
 	public static TextField getDescTextField() {
 		return descTextField;
-	}
-
-	public static RadioButton getAnnot() {
-		return annot;
-	}
-
-	public static ConceptNode getParentConcept() {
-		return parentConcept;
 	}
 
 	public static Response getButtonSelected() {

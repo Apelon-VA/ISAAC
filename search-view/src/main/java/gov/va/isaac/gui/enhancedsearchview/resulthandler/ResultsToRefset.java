@@ -24,35 +24,35 @@ public class ResultsToRefset {
 	// Create Refset out of results in Search
 	public static String resultsToRefset(Stage owner, TableView<CompositeSearchResult> tableView) throws IOException, ContradictionException, InvalidCAB, PropertyVetoException {
 		// Prompt for name/Desc/iSAnnot/parent
-		RefsetDefinitionPrompt.showContentGatheringDialog(owner, "Define Refset");
+		RefsetCreationPrompt.showContentGatheringDialog(owner, "Define Refset");
 		
 		// Create RefsetDynamic
-		if (RefsetDefinitionPrompt.getButtonSelected() == RefsetDefinitionPrompt.Response.COMMIT) {
+		if (RefsetCreationPrompt.getButtonSelected() == RefsetCreationPrompt.Response.COMMIT) {
 			RefexDynamicUsageDescription refset = 
-					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(RefsetDefinitionPrompt.getNameTextField().getText(), 
-																									 RefsetDefinitionPrompt.getNameTextField().getText(), 
-																									 RefsetDefinitionPrompt.getDescTextField().getText(),
+					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(RefsetCreationPrompt.getNameTextField().getText(), 
+																									 RefsetCreationPrompt.getNameTextField().getText(), 
+																									 RefsetCreationPrompt.getDescTextField().getText(),
 																									 new RefexDynamicColumnInfo[] {},
-																									 RefsetDefinitionPrompt.getParentConcept().getConcept().getPrimordialUuid(),
-																									 RefsetDefinitionPrompt.getAnnot().isSelected());
+																									 RefsetCreationPrompt.getParentConcept().getConcept().getPrimordialUuid(),
+																									 RefsetCreationPrompt.getAnnot().isSelected());
 		    // Create a dynamic refex CAB for each result
 			for (CompositeSearchResult con : tableView.getItems()) {
 				RefexDynamicCAB refexBlueprint = new RefexDynamicCAB(con.getContainingConcept().getNid(), refset.getRefexUsageDescriptorNid());
 				RefexDynamicChronicleBI<?> refex = WBUtility.getBuilder().construct(refexBlueprint);
 
 				
-				if (RefsetDefinitionPrompt.getAnnot().isSelected()) {
+				if (RefsetCreationPrompt.getAnnot().isSelected()) {
 					WBUtility.addUncommitted(con.getContainingConcept());
 				} 
 			}
 			
-			if (!RefsetDefinitionPrompt.getAnnot().isSelected()) {
+			if (!RefsetCreationPrompt.getAnnot().isSelected()) {
 				WBUtility.addUncommitted(refset.getRefexUsageDescriptorNid());
 			}
 			
 			WBUtility.commit();
 			
-			return RefsetDefinitionPrompt.getNameTextField().getText();
+			return RefsetCreationPrompt.getNameTextField().getText();
 		}
 		
 		return null;

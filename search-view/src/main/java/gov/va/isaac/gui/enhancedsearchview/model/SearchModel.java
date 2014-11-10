@@ -59,11 +59,12 @@ public class SearchModel {
 
 	static {
 		maxResultsCustomTextField.setMaxWidth(50);
-
+		maxResultsCustomTextField.setValue(100);
+		
 		searchTypeSelector.getSearchTypeComboBox().getSelectionModel().selectFirst();
 		searchTypeSelector.getSearchTypeComboBox().setItems(FXCollections.observableArrayList(SearchType.values()));
 
-		searchResults.initializeSearchResultsTable(resultsTypeComboBox.getSelectionModel().getSelectedItem());
+		searchResults.initializeSearchResultsTable(searchTypeSelector.getCurrentType(), resultsTypeComboBox.getSelectionModel().getSelectedItem());
 		initializeResultsTypeOptions();
 		initializeSearchTypeComboBoxController();
 	}
@@ -142,7 +143,7 @@ public class SearchModel {
 			LOG.trace("aggregationTypeComboBox event (selected: " + resultsTypeComboBox.getSelectionModel().getSelectedItem() + ")");
 
 			searchResults.getResults().getItems().clear();
-			searchResults.initializeSearchResultsTable(resultsTypeComboBox.getSelectionModel().getSelectedItem());
+			searchResults.initializeSearchResultsTable(searchTypeSelector.getCurrentType(), resultsTypeComboBox.getSelectionModel().getSelectedItem());
 		});
 
 		resultsTypeComboBox.setItems(FXCollections.observableArrayList(ResultsType.values()));
@@ -179,7 +180,7 @@ public class SearchModel {
 	}
 
 	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox) {
-		searchTypeSelector.setSearchTypePane(SearchType.COMPONENT_CONTENT);
+		searchTypeSelector.setSearchTypePane(SearchType.TEXT);
 		searchTypeSelector.setMaxResultsField(maxResultsHBox);
 		searchTypeSelector.setResultTypeField(comboBox);
 	}
