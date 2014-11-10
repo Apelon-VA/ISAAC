@@ -44,6 +44,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -85,7 +86,7 @@ public class ExportDialogController implements Initializable
 	@FXML// fx:id="exportTo"
 	private TextField exportTo; // Value injected by FXMLLoader
 	@FXML //  fx:id="exportToStack"
-    private StackPane exportToStack; // Value injected by FXMLLoader
+	private StackPane exportToStack; // Value injected by FXMLLoader
 	@FXML// fx:id="exportType"
 	private ComboBox<String> exportType; // Value injected by FXMLLoader
 	@FXML// fx:id="fileExtension"
@@ -96,6 +97,8 @@ public class ExportDialogController implements Initializable
 	private ProgressBar progress; // Value injected by FXMLLoader
 	@FXML// fx:id="rootPane"
 	private AnchorPane rootPane; // Value injected by FXMLLoader
+	@FXML
+	private Label titleLabel;
 
 	private BooleanProperty exportRunning = new SimpleBooleanProperty(false);
 	private BooleanBinding exportToValid;
@@ -118,6 +121,7 @@ public class ExportDialogController implements Initializable
 		assert progress != null : "fx:id=\"progress\" was not injected: check your FXML file 'ExportDialog.fxml'.";
 		assert rootPane != null : "fx:id=\"rootPane\" was not injected: check your FXML file 'ExportDialog.fxml'.";
 
+		titleLabel.getStyleClass().add("headerBackground");
 		// initialize your logic here: all @FXML variables will have been injected
 
 		chooseDirectory.setOnAction(new EventHandler<ActionEvent>()

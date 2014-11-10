@@ -74,7 +74,9 @@ public class AddUserDialog extends Stage implements IsaacViewWithMenusI, PopupVi
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		Scene scene = new Scene(root);
+		scene.getStylesheets().add(AddUserDialog.class.getResource("/isaac-shared-styles.css").toString());
 		setScene(scene);
+		sizeToScene();
 
 		this.controller = loader.getController();
 	}

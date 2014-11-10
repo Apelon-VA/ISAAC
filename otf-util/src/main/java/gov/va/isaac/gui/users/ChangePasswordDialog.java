@@ -70,7 +70,9 @@ public class ChangePasswordDialog extends Stage implements IsaacViewWithMenusI, 
 		FXMLLoader loader = new FXMLLoader(resource);
 		Parent root = (Parent) loader.load();
 		Scene scene = new Scene(root);
+		scene.getStylesheets().add(ChangePasswordDialog.class.getResource("/isaac-shared-styles.css").toString());
 		setScene(scene);
+		sizeToScene();
 
 		this.controller = loader.getController();
 	}

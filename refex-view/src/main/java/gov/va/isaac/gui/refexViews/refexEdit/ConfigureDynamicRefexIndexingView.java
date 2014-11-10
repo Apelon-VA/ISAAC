@@ -69,6 +69,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 		{
 			assemblageConcept_ = assemblageConcept;
 			root_ = new BorderPane();
+			root_.setPrefWidth(450);
 			
 			VBox titleBox = new VBox();
 			
@@ -79,11 +80,11 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			titleBox.getChildren().add(title);
 			
 			title = new Label(WBUtility.getDescription(assemblageConcept));
-			title.getStyleClass().add("titleLabel");
 			title.setAlignment(Pos.CENTER);
 			title.setMaxWidth(Double.MAX_VALUE);
 			titleBox.getChildren().add(title);
 			
+			titleBox.getStyleClass().add("headerBackground");
 			titleBox.setPadding(new Insets(5, 5, 5, 5));
 			root_.setTop(titleBox);
 			
@@ -162,7 +163,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 
 			Button ok = new Button("Ok");
 			buttons.getChildren().add(ok);
-			ok.prefWidthProperty().bind(cancel.widthProperty());
+			ok.minWidthProperty().bind(cancel.widthProperty());
 			ok.setOnAction((action) ->
 			{
 				try
@@ -262,8 +263,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 		stage.setScene(scene);
 		stage.setTitle("Configure Dynamic Sememe Indexing");
 		stage.getScene().getStylesheets().add(DynamicReferencedItemsView.class.getResource("/isaac-shared-styles.css").toString());
-		stage.setWidth(450);
-		stage.setHeight(400);
+		stage.sizeToScene();
 		stage.show();
 	}
 }

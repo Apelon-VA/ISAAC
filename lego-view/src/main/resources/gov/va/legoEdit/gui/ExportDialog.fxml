@@ -73,6 +73,6 @@
         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
-    <Label alignment="CENTER" styleClass="titleLabel" text="Export Lego Lists" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0" />
+    <Label alignment="CENTER" styleClass="titleLabel" fx:id="titleLabel" text="Export Lego Lists" minHeight="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
   </children>
 </AnchorPane>

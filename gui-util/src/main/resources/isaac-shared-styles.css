@@ -17,6 +17,10 @@
 	-fx-padding: 3;
 }
 
+.headerBackground {
+	-fx-background-color: radial-gradient(center 0% 50% , radius 110% , #98a8bd, #6d86b4);
+}
+
 .defaultBackgroundColor {
 	-fx-background-color: -fx-background;
 }
