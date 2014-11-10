@@ -21,7 +21,6 @@ package gov.va.legoEdit.gui;
 import gov.va.legoEdit.model.schemaModel.LegoList;
 import java.io.IOException;
 import java.util.List;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
