@@ -26,7 +26,7 @@ import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.commonFunctionality.UscrsContentRequestHandlerI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ContentRequestHandlerI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
@@ -496,7 +496,7 @@ public class CommonMenus
 			menuItems.add(openTaskViewMenuItem);
 		}
 
-		// Menu item to perform a USCRS content request
+        // Menu item to perform a USCRS content request
         MenuItem uscrsRequestViewMenuItem = createNewMenuItem(
                 CommonMenuItem.USCRS_REQUEST_VIEW,
                 builder,
@@ -506,8 +506,7 @@ public class CommonMenus
                     commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),             //make visible
                 // onHandlable
                 () -> {
-                    UscrsContentRequestHandlerI handler = AppContext.getService(UscrsContentRequestHandlerI.class);
-                    LOG.debug("handler = " + handler);
+                    ContentRequestHandlerI handler = AppContext.getService(ContentRequestHandlerI.class, SharedServiceNames.USCRS);
                     handler.setConcept(commonMenusNIdProvider.getNIds().iterator().next());
                     handler.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
                 },
@@ -516,6 +515,27 @@ public class CommonMenus
         if (uscrsRequestViewMenuItem != null)
         {
             menuItems.add(uscrsRequestViewMenuItem);
+        }
+
+        // Menu item to perform a LOINC content request
+        MenuItem loincRequestViewMenuItem = createNewMenuItem(
+                CommonMenuItem.LOINC_REQUEST_VIEW,
+                builder,
+                () -> {
+                    return commonMenusNIdProvider.getObservableNidCount().get() == 1;
+                    }, // canHandle
+                    commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),             //make visible
+                // onHandlable
+                () -> {
+                    ContentRequestHandlerI handler = AppContext.getService(ContentRequestHandlerI.class, SharedServiceNames.LOINC);
+                    handler.setConcept(commonMenusNIdProvider.getNIds().iterator().next());
+                    handler.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+                },
+                // onNotHandlable
+                () -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Task", "Can't locate an invalid task");});
+        if (loincRequestViewMenuItem != null)
+        {
+            menuItems.add(loincRequestViewMenuItem);
         }
 
 		MenuItem newReleaseWorkflowTaskItem = createNewMenuItem(

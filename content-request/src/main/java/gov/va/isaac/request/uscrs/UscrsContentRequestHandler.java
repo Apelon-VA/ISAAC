@@ -2,9 +2,12 @@ package gov.va.isaac.request.uscrs;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
-import gov.va.isaac.interfaces.gui.views.commonFunctionality.UscrsContentRequestHandlerI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ContentRequestHandlerI;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.request.ContentRequestHandler;
 import gov.va.isaac.request.ContentRequestTrackingInfo;
+import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.File;
@@ -15,6 +18,8 @@ import java.util.List;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+
+import javax.inject.Named;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -34,6 +39,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * USCRS implementation of a {@link ContentRequestHandler}.
@@ -41,12 +48,16 @@ import org.jvnet.hk2.annotations.Service;
  * @author bcarlsenca
  */
 @Service
+@Named(value = SharedServiceNames.USCRS)
 @PerLookup
 public class UscrsContentRequestHandler implements ContentRequestHandler,
-    UscrsContentRequestHandlerI {
+    ContentRequestHandlerI {
 
   /** The nid. */
   private int nid;
+
+  /** The Constant LOG. */
+  private static final Logger LOG = LoggerFactory.getLogger(CommonMenus.class);
 
   // This is subject to change
   /** The Constant TERMINOLOGY. */
@@ -70,8 +81,9 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
   };
 
   @Override
-  public ContentRequestTrackingInfo submitContentRequest(int nid)
+  public UscrsContentRequestTrackingInfo submitContentRequest(int nid)
     throws Exception {
+    LOG.debug("Submit content Request");
 
     ConceptChronicleBI concept = WBUtility.getConceptVersion(nid);
 
@@ -89,6 +101,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     handleNewRels(concept, wb);
 
     // Save the file
+    LOG.info("Choose file to save");
     FileChooser fileChooser = new FileChooser();
 
     // Set extension filter.
@@ -102,22 +115,22 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     UscrsContentRequestTrackingInfo info =
         new UscrsContentRequestTrackingInfo();
     info.setName(WBUtility.getConPrefTerm(concept.getNid()));
-    info.setDetail("Batch USCRS submission spreadsheet successfully created.");
 
     // Show save file dialog.
     File file = fileChooser.showSaveDialog(null);
+    LOG.info("  file = " + file);
     if (file != null) {
       FileOutputStream out = new FileOutputStream(file);
       wb.write(out);
       out.flush();
       out.close();
       info.setIsSuccessful(true);
-      AppContext.getCommonDialogs()
-          .showInformationDialog("USCRS Content Request",
-              "Request spreadsheet successfully generated");
+      info.setFile(file.toString());
+      info.setDetail("Batch USCRS submission spreadsheet successfully created.");
     } else {
       // Assume user cancelled
       info.setIsSuccessful(false);
+      info.setDetail("Submission cancelled.");
     }
     return info;
   }
@@ -131,7 +144,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
    */
   private void handleNewConcept(ConceptChronicleBI concept, Workbook wb)
     throws Exception {
-
+    LOG.debug("  Handle new concept tab");
     CreationHelper createHelper = wb.getCreationHelper();
     // Set font
     Font font = wb.createFont();
@@ -149,7 +162,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     int cellnum = 0;
     Row row = sheet.createRow(rownum++);
     Cell cell = null;
-
+    LOG.debug("    Add headers");
     for (String header : NEW_CONCEPT_HEADERS) {
       cell = row.createCell(cellnum++);
       cell.setCellStyle(style);
@@ -157,6 +170,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     }
 
     // Add data row
+    LOG.debug("    Add data for " + concept.toUserString());
     cellnum = 0;
     row = sheet.createRow(rownum++);
 
@@ -223,7 +237,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
                 .trim());
       }
     }
-
+    LOG.debug("      parents = " + parentIds.size());
     for (int i = 1; i < 4; i++) {
 
       if (parentIds.size() < i) {
@@ -247,7 +261,8 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         // Parent Concept Id(i)
         cell = row.createCell(cellnum++);
         cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString(parentIds.get(i)));
+        cell.setCellValue(createHelper.createRichTextString(parentIds
+            .get(i - 1)));
 
       }
     }
@@ -322,6 +337,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
    */
   private void handleNewRels(ConceptChronicleBI concept, Workbook wb)
     throws Exception {
+    LOG.debug("  Handle non-ISA rels");
 
     CreationHelper createHelper = wb.getCreationHelper();
     // Set font
@@ -340,7 +356,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     int cellnum = 0;
     Row row = sheet.createRow(rownum++);
     Cell cell = null;
-
+    LOG.debug("    Add headers");
     for (String header : NEW_RELATIONSHIP_HEADERS) {
       cell = row.createCell(cellnum++);
       cell.setCellStyle(style);
@@ -354,7 +370,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
       // find active, non-ISA relationships
       if (relVersion.isActive()
           && relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()) {
-
+        LOG.debug("    Add rel " + relVersion.toUserString());
         // Add data row
         cellnum = 0;
         row = sheet.createRow(rownum++);
@@ -476,13 +492,15 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
               .getPrimordialUuid()
               .toString()
               .equals(AppContext.getAppConfiguration().getDefaultEditPathUuid())) {
-        AppContext.getCommonDialogs().showErrorDialog(
+        DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog(
             "USCRS Content Request",
-            "Unexpected path for USCRS content request submission.",
-            "The concept path is neither Snomed CORE nor\n"
+            "The concept path is neither Snomed CORE nor "
                 + AppContext.getAppConfiguration().getDefaultEditPathName()
-                + ". " + "It is recommended that you only submit\n"
-                + "concepts edited on one of these paths to USCRS");
+                + ". It is recommended that you only submit "
+                + "concepts edited on one of these paths to USCRS.");
+        if (response == DialogResponse.NO) {
+          return;
+        }
       }
     } catch (IOException e) {
       AppContext.getCommonDialogs().showErrorDialog("USCRS Content Request",
@@ -492,16 +510,19 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     }
 
     try {
-      ContentRequestTrackingInfo info = submitContentRequest(nid);
+      UscrsContentRequestTrackingInfo info = submitContentRequest(nid);
       if (info.isSuccessful()) {
-        AppContext.getCommonDialogs().showInformationDialog("USCRS Content Request",
-            "Content request submission successful.\nSee saved file and upload here: "
-            + info.getUrl());        
+        AppContext.getCommonDialogs().showInformationDialog(
+            "USCRS Content Request",
+            "Content request submission successful.\n\nDownload the " +
+            "submission template from " + info.getUrl() + " and import " +
+                "the data from " + info.getFile() + " and submit it.");
+
       }
     } catch (Exception e) {
+      e.printStackTrace();
       AppContext.getCommonDialogs().showErrorDialog("USCRS Content Request",
-          "Unexpected error trying to submit request.",
-          e.getMessage());
+          "Unexpected error trying to submit request.", e.getMessage());
       return;
     }
   }

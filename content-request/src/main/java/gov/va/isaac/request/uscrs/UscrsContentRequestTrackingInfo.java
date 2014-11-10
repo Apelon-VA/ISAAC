@@ -18,6 +18,9 @@ public class UscrsContentRequestTrackingInfo implements
 
   /** The is successful. */
   private boolean isSuccessful;
+  
+  /**  The file. */
+  private String file;
 
   /**
    * Instantiates an empty {@link UscrsContentRequestTrackingInfo}.
@@ -101,6 +104,20 @@ public class UscrsContentRequestTrackingInfo implements
    */
   public void setIsSuccessful(boolean isSuccessful) {
     this.isSuccessful = isSuccessful;
+  }
+
+  /**
+   * @return the file
+   */
+  public String getFile() {
+    return file;
+  }
+
+  /**
+   * @param file the file to set
+   */
+  public void setFile(String file) {
+    this.file = file;
   }
 
 }

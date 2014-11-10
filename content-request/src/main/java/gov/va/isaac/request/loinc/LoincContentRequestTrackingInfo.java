@@ -19,6 +19,9 @@ public class LoincContentRequestTrackingInfo implements
   /** The is successful. */
   private boolean isSuccessful;
   
+  /**  The file. */
+  public String file;
+  
   /**
    * Instantiates an empty {@link LoincContentRequestTrackingInfo}.
    */
@@ -101,6 +104,24 @@ public class LoincContentRequestTrackingInfo implements
    */
   public void setIsSuccessful(boolean isSuccessful) {
     this.isSuccessful = isSuccessful;
+  }
+
+  /**
+   * Returns the file.
+   *
+   * @return the file
+   */
+  public String getFile() {
+    return file;
+  }
+
+  /**
+   * Sets the file.
+   *
+   * @param file the file to set
+   */
+  public void setFile(String file) {
+    this.file = file;
   }
 
 }

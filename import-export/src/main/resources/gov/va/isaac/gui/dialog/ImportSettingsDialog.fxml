@@ -15,7 +15,7 @@
     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
     
     <!-- Import file type -->
-    <Label text="Type:" ExportFileSettingsDialog.fxml
+    <Label text="Type:" minWidth="100.0"
         GridPane.columnIndex="0" GridPane.rowIndex="0"/>
  
     <ComboBox fx:id="modelTypeCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20"
