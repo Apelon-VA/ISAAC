@@ -420,7 +420,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 			String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 		} finally {
-			searchRunning.set(false);
+			getSearchRunning().set(false);
 			bottomPane.refreshBottomPanel();
 			bottomPane.refreshTotalResultsSelectedLabel();
 		}

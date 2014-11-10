@@ -459,6 +459,17 @@ public class SearchConceptHelper {
 				Map<Integer, Collection<NonSearchTypeFilter>> filterOrderMap = new TreeMap<>();
 
 				model = new SearchModel();
+				
+				if (model.getSearchTypeSelector() != null) {
+					if (model.getSearchTypeSelector().getTypeSpecificModel() == null) {
+						LOG.debug("model.getSearchTypeSelector().getTypeSpecificModel() == null");
+					} else {
+						LOG.debug("model.getSearchTypeSelector().getTypeSpecificModel(): name=\"{}\", desc=\"{}\", class={}",
+								model.getSearchTypeSelector().getTypeSpecificModel().getName(),
+								model.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
+								model.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
+					}
+				}
 
 				model.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
 				model.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
@@ -535,11 +546,11 @@ public class SearchConceptHelper {
 	
 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 	
-							if (compModel.getSearchType() != null) {
-								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());
-							} else {
+//							if (compModel.getSearchType() != null) {
+//								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());
+//							} else {
 								compModel.setSearchType(newFilter);
-							}
+//							}
 						} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() /*"Search RegExp Filter"*/)) {
 							// handle "Search RegExp Filter"
 	
