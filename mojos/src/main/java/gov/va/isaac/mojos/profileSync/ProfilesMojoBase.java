@@ -170,13 +170,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	 */
 	protected String getURL() throws MojoExecutionException
 	{
-		String url = config_.getChangeSetUrl();
-		if (url.startsWith("ssh://") && url.contains("@"))
-		{
-			int index = url.indexOf("@");
-			url = "ssh://" + getUsername() + url.substring(index);
-		}
-		return url;
+		return getProfileSyncImpl().substituteURL(config_.getChangeSetUrl(), getUsername());
 	}
 	
 	protected String getUsername() throws MojoExecutionException

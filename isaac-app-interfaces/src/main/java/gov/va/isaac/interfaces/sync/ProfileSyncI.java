@@ -178,4 +178,22 @@ public interface ProfileSyncI
 	 */
 	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
 	
+	
+	/**
+	 * An optional method that allows implementations to do an implementation specific substitution on the URL that will be used to connect.
+	 * 
+	 * For example, in the GIT implementation:
+	 *  ssh://someuser@csfe.aceworkspace.net:29418/... needs to become:
+	 *  ssh://<getUsername()>@csfe.aceworkspace.net:29418/...
+	 * 
+	 * The default implementation simply returns url directly back.
+	 * 
+	 * @param url
+	 * @param username
+	 * @return The substituted URL for this implementation.  Return url directly, if no substitution is required.
+	 */
+	public default String substituteURL(String url, String username)
+	{
+		return url;
+	}
 }

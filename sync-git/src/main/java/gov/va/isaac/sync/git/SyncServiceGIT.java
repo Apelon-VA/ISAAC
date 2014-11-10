@@ -110,13 +110,13 @@ public class SyncServiceGIT implements ProfileSyncI
 			private HashMap<Integer, BooleanSupplier> enabledMap = new HashMap<>();
 			
 			{
-				logMap.put(com.jcraft.jsch.Logger.DEBUG, log::info);  //TODO change this
+				logMap.put(com.jcraft.jsch.Logger.DEBUG, log::debug);
 				logMap.put(com.jcraft.jsch.Logger.ERROR, log::error);
 				logMap.put(com.jcraft.jsch.Logger.FATAL, log::error);
 				logMap.put(com.jcraft.jsch.Logger.INFO, log::info);
 				logMap.put(com.jcraft.jsch.Logger.WARN, log::warn);
 				
-				enabledMap.put(com.jcraft.jsch.Logger.DEBUG, log::isInfoEnabled);  //TODO change this
+				enabledMap.put(com.jcraft.jsch.Logger.DEBUG, log::isDebugEnabled);
 				enabledMap.put(com.jcraft.jsch.Logger.ERROR, log::isErrorEnabled);
 				enabledMap.put(com.jcraft.jsch.Logger.FATAL, log::isErrorEnabled);
 				enabledMap.put(com.jcraft.jsch.Logger.INFO, log::isInfoEnabled);
@@ -833,5 +833,25 @@ public class SyncServiceGIT implements ProfileSyncI
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#substituteURL(java.lang.String, java.lang.String)
+	 * 
+	 * Turns 
+	 *  ssh://someuser@csfe.aceworkspace.net:29418/... into
+	 *  ssh://username.toString()@csfe.aceworkspace.net:29418/...
+	 *  
+	 *  Otherwise, returns URL.
+	 */
+	@Override
+	public String substituteURL(String url, String username)
+	{
+		if (url.startsWith("ssh://") && url.contains("@"))
+		{
+			int index = url.indexOf("@");
+			url = "ssh://" + username + url.substring(index);
+		}
+		return url;
 	}
 }
