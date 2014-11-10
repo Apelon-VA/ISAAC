@@ -110,17 +110,14 @@ public class EnhancedSearchViewBottomPane {
 		EnhancedSavedSearch savedSearch = new EnhancedSavedSearch();
 		saveSearchContainerVBox = new VBox(15);
 		saveSearchContainerVBox.setAlignment(Pos.CENTER);
+		saveSearchContainerVBox.setPadding(new Insets(10));
 		saveSearchContainerVBox.setBorder(new Border(borderStroke ));
-		
+
 		Label saveSearchLabel = new Label("Restore Searches");
 		saveSearchLabel.setFont(boldFont);
 		
 		HBox saveSearchHBox = new HBox(15);
 		saveSearchHBox.setAlignment(Pos.CENTER);
-
-//		saveSearchLabel.setPadding(new Insets(5,0,0,0));
-//		savedSearch.getSavedSearchesComboBox().setPadding(new Insets(0, 0, 5, 5));
-//		savedSearch.getSaveButton().setPadding(new Insets(0, 5, 5, 0));
 
 		saveSearchHBox.getChildren().add(savedSearch.getSavedSearchesComboBox());
 		saveSearchHBox.getChildren().add(savedSearch.getRestoreSearchButton());
@@ -174,6 +171,7 @@ public class EnhancedSearchViewBottomPane {
 
 		resultsVBox = new VBox(15);
 		resultsVBox.setAlignment(Pos.CENTER);
+		resultsVBox.setPadding(new Insets(10));
 		resultsVBox.setBorder(new Border(borderStroke));
 		
 		Label resultsLabel = new Label("Handle Results");
@@ -187,10 +185,6 @@ public class EnhancedSearchViewBottomPane {
 		resultsButtonHBox.getChildren().add(resultsToTaxonomyButton);
 		resultsButtonHBox.getChildren().add(resultsToSememeButton); 
 		resultsButtonHBox.getChildren().add(resultsToDroolsButton); 
-		
-//		resultsLabel.setPadding(new Insets(5,0,0,0));
-//		resultsToReportButton.setPadding(new Insets(0, 0, 5, 5));
-//		resultsToTaxonomyButton.setPadding(new Insets(0, 5, 5, 0));
 
 		resultsVBox.getChildren().add(resultsLabel);
 		resultsVBox.getChildren().add(resultsButtonHBox);
