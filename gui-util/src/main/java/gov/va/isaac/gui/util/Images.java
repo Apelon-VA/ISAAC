@@ -81,7 +81,9 @@ public enum Images {
     YELLOW_DOT(setupImage("/icons/diagona/16x16/154.png")),
     USER(setupImage("/icons/misc/16x16/user.png")),
     LOCK(setupImage("/icons/misc/16x16/lock.png")),
-    KEYS(setupImage("/icons/misc/48x48/login.png"));
+    KEYS(setupImage("/icons/misc/48x48/login.png")),
+    SYNC_GREEN(setupImage("/icons/silk/16x16/arrow_refresh.png")),
+    SYNC_BLUE(setupImage("/icons/silk/16x16/arrow_refresh_blue.png"));
 
     private final Image image;
 
