@@ -24,16 +24,11 @@
  */
 package gov.va.isaac.gui.querybuilder;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javafx.beans.property.BooleanProperty;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.querybuilder.node.AssertionNode;
-import gov.va.isaac.gui.querybuilder.node.Invertable;
+import gov.va.isaac.gui.querybuilder.node.InvertableNode;
 import gov.va.isaac.gui.querybuilder.node.LogicalNode;
 import gov.va.isaac.gui.querybuilder.node.NodeDraggable;
 import gov.va.isaac.gui.querybuilder.node.RefsetContainsConcept;
@@ -44,8 +39,18 @@ import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.WBUtility;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -64,6 +69,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetItrBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
@@ -79,6 +85,8 @@ public class QueryBuilderHelper {
 	private final static Logger logger = LoggerFactory.getLogger(QueryBuilderHelper.class);
 	
 	private final static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+
+	private static NativeIdSetBI results;
 
 	/**
 	 * 
@@ -131,7 +139,7 @@ public class QueryBuilderHelper {
 		});
 	}
 	
-	private static CheckBox createInversionCheckBox(Invertable node) {
+	private static CheckBox createInversionCheckBox(InvertableNode node) {
 		CheckBox inversionCheckBox = new CheckBox();
 		inversionCheckBox.setText("Invert (NOT)");
 		inversionCheckBox.setSelected(node.getInvert());
@@ -149,7 +157,6 @@ public class QueryBuilderHelper {
 		return inversionCheckBox;
 	}
 	public static void populateNodeEditorGridPane(GridPane nodeEditorGridPane, NodeDraggable draggableNode) {
-		QueryBuilderViewController.logger.debug("Populating node editor for item: {}", draggableNode);
 
 		if (draggableNode == null) {
 			String error = "populateNodeEditorGridPane() passed null node";
@@ -621,35 +628,8 @@ public class QueryBuilderHelper {
 		
 		return descendants;
 	}
-	public static void executeQuery(Query query, TreeView<NodeDraggable> tree) {
-		NativeIdSetBI result = null;
-		try {
-			result = generateQuery(tree).compute();
-		} catch (Exception e) {
-			logger.error("Failed executing query.  Caught {} {}.", e.getClass().getName(), e.getLocalizedMessage());
-
-			e.printStackTrace();
-			
-			String title = "Query Execution Failed";
-			String msg = "Failed executing Query";
-			String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-		
-			return;
-		}
-		
-		if (result != null) {
-			StringBuilder builder = new StringBuilder();
-			
-			builder.append("Search yielded " + result.size() + " results:\n");
-			if (result.size() >0) {
-				for (int nid : result.getSetValues()) {
-					String desc = getDescription(nid);
-					builder.append("nid=" + nid + (desc != null ? ("\t\"" + desc.replaceAll("\n", " ") + "\"") : "") + "\n");
-				}
-			}
-			AppContext.getCommonDialogs().showInformationDialog("Search Results", builder.toString());
-		}
+	public static void executeQuery(Query query, TreeView<NodeDraggable> tree) throws IOException, Exception {
+		results = generateQuery(tree).compute();
 	}
 
 	public static Query generateQuery(TreeView<NodeDraggable> tree) {
@@ -687,5 +667,21 @@ public class QueryBuilderHelper {
 		};
 		
 		return syntheticQuery;
+	}
+
+	public static Collection<CompositeSearchResult>  getResults() throws IOException {
+		Set<CompositeSearchResult> collection = new HashSet<CompositeSearchResult>();
+		
+		if (results != null) {
+			NativeIdSetItrBI itr = results.getSetBitIterator();
+            while (itr.next()) {
+            	int nid = itr.nid();
+            	ConceptVersionBI con = WBUtility.getConceptVersion(nid);
+				CompositeSearchResult nidResult = new CompositeSearchResult(con, 0);
+				collection.add(nidResult);
+			}
+        }
+
+        return collection;
 	}
 }

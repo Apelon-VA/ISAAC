@@ -18,22 +18,27 @@
  */
 
 /**
- * SearchType
+ * Invertable
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.enhancedsearchview.filters;
+package gov.va.isaac.gui.querybuilder.node;
 
-public enum SearchType {
-	LUCENE("Lucene"),
-	REGEXP("RegExp");
+import javafx.beans.property.BooleanProperty;
 
-	private final String display;
 
-	private SearchType(String display) {
-		this.display = display;
-	}
+/**
+ * Invertable
+ * 
+ * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
+ *
+ */
+public interface InvertableNode {
 
-	@Override
-	public String toString() { return display; }
+	public abstract BooleanProperty getInvertProperty();
+
+	public abstract boolean getInvert();
+
+	public abstract void setInvert(boolean invert);
+
 }
