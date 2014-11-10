@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>gov.va.isaac</groupId>
+		<artifactId>isaac-parent</artifactId>
+		<version>1.0-Sprint_15-SNAPSHOT</version>
+	</parent>
+	<groupId>gov.va.isaac.modules</groupId>
+	<artifactId>content-request</artifactId>
+	<packaging>jar</packaging>
+
+	<name>ISAAC Content Request Submission Module</name>
+	<description>
+        ISAAC handling for USCRS and LOINC content submission integration.
+    </description>
+
+	<dependencies>
+
+		<!-- ISAAC App Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>gui-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- ISAAC OTF Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>otf-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- ISAAC Data Model. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>data-model</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- Apache POI -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+		</dependency>
+
+		<!-- Redirects Java logging into logback -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+		</dependency>
+
+		<!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

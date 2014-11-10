@@ -53,6 +53,7 @@ public enum Images {
     LEGO_LIST_VIEW(setupImage("/icons/silk/16x16/bricks.png")),
     SEARCH(setupImage("/icons/fugue/16x16/icons-shadowless/application-search-result.png")),
     CONCEPT_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/gear.png")),
+    CONTENT_REQUEST(setupImage("/icons/fugue/16x16/icons-shadowless/gear.png")),
     COPY(setupImage("/icons/fugue/16x16/icons-shadowless/document-copy.png")),
     DELETE(setupImage("/icons/silk/16x16/delete.png")),
     EXCLAMATION(setupImage("/icons/fugue/16x16/icons-shadowless/exclamation-red.png")),
