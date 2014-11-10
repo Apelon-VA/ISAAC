@@ -3,10 +3,10 @@ package gov.va.isaac.gui.enhancedsearchview.model.type;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
-import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeModel;
-import gov.va.isaac.gui.enhancedsearchview.model.type.component.ComponentContentSearchTypeView;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeView;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,11 +29,11 @@ public class SearchTypeSelector {
 	private static HBox maxResultsField;
 	
 	static {
-		typeSpecificViewMap.put(SearchType.COMPONENT_CONTENT,  new ComponentContentSearchTypeView());
+		typeSpecificViewMap.put(SearchType.TEXT,  new TextSearchTypeView());
 //		typeSpecificViewMap.put(SearchType.REFSET_CONTENT,  new RefsetContentSearchTypeView());
 		typeSpecificViewMap.put(SearchType.REFSET_SPEC,  new RefsetSpecSearchTypeView());
 		
-		typeSpecificModelMap.put(SearchType.COMPONENT_CONTENT, new ComponentContentSearchTypeModel());
+		typeSpecificModelMap.put(SearchType.TEXT, new TextSearchTypeModel());
 //		typeSpecificModelMap.put(SearchType.REFSET_CONTENT, new RefsetContentSearchTypeModel());
 		typeSpecificModelMap.put(SearchType.REFSET_SPEC, new RefsetSpecSearchTypeModel());
 

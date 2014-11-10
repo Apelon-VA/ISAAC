@@ -22,7 +22,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-public class RefsetDefinitionPrompt {
+public class RefsetCreationPrompt {
 	public enum Response { COMMIT, CANCEL };
 
 	private static TextField nameTextField = new TextField();

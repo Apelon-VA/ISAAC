@@ -12,9 +12,9 @@ public class SearchTypeEnums  {
 	}
 
 	public enum SearchType {
-		COMPONENT_CONTENT("Component Based Search"),
+		TEXT("Text Search"),
 		REFSET_SPEC("Refset Specification Search"),
-		REFSET_CONTENT("Refset Based Search");
+		SEMEME("Sememe Content Search");
 
 		private final String display;
 
@@ -30,8 +30,7 @@ public class SearchTypeEnums  {
 
 	public enum ComponentSearchType {
 		LUCENE("Lucene"),
-		REGEXP("RegExp"),
-		CONCEPT("Concept Search");
+		REGEXP("RegExp");
 		
 
 		private final String display;

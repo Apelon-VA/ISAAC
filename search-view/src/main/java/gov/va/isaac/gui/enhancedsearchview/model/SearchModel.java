@@ -59,7 +59,8 @@ public class SearchModel {
 
 	static {
 		maxResultsCustomTextField.setMaxWidth(50);
-
+		maxResultsCustomTextField.setValue(100);
+		
 		searchTypeSelector.getSearchTypeComboBox().getSelectionModel().selectFirst();
 		searchTypeSelector.getSearchTypeComboBox().setItems(FXCollections.observableArrayList(SearchType.values()));
 
@@ -179,7 +180,7 @@ public class SearchModel {
 	}
 
 	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox) {
-		searchTypeSelector.setSearchTypePane(SearchType.COMPONENT_CONTENT);
+		searchTypeSelector.setSearchTypePane(SearchType.TEXT);
 		searchTypeSelector.setMaxResultsField(maxResultsHBox);
 		searchTypeSelector.setResultTypeField(comboBox);
 	}

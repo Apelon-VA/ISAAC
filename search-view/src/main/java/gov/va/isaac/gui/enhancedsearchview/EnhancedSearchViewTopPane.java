@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.enhancedsearchview;
 
+import gov.va.isaac.gui.enhancedsearchview.model.EnhancedSavedSearch;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -30,6 +31,8 @@ public class EnhancedSearchViewTopPane {
 
 
 	public EnhancedSearchViewTopPane() {
+		EnhancedSavedSearch savedSearch = new EnhancedSavedSearch();
+
 		topPanelVBox = new VBox(10);
 		topPanelVBox.setAlignment(Pos.CENTER);
 		topPanelVBox.setPadding(new Insets(15));
@@ -48,9 +51,10 @@ public class EnhancedSearchViewTopPane {
 		staticTopPanePortionGridPane.setConstraints(searchTypeHBox,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(maxResultsHBox,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(searchModel.getResultsTypeComboBox(),  2,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		staticTopPanePortionGridPane.setConstraints(searchButton,  3,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
+		staticTopPanePortionGridPane.setConstraints(savedSearch.getSaveButton(),  3,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		staticTopPanePortionGridPane.setConstraints(searchButton,  4,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
 
-		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), searchButton);
+		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), savedSearch.getSaveButton(), searchButton);
 		topPanelVBox.getChildren().add(staticTopPanePortionGridPane);
 
 		searchModel.initializeCriteriaPane(maxResultsHBox, searchModel.getResultsTypeComboBox());
@@ -67,7 +71,7 @@ public class EnhancedSearchViewTopPane {
 	}
 
 	private void initializeSearchButton() {
-
+		searchButton.requestFocus();
 	}
 
 	private void initializeSearchTypeComboBox() {

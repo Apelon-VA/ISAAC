@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.enhancedsearchview.model.type.component;
+package gov.va.isaac.gui.enhancedsearchview.model.type.text;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
@@ -34,12 +34,12 @@ import javafx.collections.ObservableList;
 
 import org.apache.mahout.math.Arrays;
 
-public class ComponentContentSearchTypeModel extends SearchTypeModel implements TaskCompleteCallback {
+public class TextSearchTypeModel extends SearchTypeModel implements TaskCompleteCallback {
 	private final ObjectProperty<SearchTypeFilter> searchTypeFilterProperty = new SimpleObjectProperty();
 	private final ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> filters = FXCollections.observableArrayList();
 	private SearchHandle ssh = null;
 
-	public ComponentContentSearchTypeModel() {
+	public TextSearchTypeModel() {
 		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter>() {
 			@Override
 			public void changed(
@@ -112,8 +112,8 @@ public class ComponentContentSearchTypeModel extends SearchTypeModel implements 
 	@Override
 	public void typeSpecificCopy(SearchTypeModel other) {
 		filters.clear();
-		filters.addAll(((ComponentContentSearchTypeModel)other).getFilters());
-		searchTypeFilterProperty.set(((ComponentContentSearchTypeModel)other).getSearchType());
+		filters.addAll(((TextSearchTypeModel)other).getFilters());
+		searchTypeFilterProperty.set(((TextSearchTypeModel)other).getSearchType());
 	}
 
 	@Override
