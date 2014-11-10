@@ -260,7 +260,7 @@ public class App extends Application implements ApplicationWindowI{
                 ExtendedAppContext.getDataStore().shutdown();
             }
             controller.shutdown();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             String message = "Trouble shutting down";
             LOG.warn(message, ex);
             commonDialog_.showErrorDialog("Oops!", message, ex.getMessage());
