@@ -29,7 +29,7 @@ public class ResultsToReport {
 
 	public static void resultsToReport() {
 		FileChooser fileChooser = new FileChooser();
-		final String delimiter = "\t";
+		final String delimiter = ",";
 		final String newLine = "\n";
 
 		//Set extension filter

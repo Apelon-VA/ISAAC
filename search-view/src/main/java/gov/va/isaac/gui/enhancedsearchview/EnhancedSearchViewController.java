@@ -80,7 +80,7 @@ public class EnhancedSearchViewController {
 		topPane = new EnhancedSearchViewTopPane();
 		bottomPane = new EnhancedSearchViewBottomPane(AppContext.getMainApplicationWindow().getPrimaryStage());
 		
-		searchModel.getSearchRunning().addListener(new ChangeListener<Boolean>() {
+		SearchModel.getSearchRunning().addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
@@ -98,7 +98,7 @@ public class EnhancedSearchViewController {
 		//this sort of stuff need to be a in  background thread, with an appropriate progress indicator
 
 		topPane.getSearchButton().setOnAction((action) -> {
-			if (searchModel.getSearchRunning().get() && searchModel.getSsh() != null) {
+			if (SearchModel.getSearchRunning().get() && searchModel.getSsh() != null) {
 				searchModel.getSsh().cancel();
 			} else {
 				searchModel.getSearchTypeSelector().getTypeSpecificModel().search(searchModel.getSearchResultsTable().getResults(), 
@@ -106,8 +106,8 @@ public class EnhancedSearchViewController {
 																searchModel.getMaxResultsCustomTextField());
 			}
 		});
-		searchModel.getSearchRunning().addListener((observable, oldValue, newValue) -> {
-			if (searchModel.getSearchRunning().get()) {
+		SearchModel.getSearchRunning().addListener((observable, oldValue, newValue) -> {
+			if (SearchModel.getSearchRunning().get()) {
 				topPane.getSearchButton().setText("Cancel");
 			} else {
 				topPane.getSearchButton().setText("Search");
