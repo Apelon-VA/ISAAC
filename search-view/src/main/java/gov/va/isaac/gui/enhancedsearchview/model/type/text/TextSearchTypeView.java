@@ -4,6 +4,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.FilterType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.filters.Invertable;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
@@ -202,7 +203,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 			LOG.trace("searchModel.getResultsTypeComboBox() event (selected: " + searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem() + ")");
 
 			searchModel.getSearchResultsTable().getResults().getItems().clear();
-			searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+			searchModel.getSearchResultsTable().initializeSearchResultsTable(SearchType.TEXT, searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
 			previousSearchType = componentSearchTypeComboBox.getSelectionModel().getSelectedItem();
 		});
 

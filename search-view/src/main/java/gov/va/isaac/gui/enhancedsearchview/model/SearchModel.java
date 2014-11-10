@@ -64,7 +64,7 @@ public class SearchModel {
 		searchTypeSelector.getSearchTypeComboBox().getSelectionModel().selectFirst();
 		searchTypeSelector.getSearchTypeComboBox().setItems(FXCollections.observableArrayList(SearchType.values()));
 
-		searchResults.initializeSearchResultsTable(resultsTypeComboBox.getSelectionModel().getSelectedItem());
+		searchResults.initializeSearchResultsTable(searchTypeSelector.getCurrentType(), resultsTypeComboBox.getSelectionModel().getSelectedItem());
 		initializeResultsTypeOptions();
 		initializeSearchTypeComboBoxController();
 	}
@@ -143,7 +143,7 @@ public class SearchModel {
 			LOG.trace("aggregationTypeComboBox event (selected: " + resultsTypeComboBox.getSelectionModel().getSelectedItem() + ")");
 
 			searchResults.getResults().getItems().clear();
-			searchResults.initializeSearchResultsTable(resultsTypeComboBox.getSelectionModel().getSelectedItem());
+			searchResults.initializeSearchResultsTable(searchTypeSelector.getCurrentType(), resultsTypeComboBox.getSelectionModel().getSelectedItem());
 		});
 
 		resultsTypeComboBox.setItems(FXCollections.observableArrayList(ResultsType.values()));

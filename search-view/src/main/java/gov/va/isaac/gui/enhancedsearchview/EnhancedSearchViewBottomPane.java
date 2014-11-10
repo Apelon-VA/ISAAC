@@ -254,7 +254,7 @@ public class EnhancedSearchViewBottomPane {
 	}
 	private void resetDefaults() {
 
-		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getSearchTypeSelector().getCurrentType(), searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
 	}
 
 	private void disableButtons(boolean val) {
