@@ -120,6 +120,15 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 				return "synchronizeWorkflowMenu";
 			}
 			
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.SYNC_BLUE.getImage();
+			}
+
 			@Override
 			public boolean enableMnemonicParsing()
 			{
