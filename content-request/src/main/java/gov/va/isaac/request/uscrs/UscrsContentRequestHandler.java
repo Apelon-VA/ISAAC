@@ -69,7 +69,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
       "Fully Specified Name", "Semantic Tag", "Preferred Term",
       "Terminology(1)", "Parent Concept Id(1)", "Terminology(2)",
       "Parent Concept Id(2)", "Terminology(3)", "Parent Concept Id(3)",
-      "UMLS CUI", "Definition", "Justification", "Note"
+      "UMLS CUI", "Definition", "Proposed Use", "Justification", "Note"
   };
 
   /** The Constant NEW_RELATIONSHIP_HEADERS. */
@@ -307,8 +307,12 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         synonyms.add(descVersion.getText());
       }
     }
+    StringBuilder sb = new StringBuilder();
+    if (concept.getConceptAttributes()
+        .getVersion(WBUtility.getViewCoordinate()).isDefined()) {
+      sb.append("NOTE: this concept is fully defined. ");
+    }
     if (synonyms.size() > 0) {
-      StringBuilder sb = new StringBuilder();
       sb.append("NOTE: this concept also has the following synonyms: ");
       boolean firstSeen = false;
       for (String sy : synonyms) {
@@ -432,12 +436,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         cell.setCellValue(createHelper.createRichTextString(""
             + relVersion.getGroup()));
 
-        // Relationship Group
-        cell = row.createCell(cellnum++);
-        cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString(""
-            + relVersion.getGroup()));
-
         // Justification - consider making the user enter this (TODO: )
         cell = row.createCell(cellnum++);
         cell.setCellStyle(style);
@@ -492,12 +490,14 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
               .getPrimordialUuid()
               .toString()
               .equals(AppContext.getAppConfiguration().getDefaultEditPathUuid())) {
-        DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog(
-            "USCRS Content Request",
-            "The concept path is neither Snomed CORE nor "
-                + AppContext.getAppConfiguration().getDefaultEditPathName()
-                + ". It is recommended that you only submit "
-                + "concepts edited on one of these paths to USCRS.");
+        DialogResponse response =
+            AppContext.getCommonDialogs().showYesNoDialog(
+                "USCRS Content Request",
+                "The concept path is neither Snomed CORE nor "
+                    + AppContext.getAppConfiguration().getDefaultEditPathName()
+                    + ". It is recommended that you only submit "
+                    + "concepts edited on one of these paths to USCRS.\n\n"
+                    + "Do you want to continue?");
         if (response == DialogResponse.NO) {
           return;
         }
@@ -514,9 +514,8 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
       if (info.isSuccessful()) {
         AppContext.getCommonDialogs().showInformationDialog(
             "USCRS Content Request",
-            "Content request submission successful.\n\nDownload the " +
-            "submission template from " + info.getUrl() + " and import " +
-                "the data from " + info.getFile() + " and submit it.");
+            "Content request submission successful.\n\nUpload "
+                + info.getFile() + " to here: " + info.getUrl());
 
       }
     } catch (Exception e) {

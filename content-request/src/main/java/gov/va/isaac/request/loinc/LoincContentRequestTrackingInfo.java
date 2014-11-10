@@ -65,7 +65,7 @@ public class LoincContentRequestTrackingInfo implements
    */
   @Override
   public String getUrl() {
-    return "https://loinc.org/submissions";
+    return "https://loinc.org/submissions/new-terms";
   }
 
   /*
