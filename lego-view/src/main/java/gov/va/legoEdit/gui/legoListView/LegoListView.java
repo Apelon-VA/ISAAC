@@ -68,7 +68,7 @@ public class LegoListView implements DockedViewI
 	private LegoListView()
 	{
 		//Created by HK2
-		lfpc_ = LegoFilterPaneController.init();
+		//delay init of lfpc_
 	}
 
 	/**
@@ -77,6 +77,10 @@ public class LegoListView implements DockedViewI
 	@Override
 	public Region getView()
 	{
+		if (lfpc_ == null)
+		{
+			lfpc_ = LegoFilterPaneController.init();
+		}
 		return lfpc_.getBorderPane();
 	}
 
@@ -361,6 +365,10 @@ public class LegoListView implements DockedViewI
 	{
 		if (Toolkit.getToolkit().isFxUserThread())
 		{
+			if (lfpc_ == null)
+			{
+				lfpc_ = LegoFilterPaneController.init();
+			}
 			lfpc_.reloadOptions();
 			lfpc_.updateLegoList();
 		}
@@ -368,6 +376,10 @@ public class LegoListView implements DockedViewI
 		{
 			Platform.runLater(() -> 
 			{
+				if (lfpc_ == null)
+				{
+					lfpc_ = LegoFilterPaneController.init();
+				}
 				lfpc_.reloadOptions();
 				lfpc_.updateLegoList();
 			});
@@ -376,6 +388,10 @@ public class LegoListView implements DockedViewI
 	
 	public List<LegoListByReference> getCurrentlyDisplayedLegoLists()
 	{
+		if (lfpc_ == null)
+		{
+			lfpc_ = LegoFilterPaneController.init();
+		}
 		return lfpc_.getCurrentlyDisplayedLegoLists();
 	}
 }
