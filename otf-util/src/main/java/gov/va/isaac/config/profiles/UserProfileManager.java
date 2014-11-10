@@ -480,4 +480,9 @@ public class UserProfileManager implements ServicesToPreloadI
 		}
 		return false;
 	}
+	
+	public File getProfilesFolder()
+	{
+		return profilesFolder_;
+	}
 }

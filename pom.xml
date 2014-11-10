@@ -329,6 +329,7 @@
         <module>isaac-constants</module>
         <module>isaac-drools</module>
         <module>sync-git</module>
+        <module>sync-view</module>
     </modules>
 
     <reporting>
