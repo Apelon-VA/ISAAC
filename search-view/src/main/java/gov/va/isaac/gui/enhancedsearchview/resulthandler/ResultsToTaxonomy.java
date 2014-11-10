@@ -35,7 +35,7 @@ public class ResultsToTaxonomy {
 
 	private static Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
 
-	private static BorderPane taxonomyPanelBorderPane;
+	private static BorderPane taxonomyPanelBorderPane = new BorderPane();
 	private static SplitPane searchResultsAndTaxonomySplitPane;
 
 	private static SearchModel searchModel = new SearchModel();
@@ -46,6 +46,8 @@ public class ResultsToTaxonomy {
 	private static final Logger LOG = LoggerFactory.getLogger(ResultsToTaxonomy.class);
 
 	public static void resultsToSearchTaxonomy() {
+		initializeTaxonomyPanel();
+		
 		if (taxonomyView == null) {
 			taxonomyView = AppContext.getService(TaxonomyViewI.class);
 
