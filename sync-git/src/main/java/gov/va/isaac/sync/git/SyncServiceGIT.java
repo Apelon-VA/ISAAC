@@ -36,6 +36,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import javax.naming.AuthenticationException;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand.Stage;
 import org.eclipse.jgit.api.CommitCommand;
@@ -47,6 +48,7 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.StashApplyFailureException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
@@ -153,12 +155,24 @@ public class SyncServiceGIT implements ProfileSyncI
 		}
 		this.localFolder = localFolder;
 	}
+	
+	
 
 	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getRootLocation()
+	 */
+	@Override
+	public File getRootLocation()
+	{
+		return this.localFolder;
+	}
+
+	/**
+	 * @throws AuthenticationException 
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException
+	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException, AuthenticationException
 	{
 		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder, remoteAddress, userName);
 		try
@@ -244,6 +258,19 @@ public class SyncServiceGIT implements ProfileSyncI
 			}
 
 			log.info("linkAndFetchFromRemote Complete.  Current status: " + statusToString(git.status().call()));
+		}
+		catch (TransportException te)
+		{
+			if (te.getMessage().contains("Auth fail"))
+			{
+				log.info("Auth fail", te);
+				throw new AuthenticationException("Auth fail");
+			}
+			else
+			{
+				log.error("Unexpected", te);
+				throw new IOException("Internal error", te);
+			}
 		}
 		catch (GitAPIException e)
 		{
@@ -352,12 +379,13 @@ public class SyncServiceGIT implements ProfileSyncI
 
 	/**
 	 * @throws MergeFailure 
+	 * @throws AuthenticationException 
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#updateCommitAndPush(java.io.File, java.lang.String, java.lang.String, java.lang.String,
 	 * java.lang.String[])
 	 */
 	@Override
 	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... files)
-			throws IllegalArgumentException, IOException, MergeFailure
+			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException
 	{
 		try
 		{
@@ -414,6 +442,19 @@ public class SyncServiceGIT implements ProfileSyncI
 			log.info("commit and push complete.  Current status: " + statusToString(git.status().call()));
 			return result;
 		}
+		catch (TransportException te)
+		{
+			if (te.getMessage().contains("Auth fail"))
+			{
+				log.info("Auth fail", te);
+				throw new AuthenticationException("Auth fail");
+			}
+			else
+			{
+				log.error("Unexpected", te);
+				throw new IOException("Internal error", te);
+			}
+		}
 		catch (GitAPIException e)
 		{
 			log.error("Unexpected", e);
@@ -423,12 +464,13 @@ public class SyncServiceGIT implements ProfileSyncI
 
 	/**
 	 * @throws MergeFailure
+	 * @throws AuthenticationException 
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#updateFromRemote(java.io.File, java.lang.String, java.lang.String,
 	 * gov.va.isaac.interfaces.sync.MergeFailOption)
 	 */
 	@Override
 	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException,
-			MergeFailure
+			MergeFailure, AuthenticationException
 	{
 		Set<String> filesChangedDuringPull;
 		try
@@ -555,6 +597,19 @@ public class SyncServiceGIT implements ProfileSyncI
 			log.error("Unexpected", e);
 			throw new IOException("A local file exists (but is not yet added to source control) which conflicts with a file from the server."
 					+ "  Either delete the local file, or call addFile(...) on the offending file prior to attempting to update from remote.", e);
+		}
+		catch (TransportException te)
+		{
+			if (te.getMessage().contains("Auth fail"))
+			{
+				log.info("Auth fail", te);
+				throw new AuthenticationException("Auth fail");
+			}
+			else
+			{
+				log.error("Unexpected", te);
+				throw new IOException("Internal error", te);
+			}
 		}
 		catch (GitAPIException e)
 		{
@@ -853,5 +908,32 @@ public class SyncServiceGIT implements ProfileSyncI
 			url = "ssh://" + username + url.substring(index);
 		}
 		return url;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#isLocationConfigured()
+	 */
+	@Override
+	public boolean isLocationConfigured()
+	{
+		return new File(localFolder, ".git").isDirectory();
+	}
+
+	/**
+	 * @throws IOException 
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getLocallyModifiedFileCount()
+	 */
+	@Override
+	public int getLocallyModifiedFileCount() throws IOException
+	{
+		try
+		{
+			return getGit().status().call().getUncommittedChanges().size();
+		}
+		catch (Exception e)
+		{
+			log.error("Unexpected", e);
+			throw new IOException("Internal error", e);
+		}
 	}
 }

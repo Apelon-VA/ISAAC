@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import javax.naming.AuthenticationException;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -44,6 +45,12 @@ public interface ProfileSyncI
 	 * @throws IllegalArgumentException - if the passed in file is not a folder, or does not exist.
 	 */
 	public abstract void setRootLocation(File localFolder) throws IllegalArgumentException;
+	
+	/**
+	 * Return the currently configured root location.  
+	 * @return full path the the folder that should be synchronizable (or null, if not configured)
+	 */
+	public abstract File getRootLocation();
 	
 	/**
 	 * Connect to remote service - pull down any existing files in the remote service.
@@ -88,8 +95,9 @@ public interface ProfileSyncI
 	 * @param password - The password to use for remote operations
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
+	 * @throws AuthenticationException 
 	 */
-	public void linkAndFetchFromRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException;
+	public void linkAndFetchFromRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException, AuthenticationException;
 	
 	/**
 	 * Fix the URL to the remote service.  This call should only be used when both the local and remote repositories exist, and are a proper pair - 
@@ -141,9 +149,10 @@ public interface ProfileSyncI
 	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
 	 * update attempt.
 	 * @return The set of files that changed during the pull from the server.
+	 * @throws AuthenticationException 
 	 */
 	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String ... files) 
-			throws IllegalArgumentException, IOException, MergeFailure;
+			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException;
 	
 	/**
 	 * Get the latest files from the server.  
@@ -155,17 +164,18 @@ public interface ProfileSyncI
 	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
 	 * update attempt.
 	 * @return The set of files that changed during the pull from the server.
+	 * @throws AuthenticationException 
 	 */
 	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) 
-			throws IllegalArgumentException, IOException, MergeFailure;
+			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException;
 
 	/**
 	 * If {@link #updateCommitAndPush(File, String, String, String, MergeFailOption, String...) or {@link #updateFromRemote(File, String, String, MergeFailOption)}
 	 * resulted in a MergeFailure exception, this method should be called to specify how to resolve each merge failure.
 	 * 
-	 * After calling this, you may call {@link #updateCommitAndPush(File, String, String, String, MergeFailOption, String...) again.
+	 * After calling this, you may call {@link #updateCommitAndPush(File, String, String, String, MergeFailOption, String...)} again.
 	 * 
-	 * Note - some implementations (specifically GI) may throw another {@link MergeFailure} during this operation - this is a secondary merge failure
+	 * Note - some implementations (specifically GIT) may throw another {@link MergeFailure} during this operation - this is a secondary merge failure
 	 * which will also have to be resolved by the user (by calling this method again) before you can commit and push.
 	 * 
 	 * @param resolutions - A map where each key is a relative file name of a file that had a mergeFailure, and the corresponding value is
@@ -177,6 +187,17 @@ public interface ProfileSyncI
 	 * @return The complete set of files that changed during the pull from the server that led to the merge failure.
 	 */
 	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
+	
+	/**
+	 * Returns true if the specified location appears to be a SCM store, false otherwise.
+	 */
+	public boolean isLocationConfigured();
+	
+	/**
+	 * Check the local SCM status, and get a count of files that have changes that will be pushed.
+	 * @throws IOException 
+	 */
+	public int getLocallyModifiedFileCount() throws IOException;
 	
 	
 	/**
