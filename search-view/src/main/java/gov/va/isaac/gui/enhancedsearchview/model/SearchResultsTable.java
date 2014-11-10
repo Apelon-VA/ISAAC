@@ -165,7 +165,6 @@ public class SearchResultsTable  {
 		// Preferred term
 		TableColumn<CompositeSearchResult, String> preferredTermCol = new TableColumn<>("Term");
 		preferredTermCol.setCellFactory(new MyTableCellCallback<String>());
-		preferredTermCol.setPrefWidth(100);
 		preferredTermCol.setCellValueFactory((param) -> {
 			try {
 				return new SimpleStringProperty(param.getValue().getContainingConcept().getPreferredDescription().getText().trim());
@@ -182,7 +181,6 @@ public class SearchResultsTable  {
 		// Fully Specified Name
 		TableColumn<CompositeSearchResult, String> fsnCol = new TableColumn<>("FSN");
 		fsnCol.setCellFactory(new MyTableCellCallback<String>());
-		fsnCol.setPrefWidth(100);
 		fsnCol.setCellValueFactory((param) -> {
 			try {
 				return new SimpleStringProperty(param.getValue().getContainingConcept().getFullySpecifiedDescription().getText().trim());
