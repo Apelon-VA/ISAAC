@@ -7,6 +7,7 @@ import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+import gov.va.isaac.gui.enhancedsearchview.model.type.sememe.SememeSearchResult;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.CompositeSearchResultComparator;
 import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
@@ -49,78 +50,197 @@ public class SearchResultsTable  {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SearchResultsTable.class);
 	
-	private ResultsType selectedResultsType;
+	private ResultsType resultsType;
 	private EnhancedSearchViewBottomPane bottomPane;
 
-	private SearchType selectedSearchType;
+	private SearchType searchType;
 
-	public void initializeSearchResultsTable(SearchType selectedSearchType, ResultsType selectedResultsType) {
-		this.selectedResultsType = selectedResultsType;
-		this.selectedSearchType = selectedSearchType;
+	private TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
+	private TableColumn<CompositeSearchResult, Number> nidCol = new TableColumn<>("NID");
+	private TableColumn<CompositeSearchResult, String> uuIdCol = new TableColumn<>("UUID");
+	private TableColumn<CompositeSearchResult, String> sctIdCol = new TableColumn<>("SCTID");
+	private TableColumn<CompositeSearchResult, String> matchingDescTypeCol = new TableColumn<>("Type");
+	private TableColumn<CompositeSearchResult, String> matchingTextCol = new TableColumn<>("Text");
+	private TableColumn<CompositeSearchResult, String> fsnCol = new TableColumn<>("FSN");
+	private TableColumn<CompositeSearchResult, String> preferredTermCol = new TableColumn<>("Term");
+	private TableColumn<CompositeSearchResult, Number> numMatchesCol = new TableColumn<>("Matches");
+	private TableColumn<CompositeSearchResult, Number> scoreCol = new TableColumn<>("Score");
+
+
+	private TableColumn<CompositeSearchResult, String> referencedComponentPrefTermCol = new TableColumn<>("Referenced Component");
+	private TableColumn<CompositeSearchResult, String> assemblageConceptPrefTermCol = new TableColumn<>("Assemblage Concept");
+	private TableColumn<CompositeSearchResult, String> attachedDataCol = new TableColumn<>("Attached Data");
+
+	private List<CompositeSearchResult> resultsBackup;
+
+	public void initializeSearchResultsTable(SearchType searchType, ResultsType resultsType) {
+		if (searchType == null || resultsType == null) {
+			return;
+		}
 		
-		// Enable selection of multiple rows.  Context menu handlers are coded to send collections.
-		results.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		this.resultsType = resultsType;
+		this.searchType = searchType;
+		
+		setupTableAttributes();
 
-		// Backup existing data in order to restore after reinitializing
-		List<CompositeSearchResult> resultsBackup = new ArrayList<>(results.getItems());
+		setupColumns();
 
-		// Clear underlying data structure
-		results.getItems().clear();
+		// Default column ordering. May be changed within session
+		addTypeBasedColumns();
+		
 
-		// Enable optional menu to make visible columns invisible and currently invisible columns visible
-		results.setTableMenuButtonVisible(true);
-
-		// Disable editing of table data
-		results.setEditable(false);
-
-		// Match quality between 0 and 1
-		TableColumn<CompositeSearchResult, Number> scoreCol = new TableColumn<>("Score");
-		scoreCol.setCellValueFactory((param) -> new SimpleDoubleProperty(param.getValue().getBestScore()));
-		scoreCol.setCellFactory(new MyTableCellCallback<Number>());
-		scoreCol.setCellFactory(new MyTableCellCallback<Number>() {
+		AppContext.getService(DragRegistry.class).setupDragOnly(results, new SingleConceptIdProvider() {
 			@Override
-			public TableCell<CompositeSearchResult, Number> createNewCell() {
-
-				final DecimalFormat fmt = new DecimalFormat("#.####");
-
-				TableCell<CompositeSearchResult, Number> cell = new TableCell<CompositeSearchResult, Number>() {
-					@Override
-					public void updateItem(Number item, boolean empty) {
-						super.updateItem(item, empty);
-						setText(empty ? null : getString());
-						setGraphic(null);
-					}
-
-					private String getString() {	
-						fmt.setRoundingMode(RoundingMode.HALF_UP);
-						return getItem() == null ? "" : fmt.format(getItem().doubleValue());
-					}
-				};
-
-				cell.addEventFilter(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent event) {
-						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
-
-						if (c != null && c.getItem() != null) {
-							Tooltip tooltip = new Tooltip(c.getItem().toString());
-							Tooltip.install(cell, tooltip);
-						}
-					}
-				});
-
-				return cell;
+			public String getConceptId()
+			{
+				CompositeSearchResult dragItem = results.getSelectionModel().getSelectedItem();
+				if (dragItem != null)
+				{
+					LOG.debug("Dragging concept id " + dragItem.getContainingConcept().getNid());
+					return dragItem.getContainingConcept().getNid() + "";
+				}
+				return null;
 			}
 		});
 
-		// Active status
-		TableColumn<CompositeSearchResult, String> statusCol = new TableColumn<>("Status");
-		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getStatus().toString().trim()));
-		statusCol.setCellFactory(new MyTableCellCallback<String>());
+		Collections.sort(resultsBackup, new CompositeSearchResultComparator());
+		results.getItems().addAll(resultsBackup);
+
+		if (bottomPane != null) {
+			bottomPane.refreshBottomPanel();
+			bottomPane.refreshTotalResultsSelectedLabel();
+		}
+	}	
+	
+	private void addTypeBasedColumns() {
+		if (searchType != SearchType.SEMEME) {
+			if (searchType != SearchType.REFSET_SPEC) {
+				results.getColumns().add(scoreCol);
+			}
+		
+			results.getColumns().add(statusCol);
+		
+			results.getColumns().add(fsnCol);
+			results.getColumns().add(preferredTermCol);
+			
+			if (resultsType == ResultsType.CONCEPT) {
+				results.getColumns().add(numMatchesCol);
+			}
+			
+			if (resultsType == ResultsType.DESCRIPTION) {
+				results.getColumns().add(matchingTextCol);
+				results.getColumns().add(matchingDescTypeCol);
+			}
+		} else {
+			results.getColumns().add(referencedComponentPrefTermCol);
+			results.getColumns().add(assemblageConceptPrefTermCol);
+			results.getColumns().add(attachedDataCol);
+		}
+			
+		results.getColumns().add(sctIdCol);
+		results.getColumns().add(uuIdCol);
+		results.getColumns().add(nidCol);
+	}
+
+	private void setupColumns() {
+		initializeScoreColumn();
+		initializeStatusColumn();
+		initializeMatchesColumn();
+		initializePrefTermColumn();
+		initializeFsnColumn();
+		initializeMatchingTextColumn();
+		initializeTypeColumn();
+		initializeNidColumn();
+		initializeUuidColumn();
+		initializeSctIdColumn();
+		initializeRefCompColumn();
+		initializeAssembConColumn();
+		initializeAttachedDataColumn();
+
+		results.getColumns().clear();
+	}
+
+	private void initializeNidColumn() {
+		// NID set to invisible because largely for debugging purposes only
+		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getContainingConcept().getNid()));
+		nidCol.setCellFactory(new MyTableCellCallback<Number>());
+		nidCol.setVisible(false);
+
+	}	
+	
+	private void initializeUuidColumn() {
+		// UUID set to invisible because largely for debugging purposes only
+		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getPrimordialUuid().toString().trim()));
+		uuIdCol.setVisible(false);
+		uuIdCol.setCellFactory(new MyTableCellCallback<String>());
+	}
+	
+	private void initializeSctIdColumn() {
+		// Optional SCT ID
+		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getContainingConcept())).trim()));
+		sctIdCol.setCellFactory(new MyTableCellCallback<String>());
+	}
+	
+	private void initializeTypeColumn() {
+
+		// matchingDescTypeCol is string value type of matching description term displayed
+		// Only meaningful for AggregationType DESCRIPTION
+		// When AggregationTyppe is CONCEPT should always be type of first match
+		matchingDescTypeCol.setCellValueFactory((param) -> new SimpleStringProperty(WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid())));
+		matchingDescTypeCol.setCellFactory(new MyTableCellCallback<String>());
+		// matchingDescTypeCol defaults to invisible for anything but DESCRIPTION
+		if (resultsType != ResultsType.DESCRIPTION) {
+			matchingDescTypeCol.setVisible(false);
+		}
+	}
+
+	private void initializeMatchingTextColumn() {
+		// Matching description text.
+		// If AggregationType is CONCEPT then arbitrarily picks first matching description
+		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchingStrings().iterator().next().trim()));
+		matchingTextCol.setCellFactory(new MyTableCellCallback<String>());
+	}
+
+	private void initializeFsnColumn() {
+
+		// Fully Specified Name
+		fsnCol.setCellFactory(new MyTableCellCallback<String>());
+		fsnCol.setCellValueFactory((param) -> {
+			try {
+				return new SimpleStringProperty(param.getValue().getContainingConcept().getFullySpecifiedDescription().getText().trim());
+			} catch (IOException | ContradictionException e) {
+				String title = "Failed getting FSN";
+				String msg = "Failed getting fully specified description";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
+				e.printStackTrace();
+				return null;
+			}
+		});
+
+	}
+
+	private void initializePrefTermColumn() {
+		// Preferred term
+		preferredTermCol.setCellFactory(new MyTableCellCallback<String>());
+		preferredTermCol.setCellValueFactory((param) -> {
+			try {
+				return new SimpleStringProperty(param.getValue().getContainingConcept().getPreferredDescription().getText().trim());
+			} catch (IOException | ContradictionException e) {
+				String title = "Failed getting preferred description";
+				String msg = "Failed getting preferred description";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
+				e.printStackTrace();
+				return null;
+			}
+		});
+	}
+
+	private void initializeMatchesColumn() {
 
 		// numMatchesCol only meaningful for AggregationType CONCEPT
 		// When AggregationTyppe is DESCRIPTION should always be 1
-		TableColumn<CompositeSearchResult, Number> numMatchesCol = new TableColumn<>("Matches");
 		numMatchesCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getMatchingDescriptionComponents().size()));
 		numMatchesCol.setCellFactory(new MyTableCellCallback<Number>() {
 			@Override
@@ -162,113 +282,119 @@ public class SearchResultsTable  {
 			}
 		});
 
-		// Preferred term
-		TableColumn<CompositeSearchResult, String> preferredTermCol = new TableColumn<>("Term");
-		preferredTermCol.setCellFactory(new MyTableCellCallback<String>());
-		preferredTermCol.setCellValueFactory((param) -> {
-			try {
-				return new SimpleStringProperty(param.getValue().getContainingConcept().getPreferredDescription().getText().trim());
-			} catch (IOException | ContradictionException e) {
-				String title = "Failed getting preferred description";
-				String msg = "Failed getting preferred description";
-				LOG.error(title);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
-				e.printStackTrace();
-				return null;
-			}
-		});
+	}
 
-		// Fully Specified Name
-		TableColumn<CompositeSearchResult, String> fsnCol = new TableColumn<>("FSN");
-		fsnCol.setCellFactory(new MyTableCellCallback<String>());
-		fsnCol.setCellValueFactory((param) -> {
-			try {
-				return new SimpleStringProperty(param.getValue().getContainingConcept().getFullySpecifiedDescription().getText().trim());
-			} catch (IOException | ContradictionException e) {
-				String title = "Failed getting FSN";
-				String msg = "Failed getting fully specified description";
-				LOG.error(title);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
-				e.printStackTrace();
-				return null;
-			}
-		});
+	private void initializeStatusColumn() {
+		// Active status
+		statusCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getStatus().toString().trim()));
+		statusCol.setCellFactory(new MyTableCellCallback<String>());
+	}
 
-		// Matching description text.
-		// If AggregationType is CONCEPT then arbitrarily picks first matching description
-		TableColumn<CompositeSearchResult, String> matchingTextCol = new TableColumn<>("Text");
-		matchingTextCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getMatchingStrings().iterator().next().trim()));
-		matchingTextCol.setCellFactory(new MyTableCellCallback<String>());
-
-		// matchingDescTypeCol is string value type of matching description term displayed
-		// Only meaningful for AggregationType DESCRIPTION
-		// When AggregationTyppe is CONCEPT should always be type of first match
-		TableColumn<CompositeSearchResult, String> matchingDescTypeCol = new TableColumn<>("Type");
-		matchingDescTypeCol.setCellValueFactory((param) -> new SimpleStringProperty(WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid())));
-		matchingDescTypeCol.setCellFactory(new MyTableCellCallback<String>());
-		// matchingDescTypeCol defaults to invisible for anything but DESCRIPTION
-		if (selectedResultsType != ResultsType.DESCRIPTION) {
-			matchingDescTypeCol.setVisible(false);
-		}
-
-		// NID set to invisible because largely for debugging purposes only
-		TableColumn<CompositeSearchResult, Number> nidCol = new TableColumn<>("NID");
-		nidCol.setCellValueFactory((param) -> new SimpleIntegerProperty(param.getValue().getContainingConcept().getNid()));
-		nidCol.setCellFactory(new MyTableCellCallback<Number>());
-		nidCol.setVisible(false);
-
-		// UUID set to invisible because largely for debugging purposes only
-		TableColumn<CompositeSearchResult, String> uuIdCol = new TableColumn<>("UUID");
-		uuIdCol.setCellValueFactory((param) -> new SimpleStringProperty(param.getValue().getContainingConcept().getPrimordialUuid().toString().trim()));
-		uuIdCol.setVisible(false);
-		uuIdCol.setCellFactory(new MyTableCellCallback<String>());
-
-		// Optional SCT ID
-		TableColumn<CompositeSearchResult, String> sctIdCol = new TableColumn<>("SCTID");
-		sctIdCol.setCellValueFactory((param) -> new SimpleStringProperty(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(param.getValue().getContainingConcept())).trim()));
-		sctIdCol.setCellFactory(new MyTableCellCallback<String>());
-
-		results.getColumns().clear();
-
-		// Default column ordering. May be changed within session
-		results.getColumns().add(scoreCol);
-		results.getColumns().add(statusCol);
-		results.getColumns().add(fsnCol);
-		results.getColumns().add(preferredTermCol);
-		if (selectedResultsType == ResultsType.CONCEPT) {
-			results.getColumns().add(numMatchesCol);
-		}
-		if (selectedResultsType == ResultsType.DESCRIPTION) {
-			results.getColumns().add(matchingTextCol);
-			results.getColumns().add(matchingDescTypeCol);
-		}
-		results.getColumns().add(sctIdCol);
-		results.getColumns().add(uuIdCol);
-		results.getColumns().add(nidCol);
-
-		AppContext.getService(DragRegistry.class).setupDragOnly(results, new SingleConceptIdProvider() {
+	private void initializeScoreColumn() {
+		// Match quality between 0 and 1
+		scoreCol.setCellValueFactory((param) -> new SimpleDoubleProperty(param.getValue().getBestScore()));
+		scoreCol.setCellFactory(new MyTableCellCallback<Number>());
+		scoreCol.setCellFactory(new MyTableCellCallback<Number>() {
 			@Override
-			public String getConceptId()
-			{
-				CompositeSearchResult dragItem = results.getSelectionModel().getSelectedItem();
-				if (dragItem != null)
-				{
-					LOG.debug("Dragging concept id " + dragItem.getContainingConcept().getNid());
-					return dragItem.getContainingConcept().getNid() + "";
-				}
+			public TableCell<CompositeSearchResult, Number> createNewCell() {
+
+				final DecimalFormat fmt = new DecimalFormat("#.####");
+
+				TableCell<CompositeSearchResult, Number> cell = new TableCell<CompositeSearchResult, Number>() {
+					@Override
+					public void updateItem(Number item, boolean empty) {
+						super.updateItem(item, empty);
+						setText(empty ? null : getString());
+						setGraphic(null);
+					}
+
+					private String getString() {	
+						fmt.setRoundingMode(RoundingMode.HALF_UP);
+						return getItem() == null ? "" : fmt.format(getItem().doubleValue());
+					}
+				};
+
+				cell.addEventFilter(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent event) {
+						TableCell<?, ?> c = (TableCell<?,?>) event.getSource();
+
+						if (c != null && c.getItem() != null) {
+							Tooltip tooltip = new Tooltip(c.getItem().toString());
+							Tooltip.install(cell, tooltip);
+						}
+					}
+				});
+
+				return cell;
+			}
+		});		
+	}
+
+	private void initializeRefCompColumn() {
+		referencedComponentPrefTermCol.setCellFactory(new MyTableCellCallback<String>());
+		referencedComponentPrefTermCol.setCellValueFactory((param) -> {
+			try {
+				SememeSearchResult sememeParam = (SememeSearchResult)param.getValue();
+				return new SimpleStringProperty(sememeParam.getContainingConcept().getPreferredDescription().getText().trim());
+			} catch (IOException | ContradictionException e) {
+				String title = "Failed getting referenced component";
+				String msg = "Failed getting referenced component";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
+				e.printStackTrace();
 				return null;
 			}
 		});
-
-		Collections.sort(resultsBackup, new CompositeSearchResultComparator());
-		results.getItems().addAll(resultsBackup);
-
-		if (bottomPane != null) {
-			bottomPane.refreshBottomPanel();
-			bottomPane.refreshTotalResultsSelectedLabel();
-		}
-	}	
+	}
 	
+	private void initializeAssembConColumn() {
+		assemblageConceptPrefTermCol.setCellFactory(new MyTableCellCallback<String>());
+		assemblageConceptPrefTermCol.setCellValueFactory((param) -> {
+			try {
+				SememeSearchResult sememeParam = (SememeSearchResult)param.getValue();
+				
+				return new SimpleStringProperty(sememeParam.getAssembCon().getPreferredDescription().getText().trim());
+			} catch (IOException | ContradictionException e) {
+				String title = "Failed getting assemblage concept";
+				String msg = "Failed getting assemblage concept";
+				LOG.error(title);
+				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Encountered " + e.getClass().getName() + ": " + e.getLocalizedMessage(), AppContext.getMainApplicationWindow().getPrimaryStage());
+				e.printStackTrace();
+				return null;
+			}
+		});
+		
+	}
+
+	private void initializeAttachedDataColumn() {
+		attachedDataCol.setCellFactory(new MyTableCellCallback<String>());
+
+		attachedDataCol.setCellValueFactory((param) -> {
+			SememeSearchResult sememeParam = (SememeSearchResult)param.getValue();
+			return new SimpleStringProperty(sememeParam.getAttachedData());
+		});
+		
+	}
+
+	
+	private void setupTableAttributes() {
+		// Enable selection of multiple rows.  Context menu handlers are coded to send collections.
+		results.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+		// Backup existing data in order to restore after reinitializing
+		resultsBackup = new ArrayList<>(results.getItems());
+
+		// Clear underlying data structure
+		results.getItems().clear();
+
+		// Enable optional menu to make visible columns invisible and currently invisible columns visible
+		results.setTableMenuButtonVisible(true);
+
+		// Disable editing of table data
+		results.setEditable(false);
+ 	}
+
 	// MyTableCellCallback adds hooks for double-click and/or other mouse actions to String cells
 	private class MyTableCellCallback<T> implements Callback<TableColumn<CompositeSearchResult, T>, TableCell<CompositeSearchResult, T>> {
 		/* (non-Javadoc)
@@ -334,12 +460,12 @@ public class SearchResultsTable  {
 								public Set<Integer> getNIds() {
 									Set<Integer> nids = new HashSet<>();
 									for (CompositeSearchResult r : (ObservableList<CompositeSearchResult>)c.getTableView().getSelectionModel().getSelectedItems()) {
-										if (selectedResultsType == ResultsType.CONCEPT) {
+										if (resultsType == ResultsType.CONCEPT) {
 											nids.add(r.getContainingConcept().getNid());
-										} else if (selectedResultsType == ResultsType.DESCRIPTION) {
+										} else if (resultsType == ResultsType.DESCRIPTION) {
 											nids.add(r.getMatchingDescriptionComponents().iterator().next().getNid());
 										} else {
-											LOG.error("Unexpected AggregationType value " + selectedResultsType);
+											LOG.error("Unexpected AggregationType value " + resultsType);
 											nids.add(r.getContainingConcept().getNid());
 										}
 									}

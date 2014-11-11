@@ -179,9 +179,10 @@ public class SearchModel {
 		SearchTypeModel.setPanes(bottomPane, splitPane, taxonomyPane);
 	}
 
-	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox) {
+	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox, SearchResultsTable searchResultsTable) {
 		searchTypeSelector.setSearchTypePane(SearchType.TEXT);
 		searchTypeSelector.setMaxResultsField(maxResultsHBox);
 		searchTypeSelector.setResultTypeField(comboBox);
+		searchTypeSelector.setSearchResultsTable(searchResultsTable);
 	}
 }
