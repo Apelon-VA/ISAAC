@@ -266,7 +266,31 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 				}
 			}
 			
-			//TODO check state - recover any files in merge-conflict state
+			//TODO test merge conflict resolution
+			
+			if (cancelRequested_)
+			{
+				addLine("Cancelled");
+				return;
+			}
+			
+			Set<String> changedFiles = new HashSet<>();
+			
+			try
+			{
+				Set<String> conflictFiles = syncService_.getFilesInMergeConflict();
+				if (conflictFiles.size() > 0)
+				{
+					MergeFailure mf = new MergeFailure(conflictFiles, new HashSet<String>());
+					changedFiles.addAll(resolveMergeFailure(mf));
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Sync failure", e);
+				AppContext.getCommonDialogs().showErrorDialog("Sync Error", "Error checking for aborted merge conflicts", e.getMessage());
+				return;
+			}
 			
 			if (cancelRequested_)
 			{
@@ -292,7 +316,6 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 				return;
 			}
 			addLine("Performing remote sync");
-			Set<String> changedFiles = new HashSet<>();
 			try
 			{
 				addLine(syncService_.getLocallyModifiedFileCount() + " local modifications to be sent");
@@ -398,7 +421,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 			addLine("Processing the changed files (" + changedFiles.size() + ")");
 			for (String s : changedFiles)
 			{
-				//TODO
+				//TODO call OTF with changesets
 			}
 			addLine("Syncronization complete!");
 		}

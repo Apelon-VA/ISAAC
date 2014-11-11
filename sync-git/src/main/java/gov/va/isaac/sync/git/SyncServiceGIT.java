@@ -936,4 +936,24 @@ public class SyncServiceGIT implements ProfileSyncI
 			throw new IOException("Internal error", e);
 		}
 	}
+
+	/**
+	 * @throws IOException 
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getFilesInMergeConflict()
+	 */
+	@Override
+	public Set<String> getFilesInMergeConflict() throws IOException
+	{
+		try
+		{
+			return getGit().status().call().getConflicting();
+		}
+		catch (Exception e)
+		{
+			log.error("Unexpected", e);
+			throw new IOException("Internal error", e);
+		}
+	}
+	
+	
 }
