@@ -6,6 +6,7 @@ import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchDisplayConcept;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.SaveSearchPrompt;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
@@ -98,6 +99,9 @@ public class EnhancedSavedSearch {
 		try {
 			model = SearchConceptHelper.loadSavedSearch(searchToRestore);
 			
+			SearchType currentType = model.getSearchTypeSelector().getCurrentType();
+			model.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(null);
+			model.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(currentType);
 		} catch (SearchConceptException e) {
 			LOG.error("Failed loading saved search. Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 			e.printStackTrace();

@@ -10,6 +10,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
@@ -17,11 +18,14 @@ import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.TaskCompleteCallback;
+import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -142,7 +146,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 
 			return false;
-		}
+		} 
 		
 		return true;
 	}
@@ -152,13 +156,21 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 
 		SearchTypeFilter<?> filter = getSearchType();
 
-		if (! (filter instanceof LuceneSearchTypeFilter)) {
+		if (resultsType == ResultsType.DESCRIPTION && (filter.getSearchParameter() == null || filter.getSearchParameterProperty().isEmpty().get())) {
+			String title = "Search failed";
+
+			String msg = "Cannot search on filters and select to return Descriptions.  Must return Concepts instead";
+			getSearchRunning().set(false);
+			AppContext.getCommonDialogs().showErrorDialog(title, "Failure to search filters-only", msg, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+			return;
+		} else  if (! (filter instanceof LuceneSearchTypeFilter)) {
 			String title = "Search failed";
 
 			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
+			getSearchRunning().set(false);
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			getSearchRunning().set(false);
 			return;
 		}
 
@@ -209,7 +221,25 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 					}
 				}
 				builder.setMergeResultsOnConcept(true);
-				ssh = SearchHandler.descriptionSearch(builder);
+
+				if (getSearchType().getSearchParameter() != null && !getSearchType().getSearchParameter().isEmpty()) {
+					ssh = SearchHandler.descriptionSearch(builder);
+				} else {
+					builder.setQuery("");
+					Set<Integer> filterList = new HashSet<Integer>();
+					for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> f : filters) {
+						filterList = f.gatherNoSearchTermCaseList(filterList);
+					}
+					
+					Set<CompositeSearchResult> filterCompositeSearchResultList = new HashSet<CompositeSearchResult>();
+					
+					for (Integer c : filterList) {
+						filterCompositeSearchResultList.add(new CompositeSearchResult(WBUtility.getConceptVersion(c), 0));
+					}
+					
+
+					ssh = SearchHandler.descriptionSearch(builder, filterCompositeSearchResultList);
+				}
 				break;
 			}
 			case DESCRIPTION:

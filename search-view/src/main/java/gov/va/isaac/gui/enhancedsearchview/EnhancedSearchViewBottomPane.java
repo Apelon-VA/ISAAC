@@ -128,6 +128,8 @@ public class EnhancedSearchViewBottomPane {
 	public void refreshBottomPanel() {
 		if (searchModel.getSearchResultsTable().getResults().getItems().size() == 0) {
 			disableButtons(true);		
+		} else if (searchModel.getSearchResultsTable().getResults().getItems().size() > 5) {
+			resultsToWorkflowButton.setDisable(true);
 		} else {
 			disableButtons(false);		
 			if (searchModel.getSearchResultsTable().getResults().getItems().size() == 1) {
@@ -197,7 +199,7 @@ public class EnhancedSearchViewBottomPane {
 		resultsToWorkflowButton.setOnAction((e) -> ResultsToWorkflow.multipleResultsToWorkflow());
 		resultsToTaxonomyButton.setOnAction((e) -> ResultsToTaxonomy.resultsToSearchTaxonomy());
 		resultsToSememeButton.setOnAction((e) -> createSememe(stage));
-		resultsToDroolsButton.setOnAction((e) -> ResultsToDrools.createDroolsOnClipboard());
+		resultsToDroolsButton.setOnAction((e) -> ResultsToDrools.createDroolsOnClipboard(searchModel));
 		
 		resultsToListButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToReportButton.setPrefWidth(Control.USE_COMPUTED_SIZE);

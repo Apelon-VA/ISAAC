@@ -116,6 +116,8 @@ public class WBUtility {
 
 	static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
 
+	private static Set<UUID> rootNodeList = null;
+
 	public static TerminologyBuilderBI getBuilder() {
 		if (dataBuilder == null) {
 			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
@@ -810,8 +812,24 @@ public class WBUtility {
 		return results;
 	}
 
+	public static ArrayList<Integer> getAllChildrenOfConceptAsNids(Integer conceptNid, boolean recursive) throws IOException, ContradictionException
+	{
+		ArrayList<Integer> results = new ArrayList<>();
+		
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : WBUtility.getConceptVersion(conceptNid).getRelationshipsIncomingActiveIsa())
+		{
+			results.add(r.getOriginNid());
+			if (recursive)
+			{
+				results.addAll(getAllChildrenOfConceptAsNids(r.getOriginNid(), recursive));
+			}
+		}
+		return results;
+	}
+
 	/**
-	 * Recursively get Is a children of a concept
+	 * Recursively get Is a parents of a concept
 	 */
 	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
 	{
@@ -824,6 +842,45 @@ public class WBUtility {
 			results.addAll(getConceptAncestors(r.getDestinationNid()));
 		}
 		return results;
+	}
+
+	/**
+	 * Finds just the concept's parents
+	 */
+	public static Set<ConceptVersionBI> getConceptParents(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
+		{
+			results.add(getConceptVersion(r.getDestinationNid()));
+		}
+		return results;
+	}
+
+	/**
+	 * Recursively looks at parents until finds a concept without a parent
+	 */
+	public static ConceptVersionBI getRootConcept(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		ConceptVersionBI parent = WBUtility.getConceptVersion(concept.getRelationshipsOutgoingActiveIsa().iterator().next().getDestinationNid());
+
+		if (!getRootNodeList().contains(parent.getPrimordialUuid())) {
+			return getRootConcept(parent);
+		} else {
+			return parent;
+		}
+	}
+
+	private static Set<UUID> getRootNodeList() {
+		if (rootNodeList == null) {
+			rootNodeList = new HashSet<UUID>();
+			rootNodeList.add(UUID.fromString("ee9ac5d2-a07c-3981-a57a-f7f26baf38d8")); // SCT
+			rootNodeList.add(UUID.fromString("3958d043-9e8c-508e-bf6d-fd9c83a856da")); // LOINC
+			rootNodeList.add(UUID.fromString("ee9ac5d2-a07c-3981-a57a-f7f26baf38d8"));
+		}
+		
+		return rootNodeList;
 	}
 
 	public static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,

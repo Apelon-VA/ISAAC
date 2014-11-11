@@ -28,7 +28,7 @@ public class RefsetCreationPrompt {
 	private static TextField nameTextField = new TextField();
 	private static TextField descTextField = new TextField();
 	private static RadioButton annot = new RadioButton ("Annotation");
-	private static ConceptNode parentConcept = new ConceptNode(null, true);
+	private static ConceptNode parentConcept;
 
 	private static Response buttonSelected = Response.CANCEL;
 
@@ -110,7 +110,7 @@ public class RefsetCreationPrompt {
 
 		nameTextField.clear();
 		descTextField.clear();
-	    parentConcept.clear();
+	    parentConcept = new ConceptNode(null, true);
 	    
 		ToggleGroup typeGroup = new ToggleGroup();
 		RadioButton memberList = new RadioButton("Member List");
@@ -120,16 +120,13 @@ public class RefsetCreationPrompt {
 		HBox typeHBox = new HBox(5);
 		typeHBox.getChildren().addAll(annot, memberList);
 
-		HBox parentConceptHBox = new HBox();
-		parentConceptHBox.getChildren().add(parentConcept.getNode());
-
 		gp.setConstraints(currentMaxLabel,  0,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		gp.setConstraints(descTextField,  1,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
 
 		gp.addRow(0, name, nameTextField);
 		gp.addRow(1, desc, descTextField);
 		gp.addRow(2, type, typeHBox);
-		gp.addRow(3, parent, parentConceptHBox);
+		gp.addRow(3, parent, parentConcept.getNode());
 
 		return gp ;
 	}

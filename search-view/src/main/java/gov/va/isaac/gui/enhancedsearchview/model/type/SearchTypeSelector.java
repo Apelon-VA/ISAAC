@@ -2,9 +2,12 @@ package gov.va.isaac.gui.enhancedsearchview.model.type;
 
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsTable;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeView;
+import gov.va.isaac.gui.enhancedsearchview.model.type.sememe.SememeSearchTypeModel;
+import gov.va.isaac.gui.enhancedsearchview.model.type.sememe.SememeSearchTypeView;
 import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeView;
 
@@ -30,15 +33,17 @@ public class SearchTypeSelector {
 	
 	static {
 		typeSpecificViewMap.put(SearchType.TEXT,  new TextSearchTypeView());
-//		typeSpecificViewMap.put(SearchType.REFSET_CONTENT,  new RefsetContentSearchTypeView());
+		typeSpecificViewMap.put(SearchType.SEMEME,  new SememeSearchTypeView());
 		typeSpecificViewMap.put(SearchType.REFSET_SPEC,  new RefsetSpecSearchTypeView());
 		
 		typeSpecificModelMap.put(SearchType.TEXT, new TextSearchTypeModel());
-//		typeSpecificModelMap.put(SearchType.REFSET_CONTENT, new RefsetContentSearchTypeModel());
+		typeSpecificModelMap.put(SearchType.SEMEME, new SememeSearchTypeModel());
 		typeSpecificModelMap.put(SearchType.REFSET_SPEC, new RefsetSpecSearchTypeModel());
 
 		searchTypeSelector.setOnAction((e) -> changeSearchType());
 	}
+
+	private static SearchResultsTable searchResultsTable;
 	
 	public ComboBox<SearchType> getSearchTypeComboBox() {
 		return searchTypeSelector;
@@ -46,22 +51,34 @@ public class SearchTypeSelector {
 	
 	private static void changeSearchType() {
 		SearchType selection = searchTypeSelector.getSelectionModel().getSelectedItem();
-		
-		currentType = selection;
-		searchTypeSelector.getSelectionModel().select(selection);
-		
-		if (maxResultsField != null && resultsTypeField != null) {
-			if (selection == SearchType.REFSET_SPEC){
-				maxResultsField.setVisible(false);
-				resultsTypeField.setVisible(false);
-				resultsTypeField.getSelectionModel().select(ResultsType.CONCEPT);
-			} else {
-				maxResultsField.setVisible(true);
-				resultsTypeField.setVisible(true);
+
+		// searchType may be temporarily set to null in order to all resetting to the "current" (non-null) type,
+		// triggering selector button cell factories and change handlers
+		if (selection != null) {
+			currentType = selection;
+			searchTypeSelector.getSelectionModel().select(selection);
+
+			if (resultsTypeField != null) {
+				searchResultsTable.initializeSearchResultsTable(currentType, resultsTypeField.getSelectionModel().getSelectedItem());
+
+				if (selection == SearchType.TEXT) {
+					resultsTypeField.setVisible(true);
+				} else {
+					resultsTypeField.setVisible(false);
+					resultsTypeField.getSelectionModel().select(ResultsType.CONCEPT);
+				}
 			}
+
+			if (maxResultsField != null) {
+				if (selection == SearchType.REFSET_SPEC) {
+					maxResultsField.setVisible(false);
+				} else {
+					maxResultsField.setVisible(true);
+				}
+			}
+
+			setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 		}
-		
-		setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 	}
 
 	public void setSearchTypePane(SearchType type) {
@@ -94,10 +111,15 @@ public class SearchTypeSelector {
 	}
 	
 	public void setResultTypeField(ComboBox<ResultsType> comboBox) {
-		this.resultsTypeField = comboBox;
+		resultsTypeField = comboBox;
 	}
 
 	public void setMaxResultsField(HBox hBox) {
-		this.maxResultsField = hBox;
+		maxResultsField = hBox;
+	}
+
+	public void setSearchResultsTable(SearchResultsTable table) {
+		searchResultsTable = table;
+		searchResultsTable.initializeSearchResultsTable(SearchType.TEXT, ResultsType.DESCRIPTION);
 	}	
 }

@@ -35,9 +35,10 @@ public class EnhancedSearchViewTopPane {
 
 		topPanelVBox = new VBox(10);
 		topPanelVBox.setAlignment(Pos.CENTER);
-		topPanelVBox.setPadding(new Insets(15));
+		topPanelVBox.setPadding(new Insets(5));
 		GridPane staticTopPanePortionGridPane = new GridPane();
 		staticTopPanePortionGridPane.setHgap(15);
+		staticTopPanePortionGridPane.setPadding(new Insets(5));
 
 		// Handle Type DropDown
 		initializeSearchTypeComboBox();
@@ -57,7 +58,7 @@ public class EnhancedSearchViewTopPane {
 		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), savedSearch.getSaveButton(), searchButton);
 		topPanelVBox.getChildren().add(staticTopPanePortionGridPane);
 
-		searchModel.initializeCriteriaPane(maxResultsHBox, searchModel.getResultsTypeComboBox());
+		searchModel.initializeCriteriaPane(maxResultsHBox, searchModel.getResultsTypeComboBox(), searchModel.getSearchResultsTable());
 		topPanelVBox.getChildren().add(searchModel.getSearchTypeSelector().getResultsPane());
 	}
 

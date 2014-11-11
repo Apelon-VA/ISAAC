@@ -24,6 +24,8 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
+import java.util.Set;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -37,7 +39,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class IsRefsetMemberFilter implements NonSearchTypeFilter<IsRefsetMemberFilter>, Invertable, SingleNidFilter {
+public class IsRefsetMemberFilter extends NonSearchTypeFilter<IsRefsetMemberFilter> implements Invertable, SingleNidFilter {
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 	private BooleanProperty invert = new SimpleBooleanProperty(false);
 	private IntegerProperty nid = new SimpleIntegerProperty(0);
@@ -103,5 +105,15 @@ public class IsRefsetMemberFilter implements NonSearchTypeFilter<IsRefsetMemberF
 	public String toString() {
 		return "IsRefsetMemberFilter [isValid=" + isValid.get() + ", invert="
 				+ invert.get() + ", nid=" + nid.get() + "]";
+	}
+
+	@Override
+	public Set<Integer> gatherNoSearchTermCaseList(Set<Integer> startList) {
+		return getSingleNidNoSearchTermCaseList(startList);
+	}
+
+	@Override
+	IntegerProperty getSingleNid() {
+		return nid;
 	}
 }
