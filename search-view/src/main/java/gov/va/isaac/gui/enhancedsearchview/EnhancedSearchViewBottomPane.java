@@ -197,7 +197,7 @@ public class EnhancedSearchViewBottomPane {
 		resultsToWorkflowButton.setOnAction((e) -> ResultsToWorkflow.multipleResultsToWorkflow());
 		resultsToTaxonomyButton.setOnAction((e) -> ResultsToTaxonomy.resultsToSearchTaxonomy());
 		resultsToSememeButton.setOnAction((e) -> createSememe(stage));
-		resultsToDroolsButton.setOnAction((e) -> ResultsToDrools.createDroolsOnClipboard());
+		resultsToDroolsButton.setOnAction((e) -> ResultsToDrools.createDroolsOnClipboard(searchModel));
 		
 		resultsToListButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		resultsToReportButton.setPrefWidth(Control.USE_COMPUTED_SIZE);

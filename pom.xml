@@ -163,6 +163,20 @@
                 <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
                 <scope>test</scope>
             </dependency>
+
+		    <!-- Apache POI -->
+		    <dependency>
+			    <groupId>org.apache.poi</groupId>
+			    <artifactId>poi</artifactId>
+			    <version>3.7</version>
+		    </dependency>
+
+		    <dependency>
+			    <groupId>org.apache.poi</groupId>
+			    <artifactId>poi-ooxml</artifactId>
+			    <version>3.7</version>
+		    </dependency>
+				
         </dependencies>
     </dependencyManagement>
     
@@ -316,6 +330,7 @@
         <module>otf-util</module>
         <module>data-model</module>
         <module>import-export</module>
+        <module>content-request</module>
         <module>taxonomy-view</module>
         <module>lego-view</module>
         <module>search-view</module>

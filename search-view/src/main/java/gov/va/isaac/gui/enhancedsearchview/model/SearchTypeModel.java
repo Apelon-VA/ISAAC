@@ -4,13 +4,8 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
-import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.Tasks;
-import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.search.SearchHandle;
-import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.WBUtility;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -21,7 +16,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
@@ -47,9 +41,6 @@ public abstract class SearchTypeModel {
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
 
-	protected BooleanProperty searchRunning = new SimpleBooleanProperty(false);
-
-
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
 	abstract protected boolean isValidSearch(String errorDialogTitle);
@@ -70,7 +61,6 @@ public abstract class SearchTypeModel {
 
 	}
 
-
 	public void copy(SearchTypeModel other) {
 		name.set(other.getName());
 		description.set(other.getDescription());
@@ -81,6 +71,8 @@ public abstract class SearchTypeModel {
 		
 		typeSpecificCopy(other);
 	}
+	
+	public BooleanProperty getSearchRunning() { return SearchModel.getSearchRunning(); }
 	
 	public String getName() {
 		return name.getValue();
@@ -152,12 +144,12 @@ public abstract class SearchTypeModel {
 
 	public synchronized void search(TableView<CompositeSearchResult> results, ResultsType resultsType, IntegerField maxRequestedResults ) {
 		// Sanity check if search already running.
-		if (searchRunning.get()) {
+		if (getSearchRunning().get()) {
 			return;
 		}
 
 		try {
-			searchRunning.set(true);
+			getSearchRunning().set(true);
 
 			results.getItems().clear();
 			this.resultsTable = results;
@@ -165,7 +157,7 @@ public abstract class SearchTypeModel {
 			bottomPane.refreshTotalResultsSelectedLabel();
 
 			if (! validateSearchTypeModel("Cannot execute search")) {
-				searchRunning.set(false);
+				getSearchRunning().set(false);
 
 				return;
 			}
@@ -173,7 +165,7 @@ public abstract class SearchTypeModel {
 			executeSearch(resultsType, maxRequestedResults.getText());
 		} catch (Exception e) {
 			LOG.error("Search failed unexpectedly...", e);
-			searchRunning.set(false);
+			getSearchRunning().set(false);
 		}
 	}
 	public static void setPanes(EnhancedSearchViewBottomPane bottomPane, SplitPane splitPane, BorderPane taxonomyPane) {

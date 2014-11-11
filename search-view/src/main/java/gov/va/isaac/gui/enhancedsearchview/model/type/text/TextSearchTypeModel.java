@@ -35,16 +35,16 @@ import javafx.collections.ObservableList;
 import org.apache.mahout.math.Arrays;
 
 public class TextSearchTypeModel extends SearchTypeModel implements TaskCompleteCallback {
-	private final ObjectProperty<SearchTypeFilter> searchTypeFilterProperty = new SimpleObjectProperty();
+	private final ObjectProperty<SearchTypeFilter<?>> searchTypeFilterProperty = new SimpleObjectProperty<SearchTypeFilter<?>>();
 	private final ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> filters = FXCollections.observableArrayList();
 	private SearchHandle ssh = null;
 
 	public TextSearchTypeModel() {
-		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter>() {
+		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter<?>>() {
 			@Override
 			public void changed(
-					ObservableValue<? extends SearchTypeFilter> observable,
-					SearchTypeFilter oldValue, SearchTypeFilter newValue) {
+					ObservableValue<? extends SearchTypeFilter<?>> observable,
+					SearchTypeFilter<?> oldValue, SearchTypeFilter<?> newValue) {
 				isSearchRunnableProperty.set(isCriteriaPanelValid());
 			}
 		});
@@ -142,7 +142,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 
 			return false;
-		}
+		} 
 		
 		return true;
 	}
@@ -152,13 +152,21 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 
 		SearchTypeFilter<?> filter = getSearchType();
 
-		if (! (filter instanceof LuceneSearchTypeFilter)) {
+		if (resultsType == ResultsType.DESCRIPTION && (filter.getSearchParameter() == null || filter.getSearchParameterProperty().isEmpty().get())) {
+			String title = "Search failed";
+
+			String msg = "Cannot search on filters and select to return Descriptions.  Must return Concepts instead";
+			getSearchRunning().set(false);
+			AppContext.getCommonDialogs().showErrorDialog(title, "Failure to search filters-only", msg, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+			return;
+		} else  if (! (filter instanceof LuceneSearchTypeFilter)) {
 			String title = "Search failed";
 
 			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
+			getSearchRunning().set(false);
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			searchRunning.set(false);
 			return;
 		}
 
@@ -257,7 +265,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 							}
 						}
 					} catch (Exception ex) {
-						searchRunning.set(false);
+						getSearchRunning().set(false);
 						String title = "Unexpected Search Error";
 						LOG.error(title, ex);
 						AppContext.getCommonDialogs().showErrorDialog(title,
@@ -267,7 +275,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 						bottomPane.refreshBottomPanel();
 						bottomPane.refreshTotalResultsSelectedLabel();
 					} finally {
-						searchRunning.set(false);
+						getSearchRunning().set(false);
 					}
 				}
 			});

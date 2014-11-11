@@ -16,22 +16,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.gui.constants;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
+
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link SharedServiceNames}
+ * {@link LoincContentRequestHandlerI}
  * 
- * These values are used as the @Named annotation on some service implementations - they are useful while distinguishing
- * when there are multiple implementations of a particular service - for example - a docked view, and a stand-along popup 
- * view.
+ * An interface that represents a USCRS content request handler.
  *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ * @author bcarlsenca
  */
-public class SharedServiceNames
-{
-	public static final String DOCKED = "Docked";
-	public static final String MODERN_STYLE = "ModernStyle";
-	public static final String LEGACY_STYLE = "LegacyStyle";
-    public static final String USCRS = "USCRS";
-    public static final String LOINC = "LOINC";
+@Contract
+public interface LoincContentRequestHandlerI  {
+
 }

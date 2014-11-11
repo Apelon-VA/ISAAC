@@ -35,6 +35,8 @@ import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetItrBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
@@ -193,6 +195,12 @@ public class SearchHandler
 								}
 							}
 						}
+					} else {
+				        NativeIdSetBI allConcepts = ExtendedAppContext.getDataStore().getAllConceptNids();
+			        	NativeIdSetItrBI idsItr = allConcepts.getSetBitIterator();
+				        while (idsItr.next()) {
+							initialSearchResults.add(new CompositeSearchResult(WBUtility.getConceptVersion(idsItr.nid()), 0));
+				        }
 					}
 
 					// sort, filter and merge the results as necessary

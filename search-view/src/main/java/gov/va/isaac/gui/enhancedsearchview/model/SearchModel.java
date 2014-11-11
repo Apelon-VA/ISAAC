@@ -39,7 +39,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +161,7 @@ public class SearchModel {
 		this.ssh = ssh;
 	}
 
-	public BooleanProperty getSearchRunning() {
+	public static BooleanProperty getSearchRunning() {
 		return searchRunning;
 	}
 
@@ -179,9 +178,10 @@ public class SearchModel {
 		SearchTypeModel.setPanes(bottomPane, splitPane, taxonomyPane);
 	}
 
-	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox) {
+	public void initializeCriteriaPane(HBox maxResultsHBox, ComboBox<ResultsType> comboBox, SearchResultsTable searchResultsTable) {
 		searchTypeSelector.setSearchTypePane(SearchType.TEXT);
 		searchTypeSelector.setMaxResultsField(maxResultsHBox);
 		searchTypeSelector.setResultTypeField(comboBox);
+		searchTypeSelector.setSearchResultsTable(searchResultsTable);
 	}
 }
