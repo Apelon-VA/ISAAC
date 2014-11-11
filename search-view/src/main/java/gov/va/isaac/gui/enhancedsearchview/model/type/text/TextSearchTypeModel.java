@@ -142,7 +142,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 
 			return false;
-		}
+		} 
 		
 		return true;
 	}
@@ -152,13 +152,21 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 
 		SearchTypeFilter<?> filter = getSearchType();
 
-		if (! (filter instanceof LuceneSearchTypeFilter)) {
+		if (resultsType == ResultsType.DESCRIPTION && (filter.getSearchParameter() == null || filter.getSearchParameterProperty().isEmpty().get())) {
+			String title = "Search failed";
+
+			String msg = "Cannot search on filters and select to return Descriptions.  Must return Concepts instead";
+			getSearchRunning().set(false);
+			AppContext.getCommonDialogs().showErrorDialog(title, "Failure to search filters-only", msg, AppContext.getMainApplicationWindow().getPrimaryStage());
+
+			return;
+		} else  if (! (filter instanceof LuceneSearchTypeFilter)) {
 			String title = "Search failed";
 
 			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
+			getSearchRunning().set(false);
 			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
 
-			getSearchRunning().set(false);
 			return;
 		}
 
