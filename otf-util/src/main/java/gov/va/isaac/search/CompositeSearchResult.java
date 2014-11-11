@@ -53,7 +53,7 @@ public class CompositeSearchResult {
 		}
 		this.containingConcept = WBUtility.getConceptVersion(matchingComponent.getConceptNid());
 	}
-	protected CompositeSearchResult(int matchingComponentNid, float score) {
+	public CompositeSearchResult(int matchingComponentNid, float score) {
 		this.bestScore = score;
 		//matchingComponent may be null, if the match is not on our view path...
 		this.containingConcept = null;

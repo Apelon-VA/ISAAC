@@ -128,6 +128,8 @@ public class EnhancedSearchViewBottomPane {
 	public void refreshBottomPanel() {
 		if (searchModel.getSearchResultsTable().getResults().getItems().size() == 0) {
 			disableButtons(true);		
+		} else if (searchModel.getSearchResultsTable().getResults().getItems().size() > 5) {
+			resultsToWorkflowButton.setDisable(true);
 		} else {
 			disableButtons(false);		
 			if (searchModel.getSearchResultsTable().getResults().getItems().size() == 1) {
