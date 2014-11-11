@@ -378,6 +378,10 @@ public class SearchViewController implements TaskCompleteCallback
 											LOG.error("Unexpected error reading sememe info", e);
 										}
 									}
+									else
+									{
+										LOG.warn("Unexpected type on match: {}", c);
+									}
 								}
 							}
 							else
