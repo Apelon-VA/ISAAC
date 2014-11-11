@@ -30,7 +30,6 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
@@ -309,10 +308,8 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 						ResultsToTaxonomy.resultsToSearchTaxonomy();
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				searchRunning.set(false);
+			} catch (Exception ex) {
+				getSearchRunning().set(false);
 				String title = "Unexpected Search Error";
 				LOG.error(title, ex);
 				AppContext.getCommonDialogs().showErrorDialog(title,
@@ -321,8 +318,8 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				//searchResultsTable.getItems().clear();
 				bottomPane.refreshBottomPanel();
 				bottomPane.refreshTotalResultsSelectedLabel();
-			} finally {	
-				searchRunning.set(false);
+			} finally {
+				getSearchRunning().set(false);
 			}
 		});
 	}
