@@ -22,12 +22,18 @@ public class SememeSearchTypeView implements SearchTypeSpecificView {
 
 	@Override
 	public Pane setContents(SearchTypeModel typeModel) {
-		SememeSearchTypeModel SememeModel = (SememeSearchTypeModel)typeModel;
+		SememeSearchTypeModel sememeModel = (SememeSearchTypeModel)typeModel;
 
-		Pane topPane = setupTextSelection(SememeModel);
-		Pane bottomPane = setupAssemblageSelection(SememeModel);
-		
-		criteriaPane.getChildren().addAll(topPane, bottomPane);
+		if (criteriaPane.getChildren().isEmpty()) {
+	
+			Pane topPane = setupTextSelection(sememeModel);
+			Pane bottomPane = setupAssemblageSelection(sememeModel);
+			
+			criteriaPane.getChildren().addAll(topPane, bottomPane);
+		} else {
+			sememeModel.getSearchText().setText("");
+			sememeModel.getSearchInRefex().clear();
+		}
 		
 		return criteriaPane;
 	}
@@ -43,13 +49,9 @@ public class SememeSearchTypeView implements SearchTypeSpecificView {
 	}
 
 	private Pane setupAssemblageSelection(SememeSearchTypeModel sememeModel) {
-		if (sememeModel.getOptionsContentVBox() == null) {
-			sememeModel.setOptionsContentVBox(new VBox());
-			sememeModel.getOptionsContentVBox().getChildren().add(sememeModel.getSearchInRefexHBox());
-		}
-		
+		sememeModel.setOptionsContentVBox(new VBox());
+		sememeModel.getOptionsContentVBox().getChildren().add(sememeModel.getSearchInRefexHBox());
+	
 		return sememeModel.getOptionsContentVBox();
 	}
-
-
 }
