@@ -468,6 +468,14 @@ public class SearchConceptHelper {
 								model.getSearchTypeSelector().getTypeSpecificModel().getName(),
 								model.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
 								model.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
+						
+						if (model.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
+							
+							// TODO: reinitialize ALL compModel fields to avoid leaking old values into loaded search
+							TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+							compModel.getFilters().clear();
+							compModel.getDroolsExprProperty().set(null);
+						}
 					}
 				}
 
