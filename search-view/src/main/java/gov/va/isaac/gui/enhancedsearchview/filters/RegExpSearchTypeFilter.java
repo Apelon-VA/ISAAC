@@ -26,15 +26,10 @@ package gov.va.isaac.gui.enhancedsearchview.filters;
 
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-public class RegExpSearchTypeFilter implements SearchTypeFilter<RegExpSearchTypeFilter> {
-	private StringProperty searchParameter = new SimpleStringProperty();
-	private BooleanProperty isValid = new SimpleBooleanProperty(false);
+public class RegExpSearchTypeFilter extends SearchTypeFilter<RegExpSearchTypeFilter> {
 
 	public RegExpSearchTypeFilter() {
 		searchParameter.addListener(new ChangeListener<String>() {
@@ -50,17 +45,6 @@ public class RegExpSearchTypeFilter implements SearchTypeFilter<RegExpSearchType
 				}
 			}
 		});
-	}
-
-	public StringProperty getSearchParameterProperty() {
-		return searchParameter;
-	}
-	public String getSearchParameter() {
-		return searchParameter.get();
-	}
-
-	public void setSearchParameter(String searchParameter) {
-		this.searchParameter.set(searchParameter);
 	}
 
 	@Override
