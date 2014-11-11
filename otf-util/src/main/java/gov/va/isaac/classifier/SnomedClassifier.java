@@ -1,44 +1,47 @@
 package gov.va.isaac.classifier;
 
-import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
-import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
-import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
-import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
-import org.ihtsdo.otf.tcc.api.spec.ValidationException;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import au.csiro.ontology.Factory;
-import au.csiro.ontology.Node;
-import au.csiro.ontology.Ontology;
-import au.csiro.ontology.classification.IReasoner;
-import au.csiro.ontology.model.Axiom;
-import au.csiro.ontology.model.Concept;
-import au.csiro.ontology.model.Role;
-import au.csiro.snorocket.core.SnorocketReasoner;
-
+/**
+ * SnomedClassifier.
+ */
 public class SnomedClassifier implements ProcessUnfetchedConceptDataBI {
+
+  @Override
+  public boolean continueWork() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public boolean allowCancel() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public NativeIdSetBI getNidSet() throws IOException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public String getTitle() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void processUnfetchedConceptData(int arg0, ConceptFetcherBI arg1)
+    throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+  /**  For later
   private static final Logger LOG = LoggerFactory
       .getLogger(SnomedClassifier.class);
 
@@ -271,5 +274,5 @@ public class SnomedClassifier implements ProcessUnfetchedConceptDataBI {
   public String getTitle() {
     return this.getClass().getName();
   }
-
+**/
 }
