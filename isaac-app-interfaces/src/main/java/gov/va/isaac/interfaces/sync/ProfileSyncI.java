@@ -191,7 +191,7 @@ public interface ProfileSyncI
 	/**
 	 * Returns true if the specified location appears to be a SCM store, false otherwise.
 	 */
-	public boolean isLocationConfigured();
+	public boolean isRootLocationConfiguredForSCM();
 	
 	/**
 	 * Check the local SCM status, and get a count of files that have changes that will be pushed.

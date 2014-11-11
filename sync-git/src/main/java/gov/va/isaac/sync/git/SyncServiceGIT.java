@@ -911,10 +911,10 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#isLocationConfigured()
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#isRootLocationConfiguredForSCM()
 	 */
 	@Override
-	public boolean isLocationConfigured()
+	public boolean isRootLocationConfiguredForSCM()
 	{
 		return new File(localFolder, ".git").isDirectory();
 	}
