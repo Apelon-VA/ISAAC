@@ -37,9 +37,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
@@ -416,7 +416,30 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 	{
 		Set<String> changedFiles = mf.getFilesChangedDuringMergeAttempt();
 		
-		Map<String, MergeFailOption> resolutions = new HashMap<>();
+		CountDownLatch cdl = new CountDownLatch(1);
+		HashMap<String, MergeFailOption> resolutions = new HashMap<String, MergeFailOption>();
+
+		Platform.runLater(() ->
+		{
+			new ResolveConflicts(root_.getScene().getWindow(), mf.getMergeFailures(), new Consumer<HashMap<String, MergeFailOption>>()
+			{
+				@Override
+				public void accept(HashMap<String, MergeFailOption> t)
+				{
+					resolutions.putAll(t);
+					cdl.countDown();
+				}
+			});
+		});
+		
+		try
+		{
+			cdl.await();
+		}
+		catch (InterruptedException e)
+		{
+			log.info("Interrupted during wait for resolutions");
+		}
 		
 		try
 		{
