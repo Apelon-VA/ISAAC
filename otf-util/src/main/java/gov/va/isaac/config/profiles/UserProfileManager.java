@@ -56,7 +56,7 @@ public class UserProfileManager implements ServicesToPreloadI
 	private Logger logger = LoggerFactory.getLogger(UserProfileManager.class);
 
 	private File profilesFolder_ = new File("profiles");
-	private final String prefsFileName_ = "Preferences.xml";
+	public static final String PREFS_FILE_NAME = "Preferences.xml";
 
 	//protected, rather than private, to allow the mock code to bypass this
 	protected CountDownLatch cdl = new CountDownLatch(2);
@@ -106,8 +106,22 @@ public class UserProfileManager implements ServicesToPreloadI
 		{
 			throw new InvalidUserException("Not allowed to change the user login name!");
 		}
-		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), prefsFileName_));
+		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
 		loggedInUser_ = temp;
+	}
+	
+	/**
+	 * Reread the user profile from the preferences file, to pick up any changes that came from sync.
+	 * @throws IOException 
+	 */
+	public void rereadProfile() throws IOException
+	{
+		if (loggedInUser_ == null)
+		{
+			throw new RuntimeException("API misuse - user is not logged in");
+		}
+		
+		loggedInUser_ = UserProfile.read(new File(new File(profilesFolder_, loggedInUser_.getUserLogonName()), PREFS_FILE_NAME));
 	}
 
 	/**
@@ -154,7 +168,7 @@ public class UserProfileManager implements ServicesToPreloadI
 			}
 			try
 			{
-				UserProfile up = UserProfile.read(new File(new File(profilesFolder_, userLogonName), prefsFileName_));
+				UserProfile up = UserProfile.read(new File(new File(profilesFolder_, userLogonName), PREFS_FILE_NAME));
 				if (!up.isCorrectPassword(password))
 				{
 					throw new InvalidPasswordException("Incorrect password");
@@ -213,7 +227,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		File profileFolder = new File(profilesFolder_, user.getUniqueLogonName());
 		profileFolder.mkdir();
 		new File(profileFolder, "changesets").mkdir();
-		File prefFile = new File(profileFolder, prefsFileName_);
+		File prefFile = new File(profileFolder, PREFS_FILE_NAME);
 
 		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword(), UUID.fromString(user.getUUID()));
 
@@ -323,7 +337,7 @@ public class UserProfileManager implements ServicesToPreloadI
 				{
 					if (f.isDirectory())
 					{
-						File prefFile = new File(f, prefsFileName_);
+						File prefFile = new File(f, PREFS_FILE_NAME);
 						if (prefFile.exists() && prefFile.isFile())
 						{
 							userNamesWithProfiles_.add(f.getName());

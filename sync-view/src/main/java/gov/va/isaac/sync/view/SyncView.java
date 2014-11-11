@@ -23,6 +23,7 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.gui.users.CredentialsPromptDialog;
+import gov.va.isaac.gui.util.CopyableLabel;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
@@ -32,6 +33,7 @@ import gov.va.isaac.interfaces.sync.MergeFailOption;
 import gov.va.isaac.interfaces.sync.MergeFailure;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import gov.va.isaac.util.Utility;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,7 +118,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 		
 		url_ = syncService_.substituteURL(url_, syncUsername);
 		
-		Label info = new Label("Sync using " + urlType + ": " + url_);
+		Label info = new CopyableLabel("Sync using " + urlType + ": " + url_);
 		info.setTooltip(new Tooltip(url_));
 		
 		titleBox.getChildren().add(info);
@@ -232,7 +234,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 		try
 		{
 			UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-			if (syncService_.isLocationConfigured())
+			if (syncService_.isRootLocationConfiguredForSCM())
 			{
 				addLine("Setting Remote Address");
 				
@@ -266,8 +268,6 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 				}
 			}
 			
-			//TODO test merge conflict resolution
-			
 			if (cancelRequested_)
 			{
 				addLine("Cancelled");
@@ -276,6 +276,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 			
 			Set<String> changedFiles = new HashSet<>();
 			
+			//recover from a previous merge fail state that didn't get resolved for whatever reason
 			try
 			{
 				Set<String> conflictFiles = syncService_.getFilesInMergeConflict();
@@ -318,26 +319,32 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 			addLine("Performing remote sync");
 			try
 			{
-				addLine(syncService_.getLocallyModifiedFileCount() + " local modifications to be sent");
-				
-				CountDownLatch await = new CountDownLatch(1);
+				int modifiedFileCount = syncService_.getLocallyModifiedFileCount();
+				addLine(modifiedFileCount + " local modifications to be sent");
 				
 				commitMessage_ = null;
-				Platform.runLater(() ->
+				
+				if (modifiedFileCount > 0)
 				{
-					new CommitMessage(root_.getScene().getWindow()).getMessage(result ->
+					CountDownLatch await = new CountDownLatch(1);
+					
+					
+					Platform.runLater(() ->
 					{
-						commitMessage_ = result;
-						await.countDown();
+						new CommitMessage(root_.getScene().getWindow()).getMessage(result ->
+						{
+							commitMessage_ = result;
+							await.countDown();
+						});
 					});
-				});
-				
-				await.await();
-				
-				if (StringUtils.isBlank(commitMessage_))
-				{
-					addLine("Commit message is required.  Cancelling.");
-					return;
+					
+					await.await();
+					
+					if (StringUtils.isBlank(commitMessage_))
+					{
+						addLine("Commit message is required.  Cancelling.");
+						return;
+					}
 				}
 				
 				boolean successful = false;
@@ -345,12 +352,32 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 				{
 					try
 					{
-						changedFiles.addAll(syncService_.updateCommitAndPush(commitMessage_, up.getSyncUsername(), up.getSyncPassword(), 
-								MergeFailOption.FAIL, (String[])null));
-						successful = true;
+						//If we didn't collect a commit message above, we had no outgoing changes - just sync down
+						if (commitMessage_ == null)
+						{
+							//in theory, it should be impossible to get a merge failure here - but if we do - just run them through the normal 
+							//resolution process.
+							addLine("No local changes - checking for changes on server");
+							changedFiles.addAll(syncService_.updateFromRemote(up.getSyncUsername(), up.getSyncPassword(), MergeFailOption.FAIL));
+							successful = true;
+						}
+						else
+						{
+							//sync down and push back
+							addLine("Sending changes and checking for changes on server");
+							changedFiles.addAll(syncService_.updateCommitAndPush(commitMessage_, up.getSyncUsername(), up.getSyncPassword(), 
+									MergeFailOption.FAIL, (String[])null));
+							successful = true;
+						}
 					}
 					catch (MergeFailure mf)
 					{
+						if (commitMessage_ == null)
+						{
+							//We (somehow) got a merge failure when only doing an update, even though we had no changes to push.
+							//put in a commit message, so on the next loop of the code, we do a push as well, to push the resolution.
+							commitMessage_ = "Merge Failure Resolution";
+						}
 						changedFiles.addAll(resolveMergeFailure(mf));
 					}
 					catch (AuthenticationException ae)
@@ -421,7 +448,29 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 			addLine("Processing the changed files (" + changedFiles.size() + ")");
 			for (String s : changedFiles)
 			{
-				//TODO call OTF with changesets
+				log.debug("Post processing {} after change during sync", s);
+				File f = new File(syncService_.getRootLocation(), s);
+				if (f.getName().equals(UserProfileManager.PREFS_FILE_NAME) && f.getParentFile().getName().equals(ExtendedAppContext.getCurrentlyLoggedInUser()))
+				{
+					addLine("Rereading current user profile");
+					try
+					{
+						AppContext.getService(UserProfileManager.class).rereadProfile();
+					}
+					catch (IOException e)
+					{
+						log.error("Error rereading changed user profile!", e);
+						AppContext.getCommonDialogs().showErrorDialog("Unexpected error reading updated user profile", e);
+					}
+				}
+				else if (f.getName().toLowerCase().endsWith(".foo"))
+				{
+					//TODO process changset
+				}
+				else
+				{
+					log.info("No processing done for changed file {}", f.getAbsolutePath());
+				}
 			}
 			addLine("Syncronization complete!");
 		}
