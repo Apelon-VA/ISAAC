@@ -41,8 +41,6 @@ public abstract class SearchTypeModel {
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
 
-	//final protected BooleanProperty searchRunning = SearchModel.getSearchRunning();
-
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
 	abstract protected boolean isValidSearch(String errorDialogTitle);
