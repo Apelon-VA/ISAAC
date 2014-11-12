@@ -112,16 +112,17 @@ public class SyncServiceGIT implements ProfileSyncI
 			private HashMap<Integer, BooleanSupplier> enabledMap = new HashMap<>();
 			
 			{
+				//Note- JSCH is _really_  verbose at the INFO level, so I'm mapping info to DEBUG.
 				logMap.put(com.jcraft.jsch.Logger.DEBUG, log::debug);
 				logMap.put(com.jcraft.jsch.Logger.ERROR, log::error);
 				logMap.put(com.jcraft.jsch.Logger.FATAL, log::error);
-				logMap.put(com.jcraft.jsch.Logger.INFO, log::info);
+				logMap.put(com.jcraft.jsch.Logger.INFO, log::debug);
 				logMap.put(com.jcraft.jsch.Logger.WARN, log::warn);
 				
 				enabledMap.put(com.jcraft.jsch.Logger.DEBUG, log::isDebugEnabled);
 				enabledMap.put(com.jcraft.jsch.Logger.ERROR, log::isErrorEnabled);
 				enabledMap.put(com.jcraft.jsch.Logger.FATAL, log::isErrorEnabled);
-				enabledMap.put(com.jcraft.jsch.Logger.INFO, log::isInfoEnabled);
+				enabledMap.put(com.jcraft.jsch.Logger.INFO, log::isDebugEnabled);
 				enabledMap.put(com.jcraft.jsch.Logger.WARN, log::isWarnEnabled);
 			}
 			@Override
@@ -542,7 +543,7 @@ public class SyncServiceGIT implements ProfileSyncI
 					}
 					else
 					{
-						filesChangedDuringPull = listFilesChangedInCommit(git.getRepository(), headAfterMergeID);
+						filesChangedDuringPull = listFilesChangedInCommit(git.getRepository(), masterIdBeforeMerge, headAfterMergeID);
 					}
 				}
 			}
@@ -739,10 +740,11 @@ public class SyncServiceGIT implements ProfileSyncI
 			RevCommit rc = git.commit().setMessage("Merging with user specified merge failure resolution for files " + resolutions.keySet()).call();
 			
 			git.notesRemove().setObjectId(commitWithPotentialNote).call();
-			Set<String> filesChangedInCommit = listFilesChangedInCommit(git.getRepository(), rc);
+			Set<String> filesChangedInCommit = listFilesChangedInCommit(git.getRepository(), commitWithPotentialNote.getId(), rc);
 			
 			//When we auto resolve to KEEP_REMOTE - these will have changed - make sure they are in the list.
 			//TODO seems like this shouldn't really be necessary - need to look into the listFilesChangedInCommit algorithm closer.
+			//this might already be fixed by the rework on 11/12/14, but no time to validate at the moment.
 			for (Entry<String, MergeFailOption> r : resolutions.entrySet())
 			{
 				if (MergeFailOption.KEEP_REMOTE == r.getValue())
@@ -790,23 +792,23 @@ public class SyncServiceGIT implements ProfileSyncI
 		
 	}
 
-	private HashSet<String> listFilesChangedInCommit(Repository repository, AnyObjectId commitId) throws MissingObjectException, IncorrectObjectTypeException, IOException
+	private HashSet<String> listFilesChangedInCommit(Repository repository, AnyObjectId beforeID, AnyObjectId afterID) throws MissingObjectException, IncorrectObjectTypeException, IOException
 	{
 		log.info("calculating files changed in commit");
 		HashSet<String> result = new HashSet<>();
 		RevWalk rw = new RevWalk(repository);
-		RevCommit commit = rw.parseCommit(commitId);
-		RevCommit parent = rw.parseCommit(commit.getParent(0).getId());
+		RevCommit commitBefore = rw.parseCommit(beforeID);
+		RevCommit commitAfter = rw.parseCommit(afterID);
 		DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
 		df.setRepository(repository);
 		df.setDiffComparator(RawTextComparator.DEFAULT);
 		df.setDetectRenames(true);
-		List<DiffEntry> diffs = df.scan(parent.getTree(), commit.getTree());
+		List<DiffEntry> diffs = df.scan(commitBefore.getTree(), commitAfter.getTree());
 		for (DiffEntry diff : diffs)
 		{
 			result.add(diff.getNewPath());
 		}
-		log.debug("Files changed in commit: {} - {}", commitId.getName(), result);
+		log.debug("Files changed between commits commit: {} and {} - {}", beforeID.getName(), afterID, result);
 		return result;
 	}
 
