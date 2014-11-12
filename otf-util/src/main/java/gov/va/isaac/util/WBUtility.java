@@ -865,6 +865,8 @@ public class WBUtility {
 	{
 		ConceptVersionBI parent = WBUtility.getConceptVersion(concept.getRelationshipsOutgoingActiveIsa().iterator().next().getDestinationNid());
 
+		//TODO wouldn't it be far safer to just look and see if the parent is ISAAC.ISAAC_ROOT ?
+		//And document the method that way?
 		if (!getRootNodeList().contains(parent.getPrimordialUuid())) {
 			return getRootConcept(parent);
 		} else {
