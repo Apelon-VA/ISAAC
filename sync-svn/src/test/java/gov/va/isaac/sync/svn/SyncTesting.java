@@ -44,6 +44,8 @@ public class SyncTesting
 
 		System.out.println(ssg.getFilesInMergeConflict());
 		System.out.println(ssg.getLocallyModifiedFileCount());
-		ssg.addFiles("foo3");
+		//ssg.addFiles("foo3");
+		//ssg.removeFiles("b");
+		ssg.addUntrackedFiles();
 	}
 }
