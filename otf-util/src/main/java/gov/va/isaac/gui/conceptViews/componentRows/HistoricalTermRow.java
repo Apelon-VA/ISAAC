@@ -3,7 +3,10 @@ package gov.va.isaac.gui.conceptViews.componentRows;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.util.WBUtility;
+
+import java.io.IOException;
 import java.util.Collection;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -11,6 +14,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +58,43 @@ public class HistoricalTermRow extends TermRow {
 			Label descPathLabel = labelHelper.createLabel(dv, WBUtility.getPathString(dv), ComponentType.DESCRIPTION, 0);
 			
 			if (desc.isUncommitted()) {
-				descLabel.setUnderline(true);
-				descTypeLabel.setUnderline(true);
-				descCaseLabel.setUnderline(true);
-				descLangLabel.setUnderline(true);
+				if (desc.getVersions().size() == 1) {
+					Font f = descLabel.getFont();
+					descLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+					f = descTypeLabel.getFont();
+					descTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+					f = descCaseLabel.getFont();
+					descCaseLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+
+					f = descLangLabel.getFont();
+					descLangLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+				} else {
+					ComponentChronicleBI<?> chronicle = desc.getChronicle();
+					DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+		
+					if (!descLabel.getText().equals(origVersion.getText())) {
+						descLabel.setUnderline(true);
+					}
+					try {
+						if (WBUtility.getConceptVersion(desc.getConceptNid()).getPreferredDescription().getNid() != desc.getNid()) {
+					if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+						descTypeLabel.setUnderline(true);
+							}
+						}
+					} catch (IOException | ContradictionException e) {
+						LOG.error("Failed testing Preferred Term Labels", e);
+					}
+		
+					if (!descCaseLabel.getText().equals(getBooleanValue(origVersion.isInitialCaseSignificant()))) {
+						descCaseLabel.setUnderline(true);
+					}
+					
+					if (!descLangLabel.getText().equals(origVersion.getLang())) {
+						descLangLabel.setUnderline(true);
+					}
+				}
 			}
 
 			//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 

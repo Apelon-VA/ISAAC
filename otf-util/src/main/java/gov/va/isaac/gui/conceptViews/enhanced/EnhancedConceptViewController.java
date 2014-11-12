@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.conceptViews;
+package gov.va.isaac.gui.conceptViews.enhanced;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
@@ -146,7 +146,7 @@ public class EnhancedConceptViewController {
 			@Override
 			public void handle(ActionEvent arg0) {
 				try {
-					ExtendedAppContext.getDataStore().forget(concept);
+					ExtendedAppContext.getDataStore().forget(concept.getChronicle());
 
 					clearContents();
 					commitButton.setDisable(true);

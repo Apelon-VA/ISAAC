@@ -537,7 +537,7 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
-		LOG.info("Get concept by nid: '{}'", nid);
+		LOG.debug("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
@@ -865,6 +865,8 @@ public class WBUtility {
 	{
 		ConceptVersionBI parent = WBUtility.getConceptVersion(concept.getRelationshipsOutgoingActiveIsa().iterator().next().getDestinationNid());
 
+		//TODO wouldn't it be far safer to just look and see if the parent is ISAAC.ISAAC_ROOT ?
+		//And document the method that way?
 		if (!getRootNodeList().contains(parent.getPrimordialUuid())) {
 			return getRootConcept(parent);
 		} else {
@@ -1045,6 +1047,7 @@ public class WBUtility {
 		for (ComponentVersionBI comp : componentsInConcept) {
 			if (comp.getPathNid() == devPathNid) {
 				ComponentType type = ComponentTypeHelper.getComponentType(comp);
+				@SuppressWarnings("unused")
 				ComponentChronicleBI<?> cbi = null;
 	
 				if (type == ComponentType.Concept) {
@@ -1077,7 +1080,7 @@ public class WBUtility {
 	
 	public static Set<ComponentVersionBI> getConceptComponents(
 			ConceptVersionBI conceptWithComp) throws IOException, ContradictionException {
-		Set<ComponentVersionBI> retSet = new HashSet();
+		Set<ComponentVersionBI> retSet = new HashSet<>();
 		
 		retSet.add(conceptWithComp);
 		

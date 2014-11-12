@@ -191,7 +191,7 @@ public interface ProfileSyncI
 	/**
 	 * Returns true if the specified location appears to be a SCM store, false otherwise.
 	 */
-	public boolean isLocationConfigured();
+	public boolean isRootLocationConfiguredForSCM();
 	
 	/**
 	 * Check the local SCM status, and get a count of files that have changes that will be pushed.
@@ -199,6 +199,13 @@ public interface ProfileSyncI
 	 */
 	public int getLocallyModifiedFileCount() throws IOException;
 	
+	
+	/**
+	 * Get the list of files currently in a merge-conflicted state.  This should normally return an empty set.  Would typically only be called 
+	 * if a merge sequence was abnormally aborted.  This would allow you to get the files that still need to be merged, then call resolveMergeFailures...
+	 * @throws IOException 
+	 */
+	public Set<String> getFilesInMergeConflict() throws IOException;
 	
 	/**
 	 * An optional method that allows implementations to do an implementation specific substitution on the URL that will be used to connect.

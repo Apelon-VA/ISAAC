@@ -45,7 +45,6 @@ public class CommitMessage extends Stage
 	
 	protected CommitMessage(Window parent)
 	{
-		//HK2 should call this
 		super();
 
 		try
