@@ -20,8 +20,8 @@ package gov.va.isaac.gui.classifier;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.classifier.Classifier;
+import gov.va.isaac.classifier.SnomedSnorocketClassifier;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.gui.util.GridPaneBuilder;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
 import gov.va.isaac.util.WBUtility;
@@ -32,6 +32,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -78,10 +79,10 @@ public class ClassifierView extends GridPane {
 
   /** The request cancel. */
   boolean requestCancel = false;
-  
-  /**  The classifier. */
+
+  /** The classifier. */
   Classifier classifier = null;
-  
+
   /**
    * Instantiates an empty {@link ClassifierView}.
    */
@@ -99,8 +100,10 @@ public class ClassifierView extends GridPane {
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
     @SuppressWarnings("deprecation")
-    javafx.scene.layout.HBox hbox = javafx.scene.layout.HBoxBuilder.create()
-    .alignment(javafx.geometry.Pos.TOP_CENTER).children(cancelButton).build();
+    javafx.scene.layout.HBox hbox =
+        javafx.scene.layout.HBoxBuilder.create()
+            .alignment(javafx.geometry.Pos.TOP_CENTER).children(cancelButton)
+            .build();
 
     builder.addRow(hbox);
     cancelButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -116,7 +119,6 @@ public class ClassifierView extends GridPane {
     setMinWidth(600);
   }
 
-
   /**
    * Perform cycle check and classification.
    *
@@ -129,7 +131,10 @@ public class ClassifierView extends GridPane {
 
     // Update UI.
     pathNameLabel.setText(WBUtility.getConPrefTerm(pathNid));
-
+    
+    // Create classifier
+    classifier = new SnomedSnorocketClassifier();
+    
     // Do work in background.
     task = new ClassifyTask(pathNid);
 
@@ -191,7 +196,7 @@ public class ClassifierView extends GridPane {
    */
   class ClassifyTask extends Task<Boolean> {
     private int pathNid;
-    
+
     /** The export handler. */
     ClassifyTask(int pathNid) {
       this.pathNid = pathNid;
@@ -221,7 +226,7 @@ public class ClassifierView extends GridPane {
         statusLabel.setText("Starting...");
         progressBar.setProgress(0);
       });
-      
+
       // Perform classification
       classifier.classify(pathNid);
 
@@ -273,4 +278,40 @@ public class ClassifierView extends GridPane {
     }
 
   }
+
+  /**
+   * A utility for assembling a {@link GridPane}.
+   */
+  class GridPaneBuilder {
+
+    private final GridPane gridPane;
+
+    private int rowIndex = 0;
+
+    public GridPaneBuilder(GridPane gridPane) {
+      super();
+      this.gridPane = gridPane;
+    }
+
+    public void addRow(String labelText, Node fxNode) {
+
+      // Column 0.
+      Label label = new Label(labelText);
+      gridPane.add(label, 0, rowIndex);
+
+      // Column 1.
+      gridPane.add(fxNode, 1, rowIndex);
+
+      // Increment row index.
+      ++rowIndex;
+    }
+
+    /**
+     * @param fxNode A component to span two columns.
+     */
+    public void addRow(Node fxNode) {
+      gridPane.add(fxNode, 0, rowIndex++, 2, 1);
+    }
+  }
+
 }

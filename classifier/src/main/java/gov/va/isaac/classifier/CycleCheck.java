@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Class CycleCheck. This class is responsible to detect cyclic isa
@@ -35,6 +36,9 @@ import org.apache.log4j.Logger;
  * @version 1.0
  */
 public class CycleCheck {
+
+  /** The Constant LOG. */
+  private static final Logger LOG = LoggerFactory.getLogger(CycleCheck.class);
 
   /** The concepts. Map of id->seen */
   private Map<Long, Boolean> concepts;
@@ -51,19 +55,16 @@ public class CycleCheck {
   /** The reviewed flag. */
   private int reviewed;
 
-  /** The logger. */
-  private Logger LOG;
-
   /**
    * Instantiates an empty {@link CycleCheck}.
    */
   public CycleCheck() {
-    LOG = Logger.getLogger(getClass());
+    //
   }
 
   /**
-   * Cycle detected.  Must set concepts and isa
-   * relationships data structures before running.
+   * Cycle detected. Must set concepts and isa relationships data structures
+   * before running.
    *
    * @return true, if successful
    * @throws FileNotFoundException the file not found exception
@@ -84,12 +85,10 @@ public class CycleCheck {
     }
     if (conceptInLoop.size() > 0) {
       LOG.info("CYCLE DETECTED - Concepts reviewed: " + reviewed);
-      LOG.info("Please get conceptId for detected cycles in file:"
-          + outputFile);
+      LOG.info("Please get conceptId for detected cycles in file:" + outputFile);
       return true;
     }
-    LOG.info("*******NO CYCLE DETECTED***** - Concepts reviewed: "
-        + reviewed);
+    LOG.info("*******NO CYCLE DETECTED***** - Concepts reviewed: " + reviewed);
     return false;
   }
 
