@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.classifier.ClassifierDialogController">
+<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.dialog.ExportFileSettingsDialogController">
   <center>
  
  <GridPane 
@@ -15,7 +15,7 @@
     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
     
 	<!-- Path -->
-    <Label text="Select Path:" minWidth="100"
+    <Label text="Select Path:" minWidth="80";
         GridPane.columnIndex="0" GridPane.rowIndex="1"/>
     <ComboBox fx:id="pathCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20"
              GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -44,5 +44,4 @@
   </GridPane> 
  
   </center>
-  <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 </BorderPane>

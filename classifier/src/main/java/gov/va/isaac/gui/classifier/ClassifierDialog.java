@@ -31,33 +31,40 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 /**
- * A {@link Stage} which can be used to show an export settings dialog.
+ * A {@link Stage} which can be used to show a classifier dialog
  *
- * @author ocarlsen
+ * @author bcarlsenca
  */
+@SuppressWarnings("restriction")
 public class ClassifierDialog extends Stage {
 
-    private final ClassifierDialogController controller;
+  /** The controller. */
+  private final ClassifierDialogController controller;
 
-    public ClassifierDialog() throws IOException {
-        super();
+  /**
+   * Instantiates an empty {@link ClassifierDialog}.
+   *
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  public ClassifierDialog() throws IOException {
+    super();
 
-        setTitle("Classifier");
-        setResizable(true);
+    setTitle("Classifier");
+    setResizable(true);
 
-        Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
-        initOwner(owner);
-        initModality(Modality.WINDOW_MODAL);
-        initStyle(StageStyle.UTILITY);
+    Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
+    initOwner(owner);
+    initModality(Modality.WINDOW_MODAL);
+    initStyle(StageStyle.UTILITY);
 
-        // Load from FXML.
-        URL resource = this.getClass().getResource("ClassifierDialog.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        Parent root = (Parent) loader.load();
-        Scene scene = new Scene(root);
-        setScene(scene);
+    // Load from FXML.
+    URL resource = this.getClass().getResource("ClassifierDialog.fxml");
+    FXMLLoader loader = new FXMLLoader(resource);
+    Parent root = (Parent) loader.load();
+    Scene scene = new Scene(root);
+    setScene(scene);
 
-        this.controller = loader.getController();
-        controller.setVariables(this);
-    }
+    this.controller = loader.getController();
+    controller.setVariables(this);
+  }
 }
