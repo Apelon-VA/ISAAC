@@ -30,7 +30,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.text.Font;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
@@ -53,6 +52,7 @@ import org.slf4j.LoggerFactory;
 public class ConceptViewerTooltipHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerTooltipHelper.class);
 	private static boolean controlKeyPressed = false;
+	private static boolean shiftKeyPressed = false;
 	private EnhancedConceptViewerTooltipCache tooltipCache = new EnhancedConceptViewerTooltipCache();
 
 	EventHandler<Event> getCompTooltipEnterHandler(ComponentVersionBI comp, ComponentType type) {
@@ -60,7 +60,7 @@ public class ConceptViewerTooltipHelper {
 			@Override
 			public void handle(Event event) {
 				Label l = (Label)event.getSource();
-				if (controlKeyPressed) {
+				if (shiftKeyPressed) {
 					boolean errorFound = true;
 					StringBuffer tpText = new StringBuffer();
 	
@@ -88,8 +88,10 @@ public class ConceptViewerTooltipHelper {
 					} else {
 						l.getTooltip().setText(tpText.toString().trim());
 					}
-				} else {
+				} else if (controlKeyPressed){
 					setDefaultTooltip(l, comp, type);
+				} else {
+					l.setTooltip(null);
 				}
 			}
 		};
@@ -189,8 +191,8 @@ public class ConceptViewerTooltipHelper {
 		try {
 			refinCharType = RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()).toString();
 		} catch (NullPointerException npe) {
-			LOG.error("RelationshipType.getRelationshipType() doesn't handle AdditionalRelationship.  Tracker created");
-			refinCharType = "AdditionalRelationshipType not handled properly";
+			LOG.error("RelationshipType.getRelationshipType() doesn't handle Additional OR RF1 Relationship Types.  Tracker created");
+			refinCharType = "Additional and RF1 relationship type not handled properly";
 		} catch (Exception e) {
 			LOG.error("Unknown error in identifying relationship type");
 		}
@@ -227,6 +229,11 @@ public class ConceptViewerTooltipHelper {
 				if (event.getCode() == KeyCode.CONTROL)
 				{
 					controlKeyPressed = false;
+				} 
+
+				if (event.getCode() == KeyCode.SHIFT)
+				{
+					shiftKeyPressed = false;
 				}
 			}
 		};
@@ -239,13 +246,13 @@ public class ConceptViewerTooltipHelper {
 				if (event.getCode() == KeyCode.CONTROL)
 				{
 					controlKeyPressed = true;
+				} 
+
+				if (event.getCode() == KeyCode.SHIFT){
+					shiftKeyPressed = true;
 				}
 			}
 		};
-	}
-
-	boolean getControlKeyPressed() {
-		return controlKeyPressed;
 	}
 
 	private String getStampTooltip(ComponentVersionBI comp) {
