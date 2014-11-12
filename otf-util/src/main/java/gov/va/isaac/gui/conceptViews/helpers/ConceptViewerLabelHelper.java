@@ -147,7 +147,7 @@ public class ConceptViewerLabelHelper {
 				rtClickMenu.getItems().add(modifyComponentMenu);
 			}
 
-			Menu copyIdMenu = addIdMenus(comp);
+			Menu copyIdMenu = addIdMenus(comp, type);
 			copytoClipboardItem.getItems().add(copyIdMenu);
 		}
 
@@ -364,8 +364,8 @@ public class ConceptViewerLabelHelper {
 		return createComponentMenu;
 	}
 	
-	Menu addIdMenus(ComponentVersionBI comp) {
-		Menu copyIdMenu = new Menu("Copy Ids");
+	Menu addIdMenus(ComponentVersionBI comp, ComponentType type) {
+		Menu copyIdMenu = new Menu("Copy " + type + " Ids");
 		MenuItem sctIdItem = new MenuItem("SctId");
 		MenuItem uuidItem = new MenuItem("UUID");
 		MenuItem nidItem = new MenuItem("Native Id");
