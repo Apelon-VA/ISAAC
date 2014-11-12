@@ -66,7 +66,7 @@ public class DynamicRefexHelper {
 				DynamicRefexHelper.displayDynamicRefex(refex);
 			}
 		} catch (IOException e) {
-			LOG.warn("Failed diplaying refexes in concept " + (desc != null ? desc : "") + ". Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
+			LOG.warn("Failed diplaying sememes in concept " + (desc != null ? desc : "") + ". Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 			e.printStackTrace();
 		}
 	}

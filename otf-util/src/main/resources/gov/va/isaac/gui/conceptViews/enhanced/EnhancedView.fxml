@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="enhancedConceptPane" focusTraversable="true" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptViewController">
+	<children>
+		<BorderPane minHeight="400.0" minWidth="600.0" style="-fx-background-color: #F5F5F5;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+			<top>
+				<VBox alignment="TOP_CENTER" maxWidth="1.7976931348623157E308">
+					<children>
+						<VBox>
+							<children>
+								<GridPane alignment="TOP_CENTER" vgap="10.0">
+									<columnConstraints>
+										<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+										<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+										<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+									</columnConstraints>
+									<rowConstraints>
+										<RowConstraints vgrow="SOMETIMES" />
+									</rowConstraints>
+									<children>
+										<RadioButton fx:id="basicRadio" mnemonicParsing="false" selected="true" text="Basic" GridPane.halignment="CENTER">
+											<toggleGroup>
+												<ToggleGroup fx:id="viewGroup" />
+											</toggleGroup>
+										</RadioButton>
+										<RadioButton fx:id="detailedRadio" mnemonicParsing="false" text="Detailed" toggleGroup="$viewGroup" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+										<RadioButton fx:id="historicalRadio" mnemonicParsing="false" text="Historical" toggleGroup="$viewGroup" GridPane.columnIndex="2" GridPane.halignment="CENTER" />
+									</children>
+									<VBox.margin>
+										<Insets left="5.0" right="5.0" top="5.0" />
+									</VBox.margin>
+								</GridPane>
+								<Pane prefHeight="2.0" style="-fx-background-color: black;">
+									<VBox.margin>
+										<Insets bottom="5.0" left="25.0" right="25.0" top="5.0" />
+									</VBox.margin>
+								</Pane>
+							</children>
+						</VBox>
+						<VBox alignment="CENTER" fillWidth="false">
+							<children>
+								<GridPane alignment="CENTER" hgap="3.0" VBox.vgrow="SOMETIMES">
+									<columnConstraints>
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
+										<ColumnConstraints fillWidth="false" halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" />
+										<ColumnConstraints />
+										<ColumnConstraints />
+										<ColumnConstraints />
+									</columnConstraints>
+									<rowConstraints>
+										<RowConstraints minHeight="10.0" valignment="CENTER" vgrow="SOMETIMES" />
+									</rowConstraints>
+									<children>
+										<VBox fx:id="fsnAnnotVBox" alignment="CENTER" GridPane.vgrow="NEVER" />
+										<Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" textAlignment="CENTER" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.columnSpan="4">
+											<font>
+												<Font name="System Bold" size="24.0" />
+											</font>
+											<GridPane.margin>
+												<Insets />
+											</GridPane.margin>
+											<BorderPane.margin>
+												<Insets bottom="10.0" />
+											</BorderPane.margin>
+										</Label>
+									</children>
+								</GridPane>
+							</children>
+						</VBox>
+					</children>
+					<BorderPane.margin>
+						<Insets bottom="25.0" left="5.0" right="5.0" top="5.0" />
+					</BorderPane.margin>
+				</VBox>
+			</top>
+			<center>
+				<VBox fx:id="enhancedConceptView" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" spacing="15.0" BorderPane.alignment="TOP_CENTER">
+					<children>
+						<VBox alignment="TOP_CENTER" fillWidth="false">
+							<children>
+								<GridPane alignment="CENTER" hgap="3.0" styleClass="zone">
+									<columnConstraints>
+										<ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="10.0" />
+										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="192.0" minWidth="10.0" />
+										<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="151.0" minWidth="10.0" prefWidth="145.0" />
+									</columnConstraints>
+									<rowConstraints>
+										<RowConstraints fillHeight="false" vgrow="NEVER" />
+									</rowConstraints>
+									<children>
+										<VBox fx:id="conAnnotVBox" alignment="CENTER" />
+										<Label fx:id="releaseIdLabel" styleClass="label-orig" text="Unreleased" textFill="#113357" BorderPane.alignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="LEFT">
+											<BorderPane.margin>
+												<Insets left="10.0" />
+											</BorderPane.margin>
+											<font>
+												<Font size="18.0" />
+											</font>
+											<GridPane.margin>
+												<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+											</GridPane.margin>
+											<padding>
+												<Insets right="5.0" />
+											</padding>
+										</Label>
+										<Label fx:id="isPrimLabel" textFill="BLUE" BorderPane.alignment="CENTER" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
+											<BorderPane.margin>
+												<Insets right="10.0" />
+											</BorderPane.margin>
+											<font>
+												<Font size="18.0" />
+											</font>
+											<GridPane.margin>
+												<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+											</GridPane.margin>
+											<padding>
+												<Insets left="5.0" />
+											</padding>
+										</Label>
+									</children>
+								</GridPane>
+							</children>
+							<VBox.margin>
+								<Insets left="5.0" right="5.0" />
+							</VBox.margin>
+						</VBox>
+						<ScrollPane fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" prefViewportWidth="540.0" styleClass="scroll-transparent" VBox.vgrow="SOMETIMES">
+							<content>
+								<VBox fx:id="termVBox" alignment="TOP_CENTER" fillWidth="false" maxWidth="1.7976931348623157E308" styleClass="zone">
+									<VBox.margin>
+										<Insets left="5.0" right="5.0" />
+									</VBox.margin>
+								</VBox>
+							</content>
+						</ScrollPane>
+						<ScrollPane fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent" VBox.vgrow="SOMETIMES">
+							<content>
+								<VBox fx:id="relVBox" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" styleClass="zone">
+									<VBox.margin>
+										<Insets left="5.0" right="5.0" />
+									</VBox.margin>
+								</VBox>
+							</content>
+						</ScrollPane>
+						<ScrollPane fx:id="destScrollPane" fitToHeight="true" fitToWidth="true" maxWidth="1.7976931348623157E308" styleClass="scroll-transparent" VBox.vgrow="SOMETIMES">
+							<content>
+								<VBox fx:id="destVBox" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" styleClass="zone" />
+							</content>
+						</ScrollPane>
+					</children>
+					<BorderPane.margin>
+						<Insets left="25.0" right="25.0" />
+					</BorderPane.margin>
+				</VBox>
+			</center>
+			<bottom>
+				<VBox alignment="CENTER" maxWidth="1.7976931348623157E308" minWidth="-Infinity" spacing="45.0" BorderPane.alignment="CENTER">
+					<children>
+						<GridPane alignment="CENTER" BorderPane.alignment="CENTER">
+							<columnConstraints>
+								<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+								<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+								<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+							</columnConstraints>
+							<rowConstraints>
+								<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+							</rowConstraints>
+							<children>
+								<Button fx:id="previousButton" mnemonicParsing="false" styleClass="button-green" text="Previous Concept" GridPane.halignment="CENTER">
+									<font>
+										<Font name="System Bold" size="12.0" />
+									</font>
+								</Button>
+								<Button fx:id="closeButton" mnemonicParsing="false" styleClass="button-green" text="Close View" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+									<font>
+										<Font name="System Bold" size="12.0" />
+									</font>
+								</Button><Button fx:id="commitButton" mnemonicParsing="false" styleClass="button-green" text="Commit" GridPane.columnIndex="2" GridPane.halignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Button><Button fx:id="cancelButton" mnemonicParsing="false" styleClass="button-green" text="Cancel Changes" GridPane.columnIndex="3" GridPane.halignment="CENTER">
+<font>
+<Font name="System Bold" size="12.0" />
+</font>
+</Button>
+							</children>
+						</GridPane>
+					</children>
+					<BorderPane.margin>
+						<Insets bottom="15.0" top="50.0" />
+					</BorderPane.margin>
+				</VBox>
+			</bottom>
+		</BorderPane>
+	</children>
+</AnchorPane>

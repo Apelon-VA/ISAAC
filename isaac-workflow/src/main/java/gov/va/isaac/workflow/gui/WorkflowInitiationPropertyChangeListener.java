@@ -20,8 +20,10 @@ package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
-import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.utility.CommitListenerI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
@@ -55,7 +58,8 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Singleton
-public class WorkflowInitiationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI
+@Named (value="Workflow Initiation")
+public class WorkflowInitiationPropertyChangeListener implements PropertyChangeListener, ServicesToPreloadI, CommitListenerI
 {
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private boolean enabled = false;
@@ -68,24 +72,44 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 		// for HK2 to create
 	}
 	
+	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.CommitListenerI#getListenerName()
+	 */
+	@Override
+	public String getListenerName()
+	{
+		return "Workflow Initiation";
+	}
+
 	public boolean isEnabled()
 	{
 		return enabled;
 	}
 	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.CommitListenerI#disable()
+	 */
+	@Override
 	public void disable()
 	{
 		if (enabled)
 		{
 			LOG.info("Disabling the workflow commit listener");
+			//TODO file yet another OTF bug - this doesn't work.  We still get property change notifications after calling remove... 
 			ExtendedAppContext.getDataStore().removePropertyChangeListener(this);
 			enabled = false;
 		}
 	}
 	
+	/**
+	 * @see gov.va.isaac.interfaces.utility.CommitListenerI#enable()
+	 */
+	@Override
 	public void enable()
 	{
-		if (!enabled && ExtendedAppContext.getCurrentlyLoggedInUserProfile().isLaunchWorkflowForEachCommit())
+		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+		if (!enabled && loggedIn != null && loggedIn.isLaunchWorkflowForEachCommit())
 		{
 			LOG.info("Enabling the workflow commit listener");
 			ExtendedAppContext.getDataStore().addPropertyChangeListener(CONCEPT_EVENT.POST_COMMIT, this);
@@ -99,6 +123,11 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)
 	{
+		//TODO this shouldn't be necessary, but OTF has a bug....
+		if (!enabled)
+		{
+			return;
+		}
 		try
 		{
 			if (CONCEPT_EVENT.PRE_COMMIT.name().equals(evt.getPropertyName()))
@@ -165,12 +194,22 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 			}
 			
 			try {
-				UUID componentId = WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
-				List<LocalTask> openTaskList = localTasksService.getOpenOwnedTasksByComponentId(componentId);
-				List<ProcessInstanceCreationRequestI> reqList = processService.getRequestsByComponentId(componentId);
-				
-				if (reqList.isEmpty() && openTaskList.isEmpty() && componentNid != 0) {
-					componentsToWf.add(componentNid);
+				try {
+					UUID componentId = WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
+					int currentConNid = WBUtility.getComponentVersion(componentId).getConceptNid();
+					
+					
+					if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && componentNid != 0) {
+						componentsToWf.add(componentNid);
+					}
+				} catch (NullPointerException npe) {
+					// Retired Component... send up Concept to WF
+					int currentConNid = WBUtility.getComponentChronicle(componentNid).getConceptNid();
+					
+					
+					if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && currentConNid != 0) {
+						componentsToWf.add(currentConNid);
+					}
 				}
 			} catch (DatastoreException e) {
 				LOG.error("Unexpected", e);
@@ -180,6 +219,50 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 		return componentsToWf;
 	}
 	
+	private boolean conceptWithComponentInOpenRequest(int currentConNid) throws DatastoreException {
+		List<ProcessInstanceCreationRequestI> openReqList = processService.getRequests();
+
+		// If have open task, assume that they are working within Workflow
+		for (ProcessInstanceCreationRequestI t : openReqList) {
+			UUID taskCompUuid = UUID.fromString(t.getComponentId());
+			
+			try {
+				int taskConNid = WBUtility.getComponentChronicle(taskCompUuid).getConceptNid();
+		
+				if (taskConNid == currentConNid) {
+					return true;
+				}
+			} catch (Exception e) {
+				LOG.info("Have to handle when concept is not in DB.  Can happen if WF sync not in line with ISAAC new component");
+			}
+		}
+
+		return false;
+	}
+
+
+	private boolean conceptWithComponentInOwnedTask(int currentConNid) throws DatastoreException {
+		List<LocalTask> openTaskList = localTasksService.getOpenOwnedTasks();
+
+		// If have open task, assume that they are working within Workflow
+		for (LocalTask t : openTaskList) {
+			UUID taskCompUuid = UUID.fromString(t.getComponentId());
+			
+			try {
+				int taskConNid = WBUtility.getComponentChronicle(taskCompUuid).getConceptNid();
+		
+				if (taskConNid == currentConNid) {
+					return true;
+				}
+			} catch (Exception e) {
+				LOG.info("Have to handle when concept is not in DB.  Can happen if WF sync not in line with ISAAC new component");
+			}
+		}
+
+		return false;
+	}
+
+
 	/**
 	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
 	 */

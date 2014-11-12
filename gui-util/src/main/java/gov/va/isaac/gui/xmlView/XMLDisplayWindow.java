@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.xmlView;
 
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.XMLViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.XMLViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.XMLUtils;
 import java.util.function.Supplier;
@@ -61,14 +61,25 @@ public class XMLDisplayWindow extends Stage implements XMLViewI
 		super(StageStyle.DECORATED);
 		initModality(Modality.NONE);
 	}
+	
+	
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.XMLViewI#showView(Window, String, Supplier, int, int)
+	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
 	 */
 	@Override
-	public Window showView(Window parent, String title, Supplier<String> xmlContent, int width, int height)
+	public void showView(Window parent)
 	{
 		initOwner(parent);
+		show();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.XMLViewI#showView(Window, String, Supplier, int, int)
+	 */
+	@Override
+	public void setParameters(String title, Supplier<String> xmlContent, int width, int height)
+	{
 		setWidth(width);
 		setHeight(height);
 		setTitle(title);
@@ -97,8 +108,6 @@ public class XMLDisplayWindow extends Stage implements XMLViewI
 			}
 		});
 		
-		show();
-		
 		Utility.execute(() -> 
 		{
 			final StringBuilder formattedContent = new StringBuilder();
@@ -126,7 +135,5 @@ public class XMLDisplayWindow extends Stage implements XMLViewI
 				}
 			});
 		});
-		
-		return this;
 	}
 }

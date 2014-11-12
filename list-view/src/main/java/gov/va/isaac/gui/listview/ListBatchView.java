@@ -22,8 +22,9 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Service;
@@ -44,9 +46,9 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 
-@Service
+@Service @Named(value=SharedServiceNames.DOCKED)
 @Singleton
-public class ListBatchView implements ListBatchViewI
+public class ListBatchView implements ListBatchViewI, DockedViewI
 {
 	ListBatchViewController lbvc_;
 

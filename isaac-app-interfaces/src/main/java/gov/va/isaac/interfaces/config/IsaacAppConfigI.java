@@ -94,67 +94,6 @@ public interface IsaacAppConfigI {
   public URL getScmUrlAsURL();
 
   /**
-   * Distribution repository id.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDistReposId();
-
-  /**
-   * Distribution repository name.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDistReposName();
-
-  /**
-   * Distribution repository Url.
-   * 
-   * @return possible object is {@link String }
-   */
-  public String getDistReposUrl();
-
-  /**
-   * Distribution repository Url.
-   * 
-   * @return the URL
-   */
-  public URL getDistReposUrlAsURL();
-
-  /**
-   * Distribution snapshot repository id.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDistReposSnapId();
-
-  /**
-   * Distribution snapshot repository name.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDistReposSnapName();
-
-  /**
-   * Distribution snapshot repository Url.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDistReposSnapUrl();
-
-  /**
-   * Returns the dist repos snap url as url.
-   *
-   * @return the dist repos snap url as url
-   */
-  public URL getDistReposSnapUrlAsURL();
-
-  /**
    * Database group id.
    * 
    * @return possible object is {@link String }
@@ -244,6 +183,14 @@ public interface IsaacAppConfigI {
    * 
    */
   public URL getChangeSetUrlAsURL();
+  
+  /**
+   * The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.  With SSH urls, such as
+   * "ssh://someuser@csfe.aceworkspace.net..." the contents between 'ssh://' and '@' should be replaced with the currently logged in user's
+   * syncUserName - as specified in that users profile before using this value.
+   * @return the change set url type name
+   */
+  public String getChangeSetUrlTypeName();
 
   /**
    * Default edit path name.

@@ -109,7 +109,7 @@ public class ExportView extends GridPane {
     builder.addRow("Path Name: ", pathNameLabel);
     builder.addRow("Folder Name: ", folderNameLabel);
     builder.addRow("Progress: ", progressBar);
-    progressBar.setMinWidth(400);
+    progressBar.setMinWidth(500);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
     @SuppressWarnings("deprecation")

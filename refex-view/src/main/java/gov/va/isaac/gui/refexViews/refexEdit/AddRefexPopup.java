@@ -127,7 +127,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		VBox topItems = new VBox();
 		topItems.setFillWidth(true);
 
-		title_ = new Label("Create new refex instance");
+		title_ = new Label("Create new sememe instance");
 		title_.getStyleClass().add("titleLabel");
 		title_.setAlignment(Pos.CENTER);
 		title_.prefWidthProperty().bind(topItems.widthProperty());
@@ -190,7 +190,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						catch (Exception e)
 						{
 							selectableConcept_.isValid().setInvalid("The selected concept is not properly constructed for use as an Assemblage concept");
-							logger_.info("Concept not a valid concept for a refex assemblage", e);
+							logger_.info("Concept not a valid concept for a sememe assemblage", e);
 							assemblageIsValid_.set(false);
 						}
 					}
@@ -309,7 +309,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		createRefexFocus_ = null;
 		editRefex_ = refexToEdit;
 		
-		title_.setText("Edit existing refex instance");
+		title_.setText("Edit existing sememe instance");
 		
 		gp_.add(unselectableComponentLabel_, 1, 1);
 		unselectableComponentLabel_.setText(WBUtility.getDescription(editRefex_.getRefex().getAssemblageNid()));
@@ -341,7 +341,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		createRefexFocus_ = setFromType;
 		editRefex_ = null;
 		
-		title_.setText("Create new refex instance");
+		title_.setText("Create new sememe instance");
 
 		if (createRefexFocus_.getComponentNid() != null)
 		{
@@ -595,8 +595,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		catch (Exception e)
 		{
-			logger_.error("Error saving refex", e);
-			AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "There was an error saving the refex", e.getMessage(), this);
+			logger_.error("Error saving sememe", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error", "There was an error saving the sememe", e.getMessage(), this);
 		}
 	}
 
@@ -612,7 +612,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		{
 			throw new RunLevelException("referenced component nid must be set first");
 		}
-		setTitle("Create new Refex");
+		setTitle("Create new Sememe");
 		setResizable(true);
 
 		initOwner(parent);

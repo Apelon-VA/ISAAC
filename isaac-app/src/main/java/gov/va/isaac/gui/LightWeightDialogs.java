@@ -25,6 +25,7 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.ValidBooleanBinding;
 import java.util.function.Consumer;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -35,6 +36,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -108,7 +111,7 @@ public class LightWeightDialogs
 			}
 		};
 
-		ErrorMarkerUtils.setupErrorMarker(txPassword, passwordStack, passwordEmpty.getReasonWhyInvalid());
+		ErrorMarkerUtils.setupErrorMarker(txPassword, passwordStack, passwordEmpty);
 		ImageView lockImage = Images.LOCK.createImageView();
 		StackPane.setMargin(lockImage, new Insets(0, 0, 0, 3));
 		passwordStack.getChildren().add(lockImage);
@@ -138,7 +141,22 @@ public class LightWeightDialogs
 		buttons.getChildren().add(r);  //filler
 		Button cancelButton = new Button("Cancel");
 		cancelButton.setPadding(new Insets(5, 20, 5, 20));
+		cancelButton.setCancelButton(true);
+		//JavaFX is silly:  https://javafx-jira.kenai.com/browse/RT-39145#comment-434189
+		cancelButton.setOnKeyPressed(new EventHandler<KeyEvent>()
+		{
+			@Override
+			public void handle(KeyEvent event)
+			{
+				if (event.getCode() == KeyCode.ENTER)
+				{
+					event.consume();
+					cancelButton.fire();
+				}
+			}
+		});
 		Button loginButton = new Button("Login");
+		loginButton.setDefaultButton(true);
 		loginButton.setPadding(new Insets(5, 20, 5, 20));
 		loginButton.disableProperty().bind(passwordEmpty.not());
 

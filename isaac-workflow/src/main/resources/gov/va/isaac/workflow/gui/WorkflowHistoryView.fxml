@@ -7,10 +7,9 @@
 <?import javafx.scene.text.*?>
 
 <BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowHistoryViewController">
-<center><GridPane fx:id="wfHxGridPane" hgap="15.0" vgap="15.0" BorderPane.alignment="CENTER">
+<center><GridPane fx:id="wfHxGridPane" alignment="TOP_CENTER" hgap="15.0" vgap="25.0" BorderPane.alignment="CENTER">
   <columnConstraints>
-    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" />
-    <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" />
+    <ColumnConstraints fillWidth="false" halignment="CENTER" hgrow="NEVER" />
 <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" />
   </columnConstraints>
 <BorderPane.margin>

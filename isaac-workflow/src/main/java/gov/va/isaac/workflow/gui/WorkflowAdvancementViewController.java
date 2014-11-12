@@ -22,9 +22,9 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
+import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
@@ -67,7 +67,6 @@ public class WorkflowAdvancementViewController
 	private ConceptVersionBI conceptVersion;
 
 	@FXML private BorderPane borderPane;
-	//@FXML private TextArea commentTextField;
 	@FXML private Button closeButton;
 	@FXML private Button advanceButton;
 	@FXML private Label generatedComponentSummary;

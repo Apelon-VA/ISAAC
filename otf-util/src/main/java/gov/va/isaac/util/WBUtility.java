@@ -63,6 +63,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -90,9 +92,6 @@ import org.slf4j.LoggerFactory;
  * @author jefron
  */
 public class WBUtility {
-	//TODO we need to look up paths dynamically in the DB, let the user choose - store the setting / default somewhere in the DB (or user profile?)
-	private static ConceptSpec ISAAC_DEV_PATH = new ConceptSpec("ISAAC development path", "f5c0a264-15af-5b94-a964-bb912ea5634f");
-
 	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
 
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
@@ -117,6 +116,8 @@ public class WBUtility {
 
 	static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
 
+	private static Set<UUID> rootNodeList = null;
+
 	public static TerminologyBuilderBI getBuilder() {
 		if (dataBuilder == null) {
 			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
@@ -125,25 +126,25 @@ public class WBUtility {
 		return dataBuilder;
 	}
 	
-	public static EditCoordinate getEC()  {
-	  if (editCoord == null) {
+	public static EditCoordinate getEC() {
+		if (editCoord == null) {
 			try {
 				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
 				int module = Snomed.CORE_MODULE.getLenient().getNid();
 				int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
 
 				// Use the default edit path in the configuration
-                LOG.info("  DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
+				LOG.info("DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
 				if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
-				  editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
-				  LOG.info("Using path " + 
-				    AppContext.getAppConfiguration().getDefaultEditPathName()
-				    + " as the Edit Coordinate");
+					editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
+					LOG.info("Using path " + 
+					AppContext.getAppConfiguration().getDefaultEditPathName()
+					+ " as the Edit Coordinate");
 				}
 				// Override edit path nid 
-				editCoord =  new EditCoordinate(authorNid, module, editPathNid);
-            } catch (NullPointerException e) {
-	            LOG.error("Edit path UUID does not exist", e);
+				editCoord = new EditCoordinate(authorNid, module, editPathNid);
+			} catch (NullPointerException e) {
+				LOG.error("Edit path UUID does not exist", e);
 			} catch (IOException e) {
 				LOG.error("error configuring edit coordinate", e);
 			}
@@ -216,7 +217,7 @@ public class WBUtility {
 							bestFound = descVer.getText();
 						}
 					} else if ((descVer.getTypeNid() == getSynonymTypeNid() || descVer.getTypeNid() == getSynonymRf1TypeNid()) && 
-							   isPreferred(descVer.getAnnotations())) {
+							isPreferred(descVer.getAnnotations())) {
 						if (descVer.getStatus() == Status.ACTIVE) {
 							if (!ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN()) {
 								return descVer.getText();
@@ -536,7 +537,7 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
-		LOG.info("Get concept by nid: '{}'", nid);
+		LOG.debug("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
 			return null;
@@ -688,27 +689,27 @@ public class WBUtility {
 	 */
 	public static ViewCoordinate getViewCoordinate()
 	{
-	  if (vc == null) {
-          try {
-              vc = StandardViewCoordinates.getSnomedStatedLatest();
-              // Use the default view path in the configuration
-              LOG.info("  DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
-              if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
-                LOG.info("Using path "
-                  + AppContext.getAppConfiguration().getDefaultViewPathName()
-                  + " as the View Coordinate");
-                // Start with standard view coordinate and override the path setting to
-                // use the ISAAC development path
-                Position position = 
-                  dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
-                      UUID.fromString(AppContext.getAppConfiguration()
-                          .getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
-                vc.setViewPosition(position);
-              }
-          } catch (NullPointerException e) {
-            LOG.error("View path UUID does not exist", e);
-          } catch (IOException e) {
-            LOG.error("Unexpected error fetching view coordinates!", e);
+		if (vc == null) {
+			try {
+				vc = StandardViewCoordinates.getSnomedStatedLatest();
+				// Use the default view path in the configuration
+				LOG.info("	DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
+				if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
+				LOG.info("Using path "
+					+ AppContext.getAppConfiguration().getDefaultViewPathName()
+					+ " as the View Coordinate");
+				// Start with standard view coordinate and override the path setting to
+				// use the ISAAC development path
+				Position position = 
+					dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
+						UUID.fromString(AppContext.getAppConfiguration()
+							.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
+				vc.setViewPosition(position);
+				}
+			} catch (NullPointerException e) {
+			LOG.error("View path UUID does not exist", e);
+			} catch (IOException e) {
+			LOG.error("Unexpected error fetching view coordinates!", e);
 			}
 		}
 		
@@ -799,7 +800,7 @@ public class WBUtility {
 	{
 		ArrayList<ConceptVersionBI> results = new ArrayList<>();
 		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getOriginNid()));
@@ -811,20 +812,77 @@ public class WBUtility {
 		return results;
 	}
 
+	public static ArrayList<Integer> getAllChildrenOfConceptAsNids(Integer conceptNid, boolean recursive) throws IOException, ContradictionException
+	{
+		ArrayList<Integer> results = new ArrayList<>();
+		
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : WBUtility.getConceptVersion(conceptNid).getRelationshipsIncomingActiveIsa())
+		{
+			results.add(r.getOriginNid());
+			if (recursive)
+			{
+				results.addAll(getAllChildrenOfConceptAsNids(r.getOriginNid(), recursive));
+			}
+		}
+		return results;
+	}
+
 	/**
-	 * Recursively get Is a children of a concept
+	 * Recursively get Is a parents of a concept
 	 */
 	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
 	{
 		Set<ConceptVersionBI> results = new HashSet<>();
 		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates   https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
 		{
 			results.add(getConceptVersion(r.getDestinationNid()));
 			results.addAll(getConceptAncestors(r.getDestinationNid()));
 		}
 		return results;
+	}
+
+	/**
+	 * Finds just the concept's parents
+	 */
+	public static Set<ConceptVersionBI> getConceptParents(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
+		{
+			results.add(getConceptVersion(r.getDestinationNid()));
+		}
+		return results;
+	}
+
+	/**
+	 * Recursively looks at parents until finds a concept without a parent
+	 */
+	public static ConceptVersionBI getRootConcept(ConceptVersionBI concept) throws IOException, ContradictionException
+	{
+		ConceptVersionBI parent = WBUtility.getConceptVersion(concept.getRelationshipsOutgoingActiveIsa().iterator().next().getDestinationNid());
+
+		//TODO wouldn't it be far safer to just look and see if the parent is ISAAC.ISAAC_ROOT ?
+		//And document the method that way?
+		if (!getRootNodeList().contains(parent.getPrimordialUuid())) {
+			return getRootConcept(parent);
+		} else {
+			return parent;
+		}
+	}
+
+	private static Set<UUID> getRootNodeList() {
+		if (rootNodeList == null) {
+			rootNodeList = new HashSet<UUID>();
+			rootNodeList.add(UUID.fromString("ee9ac5d2-a07c-3981-a57a-f7f26baf38d8")); // SCT
+			rootNodeList.add(UUID.fromString("3958d043-9e8c-508e-bf6d-fd9c83a856da")); // LOINC
+			rootNodeList.add(UUID.fromString("ee9ac5d2-a07c-3981-a57a-f7f26baf38d8"));
+		}
+		
+		return rootNodeList;
 	}
 
 	public static ConceptChronicleBI createNewConcept(ConceptChronicleBI parent, String fsn,
@@ -941,7 +999,7 @@ public class WBUtility {
 		dataStore.addUncommittedNoChecks(con);
 	}
 	
-	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException  {
+	public static List<ConceptChronicleBI> getPathConcepts() throws ValidationException, IOException, ContradictionException {
 		ConceptChronicleBI pathRefset =
 				dataStore.getConcept(TermAux.PATH_REFSET.getLenient().getPrimordialUuid());
 			Collection<? extends RefexChronicleBI<?>> members = pathRefset.getRefsetMembers();
@@ -980,29 +1038,38 @@ public class WBUtility {
 		editCoord.setEditPathListSpecs(editPaths);
 		
 		
-		// Create new version of Component
-		ComponentVersionBI comp = getComponentVersion(compUuid);
-		ComponentType type = ComponentTypeHelper.getComponentType(comp);
-		ComponentChronicleBI<?> cbi = null;
+		// Create new version of all uncommitted components in concept
+		ConceptVersionBI conceptWithComp = WBUtility.getConceptVersion(getComponentVersion(compUuid).getConceptNid());
+		Set<ComponentVersionBI> componentsInConcept = getConceptComponents(conceptWithComp);
+
+		int devPathNid = ExtendedAppContext.getDataStore().getNidForUuids(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()));
 		
-		if (type == ComponentType.Concept) {
-			ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.Description) {
-			DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.Relationship) {
-			RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.Refex) {
-			RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
-		} else if (type == ComponentType.RefexDynamic) {
-			RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc,  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-			cbi = getBuilder().construct(cab);
+		for (ComponentVersionBI comp : componentsInConcept) {
+			if (comp.getPathNid() == devPathNid) {
+				ComponentType type = ComponentTypeHelper.getComponentType(comp);
+				@SuppressWarnings("unused")
+				ComponentChronicleBI<?> cbi = null;
+	
+				if (type == ComponentType.Concept) {
+					ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.Description) {
+					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.Relationship) {
+					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.Refex) {
+					RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				} else if (type == ComponentType.RefexDynamic) {
+					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = getBuilder().construct(cab);
+				}
+			}	
 		}
 		
-		commit(cbi.getEnclosingConcept().getVersion(vc));
+		commit(conceptWithComp.getVersion(vc));
 		
 		// Revert to original Edit path
 		editPaths.clear();
@@ -1011,6 +1078,31 @@ public class WBUtility {
 	}
 	
 	
+	public static Set<ComponentVersionBI> getConceptComponents(
+			ConceptVersionBI conceptWithComp) throws IOException, ContradictionException {
+		Set<ComponentVersionBI> retSet = new HashSet<>();
+		
+		retSet.add(conceptWithComp);
+		
+		for(DescriptionChronicleBI desc : conceptWithComp.getDescriptions()) {
+			retSet.add(desc.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		for(RelationshipChronicleBI rel : conceptWithComp.getRelationshipsOutgoing()) {
+			retSet.add(rel.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		for(RefexChronicleBI<?> refsetMember : conceptWithComp.getRefsetMembers()) {
+			retSet.add(refsetMember.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		for(RefexDynamicChronicleBI<?> dynRef : conceptWithComp.getRefexesDynamic()) {
+			retSet.add(dynRef.getVersion(conceptWithComp.getViewCoordinate()));
+		}
+
+		return retSet;
+	}
+
 	/**
 	 * Returns the uuid for fsn and pt based on the ConceptCB assignment algorithm.
 	 *

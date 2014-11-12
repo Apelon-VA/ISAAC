@@ -53,9 +53,13 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -223,6 +227,8 @@ public class ConceptNode implements ConceptLookupCallback
 				if (newValue == null)
 				{
 					logger.debug("Combo Value Changed - null entry");
+					c_ = null;
+					return;
 				}
 				else
 				{
@@ -471,5 +477,11 @@ public class ConceptNode implements ConceptLookupCallback
 				cb_.setValue(new SimpleDisplayConcept("", 0));
 			}
 		});
+	}
+
+	public void disableEdit() {
+		//TODO disable drag and drop
+		cb_.setEditable(false);
+		cb_.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(0), new Insets(0))));
 	}
 }

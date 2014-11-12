@@ -8,33 +8,29 @@
 
 <BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.classifier.ClassifierDialogController">
   <center>
-    <FlowPane alignment="CENTER" hgap="10.0" prefHeight="-1.0" prefWidth="-1.0" prefWrapLength="480.0" style="-fx-background-color:white;" vgap="10.0">
-      <children>
-<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-<children>
-        <Label text="Select Path:">
-          <FlowPane.margin>
-            <Insets />
-          </FlowPane.margin>
-<opaqueInsets>
-<Insets />
-</opaqueInsets>
-<HBox.margin>
-<Insets right="5.0" />
-</HBox.margin>
-        </Label>
-        <ComboBox fx:id="pathCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20">
-          <items>
-            <FXCollections fx:factory="observableArrayList">
-              <String fx:value="Item 1" />
-              <String fx:value="Item 2" />
-              <String fx:value="Item 3" />
-            </FXCollections>
-          </items>
-        </ComboBox>
-</children>
-</HBox>
-        <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0">
+ 
+ <GridPane 
+    xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+    alignment="center" hgap="10" vgap="10" styleClass="root">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+    
+	<!-- Path -->
+    <Label text="Select Path:" minWidth="100"
+        GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <ComboBox fx:id="pathCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20"
+             GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <items>
+        <FXCollections fx:factory="observableArrayList">
+          <String fx:value="Item 1" />
+          <String fx:value="Item 2" />
+          <String fx:value="Item 3" />
+        </FXCollections>
+      </items>
+    </ComboBox> 
+
+    <!-- buttons -->
+    <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0"
+    	GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2">
           <children>
             <Button defaultButton="true" mnemonicParsing="false" onAction="#handleOk" text="Ok" underline="false">
               <HBox.margin>
@@ -43,14 +39,10 @@
             </Button>
             <Button alignment="BASELINE_RIGHT" cancelButton="true" mnemonicParsing="false" onAction="#handleCancel" text="Cancel" />
           </children>
-        </HBox>
-      </children>
-      <padding>
-        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-      </padding>
-    </FlowPane>
+    </HBox>    
+
+  </GridPane> 
+ 
   </center>
-  <padding>
-    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-  </padding>
+  <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 </BorderPane>

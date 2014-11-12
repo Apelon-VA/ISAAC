@@ -9,11 +9,14 @@ import gov.va.isaac.gui.conceptViews.componentRows.RelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
+import gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptDynamicRefexPopup;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.ConceptViewMode;
-import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +40,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 
 import javax.validation.ValidationException;
 
@@ -48,6 +52,7 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class EnhancedConceptBuilder {
 	
@@ -94,7 +99,7 @@ public class EnhancedConceptBuilder {
 		con = concept;
 		
 		executeConceptBuilder();
-		executeTermBuilder();
+		executeTermBuilder(mode);
 		executeRelBuilder(mode);
 	}
 	
@@ -137,31 +142,37 @@ public class EnhancedConceptBuilder {
 	
 	
 	// Description Methods (one)
-	private void executeTermBuilder() {
+	private void executeTermBuilder(ConceptViewMode mode) {
 		// Descriptions
 		try {
 			// Sort Descriptions filtering out FSN and special storage for PT
 			Map<Integer, Set<DescriptionVersionBI<?>>> sortedDescs = new HashMap<>();
 			DescriptionVersionBI<?> ptDesc = null;
+			DescriptionVersionBI<?> fsnDesc = null;
 			
 			for (DescriptionVersionBI<?> desc : con.getDescriptionsActive()) {
-				if (desc.getNid() != con.getFullySpecifiedDescription().getNid()) {
-					if (desc.getNid() == con.getPreferredDescription().getNid()) {
-						ptDesc = desc;
-					} else {
-						if (!sortedDescs.containsKey(desc.getTypeNid())) {
-							Set<DescriptionVersionBI<?>> descs = new HashSet<>();
-							sortedDescs.put(desc.getTypeNid(), descs);
-						}
-	
-						sortedDescs.get(desc.getTypeNid()).add(desc);
+				if (desc.getNid() == con.getFullySpecifiedDescription().getNid()) {
+					fsnDesc = desc;
+				} else if (desc.getNid() == con.getPreferredDescription().getNid()) {
+					ptDesc = desc;
+				} else {
+					if (!sortedDescs.containsKey(desc.getTypeNid())) {
+						Set<DescriptionVersionBI<?>> descs = new HashSet<>();
+						sortedDescs.put(desc.getTypeNid(), descs);
 					}
+
+					sortedDescs.get(desc.getTypeNid()).add(desc);
 				}
 			}
 		   	
 			// Create GridPane
 			tr.createGridPane();
 
+			if (mode != ConceptViewMode.SIMPLE_VIEW) {
+				// Add PT Row to GridPane
+				tr.addTermRow(fsnDesc, false);
+			}
+			
 			// Add PT Row to GridPane
 			tr.addTermRow(ptDesc, true);
 
@@ -268,7 +279,18 @@ public class EnhancedConceptBuilder {
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Initiation");
+		MenuItem refexDynamicItem = new MenuItem("Open Dynamic Refexes");
+		refexDynamicItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				EnhancedConceptDynamicRefexPopup.showDynamicRefexForConcept((Stage)enhancedConceptPane.getScene().getWindow(), 
+																			"Dynamic Refexes", con.getNid());
+			}
+		});
+
+		MenuItem newWorkflowItem = new MenuItem("Send Concept to Workflow Initiation");
 		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -281,35 +303,36 @@ public class EnhancedConceptBuilder {
 			}
 		});
 
-		MenuItem listViewItem = new MenuItem("Send to List View");
+		MenuItem listViewItem = new MenuItem("Send Concept to List View");
 		listViewItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
-				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+				ListBatchViewI lv = AppContext.getService(ListBatchViewI.class, SharedServiceNames.DOCKED);
+				AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI)lv);
 				List<Integer> nidList = new ArrayList<>();
 				nidList.add(con.getNid());
 				lv.addConcepts(nidList);		
 			}
 		});
 
-		MenuItem taxonomyViewItem = new MenuItem("Show in Taxonomy");
+		MenuItem taxonomyViewItem = new MenuItem("Show Concept in Taxonomy");
 		taxonomyViewItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
 			public void handle(ActionEvent event)
 			{
-				AppContext.getService(TaxonomyViewI.class).locateConcept(con.getNid(), null);			
+				AppContext.getService(TaxonomyViewI.class, SharedServiceNames.DOCKED).locateConcept(con.getNid(), null);			
 			}
 		});
 
-		Menu copyIdMenu = labelHelper.addIdMenus(con);
+		MenuItem prefAccModificationMenu = labelHelper.addPrefAcceptModMenu(con);
+		Menu copyIdMenu = labelHelper.addIdMenus(con, ComponentType.CONCEPT);
 		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
 		Menu createComponentMenu = labelHelper.addCreateNewComponent();
 
-		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu, createComponentMenu);
+		rtClickMenu.getItems().addAll(refexDynamicItem, newWorkflowItem, listViewItem, taxonomyViewItem, prefAccModificationMenu, copyIdMenu, modifyComponentMenu, createComponentMenu);
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  

@@ -18,9 +18,9 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.ViewI;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
+
 import gov.va.isaac.util.WBUtility;
 
 import java.util.UUID;

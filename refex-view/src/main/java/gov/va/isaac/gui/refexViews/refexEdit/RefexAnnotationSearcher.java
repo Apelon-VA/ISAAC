@@ -128,7 +128,7 @@ public class RefexAnnotationSearcher implements ProcessUnfetchedConceptDataBI
 	@Override
 	public String getTitle()
 	{
-		return "Find concepts with refex annotation as specified";
+		return "Find concepts with sememe annotation as specified";
 	}
 
 	/**

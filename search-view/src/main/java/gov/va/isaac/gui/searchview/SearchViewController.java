@@ -136,7 +136,7 @@ public class SearchViewController implements TaskCompleteCallback
 	private Tooltip tooltip = new Tooltip();
 	private Integer currentlyEnteredAssemblageNid = null;
 	private FlowPane searchInColumnsHolder = new FlowPane();
-	private enum SearchInOptions {Descriptions, Refexes};
+	private enum SearchInOptions {Descriptions, Sememes};
 
 	public static SearchViewController init() throws IOException
 	{
@@ -163,7 +163,7 @@ public class SearchViewController implements TaskCompleteCallback
 		borderPane.getStylesheets().add(SearchViewController.class.getResource("/isaac-shared-styles.css").toString());
 		
 		searchIn.getItems().add(SearchInOptions.Descriptions);
-		searchIn.getItems().add(SearchInOptions.Refexes);
+		searchIn.getItems().add(SearchInOptions.Sememes);
 		searchIn.getSelectionModel().select(0);
 		
 		tooltip.setText("Enter the description text to search for.  Advanced query syntax such as 'AND', 'NOT' is supported.  You may also enter UUIDs for concepts.");
@@ -185,7 +185,7 @@ public class SearchViewController implements TaskCompleteCallback
 			}
 			else
 			{
-				tooltip.setText("Enter the refex value to search for.  Advanced query syntax such as 'AND', 'NOT', 'OR' is supported for refex data fields that "
+				tooltip.setText("Enter the sememe value to search for.  Advanced query syntax such as 'AND', 'NOT', 'OR' is supported for sememe data fields that "
 						+ "are indexed as string values.  For numeric values, mathematical interval syntax is supported - such as [4,6] or (-5,10]."
 						+ "  You may also search for 1 or more UUIDs and/or NIDs.");
 				optionsContentVBox.getChildren().add(searchInRefexHBox);
@@ -209,8 +209,8 @@ public class SearchViewController implements TaskCompleteCallback
 					Integer[] indexedColumns = LuceneDynamicRefexIndexerConfiguration.readIndexInfo(currentlyEnteredAssemblageNid);
 					if (indexedColumns == null || indexedColumns.length == 0)
 					{
-						searchInRefex.isValid().setInvalid("Refex searches can only be performed on indexed columns in the refex.  The selected "
-								+ "refex does not contain any indexed data columns.  Please configure the indexes to search this refex.");
+						searchInRefex.isValid().setInvalid("Sememe searches can only be performed on indexed columns in the sememe.  The selected "
+								+ "sememe does not contain any indexed data columns.  Please configure the indexes to search this sememe.");
 						optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 					}
 					else
@@ -246,16 +246,16 @@ public class SearchViewController implements TaskCompleteCallback
 						}
 						else
 						{
-							searchInRefex.isValid().setInvalid("Refex searches can only be performed on the data in the refex.  The selected "
-									+ "refex does not contain any data columns.");
+							searchInRefex.isValid().setInvalid("Sememe searches can only be performed on the data in the sememe.  The selected "
+									+ "sememe does not contain any data columns.");
 							optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 						}
 					}
 				}
 				catch (Exception e1)
 				{
-					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Refex Assemblage concept types."
-							+ "  The current value is not a Dynamic Refex Assemblage concept.");
+					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Sememe Assemblage concept types."
+							+ "  The current value is not a Dynamic Sememe Assemblage concept.");
 					currentlyEnteredAssemblageNid = null;
 					optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 					searchInColumnsHolder.getChildren().clear();
@@ -375,8 +375,12 @@ public class SearchViewController implements TaskCompleteCallback
 										}
 										catch (Exception e)
 										{
-											LOG.error("Unexpected error reading refex info", e);
+											LOG.error("Unexpected error reading sememe info", e);
 										}
+									}
+									else
+									{
+										LOG.warn("Unexpected type on match: {}", c);
 									}
 								}
 							}
@@ -498,7 +502,7 @@ public class SearchViewController implements TaskCompleteCallback
 			@Override
 			protected boolean computeValue()
 			{
-				if ((searchIn.getValue() == SearchInOptions.Refexes && searchText.getText().length() > 0) || searchText.getText().length() > 1)
+				if ((searchIn.getValue() == SearchInOptions.Sememes && searchText.getText().length() > 0) || searchText.getText().length() > 1)
 				{
 					return true;
 				}
@@ -658,7 +662,7 @@ public class SearchViewController implements TaskCompleteCallback
 				try
 				{
 					RefexDynamicDataBI data = NumberUtilities.wrapIntoRefexHolder(NumberUtilities.parseNumber(searchString));
-					LOG.debug("Doing a refex search with a numeric value");
+					LOG.debug("Doing a sememe search with a numeric value");
 					ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 					{
 						try
@@ -677,7 +681,7 @@ public class SearchViewController implements TaskCompleteCallback
 					try
 					{
 						Interval interval = new Interval(searchString);
-						LOG.debug("Doing a refex search with an interval value");
+						LOG.debug("Doing a sememe search with an interval value");
 						ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 						{
 							try

@@ -23,12 +23,15 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
@@ -83,7 +86,8 @@ public class SearchHandler
 			final Integer taskId, 
 			final SearchResultsFilter filters,
 			Comparator<CompositeSearchResult> comparator,
-			boolean mergeOnConcepts)
+			boolean mergeOnConcepts,
+			Set<CompositeSearchResult> filterList)
 	{
 		final SearchHandle searchHandle = new SearchHandle();
 
@@ -193,6 +197,8 @@ public class SearchHandler
 								}
 							}
 						}
+					} else {
+						initialSearchResults.addAll(filterList);
 					}
 
 					// sort, filter and merge the results as necessary
@@ -217,7 +223,7 @@ public class SearchHandler
 	 */
 	public static SearchHandle descriptionSearch(String query, int resultLimit, TaskCompleteCallback callback, boolean mergeResultsOnConcepts) {
 		return descriptionSearch(query, resultLimit, false, callback, (Integer)null, (SearchResultsFilter)null, null, 
-				mergeResultsOnConcepts);
+				mergeResultsOnConcepts, null);
 	}
 
 	/**
@@ -233,7 +239,7 @@ public class SearchHandler
 				builder.getTaskId(), 
 				builder.getFilter(),
 				builder.getComparator(),
-				builder.getMergeResultsOnConcept());
+				builder.getMergeResultsOnConcept(), null);
 	}
 
 	private static void processResults(SearchHandle searchHandle, List<CompositeSearchResult> rawResults, 
@@ -325,8 +331,8 @@ public class SearchHandler
 					
 					if (refexIndexer == null)
 					{
-						LOG.warn("No refex indexer found, aborting.");
-						searchHandle.setError(new Exception("No refex indexer available, cannot search"));
+						LOG.warn("No sememe indexer found, aborting.");
+						searchHandle.setError(new Exception("No sememe indexer available, cannot search"));
 					}
 					else
 					{
@@ -418,5 +424,19 @@ public class SearchHandler
 					throw new RuntimeException(e);
 				}
 			}, callback, taskId, filters, comparator, mergeOnConcepts);
+	}
+
+	public static SearchHandle descriptionSearch(SearchBuilder builder,
+			Set<CompositeSearchResult> filterList) {
+		return descriptionSearch(
+				builder.getQuery(), 
+				builder.getSizeLimit(), 
+				builder.isPrefixSearch(), 
+				builder.getCallback(), 
+				builder.getTaskId(), 
+				builder.getFilter(),
+				builder.getComparator(),
+				builder.getMergeResultsOnConcept(),
+				filterList);
 	}
 }

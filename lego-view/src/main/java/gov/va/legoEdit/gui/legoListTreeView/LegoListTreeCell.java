@@ -23,7 +23,7 @@ import gov.va.isaac.gui.htmlView.NativeHTMLViewer;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.XMLViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.XMLViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.legoEdit.formats.LegoXMLUtils;
 import gov.va.legoEdit.gui.ExportDialog;
@@ -404,7 +404,8 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 			@Override
 			public void handle(ActionEvent arg0)
 			{
-				AppContext.getService(XMLViewI.class).showView(treeView.getScene().getWindow(), llbr.getGroupName(), () -> 
+				XMLViewI xmlView = AppContext.getService(XMLViewI.class);
+				xmlView.setParameters(llbr.getGroupName(), () -> 
 				{
 					try
 					{
@@ -416,6 +417,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 						throw new RuntimeException(e);
 					}
 				}, 800, 600);
+				xmlView.showView(treeView.getScene().getWindow());
 			}
 		});
 		mi.setGraphic(Images.XML_VIEW_16.createImageView());

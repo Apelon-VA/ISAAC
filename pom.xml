@@ -120,6 +120,20 @@
                 </exclusions>
             </dependency>
             
+            <dependency>
+                <groupId>org.ihtsdo.otf</groupId>
+                <artifactId>query-jaxb-objects</artifactId>
+                <version>${otf-query.version}</version>
+                <type>jar</type>
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <!-- The native logback implementation (note, the logback api comes from parent) -->
             <dependency> 
                 <groupId>ch.qos.logback</groupId>
@@ -149,6 +163,33 @@
                 <!-- Code should be written against the slf4j-api - which is included below for all decendents.-->
                 <scope>test</scope>
             </dependency>
+
+            <!-- Apache POI -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>3.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>3.7</version>
+            </dependency>
+            
+            <!-- Classifier -->
+            <dependency>
+                <groupId>au.csiro</groupId>
+                <artifactId>snorocket-snapi</artifactId>
+                <version>1.1.20</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-configuration</groupId>
+                <artifactId>commons-configuration</artifactId>
+                <version>1.6</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
     
@@ -302,6 +343,8 @@
         <module>otf-util</module>
         <module>data-model</module>
         <module>import-export</module>
+        <module>content-request</module>
+        <module>classifier</module>
         <module>taxonomy-view</module>
         <module>lego-view</module>
         <module>search-view</module>
@@ -314,6 +357,8 @@
         <module>concept-wizard-view</module>
         <module>isaac-constants</module>
         <module>isaac-drools</module>
+        <module>sync-git</module>
+        <module>sync-view</module>
     </modules>
 
     <reporting>

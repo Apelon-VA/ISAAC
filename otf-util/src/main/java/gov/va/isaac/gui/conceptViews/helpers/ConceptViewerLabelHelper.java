@@ -20,7 +20,10 @@ package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptView;
+import gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptView;
+import gov.va.isaac.gui.conceptViews.enhanced.PreferredAcceptabilityPrompt;
+import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt;
+import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt.RetireConceptResponse;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.DescriptionModelingPopup;
@@ -28,10 +31,13 @@ import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.RelationshipModelingPopup;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
 import gov.va.isaac.util.WBUtility;
-//import gov.va.isaac.workflow.gui.ConceptDetailWorkflow;
+
+import java.io.IOException;
+import java.util.Collection;
+
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -43,19 +49,27 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeChronicleBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,12 +162,12 @@ public class ConceptViewerLabelHelper {
 				rtClickMenu.getItems().add(modifyComponentMenu);
 			}
 
-			Menu copyIdMenu = addIdMenus(comp);
+			Menu copyIdMenu = addIdMenus(comp, type);
 			copytoClipboardItem.getItems().add(copyIdMenu);
 		}
 
 		if (comp != null) {
-			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow");
+			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow on " + type);
 			initiateWorkflowItem.setGraphic(Images.INBOX.createImageView());
 			initiateWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 			{
@@ -228,8 +242,9 @@ public class ConceptViewerLabelHelper {
 		MenuItem editComponentMenu = new MenuItem("Edit");
 		MenuItem retireComponentMenu = new MenuItem("Retire");
 		MenuItem undoComponentMenu = new MenuItem("Undo");
+		
 		modifyComponentMenu.getItems().addAll(editComponentMenu, retireComponentMenu, undoComponentMenu);
-
+		
 		editComponentMenu.setGraphic(Images.EDIT.createImageView());
 		editComponentMenu.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -261,9 +276,45 @@ public class ConceptViewerLabelHelper {
 			{
 				try {
 					if (type == ComponentType.CONCEPT) {
-						// TODO: Retire Concept Wizard
+						ConceptVersionBI con = WBUtility.getConceptVersion(comp.getConceptNid());
+
+						if (!WBUtility.getAllChildrenOfConcept(con, false).isEmpty()) {
+							AppContext.getCommonDialogs().showInformationDialog("Retire Concept Failure", "Cannot retire concept until it has no children");
+						} else {
+							RetireConceptPrompt.retireConcept((Stage)pane.getScene().getWindow(), "Retire Concept: " + WBUtility.getConPrefTerm(comp.getNid()));
+							
+							if (RetireConceptPrompt.getButtonSelected() == RetireConceptResponse.COMMIT) {
+								// Retire Stated Parent Rels
+								Collection<? extends RelationshipVersionBI<?>> rels = con.getRelationshipsOutgoingActiveIsa();
+								for (RelationshipVersionBI<?> r : rels) {
+									if (r.getCharacteristicNid() == SnomedMetadataRf2.STATED_RELATIONSHIP_RF2.getNid()) {
+										retireRelationship(r);
+									}
+								}
+								
+								// Add new Rel
+								int retirementConceptNid = RetireConceptPrompt.getRetirementConceptNid();
+								WBUtility.createNewParent(conceptNid, retirementConceptNid);
+
+								// Retire Con
+								ConceptAttributeAB cab = new ConceptAttributeAB(con.getConceptNid(), con.getConceptAttributesActive().isDefined(), RefexDirective.EXCLUDE);
+								cab.setStatus(Status.INACTIVE);
+								
+								ConceptAttributeChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+								
+								WBUtility.addUncommitted(cabi.getEnclosingConcept());
+								
+								// Commit
+								WBUtility.commit(con);
+							}
+						}
 					} else if (type == ComponentType.DESCRIPTION) {
 						DescriptionVersionBI<?> desc = (DescriptionVersionBI<?>)comp;
+
+						if (desc.isUncommitted()) {
+							ExtendedAppContext.getDataStore().forget(desc);
+						}
+
 						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dcab.setStatus(Status.INACTIVE);
 						
@@ -274,19 +325,27 @@ public class ConceptViewerLabelHelper {
 					} else if (type == ComponentType.RELATIONSHIP) {
 						RelationshipVersionBI<?> rel = (RelationshipVersionBI<?>)comp;
 
-						RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+						if (rel.isUncommitted()) {
+							ExtendedAppContext.getDataStore().forget(rel);
+						}
 
-						rcab.setStatus(Status.INACTIVE);
-						
-						RelationshipChronicleBI rcbi = WBUtility.getBuilder().constructIfNotCurrent(rcab);
-						
-						WBUtility.addUncommitted(rcbi.getEnclosingConcept());
+						retireRelationship(rel);
 					}
 					
 					conceptView.setConcept(comp.getConceptNid());
 				} catch (Exception e) {
-					LOG.error("Failure in retiring comp: " + comp.getPrimordialUuid());
+					LOG.error("Failure in retiring comp: " + comp.getPrimordialUuid(), e);
 				}
+			}
+
+			private void retireRelationship(RelationshipVersionBI<?> rel) throws ValidationException, IOException, InvalidCAB, ContradictionException {
+				RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+
+				rcab.setStatus(Status.INACTIVE);
+				
+				RelationshipChronicleBI rcbi = WBUtility.getBuilder().constructIfNotCurrent(rcab);
+				
+				WBUtility.addUncommitted(rcbi.getEnclosingConcept());
 			}
 		});
 
@@ -356,8 +415,8 @@ public class ConceptViewerLabelHelper {
 		return createComponentMenu;
 	}
 	
-	Menu addIdMenus(ComponentVersionBI comp) {
-		Menu copyIdMenu = new Menu("Copy Ids");
+	Menu addIdMenus(ComponentVersionBI comp, ComponentType type) {
+		Menu copyIdMenu = new Menu("Copy " + type + " Ids");
 		MenuItem sctIdItem = new MenuItem("SctId");
 		MenuItem uuidItem = new MenuItem("UUID");
 		MenuItem nidItem = new MenuItem("Native Id");
@@ -415,6 +474,21 @@ public class ConceptViewerLabelHelper {
 
 	public void setConcept(int nid) {
 		conceptNid = nid;		
+	}
+
+	public MenuItem addPrefAcceptModMenu(ConceptVersionBI con) {
+		MenuItem prefAccModificationMenu = new MenuItem("Define Preferred and Acceptibility");
+		prefAccModificationMenu.setOnAction((e) -> {
+			try {
+				PreferredAcceptabilityPrompt.definePrefAcceptConcept((Stage)pane.getScene().getWindow(), "Select Preferability and Acceptability for Concept: " + con.getPreferredDescription().getText(), con);
+				conceptView.setConcept(con.getNid());
+			} catch (Exception ex) {
+				LOG.error("Pref Accept Modification Panel Error", ex);
+			}
+			
+		});
+		
+		return prefAccModificationMenu;		
 	}
 
 }

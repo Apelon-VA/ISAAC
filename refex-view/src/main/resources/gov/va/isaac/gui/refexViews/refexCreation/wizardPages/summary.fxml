@@ -11,7 +11,7 @@
 	<top>
 		<VBox alignment="TOP_CENTER" BorderPane.alignment="TOP_CENTER">
 			<children>
-				<Label text="Refex Summary" textAlignment="CENTER" BorderPane.alignment="CENTER" VBox.vgrow="NEVER">
+				<Label text="Sememe Summary" textAlignment="CENTER" BorderPane.alignment="CENTER" VBox.vgrow="NEVER">
 					<font>
 						<Font name="System Bold" size="24.0" />
 					</font>
@@ -31,7 +31,7 @@
 						<RowConstraints fillHeight="false" vgrow="NEVER" />
 					</rowConstraints>
 					<children>
-						<Label text="Refex Name">
+						<Label text="Sememe Name">
 							<font>
 								<Font name="System Bold" size="13.0" />
 							</font>
@@ -41,12 +41,12 @@
 								<Font name="System Bold" size="13.0" />
 							</font>
 						</Label>
-						<Label text="Refex Type" GridPane.rowIndex="2">
+						<Label text="Sememe Type" GridPane.rowIndex="2">
 							<font>
 								<Font name="System Bold" size="13.0" />
 							</font>
 						</Label>
-						<Label text="Refex Description" GridPane.rowIndex="3" GridPane.valignment="TOP">
+						<Label text="Sememe Description" GridPane.rowIndex="3" GridPane.valignment="TOP">
 							<font>
 								<Font name="System Bold" size="13.0" />
 							</font>

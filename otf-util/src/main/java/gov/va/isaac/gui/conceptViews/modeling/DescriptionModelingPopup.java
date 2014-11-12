@@ -74,6 +74,11 @@ public class DescriptionModelingPopup extends ModelingPopup
 		desc = (DescriptionVersionBI<?>)origComp;
 		termTf.setText(desc.getText());
 
+		if (!desc.isUncommitted() || (desc.isUncommitted() && desc.getVersions().size() > 1)) {
+			termTf.setEditable(false);
+			termTf.setBackground(notEditableBackground);
+		}
+		
 		try {
 			if (desc.getTypeNid() == SnomedMetadataRf2.SYNONYM_RF2.getNid()) {
 				typeCb.getSelectionModel().select("Synonym");
@@ -165,12 +170,6 @@ public class DescriptionModelingPopup extends ModelingPopup
 				} else {
 					isCapNewSelected.set(false);
 				}
-				
-				if (modificationMade.get() || isCapNewSelected.get()) {
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				}
 			}
 		});
 
@@ -206,12 +205,6 @@ public class DescriptionModelingPopup extends ModelingPopup
 				} else {
 					langCodeNewSelected.set(false);
 				}
-					
-				if (modificationMade.get() || langCodeNewSelected.get()) {
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				}
 			}
 		});
 		gp_.add(languageCodeCb, 2, row);
@@ -237,12 +230,6 @@ public class DescriptionModelingPopup extends ModelingPopup
 					textNewSelected.set(true);
 				} else {
 					textNewSelected.set(false);
-				}
-					
-				if (modificationMade.get() || textNewSelected.get()) {
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
 				}
 			}
 		});
@@ -274,12 +261,6 @@ public class DescriptionModelingPopup extends ModelingPopup
 					typeNewSelected.set(true);
 				} else {
 					typeNewSelected.set(false);
-				}
-
-				if (modificationMade.get() || typeNewSelected.get()) {
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
 				}
 			}
 		});

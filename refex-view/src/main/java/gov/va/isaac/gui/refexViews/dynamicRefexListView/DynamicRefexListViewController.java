@@ -166,7 +166,7 @@ public class DynamicRefexListViewController
 				}
 				catch (Exception e)
 				{
-					conceptNode.isValid().setInvalid("The specified concept is not constructed as a Dynamic Refex Assemblage concept");
+					conceptNode.isValid().setInvalid("The specified concept is not constructed as a Dynamic Sememe Assemblage concept");
 				}
 			}
 			rebuildList(false);
@@ -174,7 +174,7 @@ public class DynamicRefexListViewController
 
 		conceptNodeFilterPlaceholder.getChildren().add(conceptNode.getNode());
 
-		statusLabel.setText("Reading Refexes");
+		statusLabel.setText("Reading Sememes");
 
 		clearFilterButton.setOnAction((event) -> {
 			disableRead = true;
@@ -206,7 +206,7 @@ public class DynamicRefexListViewController
 		mi.setGraphic(Images.SEARCH.createImageView());
 		refexDefinitionsContextMenu_.getItems().add(mi);
 		
-		mi = new MenuItem("Configure Refex Indexing");
+		mi = new MenuItem("Configure Sememe Indexing");
 		mi.setOnAction((action) ->
 		{
 			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
@@ -291,7 +291,7 @@ public class DynamicRefexListViewController
 			}
 		}
 
-		statusLabel.setText("Reading Refexes");
+		statusLabel.setText("Reading Sememes");
 		readingRefexProgress.setVisible(true);
 		SimpleDisplayConcept selectedBefore = refexList.getSelectionModel().getSelectedItem();
 		refexList.getSelectionModel().clearSelection();
@@ -373,21 +373,21 @@ public class DynamicRefexListViewController
 			@Override
 			protected void failed()
 			{
-				log.error("Unexpected error building Refex List", this.getException());
-				AppContext.getCommonDialogs().showErrorDialog("Error reading Dynamic Refexes", this.getException());
+				log.error("Unexpected error building Sememe List", this.getException());
+				AppContext.getCommonDialogs().showErrorDialog("Error reading Dynamic sememes", this.getException());
 				finished();
 			}
 
 			private void finished()
 			{
-				log.debug("Refex Definition refresh complete");
+				log.debug("Sememe Definition refresh complete");
 				refexList.getItems().addAll(filteredList);
 				if (selectedBefore != null && refexList.getItems().contains(selectedBefore))
 				{
 					refexList.getSelectionModel().select(selectedBefore);
 				}
 				showRefexDetails(refexList.getSelectionModel().getSelectedItem());
-				statusLabel.setText("Showing " + filteredList.size() + " of " + allRefexDefinitions.size() + " Refexes");
+				statusLabel.setText("Showing " + filteredList.size() + " of " + allRefexDefinitions.size() + " Sememes");
 				readingRefexProgress.setVisible(false);
 				synchronized (readStatusLock)
 				{
@@ -510,8 +510,8 @@ public class DynamicRefexListViewController
 			@Override
 			protected void failed()
 			{
-				log.error("Unexpected error building selected refex", this.getException());
-				AppContext.getCommonDialogs().showErrorDialog("Error reading Dynamic Refex", this.getException());
+				log.error("Unexpected error building selected sememe", this.getException());
+				AppContext.getCommonDialogs().showErrorDialog("Error reading Dynamic Sememe", this.getException());
 				finished();
 			}
 

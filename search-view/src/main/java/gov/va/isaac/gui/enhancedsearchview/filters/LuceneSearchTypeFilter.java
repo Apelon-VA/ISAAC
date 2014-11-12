@@ -24,6 +24,8 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
@@ -31,7 +33,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-public class LuceneSearchTypeFilter implements SearchTypeFilter<LuceneSearchTypeFilter> {
+public class LuceneSearchTypeFilter extends SearchTypeFilter<LuceneSearchTypeFilter> {
 	private StringProperty searchParameter = new SimpleStringProperty();
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 
@@ -49,17 +51,6 @@ public class LuceneSearchTypeFilter implements SearchTypeFilter<LuceneSearchType
 				}
 			}
 		});
-	}
-
-	public StringProperty getSearchParameterProperty() {
-		return searchParameter;
-	}
-	public String getSearchParameter() {
-		return searchParameter.get();
-	}
-
-	public void setSearchParameter(String searchParameter) {
-		this.searchParameter.set(searchParameter);
 	}
 
 	@Override
@@ -84,10 +75,18 @@ public class LuceneSearchTypeFilter implements SearchTypeFilter<LuceneSearchType
 	}
 
 	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter#getComponentSearchType()
+	 */
+	@Override
+	public ComponentSearchType getComponentSearchType() {
+		return ComponentSearchType.LUCENE;
+	}
+
+	/* (non-Javadoc)
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter#getSearchType()
 	 */
 	@Override
 	public SearchType getSearchType() {
-		return SearchType.LUCENE;
+		return SearchType.TEXT;
 	}
 }

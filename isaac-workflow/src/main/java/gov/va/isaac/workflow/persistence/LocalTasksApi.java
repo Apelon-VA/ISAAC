@@ -20,7 +20,6 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
@@ -85,6 +84,11 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         }
     }
     
+    public void changeUserName(String oldWFUsername, String newWFUsername)
+    {
+        //TODO DAN THIS MUST BE IMPLEMENTED before changing a WF username will work properly!!!!!
+        log.error("The change username functionality is not yet complete - WF state is now corrupt!!!!!!!");
+    }
     
 
     @Override
@@ -308,7 +312,6 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
-            //TODO DAN these gets are still going to be an issue, if they have the wrong username when the initially create local tasks.
             //we will need to change the userId in the DB - if the user enters a different workflow username
             ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername() 
                     + "' and actionStatus = '" + actionStatus + "'");

@@ -6,6 +6,7 @@
 <!-- Version 2014/10/08 -->
 <!-- 
   Changelog:
+  2014/11/04 - Added changeSetUrlType 
   2014/10/08 - Aligned with archetype properties
   2014/09/30 - Initial version
  -->
@@ -80,72 +81,6 @@
               </jxb:property>
             </xs:appinfo>
             <xs:documentation>Browsable URL for PA project code.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="distReposId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Distribution repository id.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Distribution repository id.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="distReposName" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Distribution repository name.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Distribution repository name.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="distReposUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Distribution repository Url.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Distribution repository Url.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="distReposSnapId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Distribution snapshot repository id.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Distribution snapshot repository id.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="distReposSnapName" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Distribution snapshot repository name.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Distribution snapshot repository name.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="distReposSnapUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Distribution snapshot repository Url.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Distribution snapshot repository Url.</xs:documentation>
           </xs:annotation>
         </xs:element>
 
@@ -300,10 +235,25 @@
           <xs:annotation>
             <xs:appinfo>
               <jxb:property>
-                <jxb:javadoc>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</jxb:javadoc>
+                <jxb:javadoc>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.  With SSH urls, such as 
+                  "ssh://someuser@csfe.aceworkspace.net..." the contents between 'ssh://' and '@' will be replaced with the currently logged in user's 
+                  syncUserName - as specified in that users profile.</jxb:javadoc>
               </jxb:property>
             </xs:appinfo>
-            <xs:documentation>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.</xs:documentation>
+            <xs:documentation>The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.  With SSH urls, such as 
+                  "ssh://someuser@csfe.aceworkspace.net..." the contents between 'ssh://' and '@' will be replaced with the currently logged in user's 
+                  syncUserName - as specified in that users profile.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        
+        <xs:element name="changeSetUrlType" type="changeSetSCMType" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Specifies the type of source control system that should be used with the changeSetUrl</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Specifies the type of source control system that should be used with the changeSetUrl</xs:documentation>
           </xs:annotation>
         </xs:element>
 
@@ -362,7 +312,7 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="defaultEditPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+        <xs:element name="defaultEditPathUuid" type="UUID" minOccurs="1" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
               <jxb:property>
@@ -384,7 +334,7 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="defaultViewPathUuid" type="UUID" minOccurs="0" maxOccurs="1">
+        <xs:element name="defaultViewPathUuid" type="UUID" minOccurs="1" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
               <jxb:property>
@@ -421,9 +371,50 @@
     </xs:complexType>
   </xs:element>
   
+  <xs:simpleType name="changeSetSCMType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="GIT" />
+      <xs:enumeration value="SVN" />
+    </xs:restriction>
+  </xs:simpleType>
+  
   <xs:simpleType name="UUID">
     <xs:restriction base="xs:string">
       <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}" />
     </xs:restriction>
-  </xs:simpleType>  
+  </xs:simpleType>
+  
+	<!-- TODO - convert the path stuff up above over to a concept spec, rather than this pair of values stuff we have now...
+	However, none of these paths should be necessary / required anyway - they should simply be marked as default when the DB is built
+	and the runtime can read the default paths from the DB.  The way it is defined here, it is impossible to create correctly anyway
+	because the DB build generates the UUIDs... they are not prespecified - so we won't know what they are until we launch the app...
+	but we can't build the app without specifying these paths.  The easieast solution it to simply get rid of them.  This is yet another
+	thing that we should not have to manually configure multiple times. -->
+	<!--xs:element name="conceptSpec">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="FSN" type="xs:string" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The FSN for the concept</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The FSN for the concept</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="UUID" type="UUID" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:appinfo>
+							<jxb:property>
+								<jxb:javadoc>The UUID for the concept</jxb:javadoc>
+							</jxb:property>
+						</xs:appinfo>
+						<xs:documentation>The UUID for the concept</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element-->
+
 </xs:schema>

@@ -19,7 +19,6 @@
 package gov.va.isaac.interfaces.gui;
 
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import javafx.stage.Stage;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -39,10 +38,13 @@ public interface ApplicationWindowI
 	public Stage getPrimaryStage();
 	
 	/**
-	 * Register a for a callback to be notified when an app shutdown is requested.
-	 * @param listener
+	 * Display the requested docked view, if it is currently hidden / disabled.
 	 */
-	public void registerShutdownListener(ShutdownBroadcastListenerI listener);
-	
 	public void ensureDockedViewIsVisble(DockedViewI view);
+	
+	/**
+	 * A utility call to enable access to the built-in ability of JavaFX to launch a (system) web browser
+	 * @param url
+	 */
+	public void browseURL(String url);
 }

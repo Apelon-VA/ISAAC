@@ -17,11 +17,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>au.csiro</groupId>
-			<artifactId>snorocket-core</artifactId>
-			<version>2.5.3</version>
-		</dependency>
-		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>isaac-app-interfaces</artifactId>
 			<version>${project.parent.version}</version>

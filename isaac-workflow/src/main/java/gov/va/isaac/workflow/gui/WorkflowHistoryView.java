@@ -20,7 +20,7 @@ package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowHistoryViewI;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,7 +29,6 @@ import java.util.UUID;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.Region;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -98,15 +97,7 @@ public class WorkflowHistoryView extends Stage implements WorkflowHistoryViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.ViewI#getView()
-	 */
-	@Override
-	public Region getView() {
-		return controller_.getRootNode();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.TaskWithConceptViewI#getConceptUuid()
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskWithConceptI#getConceptUuid()
 	 */
 	@Override
 	public UUID getConceptUuid() {
@@ -114,7 +105,7 @@ public class WorkflowHistoryView extends Stage implements WorkflowHistoryViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.TaskWithConceptViewI#getConceptNid()
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskWithConceptI#getConceptNid()
 	 */
 	@Override
 	public int getConceptNid() {
@@ -122,7 +113,7 @@ public class WorkflowHistoryView extends Stage implements WorkflowHistoryViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI#setInitialTask(long)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowHistoryViewI#setInitialTask(long)
 	 */
 	@Override
 	public void setTask(long taskId) {
@@ -132,7 +123,7 @@ public class WorkflowHistoryView extends Stage implements WorkflowHistoryViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI#getInitialTask()
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowHistoryViewI#getInitialTask()
 	 */
 	@Override
 	public Long getTask() {

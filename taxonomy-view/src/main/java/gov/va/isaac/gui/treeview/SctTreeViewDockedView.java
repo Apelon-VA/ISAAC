@@ -22,9 +22,10 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.util.WBUtility;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Service;
@@ -45,7 +47,7 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Service
+@Service @Named (value=SharedServiceNames.DOCKED)
 @Singleton
 public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI 
 {
@@ -149,7 +151,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#locateConcept(java.util.UUID, javafx.beans.property.BooleanProperty)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI#locateConcept(java.util.UUID, javafx.beans.property.BooleanProperty)
 	 */
 	@Override
 	public void locateConcept(UUID uuid, BooleanProperty busyIndicator)

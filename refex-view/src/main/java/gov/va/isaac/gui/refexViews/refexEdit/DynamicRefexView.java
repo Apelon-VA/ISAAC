@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.RefexViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
@@ -111,7 +111,7 @@ public class DynamicRefexView implements RefexViewI
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
 	
-	private Text placeholderText = new Text("No Dynamic Refexes were found associated with the component");
+	private Text placeholderText = new Text("No Dynamic Sememes were found associated with the component");
 	private Button backgroundSearchCancelButton_;
 	private ProgressBar progressBar_;
 	private RefexAnnotationSearcher processor_;
@@ -201,14 +201,14 @@ public class DynamicRefexView implements RefexViewI
 			};
 			
 			retireButton_ = new Button(null, Images.MINUS.createImageView());
-			retireButton_.setTooltip(new Tooltip("Retire Selected Refex Extension(s)"));
+			retireButton_.setTooltip(new Tooltip("Retire Selected Sememe Extension(s)"));
 			retireButton_.disableProperty().bind(selectedRowIsActive_.and(currentRowSelected_).not());
 			retireButton_.setOnAction((action) ->
 			{
 				try
 				{
 					YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
-					DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected refex entries?");
+					DialogResponse dr = dialog.showYesNoDialog("Retire?", "Do you want to retire the selected sememe entries?");
 					if (DialogResponse.YES == dr)
 					{
 						ObservableList<TreeItem<RefexDynamicGUI>> selected = ttv_.getSelectionModel().getSelectedItems();
@@ -239,15 +239,15 @@ public class DynamicRefexView implements RefexViewI
 				}
 				catch (Exception e)
 				{
-					logger_.error("Unexpected error retiring refex", e);
-					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the refex", e.getMessage(), rootNode_.getScene().getWindow());
+					logger_.error("Unexpected error retiring sememe", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error retiring the sememe", e.getMessage(), rootNode_.getScene().getWindow());
 				}
 			});
 			
 			t.getItems().add(retireButton_);
 			
 			addButton_ = new Button(null, Images.PLUS.createImageView());
-			addButton_.setTooltip(new Tooltip("Add a new Refex Extension"));
+			addButton_.setTooltip(new Tooltip("Add a new Sememe Extension"));
 			addButton_.setOnAction((action) ->
 			{
 				AddRefexPopup arp = AppContext.getService(AddRefexPopup.class);
@@ -259,7 +259,7 @@ public class DynamicRefexView implements RefexViewI
 			t.getItems().add(addButton_);
 			
 			editButton_ = new Button(null, Images.EDIT.createImageView());
-			editButton_.setTooltip(new Tooltip("Edit a Refex"));
+			editButton_.setTooltip(new Tooltip("Edit a Sememe"));
 			editButton_.disableProperty().bind(currentRowSelected_.not());
 			editButton_.setOnAction((action) ->
 			{
@@ -476,7 +476,7 @@ public class DynamicRefexView implements RefexViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
 	 */
 	@Override
 	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
@@ -951,9 +951,9 @@ public class DynamicRefexView implements RefexViewI
 			}
 			catch (Exception e)
 			{
-				logger_.error("Unexpected error building the refex display", e);
+				logger_.error("Unexpected error building the sememe display", e);
 				//null check, as the error may happen before the scene is visible
-				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the refex display", e.getMessage(), 
+				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the sememe display", e.getMessage(), 
 						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
 			}
 		});
@@ -1232,8 +1232,8 @@ public class DynamicRefexView implements RefexViewI
 					synchronized (dialogThreadBlock_)
 					{
 						YesNoDialog dialog = new YesNoDialog(rootNode_.getScene().getWindow());
-						dr_ = dialog.showYesNoDialog("Scan for Annotation Refex entries?", "This is an annotation style Refex with no index."
-								+ "  Without a supporting index, displaying the refex entries will take a long time.  Scan for entries?");
+						dr_ = dialog.showYesNoDialog("Scan for Annotation Sememe entries?", "This is an annotation style Sememe with no index."
+								+ "  Without a supporting index, displaying the sememe entries will take a long time.  Scan for entries?");
 						if (dr_ == DialogResponse.NO)
 						{
 							placeholderText.setText("No index is available to fetch the entries");
@@ -1322,7 +1322,7 @@ public class DynamicRefexView implements RefexViewI
 
 		if (rowData.size() == 0)
 		{
-			placeholderText.setText("No Dynamic Refexes were found using this Assemblage");
+			placeholderText.setText("No Dynamic Sememes were found using this Assemblage");
 		}
 		return rowData;
 	}

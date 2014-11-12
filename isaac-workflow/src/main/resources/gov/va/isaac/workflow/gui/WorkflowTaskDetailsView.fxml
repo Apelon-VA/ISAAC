@@ -7,7 +7,7 @@
 <?import javafx.scene.text.*?>
 
 <BorderPane fx:id="mainBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.workflow.gui.WorkflowTaskDetailsViewController">
-<center><GridPane hgap="5.0" vgap="5.0" BorderPane.alignment="CENTER">
+<center><GridPane hgap="10.0" vgap="15.0" BorderPane.alignment="CENTER">
   <columnConstraints>
     <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" />
     <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="470.0" />
@@ -15,7 +15,6 @@
   <rowConstraints>
     <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
     <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
-<RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
 <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
 <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
   </rowConstraints>
@@ -37,11 +36,7 @@
 <font>
 <Font name="System Bold" size="12.0" />
 </font>
-</Label><Label text="Comments" GridPane.rowIndex="4">
-<font>
-<Font name="System Bold" size="12.0" />
-</font>
-</Label><Label fx:id="taskIdLabel" GridPane.columnIndex="1" /><Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" /><Label fx:id="componentIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" /><TextArea fx:id="instructionsTextArea" editable="false" prefHeight="60.0" prefWidth="444.0" scrollTop="60.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.vgrow="NEVER" /><TextArea editable="false" prefHeight="60.0" prefWidth="444.0" scrollTop="60.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.vgrow="NEVER" />
+</Label><Label fx:id="taskIdLabel" GridPane.columnIndex="1" /><Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" /><Label fx:id="componentIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" /><TextArea fx:id="instructionsTextArea" editable="false" prefHeight="60.0" prefWidth="444.0" scrollTop="60.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.vgrow="NEVER" />
 </children>
 <padding>
 <Insets left="5.0" right="5.0" top="10.0" />
@@ -83,6 +78,9 @@
 <BorderPane.margin>
 <Insets bottom="15.0" top="15.0" />
 </BorderPane.margin>
+<padding>
+<Insets bottom="10.0" />
+</padding>
 </VBox>
 </bottom>
 </BorderPane>

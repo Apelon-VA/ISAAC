@@ -69,21 +69,22 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 		{
 			assemblageConcept_ = assemblageConcept;
 			root_ = new BorderPane();
+			root_.setPrefWidth(450);
 			
 			VBox titleBox = new VBox();
 			
-			Label title = new Label("Dynamic Refex Index Configuration");
+			Label title = new Label("Dynamic Sememe Index Configuration");
 			title.getStyleClass().add("titleLabel");
 			title.setAlignment(Pos.CENTER);
 			title.setMaxWidth(Double.MAX_VALUE);
 			titleBox.getChildren().add(title);
 			
 			title = new Label(WBUtility.getDescription(assemblageConcept));
-			title.getStyleClass().add("titleLabel");
 			title.setAlignment(Pos.CENTER);
 			title.setMaxWidth(Double.MAX_VALUE);
 			titleBox.getChildren().add(title);
 			
+			titleBox.getStyleClass().add("headerBackground");
 			titleBox.setPadding(new Insets(5, 5, 5, 5));
 			root_.setTop(titleBox);
 			
@@ -98,9 +99,9 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			
 			if (rdud.isAnnotationStyle())
 			{
-				indexMember_ = new CheckBox("Index refex members");
-				indexMember_.setTooltip(new Tooltip("Allows queries to find all components that have an instance of this refex.\n"
-						+ "Only applicable to Annotation-style refexes"));
+				indexMember_ = new CheckBox("Index sememe members");
+				indexMember_.setTooltip(new Tooltip("Allows queries to find all components that have an instance of this sememe.\n"
+						+ "Only applicable to Annotation-style sememes"));
 				if (currentIndexConfig != null)
 				{
 					indexMember_.setSelected(true);
@@ -109,7 +110,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			}
 			else if (rdud.getColumnInfo().length == 0)
 			{
-				vbox.getChildren().add(new Label("Member-style refexes without columns are not indexable"));
+				vbox.getChildren().add(new Label("Member-style Sememes without columns are not indexable"));
 			}
 			
 			for (RefexDynamicColumnInfo col : rdud.getColumnInfo())
@@ -162,7 +163,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 
 			Button ok = new Button("Ok");
 			buttons.getChildren().add(ok);
-			ok.prefWidthProperty().bind(cancel.widthProperty());
+			ok.minWidthProperty().bind(cancel.widthProperty());
 			ok.setOnAction((action) ->
 			{
 				try
@@ -189,12 +190,28 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 								}
 								else
 								{
-									LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(assemblageConcept_.getNid(), toIndex);
+									AppContext.getRuntimeGlobals().disableAllCommitListeners();
+									try
+									{
+										LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(assemblageConcept_.getNid(), toIndex);
+									}
+									finally
+									{
+										AppContext.getRuntimeGlobals().enableAllCommitListeners();
+									}
 								}
 							}
 							else
 							{
-								LuceneDynamicRefexIndexerConfiguration.disableIndex(assemblageConcept_.getNid());
+								AppContext.getRuntimeGlobals().disableAllCommitListeners();
+								try
+								{
+									LuceneDynamicRefexIndexerConfiguration.disableIndex(assemblageConcept_.getNid());
+								}
+								finally
+								{
+									AppContext.getRuntimeGlobals().enableAllCommitListeners();
+								}
 							}
 							return null;
 						}
@@ -244,10 +261,9 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 		stage.initOwner(parent);
 		Scene scene = new Scene(root_);
 		stage.setScene(scene);
-		stage.setTitle("Configure Dynamic Refex Indexing");
+		stage.setTitle("Configure Dynamic Sememe Indexing");
 		stage.getScene().getStylesheets().add(DynamicReferencedItemsView.class.getResource("/isaac-shared-styles.css").toString());
-		stage.setWidth(450);
-		stage.setHeight(400);
+		stage.sizeToScene();
 		stage.show();
 	}
 }
