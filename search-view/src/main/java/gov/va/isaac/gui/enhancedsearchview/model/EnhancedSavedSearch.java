@@ -121,14 +121,16 @@ public class EnhancedSavedSearch {
 		// Save Search popup
 		try {
 			String searchName = getSaveSearchRequest();
-			
+
 			if (searchName != null) {
 				AppContext.getCommonDialogs().showInformationDialog("Search Successfully Saved", "Saved new search:" + searchName);
 			}
 		} catch (Exception e) {
-			AppContext.getCommonDialogs().showErrorDialog("Save Search Failure", "Save Search Failure", "Failed to save new search"); 
+			LOG.error("Failed saving search.  Caught {} \"{}\"", e.getClass().getName(), e.getLocalizedMessage());
+			e.printStackTrace();
+			AppContext.getCommonDialogs().showErrorDialog("Save Search Failure", "Save Search Failure", "Failed to save new search\n\n" + e.getLocalizedMessage()); 
 		}
-}
+	}
 
 	private String getSaveSearchRequest() throws SearchConceptException {
 		SaveSearchPrompt.showContentGatheringDialog(AppContext.getMainApplicationWindow().getPrimaryStage(), "Define Refset");

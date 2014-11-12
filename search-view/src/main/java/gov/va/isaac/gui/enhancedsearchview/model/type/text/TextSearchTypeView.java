@@ -140,7 +140,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 
 						TextField searchParamTextField = new TextField();
 
-						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getSearchType() == componentSearchType) {
+						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getComponentSearchType() == componentSearchType) {
 							searchParamTextField.setText(((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().get());
 							displayableLuceneFilter = ((LuceneSearchTypeFilter)componentContentModel.getSearchType());
 							
