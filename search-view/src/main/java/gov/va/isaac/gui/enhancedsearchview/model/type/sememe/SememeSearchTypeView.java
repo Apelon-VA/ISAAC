@@ -31,20 +31,6 @@ public class SememeSearchTypeView implements SearchTypeSpecificView {
 			Pane bottomPane = setupAssemblageSelection(sememeModel);
 			
 			criteriaPane.getChildren().addAll(topPane, bottomPane);
-		} else {
-			SememeContentSearchTypeFilter filter = sememeModel.getSearchType();
-			
-			if (filter.getSearchParameter() != null) {
-				sememeModel.getSearchText().setText(filter.getSearchParameter());
-			} else {
-				sememeModel.getSearchText().setText("");
-			}
-			
-			if (filter.getAssemblageConcept() != null) {
-				sememeModel.getSearchInRefex().set(filter.getAssemblageConcept());
-			} else {
-				sememeModel.getSearchInRefex().clear();
-			}
 		}
 		
 		return criteriaPane;
