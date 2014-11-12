@@ -34,7 +34,6 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @goal get-and-link-profile-scm
  * @phase generate-sources
  */
-//TODO figure out phase
 public class LinkProfilesToSCMMojo extends ProfilesMojoBase
 {
 	/**
