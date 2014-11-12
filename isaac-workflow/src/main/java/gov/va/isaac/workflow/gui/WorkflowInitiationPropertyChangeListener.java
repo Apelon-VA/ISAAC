@@ -194,12 +194,22 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 			}
 			
 			try {
-				UUID componentId = WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
-				int currentConNid = WBUtility.getComponentVersion(componentId).getConceptNid();
-				
-				
-				if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && componentNid != 0) {
-					componentsToWf.add(componentNid);
+				try {
+					UUID componentId = WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
+					int currentConNid = WBUtility.getComponentVersion(componentId).getConceptNid();
+					
+					
+					if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && componentNid != 0) {
+						componentsToWf.add(componentNid);
+					}
+				} catch (NullPointerException npe) {
+					// Retired Component... send up Concept to WF
+					int currentConNid = WBUtility.getComponentChronicle(componentNid).getConceptNid();
+					
+					
+					if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && currentConNid != 0) {
+						componentsToWf.add(currentConNid);
+					}
 				}
 			} catch (DatastoreException e) {
 				LOG.error("Unexpected", e);
