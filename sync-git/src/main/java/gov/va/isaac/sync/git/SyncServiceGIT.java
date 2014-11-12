@@ -96,7 +96,6 @@ public class SyncServiceGIT implements ProfileSyncI
 	
 	private File localFolder = null;
 	
-	//TODO figure out how we handle prompts for things.  GUI vs no GUI... etc.
 	public SyncServiceGIT(File localFolder)
 	{	
 		this();
