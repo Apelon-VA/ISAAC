@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.conceptViews;
+package gov.va.isaac.gui.conceptViews.enhanced;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;

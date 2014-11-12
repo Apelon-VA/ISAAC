@@ -1,4 +1,4 @@
-package gov.va.isaac.gui.conceptViews;
+package gov.va.isaac.gui.conceptViews.enhanced;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;

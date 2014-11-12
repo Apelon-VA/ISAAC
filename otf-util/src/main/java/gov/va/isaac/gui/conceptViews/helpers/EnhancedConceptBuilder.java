@@ -1,7 +1,6 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.conceptViews.EnhancedConceptDynamicRefexPopup;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.HistoricalRelRow;
@@ -10,6 +9,7 @@ import gov.va.isaac.gui.conceptViews.componentRows.RelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.SimpleTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.TermRow;
+import gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptDynamicRefexPopup;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
@@ -52,6 +52,7 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class EnhancedConceptBuilder {
 	
@@ -326,11 +327,12 @@ public class EnhancedConceptBuilder {
 			}
 		});
 
+		MenuItem prefAccModificationMenu = labelHelper.addPrefAcceptModMenu(con);
 		Menu copyIdMenu = labelHelper.addIdMenus(con, ComponentType.CONCEPT);
 		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
 		Menu createComponentMenu = labelHelper.addCreateNewComponent();
 
-		rtClickMenu.getItems().addAll(refexDynamicItem, newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu, createComponentMenu);
+		rtClickMenu.getItems().addAll(refexDynamicItem, newWorkflowItem, listViewItem, taxonomyViewItem, prefAccModificationMenu, copyIdMenu, modifyComponentMenu, createComponentMenu);
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
