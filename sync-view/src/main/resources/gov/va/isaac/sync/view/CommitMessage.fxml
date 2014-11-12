@@ -44,12 +44,12 @@
 	<bottom>
 		<HBox alignment="CENTER" BorderPane.alignment="CENTER">
 			<children>
-				<Button fx:id="okButton" mnemonicParsing="false" text="  Ok  ">
+				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel">
 					<HBox.margin>
 						<Insets right="20.0" />
 					</HBox.margin>
 				</Button>
-				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel">
+				<Button fx:id="okButton" mnemonicParsing="false" text="  Ok  ">
 					<HBox.margin>
 						<Insets left="20.0" />
 					</HBox.margin>
