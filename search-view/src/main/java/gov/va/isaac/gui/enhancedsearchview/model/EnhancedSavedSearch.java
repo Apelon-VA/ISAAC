@@ -3,20 +3,30 @@ package gov.va.isaac.gui.enhancedsearchview.model;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
+import gov.va.isaac.gui.enhancedsearchview.DynamicRefexHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchDisplayConcept;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.SaveSearchPrompt;
+import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -28,6 +38,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +71,8 @@ public class EnhancedSavedSearch {
 
 	private SearchModel searchModel = new SearchModel();
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedSavedSearch.class);
-
+	private static boolean searchTypeComboBoxChangeListenerSet = false;
+	
 	public EnhancedSavedSearch() {
 		
 		if (searchSaveNameTextField == null) {
@@ -89,6 +103,20 @@ public class EnhancedSavedSearch {
 			loadSavedSearch(); 
 		});
 		
+		if (! searchTypeComboBoxChangeListenerSet) {
+			searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchType>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends SearchType> observable,
+						SearchType oldValue, SearchType newValue) {
+					if (oldValue != newValue) {
+						refreshSavedSearchComboBox();
+					}
+				}
+			});
+
+			searchTypeComboBoxChangeListenerSet = true;
+		}
 	}
 	
 	void loadSavedSearch() {
@@ -201,10 +229,13 @@ public class EnhancedSavedSearch {
 			protected List<SearchDisplayConcept> call() throws Exception {
 				List<ConceptVersionBI> savedSearches = WBUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
 
+				SearchType currentSearchType = searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
 				for (ConceptVersionBI concept : savedSearches) {
-					String fsn = WBUtility.getFullySpecifiedName(concept);
-					String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
-					searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+					if (getCachedSearchTypeFromSearchConcept(concept) == currentSearchType) {
+						String fsn = WBUtility.getFullySpecifiedName(concept);
+						String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
+						searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+					}
 				}
 
 				return searches;
@@ -237,5 +268,43 @@ public class EnhancedSavedSearch {
 
 	public Button getRestoreSearchButton() {
 		return restoreSearchButton;
+	}
+	
+	private static Map<Integer, SearchType> conceptSearchTypeCache = new HashMap<>();
+	private static SearchType getCachedSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		if (conceptSearchTypeCache.get(concept.getNid()) == null) {
+			conceptSearchTypeCache.put(concept.getConceptNid(), getSearchTypeFromSearchConcept(concept));
+		}
+		
+		return conceptSearchTypeCache.get(concept.getNid());
+	}
+	private static SearchType getSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+		int i = 0;
+		for (RefexDynamicVersionBI<?> refex : refexes) {
+//			LOG.debug("Displaying sememe #" + (++i) + " of " + refexes.size());
+//			DynamicRefexHelper.displayDynamicRefex(refex);
+
+			RefexDynamicUsageDescription dud = null;
+			try {
+				dud = refex.getRefexDynamicUsageDescription();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed performing getRefexDynamicUsageDescription(): caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+
+				return null;
+			}
+
+			if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription())) {
+				return SearchType.TEXT;
+			} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription())) {
+				return SearchType.TEXT;
+			} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription())) {
+				return SearchType.SEMEME;
+			}
+		}
+		
+		String error = "Invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
+		LOG.error(error);
+		return null;
 	}
 }
