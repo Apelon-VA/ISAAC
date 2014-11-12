@@ -1,6 +1,7 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.conceptViews.EnhancedConceptDynamicRefexPopup;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailRelRow;
 import gov.va.isaac.gui.conceptViews.componentRows.DetailTermRow;
 import gov.va.isaac.gui.conceptViews.componentRows.HistoricalRelRow;
@@ -16,6 +17,7 @@ import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +40,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 
 import javax.validation.ValidationException;
 
@@ -275,6 +278,17 @@ public class EnhancedConceptBuilder {
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
+		MenuItem refexDynamicItem = new MenuItem("Open Dynamic Refexes");
+		refexDynamicItem.setOnAction(new EventHandler<ActionEvent>()
+		{
+			@Override
+			public void handle(ActionEvent event)
+			{
+				EnhancedConceptDynamicRefexPopup.showDynamicRefexForConcept((Stage)enhancedConceptPane.getScene().getWindow(), 
+																			"Dynamic Refexes", con.getNid());
+			}
+		});
+
 		MenuItem newWorkflowItem = new MenuItem("Send Concept to Workflow Initiation");
 		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 		{
@@ -288,7 +302,7 @@ public class EnhancedConceptBuilder {
 			}
 		});
 
-		MenuItem listViewItem = new MenuItem("Send to List View");
+		MenuItem listViewItem = new MenuItem("Send Concept to List View");
 		listViewItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -302,7 +316,7 @@ public class EnhancedConceptBuilder {
 			}
 		});
 
-		MenuItem taxonomyViewItem = new MenuItem("Show in Taxonomy");
+		MenuItem taxonomyViewItem = new MenuItem("Show Concept in Taxonomy");
 		taxonomyViewItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -316,7 +330,7 @@ public class EnhancedConceptBuilder {
 		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
 		Menu createComponentMenu = labelHelper.addCreateNewComponent();
 
-		rtClickMenu.getItems().addAll(newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu, createComponentMenu);
+		rtClickMenu.getItems().addAll(refexDynamicItem, newWorkflowItem, listViewItem, taxonomyViewItem, copyIdMenu, modifyComponentMenu, createComponentMenu);
 
 		BorderPane bp = (BorderPane)enhancedConceptPane.getChildren().get(0);
 		bp.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {  
