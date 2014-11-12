@@ -53,6 +53,9 @@ import org.slf4j.LoggerFactory;
 public class UscrsContentRequestHandler implements ContentRequestHandler,
     ContentRequestHandlerI {
 
+  /**  The request id counter. */
+  private static int ct = 1;
+  
   /** The nid. */
   private int nid;
 
@@ -177,7 +180,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     // Request ID
     cell = row.createCell(cellnum++);
     cell.setCellStyle(style);
-    cell.setCellValue(createHelper.createRichTextString("1"));
+    cell.setCellValue(createHelper.createRichTextString(ct+""));
 
     // Topic - consider making the user enter this (TODO: )
     cell = row.createCell(cellnum++);
@@ -200,7 +203,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     String fsn = WBUtility.getFullySpecifiedName(concept);
     String st = fsn;
     if (fsn.indexOf('(') != -1) {
-      fsn = fsn.substring(0, fsn.lastIndexOf('('));
+      fsn = fsn.substring(0, fsn.lastIndexOf('(')-1);
     }
     cell = row.createCell(cellnum++);
     cell.setCellStyle(style);
@@ -395,7 +398,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         // spreadsheet
         cell = row.createCell(cellnum++);
         cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString("1"));
+        cell.setCellValue(createHelper.createRichTextString(ct+""));
 
         // Relationship Type
         cell = row.createCell(cellnum++);
