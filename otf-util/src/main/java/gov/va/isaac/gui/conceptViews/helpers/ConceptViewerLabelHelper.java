@@ -152,7 +152,7 @@ public class ConceptViewerLabelHelper {
 		}
 
 		if (comp != null) {
-			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow");
+			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow on " + type);
 			initiateWorkflowItem.setGraphic(Images.INBOX.createImageView());
 			initiateWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 			{
@@ -263,6 +263,11 @@ public class ConceptViewerLabelHelper {
 						// TODO: Retire Concept Wizard
 					} else if (type == ComponentType.DESCRIPTION) {
 						DescriptionVersionBI<?> desc = (DescriptionVersionBI<?>)comp;
+
+						if (desc.isUncommitted()) {
+							ExtendedAppContext.getDataStore().forget(desc);
+						}
+
 						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dcab.setStatus(Status.INACTIVE);
 						
@@ -272,6 +277,10 @@ public class ConceptViewerLabelHelper {
 	
 					} else if (type == ComponentType.RELATIONSHIP) {
 						RelationshipVersionBI<?> rel = (RelationshipVersionBI<?>)comp;
+
+						if (rel.isUncommitted()) {
+							ExtendedAppContext.getDataStore().forget(rel);
+						}
 
 						RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 

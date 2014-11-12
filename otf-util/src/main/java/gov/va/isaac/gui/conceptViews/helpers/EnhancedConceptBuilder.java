@@ -269,7 +269,7 @@ public class EnhancedConceptBuilder {
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Initiation");
+		MenuItem newWorkflowItem = new MenuItem("Send Concept to Workflow Initiation");
 		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
