@@ -110,7 +110,6 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 			return cell;
 		});
 		componentSearchTypeComboBox.setButtonCell(new ListCell<ComponentSearchType>() {
-
 		@Override
 			protected void updateItem(ComponentSearchType componentSearchType, boolean bln) {
 				super.updateItem(componentSearchType, bln); 
@@ -133,7 +132,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 					SearchTypeFilter<?> filter = null;
 
 					componentSearchTypeControlsHbox.getChildren().add(addIsDescendantOfFilterButton);
-					if (componentSearchType == componentSearchType.LUCENE) {
+					if (componentSearchType == ComponentSearchType.LUCENE) {
 						LuceneSearchTypeFilter displayableLuceneFilter = null;
 
 						Label searchParamLabel = new Label("Lucene Param");
@@ -144,11 +143,15 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getSearchType() == componentSearchType) {
 							searchParamTextField.setText(((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().get());
 							displayableLuceneFilter = ((LuceneSearchTypeFilter)componentContentModel.getSearchType());
+							
 						} else {
 							displayableLuceneFilter = new LuceneSearchTypeFilter();
 							filter = displayableLuceneFilter;
 							componentContentModel.setSearchType(filter);
 						}
+
+						addAllSearchFilters(componentContentModel);
+						
 						searchParamTextField.textProperty().addListener(new ChangeListener<String>() {
 							@Override
 							public void changed(
@@ -210,6 +213,55 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 		return componentContentParentPane;
 	}
 
+	private void removeSearchFilter(final NonSearchTypeFilter<?> filter, TextSearchTypeModel model) {
+		// Create temp save list of nodes from searchFilterGridPane
+		List<Node> newNodes = new ArrayList<>(searchFilterGridPane.getChildren());
+
+		HBox row = null;
+		
+		for (Node gridPaneNode : searchFilterGridPane.getChildren()) {
+			if (gridPaneNode.getUserData() == filter) {
+				row = (HBox)gridPaneNode;
+			}
+		}
+		
+		if (row == null) {
+			LOG.error("Specified filter not found in searchFilterGridPane containing {} nodes: {}", searchFilterGridPane.getChildren().size(), filter);
+		}
+		
+		// Remove this node from temp save list of nodes
+		newNodes.remove(row);
+
+		// Remove this filter from searchModel
+		int preRemovalSize = model.getFilters().size();
+		model.getFilters().remove(filter);
+		int postRemovalSize = model.getFilters().size();
+		// Check before/after list size because bugs could cause identical componentContentModel.getFilters() to be created that should be the same exact filter
+		// which would otherwise silently prevent removal from list
+		if (postRemovalSize >= preRemovalSize || model.getFilters().contains(filter)) {
+			LOG.error("FAILED removing filter " + filter + " from searchModel NonSearchTypeFilter list: " + Arrays.toString(model.getFilters().toArray()));
+		} else {
+			LOG.debug("searchModel no longer contains filter " + filter + ": " + Arrays.toString(model.getFilters().toArray()));
+		}
+		
+		// Remove all nodes from searchFilterGridPane
+		removeAllSearchFilters();
+
+		// Recreate and add each node to searchFilterGridPane
+		for (NonSearchTypeFilter<?> filterToAdd : model.getFilters()) {
+			addSearchFilter(filterToAdd, model);
+		}
+	}
+	private void removeAllSearchFilters() {
+		searchFilterGridPane.getChildren().clear();
+	}
+	public void addAllSearchFilters(TextSearchTypeModel model) {
+		removeAllSearchFilters();
+		
+		for (NonSearchTypeFilter<?> filter : model.getFilters()) {
+			addSearchFilter(filter, model);
+		}
+	}
 	private void addSearchFilter(final NonSearchTypeFilter<?> filter, TextSearchTypeModel model) {
 		final int index = searchFilterGridPane.getChildren().size();
 
@@ -224,31 +276,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 		removeFilterButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				// Create temp save list of nodes from searchFilterGridPane
-				List<Node> newNodes = new ArrayList<>(searchFilterGridPane.getChildren());
-
-				// Remove this node from temp save list of nodes
-				newNodes.remove(row);
-
-				// Remove this filter from searchModel
-				int preRemovalSize = model.getFilters().size();
-				model.getFilters().remove(filter);
-				int postRemovalSize = model.getFilters().size();
-				// Check before/after list size because bugs could cause identical componentContentModel.getFilters() to be created that should be the same exact filter
-				// which would otherwise silently prevent removal from list
-				if (postRemovalSize >= preRemovalSize || model.getFilters().contains(filter)) {
-					LOG.error("FAILED removing filter " + filter + " from searchModel NonSearchTypeFilter list: " + Arrays.toString(model.getFilters().toArray()));
-				} else {
-					LOG.debug("searchModel no longer contains filter " + filter + ": " + Arrays.toString(model.getFilters().toArray()));
-				}
-				
-				// Remove all nodes from searchFilterGridPane
-				searchFilterGridPane.getChildren().clear();
-
-				// Recreate and add each node to searchFilterGridPane
-				for (NonSearchTypeFilter<?> filter : model.getFilters()) {
-					addSearchFilter(filter, model);
-				}
+				removeSearchFilter(filter, model);
 			}
 		});
 		row.getChildren().add(removeFilterButton);
@@ -376,7 +404,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 						model.getFilters().set(index, newFilter);
 					
 						// Remove all nodes from searchFilterGridPane
-						searchFilterGridPane.getChildren().clear();
+						removeAllSearchFilters();
 
 						// Recreate and add each node to searchFilterGridPane
 						for (NonSearchTypeFilter<?> f : model.getFilters()) {

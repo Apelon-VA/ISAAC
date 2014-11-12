@@ -95,7 +95,7 @@ public class EnhancedConceptBuilder {
 		con = concept;
 		
 		executeConceptBuilder();
-		executeTermBuilder();
+		executeTermBuilder(mode);
 		executeRelBuilder(mode);
 	}
 	
@@ -138,31 +138,37 @@ public class EnhancedConceptBuilder {
 	
 	
 	// Description Methods (one)
-	private void executeTermBuilder() {
+	private void executeTermBuilder(ConceptViewMode mode) {
 		// Descriptions
 		try {
 			// Sort Descriptions filtering out FSN and special storage for PT
 			Map<Integer, Set<DescriptionVersionBI<?>>> sortedDescs = new HashMap<>();
 			DescriptionVersionBI<?> ptDesc = null;
+			DescriptionVersionBI<?> fsnDesc = null;
 			
 			for (DescriptionVersionBI<?> desc : con.getDescriptionsActive()) {
-				if (desc.getNid() != con.getFullySpecifiedDescription().getNid()) {
-					if (desc.getNid() == con.getPreferredDescription().getNid()) {
-						ptDesc = desc;
-					} else {
-						if (!sortedDescs.containsKey(desc.getTypeNid())) {
-							Set<DescriptionVersionBI<?>> descs = new HashSet<>();
-							sortedDescs.put(desc.getTypeNid(), descs);
-						}
-	
-						sortedDescs.get(desc.getTypeNid()).add(desc);
+				if (desc.getNid() == con.getFullySpecifiedDescription().getNid()) {
+					fsnDesc = desc;
+				} else if (desc.getNid() == con.getPreferredDescription().getNid()) {
+					ptDesc = desc;
+				} else {
+					if (!sortedDescs.containsKey(desc.getTypeNid())) {
+						Set<DescriptionVersionBI<?>> descs = new HashSet<>();
+						sortedDescs.put(desc.getTypeNid(), descs);
 					}
+
+					sortedDescs.get(desc.getTypeNid()).add(desc);
 				}
 			}
 		   	
 			// Create GridPane
 			tr.createGridPane();
 
+			if (mode != ConceptViewMode.SIMPLE_VIEW) {
+				// Add PT Row to GridPane
+				tr.addTermRow(fsnDesc, false);
+			}
+			
 			// Add PT Row to GridPane
 			tr.addTermRow(ptDesc, true);
 
@@ -269,7 +275,7 @@ public class EnhancedConceptBuilder {
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem newWorkflowItem = new MenuItem("Send to Workflow Initiation");
+		MenuItem newWorkflowItem = new MenuItem("Send Concept to Workflow Initiation");
 		newWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override
@@ -306,7 +312,7 @@ public class EnhancedConceptBuilder {
 			}
 		});
 
-		Menu copyIdMenu = labelHelper.addIdMenus(con);
+		Menu copyIdMenu = labelHelper.addIdMenus(con, ComponentType.CONCEPT);
 		Menu modifyComponentMenu = labelHelper.addModifyMenus(ConceptViewerHelper.getConceptAttributes(con), ComponentType.CONCEPT);
 		Menu createComponentMenu = labelHelper.addCreateNewComponent();
 

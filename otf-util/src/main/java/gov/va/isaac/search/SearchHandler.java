@@ -23,20 +23,21 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetItrBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
@@ -85,7 +86,8 @@ public class SearchHandler
 			final Integer taskId, 
 			final SearchResultsFilter filters,
 			Comparator<CompositeSearchResult> comparator,
-			boolean mergeOnConcepts)
+			boolean mergeOnConcepts,
+			Set<CompositeSearchResult> filterList)
 	{
 		final SearchHandle searchHandle = new SearchHandle();
 
@@ -196,11 +198,7 @@ public class SearchHandler
 							}
 						}
 					} else {
-				        NativeIdSetBI allConcepts = ExtendedAppContext.getDataStore().getAllConceptNids();
-			        	NativeIdSetItrBI idsItr = allConcepts.getSetBitIterator();
-				        while (idsItr.next()) {
-							initialSearchResults.add(new CompositeSearchResult(WBUtility.getConceptVersion(idsItr.nid()), 0));
-				        }
+						initialSearchResults.addAll(filterList);
 					}
 
 					// sort, filter and merge the results as necessary
@@ -225,7 +223,7 @@ public class SearchHandler
 	 */
 	public static SearchHandle descriptionSearch(String query, int resultLimit, TaskCompleteCallback callback, boolean mergeResultsOnConcepts) {
 		return descriptionSearch(query, resultLimit, false, callback, (Integer)null, (SearchResultsFilter)null, null, 
-				mergeResultsOnConcepts);
+				mergeResultsOnConcepts, null);
 	}
 
 	/**
@@ -241,7 +239,7 @@ public class SearchHandler
 				builder.getTaskId(), 
 				builder.getFilter(),
 				builder.getComparator(),
-				builder.getMergeResultsOnConcept());
+				builder.getMergeResultsOnConcept(), null);
 	}
 
 	private static void processResults(SearchHandle searchHandle, List<CompositeSearchResult> rawResults, 
@@ -426,5 +424,19 @@ public class SearchHandler
 					throw new RuntimeException(e);
 				}
 			}, callback, taskId, filters, comparator, mergeOnConcepts);
+	}
+
+	public static SearchHandle descriptionSearch(SearchBuilder builder,
+			Set<CompositeSearchResult> filterList) {
+		return descriptionSearch(
+				builder.getQuery(), 
+				builder.getSizeLimit(), 
+				builder.isPrefixSearch(), 
+				builder.getCallback(), 
+				builder.getTaskId(), 
+				builder.getFilter(),
+				builder.getComparator(),
+				builder.getMergeResultsOnConcept(),
+				filterList);
 	}
 }

@@ -51,30 +51,34 @@ public class SearchTypeSelector {
 	
 	private static void changeSearchType() {
 		SearchType selection = searchTypeSelector.getSelectionModel().getSelectedItem();
-		
-		currentType = selection;
-		searchTypeSelector.getSelectionModel().select(selection);
-		
-		if (resultsTypeField != null) {
-			searchResultsTable.initializeSearchResultsTable(currentType, resultsTypeField.getSelectionModel().getSelectedItem());
 
-			if (selection == SearchType.TEXT) {
-				resultsTypeField.setVisible(true);
-			} else {
-				resultsTypeField.setVisible(false);
-				resultsTypeField.getSelectionModel().select(ResultsType.CONCEPT);
+		// searchType may be temporarily set to null in order to all resetting to the "current" (non-null) type,
+		// triggering selector button cell factories and change handlers
+		if (selection != null) {
+			currentType = selection;
+			searchTypeSelector.getSelectionModel().select(selection);
+
+			if (resultsTypeField != null) {
+				searchResultsTable.initializeSearchResultsTable(currentType, resultsTypeField.getSelectionModel().getSelectedItem());
+
+				if (selection == SearchType.TEXT) {
+					resultsTypeField.setVisible(true);
+				} else {
+					resultsTypeField.setVisible(false);
+					resultsTypeField.getSelectionModel().select(ResultsType.CONCEPT);
+				}
 			}
-		}
-		
-		if (maxResultsField != null) {
-			if (selection == SearchType.REFSET_SPEC) {
-				maxResultsField.setVisible(false);
-			} else {
-				maxResultsField.setVisible(true);
+
+			if (maxResultsField != null) {
+				if (selection == SearchType.REFSET_SPEC) {
+					maxResultsField.setVisible(false);
+				} else {
+					maxResultsField.setVisible(true);
+				}
 			}
+
+			setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 		}
-		
-		setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 	}
 
 	public void setSearchTypePane(SearchType type) {

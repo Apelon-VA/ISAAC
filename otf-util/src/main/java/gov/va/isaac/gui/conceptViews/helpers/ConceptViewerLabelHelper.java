@@ -147,12 +147,12 @@ public class ConceptViewerLabelHelper {
 				rtClickMenu.getItems().add(modifyComponentMenu);
 			}
 
-			Menu copyIdMenu = addIdMenus(comp);
+			Menu copyIdMenu = addIdMenus(comp, type);
 			copytoClipboardItem.getItems().add(copyIdMenu);
 		}
 
 		if (comp != null) {
-			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow");
+			MenuItem initiateWorkflowItem = new MenuItem("Initiate Workflow on " + type);
 			initiateWorkflowItem.setGraphic(Images.INBOX.createImageView());
 			initiateWorkflowItem.setOnAction(new EventHandler<ActionEvent>()
 			{
@@ -263,6 +263,11 @@ public class ConceptViewerLabelHelper {
 						// TODO: Retire Concept Wizard
 					} else if (type == ComponentType.DESCRIPTION) {
 						DescriptionVersionBI<?> desc = (DescriptionVersionBI<?>)comp;
+
+						if (desc.isUncommitted()) {
+							ExtendedAppContext.getDataStore().forget(desc);
+						}
+
 						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dcab.setStatus(Status.INACTIVE);
 						
@@ -272,6 +277,10 @@ public class ConceptViewerLabelHelper {
 	
 					} else if (type == ComponentType.RELATIONSHIP) {
 						RelationshipVersionBI<?> rel = (RelationshipVersionBI<?>)comp;
+
+						if (rel.isUncommitted()) {
+							ExtendedAppContext.getDataStore().forget(rel);
+						}
 
 						RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 
@@ -355,8 +364,8 @@ public class ConceptViewerLabelHelper {
 		return createComponentMenu;
 	}
 	
-	Menu addIdMenus(ComponentVersionBI comp) {
-		Menu copyIdMenu = new Menu("Copy Ids");
+	Menu addIdMenus(ComponentVersionBI comp, ComponentType type) {
+		Menu copyIdMenu = new Menu("Copy " + type + " Ids");
 		MenuItem sctIdItem = new MenuItem("SctId");
 		MenuItem uuidItem = new MenuItem("UUID");
 		MenuItem nidItem = new MenuItem("Native Id");

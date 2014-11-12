@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.classifier;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.classifier.SnomedClassifier;
+import gov.va.isaac.classifier.SnomedSnorocketClassifier;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
@@ -136,7 +136,7 @@ public class ClassifierDialogController {
 
             @Override
             protected Boolean call() throws Exception {
-            	SnomedClassifier classifier = new SnomedClassifier();
+            	SnomedSnorocketClassifier classifier = new SnomedSnorocketClassifier();
             	classifier.classify(pathNid);
                 return true;
             }

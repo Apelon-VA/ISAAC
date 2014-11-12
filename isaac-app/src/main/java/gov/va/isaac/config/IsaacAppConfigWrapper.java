@@ -21,10 +21,12 @@ package gov.va.isaac.config;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.UUID;
+
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -33,6 +35,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +63,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		
 		try
 		{
-			InputStream in = AppContext.class.getResourceAsStream("/app.xml");
+			@SuppressWarnings("resource")
+            InputStream in = AppContext.class.getResourceAsStream("/app.xml");
 			if (in != null)
 			{
 				IsaacAppConfig temp = unmarshallStream(in);
@@ -118,12 +122,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setIsaacVersion(read.getIsaacVersion());
 		setScmConnection(read.getScmConnection());
 		setScmUrl(read.getScmUrl());
-		setDistReposId(read.getDistReposId());
-		setDistReposName(read.getDistReposName());
-		setDistReposUrl(read.getDistReposUrl());
-		setDistReposSnapId(read.getDistReposSnapId());
-		setDistReposSnapName(read.getDistReposSnapName());
-		setDistReposSnapUrl(read.getDistReposSnapUrl());
 		setDbGroupId(read.getDbGroupId());
 		setDbArtifactId(read.getDbArtifactId());
 		setDbVersion(read.getDbVersion());
@@ -161,22 +159,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public URL getScmUrlAsURL() {
 		return IsaacAppConfigI.getUrlForString(getScmUrl());
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposUrlAsURL()
-	 */
-	@Override
-	public URL getDistReposUrlAsURL() {
-		return IsaacAppConfigI.getUrlForString(getDistReposUrl());
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapUrlAsURL()
-	 */
-	@Override
-	public URL getDistReposSnapUrlAsURL() {
-		return IsaacAppConfigI.getUrlForString(getDistReposSnapUrl());
 	}
 
 	/* (non-Javadoc)

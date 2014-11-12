@@ -16,11 +16,12 @@
 	</description>
 
 	<dependencies>
-		<dependency>
-			<groupId>au.csiro</groupId>
-			<artifactId>snorocket-core</artifactId>
-			<version>2.5.3</version>
-		</dependency>
+       <dependency>
+            <groupId>au.csiro</groupId>
+            <artifactId>snorocket-snapi</artifactId>
+            <version>1.1.20</version>
+        </dependency>
+
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>isaac-app-interfaces</artifactId>

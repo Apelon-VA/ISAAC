@@ -111,7 +111,7 @@ public class ImportView extends GridPane {
     builder.addRow("Information Model: ", modelTypeLabel);
     builder.addRow("File Name: ", fileNameLabel);
     builder.addRow("Progress: ", progressBar);
-    progressBar.setMinWidth(400);
+    progressBar.setMinWidth(500);
     builder.addRow("Status: ", statusLabel);
     builder.addRow("Result: ", resultLabel);
     @SuppressWarnings("deprecation")

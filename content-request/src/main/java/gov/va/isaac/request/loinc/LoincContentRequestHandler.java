@@ -158,6 +158,9 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     // Method
     sb.append(getDestinationText(concept, "Has_METHOD_TYP")).append("\t");
 
+    // Answers
+    sb.append(getAttributeText(concept, "EXMPL_ANSWERS")).append("\t");
+
     // Units
     sb.append(getAttributeText(concept, "EXAMPLE_UNITS")).append("\t");
 
