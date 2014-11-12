@@ -64,6 +64,9 @@ import javafx.stage.Window;
 import javax.inject.Singleton;
 import javax.naming.AuthenticationException;
 import org.apache.commons.lang3.StringUtils;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+import org.ihtsdo.otf.tcc.model.cs.ChangeSetReader;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,6 +187,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 		action.disableProperty().bind(running_);
 		action.setOnAction((theAction) ->
 		{
+			summary_.setText("");
 			pb_.setProgress(-1.0);
 			running_.set(true);
 			Utility.execute(() -> sync());
@@ -446,31 +450,61 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 			
 			//Process the changed files list
 			addLine("Processing the changed files (" + changedFiles.size() + ")");
-			for (String s : changedFiles)
+			StringBuilder errorsDuringProcess = new StringBuilder();
+			try
 			{
-				log.debug("Post processing {} after change during sync", s);
-				File f = new File(syncService_.getRootLocation(), s);
-				if (f.getName().equals(UserProfileManager.PREFS_FILE_NAME) && f.getParentFile().getName().equals(ExtendedAppContext.getCurrentlyLoggedInUser()))
+				AppContext.getService(BdbTerminologyStore.class).suspendChangeNotifications();
+				for (String s : changedFiles)
 				{
-					addLine("Rereading current user profile");
-					try
+					log.debug("Post processing {} after change during sync", s);
+					File f = new File(syncService_.getRootLocation(), s);
+					if (f.getName().equals(UserProfileManager.PREFS_FILE_NAME) && f.getParentFile().getName().equals(ExtendedAppContext.getCurrentlyLoggedInUser()))
 					{
-						AppContext.getService(UserProfileManager.class).rereadProfile();
+						addLine("Rereading current user profile");
+						try
+						{
+							AppContext.getService(UserProfileManager.class).rereadProfile();
+						}
+						catch (IOException e)
+						{
+							log.error("Error rereading changed user profile!", e);
+							AppContext.getCommonDialogs().showErrorDialog("Unexpected error reading updated user profile", e);
+						}
 					}
-					catch (IOException e)
+					else if (f.getName().toLowerCase().endsWith(".eccs"))
 					{
-						log.error("Error rereading changed user profile!", e);
-						AppContext.getCommonDialogs().showErrorDialog("Unexpected error reading updated user profile", e);
+						try
+						{
+							addLine("Processing changeset " + f.getName());
+							ChangeSetReader csr = new ChangeSetReader();
+							csr.setChangeSetFile(f);
+							Set<ConceptChronicleBI> indexedAnnotationConcepts = new HashSet<>();
+							csr.read(indexedAnnotationConcepts);
+							if (indexedAnnotationConcepts.size() > 0)
+							{
+								log.info("Dan doesn't know what to do with this after change set processing: {}", indexedAnnotationConcepts);
+							}
+						}
+	
+						catch (Exception e)
+						{
+							log.error("Error processing change set file " + f.getAbsolutePath(), e);
+							errorsDuringProcess.append("Error processing change set file " + f.getName() + "/r");
+						}
+					}
+					else
+					{
+						log.info("No processing done for changed file {}", f.getAbsolutePath());
 					}
 				}
-				else if (f.getName().toLowerCase().endsWith(".foo"))
-				{
-					//TODO process changset
-				}
-				else
-				{
-					log.info("No processing done for changed file {}", f.getAbsolutePath());
-				}
+			}
+			finally
+			{
+				AppContext.getService(BdbTerminologyStore.class).resumeChangeNotifications();
+			}
+			if (errorsDuringProcess.length() > 0)
+			{
+				AppContext.getCommonDialogs().showErrorDialog("Errors processing changesets", "Errors processing changesets:", errorsDuringProcess.toString());
 			}
 			addLine("Syncronization complete!");
 		}
