@@ -264,6 +264,15 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
   }
 
   /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getModuleId()
+   */
+  @Override
+  public String getModuleId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /* (non-Javadoc)
    * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
    */
   @Override
