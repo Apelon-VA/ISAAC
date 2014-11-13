@@ -98,8 +98,10 @@ public class WorkflowInboxController
 				List<LocalTask> displayedItems = new ArrayList<>(taskTable.getItems());
 				for (LocalTask taskInTable : displayedItems) {
 					if (taskInTable.getId() == actionEvent.getTaskId()) {
-						taskTable.getItems().remove(taskInTable);
-						LOG.debug("ActionEventListener removed {} task id #{} due to pending {} action", taskInTable.getName(), taskInTable.getId(), taskInTable.getAction());
+						Platform.runLater(() -> {
+							taskTable.getItems().remove(taskInTable);
+							LOG.debug("ActionEventListener removed {} task id #{} due to pending {} action", taskInTable.getName(), taskInTable.getId(), taskInTable.getAction());
+						});
 					}
 				}
 			}
