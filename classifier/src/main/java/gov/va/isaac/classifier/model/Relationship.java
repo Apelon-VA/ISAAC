@@ -243,5 +243,50 @@ public class Relationship implements Comparable<Object> {
       Logger.getLogger(Relationship.class.getName()).log(Level.SEVERE, null, e);
     }
   }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + destinationId;
+    result = prime * result + group;
+    result =
+        prime * result
+            + ((relationshipId == null) ? 0 : relationshipId.hashCode());
+    result = prime * result + sourceId;
+    result = prime * result + typeId;
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Relationship other = (Relationship) obj;
+    if (destinationId != other.destinationId)
+      return false;
+    if (group != other.group)
+      return false;
+    if (relationshipId == null) {
+      if (other.relationshipId != null)
+        return false;
+    } else if (!relationshipId.equals(other.relationshipId))
+      return false;
+    if (sourceId != other.sourceId)
+      return false;
+    if (typeId != other.typeId)
+      return false;
+    return true;
+  }
 } // class Relationship
 
