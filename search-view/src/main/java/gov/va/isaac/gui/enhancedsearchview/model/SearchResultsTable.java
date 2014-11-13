@@ -123,7 +123,7 @@ public class SearchResultsTable  {
 			results.getColumns().add(fsnCol);
 			results.getColumns().add(preferredTermCol);
 			
-			if (resultsType == ResultsType.CONCEPT) {
+			if (resultsType == ResultsType.CONCEPT && searchType == SearchType.TEXT) {
 				results.getColumns().add(numMatchesCol);
 			}
 			
