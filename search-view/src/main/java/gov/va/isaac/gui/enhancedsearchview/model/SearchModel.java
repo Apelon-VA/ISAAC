@@ -48,7 +48,8 @@ public class SearchModel {
 
 	private static SearchTypeSelector searchTypeSelector = new SearchTypeSelector();
 
-	private static SearchResultsTable searchResults = new SearchResultsTable();  
+	private final static SearchResultsTable searchResults = new SearchResultsTable();  
+
 	private static ComboBox<ResultsType> resultsTypeComboBox = new ComboBox<ResultsType>();
 	private static IntegerField maxResultsCustomTextField = new IntegerField(); 
 	private static SearchHandle ssh = null;
@@ -86,7 +87,7 @@ public class SearchModel {
 		return maxResultsCustomTextField;
 	}
 
-	public SearchResultsTable getSearchResultsTable() {
+	public static SearchResultsTable getSearchResultsTable() {
 		return searchResults;
 	}
 
@@ -153,12 +154,12 @@ public class SearchModel {
 		searchTypeSelector.getTypeSpecificModel().executeSearch(resultsType, maxResults);		
 	}
 
-	public SearchHandle getSsh() {
+	public static SearchHandle getSsh() {
 		return ssh;
 	}
 
-	public void setSsh(SearchHandle ssh) {
-		this.ssh = ssh;
+	public static void setSsh(SearchHandle passedSsh) {
+		ssh = passedSsh;
 	}
 
 	public static BooleanProperty getSearchRunning() {
@@ -182,6 +183,6 @@ public class SearchModel {
 		searchTypeSelector.setSearchTypePane(SearchType.TEXT);
 		searchTypeSelector.setMaxResultsField(maxResultsHBox);
 		searchTypeSelector.setResultTypeField(comboBox);
-		searchTypeSelector.setSearchResultsTable(searchResultsTable);
+		searchResultsTable.initializeSearchResultsTable(SearchType.TEXT, ResultsType.DESCRIPTION);
 	}
 }

@@ -140,7 +140,9 @@ public class DefinitionController implements PanelControllers {
 
 					if (frontParenCount != 1 || backParenCount != 1) 
 					{
-						return "FSNs must have a single set of parenthesis to define the semantic tag";
+						// TODO: Put this back after demo and only throw if under SCT
+						// return "FSNs must have a single set of parenthesis to define the semantic tag";
+						return "";
 					} else if (fsn.getText().trim().indexOf(")") != fsn.getText().trim().length() - 1) {
 						return "FSNs may not have characters available after their semantic tag";
 					} else {

@@ -2,6 +2,7 @@ package gov.va.isaac.gui.enhancedsearchview.model.type.refspec;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.querybuilder.QueryBuilderHelper;
@@ -405,7 +406,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 		try {
 			QueryBuilderHelper.executeQuery(QueryBuilderHelper.generateQuery(queryNodeTreeView), queryNodeTreeView);
 
-			resultsTable.setItems(FXCollections.observableArrayList(QueryBuilderHelper.getResults()));
+			SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(QueryBuilderHelper.getResults()));
 			
 			if (splitPane.getItems().contains(taxonomyPane)) {
 				ResultsToTaxonomy.resultsToSearchTaxonomy();
