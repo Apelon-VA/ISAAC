@@ -144,6 +144,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 					LOG.debug("componentsToAdd was null at POST_COMMIT - perhaps the listener was registered in the middle of a commit?");
 					return;
 				}
+				
 
 				Platform.runLater(() -> {
 					boolean showEm = componentsToAdd.size() <= 20;
