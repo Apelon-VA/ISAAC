@@ -4,7 +4,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
-import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.WBUtility;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -17,7 +16,6 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -27,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	protected TableView<CompositeSearchResult> resultsTable;
+	//protected static TableView<CompositeSearchResult> resultsTable;
 
 	protected static EnhancedSearchViewBottomPane bottomPane;
 	protected static SplitPane splitPane;
@@ -35,8 +33,8 @@ public abstract class SearchTypeModel {
 
 	protected final StringProperty name = new SimpleStringProperty();
 	protected final StringProperty description = new SimpleStringProperty();
-	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty(WBUtility.getViewCoordinate());
-	protected final BooleanProperty isSearchRunnableProperty = new SimpleBooleanProperty();
+	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(WBUtility.getViewCoordinate());
+	protected final BooleanProperty isSearchTypeRunnableProperty = new SimpleBooleanProperty(false);
 	
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
@@ -55,7 +53,7 @@ public abstract class SearchTypeModel {
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchRunnableProperty.set(isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid());
 			}
 		});
 
@@ -104,7 +102,7 @@ public abstract class SearchTypeModel {
 		viewCoordinateProperty.set(viewCoordinate);
 	}
 	public BooleanProperty getIsSearchRunnableProperty() {
-		return isSearchRunnableProperty;
+		return isSearchTypeRunnableProperty;
 	}
 	public IntegerProperty getMaxResultsProperty() {
 		return maxResults;
@@ -142,7 +140,7 @@ public abstract class SearchTypeModel {
 	}
 	
 
-	public synchronized void search(TableView<CompositeSearchResult> results, ResultsType resultsType, IntegerField maxRequestedResults ) {
+	public synchronized void search(ResultsType resultsType, IntegerField maxRequestedResults ) {
 		// Sanity check if search already running.
 		if (getSearchRunning().get()) {
 			return;
@@ -151,8 +149,7 @@ public abstract class SearchTypeModel {
 		try {
 			getSearchRunning().set(true);
 
-			results.getItems().clear();
-			this.resultsTable = results;
+			SearchModel.getSearchResultsTable().getResults().getItems().clear();
 			bottomPane.refreshBottomPanel();
 			bottomPane.refreshTotalResultsSelectedLabel();
 

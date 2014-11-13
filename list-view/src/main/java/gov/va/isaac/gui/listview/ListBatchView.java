@@ -160,7 +160,21 @@ public class ListBatchView implements ListBatchViewI, DockedViewI
 	 */
 	@Override
 	public void addConcepts(List<Integer> nids) {
-		lbvc_.addConcepts(nids);
+		if (lbvc_ == null)
+		{
+			try
+			{
+				lbvc_ = ListBatchViewController.init();
+			}
+			catch (IOException e)
+			{
+				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing ListBatchView", e);
+			}
+		}
+		if (lbvc_ != null)
+		{
+			lbvc_.addConcepts(nids);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -168,6 +182,20 @@ public class ListBatchView implements ListBatchViewI, DockedViewI
 	 */
 	@Override
 	public void addConcept(int nid) {
-		lbvc_.addConcept(nid);
+		if (lbvc_ == null)
+		{
+			try
+			{
+				lbvc_ = ListBatchViewController.init();
+			}
+			catch (IOException e)
+			{
+				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing ListBatchView", e);
+			}
+		}
+		if (lbvc_ != null)
+		{
+			lbvc_.addConcept(nid);
+		}
 	}
 }

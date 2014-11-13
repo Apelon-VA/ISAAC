@@ -29,6 +29,7 @@ import java.net.URL;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.SplitPane;
@@ -101,9 +102,9 @@ public class EnhancedSearchViewController {
 			if (SearchModel.getSearchRunning().get() && searchModel.getSsh() != null) {
 				searchModel.getSsh().cancel();
 			} else {
-				searchModel.getSearchTypeSelector().getTypeSpecificModel().search(searchModel.getSearchResultsTable().getResults(), 
-																searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem(),
-																searchModel.getMaxResultsCustomTextField());
+				searchModel.getSearchTypeSelector().getTypeSpecificModel().search( 
+						searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem(),
+						searchModel.getMaxResultsCustomTextField());
 			}
 		});
 		SearchModel.getSearchRunning().addListener((observable, oldValue, newValue) -> {
@@ -121,6 +122,14 @@ public class EnhancedSearchViewController {
 		searchBorderPane.setBottom(bottomPane.getBottomPaneHBox());
 		searchBorderPane.setCenter(searchModel.getSearchResultsTable().getResults());
 		searchModel.setPanes(bottomPane, searchAndTaxonomySplitPane, taxonomyPanelBorderPane);
+		
+		SearchModel.getSearchResultsTable().getResults().getItems().addListener(new ListChangeListener<CompositeSearchResult>() {
+			@Override
+			public void onChanged(
+					javafx.collections.ListChangeListener.Change<? extends CompositeSearchResult> c) {
+				bottomPane.refreshBottomPanel();
+			}
+		});
 	}
 
 	public SplitPane getRoot() {
@@ -130,5 +139,4 @@ public class EnhancedSearchViewController {
 	interface ColumnValueExtractor {
 		String extract(TableColumn<CompositeSearchResult, ?> col);
 	}
-
 }

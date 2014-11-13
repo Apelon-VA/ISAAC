@@ -48,13 +48,14 @@ public class SearchModel {
 
 	private static SearchTypeSelector searchTypeSelector = new SearchTypeSelector();
 
-	private static SearchResultsTable searchResults = new SearchResultsTable();  
+	private final static SearchResultsTable searchResults = new SearchResultsTable();  
+
 	private static ComboBox<ResultsType> resultsTypeComboBox = new ComboBox<ResultsType>();
 	private static IntegerField maxResultsCustomTextField = new IntegerField(); 
 	private static SearchHandle ssh = null;
 	private static BusyPopover searchRunningPopover;
 	private final static BooleanProperty searchRunning = new SimpleBooleanProperty(false);
-	
+	private final static BooleanProperty isSearchRunnable = new SimpleBooleanProperty(false);
 
 	static {
 		maxResultsCustomTextField.setMaxWidth(50);
@@ -65,7 +66,6 @@ public class SearchModel {
 
 		searchResults.initializeSearchResultsTable(searchTypeSelector.getCurrentType(), resultsTypeComboBox.getSelectionModel().getSelectedItem());
 		initializeResultsTypeOptions();
-		initializeSearchTypeComboBoxController();
 	}
 	
 	@Override
@@ -77,6 +77,13 @@ public class SearchModel {
 				+ ", viewCoordinate=" + (model.getViewCoordinateProperty().get() != null ? model.getViewCoordinateProperty().get().getViewPosition() : null) + "]"
 				+ model.getModelDisplayString();
 	}
+	
+	public static boolean isSearchRunnable() {
+		return searchTypeSelector.getTypeSpecificModel().isCriteriaPanelValid() && searchTypeSelector.getTypeSpecificModel().isValidSearch(null);
+	}
+	public static BooleanProperty isSearchRunnableProperty() {
+		return isSearchRunnable;
+	}
 
 	public SearchTypeSelector getSearchTypeSelector() {
 		return searchTypeSelector;
@@ -86,7 +93,7 @@ public class SearchModel {
 		return maxResultsCustomTextField;
 	}
 
-	public SearchResultsTable getSearchResultsTable() {
+	public static SearchResultsTable getSearchResultsTable() {
 		return searchResults;
 	}
 
@@ -94,20 +101,6 @@ public class SearchModel {
 		return resultsTypeComboBox;
 	}
 
-	private static void initializeSearchTypeComboBoxController() {
-//		searchCriteriaPane = new BorderPane();
-	
-		// searchTypeController.setOnAction((event) -> {
-		/*
-		 * 			
-		 * LOG.trace("aggregationTypeComboBox event (selected: " + aggregationTypeComboBox.getSelectionModel().getSelectedItem() + ")");
-
-			searchModel.getsearchModel.getSearchResultsTable()().getItems().clear();
-			initializesearchModel.getsearchModel.getSearchResultsTable()()();
-		});
-
-		*/
-	}
 	private static void initializeResultsTypeOptions() {
 		// Force single selection
 		resultsTypeComboBox.getSelectionModel().selectFirst();
@@ -153,12 +146,12 @@ public class SearchModel {
 		searchTypeSelector.getTypeSpecificModel().executeSearch(resultsType, maxResults);		
 	}
 
-	public SearchHandle getSsh() {
+	public static SearchHandle getSsh() {
 		return ssh;
 	}
 
-	public void setSsh(SearchHandle ssh) {
-		this.ssh = ssh;
+	public static void setSsh(SearchHandle passedSsh) {
+		ssh = passedSsh;
 	}
 
 	public static BooleanProperty getSearchRunning() {
@@ -182,6 +175,6 @@ public class SearchModel {
 		searchTypeSelector.setSearchTypePane(SearchType.TEXT);
 		searchTypeSelector.setMaxResultsField(maxResultsHBox);
 		searchTypeSelector.setResultTypeField(comboBox);
-		searchTypeSelector.setSearchResultsTable(searchResultsTable);
+		searchResultsTable.initializeSearchResultsTable(SearchType.TEXT, ResultsType.DESCRIPTION);
 	}
 }

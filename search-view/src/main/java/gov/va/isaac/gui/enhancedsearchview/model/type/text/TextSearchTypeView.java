@@ -140,7 +140,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 
 						TextField searchParamTextField = new TextField();
 
-						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getSearchType() == componentSearchType) {
+						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getComponentSearchType() == componentSearchType) {
 							searchParamTextField.setText(((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().get());
 							displayableLuceneFilter = ((LuceneSearchTypeFilter)componentContentModel.getSearchType());
 							
@@ -315,6 +315,8 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 					{
 						displayableIsDescendantOfFilter.setNid(newValue.getConceptNid());
 						LOG.debug("isDescendantFilter should now contain concept with NID " + displayableIsDescendantOfFilter.getNid() + ": " + Arrays.toString(model.getFilters().toArray()));
+					} else {
+						displayableIsDescendantOfFilter.setNid(0);
 					}
 				}
 			});
@@ -359,6 +361,8 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 					{
 						displayableIsAFilter.setNid(newValue.getConceptNid());
 						LOG.debug("isAFilter should now contain concept with NID " + displayableIsAFilter.getNid() + ": " + Arrays.toString(model.getFilters().toArray()));
+					} else {
+						displayableIsAFilter.setNid(0);
 					}
 				}
 			});

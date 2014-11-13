@@ -25,6 +25,7 @@
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -69,10 +70,18 @@ public class RegExpSearchTypeFilter extends SearchTypeFilter<RegExpSearchTypeFil
 	}
 
 	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter#getComponentSearchType()
+	 */
+	@Override
+	public ComponentSearchType getComponentSearchType() {
+		return ComponentSearchType.REGEXP;
+	}
+
+	/* (non-Javadoc)
 	 * @see gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter#getSearchType()
 	 */
 	@Override
-	public ComponentSearchType getSearchType() {
-		return ComponentSearchType.REGEXP;
+	public SearchType getSearchType() {
+		return SearchType.TEXT;
 	}
 }

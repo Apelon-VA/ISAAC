@@ -7,6 +7,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
@@ -37,6 +38,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import org.apache.mahout.math.Arrays;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 
 public class TextSearchTypeModel extends SearchTypeModel implements TaskCompleteCallback {
 	private final ObjectProperty<SearchTypeFilter<?>> searchTypeFilterProperty = new SimpleObjectProperty<SearchTypeFilter<?>>();
@@ -44,20 +46,88 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 	private SearchHandle ssh = null;
 
 	public TextSearchTypeModel() {
+		viewCoordinateProperty.addListener(new ChangeListener<ViewCoordinate>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends ViewCoordinate> observable,
+					ViewCoordinate oldValue, ViewCoordinate newValue) {	
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+			}
+		});
+
+		
 		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter<?>>() {
 			@Override
 			public void changed(
 					ObservableValue<? extends SearchTypeFilter<?>> observable,
 					SearchTypeFilter<?> oldValue, SearchTypeFilter<?> newValue) {
-				isSearchRunnableProperty.set(isCriteriaPanelValid());
+				if (newValue != null) {
+					newValue.isValidProperty().addListener(new ChangeListener<Boolean>() {
+						@Override
+						public void changed(
+								ObservableValue<? extends Boolean> observable,
+								Boolean oldValue, Boolean newValue) {
+							isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+						}
+					});
+				}
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
 			}
 		});
+		
+		if (searchTypeFilterProperty.get() != null) {
+			searchTypeFilterProperty.get().isValidProperty().addListener(new ChangeListener<Boolean>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends Boolean> observable,
+						Boolean oldValue, Boolean newValue) {
+					isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				}
+			});
+		}
 
 		filters.addListener(new ListChangeListener<NonSearchTypeFilter<?>>() {
 			@Override
 			public void onChanged(
 					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
-				isSearchRunnableProperty.set(isCriteriaPanelValid());
+				
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				
+				while (c.next()) {
+	                 if (c.wasPermutated()) {
+	                	 // irrelevant
+//	                     for (int i = c.getFrom(); i < c.getTo(); ++i) {
+//	                          //permutate
+//	                     }
+	                 } else if (c.wasUpdated()) {
+	                	 // irrelevant
+	                 } else {
+//	                     for (NonSearchTypeFilter remitem : c.getRemoved()) {
+//	                         remitem.remove(Outer.this);
+//	                     }
+	                     for (NonSearchTypeFilter<?> additem : c.getAddedSubList()) {
+	                    	 additem.isValidProperty().addListener(new ChangeListener<Boolean>() {
+								@Override
+								public void changed(
+										ObservableValue<? extends Boolean> observable,
+										Boolean oldValue, Boolean newValue) {
+									isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+								}
+	                    	 });
+	                     }
+	                 }
+	             }
+			}
+		});
+
+		isSearchTypeRunnableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				SearchModel model = new SearchModel();
+				if (model.getSearchTypeSelector().getTypeSpecificModel() == TextSearchTypeModel.this) {
+					model.isSearchRunnableProperty().set(newValue);
+				}
 			}
 		});
 	}
@@ -146,7 +216,16 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 
 			return false;
-		} 
+		} else if (! getSearchType().isValid()) {
+			String details = "Invalid search type filter: " + getSearchType();
+			LOG.warn("Invalid search type filter in search model (name=" + getName() + "). " + details + ": " + getSearchType());
+
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		}
 		
 		return true;
 	}
@@ -277,7 +356,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				public void run() {
 					try {
 						if (! ssh.isCancelled()) {
-							resultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
+							SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(ssh.getResults()));
 							
 							bottomPane.refreshBottomPanel();
 							bottomPane.refreshTotalResultsSelectedLabel();
@@ -303,5 +382,4 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			});
 		}
 	}
-
 }

@@ -751,12 +751,12 @@ public class WBUtility {
 		return dataStore.getUncommittedConcepts().contains(con.getChronicle());
 	}
 	
-	public static void commit(ConceptVersionBI con) throws IOException {
-		dataStore.commit(con);
+	public static boolean commit(ConceptVersionBI con) throws IOException {
+		return dataStore.commit(con);
 	}
 
-	public static void commit() throws IOException {
-		dataStore.commit();
+	public static boolean commit() throws IOException {
+		return dataStore.commit();
 	}
 
 	public static void addUncommitted(ConceptChronicleBI newCon) throws IOException {
@@ -916,9 +916,9 @@ public class WBUtility {
 		return new ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
 	}
 
-	public static void commit(int nid) throws IOException {
+	public static boolean commit(int nid) throws IOException {
 		ConceptVersionBI con = getConceptVersion(nid);
-		commit(con);
+		return commit(con);
 	}
 
 	public static void cancel() {

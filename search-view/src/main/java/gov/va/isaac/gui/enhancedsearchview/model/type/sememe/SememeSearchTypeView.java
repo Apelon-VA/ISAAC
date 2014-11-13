@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.enhancedsearchview.model.type.sememe;
 
+import gov.va.isaac.gui.enhancedsearchview.filters.SememeContentSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSpecificView;
 import javafx.scene.control.Label;
@@ -30,9 +31,6 @@ public class SememeSearchTypeView implements SearchTypeSpecificView {
 			Pane bottomPane = setupAssemblageSelection(sememeModel);
 			
 			criteriaPane.getChildren().addAll(topPane, bottomPane);
-		} else {
-			sememeModel.getSearchText().setText("");
-			sememeModel.getSearchInRefex().clear();
 		}
 		
 		return criteriaPane;
