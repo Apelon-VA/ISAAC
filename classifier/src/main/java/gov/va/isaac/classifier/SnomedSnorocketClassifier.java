@@ -368,7 +368,6 @@ public class SnomedSnorocketClassifier implements Classifier {
       startTime = System.currentTimeMillis();
       fireProgressEvent(93, "Compare relationships");
       LOG.info(compareAndWriteBack(previousInferredRels, snorocketRels));
-      dataStore.commit();
     } catch (Exception e) {
       throw e;
     } finally {
@@ -773,8 +772,8 @@ public class SnomedSnorocketClassifier implements Classifier {
     throws Exception {
 
     // add concept to commit list
-    // dataStore
-    // .addUncommitted(WBUtility.getConceptVersion(relationship.sourceId));
+    dataStore
+     .addUncommitted(WBUtility.getConceptVersion(relationship.sourceId));
 
     // add rel
     if (!retired) {
@@ -801,6 +800,7 @@ public class SnomedSnorocketClassifier implements Classifier {
        RelationshipChronicleBI rcbi =
        WBUtility.getBuilder().constructIfNotCurrent(rcab);
     }
+    dataStore.commit();
   }
 
   /**
