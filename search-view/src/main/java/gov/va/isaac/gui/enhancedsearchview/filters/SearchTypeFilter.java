@@ -29,6 +29,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 
 /**
  * SearchTypeFilter
@@ -37,10 +38,22 @@ import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
  *
  */
 public abstract class SearchTypeFilter<T extends SearchTypeFilter<T>> implements Filter<T> {
-	protected StringProperty searchParameter = new SimpleStringProperty();
-	protected BooleanProperty isValid = new SimpleBooleanProperty(false);
+	final protected StringProperty searchParameter;
+	final protected BooleanProperty isValid;
 
-	public abstract ComponentSearchType getSearchType();
+	public SearchTypeFilter() {
+		this(null, null);
+	}
+	public SearchTypeFilter(StringProperty searchParamProperty) {
+		this(searchParamProperty, null);
+	}
+	public SearchTypeFilter(StringProperty searchParamProperty, BooleanProperty isValidProperty) {
+		searchParameter = searchParamProperty != null ? searchParamProperty : new SimpleStringProperty();
+		isValid = isValidProperty != null ? isValidProperty : new SimpleBooleanProperty(false);
+	}
+
+	public abstract SearchType getSearchType();
+	public abstract ComponentSearchType getComponentSearchType();
 
 	public StringProperty getSearchParameterProperty() {
 		return searchParameter;

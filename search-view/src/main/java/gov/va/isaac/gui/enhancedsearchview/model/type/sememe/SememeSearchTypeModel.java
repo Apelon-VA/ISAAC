@@ -5,6 +5,8 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
+import gov.va.isaac.gui.enhancedsearchview.filters.SememeContentSearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -69,6 +71,15 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 	private ObservableList<SimpleDisplayConcept> dynamicRefexList_ = new ObservableListWrapper<>(new ArrayList<>());
 	private VBox optionsContentVBox;
 	private Font boldFont = new Font("System Bold", 13.0);
+	
+	public SememeContentSearchTypeFilter getSearchType() {
+		return new SememeContentSearchTypeFilter(searchText.getText(), searchInRefex != null ? searchInRefex.getConceptNoWait() : null);
+	}
+	public void setSearchType(SememeContentSearchTypeFilter filter) {
+		ConceptVersionBI conceptFromSearchFilter = filter != null ? filter.getAssemblageConcept() : null;
+		searchInRefex.set(conceptFromSearchFilter);
+		searchText.setText(filter.getSearchParameter());
+	}
 
 	public SememeSearchTypeModel() {
 		setupSearchText();
@@ -76,10 +87,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 		
 		Label rootExp = new Label("Search Assemblage");
 		rootExp.setFont(boldFont);
-		
 
-
-		
 		searchInRefex = new ConceptNode(null, false, dynamicRefexList_, null);
 		searchInRefexHBox.getChildren().addAll(rootExp, searchInRefex.getNode());
 
@@ -298,8 +306,8 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				if (!ssh.isCancelled())
 				{
 					Collection<CompositeSearchResult> results = createSingleEntryPerResults(ssh.getResults());
-					resultsTable.getItems().clear();
-					resultsTable.setItems(FXCollections.observableArrayList(results));
+					SearchModel.getSearchResultsTable().getResults().getItems().clear();
+					SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(results));
 					
 					bottomPane.refreshBottomPanel();
 					bottomPane.refreshTotalResultsSelectedLabel();

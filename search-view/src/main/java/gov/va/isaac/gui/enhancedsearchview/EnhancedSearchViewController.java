@@ -101,9 +101,9 @@ public class EnhancedSearchViewController {
 			if (SearchModel.getSearchRunning().get() && searchModel.getSsh() != null) {
 				searchModel.getSsh().cancel();
 			} else {
-				searchModel.getSearchTypeSelector().getTypeSpecificModel().search(searchModel.getSearchResultsTable().getResults(), 
-																searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem(),
-																searchModel.getMaxResultsCustomTextField());
+				searchModel.getSearchTypeSelector().getTypeSpecificModel().search( 
+						searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem(),
+						searchModel.getMaxResultsCustomTextField());
 			}
 		});
 		SearchModel.getSearchRunning().addListener((observable, oldValue, newValue) -> {
@@ -130,5 +130,4 @@ public class EnhancedSearchViewController {
 	interface ColumnValueExtractor {
 		String extract(TableColumn<CompositeSearchResult, ?> col);
 	}
-
 }
