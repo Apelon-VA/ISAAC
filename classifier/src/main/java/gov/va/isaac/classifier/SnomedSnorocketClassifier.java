@@ -30,12 +30,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
+import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.nid.IntSet;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.slf4j.Logger;
@@ -232,24 +238,23 @@ public class SnomedSnorocketClassifier implements Classifier {
     int roleRoot = WBUtility.getConceptVersion(CONCEPT_ATTRIBUTE).getNid();
     rocket_123.setRoleRoot(roleRoot, false);
 
-    // NOT SUPPORTED BY sample code
     // Non-grouping roles (from owl perl script)
     // $nevergrouped{"123005000"} = "T"; # part-of is never grouped
     // $nevergrouped{"272741003"} = "T"; # laterality is never grouped
     // $nevergrouped{"127489000"} = "T"; # has-active-ingredient is never
     // grouped
     // $nevergrouped{"411116001"} = "T"; # has-dose-form is never grouped
-//    rocket_123.setRoleNeverGrouped(Snomed.PART_OF.getNid());
-//    rocket_123.setRoleNeverGrouped(Snomed.LATERALITY.getNid());
-//    rocket_123.setRoleNeverGrouped(Snomed.HAS_ACTIVE_INGREDIENT.getNid());
-//    rocket_123.setRoleNeverGrouped(Snomed.HAS_DOSE_FORM.getNid());
+    rocket_123.setRoleNeverGrouped(Snomed.PART_OF.getNid());
+    rocket_123.setRoleNeverGrouped(Snomed.LATERALITY.getNid());
+    rocket_123.setRoleNeverGrouped(Snomed.HAS_ACTIVE_INGREDIENT.getNid());
+    rocket_123.setRoleNeverGrouped(Snomed.HAS_DOSE_FORM.getNid());
 
     // right identities (from owl perl script)
     // $rightid{"363701004"} = "127489000"; # direct-substance o
     // has-active-ingredient -> direct-substance
-//    rocket_123.addRoleComposition(new int[] {
-//        Snomed.DIRECT_SUBSTANCE.getNid(), Snomed.HAS_ACTIVE_INGREDIENT.getNid()
-//    }, Snomed.HAS_ACTIVE_INGREDIENT.getNid());
+    rocket_123.addRoleComposition(new int[] {
+        Snomed.DIRECT_SUBSTANCE.getNid(), Snomed.HAS_ACTIVE_INGREDIENT.getNid()
+    }, Snomed.HAS_ACTIVE_INGREDIENT.getNid());
 
     fireProgressEvent(57,
         "Setup classifier data structures - defined");
@@ -490,7 +495,7 @@ public class SnomedSnorocketClassifier implements Classifier {
                 countB_DiffISA++;
               }
 
-              writeRel(rel_B, true);
+              writeRel(rel_B, false);
 
               if (itB.hasNext()) {
                 rel_B = itB.next();
@@ -507,7 +512,7 @@ public class SnomedSnorocketClassifier implements Classifier {
               if (rel_A.typeId == Snomed.IS_A.getNid()) {
                 countA_DiffISA++;
               }
-              writeRel(rel_A, false);
+              writeRel(rel_A, true);
 
               if (itA.hasNext()) {
                 rel_A = itA.next();
@@ -773,29 +778,28 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // add rel
     if (!retired) {
-      LOG.info("RETIRE : " + relationship);
-      // RelationshipCAB relCAB =
-      // new RelationshipCAB(relationship.sourceId, relationship.typeId,
-      // relationship.destinationId, relationship.group,
-      // RelationshipType.INFERRED_ROLE, IdDirective.GENERATE_HASH);
-      // WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+      LOG.debug("ADD : " + relationship);
+       RelationshipCAB relCAB =
+       new RelationshipCAB(relationship.sourceId, relationship.typeId,
+       relationship.destinationId, relationship.group,
+       RelationshipType.INFERRED_ROLE, IdDirective.GENERATE_HASH);
+       WBUtility.getBuilder().constructIfNotCurrent(relCAB);
     }
 
     // retire rel
     else {
-      LOG.info("ADD REL : " + relationship);
-      // RelationshipVersionBI<?> rel =
-      // (RelationshipVersionBI<?>) dataStore.getComponent(Integer
-      // .parseInt(relationship.getRelId()));
-      // RelationshipCAB rcab =
-      // new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(),
-      // rel.getDestinationNid(), 1, RelationshipType.QUALIFIER, rel,
-      // WBUtility.getViewCoordinate(), IdDirective.PRESERVE,
-      // RefexDirective.EXCLUDE);
-      // rcab.setStatus(Status.INACTIVE);
-      // RelationshipChronicleBI rcbi =
-      // WBUtility.getBuilder().constructIfNotCurrent(rcab);
-
+      LOG.debug("RETIRE REL : " + relationship);
+       RelationshipVersionBI<?> rel =
+       (RelationshipVersionBI<?>) dataStore.getComponent(Integer
+       .parseInt(relationship.getRelId()));
+       RelationshipCAB rcab =
+       new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(),
+       rel.getDestinationNid(), 1, RelationshipType.QUALIFIER, rel,
+       WBUtility.getViewCoordinate(), IdDirective.PRESERVE,
+       RefexDirective.EXCLUDE);
+       rcab.setStatus(Status.INACTIVE);
+       RelationshipChronicleBI rcbi =
+       WBUtility.getBuilder().constructIfNotCurrent(rcab);
     }
   }
 
