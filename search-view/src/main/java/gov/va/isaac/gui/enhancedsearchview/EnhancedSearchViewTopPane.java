@@ -73,6 +73,7 @@ public class EnhancedSearchViewTopPane {
 
 	private void initializeSearchButton() {
 		searchButton.requestFocus();
+		searchButton.disableProperty().bind(searchModel.isSearchRunnableProperty().not());
 	}
 
 	private void initializeSearchTypeComboBox() {

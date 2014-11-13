@@ -82,6 +82,8 @@ public class SearchTypeSelector {
 
 			setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 		}
+		
+		SearchModel.isSearchRunnableProperty().set(SearchModel.isSearchRunnable());
 	}
 
 	public void setSearchTypePane(SearchType type) {

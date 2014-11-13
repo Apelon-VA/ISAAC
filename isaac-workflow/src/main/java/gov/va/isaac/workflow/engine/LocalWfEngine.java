@@ -71,7 +71,8 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
 
     @Override
     public void requestProcessInstanceCreationToServer(ProcessInstanceCreationRequestI instanceRequest) throws RemoteException, DatastoreException {
-        try
+    	ProcessInstance newInstance = null;
+    	try
         {
             KieSession session = AppContext.getService(RemoteWfEngine.class).getRemoteEngine().getKieSession();
             Map<String, Object> params = new HashMap<String, Object>();
@@ -82,14 +83,17 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             if (instanceRequest.getParams() != null) {
                 params.putAll(instanceRequest.getParams());
             }
-            ProcessInstance newInstance = session.startProcess(instanceRequest.getProcessName(), params);
+            newInstance = session.startProcess(instanceRequest.getProcessName(), params);
             procApi.updateRequestStatus(instanceRequest.getId(),
                     ProcessInstanceCreationRequestI.RequestStatus.CREATED,
                     "Instance created on KIE Server: " + AppContext.getAppConfiguration().getWorkflowServerUrl().toString(), newInstance.getId());
         }
         catch (RuntimeException e)
-        {
-            throw new RemoteException("Server error", e);
+            {
+                procApi.updateRequestStatus(instanceRequest.getId(),
+                        ProcessInstanceCreationRequestI.RequestStatus.REJECTED,
+                        "Instance rejected by KIE Server: " + AppContext.getAppConfiguration().getWorkflowServerUrl().toString() + " - " + e.getMessage(), newInstance != null ? newInstance.getId() : 0);
+                throw new RemoteException("Server error", e);
         }
     }
 
