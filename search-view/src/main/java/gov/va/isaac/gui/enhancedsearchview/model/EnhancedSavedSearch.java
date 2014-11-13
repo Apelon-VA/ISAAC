@@ -102,6 +102,17 @@ public class EnhancedSavedSearch {
 		restoreSearchButton.setOnAction((e) -> {
 			loadSavedSearch(); 
 		});
+		restoreSearchButton.setDisable(true);
+		savedSearchesComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchDisplayConcept>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends SearchDisplayConcept> observable,
+					SearchDisplayConcept oldValue, SearchDisplayConcept newValue) {
+				restoreSearchButton.setDisable(newValue == null);
+			}
+		});
+		
+
 		
 		if (! searchTypeComboBoxChangeListenerSet) {
 			searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchType>() {
