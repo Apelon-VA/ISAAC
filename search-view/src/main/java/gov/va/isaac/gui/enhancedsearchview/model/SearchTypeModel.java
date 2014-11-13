@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	protected TableView<CompositeSearchResult> resultsTable;
+	protected static TableView<CompositeSearchResult> resultsTable;
 
 	protected static EnhancedSearchViewBottomPane bottomPane;
 	protected static SplitPane splitPane;
