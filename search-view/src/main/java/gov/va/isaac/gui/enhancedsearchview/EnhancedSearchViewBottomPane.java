@@ -131,12 +131,13 @@ public class EnhancedSearchViewBottomPane {
 		} else if (searchModel.getSearchResultsTable().getResults().getItems().size() > 5) {
 			resultsToWorkflowButton.setDisable(true);
 		} else {
-			disableButtons(false);		
-			if (searchModel.getSearchResultsTable().getResults().getItems().size() == 1) {
-				totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entry displayed");
-			} else {
-				totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entries displayed");
-			}
+			disableButtons(false);	
+		}
+		
+		if (searchModel.getSearchResultsTable().getResults().getItems().size() == 1) {
+			totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entry displayed");
+		} else {
+			totalResultsReturnedLabel.setText(searchModel.getSearchResultsTable().getResults().getItems().size() + " entries displayed");
 		}
 
 		disableButtons(false);		
