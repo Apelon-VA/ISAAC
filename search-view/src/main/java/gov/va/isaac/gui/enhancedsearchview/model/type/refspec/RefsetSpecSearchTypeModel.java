@@ -69,6 +69,8 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 		queryNodeTreeView.getContextMenu().getItems().clear();
 
 		final Tooltip emptyTreeTooltip = new Tooltip("Right-click on TreeView or left-click ComboBox to select root expression");
+		//final Tooltip emptyTreeTooltip = new Tooltip("Left-click ComboBox to select root expression");
+
 		queryNodeTreeView.setTooltip(emptyTreeTooltip);
 		
 		queryNodeTreeView.rootProperty().addListener(new ChangeListener<TreeItem<NodeDraggable>>() {
@@ -79,12 +81,15 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 					TreeItem<NodeDraggable> newValue) {
 				if (newValue == null) {
 					rootNodeTypeComboBox.getButtonCell().setText("");
+					queryNodeTreeView.getContextMenu().getItems().clear();
 					addContextMenus(queryNodeTreeView.getContextMenu(), queryNodeTreeView);
 					queryNodeTreeView.setTooltip(emptyTreeTooltip);
+					queryNodeTreeViewIsValidProperty.set(false);
 				} else {
 					rootNodeTypeComboBox.getButtonCell().setText(QueryNodeType.valueOf(observable.getValue().getValue()).displayName());
 					queryNodeTreeView.getContextMenu().getItems().clear();
 					queryNodeTreeView.setTooltip(null);
+					queryNodeTreeViewIsValidProperty.set(QueryBuilderHelper.isQueryNodeTreeViewValid(queryNodeTreeView));
 				}
 			}
 		});
@@ -438,7 +443,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 
 	@Override
 	protected boolean isValidSearch(String errorDialogTitle) {
-		if (rootNodeTypeComboBox.getSelectionModel().getSelectedItem() == null) {
+		if (queryNodeTreeView.getRoot() == null) {
 			String details = "No Root Node specified: " + this;
 			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
 
