@@ -7,6 +7,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFilterHelper;
@@ -277,7 +278,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				public void run() {
 					try {
 						if (! ssh.isCancelled()) {
-							resultsTable.setItems(FXCollections.observableArrayList(ssh.getResults()));
+							SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(ssh.getResults()));
 							
 							bottomPane.refreshBottomPanel();
 							bottomPane.refreshTotalResultsSelectedLabel();
@@ -303,5 +304,4 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			});
 		}
 	}
-
 }

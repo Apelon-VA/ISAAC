@@ -5,8 +5,8 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
-import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SememeContentSearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -306,8 +306,8 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				if (!ssh.isCancelled())
 				{
 					Collection<CompositeSearchResult> results = createSingleEntryPerResults(ssh.getResults());
-					resultsTable.getItems().clear();
-					resultsTable.setItems(FXCollections.observableArrayList(results));
+					SearchModel.getSearchResultsTable().getResults().getItems().clear();
+					SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(results));
 					
 					bottomPane.refreshBottomPanel();
 					bottomPane.refreshTotalResultsSelectedLabel();

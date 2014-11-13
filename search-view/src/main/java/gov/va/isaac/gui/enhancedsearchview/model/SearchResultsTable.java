@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SearchResultsTable  {
-	private TableView<CompositeSearchResult> results = new TableView<CompositeSearchResult>();
+	private final TableView<CompositeSearchResult> results = new TableView<CompositeSearchResult>();
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SearchResultsTable.class);
 	
@@ -499,5 +499,4 @@ public class SearchResultsTable  {
 		bottomPane.refreshBottomPanel();
 		bottomPane.refreshTotalResultsSelectedLabel();
 	}
-
 }
