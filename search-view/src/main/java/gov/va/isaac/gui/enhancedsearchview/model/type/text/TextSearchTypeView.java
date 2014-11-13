@@ -59,7 +59,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 	SearchModel searchModel = new SearchModel();
 
 	static {
-		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.values()));
+		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.LUCENE /*, ComponentSearchType.REGEXP */));
 		componentSearchTypeComboBox.getSelectionModel().select(ComponentSearchType.LUCENE);
 	}
 	
