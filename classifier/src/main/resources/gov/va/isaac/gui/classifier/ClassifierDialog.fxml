@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.dialog.ExportFileSettingsDialogController">
+<BorderPane style="-fx-background-color: linear-gradient(lightGrey, darkGrey);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.classifier.ClassifierDialogController">
   <center>
  
  <GridPane 
@@ -15,18 +15,11 @@
     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
     
 	<!-- Path -->
-    <Label text="Select Path:" minWidth="80"
+    <Label text="Root Concept:" minWidth="100"
         GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <ComboBox fx:id="pathCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20"
-             GridPane.columnIndex="1" GridPane.rowIndex="1">
-      <items>
-        <FXCollections fx:factory="observableArrayList">
-          <String fx:value="Item 1" />
-          <String fx:value="Item 2" />
-          <String fx:value="Item 3" />
-        </FXCollections>
-      </items>
-    </ComboBox> 
+    <!-- TODO: make this dynamic -->
+    <Label text="SNOMED CT Concept (SNOMED RT+CTV3)" minWidth="280"
+        GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
     <!-- buttons -->
     <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0"
@@ -44,4 +37,5 @@
   </GridPane> 
  
   </center>
+  <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
 </BorderPane>
