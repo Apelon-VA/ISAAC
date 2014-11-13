@@ -752,11 +752,11 @@ public class WBUtility {
 	}
 	
 	public static boolean commit(ConceptVersionBI con) throws IOException {
-		return dataStore.commit(con);
+		return dataStore.confirmableCommit(con);
 	}
 
 	public static boolean commit() throws IOException {
-		return dataStore.commit();
+		return dataStore.confirmableCommit();
 	}
 
 	public static void addUncommitted(ConceptChronicleBI newCon) throws IOException {
