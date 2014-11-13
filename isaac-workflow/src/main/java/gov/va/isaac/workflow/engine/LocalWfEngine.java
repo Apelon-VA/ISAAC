@@ -122,6 +122,7 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
     public void claim(Integer count) throws RemoteException {
         TaskService remoteService = AppContext.getService(RemoteWfEngine.class).getRemoteTaskService();
         String userId = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
+        log.info("Workflow user {} requesting to claim {} tasks", userId, count);
         List<TaskSummary> availableTasks = remoteService.getTasksAssignedAsPotentialOwner(userId, "en-UK");
         log.debug("Available {}", availableTasks.size());
         int claimed = 0;
