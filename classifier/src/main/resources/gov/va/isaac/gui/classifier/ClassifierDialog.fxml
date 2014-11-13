@@ -15,7 +15,7 @@
     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
     
 	<!-- Path -->
-    <Label text="Select Path:" minWidth="80";
+    <Label text="Select Path:" minWidth="80"
         GridPane.columnIndex="0" GridPane.rowIndex="1"/>
     <ComboBox fx:id="pathCombo" editable="false" minWidth="280.0" prefWidth="-1.0" promptText="" visibleRowCount="20"
              GridPane.columnIndex="1" GridPane.rowIndex="1">
