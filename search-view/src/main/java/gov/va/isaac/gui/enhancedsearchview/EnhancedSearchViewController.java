@@ -29,6 +29,7 @@ import java.net.URL;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.SplitPane;
@@ -121,6 +122,14 @@ public class EnhancedSearchViewController {
 		searchBorderPane.setBottom(bottomPane.getBottomPaneHBox());
 		searchBorderPane.setCenter(searchModel.getSearchResultsTable().getResults());
 		searchModel.setPanes(bottomPane, searchAndTaxonomySplitPane, taxonomyPanelBorderPane);
+		
+		SearchModel.getSearchResultsTable().getResults().getItems().addListener(new ListChangeListener<CompositeSearchResult>() {
+			@Override
+			public void onChanged(
+					javafx.collections.ListChangeListener.Change<? extends CompositeSearchResult> c) {
+				bottomPane.refreshBottomPanel();
+			}
+		});
 	}
 
 	public SplitPane getRoot() {
