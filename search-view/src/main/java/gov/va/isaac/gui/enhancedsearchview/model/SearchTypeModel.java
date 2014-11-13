@@ -34,7 +34,7 @@ public abstract class SearchTypeModel {
 	protected final StringProperty name = new SimpleStringProperty();
 	protected final StringProperty description = new SimpleStringProperty();
 	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(WBUtility.getViewCoordinate());
-	protected final BooleanProperty isSearchRunnableProperty = new SimpleBooleanProperty();
+	protected final BooleanProperty isSearchTypeRunnableProperty = new SimpleBooleanProperty(false);
 	
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
@@ -53,7 +53,7 @@ public abstract class SearchTypeModel {
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchRunnableProperty.set(isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid());
 			}
 		});
 
@@ -102,7 +102,7 @@ public abstract class SearchTypeModel {
 		viewCoordinateProperty.set(viewCoordinate);
 	}
 	public BooleanProperty getIsSearchRunnableProperty() {
-		return isSearchRunnableProperty;
+		return isSearchTypeRunnableProperty;
 	}
 	public IntegerProperty getMaxResultsProperty() {
 		return maxResults;

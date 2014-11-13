@@ -42,6 +42,7 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Callback;
 
 import org.apache.mahout.math.Arrays;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,42 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 	public RefsetSpecSearchTypeModel() {
 		initializeQueryNodeTreeView();
 		initializeRootNodeTypeComboBox();
+		
+		viewCoordinateProperty.addListener(new ChangeListener<ViewCoordinate>() {
+			@Override
+			public void changed(ObservableValue<? extends ViewCoordinate> observable,
+					ViewCoordinate oldValue, ViewCoordinate newValue) {
+				isSearchTypeRunnableProperty.set(isValidSearch(null) && isCriteriaPanelValid());
+			}
+		});
+		queryNodeTreeView.rootProperty().addListener(new ChangeListener<TreeItem<NodeDraggable>>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends TreeItem<NodeDraggable>> observable,
+					TreeItem<NodeDraggable> oldValue,
+					TreeItem<NodeDraggable> newValue) {
+				isSearchTypeRunnableProperty.set(isValidSearch(null) && isCriteriaPanelValid());
+			}
+			
+		});
+		queryNodeTreeViewIsValidProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				isSearchTypeRunnableProperty.set(isValidSearch(null) && isCriteriaPanelValid());
+			}
+		});
+		
+		isSearchTypeRunnableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				SearchModel model = new SearchModel();
+				if (model.getSearchTypeSelector().getTypeSpecificModel() == RefsetSpecSearchTypeModel.this) {
+					model.isSearchRunnableProperty().set(newValue);
+				}
+			}
+		});
 	}
 
 	private void initializeQueryNodeTreeView() {

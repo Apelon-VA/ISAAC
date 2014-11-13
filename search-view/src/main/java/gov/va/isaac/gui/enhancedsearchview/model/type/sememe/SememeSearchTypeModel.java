@@ -27,6 +27,7 @@ import java.util.List;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
@@ -161,9 +163,34 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 				searchInColumnsHolder.getChildren().clear();
 			}
-			
 		});
-
+		
+		viewCoordinateProperty.addListener(new ChangeListener<ViewCoordinate>() {
+			@Override
+			public void changed(
+					ObservableValue<? extends ViewCoordinate> observable,
+					ViewCoordinate oldValue, ViewCoordinate newValue) {	
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+			}
+		});
+		searchText.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable,
+					String oldValue, String newValue) {
+				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+			}
+		});
+		
+		isSearchTypeRunnableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				SearchModel model = new SearchModel();
+				if (model.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
+					model.isSearchRunnableProperty().set(newValue);
+				}
+			}
+		});
 	}
 	
 	private void setupSearchText() {
