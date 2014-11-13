@@ -145,9 +145,9 @@ public class DownloaderController
 		ErrorMarkerUtils.swapGridPaneComponents(url, sp, paramGridPane);
 		ErrorMarkerUtils.setupErrorMarker(url, sp, urlValid_.getReasonWhyInvalid());
 		
-		url.getItems().add("https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-snomed/2014.10.17/solor-snomed-2014.10.17-active-only.bdb.zip");
-		url.getItems().add("https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-snomed-loinc/2014.10.17/solor-snomed-loinc-2014.10.17-active-only.bdb.zip");
-		url.getItems().add("https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-all/2014.10.17/solor-all-2014.10.17-active-only.bdb.zip");
+		url.getItems().add("https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-snomed/2014.11.12/solor-snomed-2014.11.12-active-only.bdb.zip");
+		url.getItems().add("https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-snomed-loinc/2014.11.12/solor-snomed-loinc-2014.11.12-active-only.bdb.zip");
+		url.getItems().add("https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-all/2014.11.12/solor-all-2014.11.12-active-only.bdb.zip");
 		
 		link.setOnAction((event) ->
 		{
