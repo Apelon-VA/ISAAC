@@ -3,12 +3,10 @@ package gov.va.isaac.gui.enhancedsearchview.model;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
-import gov.va.isaac.gui.enhancedsearchview.DynamicRefexHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchDisplayConcept;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
-import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.SaveSearchPrompt;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
@@ -22,7 +20,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -291,11 +288,7 @@ public class EnhancedSavedSearch {
 	}
 	private static SearchType getSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
 		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
-		int i = 0;
 		for (RefexDynamicVersionBI<?> refex : refexes) {
-//			LOG.debug("Displaying sememe #" + (++i) + " of " + refexes.size());
-//			DynamicRefexHelper.displayDynamicRefex(refex);
-
 			RefexDynamicUsageDescription dud = null;
 			try {
 				dud = refex.getRefexDynamicUsageDescription();
