@@ -23,9 +23,12 @@ import gov.va.isaac.interfaces.sync.MergeFailure;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,13 +43,25 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tmatesoft.svn.core.SVNCancelException;
+import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNPropertyValue;
+import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.internal.util.SVNEncodingUtil;
+import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 import org.tmatesoft.svn.core.wc.ISVNStatusHandler;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNConflictChoice;
+import org.tmatesoft.svn.core.wc.SVNEvent;
+import org.tmatesoft.svn.core.wc.SVNEventAction;
+import org.tmatesoft.svn.core.wc.SVNPropertyData;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNStatus;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
+import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 
 /**
@@ -63,13 +78,13 @@ public class SyncServiceSVN implements ProfileSyncI
 	private static Logger log = LoggerFactory.getLogger(SyncServiceSVN.class);
 
 	private final String eol = System.getProperty("line.separator");
-	
+
 	private File localFolder_ = null;
-	private SVNClientManager scm_; 
-	
+	private SVNClientManager scm_;
+
 	//TODO figure out how we handle prompts for things.  GUI vs no GUI... etc.
 	public SyncServiceSVN(File localFolder)
-	{	
+	{
 		this();
 		setRootLocation(localFolder);
 	}
@@ -78,7 +93,7 @@ public class SyncServiceSVN implements ProfileSyncI
 	{
 		//For HK2
 	}
-	
+
 	/**
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#setRootLocation(java.io.File)
 	 */
@@ -96,7 +111,6 @@ public class SyncServiceSVN implements ProfileSyncI
 		}
 		this.localFolder_ = localFolder;
 	}
-	
 
 	/**
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getRootLocation()
@@ -107,41 +121,154 @@ public class SyncServiceSVN implements ProfileSyncI
 		return this.localFolder_;
 	}
 
-//	/**
-//	 * @throws AuthenticationException 
-//	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
-//	 */
-//	@Override
-//	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException, AuthenticationException
-//	{
-//		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder_, remoteAddress, userName);
-//		try
-//		{
-//			File svnFolder = new File(localFolder_, ".svn");
-//
-//			if (!svnFolder.isDirectory())
-//			{
-//				log.debug("Root folder does not contain a .git subfolder.  Creating new git repository.");
-//				//TODO
-//			}
-//		}
-//		catch (SVNException e)
-//		{
-//			log.error("Unexpected", e);
-//			throw new IOException("Internal error", e);
-//		}
-//	}
-//	
-//	/**
-//	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.lang.String)
-//	 */
-//	@Override
-//	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException
-//	{
-//		log.debug("Configuring remote URL and fetch defaults to {}", remoteAddress);
-//		//TODO
-//	}
-//
+	/**
+	 * @throws AuthenticationException 
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException, AuthenticationException
+	{
+		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder_, remoteAddress, userName);
+		try
+		{
+			File svnFolder = new File(localFolder_, ".svn");
+
+			
+			if (svnFolder.isDirectory())
+			{
+				log.debug("Root folder already contains a .svn folder.  Checking to see if it can be relinked to remote.");
+				
+				String id = getSvn().getWCClient().doInfo(SVNURL.parseURIEncoded(SVNEncodingUtil.autoURIEncode(remoteAddress)), SVNRevision.HEAD, SVNRevision.HEAD)
+						.getRepositoryUUID();
+				
+				log.debug("Remote repository ID: {}", id);
+				
+				String localId = getSvn().getStatusClient().doStatus(localFolder_, false).getRepositoryUUID();
+				log.debug("Local repository ID: {}", localId);
+				
+				if (id.equals(localId))
+				{
+					log.info("Ok to re-link local to remote - they have the same ID");
+					relinkRemote(remoteAddress);
+					
+					//But, if we have any pre-existing merge conflicts.....
+					Set<String> conflicts = getFilesInMergeConflict();
+					if (conflicts.size() > 0)
+					{
+						log.info("Local repository was left in a conflicted state.  Will discared local repository information, and check out clean (preserving local files)");
+						
+						for (String s : conflicts)
+						{
+							File mine = new File(localFolder_, s + ".mine");
+							File conflicted = new File(localFolder_, s);
+							
+							if (mine.isFile() && conflicted.isFile())
+							{
+								log.info("Deleting pre-merged conflicted file " + conflicted.getAbsolutePath() + " replacing with " + mine.getAbsolutePath());
+								if (conflicted.delete())
+								{
+									mine.renameTo(conflicted);
+								}
+							}
+							else
+							{
+								log.error("Unresolved conflict being left - user will have to manually resolve before next commit!");
+							}
+						}
+						
+						deleteRecursive(svnFolder.toPath());
+					}
+				}
+				else
+				{
+					log.info("Local and remote are not the same repository.  Deleting local repository information - will check out clean (preserving local files).");
+					deleteRecursive(svnFolder.toPath());
+				}
+			}
+			
+			//we might have deleted it above, so this isn't a simple else case.
+			if (!svnFolder.isDirectory())
+			{
+				log.debug("Root folder does not contain a .svn subfolder.  Will checkout from remote.");
+				long rev = getSvn(true).getUpdateClient().doCheckout(SVNURL.parseURIEncoded(SVNEncodingUtil.autoURIEncode(remoteAddress)),
+						localFolder_, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, true);
+				log.info("Checkout out revision " + rev);
+			}
+			else
+			{
+				//Just do an update
+				try
+				{
+					updateFromRemote(userName, password, MergeFailOption.KEEP_LOCAL);
+				}
+				catch (MergeFailure e)
+				{
+					// merge failure should be impossible with the settings above.  We have already cleared any pre-existing local conflicts above, with a 
+					//metadata delete, and keep_local prevents conflicts on update.
+					throw new IOException("Should be impossible", e);
+				}
+			}
+			
+			List<String> modifiedFiles = makeInitialFilesAsNecessary(localFolder_);
+
+			ArrayList<File> filesToCommit = new ArrayList<>();
+			for (String s : modifiedFiles)
+			{
+				File f = new File(localFolder_, s);
+				if (f.isFile())
+				{
+					addFiles(f.getName());
+					filesToCommit.add(f);
+				}
+			}
+			
+			//See if ignore is set up property for 'lastUser.txt'
+			SVNPropertyData prop = getSvn().getWCClient().doGetProperty(localFolder_, "svn:ignore", SVNRevision.HEAD, SVNRevision.HEAD);
+			if (prop == null || prop.getValue() == null || prop.getValue().getString() == null || prop.getValue().getString().length() == 0)
+			{
+				log.debug("Configuring initial ignore settings");
+				getSvn().getWCClient().doSetProperty(localFolder_, "svn:ignore", SVNPropertyValue.create("lastUser.txt"), false, SVNDepth.EMPTY,
+						null, null);
+				filesToCommit.add(localFolder_);
+			}
+			
+			if (filesToCommit.size() > 0)
+			{
+				log.debug("Committing initial repository files");
+				getSvn().getCommitClient().doCommit(filesToCommit.toArray(new File[filesToCommit.size()]), false, "Adding initial repository files", 
+						null, null, false, true, SVNDepth.EMPTY);
+			}
+			
+			log.info("Status after init: " + statusToString());
+			
+		}
+		catch (SVNException e)
+		{
+			log.error("Unexpected", e);
+			throw new IOException("Internal error", e);
+		}
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.lang.String)
+	 */
+	@Override
+	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException
+	{
+
+		log.debug("Configuring remote URL and fetch defaults to {}", remoteAddress);
+		try
+		{
+			getSvn().getUpdateClient().doRelocate(localFolder_, null, SVNURL.parseURIEncoded(SVNEncodingUtil.autoURIEncode(remoteAddress)), true);
+		}
+		catch (SVNException e)
+		{
+			log.error("Unexpected", e);
+			throw new IOException("Internal error", e);
+		}
+
+	}
+
 	/**
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#addFiles(java.io.File, java.util.Set)
 	 */
@@ -193,7 +320,7 @@ public class SyncServiceSVN implements ProfileSyncI
 					client.doDelete(new File(localFolder_, file), true, false);
 				}
 			}
-			log.info("removeFiles Complete.  Current status: " +statusToString());
+			log.info("removeFiles Complete.  Current status: " + statusToString());
 		}
 		catch (SVNException e)
 		{
@@ -215,7 +342,7 @@ public class SyncServiceSVN implements ProfileSyncI
 			HashSet<String> conflicts = new HashSet<>();
 			getSvn().getStatusClient().doStatus(localFolder_, SVNRevision.BASE, SVNDepth.INFINITY, false, false, false, false, new ISVNStatusHandler()
 			{
-				
+
 				@Override
 				public void handleStatus(SVNStatus status) throws SVNException
 				{
@@ -243,7 +370,7 @@ public class SyncServiceSVN implements ProfileSyncI
 					}
 				}
 			}
-			
+
 			addFiles(result.toArray(new String[result.size()]));
 		}
 		catch (SVNException e)
@@ -252,320 +379,243 @@ public class SyncServiceSVN implements ProfileSyncI
 			throw new IOException("Internal error", e);
 		}
 	}
-//
-//	/**
-//	 * @throws MergeFailure 
-//	 * @throws AuthenticationException 
-//	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#updateCommitAndPush(java.io.File, java.lang.String, java.lang.String, java.lang.String,
-//	 * java.lang.String[])
-//	 */
-//	@Override
-//	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... files)
-//			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException
-//	{
-//		try
-//		{
-//			log.info("Commit Files called {}", (files == null ? "-null-" : Arrays.toString(files)));
-//			Git git = getGit();
-//			
-//			if (git.status().call().getConflicting().size() > 0)
-//			{
-//				log.info("Previous merge failure not yet resolved");
-//				throw new MergeFailure(git.status().call().getConflicting(), new HashSet<>());
-//			}
-//			
-//			if (files == null)
-//			{
-//				files = git.status().call().getUncommittedChanges().toArray(new String[0]);
-//				log.info("Will commit the uncommitted files {}", Arrays.toString(files));
-//			}
-//			
-//			if (StringUtils.isEmptyOrNull(commitMessage) && files.length > 0)
-//			{
-//				throw new IllegalArgumentException("The commit message is required when files are specified");
-//			}
-//
-//			if (files.length > 0)
-//			{
-//				CommitCommand commit = git.commit();
-//				for (String file : files)
-//				{
-//					commit.setOnly(file);
-//				}
-//
-//				commit.setAuthor(username, "42");
-//				commit.setMessage(commitMessage);
-//				RevCommit rv = commit.call();
-//				log.debug("Local commit completed: " + rv.getFullMessage());
-//			}
-//
-//			//need to merge origin/master into master now, prior to push
-//			Set<String> result = updateFromRemote(username, password, mergeFailOption);
-//
-//			log.debug("Pushing");
-//			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
-//
-//			Iterable<PushResult> pr = git.push().setCredentialsProvider(cp).call();
-//			pr.forEach(new Consumer<PushResult>()
-//			{
-//				@Override
-//				public void accept(PushResult t)
-//				{
-//					log.debug("Push Result Messages: " + t.getMessages());
-//				}
-//			});
-//
-//			log.info("commit and push complete.  Current status: " + statusToString(git.status().call()));
-//			return result;
-//		}
-//		catch (TransportException te)
-//		{
-//			if (te.getMessage().contains("Auth fail"))
-//			{
-//				log.info("Auth fail", te);
-//				throw new AuthenticationException("Auth fail");
-//			}
-//			else
-//			{
-//				log.error("Unexpected", te);
-//				throw new IOException("Internal error", te);
-//			}
-//		}
-//		catch (SVNException e)
-//		{
-//			log.error("Unexpected", e);
-//			throw new IOException("Internal error", e);
-//		}
-//	}
-//
+
 	/**
 	 * @throws MergeFailure
-	 * @throws AuthenticationException 
+	 * @throws AuthenticationException
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#updateCommitAndPush(java.io.File, java.lang.String, java.lang.String, java.lang.String,
+	 * java.lang.String[])
+	 */
+	@Override
+	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... fileNamesToCommit)
+			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException
+	{
+		try
+		{
+			log.info("Commit Files called {}", (fileNamesToCommit == null ? "-null-" : Arrays.toString(fileNamesToCommit)));
+
+			Set<String> conflicting = getFilesInMergeConflict();
+			if (conflicting.size() > 0)
+			{
+				log.info("Previous merge failure not yet resolved");
+				throw new MergeFailure(conflicting, new HashSet<>());
+			}
+
+			if (fileNamesToCommit == null)
+			{
+				fileNamesToCommit = getLocallyModifiedFiles().toArray(new String[0]);
+				log.info("Will commit the uncommitted files {}", Arrays.toString(fileNamesToCommit));
+			}
+
+			if (commitMessage == null || commitMessage.trim().length() == 0 && fileNamesToCommit.length > 0)
+			{
+				throw new IllegalArgumentException("The commit message is required when files are specified");
+			}
+
+			//perform update
+			Set<String> updatedFiles = updateFromRemote(username, password, mergeFailOption);
+
+			if (fileNamesToCommit.length > 0)
+			{
+				File[] filesToCommit = new File[fileNamesToCommit.length];
+				for (int i = 0; i < fileNamesToCommit.length; i++)
+				{
+					filesToCommit[i] = new File(localFolder_, fileNamesToCommit[i]);
+				}
+
+				SVNCommitInfo result = getSvn().getCommitClient().doCommit(filesToCommit, false, commitMessage, null, null, false, false, SVNDepth.EMPTY);
+
+				if (result.getErrorMessage() != null)
+				{
+					//I don't know if/when this would actually ever happen - seems most things result in a SVNException being thrown.
+					log.error("Error during commit! " + result.getErrorMessage().toString());
+					throw new IOException("Failed to commit.  Try updating first.");
+				}
+
+				log.debug("Commit completed - now at " + result.getNewRevision());
+			}
+
+			log.info("commit and push complete.  Current status: " + statusToString());
+			return updatedFiles;
+		}
+
+		//TODO handle auth issues
+		catch (SVNException e)
+		{
+			if (e.getErrorMessage() != null && SVNErrorCode.WC_NOT_UP_TO_DATE == e.getErrorMessage().getErrorCode())
+			{
+				log.error("Local checkout not up to date", e);
+				throw new IOException("Local copy out of date with server.  Please update again");
+			}
+			log.error("Unexpected", e);
+			throw new IOException("Internal error", e);
+		}
+	}
+
+	/**
+	 * @throws MergeFailure
+	 * @throws AuthenticationException
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#updateFromRemote(java.io.File, java.lang.String, java.lang.String,
 	 * gov.va.isaac.interfaces.sync.MergeFailOption)
 	 */
 	@Override
-	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException,
-			MergeFailure, AuthenticationException
+	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException, MergeFailure,
+			AuthenticationException
 	{
-		Set<String> filesChangedDuringPull = null;
+		final Set<String> filesChangedDuringPull = new HashSet<>();
 		try
 		{
 			log.info("update from remote called ");
 
 			log.debug("Fetching from remote");
-			
+
 			Set<String> mergeConflicts = getFilesInMergeConflict();
 			if (mergeConflicts.size() > 0)
 			{
 				log.info("Previous merge failure not yet resolved");
 				throw new MergeFailure(mergeConflicts, new HashSet<>());
 			}
-//			
-//			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
-//			log.debug("Fetch Message" + git.fetch().setCredentialsProvider(cp).call().getMessages());
-//			
-//			ObjectId masterIdBeforeMerge = git.getRepository().getRef("master").getObjectId();
-//			if (git.getRepository().getRef("refs/remotes/origin/master").getObjectId().getName().equals(masterIdBeforeMerge.getName()))
-//			{
-//				log.info("No changes to merge");
-//				return new HashSet<String>();
-//			}
-//
-//
-//			{
-//				log.debug("Merging from remotes/origin/master");
-//				MergeResult mr = git.merge().include(git.getRepository().getRef("refs/remotes/origin/master")).call();
-//				AnyObjectId headAfterMergeID = mr.getNewHead();
-//				
-//				if (!mr.getMergeStatus().isSuccessful())
-//				{
-//					if (mergeFailOption == null || MergeFailOption.FAIL == mergeFailOption)
-//					{
-//						addNote(NOTE_FAILED_MERGE_HAPPENED_ON_REMOTE + (stash == null ? ":NO_STASH" : STASH_MARKER + stash.getName()), git);
-//						//We can use the status here - because we already stashed the stuff that they had uncommitted above.
-//						throw new MergeFailure(mr.getConflicts().keySet(), git.status().call().getUncommittedChanges());
-//					}
-//					else if (MergeFailOption.KEEP_LOCAL == mergeFailOption || MergeFailOption.KEEP_REMOTE == mergeFailOption)
-//					{
-//						HashMap<String, MergeFailOption> resolutions = new HashMap<>();
-//						for (String s : mr.getConflicts().keySet())
-//						{
-//							resolutions.put(s, mergeFailOption);
-//						}
-//						log.debug("Resolving merge failures with option {}", mergeFailOption);
-//						filesChangedDuringPull = resolveMergeFailures(MergeFailType.REMOTE_TO_LOCAL, (stash == null ? null : stash.getName()), resolutions);
-//					}
-//					else
-//					{
-//						throw new IllegalArgumentException("Unexpected option");
-//					}
-//				}
-//				else
-//				{
-//					//Conflict free merge - or perhaps, no merge at all.
-//					if (masterIdBeforeMerge.getName().equals(headAfterMergeID.getName()))
-//					{
-//						log.debug("Merge didn't result in a commit - no incoming changes");
-//						filesChangedDuringPull = new HashSet<>();
-//					}
-//					else
-//					{
-//						filesChangedDuringPull = listFilesChangedInCommit(git.getRepository(), masterIdBeforeMerge, headAfterMergeID);
-//					}
-//				}
-//			}
 
-		
+			SVNUpdateClient client = getSvn().getUpdateClient();
+			client.setEventHandler(new ISVNEventHandler()
+			{
+
+				@Override
+				public void checkCancelled() throws SVNCancelException
+				{
+					// noop
+				}
+
+				@Override
+				public void handleEvent(SVNEvent event, double progress) throws SVNException
+				{
+					//dont care about directory updates
+					if (!event.getFile().isDirectory())
+					{
+						if (event.getAction() == SVNEventAction.UPDATE_UPDATE || event.getAction() == SVNEventAction.UPDATE_ADD
+								|| event.getAction() == SVNEventAction.UPDATE_DELETE || event.getAction() == SVNEventAction.UPDATE_REPLACE)
+						{
+							filesChangedDuringPull.add(getPathRelativeToRoot(event.getFile()));
+						}
+						else
+						{
+							log.error("Unhandeled update action! {}", event.getAction());
+						}
+					}
+				}
+			});
+
+			log.debug("Running Update");
+			client.doUpdate(localFolder_, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
+
+			System.out.println("After update:" + statusToString());
+
+			Set<String> conflicted = getFilesInMergeConflict();
+
+			if (conflicted.size() > 0)
+			{
+				if (mergeFailOption == null || MergeFailOption.FAIL == mergeFailOption)
+				{
+					throw new MergeFailure(conflicted, filesChangedDuringPull);
+				}
+				else if (MergeFailOption.KEEP_LOCAL == mergeFailOption || MergeFailOption.KEEP_REMOTE == mergeFailOption)
+				{
+					HashMap<String, MergeFailOption> resolutions = new HashMap<>();
+					for (String s : conflicted)
+					{
+						resolutions.put(s, mergeFailOption);
+					}
+					log.debug("Resolving merge failures with option {}", mergeFailOption);
+					filesChangedDuringPull.addAll(resolveMergeFailures(resolutions));
+				}
+				else
+				{
+					throw new IllegalArgumentException("Unexpected option");
+				}
+			}
+
 			log.info("Files changed during updateFromRemote: {}", filesChangedDuringPull);
 			return filesChangedDuringPull;
 		}
-		
-		//TODO put SVN back
-		catch (Exception e)
+
+		catch (SVNException e)
 		{
 			log.error("Unexpected", e);
 			throw new IOException("Internal error", e);
 		}
 	}
-	
-//	
-//	/**
-//	 * @throws MergeFailure 
-//	 * @throws NoWorkTreeException 
-//	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#resolveMergeFailures(java.io.File, java.util.Map)
-//	 */
-//	@Override
-//	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, NoWorkTreeException, MergeFailure
-//	{
-//		log.info("resolve merge failures called - resolutions: {}", resolutions);
-//		try
-//		{
-//			Git git = getGit();
-	
-//	Set<String> conflicting = git.status().call().getConflicting();
-//	if (conflicting.size() == 0)
-//	{
-//		throw new IllegalArgumentException("You do not appear to have any conflicting files");
-//	}
-//	if (conflicting.size() !=  resolutions.size())
-//	{
-//		throw new IllegalArgumentException("You must provide a resolution for each conflicting file.  Files in conflict: " + conflicting);
-//	}
-//	for (String s : conflicting)
-//	{
-//		if (!resolutions.containsKey(s))
-//		{
-//			throw new IllegalArgumentException("No conflit resolution specified for file " + s + ".  Resolutions must be specified for all files");
-//		}
-//	}
 
-//			for (Entry<String, MergeFailOption> r : resolutions.entrySet())
-//			{
-//				if (MergeFailOption.FAIL == r.getValue())
-//				{
-//					throw new IllegalArgumentException("MergeFailOption.FAIL is not a valid option");
-//				}
-//				else if (MergeFailOption.KEEP_LOCAL == r.getValue())
-//				{
-//					log.debug("Keeping our local file for conflict {}", r.getKey());
-//					git.checkout().addPath(r.getKey()).setStage(MergeFailType.REMOTE_TO_LOCAL == mergeFailType ? Stage.OURS : Stage.THEIRS).call();
-//				}
-//				else if (MergeFailOption.KEEP_REMOTE == r.getValue())
-//				{
-//					log.debug("Keeping remote file for conflict {}", r.getKey());
-//					git.checkout().addPath(r.getKey()).setStage(MergeFailType.REMOTE_TO_LOCAL == mergeFailType ? Stage.THEIRS : Stage.OURS).call();
-//				}
-//				else
-//				{
-//					throw new IllegalArgumentException("MergeFailOption is required");
-//				}
-//				
-//				log.debug("calling add to mark merge resolved");
-//				git.add().addFilepattern(r.getKey()).call();
-//			}
-//			
-//			if (mergeFailType == MergeFailType.STASH_TO_LOCAL)
-//			{
-//				//clean up the stash
-//				log.debug("Dropping stash");
-//				git.stashDrop().call();
-//			}
-//			
-//			
-//			RevWalk walk = new RevWalk(git.getRepository());
-//			Ref head = git.getRepository().getRef("refs/heads/master");
-//			RevCommit commitWithPotentialNote = walk.parseCommit(head.getObjectId());
-//			
-//			log.info("resolve merge failures Complete.  Current status: " + statusToString(git.status().call()));
-//			
-//			RevCommit rc = git.commit().setMessage("Merging with user specified merge failure resolution for files " + resolutions.keySet()).call();
-//			
-//			git.notesRemove().setObjectId(commitWithPotentialNote).call();
-//			Set<String> filesChangedInCommit = listFilesChangedInCommit(git.getRepository(), commitWithPotentialNote.getId(), rc);
-//			
-//			//When we auto resolve to KEEP_REMOTE - these will have changed - make sure they are in the list.
-//			//TODO seems like this shouldn't really be necessary - need to look into the listFilesChangedInCommit algorithm closer.
-//			//this might already be fixed by the rework on 11/12/14, but no time to validate at the moment.
-//			for (Entry<String, MergeFailOption> r : resolutions.entrySet())
-//			{
-//				if (MergeFailOption.KEEP_REMOTE == r.getValue())
-//				{
-//					filesChangedInCommit.add(r.getKey());
-//				}
-//				if (MergeFailOption.KEEP_LOCAL == r.getValue())
-//				{
-//					filesChangedInCommit.remove(r.getKey());
-//				}
-//			}
-//			
-//			if (!StringUtils.isEmptyOrNull(stashIDToApply))
-//			{
-//				log.info("Replaying stash identified in note");
-//				try
-//				{
-//					git.stashApply().setStashRef(stashIDToApply).call();
-//					log.debug("stash applied cleanly, dropping stash");
-//					git.stashDrop().call();
-//				}
-//				catch (StashApplyFailureException e)
-//				{
-//					log.debug("Stash failed to merge");
-//					addNote(NOTE_FAILED_MERGE_HAPPENED_ON_STASH, git);
-//					throw new MergeFailure(git.status().call().getConflicting(), filesChangedInCommit);
-//				}
-//			}
-//			
-//			return filesChangedInCommit;
-//		}
-//		catch (SVNException e)
-//		{
-//			log.error("Unexpected", e);
-//			throw new IOException("Internal error", e);
-//		}
-//	}
-//
-//	private HashSet<String> listFilesChangedInCommit(Repository repository, AnyObjectId beforeID, AnyObjectId afterID) throws MissingObjectException, IncorrectObjectTypeException, IOException
-//	{
-//		log.info("calculating files changed in commit");
-//		HashSet<String> result = new HashSet<>();
-//		RevWalk rw = new RevWalk(repository);
-//		RevCommit commitBefore = rw.parseCommit(beforeID);
-//		RevCommit commitAfter = rw.parseCommit(afterID);
-//		DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
-//		df.setRepository(repository);
-//		df.setDiffComparator(RawTextComparator.DEFAULT);
-//		df.setDetectRenames(true);
-//		List<DiffEntry> diffs = df.scan(commitBefore.getTree(), commitAfter.getTree());
-//		for (DiffEntry diff : diffs)
-//		{
-//			result.add(diff.getNewPath());
-//		}
-//		log.debug("Files changed between commits commit: {} and {} - {}", beforeID.getName(), afterID, result);
-//		return result;
-//	}
-//
+	/**
+	 * @throws MergeFailure
+	 * @throws NoWorkTreeException
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#resolveMergeFailures(java.io.File, java.util.Map)
+	 */
+	@Override
+	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure
+	{
+		log.info("resolve merge failures called - resolutions: {}", resolutions);
+		try
+		{
+			Set<String> conflicting = getFilesInMergeConflict();
+			if (conflicting.size() == 0)
+			{
+				throw new IllegalArgumentException("You do not appear to have any conflicting files");
+			}
+			if (conflicting.size() != resolutions.size())
+			{
+				throw new IllegalArgumentException("You must provide a resolution for each conflicting file.  Files in conflict: " + conflicting);
+			}
+			for (String s : conflicting)
+			{
+				if (!resolutions.containsKey(s))
+				{
+					throw new IllegalArgumentException("No conflit resolution specified for file " + s + ".  Resolutions must be specified for all files");
+				}
+			}
+
+			ArrayList<File> filesToCommit = new ArrayList<>();
+
+			for (Entry<String, MergeFailOption> r : resolutions.entrySet())
+			{
+				if (MergeFailOption.FAIL == r.getValue())
+				{
+					throw new IllegalArgumentException("MergeFailOption.FAIL is not a valid option");
+				}
+				else if (MergeFailOption.KEEP_LOCAL == r.getValue())
+				{
+					log.debug("Keeping our local file for conflict {}", r.getKey());
+					getSvn().getWCClient().doResolve(new File(localFolder_, r.getKey()), SVNDepth.EMPTY, SVNConflictChoice.MINE_FULL);
+				}
+				else if (MergeFailOption.KEEP_REMOTE == r.getValue())
+				{
+					log.debug("Keeping remote file for conflict {}", r.getKey());
+					getSvn().getWCClient().doResolve(new File(localFolder_, r.getKey()), SVNDepth.EMPTY, SVNConflictChoice.THEIRS_FULL);
+				}
+				else
+				{
+					throw new IllegalArgumentException("MergeFailOption is required");
+				}
+
+				filesToCommit.add(new File(localFolder_, r.getKey()));
+			}
+
+			log.info("resolve merge failures Complete.  Current status: " + statusToString());
+
+			return resolutions.keySet();
+		}
+		catch (SVNException e)
+		{
+			log.error("Unexpected", e);
+			throw new IOException("Internal error", e);
+		}
+	}
+
+	
 	private SVNClientManager getSvn() throws IOException, IllegalArgumentException
+	{
+		return getSvn(false);
+	}
+	private SVNClientManager getSvn(boolean missingLocalOk) throws IOException, IllegalArgumentException
 	{
 		if (scm_ == null)
 		{
@@ -578,10 +628,10 @@ public class SyncServiceSVN implements ProfileSyncI
 				log.error("The passed in local folder '{}' didn't exist", localFolder_);
 				throw new IllegalArgumentException("The localFolder must be a folder, and must exist");
 			}
-	
+
 			File svnFolder = new File(localFolder_, ".svn");
-	
-			if (!svnFolder.isDirectory())
+
+			if (!missingLocalOk && !svnFolder.isDirectory())
 			{
 				log.error("The passed in local folder '{}' does not appear to be a svn repository", localFolder_);
 				throw new IllegalArgumentException("The localFolder does not appear to be a svn repository");
@@ -594,12 +644,11 @@ public class SyncServiceSVN implements ProfileSyncI
 	private String statusToString() throws IllegalArgumentException, SVNException, IOException
 	{
 		StringBuilder sb = new StringBuilder();
-		
-		
+
 		HashMap<SVNStatusType, ArrayList<String>> result = new HashMap<>();
 		getSvn().getStatusClient().doStatus(localFolder_, SVNRevision.BASE, SVNDepth.INFINITY, false, true, true, false, new ISVNStatusHandler()
 		{
-			
+
 			@Override
 			public void handleStatus(SVNStatus status) throws SVNException
 			{
@@ -621,14 +670,14 @@ public class SyncServiceSVN implements ProfileSyncI
 				temp.add(path);
 			}
 		}, new ArrayList<String>());
-		
+
 		for (Entry<SVNStatusType, ArrayList<String>> x : result.entrySet())
 		{
 			sb.append(x.getKey().toString() + " - " + x.getValue() + eol);
 		}
 		return sb.toString();
 	}
-	
+
 	private String getPathRelativeToRoot(File file)
 	{
 		Path full = file.getAbsoluteFile().toPath();
@@ -656,16 +705,14 @@ public class SyncServiceSVN implements ProfileSyncI
 		{
 			log.debug("README.md already exists");
 		}
-		
-		//TODO handle getting 'lastUser.txt' into the SVN ignore properties
 		return result;
 	}
 
 	/**
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#substituteURL(java.lang.String, java.lang.String)
 	 * 
-	 *  
-	 *  Otherwise, returns URL.
+	 * 
+	 * Otherwise, returns URL.
 	 */
 	@Override
 	public String substituteURL(String url, String username)
@@ -684,31 +731,37 @@ public class SyncServiceSVN implements ProfileSyncI
 	}
 
 	/**
-	 * @throws IOException 
+	 * @throws IOException
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getLocallyModifiedFileCount()
 	 */
 	@Override
 	public int getLocallyModifiedFileCount() throws IOException
+	{
+		return getLocallyModifiedFiles().size();
+	}
+
+	private Set<String> getLocallyModifiedFiles() throws IOException
 	{
 		try
 		{
 			HashSet<String> result = new HashSet<>();
 			getSvn().getStatusClient().doStatus(localFolder_, SVNRevision.BASE, SVNDepth.INFINITY, false, false, false, false, new ISVNStatusHandler()
 			{
-				
+
 				@Override
 				public void handleStatus(SVNStatus status) throws SVNException
 				{
-					//TODO any others I need to check?
 					if (status.getNodeStatus() == SVNStatusType.STATUS_MODIFIED || status.getNodeStatus() == SVNStatusType.STATUS_ADDED
-							|| status.getNodeStatus() == SVNStatusType.STATUS_UNVERSIONED || status.getNodeStatus() == SVNStatusType.MERGED)
+							|| status.getNodeStatus() == SVNStatusType.STATUS_UNVERSIONED || status.getNodeStatus() == SVNStatusType.MERGED
+							|| status.getNodeStatus() == SVNStatusType.STATUS_DELETED || status.getNodeStatus() == SVNStatusType.STATUS_REPLACED
+							|| status.getNodeStatus() == SVNStatusType.MERGED)
 					{
-						result.add(status.getRepositoryRelativePath());
+						result.add(getPathRelativeToRoot(status.getFile()));
 					}
 				}
 			}, new ArrayList<String>());
-			
-			return result.size();
+
+			return result;
 		}
 		catch (Exception e)
 		{
@@ -718,7 +771,7 @@ public class SyncServiceSVN implements ProfileSyncI
 	}
 
 	/**
-	 * @throws IOException 
+	 * @throws IOException
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getFilesInMergeConflict()
 	 */
 	@Override
@@ -729,7 +782,7 @@ public class SyncServiceSVN implements ProfileSyncI
 			HashSet<String> result = new HashSet<>();
 			getSvn().getStatusClient().doStatus(localFolder_, SVNRevision.BASE, SVNDepth.INFINITY, false, false, false, false, new ISVNStatusHandler()
 			{
-				
+
 				@Override
 				public void handleStatus(SVNStatus status) throws SVNException
 				{
@@ -739,7 +792,7 @@ public class SyncServiceSVN implements ProfileSyncI
 					}
 				}
 			}, new ArrayList<String>());
-			
+
 			return result;
 		}
 		catch (Exception e)
@@ -748,60 +801,40 @@ public class SyncServiceSVN implements ProfileSyncI
 			throw new IOException("Internal error", e);
 		}
 	}
-
 	
-	/**
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 */
-	
-	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void linkAndFetchFromRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException, AuthenticationException
+	private static void deleteRecursive(Path path) throws IOException
 	{
-		// TODO Auto-generated method stub
-		
-	}
+		Files.walkFileTree(path, new SimpleFileVisitor<Path>()
+		{
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+			{
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
 
-	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.lang.String)
-	 */
-	@Override
-	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException
-	{
-		// TODO Auto-generated method stub
-		
-	}
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException
+			{
+				// try to delete the file anyway, even if its attributes could not be read, since delete-only access is theoretically possible
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
 
-	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#updateCommitAndPush(java.lang.String, java.lang.String, java.lang.String, gov.va.isaac.interfaces.sync.MergeFailOption, java.lang.String[])
-	 */
-	@Override
-	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... files)
-			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException
-	{
-		// TODO Auto-generated method stub
-		return null;
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+			{
+				if (exc == null)
+				{
+					Files.delete(dir);
+					return FileVisitResult.CONTINUE;
+				}
+				else
+				{
+					// directory iteration failed; propagate exception
+					throw exc;
+				}
+			}
+		});
 	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#resolveMergeFailures(java.util.Map)
-	 */
-	@Override
-	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

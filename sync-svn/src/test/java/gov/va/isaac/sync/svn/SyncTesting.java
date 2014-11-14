@@ -42,10 +42,20 @@ public class SyncTesting
 		String username = "username";
 		String password = "password";
 
-		System.out.println(ssg.getFilesInMergeConflict());
-		System.out.println(ssg.getLocallyModifiedFileCount());
+//		System.out.println(ssg.getFilesInMergeConflict());
+//		System.out.println(ssg.getLocallyModifiedFileCount());
 		//ssg.addFiles("foo3");
 		//ssg.removeFiles("b");
-		ssg.addUntrackedFiles();
+		//ssg.addUntrackedFiles();
+//		ssg.relinkRemote("file:///mnt/SSD/scratch/svnTestRepo2");
+//		System.out.println(ssg.updateFromRemote(username, password, MergeFailOption.KEEP_LOCAL));
+//		HashMap<String, MergeFailOption> resolutions = new HashMap<>();
+//		resolutions.put("a", MergeFailOption.KEEP_REMOTE);
+//		System.out.println(ssg.resolveMergeFailures(resolutions));
+//		ssg.addUntrackedFiles();
+//		System.out.println(ssg.updateCommitAndPush("test message", username, password, MergeFailOption.FAIL,(String[])null));
+		
+		ssg.linkAndFetchFromRemote("file:///mnt/SSD/scratch/svnTestRepo2", username, password);
+		
 	}
 }
