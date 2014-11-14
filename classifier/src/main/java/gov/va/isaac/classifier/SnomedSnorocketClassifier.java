@@ -529,7 +529,7 @@ public class SnomedSnorocketClassifier implements Classifier {
                 countB_DiffISA++;
               }
 
-              writeRel(rel_B, false, countConceptsSeen);
+              writeRel(rel_B, false, countConceptsSeen, "A");
 
               if (itB.hasNext()) {
                 rel_B = itB.next();
@@ -546,7 +546,7 @@ public class SnomedSnorocketClassifier implements Classifier {
               if (rel_A.typeId == Snomed.IS_A.getNid()) {
                 countA_DiffISA++;
               }
-              writeRel(rel_A, true, countConceptsSeen);
+              writeRel(rel_A, true, countConceptsSeen, "B");
               if (itA.hasNext()) {
                 rel_A = itA.next();
               } else {
@@ -566,7 +566,7 @@ public class SnomedSnorocketClassifier implements Classifier {
           if (rel_A.typeId == Snomed.IS_A.getNid()) {
             countA_DiffISA++;
           }
-          writeRel(rel_A, true, countConceptsSeen);
+          writeRel(rel_A, true, countConceptsSeen, "C");
           if (itA.hasNext()) {
             rel_A = itA.next();
           } else {
@@ -582,7 +582,7 @@ public class SnomedSnorocketClassifier implements Classifier {
           if (rel_B.typeId == Snomed.IS_A.getNid()) {
             countB_DiffISA++;
           }
-          writeRel(rel_B, false, countConceptsSeen);
+          writeRel(rel_B, false, countConceptsSeen, "D");
           if (itB.hasNext()) {
             rel_B = itB.next();
           } else {
@@ -639,7 +639,7 @@ public class SnomedSnorocketClassifier implements Classifier {
           groupList_NotEqual = groupList_A.whichNotEqual(groupList_B);
           for (RelationshipGroup sg : groupList_NotEqual) {
             for (Relationship sr_A : sg) {
-              writeRel(sr_A, true, countConceptsSeen);
+              writeRel(sr_A, true, countConceptsSeen, "E");
             }
           }
           countA_Total += groupList_A.countRels();
@@ -656,11 +656,11 @@ public class SnomedSnorocketClassifier implements Classifier {
               rgNum = nextRoleGroupNumber(groupList_A, rgNum);
               for (Relationship sr_B : sg) {
                 sr_B.group = rgNum;
-                writeRel(sr_B, false, countConceptsSeen);
+                writeRel(sr_B, false, countConceptsSeen, "F");
               }
             } else {
               for (Relationship sr_B : sg) {
-                writeRel(sr_B, false, countConceptsSeen);
+                writeRel(sr_B, false, countConceptsSeen, "G");
               }
             }
           }
@@ -677,7 +677,7 @@ public class SnomedSnorocketClassifier implements Classifier {
           if (rel_B.typeId == Snomed.IS_A.getNid()) {
             countB_DiffISA++;
           }
-          writeRel(rel_B, false, countConceptsSeen);
+          writeRel(rel_B, false, countConceptsSeen, "H");
           if (itB.hasNext()) {
             rel_B = itB.next();
           } else {
@@ -696,7 +696,7 @@ public class SnomedSnorocketClassifier implements Classifier {
           if (rel_A.typeId == Snomed.IS_A.getNid()) {
             countA_DiffISA++;
           }
-          writeRel(rel_A, true, countConceptsSeen);
+          writeRel(rel_A, true, countConceptsSeen, "I");
           if (itA.hasNext()) {
             rel_A = itA.next();
           } else {
@@ -722,7 +722,7 @@ public class SnomedSnorocketClassifier implements Classifier {
         countA_DiffISA++;
       }
       // COMPLETELY UPDATE ALL REMAINING REL_A AS RETIRED
-      writeRel(rel_A, true, countConceptsSeen);
+      writeRel(rel_A, true, countA_Diff, "J");
       if (itA.hasNext()) {
         rel_A = itA.next();
       } else {
@@ -738,7 +738,7 @@ public class SnomedSnorocketClassifier implements Classifier {
         countB_DiffISA++;
       }
       // COMPLETELY UPDATE ALL REMAINING REL_B AS NEW, CURRENT
-      writeRel(rel_B, false, countConceptsSeen);
+      writeRel(rel_B, false, countB_Diff, "K");
       if (itB.hasNext()) {
         rel_B = itB.next();
       } else {
@@ -803,7 +803,7 @@ public class SnomedSnorocketClassifier implements Classifier {
    * @param relationship the relationship
    */
   private void writeRel(Relationship relationship, boolean retired,
-    int countConceptsSeen) throws Exception {
+    int countConceptsSeen, String label) throws Exception {
 
     // add concept to commit list
     dataStore
@@ -811,7 +811,7 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // add rel
     if (!retired) {
-      LOG.debug("ADD : " + relationship);
+      LOG.debug("ADD : " + relationship + " " + label);
       // using generate random to work around an issue where the
       // constructor thinks this object is a RelGroupChronicle
       // that error was only sometimes being triggered when trying to add a new
@@ -829,7 +829,7 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // retire rel
     else {
-      LOG.debug("RETIRE REL : " + relationship + " " + relationship.getRelId());
+      LOG.debug("RETIRE REL : " + relationship + " " + relationship.getRelId() + " " + label);
       final RelationshipVersionBI<?> rel =
           (RelationshipVersionBI<?>) dataStore.getComponent(Integer
               .parseInt(relationship.getRelId()));
@@ -845,10 +845,10 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     // Commit periodically (for full case)
-    if (countConceptsSeen % 5000 == 0) {
-      LOG.info("    commit = " + countConceptsSeen);
-      dataStore.commit();
-    }
+    //if (countConceptsSeen % 5000 == 0) {
+    //  LOG.info("    commit = " + countConceptsSeen);
+    //  dataStore.commit();
+    //}
   }
 
   /**
@@ -1086,14 +1086,11 @@ public class SnomedSnorocketClassifier implements Classifier {
   private void convertToOntologyObjects(int topNid, ConceptVersionBI concept)
     throws Exception {
 
-    // Get concept attributes
-    ConceptAttributeVersionBI<?> attributes =
-        ConceptViewerHelper.getConceptAttributes(concept);
-
     // Add concept
     StringIDConcept stringIdConcept =
         new StringIDConcept(concept.getNid(), String.valueOf(concept.getNid()),
-            attributes.isDefined());
+           concept.getConceptAttributes().
+           getVersion(WBUtility.getViewCoordinate()).isDefined());
 
     // save so we can map nids to their classifier ids.
     nidSeen.add(concept.getNid());
@@ -1114,8 +1111,17 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     // Iterate through relationships
-    for (RelationshipVersionBI<?> relationship : concept
-        .getRelationshipsOutgoingActive()) {
+    for (RelationshipVersionBI<?> relationship : concept.getRelationshipsOutgoingActive()) {
+
+      // skip inactive
+      if (!relationship.isActive()) {
+        continue;
+      }
+
+      // return if the path of the rel is not valid
+      if (!validPaths.contains(relationship.getPathNid())) {
+        return;
+      }
 
       Relationship rel =
           new Relationship(relationship.getConceptNid(),
@@ -1134,8 +1140,7 @@ public class SnomedSnorocketClassifier implements Classifier {
         // Add prior inferred rels
         addPreviousInferredRel(relationship.getConceptNid(), rel);
       } else {
-        throw new Exception("Unexpected non-inferred and non-stated relationship: " 
-            + relationship.toUserString());
+        // these are the "additional" relationships, ignore them
       }
     }
     cycleCheckRelationships.put(nid, parentIds);
@@ -1341,8 +1346,9 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // Full classification is needed
     if (rocket_123 == null) {
-      throw new Exception(
+      LOG.warn(
           "Full classification must be done before incremental classification can be used.");
+      return;
     }
 
     // add concepts - add to cycle check data structures too

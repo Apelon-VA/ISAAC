@@ -37,6 +37,7 @@ import javafx.application.Platform;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.ihtsdo.otf.tcc.api.nid.IntSet;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
 import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
@@ -138,28 +139,35 @@ public class ClassifierCommitListener implements PropertyChangeListener,
         final int[] allConceptNids =
             ((NativeIdSetBI) evt.getNewValue()).getSetValues();
 
-        //
-        Platform.runLater(() -> {
-          try {
-            Classifier classifier = new SnomedSnorocketClassifier();
+        if (allConceptNids != null && allConceptNids.length > 0) {
 
-            // Identify if any components have been retired
-            // if so, clear the classifier state and send user a warning
-            LOG.debug(" Check for retirements");
-            if (includesRetirements(allConceptNids)) {
-              LOG.debug("   retirements = true");
-              classifier.clearStaticState();
-              throw new Exception("Commit included retirements, you must perform full classification again.");
-            }
-            
-            LOG.debug(" Incremental classify");
-            // classifier.incrementalClassify((IntSet)evt.getNewValue());
-          } catch (Exception e) {
-            e.printStackTrace();
-            AppContext.getCommonDialogs().showErrorDialog(e.getMessage(), e);
-          }
+          // perform action
+          Platform
+              .runLater(() -> {
+                try {
+                  Classifier classifier = new SnomedSnorocketClassifier();
 
-        });
+                  // Identify if any components have been retired
+                  // if so, clear the classifier state and send user a warning
+                  LOG.debug(" Check for retirements");
+                  if (includesRetirements(allConceptNids)) {
+                    LOG.debug("   retirements = true");
+                    classifier.clearStaticState();
+                    LOG.warn(
+                        "Commit included retirements, you must perform full classification again.");
+                    return;
+                  }
+
+                  LOG.debug(" Incremental classify");
+                  classifier.incrementalClassify((IntSet)evt.getNewValue());
+                } catch (Exception e) {
+                  e.printStackTrace();
+                  AppContext.getCommonDialogs().showErrorDialog(e.getMessage(),
+                      e);
+                }
+
+              });
+        }
       }
     } catch (Exception e) {
       LOG.error("Unexpected error processing commit notification", e);
