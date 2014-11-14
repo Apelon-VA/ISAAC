@@ -41,8 +41,8 @@ import org.slf4j.LoggerFactory;
  * 
  * @author bcarlsenca
  */
-//@Service
-//@Singleton
+@Service
+@Singleton
 @SuppressWarnings("restriction")
 public class ClassifierDialogView implements PopupViewI, IsaacViewWithMenusI {
 
