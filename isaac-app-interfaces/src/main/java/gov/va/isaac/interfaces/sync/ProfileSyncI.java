@@ -184,7 +184,8 @@ public interface ProfileSyncI
 	 * @throws IOException - if the passed parameters are invalid
 	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
 	 * update attempt.
-	 * @return The complete set of files that changed during the pull from the server that led to the merge failure.
+	 * @return At a minimum, the set of files modified by the resolution of the merge.  Implementation may, at their choosing , return the complete set of files 
+	 * that changed during the pull from the server that led to the merge failure, in addition to the files that were changes to resolve the conflicts.
 	 */
 	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
 	
