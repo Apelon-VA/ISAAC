@@ -19,6 +19,7 @@
 package gov.va.isaac.sync.svn;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.interfaces.sync.MergeFailOption;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import java.io.File;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -38,12 +39,15 @@ public class SyncTesting
 		ProfileSyncI ssg = AppContext.getService(SyncServiceSVN.class);
 		File localFolder = new File("/mnt/SSD/scratch/svnTest1/svnTestRepo");
 		ssg.setRootLocation(localFolder);
-		
+
 		String username = "username";
 		String password = "password";
+		
+		ssg.linkAndFetchFromRemote("https://csfe.aceworkspace.net/svn/repos/isaac_pa_demo_changesets_svn", username, password);
+		
 
-//		System.out.println(ssg.getFilesInMergeConflict());
-//		System.out.println(ssg.getLocallyModifiedFileCount());
+		System.out.println(ssg.getFilesInMergeConflict());
+		System.out.println(ssg.getLocallyModifiedFileCount());
 		//ssg.addFiles("foo3");
 		//ssg.removeFiles("b");
 		//ssg.addUntrackedFiles();
@@ -52,10 +56,10 @@ public class SyncTesting
 //		HashMap<String, MergeFailOption> resolutions = new HashMap<>();
 //		resolutions.put("a", MergeFailOption.KEEP_REMOTE);
 //		System.out.println(ssg.resolveMergeFailures(resolutions));
-//		ssg.addUntrackedFiles();
-//		System.out.println(ssg.updateCommitAndPush("test message", username, password, MergeFailOption.FAIL,(String[])null));
+		ssg.addUntrackedFiles();
+		System.out.println(ssg.updateCommitAndPush("test message", username, password, MergeFailOption.FAIL,(String[])null));
 		
-		ssg.linkAndFetchFromRemote("file:///mnt/SSD/scratch/svnTestRepo2", username, password);
+//		ssg.linkAndFetchFromRemote("file:///mnt/SSD/scratch/svnTestRepo2", username, password);
 		
 	}
 }

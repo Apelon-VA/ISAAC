@@ -43,6 +43,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tmatesoft.svn.core.SVNAuthenticationException;
 import org.tmatesoft.svn.core.SVNCancelException;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNDepth;
@@ -51,6 +52,7 @@ import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNPropertyValue;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.internal.util.SVNEncodingUtil;
+import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.wc.ISVNEventHandler;
 import org.tmatesoft.svn.core.wc.ISVNStatusHandler;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -82,7 +84,6 @@ public class SyncServiceSVN implements ProfileSyncI
 	private File localFolder_ = null;
 	private SVNClientManager scm_;
 
-	//TODO figure out how we handle prompts for things.  GUI vs no GUI... etc.
 	public SyncServiceSVN(File localFolder)
 	{
 		this();
@@ -129,10 +130,10 @@ public class SyncServiceSVN implements ProfileSyncI
 	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException, AuthenticationException
 	{
 		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder_, remoteAddress, userName);
+		setupCredentials(userName, password);
 		try
 		{
 			File svnFolder = new File(localFolder_, ".svn");
-
 			
 			if (svnFolder.isDirectory())
 			{
@@ -241,6 +242,11 @@ public class SyncServiceSVN implements ProfileSyncI
 			
 			log.info("Status after init: " + statusToString());
 			
+		}
+		catch (SVNAuthenticationException e) 
+		{
+			log.info("Auth fail", e);
+			throw new AuthenticationException("Auth fail");
 		}
 		catch (SVNException e)
 		{
@@ -390,10 +396,10 @@ public class SyncServiceSVN implements ProfileSyncI
 	public Set<String> updateCommitAndPush(String commitMessage, String username, String password, MergeFailOption mergeFailOption, String... fileNamesToCommit)
 			throws IllegalArgumentException, IOException, MergeFailure, AuthenticationException
 	{
+		log.info("Commit Files called {}", (fileNamesToCommit == null ? "-null-" : Arrays.toString(fileNamesToCommit)));
+		setupCredentials(username, password);
 		try
 		{
-			log.info("Commit Files called {}", (fileNamesToCommit == null ? "-null-" : Arrays.toString(fileNamesToCommit)));
-
 			Set<String> conflicting = getFilesInMergeConflict();
 			if (conflicting.size() > 0)
 			{
@@ -439,7 +445,11 @@ public class SyncServiceSVN implements ProfileSyncI
 			return updatedFiles;
 		}
 
-		//TODO handle auth issues
+		catch (SVNAuthenticationException e) 
+		{
+			log.info("Auth fail", e);
+			throw new AuthenticationException("Auth fail");
+		}
 		catch (SVNException e)
 		{
 			if (e.getErrorMessage() != null && SVNErrorCode.WC_NOT_UP_TO_DATE == e.getErrorMessage().getErrorCode())
@@ -462,13 +472,12 @@ public class SyncServiceSVN implements ProfileSyncI
 	public Set<String> updateFromRemote(String username, String password, MergeFailOption mergeFailOption) throws IllegalArgumentException, IOException, MergeFailure,
 			AuthenticationException
 	{
-		final Set<String> filesChangedDuringPull = new HashSet<>();
+		log.info("update from remote called ");
+		setupCredentials(username, password);
 		try
 		{
-			log.info("update from remote called ");
-
 			log.debug("Fetching from remote");
-
+			final Set<String> filesChangedDuringPull = new HashSet<>();
 			Set<String> mergeConflicts = getFilesInMergeConflict();
 			if (mergeConflicts.size() > 0)
 			{
@@ -538,6 +547,11 @@ public class SyncServiceSVN implements ProfileSyncI
 			return filesChangedDuringPull;
 		}
 
+		catch (SVNAuthenticationException e) 
+		{
+			log.info("Auth fail", e);
+			throw new AuthenticationException("Auth fail");
+		}
 		catch (SVNException e)
 		{
 			log.error("Unexpected", e);
@@ -717,7 +731,7 @@ public class SyncServiceSVN implements ProfileSyncI
 	@Override
 	public String substituteURL(String url, String username)
 	{
-		//TODO need any sub patterns?
+		//none needed at the moment
 		return url;
 	}
 
@@ -836,5 +850,11 @@ public class SyncServiceSVN implements ProfileSyncI
 				}
 			}
 		});
+	}
+	
+	private void setupCredentials(String username, String password) throws IllegalArgumentException, IOException
+	{
+		getSvn(true);  //make sure scm_ is inited
+		scm_.setAuthenticationManager(new DefaultSVNAuthenticationManager(null, false, username, password));
 	}
 }
