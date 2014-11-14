@@ -23,6 +23,7 @@ import gov.va.isaac.config.generated.ChangeSetSCMType;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.interfaces.sync.ProfileSyncI;
 import gov.va.isaac.sync.git.SyncServiceGIT;
+import gov.va.isaac.sync.svn.SyncServiceSVN;
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
@@ -154,7 +155,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 		}
 		else if (config_.getChangeSetUrlType() == ChangeSetSCMType.SVN)
 		{
-			throw new MojoExecutionException("SVN not supported yet");
+			return new SyncServiceSVN(userProfileFolderLocation);
 		}
 		else
 		{
