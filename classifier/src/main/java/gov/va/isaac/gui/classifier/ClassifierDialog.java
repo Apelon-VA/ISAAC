@@ -29,6 +29,7 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 /**
  * A {@link Stage} which can be used to show a classifier dialog
@@ -43,10 +44,11 @@ public class ClassifierDialog extends Stage {
 
   /**
    * Instantiates an empty {@link ClassifierDialog}.
+   * @param parent the parent
    *
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  public ClassifierDialog() throws IOException {
+  public ClassifierDialog(Window parent) throws IOException {
     super();
 
     setTitle("Classifier");
@@ -64,7 +66,7 @@ public class ClassifierDialog extends Stage {
     Scene scene = new Scene(root);
     setScene(scene);
 
-    this.controller = loader.getController();
-    controller.setVariables(this);
+    controller = loader.getController();
+    controller.setVariables(this, parent);
   }
 }

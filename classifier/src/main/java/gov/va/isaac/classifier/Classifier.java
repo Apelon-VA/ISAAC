@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package gov.va.isaac.classifier;
 import gov.va.isaac.util.ProgressReporter;
 
@@ -25,6 +28,25 @@ public interface Classifier extends ProgressReporter {
    */
   public void incrementalClassify(IntSet conceptSet) throws Exception;
 
+  /**
+   * Clear static state.  Reset after a full classification.
+   */
+  public void clearStaticState();
+  
+  /**
+   * Sets the save cycle check report.
+   *
+   * @param flag the save cycle check report
+   */
+  public void setSaveCycleCheckReport(boolean flag);
+  
+  /**
+   * Sets the save equivalent concepts report.
+   *
+   * @param flag the save equivalent concepts report
+   */
+  public void setSaveEquivalentConceptsReport(boolean flag);
+  
   /**
    * Cancel.
    */
