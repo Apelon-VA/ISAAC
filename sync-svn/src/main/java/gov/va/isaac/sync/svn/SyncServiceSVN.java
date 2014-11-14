@@ -650,7 +650,7 @@ public class SyncServiceSVN implements ProfileSyncI
 				log.error("The passed in local folder '{}' does not appear to be a svn repository", localFolder_);
 				throw new IllegalArgumentException("The localFolder does not appear to be a svn repository");
 			}
-			scm_ = SVNClientManager.newInstance();  //TODO authenticator
+			scm_ = SVNClientManager.newInstance();
 		}
 		return scm_;
 	}
