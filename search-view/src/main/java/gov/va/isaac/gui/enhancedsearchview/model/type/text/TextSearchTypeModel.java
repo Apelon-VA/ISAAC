@@ -55,12 +55,11 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 		});
 
-		
 		searchTypeFilterProperty.addListener(new ChangeListener<SearchTypeFilter<?>>() {
 			@Override
 			public void changed(
 					ObservableValue<? extends SearchTypeFilter<?>> observable,
-					SearchTypeFilter<?> oldValue, SearchTypeFilter<?> newValue) {
+							SearchTypeFilter<?> oldValue, SearchTypeFilter<?> newValue) {
 				if (newValue != null) {
 					newValue.isValidProperty().addListener(new ChangeListener<Boolean>() {
 						@Override
@@ -74,7 +73,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
 			}
 		});
-		
+
 		if (searchTypeFilterProperty.get() != null) {
 			searchTypeFilterProperty.get().isValidProperty().addListener(new ChangeListener<Boolean>() {
 				@Override
@@ -90,33 +89,33 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			@Override
 			public void onChanged(
 					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
-				
+
 				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
-				
+
 				while (c.next()) {
-	                 if (c.wasPermutated()) {
-	                	 // irrelevant
-//	                     for (int i = c.getFrom(); i < c.getTo(); ++i) {
-//	                          //permutate
-//	                     }
-	                 } else if (c.wasUpdated()) {
-	                	 // irrelevant
-	                 } else {
-//	                     for (NonSearchTypeFilter remitem : c.getRemoved()) {
-//	                         remitem.remove(Outer.this);
-//	                     }
-	                     for (NonSearchTypeFilter<?> additem : c.getAddedSubList()) {
-	                    	 additem.isValidProperty().addListener(new ChangeListener<Boolean>() {
+					if (c.wasPermutated()) {
+						// irrelevant
+						//	                     for (int i = c.getFrom(); i < c.getTo(); ++i) {
+						//	                          //permutate
+						//	                     }
+					} else if (c.wasUpdated()) {
+						// irrelevant
+					} else {
+						//	                     for (NonSearchTypeFilter remitem : c.getRemoved()) {
+						//	                         remitem.remove(Outer.this);
+						//	                     }
+						for (NonSearchTypeFilter<?> additem : c.getAddedSubList()) {
+							additem.isValidProperty().addListener(new ChangeListener<Boolean>() {
 								@Override
 								public void changed(
 										ObservableValue<? extends Boolean> observable,
 										Boolean oldValue, Boolean newValue) {
 									isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
 								}
-	                    	 });
-	                     }
-	                 }
-	             }
+							});
+						}
+					}
+				}
 			}
 		});
 
@@ -141,48 +140,30 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 	public ObservableList<NonSearchTypeFilter<? extends NonSearchTypeFilter<?>>> getFilters() {
 		return filters;
 	}
-	
+
 	public Collection<Filter<?>> getValidFilters() {
 		List<Filter<?>> validFilters = new ArrayList<>();
-		
+
 		for (Filter<?> filter : filters) {
 			if (filter.isValid()) {
 				validFilters.add(filter);
 			}
 		}
-		
+
 		return Collections.unmodifiableCollection(validFilters);
 	}
 
 	public Collection<Filter<?>> getInvalidFilters() {
 		List<Filter<?>> invalidFilters = new ArrayList<>();
-		
+
 		for (Filter<?> filter : filters) {
 			if (! filter.isValid()) {
 				invalidFilters.add(filter);
 			}
 		}
-		
+
 		return Collections.unmodifiableCollection(invalidFilters);
 	}
-
-	@Override
-	public  boolean isCriteriaPanelValid() {
-		if (getInvalidFilters().size() > 0) {
-			return false;
-		}
-
-		if (viewCoordinateProperty.get() == null) {
-			return false;
-		}
-		
-		if (searchTypeFilterProperty.get() == null || ! searchTypeFilterProperty.get().isValid()) {
-			return false;
-		}
-		
-		return true;
-	}
-
 	@Override
 	public void typeSpecificCopy(SearchTypeModel other) {
 		filters.clear();
@@ -195,12 +176,27 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 		return ", searchTypeFilter=" + searchTypeFilterProperty.get() 
 				+ ", filter=" + Arrays.toString(filters.toArray());
 	}
-	
+
+
+	@Override
+	public  boolean isCriteriaPanelValid() {
+		return isValidSearch(null);
+	}
+
 	@Override
 	protected boolean isValidSearch(String errorDialogTitle) {
 		if (getSearchType() == null) {
 			String details = "No SearchTypeFilter specified: " + this;
 			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
+
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		} else if (viewCoordinateProperty.get() == null) {
+			String details = "Invalid (null) ViewCoordinate set in search type model (name=" + getName() + ")";
+			LOG.warn(details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -216,9 +212,9 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 
 			return false;
-		} else if (! getSearchType().isValid()) {
-			String details = "Invalid search type filter: " + getSearchType();
-			LOG.warn("Invalid search type filter in search model (name=" + getName() + "). " + details + ": " + getSearchType());
+		} else if (! getSearchType().isValid() && getValidFilters().size() == 0) {
+			String details = "No valid filters set search model (name=" + getName() + "): " + getSearchType();
+			LOG.warn(details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -226,10 +222,10 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public void executeSearch(ResultsType resultsType, String modelMaxResults) {
 
@@ -285,69 +281,69 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 
 		// "we get called back when the results are ready."
 		switch (resultsType) {
-			case CONCEPT:
-			{
-				SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
-				builder.setCallback(this);
-				builder.setTaskId(Tasks.SEARCH.ordinal());
-				if (searchResultsFilter != null) {
-					builder.setFilter(searchResultsFilter);
-				}
-				if (modelMaxResults != null && modelMaxResults.length() > 0) {
-					Integer maxResults = Integer.valueOf(modelMaxResults);
-					if (maxResults != null && maxResults > 0) {
-						builder.setSizeLimit(maxResults);
-					}
-				}
-				builder.setMergeResultsOnConcept(true);
-
-				if (getSearchType().getSearchParameter() != null && !getSearchType().getSearchParameter().isEmpty()) {
-					ssh = SearchHandler.descriptionSearch(builder);
-				} else {
-					builder.setQuery("");
-					Set<Integer> filterList = new HashSet<Integer>();
-					for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> f : filters) {
-						filterList = f.gatherNoSearchTermCaseList(filterList);
-					}
-					
-					Set<CompositeSearchResult> filterCompositeSearchResultList = new HashSet<CompositeSearchResult>();
-					
-					for (Integer c : filterList) {
-						filterCompositeSearchResultList.add(new CompositeSearchResult(WBUtility.getConceptVersion(c), 0));
-					}
-					
-
-					ssh = SearchHandler.descriptionSearch(builder, filterCompositeSearchResultList);
-				}
-				break;
+		case CONCEPT:
+		{
+			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
+			builder.setCallback(this);
+			builder.setTaskId(Tasks.SEARCH.ordinal());
+			if (searchResultsFilter != null) {
+				builder.setFilter(searchResultsFilter);
 			}
-			case DESCRIPTION:
-			{
-				SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
-				builder.setCallback(this);
-				builder.setTaskId(Tasks.SEARCH.ordinal());
-				if (searchResultsFilter != null) {
-					builder.setFilter(searchResultsFilter);
+			if (modelMaxResults != null && modelMaxResults.length() > 0) {
+				Integer maxResults = Integer.valueOf(modelMaxResults);
+				if (maxResults != null && maxResults > 0) {
+					builder.setSizeLimit(maxResults);
 				}
-				if (modelMaxResults != null && modelMaxResults.length() > 0) {
-					Integer maxResults = Integer.valueOf(modelMaxResults);
-					if (maxResults != null && maxResults > 0) {
-						builder.setSizeLimit(maxResults);
-					}
-				}
+			}
+			builder.setMergeResultsOnConcept(true);
+
+			if (getSearchType().getSearchParameter() != null && !getSearchType().getSearchParameter().isEmpty()) {
 				ssh = SearchHandler.descriptionSearch(builder);
-				break;
+			} else {
+				builder.setQuery("");
+				Set<Integer> filterList = new HashSet<Integer>();
+				for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> f : filters) {
+					filterList = f.gatherNoSearchTermCaseList(filterList);
+				}
+
+				Set<CompositeSearchResult> filterCompositeSearchResultList = new HashSet<CompositeSearchResult>();
+
+				for (Integer c : filterList) {
+					filterCompositeSearchResultList.add(new CompositeSearchResult(WBUtility.getConceptVersion(c), 0));
+				}
+
+
+				ssh = SearchHandler.descriptionSearch(builder, filterCompositeSearchResultList);
 			}
-			default:
-				String title = "Unsupported Aggregation Type";
-				String msg = "Aggregation Type " + resultsType + " not supported";
-				LOG.error(title);
-				AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(ResultsType.values()), AppContext.getMainApplicationWindow().getPrimaryStage());
-	
-				ssh.cancel();
-				break;
-			}
+			break;
 		}
+		case DESCRIPTION:
+		{
+			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
+			builder.setCallback(this);
+			builder.setTaskId(Tasks.SEARCH.ordinal());
+			if (searchResultsFilter != null) {
+				builder.setFilter(searchResultsFilter);
+			}
+			if (modelMaxResults != null && modelMaxResults.length() > 0) {
+				Integer maxResults = Integer.valueOf(modelMaxResults);
+				if (maxResults != null && maxResults > 0) {
+					builder.setSizeLimit(maxResults);
+				}
+			}
+			ssh = SearchHandler.descriptionSearch(builder);
+			break;
+		}
+		default:
+			String title = "Unsupported Aggregation Type";
+			String msg = "Aggregation Type " + resultsType + " not supported";
+			LOG.error(title);
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Aggregation Type must be one of " + Arrays.toString(ResultsType.values()), AppContext.getMainApplicationWindow().getPrimaryStage());
+
+			ssh.cancel();
+			break;
+		}
+	}
 	public void taskComplete(long taskStartTime, Integer taskId) {
 		if (taskId == Tasks.SEARCH.ordinal()) {
 			// Run on JavaFX thread.
@@ -357,10 +353,10 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 					try {
 						if (! ssh.isCancelled()) {
 							SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(ssh.getResults()));
-							
+
 							bottomPane.refreshBottomPanel();
 							bottomPane.refreshTotalResultsSelectedLabel();
-							
+
 							if (splitPane.getItems().contains(taxonomyPane)) {
 								ResultsToTaxonomy.resultsToSearchTaxonomy();
 							}
