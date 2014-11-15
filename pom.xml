@@ -30,7 +30,7 @@
         <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
         <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>
         <url>https://github.com/Apelon-VA/ISAAC</url>
-        <tag>master</tag>
+        <tag>release-prep</tag>
     </scm>
     <distributionManagement>
         <!-- I don't normally define these here, but the -D overrides are being problematic on the CI server... -->
