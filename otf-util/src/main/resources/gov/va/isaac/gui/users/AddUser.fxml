@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.users.AddUserDialogController">
+	<top>
+		<Label text="Add New User" styleClass="headerBackground" maxWidth="1.7976931348623157E308" prefHeight="40.0"  alignment="CENTER" BorderPane.alignment="CENTER">
+			<font>
+				<Font name="System Bold" size="18.0" />
+			</font>
+		</Label>
+	</top>
+	<center>
+		<GridPane fx:id="layoutPane" hgap="10.0" vgap="5.0" BorderPane.alignment="CENTER">
+			<columnConstraints>
+				<ColumnConstraints hgrow="NEVER" />
+				<ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints minHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="30.0" prefHeight="70.0" vgrow="NEVER" />
+			</rowConstraints>
+			<children>
+				<Label text="* Full Name (unique)">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="Full Name" GridPane.rowIndex="2">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="* User Name (unique)" GridPane.rowIndex="1">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="Password" GridPane.rowIndex="3">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="Workflow User Name" GridPane.rowIndex="5">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="Sync User Name" GridPane.rowIndex="6">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="Roles" GridPane.rowIndex="7">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<Label text="UUID" GridPane.rowIndex="4">
+					<font>
+						<Font name="System Bold" size="13.0" />
+					</font>
+				</Label>
+				<TextField fx:id="fullNameUnique" GridPane.columnIndex="1">
+					<tooltip>
+						<Tooltip text="The Unique Full Name of the user (typically &quot;FirstName LastName [uniqueBit]&quot;" />
+					</tooltip>
+				</TextField>
+				<TextField fx:id="userName" GridPane.columnIndex="1" GridPane.rowIndex="1">
+					<tooltip>
+						<Tooltip text="The Unique username for the user - this will be the logon identifier" />
+					</tooltip>
+				</TextField>
+				<TextField fx:id="fullName" promptText="Optional" GridPane.columnIndex="1" GridPane.rowIndex="2">
+					<tooltip>
+						<Tooltip text="The Preferred Full Name of the user.  May duplicate another user with the same Full Name.  Useful if the uniqueFullName property had to be modified to make it unique, due to user name collisions." />
+					</tooltip>
+				</TextField>
+				<PasswordField fx:id="password" promptText="Optional (defaults to username)" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+				<TextField fx:id="uuid" promptText="Optional" GridPane.columnIndex="1" GridPane.rowIndex="4">
+					<tooltip>
+						<Tooltip text="The UUID for the user concept to be generated. If unspecified, will be generated based on the uniqueUserName" />
+					</tooltip>
+				</TextField>
+				<TextField fx:id="workflowUserName" promptText="Optional (defaults to username)" GridPane.columnIndex="1" GridPane.rowIndex="5">
+					<tooltip>
+						<Tooltip text="The initial username to suggest to the user for workflow remote access (sync)" />
+					</tooltip>
+				</TextField>
+				<TextField fx:id="syncUserName" promptText="Optional (defaults to username)" GridPane.columnIndex="1" GridPane.rowIndex="6">
+					<tooltip>
+						<Tooltip text="The initial username to suggest to the user for database sync (git/svn)" />
+					</tooltip>
+				</TextField>
+				<ListView fx:id="roles" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+					<tooltip>
+						<Tooltip text="Additional roles (beyond the default role of user) to grant to this user" />
+					</tooltip>
+				</ListView>
+			</children>
+			<padding>
+				<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+			</padding>
+		</GridPane>
+	</center>
+	<bottom>
+		<HBox alignment="CENTER" BorderPane.alignment="CENTER">
+			<children>
+				<Button fx:id="okButton" mnemonicParsing="false" text="  Ok  ">
+					<HBox.margin>
+						<Insets right="20.0" />
+					</HBox.margin>
+				</Button>
+				<Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel">
+					<HBox.margin>
+						<Insets left="20.0" />
+					</HBox.margin>
+				</Button>
+			</children>
+			<padding>
+				<Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+			</padding>
+		</HBox>
+	</bottom>
+</BorderPane>

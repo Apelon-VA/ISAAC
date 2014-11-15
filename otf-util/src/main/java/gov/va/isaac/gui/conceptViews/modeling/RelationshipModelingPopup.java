@@ -24,9 +24,14 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.UUID;
+
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -38,7 +43,6 @@ import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -82,15 +86,26 @@ public class RelationshipModelingPopup extends ModelingPopup
 	protected void finishInit()
 	{
 		rel = (RelationshipVersionBI<?>)origComp;
-		
+
+		ConceptVersionBI typeToSet = WBUtility.getConceptVersion(rel.getTypeNid());
+		ConceptVersionBI otherConceptToSet;
 		if (!isDestination) {
-			otherEndCon.set(WBUtility.getConceptVersion(rel.getDestinationNid()));
+			otherConceptToSet = WBUtility.getConceptVersion(rel.getDestinationNid());
 		} else {
-			otherEndCon.set(WBUtility.getConceptVersion(rel.getOriginNid()));
+			otherConceptToSet = WBUtility.getConceptVersion(rel.getOriginNid());
 		}
 		
-		typeCon.set(WBUtility.getConceptVersion(rel.getTypeNid()));
-		
+		if (!rel.isUncommitted() || (rel.isUncommitted() && rel.getVersions().size() > 1)) {
+			typeCon.set(typeToSet);
+			typeCon.disableEdit();
+			
+			otherEndCon.set(otherConceptToSet);
+			otherEndCon.disableEdit();
+		} else {
+			typeCon.set(typeToSet);
+			otherEndCon.set(otherConceptToSet);
+		}		
+
 		groupNum.setText(String.valueOf(rel.getGroup()));
 		
 		refinabilityCon.getSelectionModel().select(new SimpleDisplayConcept(WBUtility.getConceptVersion(rel.getRefinabilityNid())));
@@ -134,9 +149,12 @@ public class RelationshipModelingPopup extends ModelingPopup
 		refinabilityCon  = new ChoiceBox<>();
 		characteristicCon  = new ChoiceBox<>();
 		otherEndCon = new ConceptNode(null, true);
-		typeCon = new ConceptNode(null, true);
 		groupNum = new TextField();
 		
+		ObservableList<SimpleDisplayConcept> typeConDropDownOptions = FXCollections.observableArrayList();
+		typeConDropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(UUID.fromString("c93a30b9-ba77-3adb-a9b8-4589c9f8fb25"))));
+		typeCon = new ConceptNode(null, true, typeConDropDownOptions, null);
+
 		otherConceptNewSelected = new SimpleBooleanProperty(false);
 		typeNewSelected = new SimpleBooleanProperty(false);
 		refineNewSelected = new SimpleBooleanProperty(false);
@@ -148,10 +166,10 @@ public class RelationshipModelingPopup extends ModelingPopup
 		setupGridPane(topItems);
 		
 		// Setup Type (Row #1)
-		setupType();
+		setupOtherCon();
 
-		// Setup Term (Row #2)
-		setupTerm();
+		// Setup Type (Row #2)
+		setupType();
 		
 		// Setup Refinability (Row #3)
 		setupRefinability();
@@ -193,10 +211,6 @@ public class RelationshipModelingPopup extends ModelingPopup
 						newGroup = Integer.parseInt(newVal);
 						if (newGroup < 0) {
 							reasonSaveDisabled_.set("Group must be 0 or greater");
-						
-							if (!passesQA()) {
-								reasonSaveDisabled_.set("Failed QA");
-							}
 						}
 					} catch (NumberFormatException e) {
 						reasonSaveDisabled_.set("Must select an integer");
@@ -233,11 +247,6 @@ public class RelationshipModelingPopup extends ModelingPopup
 					charNewSelected.set(false);
 				}
 
-				if (modificationMade.get() || charNewSelected.get()) {
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				}
 			}
 		});
 
@@ -270,18 +279,13 @@ public class RelationshipModelingPopup extends ModelingPopup
 					refineNewSelected.set(false);
 				}
 
-				if (modificationMade.get() || refineNewSelected.get()) {
-					if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
-					}
-				}
 			}
 		});
 		gp_.add(refinabilityCon, 2, row);
 		row++;
 	}
 
-	private void setupTerm() {
+	private void setupType() {
 		createTitleLabel("Type");
 
 		typeCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -303,8 +307,6 @@ public class RelationshipModelingPopup extends ModelingPopup
 				if (modificationMade.get() || typeNewSelected.get()) {
 					if (!typeCon.isValid().getValue()) {
 						reasonSaveDisabled_.set(typeCon.isValid().getReasonWhyInvalid().getValue());
-					} else if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
 					}
 				}
 			}
@@ -313,7 +315,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		row++;
 	}
 
-	private void setupType() {
+	private void setupOtherCon() {
 		createTitleLabel("Destination");
 
 		otherEndCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -336,8 +338,6 @@ public class RelationshipModelingPopup extends ModelingPopup
 				if (modificationMade.get() || otherConceptNewSelected.get()) {
 					if (!otherEndCon.isValid().getValue()) {
 						reasonSaveDisabled_.set(otherEndCon.isValid().getReasonWhyInvalid().getValue());
-					} else if (!passesQA()) {
-						reasonSaveDisabled_.set("Failed QA");
 					}
 				}
 			}
@@ -424,6 +424,37 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 	@Override 
 	protected boolean passesQA() {
+		int charNid = characteristicCon.getSelectionModel().getSelectedItem().getNid();
+		int refinNid = refinabilityCon.getSelectionModel().getSelectedItem().getNid();
+		String errMsg = null;
+		
+		try {
+			if (charNid == SnomedMetadataRf2.STATED_RELATIONSHIP_RF2.getNid()) {
+				if (refinNid != SnomedMetadataRf2.NOT_REFINABLE_RF2.getNid() && refinNid != SnomedMetadataRf2.OPTIONAL_REFINIBILITY_RF2.getNid()) {
+					errMsg = "Cannot have STATED Characteristic with Refinability other than NOT_REFINABLE or OPTIONAL_REFINABLE";
+				}
+			} else if (charNid == SnomedMetadataRf2.INFERRED_RELATIONSHIP_RF2.getNid()) {
+				if (refinNid != SnomedMetadataRf2.NOT_REFINABLE_RF2.getNid() && refinNid != SnomedMetadataRf2.OPTIONAL_REFINIBILITY_RF2.getNid()) {
+					errMsg = "Cannot have INFERRED Characteristic with Refinability other than NOT_REFINABLE or OPTIONAL_REFINABLE";
+				}
+			} else if (charNid == SnomedMetadataRf2.QUALIFYING_RELATIONSSHIP_RF2.getNid()) {
+				if (refinNid != SnomedMetadataRf2.MANDATORY_REFINIBILITY_RF2.getNid()) {
+					errMsg = "Cannot have QUALIFYING Characteristic with Refinability other than MANDATORY";
+				}
+			} else if (charNid == SnomedMetadataRf2.HISTORICAL_RELATIONSSHIP_RF2.getNid()) {
+				if (refinNid != SnomedMetadataRf2.NOT_REFINABLE_RF2.getNid()) {
+					errMsg = "Cannot have HISTORICAL Characteristic with Refinability other than NOT_REFINABLE";
+				}
+			}
+		} catch (Exception e) {
+			LOG.error("Cannot access basic char/refin values from database" , e);
+		}
+		
+		if (errMsg != null) {
+			AppContext.getCommonDialogs().showInformationDialog("Relationship failed QA", errMsg);
+			return false;
+		}
+		
 		return true;
 	}
 }

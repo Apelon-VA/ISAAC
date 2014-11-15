@@ -3,8 +3,8 @@ package gov.va.isaac.gui.conceptViews.modeling;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -15,12 +15,16 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -55,6 +59,8 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	protected final String SELECT_VALUE = "<Select a Value>";
 	protected int conceptNid;
 	private Button saveButton;
+	protected static Background notEditableBackground = new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(0), new Insets(0)));
+
 	
 	abstract protected void finishInit();
 	abstract protected void setupTopItems(VBox topItems);
@@ -154,14 +160,16 @@ public abstract class ModelingPopup extends Stage implements PopupViewI {
 	
 	protected void doSave()
 	{
-		addNewVersion();
-
-		if (callingView_ != null)
-		{
-			ExtendedAppContext.getDataStore().waitTillWritesFinished();
-			callingView_.setConcept(conceptNid);
+		if (passesQA()) {
+			addNewVersion();
+	
+			if (callingView_ != null)
+			{
+				ExtendedAppContext.getDataStore().waitTillWritesFinished();
+				callingView_.setConcept(conceptNid);
+			}
+			close();
 		}
-		close();
 	}
 	
 	protected void createTitleLabel(String title) {

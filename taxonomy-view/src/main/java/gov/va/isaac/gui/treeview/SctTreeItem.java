@@ -19,8 +19,8 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
-import gov.va.isaac.interfaces.treeview.SctTreeItemI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.WBUtility;
 
@@ -86,7 +86,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
     public SctTreeItem(TaxonomyReferenceWithConcept t, SctTreeItemDisplayPolicies displayPolicies, Node node) {
         super(t, node);
         this.displayPolicies = displayPolicies;
-        AppContext.getMainApplicationWindow().registerShutdownListener(this);
+        AppContext.getRuntimeGlobals().registerShutdownListener(this);
     }
 
     public SctTreeItemDisplayPolicies getDisplayPolicies() {

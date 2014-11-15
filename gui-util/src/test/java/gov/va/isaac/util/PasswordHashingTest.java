@@ -73,8 +73,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString("wrongPassword", encrypted).equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString("wrongPassword", encrypted);
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
@@ -91,8 +92,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString("", encrypted).equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString("", encrypted);
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
@@ -109,8 +111,9 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString("wrongPassword", encrypted).equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString("wrongPassword", encrypted);
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
@@ -127,12 +130,27 @@ public class PasswordHashingTest
 		Assert.assertTrue(PasswordHasher.decryptToString(password, encrypted).equals(data));
 		try
 		{
-			Assert.assertFalse(PasswordHasher.decryptToString(password, "wrong encrypted string").equals(data));
-			Assert.fail();
+			String decrypted = PasswordHasher.decryptToString(password, "wrong encrypted string");
+			Assert.assertFalse(decrypted.equals(data));
+			Assert.fail("Expected an exception, but instead got decrypted data: '" + decrypted + "'");
 		}
 		catch (Exception e)
 		{
 			//expected
 		}
+	}
+	
+	@Test
+	public void checksumTestOne() throws Exception
+	{
+		String hash = PasswordHasher.computeChecksum("MD5", "Some random data".getBytes());
+		Assert.assertTrue(hash.equals("b08f254d76b1c6a7ad924708c0032251"));
+	}
+	
+	@Test
+	public void checksumTestTwo() throws Exception
+	{
+		String hash = PasswordHasher.computeChecksum("SHA1", "Some random data".getBytes());
+		Assert.assertTrue(hash.equals("3b0af1dd47d543b2166440b83bbf0ed0235173d8"));
 	}
 }

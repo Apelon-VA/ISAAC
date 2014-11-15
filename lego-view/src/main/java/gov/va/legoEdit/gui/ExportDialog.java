@@ -53,6 +53,7 @@ public class ExportDialog
 		ExportDialogController exportDC = loader.getController();
 		scene.getStylesheets().add(ExportDialog.class.getResource("/isaac-shared-styles.css").toString());
 		exportStage.setScene(scene);
+		exportStage.sizeToScene();
 		exportDC.exportFiles(legoLists);
 	}
 }

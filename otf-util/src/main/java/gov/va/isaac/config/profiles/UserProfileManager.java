@@ -55,8 +55,8 @@ public class UserProfileManager implements ServicesToPreloadI
 {
 	private Logger logger = LoggerFactory.getLogger(UserProfileManager.class);
 
-	private final File profilesFolder_ = new File("profiles");
-	private final String prefsFileName_ = "Preferences.xml";
+	private File profilesFolder_ = new File("profiles");
+	public static final String PREFS_FILE_NAME = "Preferences.xml";
 
 	//protected, rather than private, to allow the mock code to bypass this
 	protected CountDownLatch cdl = new CountDownLatch(2);
@@ -106,8 +106,22 @@ public class UserProfileManager implements ServicesToPreloadI
 		{
 			throw new InvalidUserException("Not allowed to change the user login name!");
 		}
-		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), prefsFileName_));
+		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
 		loggedInUser_ = temp;
+	}
+	
+	/**
+	 * Reread the user profile from the preferences file, to pick up any changes that came from sync.
+	 * @throws IOException 
+	 */
+	public void rereadProfile() throws IOException
+	{
+		if (loggedInUser_ == null)
+		{
+			throw new RuntimeException("API misuse - user is not logged in");
+		}
+		
+		loggedInUser_ = UserProfile.read(new File(new File(profilesFolder_, loggedInUser_.getUserLogonName()), PREFS_FILE_NAME));
 	}
 
 	/**
@@ -154,7 +168,7 @@ public class UserProfileManager implements ServicesToPreloadI
 			}
 			try
 			{
-				UserProfile up = UserProfile.read(new File(new File(profilesFolder_, userLogonName), prefsFileName_));
+				UserProfile up = UserProfile.read(new File(new File(profilesFolder_, userLogonName), PREFS_FILE_NAME));
 				if (!up.isCorrectPassword(password))
 				{
 					throw new InvalidPasswordException("Incorrect password");
@@ -178,19 +192,32 @@ public class UserProfileManager implements ServicesToPreloadI
 			}
 		}
 	}
+	
+	/**
+	 * Challenge the currently logged in user for their password
+	 * @param password
+	 * @return true if the password is correct, false otherwise.
+	 */
+	public boolean revalidatePassword(String password)
+	{
+		if (loggedInUser_ == null)
+		{
+			return false;
+		}
+		else
+		{
+			return loggedInUser_.isCorrectPassword(password);
+		}
+	}
 
 	/**
-	 * The defaults parameter is optional - if not present, uses hardcoded defaults in {@link UserProfile} for fields that 
-	 * don't come from the {@link User} object.
+	 * The defaults parameter is optional - if not present, first uses defaults supplied in the users.xml file (if present)
+	 * and then uses hardcoded defaults in {@link UserProfile} for fields that don't come from the {@link User} object.
 	 */
 	public void createUserProfile(User user, NewUserDefaults defaults) throws IOException
 	{
 		logger.info("Creating user profile for " + user.getUniqueLogonName());
 
-		if (isAutomationModeEnabled())
-		{
-			throw new RuntimeException("API Misuse - automation mode is enabled!");
-		}
 		//don't need to checkInit - doesProfileExist does that for us
 		if (doesProfileExist(user.getUniqueLogonName()))
 		{
@@ -200,11 +227,25 @@ public class UserProfileManager implements ServicesToPreloadI
 		File profileFolder = new File(profilesFolder_, user.getUniqueLogonName());
 		profileFolder.mkdir();
 		new File(profileFolder, "changesets").mkdir();
-		File prefFile = new File(profileFolder, prefsFileName_);
+		File prefFile = new File(profileFolder, PREFS_FILE_NAME);
 
 		UserProfile up = new UserProfile(user.getUniqueLogonName(), user.getPassword(), UUID.fromString(user.getUUID()));
+
+		if (defaults == null)
+		{
+			try
+			{
+				defaults = GenerateUsers.readUserCreationFile().getNewUserDefaults();
+			}
+			catch (Throwable e)
+			{
+				logger.info("could not locate a default users.xml file to read the NewUserDefaults from");
+			}
+		}
+		
 		if (defaults != null)
 		{
+			
 			if (defaults.getStatedInferredPolicy() != null)
 			{
 				up.setStatedInferredPolicy(defaults.getStatedInferredPolicy());
@@ -230,11 +271,20 @@ public class UserProfileManager implements ServicesToPreloadI
 		up.setWorkflowPassword(temp);  //Just a guess
 		
 		up.store(prefFile);
-		Platform.runLater(() ->
+		if (isAutomationModeEnabled())
 		{
+			//Just put them in the list on this thread - nobody is listening
 			userNamesWithProfiles_.add(user.getUniqueLogonName());
-			FXCollections.sort(userNamesWithProfiles_);
-		});
+		}
+		else
+		{
+			//do this on the platform thread, so GUI updates can be processed properly.  Also, sort.
+			Platform.runLater(() ->
+			{
+				userNamesWithProfiles_.add(user.getUniqueLogonName());
+				FXCollections.sort(userNamesWithProfiles_);
+			});
+		}
 		
 	}
 
@@ -287,7 +337,7 @@ public class UserProfileManager implements ServicesToPreloadI
 				{
 					if (f.isDirectory())
 					{
-						File prefFile = new File(f, prefsFileName_);
+						File prefFile = new File(f, PREFS_FILE_NAME);
 						if (prefFile.exists() && prefFile.isFile())
 						{
 							userNamesWithProfiles_.add(f.getName());
@@ -407,15 +457,24 @@ public class UserProfileManager implements ServicesToPreloadI
 	 * 
 	 * When Automation Mode is configured - any API call that makes changes will throw an exception.  create*, save*, etc.
 	 * 
+	 * @param userProfileLocation (optional) the path to use for the user profiles.  Defaults to 'profiles' relative to 
+	 * the JVM launch path.  If the location is provided, it will also look there for any existing users, and populate
+	 * the real users list.  If null, it won't attempt to load users.
 	 * @throws InvalidUserException 
 	 */
-	public void configureAutomationMode() throws InvalidUserException
+	public void configureAutomationMode(File userProfileLocation) throws InvalidUserException
 	{
 		if (loggedInUser_ != null)
 		{
 			throw new InvalidUserException("Cannot set automation mode when a user has logged in!");
 		}
-		if (cdl.getCount() == 2)
+		
+		if (userProfileLocation != null)
+		{
+			profilesFolder_ = userProfileLocation;
+			loadRequested();
+		}
+		else if (cdl.getCount() == 2)
 		{
 			cdl.countDown();
 			cdl.countDown();
@@ -434,5 +493,10 @@ public class UserProfileManager implements ServicesToPreloadI
 			return true;
 		}
 		return false;
+	}
+	
+	public File getProfilesFolder()
+	{
+		return profilesFolder_;
 	}
 }

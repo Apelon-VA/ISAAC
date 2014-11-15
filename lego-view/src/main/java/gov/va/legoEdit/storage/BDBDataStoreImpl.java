@@ -120,7 +120,7 @@ public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastLi
 		try
 		{
 			logger.info("Configuring the Database");
-			AppContext.getMainApplicationWindow().registerShutdownListener(this);
+			AppContext.getRuntimeGlobals().registerShutdownListener(this);
 			EnvironmentConfig myEnvConfig = new EnvironmentConfig();
 			myEnvConfig.setTransactional(true);
 			StoreConfig storeConfig = new StoreConfig();

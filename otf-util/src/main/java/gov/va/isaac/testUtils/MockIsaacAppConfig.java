@@ -20,9 +20,7 @@ package gov.va.isaac.testUtils;
 
 import java.net.URL;
 import java.util.UUID;
-
 import org.jvnet.hk2.annotations.Service;
-
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
 // TODO: Auto-generated Javadoc
@@ -203,78 +201,6 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
   }
 
   /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposId()
-   */
-  @Override
-  public String getDistReposId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposName()
-   */
-  @Override
-  public String getDistReposName() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposUrl()
-   */
-  @Override
-  public String getDistReposUrl() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposUrlAsURL()
-   */
-  @Override
-  public URL getDistReposUrlAsURL() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapId()
-   */
-  @Override
-  public String getDistReposSnapId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapName()
-   */
-  @Override
-  public String getDistReposSnapName() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapUrl()
-   */
-  @Override
-  public String getDistReposSnapUrl() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDistReposSnapUrlAsURL()
-   */
-  @Override
-  public URL getDistReposSnapUrlAsURL() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* (non-Javadoc)
    * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbGroupId()
    */
   @Override
@@ -333,6 +259,15 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getExtensionNamespace() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /* (non-Javadoc)
+   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getModuleId()
+   */
+  @Override
+  public String getModuleId() {
     // TODO Auto-generated method stub
     return null;
   }
@@ -418,5 +353,18 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
     return null;
   }
 
+  @Override
+  public String getDbType() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
+  @Override
+  public String getChangeSetUrlTypeName()
+  {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

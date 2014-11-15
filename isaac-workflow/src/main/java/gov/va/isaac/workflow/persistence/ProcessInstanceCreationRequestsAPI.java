@@ -23,6 +23,7 @@ import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -38,8 +39,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+
+import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +81,9 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
         try (Connection conn = ds.getConnection()) {
             PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message,"
                 + " request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+            if (componentId == null) {
+            	log.error("Setting null componentId for ProcessInstanceCreationRequestsAPI.createRequest(): user_id={}, process_name={}, component={}, map={}", author, processName, componentName, variables);
+            }
             psInsert.setString(1, componentId != null ? componentId.toString() : null);
             psInsert.setString(2, componentName);
             psInsert.setString(3, processName);

@@ -3,6 +3,9 @@ package gov.va.isaac.gui.conceptViews.componentRows;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.util.WBUtility;
+
+import java.io.IOException;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -14,10 +17,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DetailTermRow extends TermRow {
+	private static final Logger LOGGER = LoggerFactory.getLogger(DetailTermRow.class);
 
 	public DetailTermRow(ConceptViewerLabelHelper labelHelper) {
 		super(labelHelper);
@@ -59,8 +65,14 @@ public class DetailTermRow extends TermRow {
 				if (!descLabel.getText().equals(origVersion.getText())) {
 					descLabel.setUnderline(true);
 				}
+				try {
+					if (WBUtility.getConceptVersion(desc.getConceptNid()).getPreferredDescription().getNid() != desc.getNid()) {
 				if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
 					descTypeLabel.setUnderline(true);
+						}
+					}
+				} catch (IOException | ContradictionException e) {
+					LOGGER.error("Failed testing Preferred Term Labels", e);
 				}
 	
 				if (!descCaseLabel.getText().equals(getBooleanValue(origVersion.isInitialCaseSignificant()))) {

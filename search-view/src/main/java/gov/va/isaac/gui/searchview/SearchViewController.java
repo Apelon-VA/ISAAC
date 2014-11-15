@@ -136,7 +136,7 @@ public class SearchViewController implements TaskCompleteCallback
 	private Tooltip tooltip = new Tooltip();
 	private Integer currentlyEnteredAssemblageNid = null;
 	private FlowPane searchInColumnsHolder = new FlowPane();
-	private enum SearchInOptions {Descriptions, Refexes};
+	private enum SearchInOptions {Descriptions, Sememes};
 
 	public static SearchViewController init() throws IOException
 	{
@@ -163,7 +163,7 @@ public class SearchViewController implements TaskCompleteCallback
 		borderPane.getStylesheets().add(SearchViewController.class.getResource("/isaac-shared-styles.css").toString());
 		
 		searchIn.getItems().add(SearchInOptions.Descriptions);
-		searchIn.getItems().add(SearchInOptions.Refexes);
+		searchIn.getItems().add(SearchInOptions.Sememes);
 		searchIn.getSelectionModel().select(0);
 		
 		tooltip.setText("Enter the description text to search for.  Advanced query syntax such as 'AND', 'NOT' is supported.  You may also enter UUIDs for concepts.");
@@ -185,7 +185,7 @@ public class SearchViewController implements TaskCompleteCallback
 			}
 			else
 			{
-				tooltip.setText("Enter the refex value to search for.  Advanced query syntax such as 'AND', 'NOT', 'OR' is supported for refex data fields that "
+				tooltip.setText("Enter the sememe value to search for.  Advanced query syntax such as 'AND', 'NOT', 'OR' is supported for sememe data fields that "
 						+ "are indexed as string values.  For numeric values, mathematical interval syntax is supported - such as [4,6] or (-5,10]."
 						+ "  You may also search for 1 or more UUIDs and/or NIDs.");
 				optionsContentVBox.getChildren().add(searchInRefexHBox);
@@ -209,8 +209,8 @@ public class SearchViewController implements TaskCompleteCallback
 					Integer[] indexedColumns = LuceneDynamicRefexIndexerConfiguration.readIndexInfo(currentlyEnteredAssemblageNid);
 					if (indexedColumns == null || indexedColumns.length == 0)
 					{
-						searchInRefex.isValid().setInvalid("Refex searches can only be performed on indexed columns in the refex.  The selected "
-								+ "refex does not contain any indexed data columns.  Please configure the indexes to search this refex.");
+						searchInRefex.isValid().setInvalid("Sememe searches can only be performed on indexed columns in the sememe.  The selected "
+								+ "sememe does not contain any indexed data columns.  Please configure the indexes to search this sememe.");
 						optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 					}
 					else
@@ -246,16 +246,16 @@ public class SearchViewController implements TaskCompleteCallback
 						}
 						else
 						{
-							searchInRefex.isValid().setInvalid("Refex searches can only be performed on the data in the refex.  The selected "
-									+ "refex does not contain any data columns.");
+							searchInRefex.isValid().setInvalid("Sememe searches can only be performed on the data in the sememe.  The selected "
+									+ "sememe does not contain any data columns.");
 							optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 						}
 					}
 				}
 				catch (Exception e1)
 				{
-					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Refex Assemblage concept types."
-							+ "  The current value is not a Dynamic Refex Assemblage concept.");
+					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Sememe Assemblage concept types."
+							+ "  The current value is not a Dynamic Sememe Assemblage concept.");
 					currentlyEnteredAssemblageNid = null;
 					optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 					searchInColumnsHolder.getChildren().clear();
@@ -318,10 +318,9 @@ public class SearchViewController implements TaskCompleteCallback
 							box.setFillWidth(true);
 							
 							final ConceptVersionBI wbConcept = item.getContainingConcept();
-							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "error - see log");
-							
+							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "Not on path!");
 						
-							if (item.getMatchingComponents().iterator().next() instanceof RefexDynamicVersionBI<?>)
+							if (item.getMatchingComponents().size() > 0 && item.getMatchingComponents().iterator().next() instanceof RefexDynamicVersionBI<?>)
 							{
 								HBox hb = new HBox();
 								Label concept = new Label("Referenced Concept");
@@ -376,8 +375,12 @@ public class SearchViewController implements TaskCompleteCallback
 										}
 										catch (Exception e)
 										{
-											LOG.error("Unexpected error reading refex info", e);
+											LOG.error("Unexpected error reading sememe info", e);
 										}
+									}
+									else
+									{
+										LOG.warn("Unexpected type on match: {}", c);
 									}
 								}
 							}
@@ -424,11 +427,13 @@ public class SearchViewController implements TaskCompleteCallback
 									List<String> items = new ArrayList<>();
 									for (CompositeSearchResult currentItem : searchResults.getSelectionModel().getSelectedItems())
 									{
-										//items.add(source.getTableColumn().getCellData(index).toString());
-										final ConceptVersionBI currentWbConcept = currentItem.getContainingConcept();
-										final String currentPreferredText = (currentWbConcept != null ? WBUtility.getDescription(currentWbConcept) : "error - see log");
-
-										items.add(currentPreferredText);
+										ConceptVersionBI currentWbConcept = currentItem.getContainingConcept();
+										if (currentWbConcept == null)
+										{
+											//not on path, most likely
+											continue;
+										}
+										items.add(WBUtility.getDescription(currentWbConcept));
 									}
 
 									String[] itemArray = items.toArray(new String[items.size()]);
@@ -445,6 +450,11 @@ public class SearchViewController implements TaskCompleteCallback
 
 									for (CompositeSearchResult r : searchResults.getSelectionModel().getSelectedItems())
 									{
+										if (r.getContainingConcept() == null)
+										{
+											//not on path
+											continue;
+										}
 										nids.add(r.getContainingConcept().getNid());
 									}
 									return nids;
@@ -474,7 +484,10 @@ public class SearchViewController implements TaskCompleteCallback
 				CompositeSearchResult dragItem = searchResults.getSelectionModel().getSelectedItem();
 				if (dragItem != null)
 				{
-					return dragItem.getContainingConcept() + "";
+					if (dragItem.getContainingConcept() != null)
+					{
+						return dragItem.getContainingConcept() + "";
+					}
 				}
 				return null;
 			}
@@ -489,7 +502,7 @@ public class SearchViewController implements TaskCompleteCallback
 			@Override
 			protected boolean computeValue()
 			{
-				if ((searchIn.getValue() == SearchInOptions.Refexes && searchText.getText().length() > 0) || searchText.getText().length() > 1)
+				if ((searchIn.getValue() == SearchInOptions.Sememes && searchText.getText().length() > 0) || searchText.getText().length() > 1)
 				{
 					return true;
 				}
@@ -649,7 +662,7 @@ public class SearchViewController implements TaskCompleteCallback
 				try
 				{
 					RefexDynamicDataBI data = NumberUtilities.wrapIntoRefexHolder(NumberUtilities.parseNumber(searchString));
-					LOG.debug("Doing a refex search with a numeric value");
+					LOG.debug("Doing a sememe search with a numeric value");
 					ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 					{
 						try
@@ -668,7 +681,7 @@ public class SearchViewController implements TaskCompleteCallback
 					try
 					{
 						Interval interval = new Interval(searchString);
-						LOG.debug("Doing a refex search with an interval value");
+						LOG.debug("Doing a sememe search with an interval value");
 						ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 						{
 							try

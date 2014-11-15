@@ -24,11 +24,46 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+
 /**
  * SearchTypeFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public interface SearchTypeFilter<T extends SearchTypeFilter<T>> extends Filter<T> {
+public abstract class SearchTypeFilter<T extends SearchTypeFilter<T>> implements Filter<T> {
+	final protected StringProperty searchParameter;
+	final protected BooleanProperty isValid;
+
+	public SearchTypeFilter() {
+		this(null, null);
+	}
+	public SearchTypeFilter(StringProperty searchParamProperty) {
+		this(searchParamProperty, null);
+	}
+	public SearchTypeFilter(StringProperty searchParamProperty, BooleanProperty isValidProperty) {
+		searchParameter = searchParamProperty != null ? searchParamProperty : new SimpleStringProperty();
+		isValid = isValidProperty != null ? isValidProperty : new SimpleBooleanProperty(false);
+	}
+
+	public abstract SearchType getSearchType();
+	public abstract ComponentSearchType getComponentSearchType();
+
+	public StringProperty getSearchParameterProperty() {
+		return searchParameter;
+	}
+	public String getSearchParameter() {
+		return searchParameter.get();
+	}
+
+	public void setSearchParameter(String searchParameter) {
+		this.searchParameter.set(searchParameter);
+	}
+
 }

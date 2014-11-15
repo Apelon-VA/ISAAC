@@ -18,12 +18,10 @@
  */
 package gov.va.isaac.workflow.gui;
 
-
 import gov.va.isaac.AppContext;
 import gov.va.isaac.util.WBUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
-import gov.va.isaac.workflow.exceptions.DatastoreException;
 import gov.va.isaac.workflow.persistence.WorkflowHistoryHelper;
 
 import java.util.UUID;
@@ -81,9 +79,6 @@ public class WorkflowHistoryViewController
 	}
 
 	public void setTask(long taskId) {
-		//TODO Joel - what is a user supposed to do about any of these failures?  Shouldn't all of these be putting up a dialog informing them that the 
-		//set task failed?  You can't just silently eat them - or can you eat some of these?
-
 		final String errorDialogTitle = "Failed Setting Workflow Task";
 		final String errorDialogMsg = "Failed setting initial workflow task by id #" + taskId;
 
@@ -92,7 +87,7 @@ public class WorkflowHistoryViewController
 		{
 			localTask = taskService_.getTask(taskId);
 		}
-		catch (DatastoreException e1)
+		catch (Exception e1)
 		{
 			String details = "Failed loading initial workflow task #" + taskId + ". Caught " + e1.getClass().getName() + " " + e1.getLocalizedMessage();
 			logger.error(details, e1);

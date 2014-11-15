@@ -56,9 +56,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Tim Kao
  */
-public class OWLExporter extends CommonBase implements
-   Exporter, ProcessUnfetchedConceptDataBI {
-  
+public class OWLExporter extends CommonBase implements Exporter,
+    ProcessUnfetchedConceptDataBI {
 
   /** Listeners */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -101,9 +100,9 @@ public class OWLExporter extends CommonBase implements
   /** The set of axioms. */
   private Set<OWLAxiom> setOfAxioms = new HashSet<>();
 
-  /**  The request cancel. */
+  /** The request cancel. */
   private boolean requestCancel = false;
-  
+
   //
   // Hardcoded SNOMED info
   //
@@ -252,11 +251,12 @@ public class OWLExporter extends CommonBase implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
-    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+    if (Thread.currentThread().isInterrupted())
+      throw new InterruptedException();
     ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
     LOG.debug("Process concept " + concept.getPrimordialUuid());
     allCount++;
-    if (concept.getPathNid() == pathNid) {
+    if (Exporter.isQualifying(concept.getNid(), pathNid)) {
       count++;
       convertToOWLObjects(concept);
     }
@@ -336,10 +336,12 @@ public class OWLExporter extends CommonBase implements
     Set<OWLClass> parentClasses = new HashSet<>();
     for (RelationshipVersionBI<?> rel : currentConcept
         .getRelationshipsOutgoingActiveIsa()) {
-      parentClasses.add(factory.getOWLClass(
-          ":"
-              + getSnomedConceptID(WBUtility.getConceptVersion(rel
-                  .getDestinationNid())), pm));
+      if (rel.isStated()) {
+        parentClasses.add(factory.getOWLClass(
+            ":"
+                + getSnomedConceptID(WBUtility.getConceptVersion(rel
+                    .getDestinationNid())), pm));
+      }
     }
 
     // Handle other relationships
@@ -354,7 +356,7 @@ public class OWLExporter extends CommonBase implements
         .getRelationshipsOutgoingActive()) {
       // Skip the is a relationship, these are taken care of in the parents
       // relationships
-      if (rel.getTypeNid() == Snomed.IS_A.getNid()) {
+      if (rel.getTypeNid() == Snomed.IS_A.getNid() && rel.isStated()) {
         continue;
       }
 
@@ -370,9 +372,11 @@ public class OWLExporter extends CommonBase implements
       OWLClassExpression owlRel =
           factory.getOWLObjectSomeValuesFrom(relationshipTypeProperty,
               destinationClass);
-      if (rel.getTypeNid() == Snomed.LATERALITY.getNid() || rel.getTypeNid() == Snomed.PART_OF.getNid()
-        || rel.getTypeNid() == Snomed.HAS_ACTIVE_INGREDIENT.getNid() || rel.getTypeNid() == Snomed.HAS_DOSE_FORM.getNid()) {
-          neverGroupedRelationships.add(owlRel);
+      if (rel.getTypeNid() == Snomed.LATERALITY.getNid()
+          || rel.getTypeNid() == Snomed.PART_OF.getNid()
+          || rel.getTypeNid() == Snomed.HAS_ACTIVE_INGREDIENT.getNid()
+          || rel.getTypeNid() == Snomed.HAS_DOSE_FORM.getNid()) {
+        neverGroupedRelationships.add(owlRel);
       }
       if (relationshipGroups.containsKey(rel.getGroup())) {
         relationshipGroups.get(rel.getGroup()).add(owlRel);
@@ -395,21 +399,21 @@ public class OWLExporter extends CommonBase implements
       for (int group : relationshipGroups.keySet()) {
         OWLClassExpression innerRelationship = null;
         if (relationshipGroups.get(group).size() > 1) {
-          //Separate into two sets, the nevergrouped and the normally grouped
+          // Separate into two sets, the nevergrouped and the normally grouped
           Set<OWLClassExpression> groupedRels = new HashSet<>();
-          for(OWLClassExpression rel : relationshipGroups.get(group)) {
-              if (neverGroupedRelationships.contains(rel)) {
-                  owlInnerRelationships.add(rel);
-              } else {
-                groupedRels.add(rel);
-              }
+          for (OWLClassExpression rel : relationshipGroups.get(group)) {
+            if (neverGroupedRelationships.contains(rel)) {
+              owlInnerRelationships.add(rel);
+            } else {
+              groupedRels.add(rel);
+            }
           }
           if (!groupedRels.isEmpty()) {
-              innerRelationship =
-                      factory.getOWLObjectIntersectionOf(groupedRels);
+            innerRelationship = factory.getOWLObjectIntersectionOf(groupedRels);
           }
         } else {
-          OWLClassExpression singleRelationship = relationshipGroups.get(group).iterator().next();
+          OWLClassExpression singleRelationship =
+              relationshipGroups.get(group).iterator().next();
           if (neverGroupedRelationships.contains(singleRelationship)) {
             owlInnerRelationships.add(singleRelationship);
           } else {
@@ -418,8 +422,8 @@ public class OWLExporter extends CommonBase implements
         }
 
         if (innerRelationship != null) {
-            owlInnerRelationships.add(factory.getOWLObjectSomeValuesFrom(groupPart,
-                    innerRelationship));
+          owlInnerRelationships.add(factory.getOWLObjectSomeValuesFrom(
+              groupPart, innerRelationship));
         }
       }
       owlRelationships =
@@ -531,15 +535,17 @@ public class OWLExporter extends CommonBase implements
     // <http://snomed.info/id/363701004>)
     for (RelationshipVersionBI<?> rel : conceptVersionBI
         .getRelationshipsOutgoingActiveIsa()) {
-      String sctid =
-          getSnomedConceptID(WBUtility.getConceptVersion(rel
-              .getDestinationNid()));
-      // Skip the root of the attributes tree
-      if (!sctid.equals(snomedConceptAttributeModelConcept)) {
-        OWLObjectProperty parent =
-            factory.getOWLObjectProperty(":" + sctid, pm);
-        setOfAxioms.add(factory.getOWLSubObjectPropertyOfAxiom(
-            owlPropertyClass, parent));
+      if (rel.isStated()) {
+        String sctid =
+            getSnomedConceptID(WBUtility.getConceptVersion(rel
+                .getDestinationNid()));
+        // Skip the root of the attributes tree
+        if (!sctid.equals(snomedConceptAttributeModelConcept)) {
+          OWLObjectProperty parent =
+              factory.getOWLObjectProperty(":" + sctid, pm);
+          setOfAxioms.add(factory.getOWLSubObjectPropertyOfAxiom(
+              owlPropertyClass, parent));
+        }
       }
     }
 
@@ -623,7 +629,7 @@ public class OWLExporter extends CommonBase implements
    */
   @Override
   public void cancel() {
-    requestCancel = true;    
+    requestCancel = true;
   }
 
 }

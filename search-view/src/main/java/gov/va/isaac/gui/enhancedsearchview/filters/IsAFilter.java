@@ -24,6 +24,8 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
+import java.util.Set;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -37,7 +39,7 @@ import javafx.beans.value.ObservableValue;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, SingleNidFilter {
+public class IsAFilter extends NonSearchTypeFilter<IsAFilter> implements Invertable, SingleNidFilter {
 	private BooleanProperty isValid = new SimpleBooleanProperty(false);
 	private BooleanProperty invert = new SimpleBooleanProperty(false);
 	private IntegerProperty nid = new SimpleIntegerProperty(0);
@@ -47,7 +49,7 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, Si
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue.intValue() != 0) {
+				if (newValue != null && newValue.intValue() != 0) {
 					isValid.set(true);
 				} else {
 					isValid.set(false);
@@ -104,5 +106,15 @@ public class IsAFilter implements NonSearchTypeFilter<IsAFilter>, Invertable, Si
 	public String toString() {
 		return "IsAFilter [isValid=" + isValid.get() + ", invert="
 				+ invert.get() + ", nid=" + nid.get() + "]";
+	}
+
+	@Override
+	public Set<Integer> gatherNoSearchTermCaseList(Set<Integer> startList) {
+		return getSingleNidNoSearchTermCaseList(startList);
+	}
+
+	@Override
+	IntegerProperty getSingleNid() {
+		return nid;
 	}
 }

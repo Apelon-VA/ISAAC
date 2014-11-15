@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.config.profiles;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.util.PasswordHasher;
@@ -81,6 +82,9 @@ public class UserProfile
 	
 	@XmlElement
 	private boolean launchWorkflowForEachCommit = true;
+	
+	@XmlElement
+	private boolean runDroolsBeforeEachCommit = true;
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
 	 */
@@ -134,6 +138,8 @@ public class UserProfile
 
 	/**
 	 * This call sets both the clearTextPassword field, and the hashedPassword field - hashing as appropriate.
+	 * 
+	 * This call saves the changes to the preferences file.
 	 */
 	public void setPassword(String currentPassword, String newPassword) throws InvalidPasswordException
 	{
@@ -162,6 +168,7 @@ public class UserProfile
 			{
 				setSyncPassword(syncPass);
 			}
+			AppContext.getService(UserProfileManager.class).saveChanges(this);
 		}
 		catch (Exception e)
 		{
@@ -324,6 +331,22 @@ public class UserProfile
 	{
 		this.launchWorkflowForEachCommit = launchWorkflowForEachCommit;
 	}
+	
+	/**
+	 * @return the runDroolsBeforeEachCommit
+	 */
+	public boolean isRunDroolsBeforeEachCommit()
+	{
+		return runDroolsBeforeEachCommit;
+	}
+
+	/**
+	 * @param runDroolsBeforeEachCommit the runDroolsBeforeEachCommit to set
+	 */
+	public void setRunDroolsBeforeEachCommit(boolean runDroolsBeforeEachCommit)
+	{
+		this.runDroolsBeforeEachCommit = runDroolsBeforeEachCommit;
+	}
 
 	protected void store(File fileToWrite) throws IOException
 	{
@@ -339,7 +362,7 @@ public class UserProfile
 		}
 		catch (Exception e)
 		{
-			throw new IOException("Problem storings UserProfile to " + fileToWrite.getAbsolutePath());
+			throw new IOException("Problem storings UserProfile to " + fileToWrite.getAbsolutePath(), e);
 		}
 	}
 
@@ -374,6 +397,7 @@ public class UserProfile
 		clone.workflowUsername = this.workflowUsername;
 		clone.conceptUUID = this.conceptUUID;
 		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
+		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
 		
 		return clone;
 	}

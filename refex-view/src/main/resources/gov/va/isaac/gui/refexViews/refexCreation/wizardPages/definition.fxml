@@ -26,10 +26,10 @@
 				<Label text="Description" GridPane.rowIndex="1" GridPane.valignment="TOP" />
 				<Label text="# of Extension Fields" GridPane.rowIndex="2" />
 				<Label text="Type" GridPane.rowIndex="3" />
-				<Label text="Refex Parent Concept" GridPane.rowIndex="4">
+				<Label text="Sememe Parent Concept" GridPane.rowIndex="4">
 					<tooltip>
 						<Tooltip
-							text="The (existing) concept that should serve as the parent of the Refex Assemblage Concept that is being defined in this wizard" />
+							text="The (existing) concept that should serve as the parent of the Sememe Assemblage Concept that is being defined in this wizard" />
 					</tooltip>
 				</Label>
 				<TextField fx:id="refexName" prefHeight="25.0" prefWidth="338.0" GridPane.columnIndex="1" GridPane.columnSpan="2" />
@@ -46,7 +46,7 @@
 		</GridPane>
 	</center>
 	<top>
-		<Label text="Refex Concept Definition" BorderPane.alignment="CENTER">
+		<Label text="Sememe Concept Definition" BorderPane.alignment="CENTER">
 			<font>
 				<Font name="System Bold" size="24.0" />
 			</font>

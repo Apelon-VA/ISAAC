@@ -155,7 +155,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 						else if (cv instanceof RefexDynamicVersionBI<?>)
 						{
 							RefexDynamicVersionBI<?> rdv = (RefexDynamicVersionBI<?>) cv;
-							text = "Nested Refex Dynamic: using assemblage " + WBUtility.getDescription(rdv.getAssemblageNid());
+							text = "Nested Sememe Dynamic: using assemblage " + WBUtility.getDescription(rdv.getAssemblageNid());
 							
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
@@ -173,7 +173,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 						else if (cv instanceof RefexVersionBI<?>)
 						{
 							RefexVersionBI<?> rv = (RefexVersionBI<?>) cv;
-							text = "Nested Refex: using assemblage " + WBUtility.getDescription(rv.getAssemblageNid());
+							text = "Nested Sememe: using assemblage " + WBUtility.getDescription(rv.getAssemblageNid());
 							
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
@@ -199,7 +199,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 					{
 						if (isAssemblage_)
 						{
-							MenuItem mi = new MenuItem("View Refex Assemblage Usage");
+							MenuItem mi = new MenuItem("View Sememe Assemblage Usage");
 							mi.setOnAction((action) ->
 							{
 								SimpleDisplayConcept sdc = new SimpleDisplayConcept(c);
@@ -209,7 +209,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 							mi.setGraphic(Images.SEARCH.createImageView());
 							cm.getItems().add(mi);
 							
-							mi = new MenuItem("Configure Refex Indexing");
+							mi = new MenuItem("Configure Sememe Indexing");
 							mi.setOnAction((action) ->
 							{
 								new ConfigureDynamicRefexIndexingView(c).showView(null);

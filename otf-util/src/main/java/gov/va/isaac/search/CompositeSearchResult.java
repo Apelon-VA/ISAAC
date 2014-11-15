@@ -38,15 +38,27 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
  */
 public class CompositeSearchResult {
 
-	private final ConceptVersionBI containingConcept;
+	private ConceptVersionBI containingConcept = null;
 	private final Set<ComponentVersionBI> matchingComponents = new HashSet<>();
-
+	private int matchingComponentNid;
 	private float bestScore; // best score, rather than score, as multiple matches may go into a SearchResult
 
-	protected CompositeSearchResult(ComponentVersionBI matchingComponent, float score) {
+	public CompositeSearchResult(ComponentVersionBI matchingComponent, float score) {
 		this.matchingComponents.add(matchingComponent);
 		this.bestScore = score;
+		//matchingComponent may be null, if the match is not on our view path...
+		if (matchingComponent == null)
+		{
+			throw new RuntimeException("Please call the constructor that takes a nid, if matchingComponent is null...");
+		}
 		this.containingConcept = WBUtility.getConceptVersion(matchingComponent.getConceptNid());
+	}
+	public CompositeSearchResult(int matchingComponentNid, float score) {
+		this.bestScore = score;
+		//matchingComponent may be null, if the match is not on our view path...
+		this.containingConcept = null;
+		this.matchingComponentNid = matchingComponentNid;
+		
 	}
 	
 	protected void adjustScore(float newScore) {
@@ -57,6 +69,9 @@ public class CompositeSearchResult {
 		return bestScore;
 	}
 	
+	/**
+	 * This may return null, if the concept and/or matching component was not on the path
+	 */
 	public ConceptVersionBI getContainingConcept() {
 		return containingConcept;
 	}
@@ -66,6 +81,17 @@ public class CompositeSearchResult {
 	 */
 	public List<String> getMatchingStrings() {
 		ArrayList<String> strings = new ArrayList<>();
+		if (matchingComponents.size() == 0)
+		{
+			if (containingConcept == null)
+			{
+				strings.add("Match to NID (not on path):" + matchingComponentNid);
+			}
+			else
+			{
+				throw new RuntimeException("Unexpected");
+			}
+		}
 		for (ComponentVersionBI cc : matchingComponents)
 		{
 			if (cc instanceof DescriptionAnalogBI)

@@ -21,15 +21,16 @@ package gov.va.isaac.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
+import gov.va.isaac.gui.download.DownloadDialog;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
+import gov.va.isaac.util.DBLocator;
 import gov.va.isaac.util.Utility;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.function.Consumer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -61,7 +62,6 @@ public class App extends Application implements ApplicationWindowI{
     private boolean shutdown = false;
     private Stage primaryStage_;
     private CommonDialogs commonDialog_;
-    private ArrayList<ShutdownBroadcastListenerI> shutdownListeners_ = new ArrayList<>();
     private static IOException dataStoreLocationInitException_ = null;
 
     @Override
@@ -73,7 +73,7 @@ public class App extends Application implements ApplicationWindowI{
 
         this.controller = new AppController();
 
-        primaryStage.getIcons().add(new Image("/icons/16x16/application-block.png"));
+        primaryStage.getIcons().add(new Image("/icons/application-icon.png"));
         String title = AppContext.getAppConfiguration().getApplicationTitle();
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(controller.getRoot()));
@@ -120,21 +120,39 @@ public class App extends Application implements ApplicationWindowI{
         }
         else
         {
-            String message = "The Snomed Database was not found.";
-            LOG.error(message, dataStoreLocationInitException_);
-            String details = "Please download the file\n\n"
-                    + "https://va.maestrodev.com/archiva/repository/data-files/gov/va/isaac/db/solor-snomed/2014.09.14/solor-snomed-2014.09.14-active-only.bdb.zip"
-                    + "\nor"
-                    + "\nhttps://csfe.aceworkspace.net/sf/frs/do/downloadFile/projects.veterans_administration_project/frs.isaac.isaac_databases/frs15559?dl=1"
-                    + "\n\nand unzip it into\n\n"
-                    + System.getProperty("user.dir")
-                    + "\n\nand then restart the editor.";
-            commonDialog_.showErrorDialog("No Snomed Database", message, details);
-
-            // Close app since no DB to load.
-            // (The #shutdown method will be also invoked by
-            // the handler we hooked up with Stage#setOnHiding.)
-            primaryStage_.hide();
+            new DownloadDialog(AppContext.getMainApplicationWindow().getPrimaryStage(), new Consumer<Boolean>()
+            {
+                @Override
+                public void accept(Boolean t)
+                {
+                    if (t)
+                    {
+                        dataStoreLocationInitException_ = null;
+                        try
+                        {
+                            configDataStorePaths(new File("berkeley-db"));
+                        }
+                        catch (IOException e)
+                        {
+                            //this should be impossible
+                            LOG.error("Failed to find DB after download?", e);
+                            // Close app since no DB to load.
+                            // (The #shutdown method will be also invoked by
+                            // the handler we hooked up with Stage#setOnHiding.)
+                            primaryStage_.hide();
+                        }
+                        loadDataStore();
+                    }
+                    else
+                    {
+                        // Close app since no DB to load.
+                        // (The #shutdown method will be also invoked by
+                        // the handler we hooked up with Stage#setOnHiding.)
+                        primaryStage_.hide();
+                    }
+                    
+                }
+            });
         }
     }
 
@@ -191,32 +209,34 @@ public class App extends Application implements ApplicationWindowI{
         }
         else
         {
+            File localBDBLocation = DBLocator.findDBFolder(bdbFolder);
+            File localLuceneLocation = DBLocator.findLuceneIndexFolder(localBDBLocation);
             
-            if (!bdbFolder.exists())
+            if (!localBDBLocation.exists())
             {
-                throw new FileNotFoundException("Couldn't find specified bdb data store '" + bdbFolder.getAbsolutePath() + "'");
+                throw new FileNotFoundException("Couldn't find a bdb data store in '" + localBDBLocation.getAbsoluteFile().getParentFile().getAbsolutePath() + "'");
             }
-            if (!bdbFolder.isDirectory())
+            if (!localBDBLocation.isDirectory())
             {
-                throw new IOException("The specified bdb data store: '" + bdbFolder.getAbsolutePath() + "' is not a folder");
+                throw new IOException("The specified bdb data store: '" + localBDBLocation.getAbsolutePath() + "' is not a folder");
             }
             
             if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
             {
-                System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolder.getCanonicalPath());
+                System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, localBDBLocation.getCanonicalPath());
             }
             else
             {
-                LOG.warn("The application specified '" + bdbFolder.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY 
+                LOG.warn("The application specified '" + localBDBLocation.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY 
                         + "is set to " + System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY + " this will override the application path"));
             }
             if (System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) == null)
             {
-                System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, bdbFolder.getCanonicalPath());
+                System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, localLuceneLocation.getCanonicalPath());
             }
             else
             {
-                LOG.warn("The application specified '" + bdbFolder.getCanonicalPath() + "' but the system property " + LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY 
+                LOG.warn("The application specified '" + localLuceneLocation.getCanonicalPath() + "' but the system property " + LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY 
                         + "is set to " + System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) + " this will override the application path");
             }
             
@@ -239,14 +259,8 @@ public class App extends Application implements ApplicationWindowI{
             {
                 ExtendedAppContext.getDataStore().shutdown();
             }
-            for (ShutdownBroadcastListenerI s : shutdownListeners_)
-            {
-                if (s != null)
-                {
-                    s.shutdown();
-                }
-            }
-        } catch (Exception ex) {
+            controller.shutdown();
+        } catch (Throwable ex) {
             String message = "Trouble shutting down";
             LOG.warn(message, ex);
             commonDialog_.showErrorDialog("Oops!", message, ex.getMessage());
@@ -265,15 +279,6 @@ public class App extends Application implements ApplicationWindowI{
     }
     
     /**
-     * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#registerShutdownListener(gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI)
-     */
-    @Override
-    public void registerShutdownListener(ShutdownBroadcastListenerI listener)
-    {
-        shutdownListeners_.add(listener);
-    }
-    
-    /**
      * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#ensureDockedViewIsVisble(gov.va.isaac.interfaces.gui.views.DockedViewI)
      */
     @Override
@@ -282,7 +287,16 @@ public class App extends Application implements ApplicationWindowI{
         controller.ensureDockedViewIsVisible(view);
     }
 
-    public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    /**
+     * @see gov.va.isaac.interfaces.gui.ApplicationWindowI#browseURL(java.lang.String)
+     */
+    @Override
+    public void browseURL(String url)
+    {
+        this.getHostServices().showDocument(url);
+    }
+
+    public static void main(String[] args) throws Exception {
         //Configure Java logging into logback
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
@@ -294,17 +308,15 @@ public class App extends Application implements ApplicationWindowI{
         //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
         //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
         
-        //This is a hack to make SecureRandom not block while waiting for entropy on Linux system. 
-        //This needs to be done early... otherwise, something else in the dependency chain inits the security system before 
-        //the static call in PasswordHasher.java can... and we get stuck waiting for entropy, which prevents user profiles from geing generated.
-        if (System.getProperty("os.name").equals("Linux"))
-        {
-            System.setProperty("java.security.egd", "file:/dev/./urandom");
-        }
-        
         try
         {
-            configDataStorePaths(new File("berkeley-db"));
+            if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
+            {
+                configDataStorePaths(new File(BdbTerminologyStore.DEFAULT_BDB_LOCATION));
+            } else {
+                configDataStorePaths(new File(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY)));
+            }
+
         }
         catch (IOException e)
         {

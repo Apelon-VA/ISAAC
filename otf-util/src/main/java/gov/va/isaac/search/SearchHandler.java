@@ -28,7 +28,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
@@ -83,7 +85,8 @@ public class SearchHandler
 			final Integer taskId, 
 			final SearchResultsFilter filters,
 			Comparator<CompositeSearchResult> comparator,
-			boolean mergeOnConcepts)
+			boolean mergeOnConcepts,
+			Supplier<Set<CompositeSearchResult>> filterList)
 	{
 		final SearchHandle searchHandle = new SearchHandle();
 
@@ -163,7 +166,8 @@ public class SearchHandler
 
 									// normalize the scores between 0 and 1
 									float normScore = (searchResult.getScore() / maxScore);
-									CompositeSearchResult csr = new CompositeSearchResult(cc, normScore);
+									CompositeSearchResult csr = (cc == null ? new CompositeSearchResult(searchResult.getNid(), normScore) : 
+										new CompositeSearchResult(cc, normScore));
 									initialSearchResults.add(csr);
 									
 
@@ -192,6 +196,10 @@ public class SearchHandler
 								}
 							}
 						}
+					} 
+					else if (filterList != null) 
+					{
+						initialSearchResults.addAll(filterList.get());
 					}
 
 					// sort, filter and merge the results as necessary
@@ -216,7 +224,7 @@ public class SearchHandler
 	 */
 	public static SearchHandle descriptionSearch(String query, int resultLimit, TaskCompleteCallback callback, boolean mergeResultsOnConcepts) {
 		return descriptionSearch(query, resultLimit, false, callback, (Integer)null, (SearchResultsFilter)null, null, 
-				mergeResultsOnConcepts);
+				mergeResultsOnConcepts, null);
 	}
 
 	/**
@@ -232,7 +240,7 @@ public class SearchHandler
 				builder.getTaskId(), 
 				builder.getFilter(),
 				builder.getComparator(),
-				builder.getMergeResultsOnConcept());
+				builder.getMergeResultsOnConcept(), null);
 	}
 
 	private static void processResults(SearchHandle searchHandle, List<CompositeSearchResult> rawResults, 
@@ -250,8 +258,14 @@ public class SearchHandler
 		if (mergeOnConcepts)
 		{
 			Hashtable<Integer, CompositeSearchResult> merged = new Hashtable<>();
+			ArrayList<CompositeSearchResult> unmergeable = new ArrayList<>();
 			for (CompositeSearchResult csr : rawResults)
 			{
+				if (csr.getContainingConcept() == null)
+				{
+					unmergeable.add(csr);
+					continue;
+				}
 				CompositeSearchResult found = merged.get(csr.getContainingConcept().getNid());
 				if (found == null)
 				{
@@ -264,6 +278,7 @@ public class SearchHandler
 			}
 			rawResults.clear();
 			rawResults.addAll(merged.values());
+			rawResults.addAll(unmergeable);
 		}
 		
 		Collections.sort(rawResults, (comparator == null ? new CompositeSearchResultComparator() : comparator));
@@ -317,8 +332,8 @@ public class SearchHandler
 					
 					if (refexIndexer == null)
 					{
-						LOG.warn("No refex indexer found, aborting.");
-						searchHandle.setError(new Exception("No refex indexer available, cannot search"));
+						LOG.warn("No sememe indexer found, aborting.");
+						searchHandle.setError(new Exception("No sememe indexer available, cannot search"));
 					}
 					else
 					{
@@ -353,7 +368,8 @@ public class SearchHandler
 
 								// normalize the scores between 0 and 1
 								float normScore = (searchResult.getScore() / maxScore);
-								CompositeSearchResult csr = new CompositeSearchResult(cc, normScore);
+								CompositeSearchResult csr = (cc == null ? new CompositeSearchResult(searchResult.getNid(), normScore) : 
+									new CompositeSearchResult(cc, normScore));
 								initialSearchResults.add(csr);
 							}
 						}
@@ -409,5 +425,19 @@ public class SearchHandler
 					throw new RuntimeException(e);
 				}
 			}, callback, taskId, filters, comparator, mergeOnConcepts);
+	}
+
+	public static SearchHandle descriptionSearch(SearchBuilder builder,
+			Supplier<Set<CompositeSearchResult>> filterList) {
+		return descriptionSearch(
+				builder.getQuery(), 
+				builder.getSizeLimit(), 
+				builder.isPrefixSearch(), 
+				builder.getCallback(), 
+				builder.getTaskId(), 
+				builder.getFilter(),
+				builder.getComparator(),
+				builder.getMergeResultsOnConcept(),
+				filterList);
 	}
 }

@@ -24,11 +24,52 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.WBUtility;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import javafx.beans.property.IntegerProperty;
+
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
+import org.jfree.util.Log;
+
 /**
  * NonSearchTypeFilter
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public interface NonSearchTypeFilter<T extends NonSearchTypeFilter<T>> extends Filter<T> {
+public abstract class NonSearchTypeFilter<T extends NonSearchTypeFilter<T>> implements Filter<T> {
+	public abstract Set<Integer> gatherNoSearchTermCaseList(Set<Integer> startList);
+	abstract IntegerProperty getSingleNid();
+
+	protected Set<Integer> getSingleNidNoSearchTermCaseList(Set<Integer> startList) {
+		Set<Integer> mergedSet = new HashSet<Integer>();
+
+		try {
+			ConceptVersionBI con = WBUtility.getConceptVersion(getSingleNid().get());
+			ConceptVersionBI rootCon = WBUtility.getRootConcept(con);
+
+			NativeIdSetBI allConcepts = ExtendedAppContext.getDataStore().getAllConceptNids();
+			NoSearchTermConcurrentSearcher searcher = new NoSearchTermConcurrentSearcher(allConcepts, rootCon.getConceptNid());
+			ExtendedAppContext.getDataStore().iterateConceptDataInParallel(searcher);
+
+			if (!startList.isEmpty()) {
+				for (Integer examCon : startList) {
+					if (searcher.getResults().contains(examCon)) {
+						mergedSet.add(examCon);
+					}
+				}
+			} else {
+				mergedSet.addAll(searcher.getResults());
+			}
+		} catch (Exception e) {
+			Log.error("Cannot find calculate the NoSearchTermCaseList", e);
+		}
+
+		return mergedSet;
+	}
 }

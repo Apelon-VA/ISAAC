@@ -81,6 +81,13 @@ public class Search {
 			new String[] { "drools expression column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 
+	public static ConceptSpec UUID_COLUMN = new ConceptSpecWithDescriptions(
+			"uuid", 
+			UUID.fromString("72a4b2de-3854-55f2-ba36-47f2e675351c"),
+			new String[] { "uuid" }, 
+			new String[] { "uuid column" },
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
 	//TODO [JOEL] On all of these that define refex columns, are the column values required, or optional?  I made everything optional, for now...
 	//when I added the new feature for optional / required
 	public static DynamicRefexConceptSpec SEARCH_GLOBAL_ATTRIBUTES = new DynamicRefexConceptSpec("Search Global Attributes", 
@@ -121,6 +128,17 @@ public class Search {
 			new String[] { "param" }, 
 			new String[] { "parameter column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static DynamicRefexConceptSpec SEARCH_SEMEME_CONTENT_FILTER = new DynamicRefexConceptSpec(
+			"Search Sememe Content Filter", 
+			UUID.fromString("1723aa79-ac7f-520f-a2f5-cd9e03dc4142"),
+			true, 
+			"Search Sememe Content Filter is for attributes effecting this Sememe Content search",
+			new RefexDynamicColumnInfo[] {
+				new RefexDynamicColumnInfo(0, Search.PARAMETER_COLUMN.getUuids()[0], RefexDynamicDataType.STRING, null, true, null, null),
+				new RefexDynamicColumnInfo(1, Search.UUID_COLUMN.getUuids()[0], RefexDynamicDataType.UUID, null, false, null, null)
+			},
+			SEARCH_TYPES);
 	
 	public static DynamicRefexConceptSpec SEARCH_LUCENE_FILTER = new DynamicRefexConceptSpec("Search Lucene Filter", 
 			UUID.fromString("4ece37d7-1ae0-5c5e-b475-f8e3bdce4d86"),

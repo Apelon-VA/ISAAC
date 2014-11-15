@@ -20,6 +20,7 @@ package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.RuntimeGlobals;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.ToolTipDefaultsFixer;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
@@ -27,14 +28,11 @@ import gov.va.isaac.interfaces.gui.MenuItemI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
-
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
@@ -51,9 +49,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-
 import javax.inject.Inject;
-
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +60,7 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class AppController implements ShutdownBroadcastListenerI {
+public class AppController {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
 
@@ -72,6 +68,8 @@ public class AppController implements ShutdownBroadcastListenerI {
     private SplitPane mainSplitPane;
     private MenuBar menuBar;
     private BorderPane loadWait;
+    private boolean preloadExecuted = false;
+
 
     @Inject
     private IterableProvider<IsaacViewWithMenusI> moduleViews_;
@@ -86,7 +84,6 @@ public class AppController implements ShutdownBroadcastListenerI {
     public AppController() {
 
         AppContext.getServiceLocator().inject(this);
-        AppContext.getMainApplicationWindow().registerShutdownListener(this);
         ToolTipDefaultsFixer.setTooltipTimers(100, 20000, 200);
         
         root_ = new BorderPane();
@@ -114,7 +111,7 @@ public class AppController implements ShutdownBroadcastListenerI {
             m.setDisable(true);
             m.setMnemonicParsing(false);
             menuBar.getMenus().add(m);
-          //index these for ease in adding module menus
+            //index these for ease in adding module menus
             allMenus_.put(m.getId(), m);
         }
         
@@ -154,6 +151,10 @@ public class AppController implements ShutdownBroadcastListenerI {
                 if (menuItemsToCreate.getImage() != null)
                 {
                     menuItem.setGraphic(new ImageView(menuItemsToCreate.getImage()));
+                }
+                if (menuItemsToCreate.getDisableBinding() != null)
+                {
+                    menuItem.disableProperty().bind(menuItemsToCreate.getDisableBinding());
                 }
                 parentMenu.getItems().add(menuItem);
                 //TODO fix this sorting API stuff... supposed to be sorted by the menu order in the menu API - but was never finished... see other TODO below.
@@ -231,7 +232,8 @@ public class AppController implements ShutdownBroadcastListenerI {
             LOG.debug("Preloading {}", service);
             service.loadRequested();
         }
-
+        preloadExecuted = true;
+        
         loadWait.getChildren().clear();
         
         AtomicLong loginFailCount = new AtomicLong(0);
@@ -326,19 +328,18 @@ public class AppController implements ShutdownBroadcastListenerI {
             }
         }
     }
-
-    /**
-     * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
-     */
-    @Override
-    public void shutdown()
+    
+    protected void shutdown()
     {
-        //notify anything that was preloaded
-        for (ServicesToPreloadI service : preloadRequested_)
+        AppContext.getService(RuntimeGlobals.class).shutdown();
+        if (preloadExecuted)
         {
-            LOG.debug("Shutdown notify {}", service);
-            service.shutdown();
+            //notify anything that was preloaded
+            for (ServicesToPreloadI service : preloadRequested_)
+            {
+                LOG.debug("Shutdown notify {}", service);
+                service.shutdown();
+            }
         }
-        
     }
 }

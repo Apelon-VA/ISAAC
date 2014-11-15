@@ -1,0 +1,79 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>gov.va.isaac</groupId>
+		<artifactId>isaac-parent</artifactId>
+		<version>1.0-Sprint_15-SNAPSHOT</version>
+	</parent>
+	<groupId>gov.va.isaac.modules</groupId>
+	<artifactId>isaac-classifier</artifactId>
+	<packaging>jar</packaging>
+
+	<name>ISAAC Classifier</name>
+	<description>
+        ISAAC Classifier Module
+    </description>
+
+	<dependencies>
+
+		<!-- ISAAC App Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>gui-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- ISAAC App. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>isaac-app</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- ISAAC OTF Utils. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>otf-util</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<!-- ISAAC Data Model. -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>data-model</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>au.csiro</groupId>
+			<artifactId>snorocket-snapi</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+		</dependency>
+
+		<!-- Redirects Java logging into logback -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+		</dependency>
+
+		<!-- Redirects log4j into logback - note - we must not include log4j in our classpath... -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.7</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

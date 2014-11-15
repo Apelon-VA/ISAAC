@@ -191,7 +191,7 @@ public class RefexDataTypeFXNodeBuilder
 			choosenFile.setAlignment(Pos.CENTER_LEFT);
 			choosenFile.setMaxWidth(Double.MAX_VALUE);
 			choosenFile.setMaxHeight(Double.MAX_VALUE);
-			Tooltip tt = new Tooltip("Select a file to attach to the refex");
+			Tooltip tt = new Tooltip("Select a file to attach to the sememe");
 			Tooltip.install(choosenFile, tt);
 			Button fileChooser = new Button("Choose File...");
 			final ByteArrayDataHolder dataHolder = new ByteArrayDataHolder();
@@ -218,7 +218,7 @@ public class RefexDataTypeFXNodeBuilder
 			fileChooser.setOnAction((event) -> 
 			{
 				FileChooser fc = new FileChooser();
-				fc.setTitle("Select a file to attach to the refex");
+				fc.setTitle("Select a file to attach to the sememe");
 				File selectedFile = fc.showOpenDialog(fileChooser.getScene().getWindow());
 				if (selectedFile != null && selectedFile.isFile())
 				{
@@ -257,7 +257,7 @@ public class RefexDataTypeFXNodeBuilder
 						else
 						{
 							choosenFile.setText("- no data attached -");
-							tt.setText("Select a file to attach that file to the refex");
+							tt.setText("Select a file to attach that file to the sememe");
 							if (valueIsRequired != null)
 							{
 								valueIsRequired.set("You must select a file to attach");

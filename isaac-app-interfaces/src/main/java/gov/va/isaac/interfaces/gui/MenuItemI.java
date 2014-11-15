@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.interfaces.gui;
 
+import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
 import javafx.stage.Window;
 
@@ -70,6 +71,15 @@ public abstract class MenuItemI implements Comparable<MenuItemI>
 	 * Not abstract, as it was added later, and I didn't want to break everything
 	 */
 	public Image getImage()
+	{
+		return null;
+	}
+	
+	/**
+	 * Allow the menu creator to specify a binding that will enable / disable this menu
+	 * Null is allowed (and is the default value)
+	 */
+	public ObservableValue<? extends Boolean> getDisableBinding()
 	{
 		return null;
 	}

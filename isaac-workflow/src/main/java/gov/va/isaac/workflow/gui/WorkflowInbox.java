@@ -23,6 +23,7 @@ import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
 import gov.va.isaac.util.Utility;
@@ -36,6 +37,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -47,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
 
-@Service
+@Service @Named(SharedServiceNames.DOCKED)
 @Singleton
 public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 {
@@ -97,7 +99,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 			@Override
 			public int getSortOrder()
 			{
-				return 20;
+				return 15;
 			}
 			
 			@Override
@@ -118,6 +120,15 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 				return "synchronizeWorkflowMenu";
 			}
 			
+			/**
+			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+			 */
+			@Override
+			public Image getImage()
+			{
+				return Images.SYNC_BLUE.getImage();
+			}
+
 			@Override
 			public boolean enableMnemonicParsing()
 			{
@@ -146,7 +157,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 					}
 					catch (IOException e)
 					{
-						LOG.error("Unexpected error initializing the Search View", e);
+						LOG.error("Unexpected error initializing the Workflow Inbox View", e);
 						return new Label("oops - check logs");
 					}
 				}

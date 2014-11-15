@@ -22,7 +22,8 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.RefexDefinitionViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.LoggerFactory;
@@ -39,9 +41,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-@Service
+@Service @Named(value=SharedServiceNames.DOCKED)
 @Singleton
-public class DynamicRefexListView implements RefexDefinitionViewI
+public class DynamicRefexListView implements DockedViewI
 {
 	DynamicRefexListViewController drlvc_;
 
@@ -79,13 +81,13 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 			@Override
 			public String getMenuName()
 			{
-				return "Dynamic Refex View Panel";
+				return "Dynamic Sememe View Panel";
 			}
 
 			@Override
 			public String getMenuId()
 			{
-				return "dynamicRefexViewPanelMenuItem";
+				return "dynamicSememeViewPanelMenuItem";
 			}
 
 			@Override
@@ -112,7 +114,7 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 	@Override
 	public String getViewTitle()
 	{
-		return "Dynamic Refex Viewer";
+		return "Dynamic Sememe Viewer";
 	}
 
 	/**
@@ -129,8 +131,8 @@ public class DynamicRefexListView implements RefexDefinitionViewI
 			}
 			catch (IOException e)
 			{
-				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing DynamicRefexListView", e);
-				AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating DynamicRefexListView", e);
+				LoggerFactory.getLogger(this.getClass()).error("Unexpected error initing DynamicSememeListView", e);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating DynamicSememeListView", e);
 				return new Label("Unexpected error initializing view, see log file");
 			}
 

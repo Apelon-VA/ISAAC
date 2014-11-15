@@ -26,11 +26,11 @@ import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -38,16 +38,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.jvnet.hk2.annotations.Service;
 import org.kie.api.task.model.Status;
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ import org.slf4j.LoggerFactory;
 public class LocalTasksApi implements LocalTasksServiceBI {
     private static final Logger log = LoggerFactory.getLogger(LocalTasksApi.class);
     
+    private final Set<ActionEventListener> actionEventListeners = new HashSet<>();
+    
     private DataSource ds;
     
     private LocalTasksApi()
@@ -81,11 +84,19 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         }
     }
     
+    public void changeUserName(String oldWFUsername, String newWFUsername)
+    {
+        //TODO DAN THIS MUST BE IMPLEMENTED before changing a WF username will work properly!!!!!
+        log.error("The change username functionality is not yet complete - WF state is now corrupt!!!!!!!");
+    }
     
 
     @Override
     public void saveTask(LocalTask task) throws DatastoreException {
-        WorkflowHistoryHelper.createAndAddNewEntry(task, Action.NONE, task.getInputVariables());
+    	final Action action = Action.NONE;
+    	final TaskActionStatus actionStatus = TaskActionStatus.None;
+
+    	WorkflowHistoryHelper.createAndAddNewEntry(task, action, task.getInputVariables());
 
         try (Connection conn = ds.getConnection()) {
             try {
@@ -96,13 +107,42 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 psInsert.setString(4, task.getComponentName());
                 psInsert.setString(5, task.getStatus().name());
                 psInsert.setString(6, task.getOwner());
-                psInsert.setString(7, Action.NONE.name());
-                psInsert.setString(8, TaskActionStatus.None.name());
+                psInsert.setString(7, action.name());
+                psInsert.setString(8, actionStatus.name());
                 psInsert.setString(9, serializeMap(task.getInputVariables()));
                 psInsert.setString(10, "");
                 psInsert.executeUpdate();
                 conn.commit();
                 log.debug("Task {} saved", task.getId());
+
+                if (actionEventListeners.size() > 0) {
+                	final ActionEvent event = new ActionEvent() {
+            			@Override
+            			public Long getTaskId() {
+            				return task.getId();
+            			}
+
+            			@Override
+            			public Action getAction() {
+            				return action;
+            			}
+
+            			@Override
+            			public TaskActionStatus getActionStatus() {
+            				return actionStatus;
+            			}
+
+            			@Override
+            			public Map<String, String> getOutputVariables() {
+            				return Collections.unmodifiableMap(new HashMap<>());
+            			}
+            		};
+
+                	for (ActionEventListener listener : actionEventListeners) {
+                		//Utility.execute(() -> listener.handle(event));
+                		listener.handle(event);
+                	}
+                }
             } catch (SQLException ex) {
                 if (ex.getSQLState().equals("23505")) {
                     log.info("Task {} already exists", task.getId());
@@ -172,6 +212,35 @@ public class LocalTasksApi implements LocalTasksServiceBI {
                 throw new DatastoreException("update action on existing task failed!");
             }
             conn.commit();
+
+            if (actionEventListeners.size() > 0) {
+            	final ActionEvent event = new ActionEvent() {
+        			@Override
+        			public Long getTaskId() {
+        				return taskId;
+        			}
+
+        			@Override
+        			public Action getAction() {
+        				return action;
+        			}
+
+        			@Override
+        			public TaskActionStatus getActionStatus() {
+        				return actionStatus;
+        			}
+
+        			@Override
+        			public Map<String, String> getOutputVariables() {
+        				return Collections.unmodifiableMap(outputVariables);
+        			}
+        		};
+
+            	for (ActionEventListener listener : actionEventListeners) {
+            		//Utility.execute(() -> listener.handle(event));
+            		listener.handle(event);
+            	}
+            }
         } catch (RuntimeException re) {
             log.error("Caught {} \"{}\" setting Action {} with TaskActionStatus {} on task {}: {}", re.getClass().getName(), re.getLocalizedMessage(), action, actionStatus, taskId, outputVariables);
             throw re;
@@ -243,7 +312,6 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         List<LocalTask> tasks = new ArrayList<>();
         try (Connection conn = ds.getConnection()){
             Statement s = conn.createStatement();
-            //TODO DAN these gets are still going to be an issue, if they have the wrong username when the initially create local tasks.
             //we will need to change the userId in the DB - if the user enters a different workflow username
             ResultSet rs = s.executeQuery("SELECT * FROM local_tasks where owner = '" + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername() 
                     + "' and actionStatus = '" + actionStatus + "'");
@@ -420,4 +488,20 @@ public class LocalTasksApi implements LocalTasksServiceBI {
             }
         }
     }
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.workflow.LocalTasksServiceBI#addActionEventListener(gov.va.isaac.workflow.LocalTasksServiceBI.ActionListener)
+	 */
+	@Override
+	public void addActionEventListener(ActionEventListener listener) {
+		this.actionEventListeners.add(listener);
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.workflow.LocalTasksServiceBI#removeActionEventListener(gov.va.isaac.workflow.LocalTasksServiceBI.ActionEventListener)
+	 */
+	@Override
+	public void removeActionEventListener(ActionEventListener listener) {
+		this.actionEventListeners.remove(listener);
+	}
 }

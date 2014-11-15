@@ -19,15 +19,17 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowHistoryViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowAdvancementViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowHistoryViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
+import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.WBUtility;
-import gov.va.isaac.workflow.ComponentDescriptionHelper;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
+import gov.va.isaac.workflow.TaskActionStatus;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 
 import java.util.Map;
@@ -47,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Controller class for {@link WorkflowTaskViewI}
+ * Controller class for {@link WorkflowTaskDetailsViewI}
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
@@ -118,7 +120,6 @@ public class WorkflowTaskDetailsViewController {
 	@FXML private Label componentIdLabel;
 	
 	@FXML private TextArea instructionsTextArea;
-	@FXML private TextArea commentsTextArea;
 
 	private WorkflowTaskDetailsView workflowTaskDetailsView;
 	private LocalTask task;	
@@ -199,11 +200,13 @@ public class WorkflowTaskDetailsViewController {
 
 		taskIdLabel.setText(Long.toString(task.getId()));
 
+		if (task.getActionStatus() == TaskActionStatus.Pending) {
+			advanceWfButton.setDisable(true);
+			releaseTaskButton.setDisable(true);
+		}
+
 		if (task.getInputVariables() != null) {
 			if (task.getInputVariables().size() > 0) {
-				String[] editorComments = null;
-				String[] reviewComments = null;
-				String[] approveComments = null;
 				
 				for (Map.Entry<String, String> entry: task.getInputVariables().entrySet()) {
 					
@@ -214,41 +217,10 @@ public class WorkflowTaskDetailsViewController {
 							componentIdLabel.setText(entry.getValue());
 						} else if (entry.getKey().equals("in_instructions")) {
 							instructionsTextArea.setText(entry.getValue());
-						} else if (entry.getKey().equals("editor_comment") && entry.getValue().trim().length() > 0) {
-							editorComments = entry.getValue().split(";");
-						} else if (entry.getKey().equals("review_comment") && entry.getValue().trim().length() > 0) {
-							reviewComments = entry.getValue().split(";");
-						} else if (entry.getKey().equals("approval_comment") && entry.getValue().trim().length() > 0) {
-							approveComments = entry.getValue().split(";");
 						}
 					} else {
 						LOG.debug("Not displaying excluded input variables map entry: {}", entry);
 					}
-				}
-				
-				if (editorComments != null) {
-					StringBuffer str = new StringBuffer();
-					for (int i = 0; i < editorComments.length; i++) {
-						if (i == 0) {
-							str.append(editorComments[0]);
-						} else {
-							str.append("\r\n");
-							str.append(reviewComments[i]);
-						}
-
-						
-						if (reviewComments != null && reviewComments.length < i) {
-							str.append("\r\n");
-							str.append(reviewComments[i]);
-						}
-
-						if (approveComments != null && approveComments.length < i) {
-							str.append("\r\n");
-							str.append(approveComments[i]);
-						}
-					}
-					
-					commentsTextArea.setText(str.toString());
 				}
 			}
 		}
@@ -271,7 +243,7 @@ public class WorkflowTaskDetailsViewController {
 	}
 	
 	private void openConceptPanel() {
-		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+		PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.MODERN_STYLE);
 		cv.setConcept(conceptId);
 		cv.showView(null);
 	}

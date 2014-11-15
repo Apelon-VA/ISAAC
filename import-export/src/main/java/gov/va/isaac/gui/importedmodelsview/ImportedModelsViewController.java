@@ -24,7 +24,7 @@ import gov.va.isaac.gui.dialog.ImportSettingsDialogController;
 import gov.va.isaac.gui.dialog.InformationModelDetailsDialog;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.ie.FetchHandler;
-import gov.va.isaac.interfaces.gui.views.InfoModelViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI;
 import gov.va.isaac.model.InformationModelType;
 import gov.va.isaac.models.InformationModel;
 import gov.va.isaac.util.CommonMenuBuilderI;

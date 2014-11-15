@@ -22,18 +22,23 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.TaxonomyViewI;
-import gov.va.isaac.interfaces.gui.views.ListBatchViewI;
-import gov.va.isaac.interfaces.gui.views.PopupConceptViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowAdvancementViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowInitiationViewI;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
+import gov.va.isaac.interfaces.gui.views.DockedViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.ContentRequestHandlerI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
+import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
@@ -45,6 +50,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -71,7 +77,9 @@ public class CommonMenus
 		CONCEPT_VIEW("View Concept", Images.CONCEPT_VIEW),
 		CONCEPT_VIEW_LEGACY("View Concept 2", Images.CONCEPT_VIEW),
 		TAXONOMY_VIEW("Find in Taxonomy", Images.ROOT),
-		WORKFLOW_TASK_DETAILS_VIEW("Workflow Task Details", Images.INBOX),
+        WORKFLOW_TASK_DETAILS_VIEW("Workflow Task Details", Images.INBOX),
+        USCRS_REQUEST_VIEW("USCRS Content Request", Images.CONTENT_REQUEST),
+        LOINC_REQUEST_VIEW("LOINC Content Request", Images.CONTENT_REQUEST),
 		
 		SEND_TO("Send To", null),
 			LIST_VIEW("List View", Images.LIST_VIEW),
@@ -416,7 +424,7 @@ public class CommonMenus
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW.getText() + "\" menu item to display concept with id \"" 
 							+ getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()) + "\"");
 
-					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "ModernStyle");
+					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.MODERN_STYLE);
 					cv.setConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()));
 					cv.showView(null);
 				},
@@ -438,7 +446,7 @@ public class CommonMenus
 					LOG.debug("Using \"" + CommonMenuItem.CONCEPT_VIEW_LEGACY.getText() + "\" menu item to display concept with id \"" 
 							+ getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()) + "\"");
 
-					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, "LegacyStyle");
+					PopupConceptViewI cv = AppContext.getService(PopupConceptViewI.class, SharedServiceNames.LEGACY_STYLE);
 					cv.setConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()));
 
 					cv.showView(null);
@@ -459,7 +467,7 @@ public class CommonMenus
 				() -> {return commonMenusNIdProvider.getObservableNidCount().get() == 1;}, // canHandle
 				commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),				//make visible
 				// onHandlable
-				() -> { AppContext.getService(TaxonomyViewI.class).locateConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()), null); },
+				() -> { AppContext.getService(TaxonomyViewI.class, SharedServiceNames.DOCKED).locateConcept(getComponentParentConceptNid(commonMenusNIdProvider.getNIds().iterator().next()), null); },
 				// onNotHandlable
 				() -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Concept", "Can't locate an invalid concept");});
 		if (findInTaxonomyViewMenuItem != null)
@@ -477,7 +485,7 @@ public class CommonMenus
 					taskIdProvider.getObservableTaskIdCount().isEqualTo(1),				//make visible
 				// onHandlable
 				() -> {
-					WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
+					WorkflowTaskDetailsViewI view = AppContext.getService(WorkflowTaskDetailsViewI.class);
 					view.setTask(taskIdProvider.getTaskIds().iterator().next());
 					view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
 				},
@@ -487,7 +495,48 @@ public class CommonMenus
 		{
 			menuItems.add(openTaskViewMenuItem);
 		}
-		
+
+        // Menu item to perform a USCRS content request
+        MenuItem uscrsRequestViewMenuItem = createNewMenuItem(
+                CommonMenuItem.USCRS_REQUEST_VIEW,
+                builder,
+                () -> {
+                    return commonMenusNIdProvider.getObservableNidCount().get() == 1;
+                    }, // canHandle
+                    commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),             //make visible
+                // onHandlable
+                () -> {
+                    ContentRequestHandlerI handler = AppContext.getService(ContentRequestHandlerI.class, SharedServiceNames.USCRS);
+                    handler.setConcept(commonMenusNIdProvider.getNIds().iterator().next());
+                    handler.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+                },
+                // onNotHandlable
+                () -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Task", "Can't locate an invalid task");});
+        if (uscrsRequestViewMenuItem != null)
+        {
+            menuItems.add(uscrsRequestViewMenuItem);
+        }
+
+        // Menu item to perform a LOINC content request
+        MenuItem loincRequestViewMenuItem = createNewMenuItem(
+                CommonMenuItem.LOINC_REQUEST_VIEW,
+                builder,
+                () -> {
+                    return commonMenusNIdProvider.getObservableNidCount().get() == 1;
+                    }, // canHandle
+                    commonMenusNIdProvider.getObservableNidCount().isEqualTo(1),             //make visible
+                // onHandlable
+                () -> {
+                    ContentRequestHandlerI handler = AppContext.getService(ContentRequestHandlerI.class, SharedServiceNames.LOINC);
+                    handler.setConcept(commonMenusNIdProvider.getNIds().iterator().next());
+                    handler.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+                },
+                // onNotHandlable
+                () -> { AppContext.getCommonDialogs().showInformationDialog("Invalid Task", "Can't locate an invalid task");});
+        if (loincRequestViewMenuItem != null)
+        {
+            menuItems.add(loincRequestViewMenuItem);
+        }
 
 		MenuItem newReleaseWorkflowTaskItem = createNewMenuItem(
 				CommonMenuItem.RELEASE_WORKFLOW_TASK,
@@ -499,8 +548,8 @@ public class CommonMenus
 				() -> { // onHandlable
 					try
 					{
-						WorkflowTaskViewI view = AppContext.getService(WorkflowTaskViewI.class);
-						view.releaseTask(taskIdProvider.getTaskIds().iterator().next());
+						ComponentWorkflowServiceI wfEngine = AppContext.getService(ComponentWorkflowServiceI.class);
+						wfEngine.releaseTask(taskIdProvider.getTaskIds().iterator().next());
 					}
 					catch (IOException e)
 					{
@@ -618,9 +667,9 @@ public class CommonMenus
 					LOG.debug("Using \"" + CommonMenuItem.LIST_VIEW.getText() + "\" menu item to list concept(s) with id(s) \"" 
 							+ Arrays.toString(nidList.toArray()) + "\"");
 
-					ListBatchViewI lv = AppContext.getService(ListBatchViewI.class);
+					ListBatchViewI lv = AppContext.getService(ListBatchViewI.class, SharedServiceNames.DOCKED);
 
-					AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(lv);
+					AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI)lv);
 
 					lv.addConcepts(nidList);		
 				},

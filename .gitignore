@@ -69,3 +69,4 @@ workflowDB/**
 # IntelliJ IDEA stuff
 *.iml
 .idea
+.idea/

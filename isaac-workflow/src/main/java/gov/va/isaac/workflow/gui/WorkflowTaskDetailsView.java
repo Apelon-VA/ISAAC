@@ -21,7 +21,7 @@ package gov.va.isaac.workflow.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.WorkflowTaskViewI;
+import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
 import java.io.IOException;
 import java.net.URL;
@@ -38,13 +38,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link WorkflowTaskViewI} which can be used to initiate a new workflow instance
+ * A {@link WorkflowTaskDetailsViewI} which can be used to initiate a new workflow instance
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
 @Service
 @PerLookup
-public class WorkflowTaskDetailsView extends Stage implements WorkflowTaskViewI
+public class WorkflowTaskDetailsView extends Stage implements WorkflowTaskDetailsViewI
 {
 	private final Logger logger = LoggerFactory.getLogger(WorkflowTaskDetailsView.class);
 

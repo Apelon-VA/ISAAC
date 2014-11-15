@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
 public class WorkflowHistoryHelper {
 	private final static Logger logger = LoggerFactory.getLogger(WorkflowHistoryHelper.class);
 
-	private final static String WF_HISTORY_MAP_VARIABLE_NAME = "wf_history";
+	private final static String WF_IN_HISTORY_MAP_VARIABLE_NAME = "in_history";
+	private final static String WF_OUT_HISTORY_MAP_VARIABLE_NAME = "out_history";
 
 	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy @ HH:mm:ss");
 
@@ -70,12 +71,14 @@ public class WorkflowHistoryHelper {
 		wf_hist_action_owner,
 		wf_hist_action_time,
 		wf_hist_action, 
-		wf_hist_comment
+		wf_hist_comment,
+		wf_hist_task_name
 	}
 
 	public static List<Map<String, String>> getHistoryEntries(LocalTask task) {
-		List<Map<String, String>> existingEntries = deserializeMaps(task.getInputVariables().get(WF_HISTORY_MAP_VARIABLE_NAME));
+		List<Map<String, String>> existingEntries = deserializeMaps(task.getInputVariables().get(WF_IN_HISTORY_MAP_VARIABLE_NAME));
 
+		logger.debug("Got {} history entries from task #{}: {}", existingEntries.size(), task.getId(), historyEntriesToString(existingEntries));
 		return existingEntries;
 	}
 
@@ -110,83 +113,93 @@ public class WorkflowHistoryHelper {
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action_time.name(), Long.toString(time));
 		newEntry.put(WorkflowHistoryVariable.wf_hist_action.name(), action.name());
 		newEntry.put(WorkflowHistoryVariable.wf_hist_comment.name(), comment);
+		newEntry.put(WorkflowHistoryVariable.wf_hist_task_name.name(), task.getName());
 
 		return newEntry;
 	}
 
 	public static void createAndAddNewEntry(LocalTask task, Action action, Map<String, String> outputVariables) {
-
 		List<Map<String, String>> existingEntries = getHistoryEntries(task);
 		int numExistingEntries = existingEntries.size();
 		Map<String, String> newEntry = createNewHistoryEntry(task, action, outputVariables.get("out_comment"));
-		outputVariables.putAll(newEntry);
-		existingEntries.add(outputVariables);
+		//outputVariables.putAll(newEntry);
+		//existingEntries.add(outputVariables);
+		existingEntries.add(newEntry);
 
 		String serializedEntries = serializeMaps(existingEntries);
-		outputVariables.put(WF_HISTORY_MAP_VARIABLE_NAME, serializedEntries);
+		outputVariables.put(WF_OUT_HISTORY_MAP_VARIABLE_NAME, serializedEntries);
 
-		logger.debug("Added new history entry for task #{} with {} existing entries: {}", task.getId(), numExistingEntries, outputVariables);
+		logger.debug("Added new history entry for task #{} with {} existing entries: {}", task.getId(), numExistingEntries, existingEntries);
 	}
 
-	private static String serializeMaps(List<Map<String, String>> list) {
-		if (list == null) {
+	private static String serializeMaps(List<Map<String, String>> listOfHistoryEntryMaps) {
+		if (listOfHistoryEntryMaps == null) {
+			logger.warn("serialized null listOfHistoryEntryMaps into zero-length string \"\"");
 			return "";
 		}
+		logger.debug("serializing listOfHistoryEntryMaps of size {}: {}", listOfHistoryEntryMaps.size(), listOfHistoryEntryMaps);
+
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		XMLEncoder xmlEncoder = new XMLEncoder(bos);
-		xmlEncoder.writeObject(list);
+		xmlEncoder.writeObject(listOfHistoryEntryMaps);
 		xmlEncoder.close();
 
 		String serializedMaps = bos.toString();
+		
+		logger.debug("serialized listOfHistoryEntryMaps of size {} into XML: {}", listOfHistoryEntryMaps.size(), serializedMaps);
 		return serializedMaps;
 	}
 
-	private static List<Map<String, String>> deserializeMaps(String serializedMaps) {
-		if (serializedMaps == null || serializedMaps.isEmpty()) {
+	private static List<Map<String, String>> deserializeMaps(String listOfSerializedMaps) {
+		if (listOfSerializedMaps == null || listOfSerializedMaps.isEmpty()) {
+			logger.warn("null or empty xml string passed.  Returning empty history entry map list.");
 			return new ArrayList<Map<String, String>>();
 		} else {
-			XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(serializedMaps.getBytes()));
+			XMLDecoder xmlDecoder = new XMLDecoder(new ByteArrayInputStream(listOfSerializedMaps.getBytes()));
 			@SuppressWarnings("unchecked")
 			List<Map<String, String>> parsedMaps = (List<Map<String, String>>) xmlDecoder.readObject();
 			xmlDecoder.close();
+			logger.debug("deserialized xml string \"{}\" into list of history entry maps with {} entries: {}", listOfSerializedMaps, parsedMaps.size(), parsedMaps.toString());
 			return parsedMaps;
 		}
 	}
 
 	public static void loadGridPane(GridPane gp, LocalTask task) {
-		List<Map<String, String>> entries = getHistoryEntries(task);
+		List<Map<String, String>> historyEntryMaps = getHistoryEntries(task);
 		
+		logger.debug("Loading GridPane with {} history entries from task #{}: {}", historyEntryMaps.size(), task.getId(), historyEntriesToString(historyEntryMaps));
+
 		int counter = 0;
-		for (Map<String, String> entry : entries) {
-			String owner = "Owner doesn't exist";
-			String action = "Action doesn't exist";
-			String timestamp = "Timestamp doesn't exist";
+		for (Map<String, String> historyEntryMap : historyEntryMaps) {
+			String owner = "Owner unset";
+			String timestamp = "Timestamp unset";
+			String comment = "Comment unset";
+			String taskName = "Task name unset";
 			
-			for (String key : entry.keySet()) {
+			for (String key : historyEntryMap.keySet()) {
 				if (key.equals(WorkflowHistoryVariable.wf_hist_action_owner.toString())) {
-					owner = entry.get(key);
-				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action.toString())) {
-					action = entry.get(key);
-					
-					if (action.equalsIgnoreCase("None")) {
-						action = "Initialize Workflow";
-					}
+					owner = historyEntryMap.get(key);
 				} else if (key.equals(WorkflowHistoryVariable.wf_hist_action_time.toString())) {
-					Long time = Long.parseLong(entry.get(key));
+					Long time = Long.parseLong(historyEntryMap.get(key));
 					
 			        timestamp = sdf.format(time);
-				} 
-					
+				} else if (key.equals(WorkflowHistoryVariable.wf_hist_comment.toString())) {
+					comment = historyEntryMap.get(key);
+				} else if (key.equals(WorkflowHistoryVariable.wf_hist_task_name.toString())) {
+					taskName = historyEntryMap.get(key);
+				}
 			}
 
 			Label ownerLabel = new Label(owner);
 			ownerLabel.setFont(new Font("System Bold", 14));
-			Label actionLabel = new Label(action);
-			actionLabel.setFont(new Font("System Bold", 14));
+			Label taskNameLabel = new Label(taskName);
+			taskNameLabel.setFont(new Font("System Bold", 14));
 			Label timeLabel = new Label(timestamp);
 			timeLabel.setFont(new Font("System Bold", 14));
+			Label commentLabel = new Label(comment);
+			commentLabel.setFont(new Font("System Bold", 14));
 
-			gp.addRow(counter++, ownerLabel, actionLabel, timeLabel);
+			gp.addRow(counter++, ownerLabel, taskNameLabel, timeLabel, commentLabel);
 		}
 	}
 }

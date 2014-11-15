@@ -82,7 +82,18 @@ public class SummaryController implements PanelControllersI {
 	
 		commitButton.setOnAction(e -> 
 		{
-			storeValues();
+		    try
+			{
+				AppContext.getRuntimeGlobals().disableAllCommitListeners();
+				storeValues();
+			} catch (Exception e1) {
+				logger.error("Coudn't Disable WF Init & Commit New Dynamic Refex Concept", e1);
+			}
+			finally
+			{
+			    AppContext.getRuntimeGlobals().enableAllCommitListeners();
+			}
+
 			((Stage)summaryPane.getScene().getWindow()).close();
 		});
 
@@ -124,7 +135,7 @@ public class SummaryController implements PanelControllersI {
 					refexData.isAnnotatedStyle());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
-			AppContext.getCommonDialogs().showErrorDialog("Error Creating Refex", "Unexpected error creating the Refex", e.getMessage(), summaryPane.getScene().getWindow());
+			AppContext.getCommonDialogs().showErrorDialog("Error Creating Sememe", "Unexpected error creating the Sememe", e.getMessage(), summaryPane.getScene().getWindow());
 		}
 	}
 	
