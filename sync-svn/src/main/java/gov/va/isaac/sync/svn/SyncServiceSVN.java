@@ -93,6 +93,8 @@ public class SyncServiceSVN implements ProfileSyncI
 	private SyncServiceSVN()
 	{
 		//For HK2
+		//if this is left on the default of true, javafx hangs when trying to get the gnome keyring
+		System.setProperty("svnkit.useJNA", "false");
 	}
 
 	/**
@@ -127,10 +129,10 @@ public class SyncServiceSVN implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException, AuthenticationException
+	public void linkAndFetchFromRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException, AuthenticationException
 	{
-		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder_, remoteAddress, userName);
-		setupCredentials(userName, password);
+		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder_, remoteAddress, username);
+		setupCredentials(username, password);
 		try
 		{
 			File svnFolder = new File(localFolder_, ".svn");
@@ -150,7 +152,7 @@ public class SyncServiceSVN implements ProfileSyncI
 				if (id.equals(localId))
 				{
 					log.info("Ok to re-link local to remote - they have the same ID");
-					relinkRemote(remoteAddress);
+					relinkRemote(remoteAddress, username, password);
 					
 					//But, if we have any pre-existing merge conflicts.....
 					Set<String> conflicts = getFilesInMergeConflict();
@@ -200,7 +202,7 @@ public class SyncServiceSVN implements ProfileSyncI
 				//Just do an update
 				try
 				{
-					updateFromRemote(userName, password, MergeFailOption.KEEP_LOCAL);
+					updateFromRemote(username, password, MergeFailOption.KEEP_LOCAL);
 				}
 				catch (MergeFailure e)
 				{
@@ -256,23 +258,28 @@ public class SyncServiceSVN implements ProfileSyncI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.lang.String)
+	 * @throws AuthenticationException 
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException
+	public void relinkRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException, AuthenticationException
 	{
-
 		log.debug("Configuring remote URL and fetch defaults to {}", remoteAddress);
+		setupCredentials(username, password);
 		try
 		{
 			getSvn().getUpdateClient().doRelocate(localFolder_, null, SVNURL.parseURIEncoded(SVNEncodingUtil.autoURIEncode(remoteAddress)), true);
+		}
+		catch (SVNAuthenticationException e) 
+		{
+			log.info("Auth fail", e);
+			throw new AuthenticationException("Auth fail");
 		}
 		catch (SVNException e)
 		{
 			log.error("Unexpected", e);
 			throw new IOException("Internal error", e);
 		}
-
 	}
 
 	/**
@@ -517,7 +524,7 @@ public class SyncServiceSVN implements ProfileSyncI
 			log.debug("Running Update");
 			client.doUpdate(localFolder_, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
 
-			System.out.println("After update:" + statusToString());
+			log.info("After update:" + statusToString());
 
 			Set<String> conflicted = getFilesInMergeConflict();
 

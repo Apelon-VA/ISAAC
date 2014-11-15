@@ -242,15 +242,36 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 			{
 				addLine("Setting Remote Address");
 				
-				try
+				boolean successful = false;
+				while (!successful)
 				{
-					syncService_.relinkRemote(url_);
-				}
-				catch (Exception e)
-				{
-					log.error("Sync failure", e);
-					AppContext.getCommonDialogs().showErrorDialog("Sync Error", "Sync error setting up remote address", e.getMessage());
-					return;
+					try
+					{
+						syncService_.relinkRemote(url_, up.getSyncUsername(), up.getSyncPassword());
+						successful = true;
+					}
+					catch (AuthenticationException ae)
+					{
+						try
+						{
+							promptUserForCreds(up);
+						}
+						catch (InterruptedException e)
+						{
+							//noop
+						}
+						
+						if (cancelRequested_)
+						{
+							return;
+						}
+					}
+					catch (Exception e)
+					{
+						log.error("Sync failure", e);
+						AppContext.getCommonDialogs().showErrorDialog("Sync Error", "Sync error setting up remote address", e.getMessage());
+						return;
+					}
 				}
 			}
 			else
@@ -386,52 +407,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 					}
 					catch (AuthenticationException ae)
 					{
-						CountDownLatch awaitCreds = new CountDownLatch(1);
-						
-						Platform.runLater(() ->
-						{
-							AppContext.getService(CredentialsPromptDialog.class).showView(up.getSyncUsername(), up.getSyncPassword(), 
-									"Please provide the Sync credentials", credentials ->
-							{
-								if (credentials == null)
-								{
-									addLine("Cancelling");
-									cancelRequested_ = true;
-								}
-								else
-								{
-									
-									if (!up.getSyncUsername().equals(credentials.getUsername()))
-									{
-										try
-										{
-											syncService_.relinkRemote(syncService_.substituteURL(AppContext.getAppConfiguration().getChangeSetUrl(), 
-													credentials.getUsername()));
-										}
-										catch (Exception e)
-										{
-											//highly unlikely.. don't care, it will just fail - will work next time.
-											log.error("Unexpected", e);
-										}
-									}
-									up.setSyncUsername(credentials.getUsername());
-									up.setSyncPassword(credentials.getPassword());
-									
-									try
-									{
-										AppContext.getService(UserProfileManager.class).saveChanges(up);
-									}
-									catch (Exception e)
-									{
-										//doesn't really matter - just a pw change, no big deal if we can't save it.
-										log.error("Unexpected error changing profile change", e);
-									}
-								}
-								awaitCreds.countDown();
-							});
-						});
-						
-						awaitCreds.await();
+						promptUserForCreds(up);
 						
 						if (cancelRequested_)
 						{
@@ -516,6 +492,60 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 				running_.set(false);
 			});
 		}
+	}
+	
+	private void promptUserForCreds(UserProfile up) throws InterruptedException
+	{
+		CountDownLatch awaitCreds = new CountDownLatch(1);
+		
+		Platform.runLater(() ->
+		{
+			AppContext.getService(CredentialsPromptDialog.class).showView(up.getSyncUsername(), up.getSyncPassword(), 
+					"Please provide the Sync credentials", credentials ->
+			{
+				if (credentials == null)
+				{
+					addLine("Cancelling");
+					cancelRequested_ = true;
+				}
+				else
+				{
+					
+					if (!up.getSyncUsername().equals(credentials.getUsername()))
+					{
+						try
+						{
+							syncService_.relinkRemote(syncService_.substituteURL(AppContext.getAppConfiguration().getChangeSetUrl(), 
+									credentials.getUsername()), credentials.getUsername(), credentials.getPassword());
+						}
+						catch (AuthenticationException e)
+						{
+							log.info("Sync credentials still incorrect", e);
+						}
+						catch (Exception e)
+						{
+							//highly unlikely.. don't care, it will just fail - will work next time.
+							log.error("Unexpected", e);
+						}
+					}
+					up.setSyncUsername(credentials.getUsername());
+					up.setSyncPassword(credentials.getPassword());
+					
+					try
+					{
+						AppContext.getService(UserProfileManager.class).saveChanges(up);
+					}
+					catch (Exception e)
+					{
+						//doesn't really matter - just a pw change, no big deal if we can't save it.
+						log.error("Unexpected error changing profile change", e);
+					}
+				}
+				awaitCreds.countDown();
+			});
+		});
+		
+		awaitCreds.await();
 	}
 	
 	private Set<String> resolveMergeFailure(MergeFailure mf) throws IllegalArgumentException, IOException

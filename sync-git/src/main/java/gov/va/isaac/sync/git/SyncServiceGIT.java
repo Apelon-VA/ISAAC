@@ -172,9 +172,9 @@ public class SyncServiceGIT implements ProfileSyncI
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#linkAndFetchFromRemote(java.io.File, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void linkAndFetchFromRemote(String remoteAddress, String userName, String password) throws IllegalArgumentException, IOException, AuthenticationException
+	public void linkAndFetchFromRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException, AuthenticationException
 	{
-		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder, remoteAddress, userName);
+		log.info("linkAndFetchFromRemote called - folder: {}, remoteAddress: {}, username: {}", localFolder, remoteAddress, username);
 		try
 		{
 			File gitFolder = new File(localFolder, ".git");
@@ -186,11 +186,11 @@ public class SyncServiceGIT implements ProfileSyncI
 				r.create();
 			}
 
-			relinkRemote(remoteAddress);
+			relinkRemote(remoteAddress, username, password);
 
 			Git git = new Git(r);
 
-			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(userName, password);
+			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
 
 			log.debug("Fetching");
 			FetchResult fr = git.fetch().setCheckFetchedObjects(true).setCredentialsProvider(cp).call();
@@ -231,7 +231,7 @@ public class SyncServiceGIT implements ProfileSyncI
 				{
 					log.debug("Adding and committing {}", newFile);
 					git.add().addFilepattern(newFile).call();
-					git.commit().setMessage("Adding " + newFile).setAuthor(userName, "42").call();
+					git.commit().setMessage("Adding " + newFile).setAuthor(username, "42").call();
 
 					for (PushResult pr : git.push().setCredentialsProvider(cp).call())
 					{
@@ -247,7 +247,7 @@ public class SyncServiceGIT implements ProfileSyncI
 				{
 					log.debug("Adding and committing {}", newFile);
 					git.add().addFilepattern(newFile).call();
-					git.commit().setMessage("Adding readme file").setAuthor(userName, "42").call();
+					git.commit().setMessage("Adding readme file").setAuthor(username, "42").call();
 				}
 
 				log.debug("Pushing repository");
@@ -280,10 +280,10 @@ public class SyncServiceGIT implements ProfileSyncI
 	}
 	
 	/**
-	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.io.File, java.lang.String)
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#relinkRemote(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException
+	public void relinkRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException
 	{
 		log.debug("Configuring remote URL and fetch defaults to {}", remoteAddress);
 		StoredConfig sc = getGit().getRepository().getConfig();
