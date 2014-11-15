@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.0-Sprint_15-SNAPSHOT</version>
+    <version>1.0-Sprint_16-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -209,7 +209,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>2.10.1</version>
                     <configuration>
                         <additionalparam>-Xdoclint:none</additionalparam>
                     </configuration>
@@ -289,7 +289,8 @@
                     <preparationGoals>clean validate</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <!-- TODO disable this by default, only enable by option in maestrodev, otherwise, other branches of our code overwrite our gh-pages site -->
-                    <goals>deploy site site:stage scm-publish:publish-scm</goals>
+                    <!-- TODO figure out what is wrong with maven now....https://support.maestrodev.com/browse/VA-110 -->
+                    <goals>deploy</goals> <!-- Disabled ' site site:stage scm-publish:publish-scm' for the moment -->
                 </configuration>
             </plugin>
         </plugins>
@@ -391,7 +392,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>2.10.1</version>
                 <inherited>false</inherited>
                 <configuration>
                     <notimestamp>true</notimestamp>
