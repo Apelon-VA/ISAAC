@@ -596,11 +596,7 @@ public class SearchConceptHelper {
 	
 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 	
-							if (compModel.getSearchType() != null) {
-								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());
-							} else {
-								compModel.setSearchType(newFilter);
-							}
+							compModel.setSearchType(newFilter);
 						} else if (dud.getRefexName().equals(Search.SEARCH_ISDESCENDANTOF_FILTER.getDescription() /*"Search IsKindOf Filter"*/)) {
 							// handle "Search RegExp Filter"
 	
@@ -679,9 +675,7 @@ public class SearchConceptHelper {
 							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
 							LOG.debug("Read drools expression from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 	
-						} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() /*"Search Sememe Filter"*/)) {
-							// handle "Search Lucene Filter"
-	
+						} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() /*"Search Sememe Filter"*/)) {	
 							LOG.debug("Loading data into model from Search Sememe Filter refex");
 	
 							SememeContentSearchTypeFilter newFilter = new SememeContentSearchTypeFilter();

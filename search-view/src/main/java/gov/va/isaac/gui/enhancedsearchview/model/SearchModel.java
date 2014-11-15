@@ -85,7 +85,7 @@ public class SearchModel {
 		return isSearchRunnable;
 	}
 
-	public SearchTypeSelector getSearchTypeSelector() {
+	public static SearchTypeSelector getSearchTypeSelector() {
 		return searchTypeSelector;
 	}
 	

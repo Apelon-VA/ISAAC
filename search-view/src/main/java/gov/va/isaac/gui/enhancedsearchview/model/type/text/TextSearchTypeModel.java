@@ -1,10 +1,10 @@
 package gov.va.isaac.gui.enhancedsearchview.model.type.text;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.Tasks;
 import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
-import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
@@ -130,6 +130,11 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			}
 		});
 	}
+	
+	public static ComponentSearchType getCurrentComponentSearchType() {
+		return TextSearchTypeView.getCurrentComponentSearchType();
+	}
+
 	public SearchTypeFilter<?> getSearchType() {
 		return searchTypeFilterProperty.get();
 	}
@@ -239,17 +244,15 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			AppContext.getCommonDialogs().showErrorDialog(title, "Failure to search filters-only", msg, AppContext.getMainApplicationWindow().getPrimaryStage());
 
 			return;
-		} else  if (! (filter instanceof LuceneSearchTypeFilter)) {
+		} else  if (! (filter instanceof SearchTypeFilter)) {
 			String title = "Search failed";
 
 			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
 			getSearchRunning().set(false);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter and RegExpSearchFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
 
 			return;
 		}
-
-		LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
 
 		SearchResultsFilter searchResultsFilter = null;
 		if (getFilters() != null) {
@@ -283,7 +286,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 		switch (resultsType) {
 		case CONCEPT:
 		{
-			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
+			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(filter.getSearchParameter() != null ? filter.getSearchParameter() : "");
 			builder.setCallback(this);
 			builder.setTaskId(Tasks.SEARCH.ordinal());
 			if (searchResultsFilter != null) {
@@ -319,7 +322,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 		}
 		case DESCRIPTION:
 		{
-			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
+			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(filter.getSearchParameter() != null ? filter.getSearchParameter() : "");
 			builder.setCallback(this);
 			builder.setTaskId(Tasks.SEARCH.ordinal());
 			if (searchResultsFilter != null) {

@@ -6,7 +6,9 @@ import gov.va.isaac.constants.Search;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchDisplayConcept;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.SaveSearchPrompt;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
@@ -229,7 +231,7 @@ public class EnhancedSavedSearch {
 		refreshSavedSearchComboBox();
 	}
 
-	private void refreshSavedSearchComboBox() {
+	public static void refreshSavedSearchComboBox() {
 		Task<List<SearchDisplayConcept>> loadSavedSearches = new Task<List<SearchDisplayConcept>>() {
 			private ObservableList<SearchDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
 
@@ -237,12 +239,26 @@ public class EnhancedSavedSearch {
 			protected List<SearchDisplayConcept> call() throws Exception {
 				List<ConceptVersionBI> savedSearches = WBUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
 
-				SearchType currentSearchType = searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
+				SearchType currentSearchType = SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
 				for (ConceptVersionBI concept : savedSearches) {
 					if (getCachedSearchTypeFromSearchConcept(concept) == currentSearchType) {
-						String fsn = WBUtility.getFullySpecifiedName(concept);
-						String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
-						searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+						boolean addSearchToList = true;
+						if (currentSearchType == SearchType.TEXT) {
+							ComponentSearchType currentlyViewedComponentSearchType = TextSearchTypeModel.getCurrentComponentSearchType();
+							ComponentSearchType loadedComponentSearchType = getComponentSearchTypeFromSearchConcept(concept);
+							
+							if (currentlyViewedComponentSearchType != null && loadedComponentSearchType != null) {
+								if (currentlyViewedComponentSearchType != loadedComponentSearchType) {
+									addSearchToList = false;
+								}
+							}
+						}
+						
+						if (addSearchToList) {
+							String fsn = WBUtility.getFullySpecifiedName(concept);
+							String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
+							searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+						}
 					}
 				}
 
@@ -304,6 +320,38 @@ public class EnhancedSavedSearch {
 				return SearchType.TEXT;
 			} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription())) {
 				return SearchType.SEMEME;
+			}
+		}
+		
+		String error = "Invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
+		LOG.error(error);
+		return null;
+	}
+	
+	private static Map<Integer, ComponentSearchType> componentSearchTypeCache = new HashMap<>();
+	private static ComponentSearchType getCachedComponentSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		if (componentSearchTypeCache.get(concept.getNid()) == null) {
+			componentSearchTypeCache.put(concept.getConceptNid(), getComponentSearchTypeFromSearchConcept(concept));
+		}
+		
+		return componentSearchTypeCache.get(concept.getNid());
+	}
+	private static ComponentSearchType getComponentSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+		for (RefexDynamicVersionBI<?> refex : refexes) {
+			RefexDynamicUsageDescription dud = null;
+			try {
+				dud = refex.getRefexDynamicUsageDescription();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed performing getRefexDynamicUsageDescription(): caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+
+				return null;
+			}
+
+			if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription())) {
+				return ComponentSearchType.LUCENE;
+			} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription())) {
+				return ComponentSearchType.REGEXP;
 			}
 		}
 		

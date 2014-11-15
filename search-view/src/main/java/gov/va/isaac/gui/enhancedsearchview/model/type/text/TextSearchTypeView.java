@@ -10,8 +10,10 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
+import gov.va.isaac.gui.enhancedsearchview.filters.RegExpSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SingleNidFilter;
+import gov.va.isaac.gui.enhancedsearchview.model.EnhancedSavedSearch;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSpecificView;
@@ -59,8 +61,12 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 	SearchModel searchModel = new SearchModel();
 
 	static {
-		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.LUCENE /*, ComponentSearchType.REGEXP */));
+		componentSearchTypeComboBox.setItems(FXCollections.observableArrayList(ComponentSearchType.LUCENE, ComponentSearchType.REGEXP));
 		componentSearchTypeComboBox.getSelectionModel().select(ComponentSearchType.LUCENE);
+	}
+
+	public static ComponentSearchType getCurrentComponentSearchType() {
+		return componentSearchTypeComboBox.getSelectionModel().getSelectedItem();
 	}
 	
 	@Override
@@ -141,9 +147,8 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 						TextField searchParamTextField = new TextField();
 
 						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getComponentSearchType() == componentSearchType) {
-							searchParamTextField.setText(((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().get());
+							searchParamTextField.setText(componentContentModel.getSearchType().getSearchParameterProperty().get());
 							displayableLuceneFilter = ((LuceneSearchTypeFilter)componentContentModel.getSearchType());
-							
 						} else {
 							displayableLuceneFilter = new LuceneSearchTypeFilter();
 							filter = displayableLuceneFilter;
@@ -157,8 +162,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 							public void changed(
 									ObservableValue<? extends String> observable,
 									String oldValue, String newValue) {
-								((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().set(newValue);
-								//LOG.debug("LUCENE searchParamTextField changed from \"{}\" to \"{}\".  componentContentModel LuceneSearchTypeFilter search param is \"{}\"", oldValue, newValue, ((LuceneSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().get());
+								componentContentModel.getSearchType().getSearchParameterProperty().set(newValue);
 							}
 						});
 
@@ -169,32 +173,48 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 						}
 
 						componentSearchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
+						
+						EnhancedSavedSearch.refreshSavedSearchComboBox();
+					} else if (componentSearchType == ComponentSearchType.REGEXP) {
+						RegExpSearchTypeFilter displayableRegExpFilter = null;
+
+						Label searchParamLabel = new Label("RegExp Param");
+						searchParamLabel.setPadding(new Insets(5.0));
+
+						TextField searchParamTextField = new TextField();
+
+						if (componentContentModel.getSearchType() != null && componentContentModel.getSearchType().getComponentSearchType() == componentSearchType) {
+							searchParamTextField.setText(ComponentSearchTypeHelper.stripAllSurroundingRegExpSlashes(componentContentModel.getSearchType().getSearchParameterProperty().get()));
+							displayableRegExpFilter = ((RegExpSearchTypeFilter)componentContentModel.getSearchType());
+						} else {
+							displayableRegExpFilter = new RegExpSearchTypeFilter();
+							filter = displayableRegExpFilter;
+							componentContentModel.setSearchType(filter);
+						}
+
+						addAllSearchFilters(componentContentModel);
+						
+						searchParamTextField.textProperty().addListener(new ChangeListener<String>() {
+							@Override
+							public void changed(
+									ObservableValue<? extends String> observable,
+									String oldValue, String newValue) {
+								componentContentModel.getSearchType().getSearchParameterProperty().set(ComponentSearchTypeHelper.addSurroundingRegExpSlashesIfNotAlreadyThere(ComponentSearchTypeHelper.stripAllSurroundingRegExpSlashes(newValue)));
+							}
+						});
+
+						searchParamTextField.setPadding(new Insets(5.0));
+						searchParamTextField.setPromptText("Enter regexp text");
+						if (displayableRegExpFilter.getSearchParameter() != null) {
+							searchParamTextField.setText(ComponentSearchTypeHelper.stripAllSurroundingRegExpSlashes(displayableRegExpFilter.getSearchParameter()));
+						}
+
+						componentSearchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);						
+
+						EnhancedSavedSearch.refreshSavedSearchComboBox();
 					} 
-//					else if (ComponentSearchType == ComponentSearchType.REGEXP) {
-//						RegExpSearchTypeFilter displayableRegExpFilter = new RegExpSearchTypeFilter();
-//
-//						filter = displayableRegExpFilter;
-//
-//						Label searchParamLabel = new Label("RegExp Param");
-//						searchParamLabel.setPadding(new Insets(5.0));
-//
-//						TextField searchParamTextField = new TextField();
-//
-//						componentContentModel.setSearchType(filter);
-//						
-//						((RegExpSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty().set("");
-//						Bindings.bindBidirectional(searchParamTextField.textProperty(), ((RegExpSearchTypeFilter)componentContentModel.getSearchType()).getSearchParameterProperty());
-//
-//						searchParamTextField.setPadding(new Insets(5.0));
-//						searchParamTextField.setPromptText("Enter search text");
-//						if (displayableRegExpFilter.getSearchParameter() != null) {
-//							searchParamTextField.setText(displayableRegExpFilter.getSearchParameter());
-//						}
-//
-//						searchTypeControlsHbox.getChildren().addAll(searchParamLabel, searchParamTextField);
-//					}
 					else {
-						System.out.println("Regex Unsupported");
+						LOG.warn("Unsupported ComponentSearchType {}", componentSearchType);
 //						throw new RuntimeException("Unsupported ComponentSearchType " + componentSearchType);
 					}
 
