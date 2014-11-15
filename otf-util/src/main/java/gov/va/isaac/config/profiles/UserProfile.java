@@ -362,7 +362,7 @@ public class UserProfile
 		}
 		catch (Exception e)
 		{
-			throw new IOException("Problem storings UserProfile to " + fileToWrite.getAbsolutePath());
+			throw new IOException("Problem storings UserProfile to " + fileToWrite.getAbsolutePath(), e);
 		}
 	}
 
