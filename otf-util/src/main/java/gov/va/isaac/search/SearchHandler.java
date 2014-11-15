@@ -23,7 +23,6 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,7 +30,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-
+import java.util.function.Supplier;
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
@@ -87,7 +86,7 @@ public class SearchHandler
 			final SearchResultsFilter filters,
 			Comparator<CompositeSearchResult> comparator,
 			boolean mergeOnConcepts,
-			Set<CompositeSearchResult> filterList)
+			Supplier<Set<CompositeSearchResult>> filterList)
 	{
 		final SearchHandle searchHandle = new SearchHandle();
 
@@ -197,8 +196,10 @@ public class SearchHandler
 								}
 							}
 						}
-					} else {
-						initialSearchResults.addAll(filterList);
+					} 
+					else if (filterList != null) 
+					{
+						initialSearchResults.addAll(filterList.get());
 					}
 
 					// sort, filter and merge the results as necessary
@@ -427,7 +428,7 @@ public class SearchHandler
 	}
 
 	public static SearchHandle descriptionSearch(SearchBuilder builder,
-			Set<CompositeSearchResult> filterList) {
+			Supplier<Set<CompositeSearchResult>> filterList) {
 		return descriptionSearch(
 				builder.getQuery(), 
 				builder.getSizeLimit(), 
