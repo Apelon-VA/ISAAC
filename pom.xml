@@ -209,7 +209,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.1</version>  <!-- maven broke everything with release 2.10... do not use! -->
+                    <version>2.9.1</version>  <!-- maven broke everything with release 2.10... do not use! -->
                     <configuration>
                         <additionalparam>-Xdoclint:none</additionalparam>
                     </configuration>
