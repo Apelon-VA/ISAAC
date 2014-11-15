@@ -82,6 +82,9 @@ public class UserProfile
 	
 	@XmlElement
 	private boolean launchWorkflowForEachCommit = true;
+	
+	@XmlElement
+	private boolean runDroolsBeforeEachCommit = true;
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
 	 */
@@ -328,6 +331,22 @@ public class UserProfile
 	{
 		this.launchWorkflowForEachCommit = launchWorkflowForEachCommit;
 	}
+	
+	/**
+	 * @return the runDroolsBeforeEachCommit
+	 */
+	public boolean isRunDroolsBeforeEachCommit()
+	{
+		return runDroolsBeforeEachCommit;
+	}
+
+	/**
+	 * @param runDroolsBeforeEachCommit the runDroolsBeforeEachCommit to set
+	 */
+	public void setRunDroolsBeforeEachCommit(boolean runDroolsBeforeEachCommit)
+	{
+		this.runDroolsBeforeEachCommit = runDroolsBeforeEachCommit;
+	}
 
 	protected void store(File fileToWrite) throws IOException
 	{
@@ -343,7 +362,7 @@ public class UserProfile
 		}
 		catch (Exception e)
 		{
-			throw new IOException("Problem storings UserProfile to " + fileToWrite.getAbsolutePath());
+			throw new IOException("Problem storings UserProfile to " + fileToWrite.getAbsolutePath(), e);
 		}
 	}
 
@@ -378,6 +397,7 @@ public class UserProfile
 		clone.workflowUsername = this.workflowUsername;
 		clone.conceptUUID = this.conceptUUID;
 		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
+		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
 		
 		return clone;
 	}

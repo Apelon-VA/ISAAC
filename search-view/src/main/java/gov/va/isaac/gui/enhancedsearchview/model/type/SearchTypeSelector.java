@@ -2,6 +2,7 @@ package gov.va.isaac.gui.enhancedsearchview.model.type;
 
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsTable;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeModel;
@@ -43,7 +44,7 @@ public class SearchTypeSelector {
 		searchTypeSelector.setOnAction((e) -> changeSearchType());
 	}
 
-	private static SearchResultsTable searchResultsTable;
+	//private static SearchResultsTable searchResultsTable;
 	
 	public ComboBox<SearchType> getSearchTypeComboBox() {
 		return searchTypeSelector;
@@ -51,6 +52,8 @@ public class SearchTypeSelector {
 	
 	private static void changeSearchType() {
 		SearchType selection = searchTypeSelector.getSelectionModel().getSelectedItem();
+		
+		SearchModel.getSearchResultsTable().getResults().getItems().clear();
 
 		// searchType may be temporarily set to null in order to all resetting to the "current" (non-null) type,
 		// triggering selector button cell factories and change handlers
@@ -59,7 +62,7 @@ public class SearchTypeSelector {
 			searchTypeSelector.getSelectionModel().select(selection);
 
 			if (resultsTypeField != null) {
-				searchResultsTable.initializeSearchResultsTable(currentType, resultsTypeField.getSelectionModel().getSelectedItem());
+				SearchModel.getSearchResultsTable().initializeSearchResultsTable(currentType, resultsTypeField.getSelectionModel().getSelectedItem());
 
 				if (selection == SearchType.TEXT) {
 					resultsTypeField.setVisible(true);
@@ -79,6 +82,8 @@ public class SearchTypeSelector {
 
 			setCriteriaPane(typeSpecificViewMap.get(selection).setContents(typeSpecificModelMap.get(selection)));
 		}
+		
+		SearchModel.isSearchRunnableProperty().set(SearchModel.isSearchRunnable());
 	}
 
 	public void setSearchTypePane(SearchType type) {
@@ -117,9 +122,4 @@ public class SearchTypeSelector {
 	public void setMaxResultsField(HBox hBox) {
 		maxResultsField = hBox;
 	}
-
-	public void setSearchResultsTable(SearchResultsTable table) {
-		searchResultsTable = table;
-		searchResultsTable.initializeSearchResultsTable(SearchType.TEXT, ResultsType.DESCRIPTION);
-	}	
 }

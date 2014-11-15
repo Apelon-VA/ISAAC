@@ -106,10 +106,13 @@ public interface ProfileSyncI
 	 * Has no impact on any local files.
 	 *
 	 * @param remoteAddress - the URL to the remote server
+	 * @param username - remote credentials
+	 * @param password - remote credentials
 	 * @throws IOException - Thrown if an error occurs accessing local or remote resources
 	 * @throws IllegalArgumentException - if the passed parameters are invalid
+	 * @throws AuthenticationException - if auth fails during remote relink 
 	 */
-	public void relinkRemote(String remoteAddress) throws IllegalArgumentException, IOException;
+	public void relinkRemote(String remoteAddress, String username, String password) throws IllegalArgumentException, IOException, AuthenticationException;
 	
 	/**
 	 * Mark the specified files as files that should be synchronized.  This is a local operation only - does not push to the server.
@@ -184,7 +187,8 @@ public interface ProfileSyncI
 	 * @throws IOException - if the passed parameters are invalid
 	 * @throws MergeFailure - If the update cannot be applied cleanly.  The exception will contain the list of files that were changed (cleanly, or not) during the
 	 * update attempt.
-	 * @return The complete set of files that changed during the pull from the server that led to the merge failure.
+	 * @return At a minimum, the set of files modified by the resolution of the merge.  Implementation may, at their choosing , return the complete set of files 
+	 * that changed during the pull from the server that led to the merge failure, in addition to the files that were changes to resolve the conflicts.
 	 */
 	public Set<String> resolveMergeFailures(Map<String, MergeFailOption> resolutions) throws IllegalArgumentException, IOException, MergeFailure;
 	

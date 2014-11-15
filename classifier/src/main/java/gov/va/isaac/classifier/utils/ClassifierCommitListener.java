@@ -20,6 +20,8 @@ package gov.va.isaac.classifier.utils;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.classifier.Classifier;
+import gov.va.isaac.classifier.SnomedSnorocketClassifier;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.utility.CommitListenerI;
@@ -33,6 +35,7 @@ import javafx.application.Platform;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.ihtsdo.otf.tcc.api.nid.IntSet;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
 import org.jvnet.hk2.annotations.Service;
@@ -135,20 +138,15 @@ public class ClassifierCommitListener implements PropertyChangeListener,
 
         //
         Platform.runLater(() -> {
+          try {
+            //Classifier classifier = new SnomedSnorocketClassifier();
+            //classifier.incrementalClassify((IntSet)evt.getNewValue());
+          } catch (Exception e) {
+            e.printStackTrace();
+            AppContext.getCommonDialogs().showErrorDialog(e.getMessage(), e);
+          }
 
-          LOG.debug("Start incremental classification");
-          // add axioms for concepts
-            LOG.debug("  Add axioms for concepts " + allConceptNids.length);
-
-            // run classifier
-            LOG.debug("  Run classifier");
-
-            // handle output
-            LOG.debug("  Handle output");
-
-            LOG.debug("Finish incremental classification");
-
-          });
+        });
       }
     } catch (Exception e) {
       LOG.error("Unexpected error processing commit notification", e);

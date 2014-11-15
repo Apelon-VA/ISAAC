@@ -31,6 +31,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 /**
  * EditContentTaskModel
@@ -176,6 +177,18 @@ public class DualReviewAdjudicateContentTaskModel extends TaskModel {
 			return responseComboBox;
 		}
 
+		case out_submit_list: {
+			TextField outSubmitListTextField = new TextField();
+			
+			StringProperty outSubmitListText = getOutputVariableValueProperty(variableName);
+
+			outSubmitListText.bind(outSubmitListTextField.textProperty());
+			
+			// Initialize state of input control, triggering handlers/listeners
+			outSubmitListTextField.setText("");
+			
+			return outSubmitListTextField;
+		}
 		
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);
 		}

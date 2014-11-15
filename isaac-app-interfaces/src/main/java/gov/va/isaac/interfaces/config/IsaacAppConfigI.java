@@ -167,6 +167,14 @@ public interface IsaacAppConfigI {
   public String getExtensionNamespace();
 
   /**
+   * Module id.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getModuleId();
+
+  /**
    * The SVN or GIT URL that will be used to synchronize user profiles and
    * changesets for this bundle.
    * 

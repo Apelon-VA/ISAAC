@@ -12,6 +12,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.BorderPane;
@@ -134,6 +135,12 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 				refsetSpecModel.getRootNodeTypeComboBox().getItems().add(new Separator());
 			}
 			refsetSpecModel.getRootNodeTypeComboBox().getItems().addAll(relationshipAssertionNodeTypes);
+		}
+		
+		if (refsetSpecModel.getQueryNodeTreeView().getContextMenu() != null) {
+			refsetSpecModel.getQueryNodeTreeView().getContextMenu().getItems().clear();
+		} else {
+			refsetSpecModel.getQueryNodeTreeView().setContextMenu(new ContextMenu());
 		}
 		refsetSpecModel.addContextMenus(refsetSpecModel.getQueryNodeTreeView().getContextMenu(), refsetSpecModel.getQueryNodeTreeView());
 	}

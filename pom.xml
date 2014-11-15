@@ -52,8 +52,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.8-SNAPSHOT</otf-query.version>
-        <otf-versioning.version>1.1-va-1.8-SNAPSHOT</otf-versioning.version>
+        <otf-query.version>1.1-va-1.8</otf-query.version>
+        <otf-versioning.version>1.1-va-1.8</otf-versioning.version>
         <kie.version>6.0.1.Final</kie.version>  <!-- Workflow, drools, etc -->
     </properties>
     
@@ -357,8 +357,9 @@
         <module>concept-wizard-view</module>
         <module>isaac-constants</module>
         <module>isaac-drools</module>
-        <module>sync-git</module>
         <module>sync-view</module>
+        <module>sync-git</module>
+        <module>sync-svn</module>
     </modules>
 
     <reporting>

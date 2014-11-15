@@ -231,6 +231,17 @@
           </xs:annotation>
         </xs:element>
 
+        <xs:element name="moduleId" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:appinfo>
+              <jxb:property>
+                <jxb:javadoc>Module id.</jxb:javadoc>
+              </jxb:property>
+            </xs:appinfo>
+            <xs:documentation>Module id.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+
         <xs:element name="changeSetUrl" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>

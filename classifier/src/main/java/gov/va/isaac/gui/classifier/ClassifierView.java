@@ -42,6 +42,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.stage.Stage;
 
+import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public class ClassifierView extends GridPane {
   static final Logger LOG = LoggerFactory.getLogger(ClassifierView.class);
 
   /** The path name label. */
-  private final Label pathNameLabel = new Label();
+  private final Label rootName = new Label();
 
   /** The progress bar. */
   final javafx.scene.control.ProgressBar progressBar = new ProgressBar(0);
@@ -94,7 +95,7 @@ public class ClassifierView extends GridPane {
     this.setVgap(10);
     this.setPadding(new javafx.geometry.Insets(10, 10, 10, 10));
     GridPaneBuilder builder = new GridPaneBuilder(this);
-    builder.addRow("Path Name: ", pathNameLabel);
+    builder.addRow("Root Name: ", rootName);
     builder.addRow("Progress: ", progressBar);
     progressBar.setMinWidth(500);
     builder.addRow("Status: ", statusLabel);
@@ -121,22 +122,21 @@ public class ClassifierView extends GridPane {
 
   /**
    * Perform cycle check and classification.
-   *
-   * @param pathNid the path nid
+   * @throws Exception if anything goes wrong
    */
-  public void doClassify(int pathNid) {
+  public void doClassify() throws Exception {
 
     // Make sure in application thread.
     FxUtils.checkFxUserThread();
 
     // Update UI.
-    pathNameLabel.setText(WBUtility.getConPrefTerm(pathNid));
+    rootName.setText(WBUtility.getConPrefTerm(Taxonomies.SNOMED.getLenient().getNid()));
     
     // Create classifier
     classifier = new SnomedSnorocketClassifier();
     
     // Do work in background.
-    task = new ClassifyTask(pathNid);
+    task = new ClassifyTask();
 
     // Bind cursor to task state.
     ObjectBinding<Cursor> cursorBinding =
@@ -144,7 +144,7 @@ public class ClassifierView extends GridPane {
             .otherwise(Cursor.DEFAULT);
     this.getScene().cursorProperty().bind(cursorBinding);
 
-    taskThread = new Thread(task, "classify_" + pathNid);
+    taskThread = new Thread(task, "classify");
     taskThread.setDaemon(true);
     taskThread.start();
   }
@@ -195,11 +195,10 @@ public class ClassifierView extends GridPane {
    * Inner class to handle the export task.
    */
   class ClassifyTask extends Task<Boolean> {
-    private int pathNid;
 
     /** The export handler. */
-    ClassifyTask(int pathNid) {
-      this.pathNid = pathNid;
+    ClassifyTask() {
+      // do nothing
     }
 
     /*
@@ -228,7 +227,7 @@ public class ClassifierView extends GridPane {
       });
 
       // Perform classification
-      classifier.classify(pathNid);
+      classifier.classify(Taxonomies.SNOMED.getLenient().getNid());
 
       Platform.runLater(() -> {
         statusLabel.setText("Finished");

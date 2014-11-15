@@ -144,6 +144,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 					LOG.debug("componentsToAdd was null at POST_COMMIT - perhaps the listener was registered in the middle of a commit?");
 					return;
 				}
+				
 
 				Platform.runLater(() -> {
 					boolean showEm = componentsToAdd.size() <= 20;
@@ -203,12 +204,16 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 						componentsToWf.add(componentNid);
 					}
 				} catch (NullPointerException npe) {
-					// Retired Component... send up Concept to WF
-					int currentConNid = WBUtility.getComponentChronicle(componentNid).getConceptNid();
-					
-					
-					if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && currentConNid != 0) {
-						componentsToWf.add(currentConNid);
+					try {
+						// Retired Component... send up Concept to WF
+						int currentConNid = WBUtility.getComponentChronicle(componentNid).getConceptNid();
+						
+						
+						if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && currentConNid != 0) {
+							componentsToWf.add(currentConNid);
+						}
+					} catch (Exception ncnpe) {
+						// TODO: Handle Case of new Concept
 					}
 				}
 			} catch (DatastoreException e) {

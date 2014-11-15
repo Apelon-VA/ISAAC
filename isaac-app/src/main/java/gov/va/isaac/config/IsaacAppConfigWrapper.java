@@ -130,7 +130,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setApplicationTitle(read.getApplicationTitle());
 		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
 		setReleaseVersion(read.getReleaseVersion());
-		setExtensionNamespace(read.getExtensionNamespace());
+        setExtensionNamespace(read.getExtensionNamespace());
+        setModuleId(read.getModuleId());
 		setChangeSetUrl(read.getChangeSetUrl());
 		setChangeSetUrlType(read.getChangeSetUrlType());
 		setAppSchemaLocation(read.getAppSchemaLocation());

@@ -49,7 +49,7 @@ public class IsDescendantOfFilter extends NonSearchTypeFilter<IsDescendantOfFilt
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue.intValue() != 0) {
+				if (newValue != null && newValue.intValue() != 0) {
 					isValid.set(true);
 				} else {
 					isValid.set(false);
