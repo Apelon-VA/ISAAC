@@ -289,7 +289,7 @@
                     <preparationGoals>clean validate</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <!-- TODO disable this by default, only enable by option in maestrodev, otherwise, other branches of our code overwrite our gh-pages site -->
-                    <goals>deploy site site:stage scm-publish:publish-scm</goals>
+                    <goals>deploy</goals> <!-- Disabled ' site site:stage scm-publish:publish-scm' for the moment -->
                 </configuration>
             </plugin>
         </plugins>
