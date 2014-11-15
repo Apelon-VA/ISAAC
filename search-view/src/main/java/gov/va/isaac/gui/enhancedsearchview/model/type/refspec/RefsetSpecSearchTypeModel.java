@@ -482,7 +482,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 	protected boolean isValidSearch(String errorDialogTitle) {
 		if (queryNodeTreeView.getRoot() == null) {
 			String details = "No Root Node specified: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
+			LOG.info("Invalid search model (name=" + getName() + "). " + details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -491,7 +491,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 			return false;
 		} else if (!queryNodeTreeViewIsValidProperty.get()) {
 			String details = "Invalide Query specified.  May be missing required children?  See Red Nodes: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
+			LOG.info("Invalid search model (name=" + getName() + "). " + details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());

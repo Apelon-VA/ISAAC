@@ -271,6 +271,7 @@ public class SearchConceptHelper {
 				RefexDynamicData searchParameterData = new RefexDynamicString(filter.getSearchParameter());
 				filterRefexData[0] = searchParameterData;
 			} else {
+				//TODO and how exactly do we tell the user that their save just failed?
 				LOG.warn("Attempting to save SememeContentSearchTypeFilter with null search string parameter");
 			}
 			if (filter.getAssemblageConcept() != null) {

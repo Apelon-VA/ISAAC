@@ -15,7 +15,7 @@ public class SearchValidator {
 	static public boolean validateComponentSearchViewModel(SearchModel model, String errorDialogTitle) {
 		if (model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate() == null) {
 			String details = "View coordinate is null: " + model;
-			LOG.warn("Invalid search model (name=" + model.getSearchTypeSelector().getTypeSpecificModel().getName() + "). " + details);
+			LOG.info("Invalid search model (name=" + model.getSearchTypeSelector().getTypeSpecificModel().getName() + "). " + details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -26,7 +26,7 @@ public class SearchValidator {
 			TextSearchTypeModel typeModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
 			if (typeModel.getSearchType() == null) {
 				String details = "No SearchTypeFilter specified: " + model;
-				LOG.warn("Invalid search model (name=" + model.getSearchTypeSelector().getTypeSpecificModel().getName() + "). " + details);
+				LOG.info("Invalid search model (name=" + model.getSearchTypeSelector().getTypeSpecificModel().getName() + "). " + details);
 
 				if (errorDialogTitle != null) {
 					AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
@@ -35,7 +35,7 @@ public class SearchValidator {
 				return false;
 			} else if (typeModel.getInvalidFilters().size() > 0) {
 				String details = "Found " + typeModel.getInvalidFilters().size() + " invalid filter: " + Arrays.toString(typeModel.getFilters().toArray());
-				LOG.warn("Invalid filter in search model (name=" + typeModel.getName() + "). " + details);
+				LOG.info("Invalid filter in search model (name=" + typeModel.getName() + "). " + details);
 	
 				if (errorDialogTitle != null) {
 					AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());

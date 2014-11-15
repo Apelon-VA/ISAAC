@@ -26,6 +26,10 @@ public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	//protected static TableView<CompositeSearchResult> resultsTable;
+	
+	//TODO rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
+	//We obviously need a training session for some folks on what HK2 is good at.  
+	
 
 	protected static EnhancedSearchViewBottomPane bottomPane;
 	protected static SplitPane splitPane;
@@ -127,7 +131,7 @@ public abstract class SearchTypeModel {
 	public boolean validateSearchTypeModel(String errorDialogTitle) {
 		if (getViewCoordinate() == null) {
 			String details = "View coordinate is null: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
+			LOG.info("Invalid search model (name=" + getName() + "). " + details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
