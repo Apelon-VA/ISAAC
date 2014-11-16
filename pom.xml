@@ -33,17 +33,6 @@
         <tag>master</tag>
     </scm>
     <distributionManagement>
-        <!-- I don't normally define these here, but the -D overrides are being problematic on the CI server... -->
-        <repository>
-          <id>maestro-deploy</id>
-          <name>VA Public Releases Repository</name>
-          <url>http://va-archiva-host:8082/archiva/repository/va-releases/</url>
-        </repository>
-        <snapshotRepository>
-          <id>maestro-deploy</id>
-          <name>VA Public Snapshots Repository</name>
-          <url>http://va-archiva-host:8082/archiva/repository/va-snapshots/</url>
-        </snapshotRepository>
         <site>
             <id>site</id>
             <url>scm:git:git@github.com:Apelon-VA/ISAAC.git</url>
