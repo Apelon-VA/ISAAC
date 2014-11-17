@@ -51,8 +51,6 @@ public class EnhancedSearchViewController {
 	@FXML private BorderPane searchBorderPane;
 	@FXML private SplitPane searchAndTaxonomySplitPane;
 
-	private BorderPane taxonomyPanelBorderPane;
-
 	//@FXML private ListView<DisplayableFilter> searchFilterListView;
 	private EnhancedSearchViewTopPane topPane;
 	private EnhancedSearchViewBottomPane bottomPane;
@@ -99,10 +97,10 @@ public class EnhancedSearchViewController {
 		//this sort of stuff need to be a in  background thread, with an appropriate progress indicator
 
 		topPane.getSearchButton().setOnAction((action) -> {
-			if (SearchModel.getSearchRunning().get() && searchModel.getSsh() != null) {
-				searchModel.getSsh().cancel();
+			if (SearchModel.getSearchRunning().get() && SearchModel.getSsh() != null) {
+				SearchModel.getSsh().cancel();
 			} else {
-				searchModel.getSearchTypeSelector().getTypeSpecificModel().search( 
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().search( 
 						searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem(),
 						searchModel.getMaxResultsCustomTextField());
 			}
@@ -116,12 +114,11 @@ public class EnhancedSearchViewController {
 		});
 		
 		ResultsToTaxonomy.setSearchAndTaxonomySplitPane(searchAndTaxonomySplitPane);
-		ResultsToTaxonomy.setTaxonomyPanelBorderPane(taxonomyPanelBorderPane);
 
 		searchBorderPane.setTop(topPane.getTopPaneVBox());
 		searchBorderPane.setBottom(bottomPane.getBottomPaneHBox());
-		searchBorderPane.setCenter(searchModel.getSearchResultsTable().getResults());
-		searchModel.setPanes(bottomPane, searchAndTaxonomySplitPane, taxonomyPanelBorderPane);
+		searchBorderPane.setCenter(SearchModel.getSearchResultsTable().getResults());
+		searchModel.setPanes(bottomPane, searchAndTaxonomySplitPane, ResultsToTaxonomy.getTaxonomyPanelBorderPane());
 		
 		SearchModel.getSearchResultsTable().getResults().getItems().addListener(new ListChangeListener<CompositeSearchResult>() {
 			@Override
