@@ -49,7 +49,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {	
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
 			}
 		});
 
@@ -64,11 +64,11 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 						public void changed(
 								ObservableValue<? extends Boolean> observable,
 								Boolean oldValue, Boolean newValue) {
-							isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+							isSearchTypeRunnableProperty.set(isValidSearch());
 						}
 					});
 				}
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
 			}
 		});
 
@@ -78,7 +78,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				public void changed(
 						ObservableValue<? extends Boolean> observable,
 						Boolean oldValue, Boolean newValue) {
-					isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+					isSearchTypeRunnableProperty.set(isValidSearch());
 				}
 			});
 		}
@@ -88,7 +88,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			public void onChanged(
 					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
 
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
 
 				while (c.next()) {
 					if (c.wasPermutated()) {
@@ -108,7 +108,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 								public void changed(
 										ObservableValue<? extends Boolean> observable,
 										Boolean oldValue, Boolean newValue) {
-									isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+									isSearchTypeRunnableProperty.set(isValidSearch());
 								}
 							});
 						}
@@ -179,53 +179,19 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				+ ", filter=" + Arrays.toString(filters.toArray());
 	}
 
-
 	@Override
-	public  boolean isCriteriaPanelValid() {
-		return isValidSearch(null);
-	}
-
-	@Override
-	protected boolean isValidSearch(String errorDialogTitle) {
+	public String getValidationFailureMessage() {
 		if (getSearchType() == null) {
-			String details = "No SearchTypeFilter specified: " + this;
-			LOG.info("Invalid search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return "No SearchTypeFilter specified";
 		} else if (viewCoordinateProperty.get() == null) {
-			String details = "Invalid (null) ViewCoordinate set in search type model (name=" + getName() + ")";
-			LOG.info(details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return "Invalid (null) ViewCoordinate";
 		} else if (getInvalidFilters().size() > 0) {
-			String details = "Found " + getInvalidFilters().size() + " invalid filter: " + Arrays.toString(getFilters().toArray());
-			LOG.info("Invalid filter in search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return "Found " + getInvalidFilters().size() + " invalid filter(s): " + Arrays.toString(getFilters().toArray());
 		} else if (! getSearchType().isValid() && getValidFilters().size() == 0) {
-			String details = "No valid filters set search model (name=" + getName() + "): " + getSearchType();
-			LOG.info(details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return getSearchType() + " filter is unset/invalid and no other valid filters are set";
 		}
 
-		return true;
+		return null;
 	}
 
 	@Override

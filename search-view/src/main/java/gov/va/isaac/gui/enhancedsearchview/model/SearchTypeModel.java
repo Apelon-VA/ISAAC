@@ -24,18 +24,15 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
-	//protected static TableView<CompositeSearchResult> resultsTable;
 	
 	//TODO rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
 	//We obviously need a training session for some folks on what HK2 is good at.  
 	
-
 	protected static EnhancedSearchViewBottomPane bottomPane;
 	protected static SplitPane splitPane;
 	protected static BorderPane taxonomyPane;
 
-	protected final StringProperty name = new SimpleStringProperty();
+	protected final StringProperty name = new SimpleStringProperty(getClass().getName().replaceAll(".*\\.", ""));
 	protected final StringProperty description = new SimpleStringProperty();
 	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(WBUtility.getViewCoordinate());
 	protected final BooleanProperty isSearchTypeRunnableProperty = new SimpleBooleanProperty(false);
@@ -45,9 +42,27 @@ public abstract class SearchTypeModel {
 
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
-	abstract protected boolean isValidSearch(String errorDialogTitle);
 	abstract public void executeSearch(ResultsType resultsType, String modelMaxResults);
-	abstract protected boolean isCriteriaPanelValid();
+
+	abstract public String getValidationFailureMessage();
+	final protected boolean isValidSearch() {
+		return isValidSearch(null);
+	}
+	final protected boolean isValidSearch(String errorDialogTitle) {
+		String validationError = getValidationFailureMessage();
+		if (validationError == null) {
+			return true;
+		} else {
+			String details = "Invalid search type model (name=" + getName() + "). " + validationError;
+			LOG.info(details);
+
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		}
+	}
 	
 	protected SearchTypeModel() {
 		viewCoordinateProperty.set(WBUtility.getViewCoordinate());
@@ -57,10 +72,9 @@ public abstract class SearchTypeModel {
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isValidSearch());
 			}
 		});
-
 	}
 
 	public void copy(SearchTypeModel other) {
@@ -73,7 +87,7 @@ public abstract class SearchTypeModel {
 		
 		typeSpecificCopy(other);
 	}
-	
+
 	public BooleanProperty getSearchRunning() { return SearchModel.getSearchRunning(); }
 	
 	public String getName() {

@@ -79,7 +79,7 @@ public class SearchModel {
 	}
 	
 	public static boolean isSearchRunnable() {
-		return searchTypeSelector.getTypeSpecificModel().isCriteriaPanelValid() && searchTypeSelector.getTypeSpecificModel().isValidSearch(null);
+		return searchTypeSelector.getTypeSpecificModel().isValidSearch();
 	}
 	public static BooleanProperty isSearchRunnableProperty() {
 		return isSearchRunnable;

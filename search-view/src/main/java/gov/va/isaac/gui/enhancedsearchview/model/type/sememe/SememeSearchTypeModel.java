@@ -170,14 +170,14 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {	
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
 			}
 		});
 		searchText.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable,
 					String oldValue, String newValue) {
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
 			}
 		});
 		
@@ -185,9 +185,8 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				SearchModel model = new SearchModel();
-				if (model.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
-					model.isSearchRunnableProperty().set(newValue);
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
+					SearchModel.isSearchRunnableProperty().set(newValue);
 				}
 			}
 		});
@@ -470,23 +469,13 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 	}
 
 	@Override
-	public  boolean isCriteriaPanelValid() {
+	public String getValidationFailureMessage() {
 		if (viewCoordinateProperty.get() == null) {
-			return false;
-		}
-		
-		return true;
-	}
-
-	@Override
-	protected boolean isValidSearch(String errorDialogTitle) {
-		if ((searchText.getText().length() > 0) || searchText.getText().length() > 1)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
+			return "View Coordinate is unset";
+		} else if (searchText.getText().length() == 0) {
+			return "Text parameter is unset or too short";
+		} else {
+			return null;
 		}
 	}
 

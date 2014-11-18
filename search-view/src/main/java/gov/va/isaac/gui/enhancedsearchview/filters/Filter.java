@@ -28,6 +28,7 @@ import javafx.beans.property.BooleanProperty;
 
 public interface Filter<T extends Filter<T>> {
 	public BooleanProperty isValidProperty();
-	public default boolean isValid() { return isValidProperty().get(); }
+	public boolean isValid();
+	//public default boolean isValid() { return isValidProperty().get(); }
 	public void copy(T toCopy);
 }

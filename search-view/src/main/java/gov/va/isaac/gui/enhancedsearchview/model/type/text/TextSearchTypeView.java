@@ -225,8 +225,8 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 		componentSearchTypeComboBox.setOnAction((event) -> {
 			LOG.trace("searchModel.getResultsTypeComboBox() event (selected: " + searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem() + ")");
 
-			searchModel.getSearchResultsTable().getResults().getItems().clear();
-			searchModel.getSearchResultsTable().initializeSearchResultsTable(SearchType.TEXT, searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+			SearchModel.getSearchResultsTable().getResults().getItems().clear();
+			SearchModel.getSearchResultsTable().initializeSearchResultsTable(SearchType.TEXT, searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
 			previousSearchType = componentSearchTypeComboBox.getSelectionModel().getSelectedItem();
 		});
 
@@ -289,7 +289,6 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 		HBox.setMargin(row, new Insets(5, 5, 5, 5));
 		row.setUserData(filter);
 
-		// TODO: add binding to disable deletion of first filter in list containing other filter
 		Button removeFilterButton = new Button("Remove");
 		removeFilterButton.setMinWidth(55);
 		removeFilterButton.setPadding(new Insets(5.0));
