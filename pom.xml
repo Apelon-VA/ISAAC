@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.9-Release_01</version>
+    <version>1.0-Sprint_16-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -30,7 +30,7 @@
         <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
         <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>
         <url>https://github.com/Apelon-VA/ISAAC</url>
-        <tag>Release_01-1.9</tag>
+        <tag>release-prep</tag>
     </scm>
     <distributionManagement>
         <site>
