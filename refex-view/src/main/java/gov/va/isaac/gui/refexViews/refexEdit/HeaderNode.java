@@ -24,9 +24,12 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.util.Images;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -54,6 +57,7 @@ public class HeaderNode {
 	final Label label;
 	final Button filterConfigurationButton = new Button();
 	final TreeTableColumn<RefexDynamicGUI, ?> column;
+	private ObservableList<String> valuesToFilter;
 
 	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col) {
 		this(col, new Label(col.getText()));
@@ -74,11 +78,28 @@ public class HeaderNode {
 			}
 		});
 		
-		filterConfigurationButton.setOnAction(event -> { System.out.println("Clicked filterConfigurationButton"); });
+		filterConfigurationButton.setOnAction(event -> { getUserFilters(label.getText()); });
 
 		updateTextFillColor();
 	}
 	
+	private void getUserFilters(String text) {
+		List<String> testList = new ArrayList<String>();
+		testList.add("Jesse");
+		testList.add("Dan");
+		testList.add("Joel");
+		
+		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList);
+		prompt.showUserPrompt(AppContext.getMainApplicationWindow().getPrimaryStage(), "Select Filters");
+
+
+		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
+			valuesToFilter = prompt.getSelectedValues();
+		} else {		
+			valuesToFilter = null;
+		}
+	}
+
 	public ObservableList<Filter> getFilters() { return filters; }
 	public Label getLabel() { return label; }
 	public Button getButton() { return filterConfigurationButton; }
