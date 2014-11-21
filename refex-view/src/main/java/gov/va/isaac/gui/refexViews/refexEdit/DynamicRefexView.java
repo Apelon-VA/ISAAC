@@ -596,12 +596,9 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label("s");
+				Label l = new Label(); 
 				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
-
-				HeaderNode ttStatusColHeaderNode = new HeaderNode(ttStatusCol, l, rootNode_.getScene());
-				columnHeaderNodes_.add(ttStatusColHeaderNode);
-				ttStatusCol.setGraphic(ttStatusColHeaderNode.getNode());
+				ttStatusCol.setGraphic(l);
 				
 				ttStatusCol.setText(null);
 				ttStatusCol.setSortable(true);
@@ -623,6 +620,7 @@ public class DynamicRefexView implements RefexViewI
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
 					//ttCol.setText("Component");
 
+					l = new Label("Component");
 					HeaderNode ttComponentColHeaderNode = new HeaderNode(ttCol, l, rootNode_.getScene());
 					ttComponentColHeaderNode.getLabel().setText("Component");
 					columnHeaderNodes_.add(ttComponentColHeaderNode);
@@ -649,7 +647,8 @@ public class DynamicRefexView implements RefexViewI
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
 					//ttCol.setText("Assemblage");
-
+					
+					l = new Label("Assemblage");
 					HeaderNode ttAssemblageColHeaderNode = new HeaderNode(ttCol, l, rootNode_.getScene());
 					ttAssemblageColHeaderNode.getLabel().setText("Assemblage");
 					columnHeaderNodes_.add(ttAssemblageColHeaderNode);
@@ -674,12 +673,7 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, String> ttStringCol = new TreeTableColumn<>();
 				ttStringCol = new TreeTableColumn<>();
-				//ttStringCol.setText("Attached Data");
-				
-				HeaderNode ttAttachedDataColHeaderNode = new HeaderNode(ttStringCol, l, rootNode_.getScene());
-				ttAttachedDataColHeaderNode.getLabel().setText("Attached Data");
-				columnHeaderNodes_.add(ttAttachedDataColHeaderNode);
-				ttStringCol.setGraphic(ttAttachedDataColHeaderNode.getNode());
+				ttStringCol.setText("Attached Data");
 				
 				ttStringCol.setSortable(true);
 				ttStringCol.setResizable(true);
