@@ -33,11 +33,13 @@ import java.util.List;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 import com.sun.javafx.collections.ObservableListWrapper;
 
@@ -58,15 +60,17 @@ public class HeaderNode {
 	final Button filterConfigurationButton = new Button();
 	final TreeTableColumn<RefexDynamicGUI, ?> column;
 	private ObservableList<String> valuesToFilter;
+	private Scene scene;
 
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col) {
-		this(col, new Label(col.getText()));
+	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Scene scene) {
+		this(col, new Label(col.getText()), scene);
 	}
 
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label label) {
+	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label label, Scene scene) {
 		column = col;
+		this.scene = scene;
 		this.label = label;
-		filterConfigurationButton.setGraphic(Images.EXCLAMATION.createImageView());
+		filterConfigurationButton.setGraphic(Images.FILTER_16.createImageView());
 		
 		hbox.getChildren().addAll(label, filterConfigurationButton);
 
@@ -90,7 +94,7 @@ public class HeaderNode {
 		testList.add("Joel");
 		
 		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList);
-		prompt.showUserPrompt(AppContext.getMainApplicationWindow().getPrimaryStage(), "Select Filters");
+		prompt.showUserPrompt((Stage)scene.getWindow(), "Select Filters");
 
 
 		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {

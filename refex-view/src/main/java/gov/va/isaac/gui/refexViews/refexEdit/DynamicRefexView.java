@@ -6,7 +6,7 @@
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at 
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -27,6 +27,7 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +39,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -65,7 +68,9 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+
 import javax.inject.Named;
+
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
@@ -87,6 +92,7 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -110,11 +116,14 @@ public class DynamicRefexView implements RefexViewI
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_;
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
-	
+
 	private Text placeholderText = new Text("No Dynamic Sememes were found associated with the component");
 	private Button backgroundSearchCancelButton_;
 	private ProgressBar progressBar_;
 	private RefexAnnotationSearcher processor_;
+	
+	private Set<HeaderNode> columnHeaderNodes_ = new HashSet<>();
+	private Button clearColumnHeaderNodesButton_ = new Button("Clear Filters");
 	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
@@ -154,6 +163,13 @@ public class DynamicRefexView implements RefexViewI
 			
 			ToolBar t = new ToolBar();
 			
+			clearColumnHeaderNodesButton_.setOnAction(event -> {
+				for (HeaderNode headerNode : columnHeaderNodes_) {
+					headerNode.getFilters().clear();
+				}
+			});
+			t.getItems().add(clearColumnHeaderNodesButton_);
+			
 			currentRowSelected_ = new UpdateableBooleanBinding()
 			{
 				{
@@ -189,7 +205,7 @@ public class DynamicRefexView implements RefexViewI
 						}
 						catch (IOException e)
 						{
-							logger_.error("Unexpeted error!", e);
+							logger_.error("Unexpected error!", e);
 							return false;
 						}
 					}
@@ -580,9 +596,13 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label("s"); 
+				Label l = new Label("s");
 				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
-				ttStatusCol.setGraphic(l);
+
+				HeaderNode ttStatusColHeaderNode = new HeaderNode(ttStatusCol, l, rootNode_.getScene());
+				columnHeaderNodes_.add(ttStatusColHeaderNode);
+				ttStatusCol.setGraphic(ttStatusColHeaderNode.getNode());
+				
 				ttStatusCol.setText(null);
 				ttStatusCol.setSortable(true);
 				ttStatusCol.setResizable(true);
@@ -601,7 +621,13 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					ttCol.setText("Component");
+					//ttCol.setText("Component");
+
+					HeaderNode ttComponentColHeaderNode = new HeaderNode(ttCol, l, rootNode_.getScene());
+					ttComponentColHeaderNode.getLabel().setText("Component");
+					columnHeaderNodes_.add(ttComponentColHeaderNode);
+					ttCol.setGraphic(ttComponentColHeaderNode.getNode());
+
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
@@ -622,7 +648,13 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					ttCol.setText("Assemblage");
+					//ttCol.setText("Assemblage");
+
+					HeaderNode ttAssemblageColHeaderNode = new HeaderNode(ttCol, l, rootNode_.getScene());
+					ttAssemblageColHeaderNode.getLabel().setText("Assemblage");
+					columnHeaderNodes_.add(ttAssemblageColHeaderNode);
+					ttCol.setGraphic(ttAssemblageColHeaderNode.getNode());
+					
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
@@ -642,7 +674,13 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, String> ttStringCol = new TreeTableColumn<>();
 				ttStringCol = new TreeTableColumn<>();
-				ttStringCol.setText("Attached Data");
+				//ttStringCol.setText("Attached Data");
+				
+				HeaderNode ttAttachedDataColHeaderNode = new HeaderNode(ttStringCol, l, rootNode_.getScene());
+				ttAttachedDataColHeaderNode.getLabel().setText("Attached Data");
+				columnHeaderNodes_.add(ttAttachedDataColHeaderNode);
+				ttStringCol.setGraphic(ttAttachedDataColHeaderNode.getNode());
+				
 				ttStringCol.setSortable(true);
 				ttStringCol.setResizable(true);
 				//don't add yet - we might not need this column.  throw away later, if we don't need it
@@ -731,7 +769,11 @@ public class DynamicRefexView implements RefexViewI
 						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>();
 						l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
 						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
-						nestedCol.setGraphic(l);
+						
+						HeaderNode ttNestedColHeaderNode = new HeaderNode(nestedCol, l, rootNode_.getScene());
+						columnHeaderNodes_.add(ttNestedColHeaderNode);
+						nestedCol.setGraphic(ttNestedColHeaderNode.getNode());
+						
 						nestedCol.setSortable(true);
 						nestedCol.setResizable(true);
 						
@@ -754,14 +796,26 @@ public class DynamicRefexView implements RefexViewI
 				
 				//Create the STAMP columns
 				ttStringCol = new TreeTableColumn<>();
-				ttStringCol.setText("STAMP");
+				//ttStringCol.setText("STAMP");
+				
+				HeaderNode ttSTAMPColHeaderNode = new HeaderNode(ttStringCol, rootNode_.getScene());
+				ttSTAMPColHeaderNode.getLabel().setText("STAMP");
+				columnHeaderNodes_.add(ttSTAMPColHeaderNode);
+				ttStringCol.setGraphic(ttSTAMPColHeaderNode.getNode());
+				
 				ttStringCol.setSortable(true);
 				ttStringCol.setResizable(true);
 				stampColumn_ = ttStringCol;
 				treeColumns.add(ttStringCol);
 				
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Status");
+				//nestedCol.setText("Status");
+				
+				HeaderNode ttSTAMPStatusColHeaderNode = new HeaderNode(nestedCol, rootNode_.getScene());
+				ttSTAMPStatusColHeaderNode.getLabel().setText("Status");
+				columnHeaderNodes_.add(ttSTAMPStatusColHeaderNode);
+				nestedCol.setGraphic(ttSTAMPStatusColHeaderNode.getNode());
+				
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
@@ -772,7 +826,13 @@ public class DynamicRefexView implements RefexViewI
 				
 
 				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Time");
+				//nestedCol.setText("Time");
+				
+				HeaderNode ttSTAMPTimeColHeaderNode = new HeaderNode(nestedCol, rootNode_.getScene());
+				ttSTAMPTimeColHeaderNode.getLabel().setText("Time");
+				columnHeaderNodes_.add(ttSTAMPTimeColHeaderNode);
+				nestedCol.setGraphic(ttSTAMPTimeColHeaderNode.getNode());
+				
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
@@ -790,7 +850,13 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.getColumns().add(nestedCol);
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Author");
+				//nestedIntCol.setText("Author");
+				
+				HeaderNode ttSTAMPAuthorColHeaderNode = new HeaderNode(nestedIntCol, rootNode_.getScene());
+				ttSTAMPAuthorColHeaderNode.getLabel().setText("Author");
+				columnHeaderNodes_.add(ttSTAMPAuthorColHeaderNode);
+				nestedIntCol.setGraphic(ttSTAMPAuthorColHeaderNode.getNode());
+				
 				nestedIntCol.setSortable(true);
 				nestedIntCol.setResizable(true);
 				nestedIntCol.setCellFactory((colInfo) -> 
@@ -809,7 +875,13 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Module");
+				//nestedIntCol.setText("Module");
+				
+				HeaderNode ttSTAMPModuleColHeaderNode = new HeaderNode(nestedIntCol, rootNode_.getScene());
+				ttSTAMPModuleColHeaderNode.getLabel().setText("Module");
+				columnHeaderNodes_.add(ttSTAMPModuleColHeaderNode);
+				nestedIntCol.setGraphic(ttSTAMPModuleColHeaderNode.getNode());
+				
 				nestedIntCol.setSortable(true);
 				nestedIntCol.setResizable(true);
 				nestedIntCol.setVisible(false);
@@ -828,7 +900,13 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Path");
+				//nestedIntCol.setText("Path");
+				
+				HeaderNode ttSTAMPPathColHeaderNode = new HeaderNode(nestedIntCol, rootNode_.getScene());
+				ttSTAMPPathColHeaderNode.getLabel().setText("Path");
+				columnHeaderNodes_.add(ttSTAMPPathColHeaderNode);
+				nestedIntCol.setGraphic(ttSTAMPPathColHeaderNode.getNode());
+				
 				nestedIntCol.setSortable(true);
 				nestedIntCol.setResizable(true);
 				nestedIntCol.setVisible(false);
@@ -908,6 +986,13 @@ public class DynamicRefexView implements RefexViewI
 						else
 						{
 							String text = (col.getGraphic() != null && col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : col.getText());
+							if (text == null) {
+								for (HeaderNode headerNode : columnHeaderNodes_) {
+									if (headerNode.getNode() == col.getGraphic()) {
+										text = headerNode.getLabel().getText();
+									}
+								}
+							}
 							if (text.equalsIgnoreCase("Assemblage") || text.equalsIgnoreCase("Component"))
 							{
 								col.setPrefWidth(250);
