@@ -33,6 +33,7 @@ import java.util.List;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -55,7 +56,7 @@ public class HeaderNode {
 		// Mockup
 	}
 	final ObservableList<Filter> filters = new ObservableListWrapper<Filter>(new ArrayList<>());
-	final HBox hbox = new HBox();
+	final HBox hbox = new HBox(5);
 	final Label label;
 	final Button filterConfigurationButton = new Button();
 	final TreeTableColumn<RefexDynamicGUI, ?> column;
@@ -66,12 +67,17 @@ public class HeaderNode {
 		this(col, new Label(col.getText()), scene);
 	}
 
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label label, Scene scene) {
+	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label l, Scene scene) {
 		column = col;
 		this.scene = scene;
-		this.label = label;
-		filterConfigurationButton.setGraphic(Images.FILTER_16.createImageView());
+		label = l;
 		
+		if (label.getText().startsWith("info model property ")) {
+			label.setText(label.getText().replace("info model property ",""));
+		}
+		
+		filterConfigurationButton.setGraphic(Images.FILTER_16.createImageView()); 
+		hbox.setAlignment(Pos.CENTER);
 		hbox.getChildren().addAll(label, filterConfigurationButton);
 
 		filters.addListener(new ListChangeListener<Filter>() {
