@@ -30,7 +30,6 @@ import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.ToIntFunction;
 import javafx.concurrent.Task;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -56,17 +55,17 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 	private static Logger logger_ = LoggerFactory.getLogger(ComponentDataCell.class);
 	
 	private boolean isAssemblage_ = false;
-	private ToIntFunction<RefexDynamicVersionBI<?>> nidFetcher_;
+	private DynamicRefexColumnType type_;
 	
-	protected ComponentDataCell(boolean isAssemblage, ToIntFunction<RefexDynamicVersionBI<?>> nidFetcher)
+	protected ComponentDataCell(boolean isAssemblage, DynamicRefexColumnType type)
 	{
-		nidFetcher_ = nidFetcher;
+		type_ = type;
 		isAssemblage_ = isAssemblage;
 	}
 	
-	protected ComponentDataCell(ToIntFunction<RefexDynamicVersionBI<?>> nidFetcher)
+	protected ComponentDataCell(DynamicRefexColumnType type)
 	{
-		nidFetcher_ = nidFetcher;
+		type_ = type;
 		isAssemblage_ = false;
 	}
 
@@ -101,13 +100,14 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 			String text;
 			boolean setStyle = false;
 			ContextMenu cm = new ContextMenu();
-			int nid = nidFetcher_.applyAsInt(item.getRefex());
+			int nid = item.getNidFetcher(type_, null).applyAsInt(item.getRefex());
 			
 			@Override
 			protected Void call() throws Exception
 			{
 				try
 				{
+					text = item.getDisplayStrings(type_, null).getKey();
 					ConceptVersionBI c = WBUtility.getConceptVersion(nid);
 					if (c == null) 
 					{
@@ -117,8 +117,6 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 						if (cv instanceof DescriptionVersionBI<?>)
 						{
 							DescriptionVersionBI<?> dv = (DescriptionVersionBI<?>) cv;
-							text = "Description: " + dv.getText();
-							
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
 							
@@ -135,9 +133,6 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 						else if (cv instanceof RelationshipVersionBI<?>)
 						{
 							RelationshipVersionBI<?> rv = (RelationshipVersionBI<?>) cv;
-							text = "Relationship: " + WBUtility.getDescription(rv.getOriginNid()) + "->" 
-									+ WBUtility.getDescription(rv.getTypeNid()) + "->"
-									+ WBUtility.getDescription(rv.getDestinationNid());
 							
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
@@ -155,8 +150,6 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 						else if (cv instanceof RefexDynamicVersionBI<?>)
 						{
 							RefexDynamicVersionBI<?> rdv = (RefexDynamicVersionBI<?>) cv;
-							text = "Nested Sememe Dynamic: using assemblage " + WBUtility.getDescription(rdv.getAssemblageNid());
-							
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
 							
@@ -173,7 +166,6 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 						else if (cv instanceof RefexVersionBI<?>)
 						{
 							RefexVersionBI<?> rv = (RefexVersionBI<?>) cv;
-							text = "Nested Sememe: using assemblage " + WBUtility.getDescription(rv.getAssemblageNid());
 							
 							CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 							menuBuilder.setMenuItemsToExclude(CommonMenuItem.COPY_SCTID);
@@ -187,12 +179,6 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 									return Arrays.asList(new Integer[] {rv.getNid()});
 								}
 							});
-						}
-						else
-						{
-							logger_.warn("The component type " + cv + " is not handled yet!");
-							//Not sure what else there may be?  media - doesn't seem to be used... anything else?
-							text = cv.toUserString();
 						}
 					}
 					else
@@ -217,8 +203,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 							mi.setGraphic(Images.CONFIGURE.createImageView());
 							cm.getItems().add(mi);
 						}
-						
-						
+
 						CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
 						{
 							
@@ -228,7 +213,6 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 								return Arrays.asList(new Integer[] {item.getRefex().getNid()});
 							}
 						});
-						text = WBUtility.getDescription(c);
 						setStyle = true;
 					}
 				}

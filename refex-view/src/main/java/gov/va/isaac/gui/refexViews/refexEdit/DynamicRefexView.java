@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -580,12 +579,20 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label("s"); 
+				Label l = new Label(DynamicRefexColumnType.STATUS_CONDENSED.toString()); 
 				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
 				ttStatusCol.setGraphic(l);
 				ttStatusCol.setText(null);
 				ttStatusCol.setSortable(true);
 				ttStatusCol.setResizable(true);
+				ttStatusCol.setComparator(new Comparator<RefexDynamicGUI>()
+				{
+					@Override
+					public int compare(RefexDynamicGUI o1, RefexDynamicGUI o2)
+					{
+						return o1.compareTo(DynamicRefexColumnType.STATUS_CONDENSED, null, o2);
+					}
+				});
 				ttStatusCol.setCellFactory((colInfo) -> 
 				{
 					return new StatusCell();
@@ -600,50 +607,20 @@ public class DynamicRefexView implements RefexViewI
 				if (setFromType_.getComponentNid() == null)
 				{
 					//If the component is null, the assemblage is always the same - don't show.
-					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					ttCol.setText("Component");
-					ttCol.setSortable(true);
-					ttCol.setResizable(true);
-					ttCol.setCellFactory((colInfo) -> 
-					{
-						return new ComponentDataCell((refex) ->
-						{
-							return refex.getReferencedComponentNid();
-						});
-						
-					});
-					ttCol.setCellValueFactory((callback) ->
-					{
-						return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-					});
+					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
 					treeColumns.add(ttCol);
 				}
 				else
 				{
 					//if the assemblage is null, the component is always the same - don't show.
-					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					ttCol.setText("Assemblage");
-					ttCol.setSortable(true);
-					ttCol.setResizable(true);
-					ttCol.setCellFactory((colInfo) -> 
-					{
-						return new ComponentDataCell(true, (refex) ->
-						{
-							return refex.getAssemblageNid();
-						});
-						
-					});
-					ttCol.setCellValueFactory((callback) ->
-					{
-						return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-					});
+					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
 					treeColumns.add(ttCol);
 				}
 				
 				TreeTableColumn<RefexDynamicGUI, String> ttStringCol = new TreeTableColumn<>();
 				ttStringCol = new TreeTableColumn<>();
-				ttStringCol.setText("Attached Data");
-				ttStringCol.setSortable(true);
+				ttStringCol.setText(DynamicRefexColumnType.ATTACHED_DATA.toString());
+				ttStringCol.setSortable(false);
 				ttStringCol.setResizable(true);
 				//don't add yet - we might not need this column.  throw away later, if we don't need it
 				
@@ -734,6 +711,38 @@ public class DynamicRefexView implements RefexViewI
 						nestedCol.setGraphic(l);
 						nestedCol.setSortable(true);
 						nestedCol.setResizable(true);
+						final Integer listItem = i;
+						nestedCol.setComparator(new Comparator<RefexDynamicGUI>()
+						{
+							@Override
+							public int compare(RefexDynamicGUI o1, RefexDynamicGUI o2)
+							{
+								try
+								{
+									for (UUID uuid : col.keySet())
+									{
+										if (ExtendedAppContext.getDataStore().getNidForUuids(uuid) == o1.getRefex().getAssemblageNid())
+										{
+											List<RefexDynamicColumnInfo> colInfo =  col.get(uuid);
+											Integer refexColumnOrder = (colInfo.size() > listItem ? 
+													(o1.getRefex().getData().length <= colInfo.get(listItem).getColumnOrder() ? null 
+														: colInfo.get(listItem).getColumnOrder()): null);
+											
+											if (refexColumnOrder != null)
+											{
+												return o1.compareTo(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder, o2);
+											}
+										}
+									}
+								}
+								catch (Exception e)
+								{
+									logger_.error("Unexpected error sorting data columns", e);
+								}
+								return 1;  //not applicable / blank row
+								
+							}
+						});
 						
 						nestedCol.setCellFactory(new AttachedDataCellFactory(col, i));
 						
@@ -755,95 +764,41 @@ public class DynamicRefexView implements RefexViewI
 				//Create the STAMP columns
 				ttStringCol = new TreeTableColumn<>();
 				ttStringCol.setText("STAMP");
-				ttStringCol.setSortable(true);
+				ttStringCol.setSortable(false);
 				ttStringCol.setResizable(true);
 				stampColumn_ = ttStringCol;
 				treeColumns.add(ttStringCol);
 				
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Status");
+				nestedCol.setText(DynamicRefexColumnType.STATUS_STRING.toString());
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyStringWrapper(callback.getValue().getValue().getRefex().getStatus().toString());
+					return new ReadOnlyStringWrapper(callback.getValue().getValue().getDisplayStrings(DynamicRefexColumnType.STATUS_STRING, null).getKey());
 				});
 				ttStringCol.getColumns().add(nestedCol);
 				
 
 				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Time");
+				nestedCol.setText(DynamicRefexColumnType.TIME.toString());
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					long time = callback.getValue().getValue().getRefex().getTime();
-					if (time == Long.MAX_VALUE)
-					{
-						return new ReadOnlyStringWrapper("-Uncommitted-");
-					}
-					else
-					{
-						return new ReadOnlyStringWrapper(new Date(time).toString());
-					}
+					return new ReadOnlyStringWrapper(callback.getValue().getValue().getDisplayStrings(DynamicRefexColumnType.TIME, null).getKey());
 				});
 				ttStringCol.getColumns().add(nestedCol);
 				
-				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Author");
-				nestedIntCol.setSortable(true);
-				nestedIntCol.setResizable(true);
-				nestedIntCol.setCellFactory((colInfo) -> 
-				{
-					return new ComponentDataCell((refex) ->
-					{
-						return refex.getAuthorNid();
-					});
-					
-				});
-				nestedIntCol.setCellValueFactory((callback) ->
-				{
-					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-				});
-
+				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.AUTHOR); 
 				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Module");
-				nestedIntCol.setSortable(true);
-				nestedIntCol.setResizable(true);
+				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.MODULE); 
 				nestedIntCol.setVisible(false);
-				nestedIntCol.setCellFactory((colInfo) -> 
-				{
-					return new ComponentDataCell((refex) ->
-					{
-						return refex.getModuleNid();
-					});
-					
-				});
-				nestedIntCol.setCellValueFactory((callback) ->
-				{
-					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-				});
 				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Path");
-				nestedIntCol.setSortable(true);
-				nestedIntCol.setResizable(true);
+				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.PATH); 
 				nestedIntCol.setVisible(false);
-				nestedIntCol.setCellFactory((colInfo) -> 
-				{
-					return new ComponentDataCell((refex) ->
-					{
-						return refex.getPathNid();
-					});
-					
-				});
-				nestedIntCol.setCellValueFactory((callback) ->
-				{
-					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-				});
 				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
@@ -958,6 +913,26 @@ public class DynamicRefexView implements RefexViewI
 			}
 		});
 	}
+	
+	private TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> buildComponentCellColumn(DynamicRefexColumnType type)
+	{
+		TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttCol = new TreeTableColumn<>();
+		ttCol.setText(type.toString());
+		ttCol.setSortable(true);
+		ttCol.setResizable(true);
+		ttCol.setComparator(new Comparator<RefexDynamicGUI>()
+		{
+			@Override
+			public int compare(RefexDynamicGUI o1, RefexDynamicGUI o2)
+			{
+				return o1.compareTo(type, null, o2);
+			}
+		});
+		ttCol.setCellFactory((colInfo) -> {return new ComponentDataCell(type);});
+		ttCol.setCellValueFactory((callback) -> {return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());});
+		return ttCol;
+	}
+
 	
 	private ArrayList<TreeItem<RefexDynamicGUI>> getDataRows(ComponentChronicleBI<?> component, TreeItem<RefexDynamicGUI> nestUnder) 
 			throws IOException, ContradictionException
