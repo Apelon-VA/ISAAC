@@ -844,8 +844,12 @@ public class DynamicRefexView implements RefexViewI
 					{
 						for (TreeTableColumn<RefexDynamicGUI, ?> nCol : col.getColumns())
 						{
-							String text = (nCol.getGraphic() != null && nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() : nCol.getText());
-							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+							String text = (nCol.getGraphic() != null 
+									&& (nCol.getGraphic() instanceof Label || nCol.getGraphic() instanceof HBox) 
+										? (nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() 
+												: ((Label)((HBox)nCol.getGraphic()).getChildren().get(0)).getText()) 
+										: nCol.getText());
+							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 70);
 						}
 						
 						if (col.getColumns().size() > 0)
@@ -870,7 +874,7 @@ public class DynamicRefexView implements RefexViewI
 											temp += nCol.getWidth();
 										}
 									}
-									float parentColWidth = Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10;
+									float parentColWidth = Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 70;
 									if (temp < parentColWidth)
 									{
 										//bump the size of the first nested column, so the parent doesn't get clipped
@@ -883,7 +887,11 @@ public class DynamicRefexView implements RefexViewI
 						}
 						else
 						{
-							String text = (col.getGraphic() != null && col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : col.getText());
+							String text =  (col.getGraphic() != null 
+									&& (col.getGraphic() instanceof Label || col.getGraphic() instanceof HBox) 
+									? (col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() 
+											: ((Label)((HBox)col.getGraphic()).getChildren().get(0)).getText()) 
+									: col.getText());
 							if (text.equalsIgnoreCase(DynamicRefexColumnType.ASSEMBLAGE.toString()) 
 									|| text.equalsIgnoreCase(DynamicRefexColumnType.COMPONENT.toString()))
 							{
@@ -896,7 +904,7 @@ public class DynamicRefexView implements RefexViewI
 							}
 							else
 							{
-								col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+								col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 70);
 							}
 						}
 					}
