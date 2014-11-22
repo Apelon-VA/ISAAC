@@ -306,10 +306,14 @@ public class ColumnController implements PanelControllersI {
 					l.setAlignment(Pos.CENTER_LEFT);
 					l.setMinHeight(25.0);
 					defaultValueHolder.getChildren().add(l);
+				
+					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+					validatorType.setDisable(true);
 				}
 				else if (newValue == RefexDynamicDataType.UNKNOWN)
 				{
-					//noop
+					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+					validatorType.setDisable(true);
 				}
 				else
 				{
@@ -321,6 +325,7 @@ public class ColumnController implements PanelControllersI {
 					else
 					{
 						validatorType.setDisable(false);
+						updateValidationValues(newValue);
 					}
 					
 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, null, 
@@ -332,6 +337,7 @@ public class ColumnController implements PanelControllersI {
 			}
 		});
 		
+		validatorType.setDisable(true);
 		validatorType.setConverter(new StringConverter<RefexDynamicValidatorType>()
 		{
 			
@@ -388,6 +394,62 @@ public class ColumnController implements PanelControllersI {
 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
 	}
 	
+	
+	private void updateValidationValues(RefexDynamicDataType dType) {
+		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) {
+			if (type != RefexDynamicValidatorType.UNKNOWN) {
+				validatorType.getItems().remove(type);
+			}
+		}
+
+		/* 
+		 * Options from RefexDynamicValidatorType
+		 * 
+			LESS_THAN("<"), GREATER_THAN(">"), LESS_THAN_OR_EQUAL("<="), GREATER_THAN_OR_EQUAL(">="),  //Standard math stuff 
+			INTERVAL("Interval"), //math interval notation - such as [5,10)
+			REGEXP("Regular Expression"),  //http://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
+			EXTERNAL("External"), //see class docs above - implemented by an ExternalValidatorBI
+			IS_CHILD_OF("Is Child Of"), //OTF is child of - which only includes immediate (not recursive) children on the 'Is A' relationship. 
+			IS_KIND_OF("Is Kind Of"), //OTF kind of - which is child of - but recursive, and self (heart disease is a kind-of heart disease);
+			UNKNOWN("Unknown");  //Not a real validator, only exists to allow GUI convenience, or potentially store other validator data that we don't support in OTF
+		 *
+		 *
+		 * Options from RefexDynamicDataType
+		 * 
+		 	NID(101, RefexDynamicNidBI.class, "Component Nid"), 				--> Component
+			STRING(102, RefexDynamicStringBI.class, "String"),  				--> RegExp
+			INTEGER(103, RefexDynamicIntegerBI.class, "Integer"), 				--> Math
+			BOOLEAN(104, RefexDynamicBooleanBI.class, "Boolean"), 				--> Unique
+			LONG(105, RefexDynamicLongBI.class, "Long"), 						--> Math
+			BYTEARRAY(106, RefexDynamicByteArrayBI.class, "Arbitrary Data"), 	--> Unique
+			FLOAT(107, RefexDynamicFloatBI.class, "Float"), 					--> Math
+			DOUBLE(108, RefexDynamicDoubleBI.class, "Double"), 					--> Math
+			UUID(109, RefexDynamicUUIDBI.class, "UUID"),						--> Component
+			POLYMORPHIC(110, RefexDynamicPolymorphicBI.class, "Unspecified"),	--> Unique
+			UNKNOWN(Byte.MAX_VALUE, null, "Unknown");							--> Unique
+
+		 */
+		
+		if (dType == RefexDynamicDataType.NID || dType == RefexDynamicDataType.UUID) {
+			validatorType.getItems().add(RefexDynamicValidatorType.IS_CHILD_OF);
+			validatorType.getItems().add(RefexDynamicValidatorType.IS_KIND_OF);
+			
+		} else if (dType == RefexDynamicDataType.STRING) {
+			validatorType.getItems().add(RefexDynamicValidatorType.REGEXP);
+		} else if (dType == RefexDynamicDataType.INTEGER ||
+				   dType == RefexDynamicDataType.LONG ||
+				   dType == RefexDynamicDataType.FLOAT ||
+				   dType == RefexDynamicDataType.DOUBLE) {
+			validatorType.getItems().add(RefexDynamicValidatorType.INTERVAL);
+			validatorType.getItems().add(RefexDynamicValidatorType.LESS_THAN);
+			validatorType.getItems().add(RefexDynamicValidatorType.LESS_THAN_OR_EQUAL);
+			validatorType.getItems().add(RefexDynamicValidatorType.GREATER_THAN_OR_EQUAL);
+		}
+		
+		validatorType.getItems().add(RefexDynamicValidatorType.EXTERNAL);
+		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+	}
+
 	private void initializeTypeConcepts() {
 		for (RefexDynamicDataType type : RefexDynamicDataType.values()) {
 			typeOption.getItems().add(type);

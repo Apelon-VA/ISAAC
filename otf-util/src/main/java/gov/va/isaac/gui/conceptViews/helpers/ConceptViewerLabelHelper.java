@@ -23,12 +23,12 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.enhanced.PreferredAcceptabilityPrompt;
 import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt;
-import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt.RetireConceptResponse;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.DescriptionModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.RelationshipModelingPopup;
+import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
@@ -281,9 +281,11 @@ public class ConceptViewerLabelHelper {
 						if (!WBUtility.getAllChildrenOfConcept(con, false).isEmpty()) {
 							AppContext.getCommonDialogs().showInformationDialog("Retire Concept Failure", "Cannot retire concept until it has no children");
 						} else {
-							RetireConceptPrompt.retireConcept((Stage)pane.getScene().getWindow(), "Retire Concept: " + WBUtility.getConPrefTerm(comp.getNid()));
+							RetireConceptPrompt prompt = new RetireConceptPrompt();
 							
-							if (RetireConceptPrompt.getButtonSelected() == RetireConceptResponse.COMMIT) {
+							prompt.showUserPrompt((Stage)pane.getScene().getWindow(), "Retire Concept: " + WBUtility.getConPrefTerm(comp.getNid()));
+							
+							if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 								// Retire Stated Parent Rels
 								Collection<? extends RelationshipVersionBI<?>> rels = con.getRelationshipsOutgoingActiveIsa();
 								for (RelationshipVersionBI<?> r : rels) {
@@ -293,7 +295,7 @@ public class ConceptViewerLabelHelper {
 								}
 								
 								// Add new Rel
-								int retirementConceptNid = RetireConceptPrompt.getRetirementConceptNid();
+								int retirementConceptNid = prompt.getRetirementConceptNid();
 								WBUtility.createNewParent(conceptNid, retirementConceptNid);
 
 								// Retire Con

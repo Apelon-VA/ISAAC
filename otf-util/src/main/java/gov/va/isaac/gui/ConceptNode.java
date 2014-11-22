@@ -227,8 +227,6 @@ public class ConceptNode implements ConceptLookupCallback
 				if (newValue == null)
 				{
 					logger.debug("Combo Value Changed - null entry");
-					c_ = null;
-					return;
 				}
 				else
 				{
@@ -240,19 +238,29 @@ public class ConceptNode implements ConceptLookupCallback
 					logger.debug("change listener disabled");
 					return;
 				}
-				if (newValue.shouldIgnoreChange())
+				
+				if (newValue == null)
 				{
-					logger.debug("One time change ignore");
+					//TODO - resolve if / when this happens - and what should we do about it?
+					logger.warn("Unexpected case!");
 					return;
 				}
-				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
-				if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
+				else
 				{
-					logger.debug("Not a real change, ignore");
-					newValue.setNid(oldValue.getNid());
-					return;
+					if (newValue.shouldIgnoreChange())
+					{
+						logger.debug("One time change ignore");
+						return;
+					}
+					//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
+					if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
+					{
+						logger.debug("Not a real change, ignore");
+						newValue.setNid(oldValue.getNid());
+						return;
+					}
+					lookup();
 				}
-				lookup();
 			}
 		});
 

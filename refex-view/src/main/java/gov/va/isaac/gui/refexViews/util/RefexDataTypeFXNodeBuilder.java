@@ -511,6 +511,8 @@ public class RefexDataTypeFXNodeBuilder
 			
 			cn.getConceptProperty().addListener((change) ->
 			{
+				//TODO  - this is broken, and doesn't properly set the state of valueIsRequired when the concept has been set.
+				//https://csfe.aceworkspace.net/sf/go/artf231354
 				if (cn.getConceptProperty().getValue() == null && valueIsRequired != null && defaultValue == null)
 				{
 					valueIsRequired.set("You must specify a value for this field");

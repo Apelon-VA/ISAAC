@@ -6,7 +6,7 @@
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at 
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -27,6 +27,7 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +38,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -64,7 +67,9 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+
 import javax.inject.Named;
+
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
@@ -86,6 +91,7 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -109,11 +115,14 @@ public class DynamicRefexView implements RefexViewI
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_;
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
-	
+
 	private Text placeholderText = new Text("No Dynamic Sememes were found associated with the component");
 	private Button backgroundSearchCancelButton_;
 	private ProgressBar progressBar_;
 	private RefexAnnotationSearcher processor_;
+	
+	private Set<HeaderNode> columnHeaderNodes_ = new HashSet<>();
+	private Button clearColumnHeaderNodesButton_ = new Button("Clear Filters");
 	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
@@ -153,6 +162,13 @@ public class DynamicRefexView implements RefexViewI
 			
 			ToolBar t = new ToolBar();
 			
+			clearColumnHeaderNodesButton_.setOnAction(event -> {
+				for (HeaderNode headerNode : columnHeaderNodes_) {
+					headerNode.getFilters().clear();
+				}
+			});
+			t.getItems().add(clearColumnHeaderNodesButton_);
+			
 			currentRowSelected_ = new UpdateableBooleanBinding()
 			{
 				{
@@ -188,7 +204,7 @@ public class DynamicRefexView implements RefexViewI
 						}
 						catch (IOException e)
 						{
-							logger_.error("Unexpeted error!", e);
+							logger_.error("Unexpected error!", e);
 							return false;
 						}
 					}
@@ -582,6 +598,7 @@ public class DynamicRefexView implements RefexViewI
 				Label l = new Label(DynamicRefexColumnType.STATUS_CONDENSED.toString()); 
 				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
 				ttStatusCol.setGraphic(l);
+				ttStatusCol.setText(l.getText());
 				ttStatusCol.setText(null);
 				ttStatusCol.setSortable(true);
 				ttStatusCol.setResizable(true);
@@ -708,7 +725,11 @@ public class DynamicRefexView implements RefexViewI
 						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>();
 						l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
 						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
-						nestedCol.setGraphic(l);
+						
+						HeaderNode ttNestedColHeaderNode = new HeaderNode(nestedCol, l, rootNode_.getScene());
+						columnHeaderNodes_.add(ttNestedColHeaderNode);
+						nestedCol.setGraphic(ttNestedColHeaderNode.getNode());
+						
 						nestedCol.setSortable(true);
 						nestedCol.setResizable(true);
 						final Integer listItem = i;
@@ -863,7 +884,8 @@ public class DynamicRefexView implements RefexViewI
 						else
 						{
 							String text = (col.getGraphic() != null && col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : col.getText());
-							if (text.equalsIgnoreCase("Assemblage") || text.equalsIgnoreCase("Component"))
+							if (text.equalsIgnoreCase(DynamicRefexColumnType.ASSEMBLAGE.toString()) 
+									|| text.equalsIgnoreCase(DynamicRefexColumnType.COMPONENT.toString()))
 							{
 								col.setPrefWidth(250);
 							}

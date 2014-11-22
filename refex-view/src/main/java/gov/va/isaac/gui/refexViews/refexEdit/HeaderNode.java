@@ -24,17 +24,23 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.util.Images;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 import com.sun.javafx.collections.ObservableListWrapper;
 
@@ -50,20 +56,28 @@ public class HeaderNode {
 		// Mockup
 	}
 	final ObservableList<Filter> filters = new ObservableListWrapper<Filter>(new ArrayList<>());
-	final HBox hbox = new HBox();
+	final HBox hbox = new HBox(5);
 	final Label label;
 	final Button filterConfigurationButton = new Button();
 	final TreeTableColumn<RefexDynamicGUI, ?> column;
+	private ObservableList<String> valuesToFilter;
+	private Scene scene;
 
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col) {
-		this(col, new Label(col.getText()));
+	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Scene scene) {
+		this(col, new Label(col.getText()), scene);
 	}
 
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label label) {
+	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label l, Scene scene) {
 		column = col;
-		this.label = label;
-		filterConfigurationButton.setGraphic(Images.EXCLAMATION.createImageView());
+		this.scene = scene;
+		label = l;
 		
+		if (label.getText().startsWith("info model property ")) {
+			label.setText(label.getText().replace("info model property ",""));
+		}
+		
+		filterConfigurationButton.setGraphic(Images.FILTER_16.createImageView()); 
+		hbox.setAlignment(Pos.CENTER);
 		hbox.getChildren().addAll(label, filterConfigurationButton);
 
 		filters.addListener(new ListChangeListener<Filter>() {
@@ -74,11 +88,28 @@ public class HeaderNode {
 			}
 		});
 		
-		filterConfigurationButton.setOnAction(event -> { System.out.println("Clicked filterConfigurationButton"); });
+		filterConfigurationButton.setOnAction(event -> { getUserFilters(label.getText()); });
 
 		updateTextFillColor();
 	}
 	
+	private void getUserFilters(String text) {
+		List<String> testList = new ArrayList<String>();
+		testList.add("Jesse");
+		testList.add("Dan");
+		testList.add("Joel");
+		
+		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList);
+		prompt.showUserPrompt((Stage)scene.getWindow(), "Select Filters");
+
+
+		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
+			valuesToFilter = prompt.getSelectedValues();
+		} else {		
+			valuesToFilter = null;
+		}
+	}
+
 	public ObservableList<Filter> getFilters() { return filters; }
 	public Label getLabel() { return label; }
 	public Button getButton() { return filterConfigurationButton; }

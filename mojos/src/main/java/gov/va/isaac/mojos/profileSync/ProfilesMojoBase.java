@@ -56,6 +56,7 @@ public abstract class ProfilesMojoBase extends AbstractMojo
 	
 	// For preventing command line prompts for credentials during automated runs - set this system property to true.
 	public static final String PROFILE_SYNC_NO_PROMPTS = "profileSyncNoPrompt";
+	//TODO autodetect running on maestrodev (have code elsewhere that does this)
 	
 	// Allow setting the username via a system property
 	public static final String PROFILE_SYNC_USERNAME_PROPERTY = "profileSyncUsername";
