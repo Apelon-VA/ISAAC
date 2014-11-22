@@ -596,9 +596,10 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label(); 
+				Label l = new Label("s");
 				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
 				ttStatusCol.setGraphic(l);
+				ttStatusCol.setText(l.getText());
 				
 				ttStatusCol.setText(null);
 				ttStatusCol.setSortable(true);
@@ -618,14 +619,14 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					//ttCol.setText("Component");
 
 					l = new Label("Component");
 					HeaderNode ttComponentColHeaderNode = new HeaderNode(ttCol, l, rootNode_.getScene());
-					ttComponentColHeaderNode.getLabel().setText("Component");
+					//ttComponentColHeaderNode.getLabel().setText("Component");
 					columnHeaderNodes_.add(ttComponentColHeaderNode);
 					ttCol.setGraphic(ttComponentColHeaderNode.getNode());
 
+					//ttCol.setText(l.getText());
 					ttCol.setSortable(true);
 					ttCol.setResizable(true);
 					ttCol.setCellFactory((colInfo) -> 
