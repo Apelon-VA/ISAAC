@@ -182,6 +182,10 @@ public class WBUtility {
 	
 	public static String getDescription(int nid) {
 		try {
+			if (!dataStore.hasConcept(nid))
+			{
+				return null;
+			}
 			ConceptVersionBI conceptVersion = dataStore.getConceptVersion(getViewCoordinate(), nid);
 			return getDescription(conceptVersion);
 		} catch (Exception ex) {
