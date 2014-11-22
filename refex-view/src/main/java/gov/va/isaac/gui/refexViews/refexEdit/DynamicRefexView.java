@@ -164,7 +164,7 @@ public class DynamicRefexView implements RefexViewI
 			
 			clearColumnHeaderNodesButton_.setOnAction(event -> {
 				for (HeaderNode headerNode : columnHeaderNodes_) {
-					headerNode.getFilters().clear();
+					headerNode.getUserFilters().clear();
 				}
 			});
 			t.getItems().add(clearColumnHeaderNodesButton_);
@@ -591,15 +591,15 @@ public class DynamicRefexView implements RefexViewI
 			try
 			{
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
-				
-				
-				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
+
+				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>(DynamicRefexColumnType.STATUS_CONDENSED.toString());
 				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label(DynamicRefexColumnType.STATUS_CONDENSED.toString()); 
-				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
-				ttStatusCol.setGraphic(l);
-				ttStatusCol.setText(l.getText());
-				ttStatusCol.setText(null);
+				//Label l = new Label(DynamicRefexColumnType.STATUS_CONDENSED.toString()); 
+				
+				HeaderNode ttStatusColHeaderNode = new HeaderNode(ttStatusCol, rootNode_.getScene());
+				this.columnHeaderNodes_.add(ttStatusColHeaderNode);
+				//tooltipsToInstall.put(ttStatusColHeaderNode.getLabel(), "Status Markers - for active / inactive and current / historical and uncommitted");
+				ttStatusCol.setGraphic(ttStatusColHeaderNode.getNode());
 				ttStatusCol.setSortable(true);
 				ttStatusCol.setResizable(true);
 				ttStatusCol.setComparator(new Comparator<RefexDynamicGUI>()
@@ -625,12 +625,20 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
+					HeaderNode headerNode = new HeaderNode(ttCol, rootNode_.getScene());
+					this.columnHeaderNodes_.add(headerNode);
+					ttCol.setGraphic(headerNode.getNode());
+					
 					treeColumns.add(ttCol);
 				}
 				else
 				{
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
+					HeaderNode headerNode = new HeaderNode(ttCol, rootNode_.getScene());
+					this.columnHeaderNodes_.add(headerNode);
+					ttCol.setGraphic(headerNode.getNode());
+
 					treeColumns.add(ttCol);
 				}
 				
@@ -722,11 +730,12 @@ public class DynamicRefexView implements RefexViewI
 					
 					for (int i = 0; i < max; i++)
 					{
-						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>();
-						l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
-						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
+						final String name = col.values().iterator().next().get(0).getColumnName(); //all the same, just pick the first
+						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>(name);
+						//Label l = new Label(name);
+						//tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
 						
-						HeaderNode ttNestedColHeaderNode = new HeaderNode(nestedCol, l, rootNode_.getScene());
+						HeaderNode ttNestedColHeaderNode = new HeaderNode(nestedCol, rootNode_.getScene());
 						columnHeaderNodes_.add(ttNestedColHeaderNode);
 						nestedCol.setGraphic(ttNestedColHeaderNode.getNode());
 						
@@ -887,11 +896,14 @@ public class DynamicRefexView implements RefexViewI
 						}
 						else
 						{
-							String text =  (col.getGraphic() != null 
-									&& (col.getGraphic() instanceof Label || col.getGraphic() instanceof HBox) 
-									? (col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() 
-											: ((Label)((HBox)col.getGraphic()).getChildren().get(0)).getText()) 
-									: col.getText());
+							String text = col.getText();
+							
+							if (text == null) {
+								text = (col.getGraphic() != null && (col.getGraphic() instanceof Label || col.getGraphic() instanceof HBox)
+										? (col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : ((Label)((HBox)col.getGraphic()).getChildren().get(0)).getText()) 
+										: col.getText());
+							}
+							
 							if (text.equalsIgnoreCase(DynamicRefexColumnType.ASSEMBLAGE.toString()) 
 									|| text.equalsIgnoreCase(DynamicRefexColumnType.COMPONENT.toString()))
 							{
@@ -946,8 +958,7 @@ public class DynamicRefexView implements RefexViewI
 	
 	private TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> buildComponentCellColumn(DynamicRefexColumnType type)
 	{
-		TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttCol = new TreeTableColumn<>();
-		ttCol.setText(type.toString());
+		TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttCol = new TreeTableColumn<>(type.toString());
 		ttCol.setSortable(true);
 		ttCol.setResizable(true);
 		ttCol.setComparator(new Comparator<RefexDynamicGUI>()

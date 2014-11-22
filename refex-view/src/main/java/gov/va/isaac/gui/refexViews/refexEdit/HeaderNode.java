@@ -24,7 +24,6 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.util.Images;
 
@@ -33,13 +32,11 @@ import java.util.List;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 import com.sun.javafx.collections.ObservableListWrapper;
@@ -55,45 +52,43 @@ public class HeaderNode {
 	public interface Filter {
 		// Mockup
 	}
-	final ObservableList<Filter> filters = new ObservableListWrapper<Filter>(new ArrayList<>());
-	final HBox hbox = new HBox(5);
-	final Label label;
-	final Button filterConfigurationButton = new Button();
-	final TreeTableColumn<RefexDynamicGUI, ?> column;
-	private ObservableList<String> valuesToFilter;
+	private final ToggleButton filterConfigurationButton = new ToggleButton();
+	private final TreeTableColumn<RefexDynamicGUI, ?> column;
+	private final ObservableList<String> valuesToFilter = new ObservableListWrapper<String>(new ArrayList<>());
 	private Scene scene;
+	
+	private final ImageView image = Images.FILTER_16.createImageView();
 
 	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Scene scene) {
-		this(col, new Label(col.getText()), scene);
-	}
-
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Label l, Scene scene) {
 		column = col;
 		this.scene = scene;
-		label = l;
-		
-		if (label.getText().startsWith("info model property ")) {
-			label.setText(label.getText().replace("info model property ",""));
-		}
-		
-		filterConfigurationButton.setGraphic(Images.FILTER_16.createImageView()); 
-		hbox.setAlignment(Pos.CENTER);
-		hbox.getChildren().addAll(label, filterConfigurationButton);
 
-		filters.addListener(new ListChangeListener<Filter>() {
+		image.setFitHeight(8);
+		image.setFitWidth(8);
+
+//		if (label.getText().startsWith("info model property ")) {
+//			label.setText(label.getText().replace("info model property ",""));
+//		}
+		
+		filterConfigurationButton.setGraphic(image); 
+
+		valuesToFilter.addListener(new ListChangeListener<String>() {
 			@Override
 			public void onChanged(
-					javafx.collections.ListChangeListener.Change<? extends Filter> c) {
-				updateTextFillColor();
+					javafx.collections.ListChangeListener.Change<? extends String> c) {
+				updateButton();
 			}
 		});
+		updateButton();
 		
-		filterConfigurationButton.setOnAction(event -> { getUserFilters(label.getText()); });
-
-		updateTextFillColor();
+		filterConfigurationButton.setOnAction(event -> { setUserFilters(column.getText()); });
 	}
 	
-	private void getUserFilters(String text) {
+	private void updateButton() {
+		filterConfigurationButton.selectedProperty().set(valuesToFilter.size() > 0);
+	}
+	
+	private void setUserFilters(String text) {
 		List<String> testList = new ArrayList<String>();
 		testList.add("Jesse");
 		testList.add("Dan");
@@ -102,28 +97,26 @@ public class HeaderNode {
 		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList);
 		prompt.showUserPrompt((Stage)scene.getWindow(), "Select Filters");
 
-
 		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
-			valuesToFilter = prompt.getSelectedValues();
+			valuesToFilter.setAll(prompt.getSelectedValues());
 		} else {		
-			valuesToFilter = null;
+			valuesToFilter.clear();
 		}
 	}
 
-	public ObservableList<Filter> getFilters() { return filters; }
-	public Label getLabel() { return label; }
-	public Button getButton() { return filterConfigurationButton; }
+	public ToggleButton getButton() { return filterConfigurationButton; }
 	public TreeTableColumn<RefexDynamicGUI, ?> getColumn() { return column; }
+	public ObservableList<String> getUserFilters() { return valuesToFilter; }
+
+	public Node getNode() { return filterConfigurationButton; }
 	
-	public javafx.scene.Node getNode() { return hbox; }
-	
-	private void updateTextFillColor() {
-		Color color = Color.BLACK;
-		if (filters.size() == 0) {
-			color = Color.BLACK;
-		} else {
-			color = Color.RED;
-		}
-		label.setTextFill(color);
-	}
+//	private void updateTextFillColor() {
+//		Color color = Color.BLACK;
+//		if (valuesToFilter.size() == 0) {
+//			color = Color.BLACK;
+//		} else {
+//			color = Color.RED;
+//		}
+//		filterConfigurationButton.setTextFill(color);
+//	}
 }
