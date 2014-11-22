@@ -54,19 +54,11 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 {
 	private static Logger logger_ = LoggerFactory.getLogger(ComponentDataCell.class);
 	
-	private boolean isAssemblage_ = false;
 	private DynamicRefexColumnType type_;
-	
-	protected ComponentDataCell(boolean isAssemblage, DynamicRefexColumnType type)
-	{
-		type_ = type;
-		isAssemblage_ = isAssemblage;
-	}
 	
 	protected ComponentDataCell(DynamicRefexColumnType type)
 	{
 		type_ = type;
-		isAssemblage_ = false;
 	}
 
 	/**
@@ -183,7 +175,7 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 					}
 					else
 					{
-						if (isAssemblage_)
+						if (DynamicRefexColumnType.ASSEMBLAGE == type_)
 						{
 							MenuItem mi = new MenuItem("View Sememe Assemblage Usage");
 							mi.setOnAction((action) ->
@@ -206,11 +198,10 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 
 						CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
 						{
-							
 							@Override
 							public Collection<Integer> getNIds()
 							{
-								return Arrays.asList(new Integer[] {item.getRefex().getNid()});
+								return Arrays.asList(new Integer[] {item.getNidFetcher(type_, null).applyAsInt(item.getRefex())});
 							}
 						});
 						setStyle = true;
