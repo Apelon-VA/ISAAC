@@ -62,7 +62,6 @@ public class HeaderNode {
 	private final Scene scene;
 	private final StringProvider stringProvider;
 	
-	
 	private final ImageView image = Images.FILTER_16.createImageView();
 
 	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Scene scene, StringProvider stringProvider) {
@@ -88,6 +87,16 @@ public class HeaderNode {
 		updateButton();
 		
 		filterConfigurationButton.setOnAction(event -> { setUserFilters(column.getText()); });
+	}
+	
+	public boolean filter(RefexDynamicGUI dataToFilter) {
+		for (String valueToFilter : valuesToFilter) {
+			if (stringProvider.getString(dataToFilter).equals(valueToFilter)) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	private void updateButton() {

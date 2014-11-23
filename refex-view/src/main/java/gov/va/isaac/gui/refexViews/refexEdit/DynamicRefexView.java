@@ -48,6 +48,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -590,6 +591,8 @@ public class DynamicRefexView implements RefexViewI
 		Utility.execute(() -> {
 			try
 			{
+				columnHeaderNodes_.clear();
+				
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
 
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>(DynamicRefexColumnType.STATUS_CONDENSED.toString());
@@ -602,7 +605,7 @@ public class DynamicRefexView implements RefexViewI
 						return source.getDisplayStrings(DynamicRefexColumnType.STATUS_CONDENSED, null).getKey();
 					}
 				});
-				this.columnHeaderNodes_.add(ttStatusColHeaderNode);
+				columnHeaderNodes_.add(ttStatusColHeaderNode);
 				//tooltipsToInstall.put(ttStatusColHeaderNode.getLabel(), "Status Markers - for active / inactive and current / historical and uncommitted");
 				ttStatusCol.setGraphic(ttStatusColHeaderNode.getNode());
 				ttStatusCol.setSortable(true);
@@ -996,6 +999,25 @@ public class DynamicRefexView implements RefexViewI
 					ttv_.setPlaceholder(placeholderText);
 					ttv_.getSelectionModel().clearAndSelect(0);
 				});
+				
+				// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
+				for (HeaderNode headerNode : columnHeaderNodes_) {
+					headerNode.getUserFilters().addListener(new ListChangeListener<String>() {
+						@Override
+						public void onChanged(
+								javafx.collections.ListChangeListener.Change<? extends String> c) {
+							while (c.next()) {
+								if (c.wasPermutated()) {
+									// irrelevant
+								} else if (c.wasUpdated()) {
+									// irrelevant
+								} else {
+									refresh();
+								}
+							}
+						}
+					});
+				}
 			}
 			catch (Exception e)
 			{
@@ -1039,7 +1061,7 @@ public class DynamicRefexView implements RefexViewI
 			return (nestUnder == null ? new ArrayList<>() : null);
 		}
 
-		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createVersionFilteredRowData(component.getRefexesDynamic());
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createFilteredRowData(component.getRefexesDynamic());
 		
 		if (nestUnder != null)
 		{
@@ -1052,7 +1074,7 @@ public class DynamicRefexView implements RefexViewI
 		}
 	}
 	
-	private ArrayList<TreeItem<RefexDynamicGUI>> createVersionFilteredRowData(Collection<? extends RefexDynamicChronicleBI<?>> refexChronicles) throws IOException, 
+	private ArrayList<TreeItem<RefexDynamicGUI>> createFilteredRowData(Collection<? extends RefexDynamicChronicleBI<?>> refexChronicles) throws IOException, 
 		ContradictionException
 	{
 		ArrayList<TreeItem<RefexDynamicGUI>> rowData = new ArrayList<>();
@@ -1082,7 +1104,6 @@ public class DynamicRefexView implements RefexViewI
 				{
 					return o1.getPrimordialUuid().compareTo(o2.getPrimordialUuid());
 				}
-				
 			}
 		});
 		
@@ -1096,11 +1117,25 @@ public class DynamicRefexView implements RefexViewI
 			}
 			if (showActiveOnly_.get() == false || r.isActive())
 			{
-				TreeItem<RefexDynamicGUI> ti = new TreeItem<>();
-				ti.setValue(new RefexDynamicGUI(r, !r.getPrimordialUuid().equals(lastSeenRefex)));  //first one we see with a new UUID is current, others are historical
-				//recurse
-				getDataRows(r, ti);  
-				rowData.add(ti);
+				RefexDynamicGUI newRefexDynamicGUI = new RefexDynamicGUI(r, !r.getPrimordialUuid().equals(lastSeenRefex));  //first one we see with a new UUID is current, others are historical
+				
+				// HeaderNode FILTERING DONE HERE
+				boolean filterOut = false;
+				for (HeaderNode headerNode : this.columnHeaderNodes_) {
+					if (! headerNode.filter(newRefexDynamicGUI)) {
+						filterOut = true;
+						break;
+					}
+				}
+				
+				if (! filterOut) {
+					TreeItem<RefexDynamicGUI> ti = new TreeItem<>();
+
+					ti.setValue(newRefexDynamicGUI);
+					//recurse
+					getDataRows(r, ti);  
+					rowData.add(ti);
+				}
 			}
 			lastSeenRefex = r.getPrimordialUuid();
 		}
@@ -1385,7 +1420,7 @@ public class DynamicRefexView implements RefexViewI
 			}
 		}
 		
-		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createVersionFilteredRowData(refexMembers);
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createFilteredRowData(refexMembers);
 
 		if (rowData.size() == 0)
 		{
