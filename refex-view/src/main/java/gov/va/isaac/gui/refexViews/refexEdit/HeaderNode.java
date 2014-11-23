@@ -28,13 +28,17 @@ import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.util.Images;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Button;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
@@ -49,29 +53,31 @@ import com.sun.javafx.collections.ObservableListWrapper;
  *
  */
 public class HeaderNode {
-	public interface Filter {
-		// Mockup
+	public static interface StringProvider {
+		public String getString(RefexDynamicGUI source);
 	}
-	private final ToggleButton filterConfigurationButton = new ToggleButton();
+	private final Button filterConfigurationButton = new Button();
 	private final TreeTableColumn<RefexDynamicGUI, ?> column;
 	private final ObservableList<String> valuesToFilter = new ObservableListWrapper<String>(new ArrayList<>());
-	private Scene scene;
+	private final Scene scene;
+	private final StringProvider stringProvider;
+	
 	
 	private final ImageView image = Images.FILTER_16.createImageView();
 
-	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Scene scene) {
-		column = col;
+	public HeaderNode(TreeTableColumn<RefexDynamicGUI, ?> col, Scene scene, StringProvider stringProvider) {
+		this.column = col;
 		this.scene = scene;
-
-		image.setFitHeight(8);
-		image.setFitWidth(8);
+		this.image.setFitHeight(8);
+		this.image.setFitWidth(8);
+		this.stringProvider = stringProvider;
 
 //		if (label.getText().startsWith("info model property ")) {
 //			label.setText(label.getText().replace("info model property ",""));
 //		}
 		
-		filterConfigurationButton.setGraphic(image); 
-
+		filterConfigurationButton.setGraphic(image);
+		
 		valuesToFilter.addListener(new ListChangeListener<String>() {
 			@Override
 			public void onChanged(
@@ -85,14 +91,42 @@ public class HeaderNode {
 	}
 	
 	private void updateButton() {
-		filterConfigurationButton.selectedProperty().set(valuesToFilter.size() > 0);
+		if (valuesToFilter.size() > 0) {
+			filterConfigurationButton.setStyle(
+					"-fx-background-color: red;"
+							//+ "-fx-text-fill: white;"
+							+ "-fx-padding: 0 0 0 0;");
+		} else {
+			filterConfigurationButton.setStyle(
+					"-fx-background-color: white;"
+							//+ "-fx-text-fill: white;"
+							+ "-fx-padding: 0 0 0 0;");
+		}
+	}
+
+	private static Set<String> getUniqueDisplayStrings(TreeItem<RefexDynamicGUI> item, StringProvider stringProvider) {
+		Set<String> stringSet = new HashSet<>();
+		
+		if (item == null) {
+			return stringSet;
+		}
+
+		if (item.getValue() != null) {
+			stringSet.add(stringProvider.getString(item.getValue()));
+		}
+		
+		for (TreeItem<RefexDynamicGUI> childItem : item.getChildren()) {
+			stringSet.addAll(getUniqueDisplayStrings(childItem, stringProvider));
+		}
+		
+		return stringSet;
 	}
 	
 	private void setUserFilters(String text) {
 		List<String> testList = new ArrayList<String>();
-		testList.add("Jesse");
-		testList.add("Dan");
-		testList.add("Joel");
+		testList.addAll(getUniqueDisplayStrings(column.getTreeTableView().getRoot(), stringProvider));
+		
+		Collections.sort(testList);
 		
 		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList);
 		prompt.showUserPrompt((Stage)scene.getWindow(), "Select Filters");
@@ -104,19 +138,9 @@ public class HeaderNode {
 		}
 	}
 
-	public ToggleButton getButton() { return filterConfigurationButton; }
+	public Button getButton() { return filterConfigurationButton; }
 	public TreeTableColumn<RefexDynamicGUI, ?> getColumn() { return column; }
 	public ObservableList<String> getUserFilters() { return valuesToFilter; }
 
 	public Node getNode() { return filterConfigurationButton; }
-	
-//	private void updateTextFillColor() {
-//		Color color = Color.BLACK;
-//		if (valuesToFilter.size() == 0) {
-//			color = Color.BLACK;
-//		} else {
-//			color = Color.RED;
-//		}
-//		filterConfigurationButton.setTextFill(color);
-//	}
 }
