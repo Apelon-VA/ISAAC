@@ -25,8 +25,15 @@ package gov.va.isaac.gui.refexViews.refexEdit;
  */
 public enum DynamicRefexColumnType
 {
-	STATUS_CONDENSED("s"), COMPONENT("Component"), ASSEMBLAGE("Assemblage"), STATUS_STRING("Status"), TIME("Time"), AUTHOR("Author"),
-	MODULE("Module"), PATH("Path"), ATTACHED_DATA("Attached Data");
+	STATUS_CONDENSED("s"),
+	COMPONENT("Component"),
+	ASSEMBLAGE("Assemblage"),
+	STATUS_STRING("Status"),
+	TIME("Time"),
+	AUTHOR("Author"),
+	MODULE("Module"),
+	PATH("Path"),
+	ATTACHED_DATA("Attached Data");
 	
 	private String niceName_;
 	
