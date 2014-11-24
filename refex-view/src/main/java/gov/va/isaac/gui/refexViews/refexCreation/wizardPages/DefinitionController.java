@@ -38,10 +38,12 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringBinding;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -49,9 +51,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +81,7 @@ public class DefinitionController implements PanelControllersI {
 	@FXML private Button cancelCreation;
 	@FXML private HBox parentConceptHBox;
 	@FXML private GridPane gridPane;
+	@FXML private ChoiceBox<ComponentType> componentType;
 	
 	Region scene_;
 	ScreensController processController_;
@@ -103,6 +108,7 @@ public class DefinitionController implements PanelControllersI {
 		assert refsetCreationPane != null : "fx:id=\"refsetCreationPane\" was not injected: check your FXML file 'definition.fxml'.";
 		assert cancelCreation != null : "fx:id=\"cancelCreation\" was not injected: check your FXML file 'definition.fxml'.";
 		assert parentConceptHBox != null : "fx:id=\"parentConceptHBox\" was not injected: check your FXML file 'definition.fxml'.";
+		assert componentType != null : "fx:id=\"componentType\" was not injected: check your FXML file 'definition.fxml'.";
 		
 		extensionCount.setText("0");
 		
@@ -125,6 +131,43 @@ public class DefinitionController implements PanelControllersI {
 				processController_.showNextScreen();
 			}
 		});
+		
+		
+		componentType.setConverter(new StringConverter<ComponentType>()
+		{
+			@Override
+			public String toString(ComponentType object)
+			{
+				if (object == ComponentType.UNKNOWN)
+				{
+					return "No Component Type Restriction";
+				}
+				else
+				{
+					return "Must be a " + object.toString();
+				}
+			}
+
+			@Override
+			public ComponentType fromString(String string)
+			{
+				// will never happen
+				return ComponentType.UNKNOWN;
+			}
+			
+		});
+		
+		//unknown first
+		componentType.getItems().add(ComponentType.UNKNOWN);
+		for (ComponentType ct : ComponentType.values())
+		{
+			if (ct != ComponentType.UNKNOWN)
+			{
+				componentType.getItems().add(ct);
+			}
+		}
+			
+		componentType.getSelectionModel().select(0);
 		
 		refexNameInvalidReason = new StringBinding()
 		{
@@ -269,7 +312,8 @@ public class DefinitionController implements PanelControllersI {
 	
 		if (wizardData == null)
 		{
-			wizardData = new RefexData(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(), count, refexAnnotationType.isSelected());
+			wizardData = new RefexData(refexName.getText().trim(), refexDescription.getText().trim(), parentConcept.getConcept(), count, refexAnnotationType.isSelected(),
+					componentType.getValue());
 		}
 		else
 		{
@@ -278,6 +322,7 @@ public class DefinitionController implements PanelControllersI {
 			wizardData.setRefexDescription(refexDescription.getText().trim());
 			wizardData.setParentConcept(parentConcept.getConcept());
 			wizardData.setIsAnnotatedStyle(refexAnnotationType.isSelected());
+			wizardData.setComponentRestrictionType(componentType.getValue());
 		}
 	}
 	

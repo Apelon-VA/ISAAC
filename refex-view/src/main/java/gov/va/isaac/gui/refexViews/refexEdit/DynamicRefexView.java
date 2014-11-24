@@ -956,6 +956,7 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.getColumns().add(nestedCol);
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.AUTHOR); 
+				nestedIntCol.setVisible(false);
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.MODULE);
@@ -1095,6 +1096,19 @@ public class DynamicRefexView implements RefexViewI
 	private TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> buildComponentCellColumn(DynamicRefexColumnType type)
 	{
 		TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttCol = new TreeTableColumn<>(type.toString());
+		HeaderNode<String> headerNode = new HeaderNode<>(
+				filterCache_,
+				ttCol,
+				ColumnId.getInstance(type),
+				rootNode_.getScene(),
+				new HeaderNode.DataProvider<String>() {
+					@Override
+					public String getData(RefexDynamicGUI source) {
+						return source.getDisplayStrings(type, null).getKey();
+					}
+				});
+		ttCol.setGraphic(headerNode.getNode());
+		
 		ttCol.setSortable(true);
 		ttCol.setResizable(true);
 		ttCol.setComparator(new Comparator<RefexDynamicGUI>()

@@ -118,7 +118,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private GridPane gp_;
 	private Label title_;
 
-	//TODO use the word Sememe
 	private AddRefexPopup()
 	{
 		super();

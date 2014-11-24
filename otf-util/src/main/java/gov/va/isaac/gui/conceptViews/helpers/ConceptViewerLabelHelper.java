@@ -23,7 +23,6 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.enhanced.PreferredAcceptabilityPrompt;
 import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.DescriptionModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
@@ -34,10 +33,8 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.Collection;
-
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -50,7 +47,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -65,6 +61,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;

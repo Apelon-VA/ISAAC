@@ -18,7 +18,7 @@ public abstract class UserPrompt {
 	public enum UserPromptResponse { APPROVE, CANCEL };
 	protected UserPromptResponse buttonSelected = UserPromptResponse.CANCEL;
 	protected String cancelButtonText = "Cancel";
-	private String approvalButtonText;
+	protected String approvalButtonText = "Ok";
 	
 	protected Button cancelButton = new Button();
 	protected Button commitButton = new Button();
@@ -30,7 +30,9 @@ public abstract class UserPrompt {
 	protected Prompt prompt;
 	
 	protected static Font boldFont = new Font("System Bold", 13.0);
-
+	
+	protected UserPrompt() {
+	}
 	protected UserPrompt(String string) {
 		this.approvalButtonText = string;
 	}
