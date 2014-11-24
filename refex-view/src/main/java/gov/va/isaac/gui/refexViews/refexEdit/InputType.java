@@ -73,6 +73,4 @@ public class InputType
 	{
 		return assemblyNid_;
 	}
-	
-	public Integer getNid() { return componentNid_ != null ? componentNid_ : assemblyNid_; }
 }
