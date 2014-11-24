@@ -161,7 +161,7 @@ public class DefinitionController implements PanelControllersI {
 		componentType.getItems().add(ComponentType.UNKNOWN);
 		for (ComponentType ct : ComponentType.values())
 		{
-			if (ct != ComponentType.UNKNOWN)
+			if (ct != ComponentType.UNKNOWN && ct != ComponentType.SEMEME && ct != ComponentType.MEDIA && ct != ComponentType.CONCEPT_ATTRIBUTES)
 			{
 				componentType.getItems().add(ct);
 			}
