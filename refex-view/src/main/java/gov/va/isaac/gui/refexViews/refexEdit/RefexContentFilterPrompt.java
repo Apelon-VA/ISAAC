@@ -8,7 +8,6 @@ import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,6 +16,7 @@ import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -37,24 +37,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
 				this.alreadySelectedValues.add(obj.toString());
 			}
 		}
-		
-//		setCommitButtonDisabledState();
-//		selectedValues.getItems().addListener(new ListChangeListener<String>() {
-//			@Override
-//			public void onChanged(
-//					javafx.collections.ListChangeListener.Change<? extends String> c) {
-//				setCommitButtonDisabledState();
-//			}
-//		});
 	}
-	
-//	protected void setCommitButtonDisabledState() {
-//		if (selectedValues.getItems().size() > 0) {
-//			commitButton.setDisable(false);
-//		} else {
-//			commitButton.setDisable(true);
-//		}
-//	}
 
 	protected Node createUserInterface() {
 		VBox vb = new VBox(10);
@@ -79,7 +62,10 @@ public class RefexContentFilterPrompt extends UserPrompt {
         List<CheckMenuItem> checkItems = new ArrayList<CheckMenuItem>();
         
         for (String s : allValues) {
-        	CheckMenuItem item = new CheckMenuItem(s);
+        	Label label = new Label(s);
+        	label.setMaxWidth(280);
+        	label.setTooltip(new Tooltip(s));
+        	CheckMenuItem item = new CheckMenuItem(null, label);
         	if (alreadySelectedValues.contains(s)) {
         		item.setSelected(true);
         	}
@@ -96,19 +82,18 @@ public class RefexContentFilterPrompt extends UserPrompt {
                 public void changed(ObservableValue<? extends Boolean> obs,
                         Boolean wasPreviouslySelected, Boolean isNowSelected) {
                     if (isNowSelected) {
-                        selectedValues.getItems().add(item.getText());
+                        selectedValues.getItems().add(((Label)item.getGraphic()).getText());
                     } else {
-                        selectedValues.getItems().remove(item.getText());
+                        selectedValues.getItems().remove(((Label)item.getGraphic()).getText());
                     }
                 }
             });
             if (item.isSelected()) {
-            	selectedValues.getItems().add(item.getText());
+            	selectedValues.getItems().add(((Label)item.getGraphic()).getText());
             }
         }	
         
-        return choicesMenuBox;       
-        
+        return choicesMenuBox;
     }
 
 	public ObservableList<String> getSelectedValues() {
