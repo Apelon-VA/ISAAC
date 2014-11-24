@@ -674,7 +674,7 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
-					HeaderNode headerNode = new HeaderNode(
+					HeaderNode<String> headerNode = new HeaderNode<>(
 							ttCol,
 							ColumnId.getInstance(DynamicRefexColumnType.COMPONENT),
 							rootNode_.getScene(),
@@ -692,7 +692,7 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
-					HeaderNode headerNode = new HeaderNode(
+					HeaderNode<String> headerNode = new HeaderNode<>(
 							ttCol,
 							ColumnId.getInstance(DynamicRefexColumnType.ASSEMBLAGE),
 							rootNode_.getScene(),
@@ -801,13 +801,10 @@ public class DynamicRefexView implements RefexViewI
 						//tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
 						
 						// TODO: FILTER ID
-						final int order = col.values().iterator().next().get(i).getColumnOrder();
-						final UUID assemblageUuid = col.values().iterator().next().get(i).getAssemblageConcept();
-
 						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
 
 						final Integer listItem = i;
-						HeaderNode ttNestedColHeaderNode = new HeaderNode(
+						HeaderNode<String> ttNestedColHeaderNode = new HeaderNode<>(
 								nestedCol,
 								columnKey,
 								rootNode_.getScene(),
@@ -911,17 +908,17 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.STATUS_STRING.toString());
-				HeaderNode nestedColHeaderNode = new HeaderNode(
+				HeaderNode<String> nestedColHeaderNode = new HeaderNode<>(
 						nestedCol,
 						ColumnId.getInstance(DynamicRefexColumnType.STATUS_STRING),
 						rootNode_.getScene(),
 						new HeaderNode.DataProvider<String>() {
-					@Override
-					public String getData(RefexDynamicGUI source) {
-						return source.getDisplayStrings(DynamicRefexColumnType.STATUS_STRING, null).getKey();
-					}
-				});
-				
+							@Override
+							public String getData(RefexDynamicGUI source) {
+								return source.getDisplayStrings(DynamicRefexColumnType.STATUS_STRING, null).getKey();
+							}
+						});
+				nestedCol.setGraphic(nestedColHeaderNode.getNode());
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
@@ -933,17 +930,17 @@ public class DynamicRefexView implements RefexViewI
 
 				nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.TIME.toString());
-				nestedColHeaderNode = new HeaderNode(
+				nestedColHeaderNode = new HeaderNode<>(
 						nestedCol,
 						ColumnId.getInstance(DynamicRefexColumnType.TIME),
 						rootNode_.getScene(),
 						new HeaderNode.DataProvider<String>() {
-					@Override
-					public String getData(RefexDynamicGUI source) {
-						return source.getDisplayStrings(DynamicRefexColumnType.TIME, null).getKey();
-					}
-				});
-				
+							@Override
+							public String getData(RefexDynamicGUI source) {
+								return source.getDisplayStrings(DynamicRefexColumnType.TIME, null).getKey();
+							}
+						});
+				nestedCol.setGraphic(nestedColHeaderNode.getNode());
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
