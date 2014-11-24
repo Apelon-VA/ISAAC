@@ -374,6 +374,8 @@ public class ColumnController implements PanelControllersI {
 				allValid_.removeBinding(binding);
 			}
 			
+			processController_.getWizardData().getColumnInfo().get(columnNumber_).setValidatorData(null);
+			
 			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
 			{
 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
