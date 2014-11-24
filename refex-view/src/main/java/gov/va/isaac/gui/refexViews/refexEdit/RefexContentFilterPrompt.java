@@ -33,6 +33,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
 		super("Filter");
 		this.columnName = columnName;
 		this.allValues = allValues;
+		this.cancelButtonText = "Clear";
 		
 		for (Object obj : alreadySelectedValues) {
 			if (obj != null) {
@@ -87,6 +88,9 @@ public class RefexContentFilterPrompt extends UserPrompt {
                     }
                 }
             });
+            if (item.isSelected()) {
+            	selectedValues.getItems().add(item.getText());
+            }
         }	
         
         return choicesMenuBox;       

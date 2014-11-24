@@ -17,6 +17,7 @@ import javafx.stage.StageStyle;
 public abstract class UserPrompt {
 	public enum UserPromptResponse { APPROVE, CANCEL };
 	protected UserPromptResponse buttonSelected = UserPromptResponse.CANCEL;
+	protected String cancelButtonText = "Cancel";
 	
 	private double currentMax = 0;
 	protected Label currentMaxLabel = null;
@@ -75,7 +76,7 @@ public abstract class UserPrompt {
 		    		}
 		    } );
 
-		    Button cancelButton = new Button( "Cancel" );
+		    Button cancelButton = new Button(cancelButtonText);
 		    cancelButton.setOnAction((e) -> {
 		            prompt.close();
 		            buttonSelected = UserPromptResponse.CANCEL;

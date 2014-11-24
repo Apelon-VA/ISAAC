@@ -203,9 +203,11 @@ public class DynamicRefexView implements RefexViewI
 			ToolBar t = new ToolBar();
 			
 			clearColumnHeaderNodesButton_.setOnAction(event -> {
+				removeFilterCacheListeners();
 				for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
 					filter.getFilterValues().clear();
 				}
+				refresh();
 			});
 			t.getItems().add(clearColumnHeaderNodesButton_);
 			
