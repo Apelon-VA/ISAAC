@@ -40,6 +40,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.WeakHashMap;
 
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
@@ -52,7 +53,9 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+
 import com.sun.javafx.collections.ObservableMapWrapper;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -136,9 +139,9 @@ public class DynamicRefexView implements RefexViewI
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
 
-	private final ObservableMap<ColumnId, Filter<?>> filterCache_ = new ObservableMapWrapper<>(new HashMap<>());
+	private final ObservableMap<ColumnId, Filter<?>> filterCache_ = new ObservableMapWrapper<>(new WeakHashMap<>());
 	
-	private final MapChangeListener<ColumnId, Filter<?>> filterCacheListener = new MapChangeListener<ColumnId, Filter<?>>() {
+	private final MapChangeListener<ColumnId, Filter<?>> filterCacheListener_ = new MapChangeListener<ColumnId, Filter<?>>() {
 		@Override
 		public void onChanged(
 				javafx.collections.MapChangeListener.Change<? extends ColumnId, ? extends Filter<?>> c) {
@@ -147,7 +150,7 @@ public class DynamicRefexView implements RefexViewI
 			}
 		}
 	};
-	private final ListChangeListener<Object> filterListener = new ListChangeListener<Object>() {
+	private final ListChangeListener<Object> filterListener_ = new ListChangeListener<Object>() {
 		@Override
 		public void onChanged(
 				javafx.collections.ListChangeListener.Change<? extends Object> c) {
@@ -165,15 +168,15 @@ public class DynamicRefexView implements RefexViewI
 	};
 	private void addFilterCacheListeners() {
 		removeFilterCacheListeners();
-		filterCache_.addListener(filterCacheListener);
+		filterCache_.addListener(filterCacheListener_);
 		for (HeaderNode.Filter<?> filter : filterCache_.values()) {
-			filter.getFilterValues().addListener(filterListener);
+			filter.getFilterValues().addListener(filterListener_);
 		}
 	}
 	private void removeFilterCacheListeners() {
-		filterCache_.removeListener(filterCacheListener);
+		filterCache_.removeListener(filterCacheListener_);
 		for (HeaderNode.Filter<?> filter : filterCache_.values()) {
-			filter.getFilterValues().removeListener(filterListener);
+			filter.getFilterValues().removeListener(filterListener_);
 		}
 	}
 
@@ -683,7 +686,7 @@ public class DynamicRefexView implements RefexViewI
 					HeaderNode<String> headerNode = new HeaderNode<>(
 							filterCache_,
 							ttCol,
-							ColumnId.newInstance(DynamicRefexColumnType.COMPONENT),
+							ColumnId.getInstance(DynamicRefexColumnType.COMPONENT),
 							rootNode_.getScene(),
 							new HeaderNode.DataProvider<String>() {
 						@Override
@@ -702,7 +705,7 @@ public class DynamicRefexView implements RefexViewI
 					HeaderNode<String> headerNode = new HeaderNode<>(
 							filterCache_,
 							ttCol,
-							ColumnId.newInstance(DynamicRefexColumnType.ASSEMBLAGE),
+							ColumnId.getInstance(DynamicRefexColumnType.ASSEMBLAGE),
 							rootNode_.getScene(),
 							new HeaderNode.DataProvider<String>() {
 						@Override
@@ -809,7 +812,7 @@ public class DynamicRefexView implements RefexViewI
 						//tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
 						
 						// TODO: FILTER ID
-						final ColumnId columnKey = ColumnId.newInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
+						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
 
 						final Integer listItem = i;
 						HeaderNode<String> ttNestedColHeaderNode = new HeaderNode<>(
@@ -920,7 +923,7 @@ public class DynamicRefexView implements RefexViewI
 				HeaderNode<String> nestedColHeaderNode = new HeaderNode<>(
 						filterCache_,
 						nestedCol,
-						ColumnId.newInstance(DynamicRefexColumnType.STATUS_STRING),
+						ColumnId.getInstance(DynamicRefexColumnType.STATUS_STRING),
 						rootNode_.getScene(),
 						new HeaderNode.DataProvider<String>() {
 							@Override
@@ -943,7 +946,7 @@ public class DynamicRefexView implements RefexViewI
 				nestedColHeaderNode = new HeaderNode<>(
 						filterCache_,
 						nestedCol,
-						ColumnId.newInstance(DynamicRefexColumnType.TIME),
+						ColumnId.getInstance(DynamicRefexColumnType.TIME),
 						rootNode_.getScene(),
 						new HeaderNode.DataProvider<String>() {
 							@Override

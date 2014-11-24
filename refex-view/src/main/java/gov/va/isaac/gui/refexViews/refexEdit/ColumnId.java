@@ -17,36 +17,26 @@
  * limitations under the License.
  */
 
-/**
- * ColumnKey
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**
- * ColumnKey
+ * ColumnId
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- *
  */
-
-
 public class ColumnId {	
 	private final String columnDescriptionUuidOrColumnType;
 	private final Integer columnOrder;
 
-	public static ColumnId newInstance(DynamicRefexColumnType aDynamicRefexColumnType) {
-		return newInstance(aDynamicRefexColumnType.toString(), null);
+	public static ColumnId getInstance(DynamicRefexColumnType aDynamicRefexColumnType) {
+		return getInstance(aDynamicRefexColumnType.toString(), null);
 	}
-	public static ColumnId newInstance(UUID columnDescriptionUuid, Integer columnOrder) {
-		return newInstance((Object)columnDescriptionUuid, columnOrder);
+	public static ColumnId getInstance(UUID columnDescriptionUuid, Integer columnOrder) {
+		return getInstance((Object)columnDescriptionUuid, columnOrder);
 	}
-	private static ColumnId newInstance(Object columnDescriptionUuidOrColumnType, Integer columnOrder) {
+	private static ColumnId getInstance(Object columnDescriptionUuidOrColumnType, Integer columnOrder) {
 		return new ColumnId(columnDescriptionUuidOrColumnType.toString(), columnOrder);
 	}
 
@@ -117,8 +107,6 @@ public class ColumnId {
 	 */
 	@Override
 	public String toString() {
-		return "ColumnKey [columnDescriptionUuidOrColumnType="
-				+ columnDescriptionUuidOrColumnType + ", columnOrder="
-				+ columnOrder + "]";
+		return columnDescriptionUuidOrColumnType + (columnOrder != null ? (":" + columnOrder) : "");
 	}
 }

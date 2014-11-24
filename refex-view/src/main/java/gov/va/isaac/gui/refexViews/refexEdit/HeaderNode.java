@@ -128,7 +128,7 @@ public class HeaderNode<T> {
 			}
 		});
 		updateButton();
-		
+
 		filterConfigurationButton.setOnAction(event -> { setUserFilters(column.getText()); });
 	}
 	
@@ -136,12 +136,10 @@ public class HeaderNode<T> {
 		if (filter.getFilterValues().size() > 0) {
 			filterConfigurationButton.setStyle(
 					"-fx-background-color: red;"
-							//+ "-fx-text-fill: white;"
 							+ "-fx-padding: 0 0 0 0;");
 		} else {
 			filterConfigurationButton.setStyle(
 					"-fx-background-color: white;"
-							//+ "-fx-text-fill: white;"
 							+ "-fx-padding: 0 0 0 0;");
 		}
 	}
@@ -172,7 +170,7 @@ public class HeaderNode<T> {
 				testList.add(obj.toString());
 			}
 		}
-		
+
 		Collections.sort(testList);
 		
 		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList, filter.getFilterValues());
