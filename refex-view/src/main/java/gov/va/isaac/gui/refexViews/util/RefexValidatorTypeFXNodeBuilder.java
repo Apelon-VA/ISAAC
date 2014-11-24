@@ -38,6 +38,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.util.StringConverter;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
@@ -303,6 +304,48 @@ public class RefexValidatorTypeFXNodeBuilder
 			{
 				throw new RuntimeException("Unexpected", e);
 			}
+		}
+		else if (RefexDynamicValidatorType.COMPONENT_TYPE == dt)
+		{
+			ChoiceBox<ComponentType> cb = new ChoiceBox<>();
+			cb.setMaxWidth(Double.MAX_VALUE);
+			
+			for (ComponentType ct : ComponentType.values())
+			{
+				if (ct != ComponentType.UNKNOWN && ct != ComponentType.CONCEPT_ATTRIBUTES)
+				{
+					cb.getItems().add(ct);
+				}
+			}
+			cb.setConverter(new StringConverter<ComponentType>()
+			{
+				@Override
+				public String toString(ComponentType object)
+				{
+					return "Must be a " + object.toString();
+				}
+
+				@Override
+				public ComponentType fromString(String string)
+				{
+					//not needed
+					return ComponentType.UNKNOWN;
+				}
+			});
+			
+			cb.valueProperty().addListener((change) ->
+			{
+				try
+				{
+					returnValue.validatorData.set(new RefexDynamicString(cb.getValue().name()));
+				}
+				catch (Exception e)
+				{
+					logger.error("Unexpected!", e);
+				}
+			});
+			returnValue.nodeForDisplay = cb;
+			cb.getSelectionModel().select(0);
 		}
 		else
 		{
