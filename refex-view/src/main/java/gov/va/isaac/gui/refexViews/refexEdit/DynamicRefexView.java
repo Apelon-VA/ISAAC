@@ -342,6 +342,7 @@ public class DynamicRefexView implements RefexViewI
 			stampButton_.setGraphic(Images.STAMP.createImageView());
 			stampButton_.setTooltip(new Tooltip("Show / Hide Stamp Columns"));
 			stampButton_.setVisible(false);
+			stampButton_.setSelected(true);
 			t.getItems().add(stampButton_);
 			
 			showStampColumns_ = new UpdateableBooleanBinding()
@@ -959,11 +960,9 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.MODULE);
-				nestedIntCol.setVisible(false);
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.PATH); 
-				nestedIntCol.setVisible(false);
 				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
