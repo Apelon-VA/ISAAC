@@ -197,7 +197,7 @@ public class HeaderNode<T> {
 		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 			filter.getFilterValues().setAll(prompt.getSelectedValues());
 		} else {
-			filter.getFilterValues().clear();
+			//filter.getFilterValues().clear();
 		}
 	}
 
