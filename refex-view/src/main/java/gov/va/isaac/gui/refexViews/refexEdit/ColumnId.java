@@ -36,30 +36,18 @@ import java.util.UUID;
  */
 
 
-public class ColumnId {
-	private static Set<ColumnId> instanceCache = new HashSet<>();
-	
+public class ColumnId {	
 	private final String columnDescriptionUuidOrColumnType;
 	private final Integer columnOrder;
 
-	public synchronized static ColumnId getInstance(DynamicRefexColumnType aDynamicRefexColumnType) {
-		return getInstance(aDynamicRefexColumnType.toString(), null);
+	public static ColumnId newInstance(DynamicRefexColumnType aDynamicRefexColumnType) {
+		return newInstance(aDynamicRefexColumnType.toString(), null);
 	}
-	public synchronized static ColumnId getInstance(UUID columnDescriptionUuid, Integer columnOrder) {
-		return getInstance((Object)columnDescriptionUuid, columnOrder);
+	public static ColumnId newInstance(UUID columnDescriptionUuid, Integer columnOrder) {
+		return newInstance((Object)columnDescriptionUuid, columnOrder);
 	}
-	private synchronized static ColumnId getInstance(Object columnDescriptionUuidOrColumnType, Integer columnOrder) {
-		ColumnId tempKey = new ColumnId(columnDescriptionUuidOrColumnType.toString(), columnOrder);
-		
-		for (ColumnId cachedInstance : instanceCache) {
-			if (tempKey.equals(cachedInstance)) {
-				return cachedInstance;
-			}
-		}
-		
-		instanceCache.add(tempKey);
-		
-		return tempKey;
+	private static ColumnId newInstance(Object columnDescriptionUuidOrColumnType, Integer columnOrder) {
+		return new ColumnId(columnDescriptionUuidOrColumnType.toString(), columnOrder);
 	}
 
 	/**

@@ -683,7 +683,7 @@ public class DynamicRefexView implements RefexViewI
 					HeaderNode<String> headerNode = new HeaderNode<>(
 							filterCache_,
 							ttCol,
-							ColumnId.getInstance(DynamicRefexColumnType.COMPONENT),
+							ColumnId.newInstance(DynamicRefexColumnType.COMPONENT),
 							rootNode_.getScene(),
 							new HeaderNode.DataProvider<String>() {
 						@Override
@@ -702,7 +702,7 @@ public class DynamicRefexView implements RefexViewI
 					HeaderNode<String> headerNode = new HeaderNode<>(
 							filterCache_,
 							ttCol,
-							ColumnId.getInstance(DynamicRefexColumnType.ASSEMBLAGE),
+							ColumnId.newInstance(DynamicRefexColumnType.ASSEMBLAGE),
 							rootNode_.getScene(),
 							new HeaderNode.DataProvider<String>() {
 						@Override
@@ -809,7 +809,7 @@ public class DynamicRefexView implements RefexViewI
 						//tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
 						
 						// TODO: FILTER ID
-						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
+						final ColumnId columnKey = ColumnId.newInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
 
 						final Integer listItem = i;
 						HeaderNode<String> ttNestedColHeaderNode = new HeaderNode<>(
@@ -920,7 +920,7 @@ public class DynamicRefexView implements RefexViewI
 				HeaderNode<String> nestedColHeaderNode = new HeaderNode<>(
 						filterCache_,
 						nestedCol,
-						ColumnId.getInstance(DynamicRefexColumnType.STATUS_STRING),
+						ColumnId.newInstance(DynamicRefexColumnType.STATUS_STRING),
 						rootNode_.getScene(),
 						new HeaderNode.DataProvider<String>() {
 							@Override
@@ -943,7 +943,7 @@ public class DynamicRefexView implements RefexViewI
 				nestedColHeaderNode = new HeaderNode<>(
 						filterCache_,
 						nestedCol,
-						ColumnId.getInstance(DynamicRefexColumnType.TIME),
+						ColumnId.newInstance(DynamicRefexColumnType.TIME),
 						rootNode_.getScene(),
 						new HeaderNode.DataProvider<String>() {
 							@Override
