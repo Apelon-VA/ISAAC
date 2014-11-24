@@ -27,12 +27,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.image.ImageView;
@@ -119,6 +121,10 @@ public class HeaderNode<T> {
 		}
 		
 		filterConfigurationButton.setGraphic(image);
+		Platform.runLater(() ->
+		{
+			filterConfigurationButton.setTooltip(new Tooltip("Press to configure filters for " + col.getText()));
+		});
 		
 		filter.getFilterValues().addListener(new ListChangeListener<Object>() {
 			@Override
