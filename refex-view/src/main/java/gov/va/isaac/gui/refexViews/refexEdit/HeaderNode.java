@@ -180,7 +180,7 @@ public class HeaderNode<T> {
 
 		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 			filter.getFilterValues().setAll(prompt.getSelectedValues());
-		} else {		
+		} else {
 			filter.getFilterValues().clear();
 		}
 	}

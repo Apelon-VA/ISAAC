@@ -8,6 +8,7 @@ import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -26,9 +27,6 @@ public class RefexContentFilterPrompt extends UserPrompt {
 
 	final List<String> alreadySelectedValues = new ArrayList<>();
 
-//	protected RefexContentFilterPrompt(String columnName, List<String> allValues) {
-//		this(columnName, allValues, null);
-//	}
 	protected RefexContentFilterPrompt(String columnName, List<String> allValues, List<?> alreadySelectedValues) {
 		super("Filter");
 		this.columnName = columnName;
@@ -39,6 +37,23 @@ public class RefexContentFilterPrompt extends UserPrompt {
 			if (obj != null) {
 				this.alreadySelectedValues.add(obj.toString());
 			}
+		}
+		
+		setCommitButtonDisabledState();
+		selectedValues.getItems().addListener(new ListChangeListener<String>() {
+			@Override
+			public void onChanged(
+					javafx.collections.ListChangeListener.Change<? extends String> c) {
+				setCommitButtonDisabledState();
+			}
+		});
+	}
+	
+	protected void setCommitButtonDisabledState() {
+		if (selectedValues.getItems().size() > 0) {
+			commitButton.setDisable(false);
+		} else {
+			commitButton.setDisable(true);
 		}
 	}
 

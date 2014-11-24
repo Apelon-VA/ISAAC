@@ -18,18 +18,21 @@ public abstract class UserPrompt {
 	public enum UserPromptResponse { APPROVE, CANCEL };
 	protected UserPromptResponse buttonSelected = UserPromptResponse.CANCEL;
 	protected String cancelButtonText = "Cancel";
+	private String approvalButtonText;
+	
+	protected Button cancelButton = new Button();
+	protected Button commitButton = new Button();
 	
 	private double currentMax = 0;
 	protected Label currentMaxLabel = null;
 
 	protected VBox vb;
 	protected Prompt prompt;
-	private String approvalString;
 	
 	protected static Font boldFont = new Font("System Bold", 13.0);
 
 	protected UserPrompt(String string) {
-		this.approvalString = string;
+		this.approvalButtonText = string;
 	}
 	protected static class Prompt extends Stage {
 		
@@ -66,7 +69,7 @@ public abstract class UserPrompt {
 		    buttonHBox.setAlignment( Pos.CENTER );
 
 
-			Button commitButton = new Button( approvalString );
+			commitButton.setText(approvalButtonText);
 		    commitButton.setOnAction((e) -> {
 		    		if (isSelectedValuesValid()) {
 			            prompt.close();
@@ -76,7 +79,7 @@ public abstract class UserPrompt {
 		    		}
 		    } );
 
-		    Button cancelButton = new Button(cancelButtonText);
+		    cancelButton.setText(cancelButtonText);
 		    cancelButton.setOnAction((e) -> {
 		            prompt.close();
 		            buttonSelected = UserPromptResponse.CANCEL;
@@ -113,5 +116,4 @@ public abstract class UserPrompt {
 		
 		return l;
 	}
-
 }
