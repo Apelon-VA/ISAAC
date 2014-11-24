@@ -6,17 +6,19 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="refsetCreationPane" minWidth="400.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.DefinitionController">
+<BorderPane fx:id="refsetCreationPane" minWidth="400.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.DefinitionController">
 	<center>
 		<GridPane fx:id="gridPane" hgap="10.0" vgap="10.0">
 			<columnConstraints>
-				<ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="175.0" minWidth="160.0" prefWidth="175.0" />
-				<ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="140.0" minWidth="10.0" prefWidth="140.0" />
+				<ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" maxWidth="200.0" minWidth="160.0" prefWidth="200.0" />
+				<ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="140.0" minWidth="10.0" prefWidth="116.0" />
 				<ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="100.0" />
 			</columnConstraints>
 			<rowConstraints>
 				<RowConstraints vgrow="NEVER" />
 				<RowConstraints vgrow="NEVER" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
 				<RowConstraints vgrow="NEVER" />
 				<RowConstraints vgrow="NEVER" />
 				<RowConstraints vgrow="NEVER" />
@@ -24,24 +26,45 @@
 			<children>
 				<Label text="Name" />
 				<Label text="Description" GridPane.rowIndex="1" GridPane.valignment="TOP" />
-				<Label text="# of Extension Fields" GridPane.rowIndex="2" />
-				<Label text="Type" GridPane.rowIndex="3" />
-				<Label text="Sememe Parent Concept" GridPane.rowIndex="4">
+				<Label text="# of Extension Fields" GridPane.rowIndex="3" />
+				<Label text="Sememe Storage Style" GridPane.rowIndex="4" />
+				<Label text="Sememe Parent Concept" GridPane.rowIndex="5">
 					<tooltip>
 						<Tooltip
 							text="The (existing) concept that should serve as the parent of the Sememe Assemblage Concept that is being defined in this wizard" />
 					</tooltip>
 				</Label>
 				<TextField fx:id="refexName" prefHeight="25.0" prefWidth="338.0" GridPane.columnIndex="1" GridPane.columnSpan="2" />
-				<TextArea fx:id="refexDescription" minHeight="100.0" prefHeight="100.0" prefWidth="338.0" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-				<TextField fx:id="extensionCount" prefHeight="25.0" prefWidth="52.0" promptText="0 or integer" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-				<RadioButton fx:id="refexAnnotationType" mnemonicParsing="false" selected="true" text="Annotation" GridPane.columnIndex="1" GridPane.rowIndex="3">
+				<TextArea fx:id="refexDescription" minHeight="100.0" prefHeight="100.0" prefWidth="338.0" wrapText="true" GridPane.columnIndex="1"
+					GridPane.columnSpan="2" GridPane.rowIndex="1" />
+				<TextField fx:id="extensionCount" prefHeight="25.0" prefWidth="52.0" promptText="0 or integer" GridPane.columnIndex="1"
+					GridPane.columnSpan="2" GridPane.rowIndex="3" />
+				<RadioButton fx:id="refexAnnotationType" mnemonicParsing="false" selected="true" text="Annotation" GridPane.columnIndex="1"
+					GridPane.rowIndex="4">
 					<toggleGroup>
 						<ToggleGroup fx:id="refexType" />
 					</toggleGroup>
+					<tooltip>
+						<Tooltip
+							text="In an Annotation style Sememe, the membership information of the items that are part of the Sememe are stored on each individual item, as an annotation" />
+					</tooltip>
 				</RadioButton>
-				<RadioButton fx:id="refexTypeRefset" mnemonicParsing="false" text="Member List" toggleGroup="$refexType" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-				<HBox fx:id="parentConceptHBox" fillHeight="false" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" />
+				<RadioButton fx:id="refexTypeRefset" mnemonicParsing="false" text="Embedded" toggleGroup="$refexType" GridPane.columnIndex="2"
+					GridPane.rowIndex="4">
+					<tooltip>
+						<Tooltip
+							text="In an Embedded style Sememe, the membership information of the items that are part of the Sememe are stored within the Sememe concept itself" />
+					</tooltip>
+				</RadioButton>
+				<HBox fx:id="parentConceptHBox" fillHeight="false" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="5" />
+				<Label text="Component Type Restriction" GridPane.rowIndex="2" />
+				<ChoiceBox fx:id="componentType" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="2"
+					GridPane.rowIndex="2">
+					<tooltip>
+						<Tooltip
+							text="When set to No Restriction, this Sememe can be utilized with any component type.  Otherwise, this Sememe can only be utilizied with the selected component type." />
+					</tooltip>
+				</ChoiceBox>
 			</children>
 		</GridPane>
 	</center>
@@ -65,7 +88,8 @@
 				<RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
 			</rowConstraints>
 			<children>
-				<Button fx:id="cancelCreation" mnemonicParsing="false" text="Cancel" GridPane.halignment="RIGHT" GridPane.hgrow="SOMETIMES" HBox.hgrow="SOMETIMES">
+				<Button fx:id="cancelCreation" mnemonicParsing="false" text="Cancel" GridPane.halignment="RIGHT" GridPane.hgrow="SOMETIMES"
+					HBox.hgrow="SOMETIMES">
 					<HBox.margin>
 						<Insets bottom="5.0" left="5.0" right="15.0" top="5.0" />
 					</HBox.margin>
@@ -73,7 +97,8 @@
 						<Insets bottom="5.0" left="5.0" right="15.0" top="5.0" />
 					</GridPane.margin>
 				</Button>
-				<Button fx:id="continueCreation" mnemonicParsing="false" text="Next" GridPane.columnIndex="1" GridPane.hgrow="SOMETIMES" HBox.hgrow="SOMETIMES">
+				<Button fx:id="continueCreation" mnemonicParsing="false" text="Next" GridPane.columnIndex="1" GridPane.hgrow="SOMETIMES"
+					HBox.hgrow="SOMETIMES">
 					<GridPane.margin>
 						<Insets bottom="5.0" left="15.0" right="5.0" top="5.0" />
 					</GridPane.margin>

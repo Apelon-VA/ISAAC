@@ -21,10 +21,11 @@
 				</Label>
 				<GridPane hgap="5.0" vgap="5.0">
 					<columnConstraints>
-						<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" />
-						<ColumnConstraints hgrow="ALWAYS" />
+						<ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="232.0" minWidth="150.0" prefWidth="226.0" />
+						<ColumnConstraints hgrow="ALWAYS" maxWidth="429.0" minWidth="353.0" prefWidth="359.0" />
 					</columnConstraints>
 					<rowConstraints>
+						<RowConstraints fillHeight="false" vgrow="NEVER" />
 						<RowConstraints fillHeight="false" vgrow="NEVER" />
 						<RowConstraints fillHeight="false" vgrow="NEVER" />
 						<RowConstraints fillHeight="false" vgrow="NEVER" />
@@ -55,6 +56,12 @@
 						<Label fx:id="actualParentConcept" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 						<Label fx:id="actualRefexType" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 						<Label fx:id="actualRefexDescription" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+						<Label text="Component Type Restriction" GridPane.rowIndex="4">
+							<font>
+								<Font name="System Bold" size="13.0" />
+							</font>
+						</Label>
+						<Label fx:id="actualComponentTypeRestriction" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 					</children>
 					<VBox.margin>
 						<Insets bottom="5.0" left="5.0" right="5.0" />

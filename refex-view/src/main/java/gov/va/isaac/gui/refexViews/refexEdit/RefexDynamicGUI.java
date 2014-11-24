@@ -30,6 +30,7 @@ import java.util.function.ToIntFunction;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.media.MediaVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
@@ -379,10 +380,15 @@ public class RefexDynamicGUI
 					RefexVersionBI<?> rv = (RefexVersionBI<?>) cv;
 					text = "Nested Sememe: using assemblage " + WBUtility.getDescription(rv.getAssemblageNid());
 				}
+				else if (cv instanceof MediaVersionBI<?>)
+				{
+					MediaVersionBI<?> mv = (MediaVersionBI<?>) cv;
+					text = "Media of format " + mv.getFormat();
+				}
 				else
 				{
 					logger_.warn("The component type " + cv + " is not handled yet!");
-					//Not sure what else there may be?  media - doesn't seem to be used... anything else?
+					//Not sure what else there may be?
 					text = cv.toUserString();
 				}
 			}

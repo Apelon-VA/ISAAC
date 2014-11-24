@@ -37,6 +37,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ public class SummaryController implements PanelControllersI {
 	@FXML private Label actualRefexDescription;
 	@FXML private Label actualParentConcept;
 	@FXML private Label actualRefexType;
+	@FXML private Label actualComponentTypeRestriction;
 	@FXML private BorderPane summaryPane;
 	@FXML private ListView<RefexDynamicColumnInfo> detailsListView;
 	@FXML private Button cancelButton;
@@ -82,7 +84,7 @@ public class SummaryController implements PanelControllersI {
 	
 		commitButton.setOnAction(e -> 
 		{
-		    try
+			try
 			{
 				AppContext.getRuntimeGlobals().disableAllCommitListeners();
 				storeValues();
@@ -114,7 +116,8 @@ public class SummaryController implements PanelControllersI {
 		actualRefexName.setText(refexData.getRefexName());
 		actualRefexDescription.setText(refexData.getRefexDescription());
 		actualParentConcept.setText(WBUtility.getDescription(refexData.getParentConcept()));
-		
+		actualComponentTypeRestriction.setText(refexData.getComponentRestrictionType() == ComponentType.UNKNOWN ? "No Restriction" 
+				: refexData.getComponentRestrictionType().toString());
 		if (refexData.isAnnotatedStyle()) {
 			actualRefexType.setText("Annotated");
 		} else {
