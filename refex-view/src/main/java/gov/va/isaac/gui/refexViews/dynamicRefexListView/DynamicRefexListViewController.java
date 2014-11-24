@@ -478,7 +478,7 @@ public class DynamicRefexListViewController
 				{
 					selectedRefexNameLabel.setText(rdud.getRefexName());
 					selectedRefexDescriptionLabel.setText(rdud.getRefexUsageDescription());
-					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Member Refset");
+					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Embedded");
 				});
 				
 				//now fill in the data column details...
