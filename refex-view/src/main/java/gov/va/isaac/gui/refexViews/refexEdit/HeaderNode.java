@@ -54,6 +54,7 @@ public class HeaderNode<T> {
 		public T getData(RefexDynamicGUI source);
 	}
 	public static class Filter<T> {
+		private final Set<T> allPotentialFilterValues = new HashSet<>();
 		private final ObservableList<Object> filterValues = new ObservableListWrapper<>(new ArrayList<>());
 		private final ColumnId columnId;
 		private DataProvider<T> dataProvider;
@@ -76,6 +77,13 @@ public class HeaderNode<T> {
 		
 		public ObservableList<Object> getFilterValues() {
 			return filterValues;
+		}
+
+		/**
+		 * @return the allPotentialFilterValues
+		 */
+		public Set<T> getAllPotentialFilterValues() {
+			return allPotentialFilterValues;
 		}
 
 		/**
@@ -150,15 +158,15 @@ public class HeaderNode<T> {
 		}
 	}
 
-	private static Set<Object> getUniqueDisplayObjects(TreeItem<RefexDynamicGUI> item, DataProvider<?> dataProvider) {
-		Set<Object> stringSet = new HashSet<>();
+	private static <T> Set<T> getUniqueDisplayObjects(TreeItem<RefexDynamicGUI> item, DataProvider<T> dataProvider) {
+		Set<T> stringSet = new HashSet<>();
 		
 		if (item == null) {
 			return stringSet;
 		}
 
 		if (item.getValue() != null) {
-			stringSet.add(dataProvider.getData(item.getValue()).toString());
+			stringSet.add(dataProvider.getData(item.getValue()));
 		}
 		
 		for (TreeItem<RefexDynamicGUI> childItem : item.getChildren()) {
@@ -171,12 +179,16 @@ public class HeaderNode<T> {
 	private void setUserFilters(String text) {
 		List<String> testList = new ArrayList<String>();
 
-		for (Object obj : getUniqueDisplayObjects(column.getTreeTableView().getRoot(), dataProvider)) {
+		for (T obj : getUniqueDisplayObjects(column.getTreeTableView().getRoot(), dataProvider)) {
 			if (obj != null) {
-				testList.add(obj.toString());
+				filter.allPotentialFilterValues.add(obj);
 			}
 		}
 
+		for (T obj : filter.allPotentialFilterValues) {
+			testList.add(obj.toString());
+		}
+		
 		Collections.sort(testList);
 		
 		RefexContentFilterPrompt prompt = new RefexContentFilterPrompt(text, testList, filter.getFilterValues());

@@ -644,16 +644,7 @@ public class DynamicRefexView implements RefexViewI
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
 
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>(DynamicRefexColumnType.STATUS_CONDENSED.toString());
-				HashMap<Label , String> tooltipsToInstall = new HashMap<>(); 
-				
-//				HeaderNode ttStatusColHeaderNode = new HeaderNode(ttStatusCol, rootNode_.getScene(), new HeaderNode.StringProvider() {
-//					@Override
-//					public String getString(RefexDynamicGUI source) {
-//						return source.getDisplayStrings(DynamicRefexColumnType.STATUS_CONDENSED, null).getKey();
-//					}
-//				});
-//				columnHeaderNodes_.add(ttStatusColHeaderNode);
-//				ttStatusCol.setGraphic(ttStatusColHeaderNode.getNode());
+				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
 
 //				Label l = new Label(DynamicRefexColumnType.STATUS_CONDENSED.toString());
 //				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
