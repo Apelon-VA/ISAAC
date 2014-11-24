@@ -24,10 +24,21 @@ public class RefexContentFilterPrompt extends UserPrompt {
 	private String columnName;
 	private List<String> allValues;
 
-	protected RefexContentFilterPrompt(String columnName, List<String> allValues) {
+	final List<String> alreadySelectedValues = new ArrayList<>();
+
+//	protected RefexContentFilterPrompt(String columnName, List<String> allValues) {
+//		this(columnName, allValues, null);
+//	}
+	protected RefexContentFilterPrompt(String columnName, List<String> allValues, List<?> alreadySelectedValues) {
 		super("Filter");
 		this.columnName = columnName;
 		this.allValues = allValues;
+		
+		for (Object obj : alreadySelectedValues) {
+			if (obj != null) {
+				this.alreadySelectedValues.add(obj.toString());
+			}
+		}
 	}
 
 	protected Node createUserInterface() {
@@ -54,6 +65,9 @@ public class RefexContentFilterPrompt extends UserPrompt {
         
         for (String s : allValues) {
         	CheckMenuItem item = new CheckMenuItem(s);
+        	if (alreadySelectedValues.contains(s)) {
+        		item.isSelected();
+        	}
     		checkItems.add(item);
         }
         

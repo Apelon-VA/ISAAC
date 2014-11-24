@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
+import gov.va.isaac.gui.refexViews.refexEdit.HeaderNode.Filter;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
@@ -38,7 +39,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 
 import javafx.application.Platform;
@@ -49,6 +49,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -122,7 +123,6 @@ public class DynamicRefexView implements RefexViewI
 	private ProgressBar progressBar_;
 	private RefexAnnotationSearcher processor_;
 	
-	private Set<HeaderNode> columnHeaderNodes_ = new HashSet<>();
 	private Button clearColumnHeaderNodesButton_ = new Button("Clear Filters");
 	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
@@ -133,7 +133,46 @@ public class DynamicRefexView implements RefexViewI
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
-	
+
+	private final MapChangeListener<ColumnId, Filter<?>> filterCacheListener = new MapChangeListener<ColumnId, Filter<?>>() {
+		@Override
+		public void onChanged(
+				javafx.collections.MapChangeListener.Change<? extends ColumnId, ? extends Filter<?>> c) {
+			if (c.wasAdded() || c.wasRemoved()) {
+				refresh();
+			}
+		}
+	};
+	private final ListChangeListener<Object> filterListener = new ListChangeListener<Object>() {
+		@Override
+		public void onChanged(
+				javafx.collections.ListChangeListener.Change<? extends Object> c) {
+			while (c.next()) {
+				if (c.wasPermutated()) {
+					// irrelevant
+				} else if (c.wasUpdated()) {
+					// irrelevant
+				} else {
+					refresh();
+					break;
+				}
+			}
+		}
+	};
+	private void addFilterCacheListeners() {
+		removeFilterCacheListeners();
+		HeaderNode.getFilterCache().addListener(filterCacheListener);
+		for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+			filter.getFilterValues().addListener(filterListener);
+		}
+	}
+	private void removeFilterCacheListeners() {
+		HeaderNode.getFilterCache().removeListener(filterCacheListener);
+		for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+			filter.getFilterValues().removeListener(filterListener);
+		}
+	}
+
 	private DynamicRefexView() 
 	{
 		//Created by HK2 - no op - delay till getView called
@@ -164,8 +203,8 @@ public class DynamicRefexView implements RefexViewI
 			ToolBar t = new ToolBar();
 			
 			clearColumnHeaderNodesButton_.setOnAction(event -> {
-				for (HeaderNode headerNode : columnHeaderNodes_) {
-					headerNode.getUserFilters().clear();
+				for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+					filter.getFilterValues().clear();
 				}
 			});
 			t.getItems().add(clearColumnHeaderNodesButton_);
@@ -590,8 +629,8 @@ public class DynamicRefexView implements RefexViewI
 	{
 		Utility.execute(() -> {
 			try
-			{
-				columnHeaderNodes_.clear();
+			{				
+				removeFilterCacheListeners();
 				
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
 
@@ -635,13 +674,16 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
-					HeaderNode headerNode = new HeaderNode(ttCol, rootNode_.getScene(), new HeaderNode.StringProvider() {
+					HeaderNode headerNode = new HeaderNode(
+							ttCol,
+							ColumnId.getInstance(DynamicRefexColumnType.COMPONENT),
+							rootNode_.getScene(),
+							new HeaderNode.DataProvider<String>() {
 						@Override
-						public String getString(RefexDynamicGUI source) {
+						public String getData(RefexDynamicGUI source) {
 							return source.getDisplayStrings(DynamicRefexColumnType.COMPONENT, null).getKey();
 						}
 					});
-					this.columnHeaderNodes_.add(headerNode);
 					ttCol.setGraphic(headerNode.getNode());
 					
 					treeColumns.add(ttCol);
@@ -650,13 +692,16 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
-					HeaderNode headerNode = new HeaderNode(ttCol, rootNode_.getScene(), new HeaderNode.StringProvider() {
+					HeaderNode headerNode = new HeaderNode(
+							ttCol,
+							ColumnId.getInstance(DynamicRefexColumnType.ASSEMBLAGE),
+							rootNode_.getScene(),
+							new HeaderNode.DataProvider<String>() {
 						@Override
-						public String getString(RefexDynamicGUI source) {
+						public String getData(RefexDynamicGUI source) {
 							return source.getDisplayStrings(DynamicRefexColumnType.ASSEMBLAGE, null).getKey();
 						}
 					});
-					this.columnHeaderNodes_.add(headerNode);
 					ttCol.setGraphic(headerNode.getNode());
 
 					treeColumns.add(ttCol);
@@ -754,11 +799,21 @@ public class DynamicRefexView implements RefexViewI
 						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>(name);
 						//Label l = new Label(name);
 						//tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
+						
+						// TODO: FILTER ID
+						final int order = col.values().iterator().next().get(i).getColumnOrder();
+						final UUID assemblageUuid = col.values().iterator().next().get(i).getAssemblageConcept();
+
+						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
 
 						final Integer listItem = i;
-						HeaderNode ttNestedColHeaderNode = new HeaderNode(nestedCol, rootNode_.getScene(), new HeaderNode.StringProvider() {
+						HeaderNode ttNestedColHeaderNode = new HeaderNode(
+								nestedCol,
+								columnKey,
+								rootNode_.getScene(),
+								new HeaderNode.DataProvider<String>() {
 							@Override
-							public String getString(RefexDynamicGUI source) {
+							public String getData(RefexDynamicGUI source) {
 								if (source == null) {
 									return null;
 								}
@@ -790,7 +845,6 @@ public class DynamicRefexView implements RefexViewI
 								return null;  //not applicable / blank row
 							}
 						});
-						columnHeaderNodes_.add(ttNestedColHeaderNode);
 						nestedCol.setGraphic(ttNestedColHeaderNode.getNode());
 						
 						nestedCol.setSortable(true);
@@ -857,13 +911,16 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.STATUS_STRING.toString());
-				HeaderNode nestedColHeaderNode = new HeaderNode(nestedCol, rootNode_.getScene(), new HeaderNode.StringProvider() {
+				HeaderNode nestedColHeaderNode = new HeaderNode(
+						nestedCol,
+						ColumnId.getInstance(DynamicRefexColumnType.STATUS_STRING),
+						rootNode_.getScene(),
+						new HeaderNode.DataProvider<String>() {
 					@Override
-					public String getString(RefexDynamicGUI source) {
+					public String getData(RefexDynamicGUI source) {
 						return source.getDisplayStrings(DynamicRefexColumnType.STATUS_STRING, null).getKey();
 					}
 				});
-				columnHeaderNodes_.add(nestedColHeaderNode);
 				
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
@@ -876,13 +933,16 @@ public class DynamicRefexView implements RefexViewI
 
 				nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.TIME.toString());
-				nestedColHeaderNode = new HeaderNode(nestedCol, rootNode_.getScene(), new HeaderNode.StringProvider() {
+				nestedColHeaderNode = new HeaderNode(
+						nestedCol,
+						ColumnId.getInstance(DynamicRefexColumnType.TIME),
+						rootNode_.getScene(),
+						new HeaderNode.DataProvider<String>() {
 					@Override
-					public String getString(RefexDynamicGUI source) {
+					public String getData(RefexDynamicGUI source) {
 						return source.getDisplayStrings(DynamicRefexColumnType.TIME, null).getKey();
 					}
 				});
-				columnHeaderNodes_.add(nestedColHeaderNode);
 				
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
@@ -1019,23 +1079,7 @@ public class DynamicRefexView implements RefexViewI
 				});
 				
 				// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
-				for (HeaderNode headerNode : columnHeaderNodes_) {
-					headerNode.getUserFilters().addListener(new ListChangeListener<String>() {
-						@Override
-						public void onChanged(
-								javafx.collections.ListChangeListener.Change<? extends String> c) {
-							while (c.next()) {
-								if (c.wasPermutated()) {
-									// irrelevant
-								} else if (c.wasUpdated()) {
-									// irrelevant
-								} else {
-									refresh();
-								}
-							}
-						}
-					});
-				}
+				addFilterCacheListeners();
 			}
 			catch (Exception e)
 			{
@@ -1139,10 +1183,12 @@ public class DynamicRefexView implements RefexViewI
 				
 				// HeaderNode FILTERING DONE HERE
 				boolean filterOut = false;
-				for (HeaderNode headerNode : this.columnHeaderNodes_) {
-					if (! headerNode.filter(newRefexDynamicGUI)) {
-						filterOut = true;
-						break;
+				for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+					if (filter.getFilterValues().size() > 0) {
+						if (! filter.accept(newRefexDynamicGUI)) {
+							filterOut = true;
+							break;
+						}
 					}
 				}
 				
