@@ -148,7 +148,8 @@ public class SnomedConceptViewController {
         stampToggle.setText("");
         stampToggle.setGraphic(Images.STAMP.createImageView());
         stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
-        
+        stampToggle.setSelected(true);
+
         activeOnlyToggle.setText("");
         activeOnlyToggle.setGraphic(Images.FILTER_16.createImageView());
         activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
