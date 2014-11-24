@@ -338,7 +338,7 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 					if (!ExtendedAppContext.getDataStore().hasUuid(WBUtility.getUuidForFsn(value, value))) {
 						// Create Refex's Description
 						StringBuilder enumerationDesc = new StringBuilder();
-						enumerationDesc.append("Enumeration Refex for " + auth + "'s " + id);
+						enumerationDesc.append("Enumeration Sememe for " + auth + "'s " + id);
 						if (vs.getDescription() != null) {
 							enumerationDesc.append("\r\n" + vs.getDescription());
 						}

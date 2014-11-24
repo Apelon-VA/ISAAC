@@ -44,7 +44,7 @@ public class DynamicRefexViewRunner extends Application
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
-		primaryStage.setTitle("Refex View");
+		primaryStage.setTitle("Sememe View");
 
 		DynamicRefexView refexView = AppContext.getService(DynamicRefexView.class);
 		refexView.setComponent(RefexDynamic.REFEX_DYNAMIC_DEFINITION.getNid(), null, null, null);

@@ -87,7 +87,7 @@ public class SummaryController implements PanelControllersI {
 				AppContext.getRuntimeGlobals().disableAllCommitListeners();
 				storeValues();
 			} catch (Exception e1) {
-				logger.error("Coudn't Disable WF Init & Commit New Dynamic Refex Concept", e1);
+				logger.error("Coudn't Disable WF Init & Commit New Dynamic Sememe Concept", e1);
 			}
 			finally
 			{

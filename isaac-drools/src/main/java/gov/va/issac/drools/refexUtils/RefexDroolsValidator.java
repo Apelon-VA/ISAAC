@@ -105,7 +105,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 				StringBuilder sb = new StringBuilder();
 				for (ResultsItem r : rc.getResultsItems())
 				{
-					logger.debug("Drools rule fired during refex validation with severity {}, error code {}, rule ID {}, message {}", r.getSeverity().getName(),
+					logger.debug("Drools rule fired during sememe validation with severity {}, error code {}, rule ID {}, message {}", r.getSeverity().getName(),
 							r.getErrorCode(), r.getRuleUuid(), r.getMessage());
 					sb.append(r.getMessage());
 					sb.append(", ");
