@@ -124,7 +124,7 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 									});
 									cm.getItems().add(mi);
 									setContextMenu(cm);
-									if (texts.getValue() != null)
+									if (texts.getValue() != null && texts.getValue().length() > 0)
 									{
 										setTooltip(new Tooltip(texts.getValue()));
 									}
@@ -181,7 +181,7 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 
 			Platform.runLater(() ->
 			{
-				if (value.getValue() != null)
+				if (value.getValue() != null && value.getValue().length() > 0)
 				{
 					setTooltip(new Tooltip(value.getValue()));
 				}
