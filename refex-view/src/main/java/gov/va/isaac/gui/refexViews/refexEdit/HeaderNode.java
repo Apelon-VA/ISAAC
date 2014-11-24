@@ -23,7 +23,6 @@ import gov.va.isaac.gui.util.Images;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +30,6 @@ import java.util.Set;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import com.sun.javafx.collections.ObservableMapWrapper;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -50,22 +48,19 @@ import com.sun.javafx.collections.ObservableListWrapper;
  *
  */
 public class HeaderNode<T> {
-	private final static ObservableMap<ColumnId, Filter<?>> filterCache = new ObservableMapWrapper<>(new HashMap<>());
-	public static ObservableMap<ColumnId, Filter<?>> getFilterCache() { return filterCache; }
-
 	public static interface DataProvider<T> {
 		public T getData(RefexDynamicGUI source);
 	}
 	public static class Filter<T> {
 		private final ObservableList<Object> filterValues = new ObservableListWrapper<>(new ArrayList<>());
-		private final ColumnId columnKey;
+		private final ColumnId columnId;
 		private DataProvider<T> dataProvider;
 		/**
 		 * @param columnKey
 		 */
-		public Filter(ColumnId columnKey, DataProvider<T> dataProvider) {
+		public Filter(ColumnId columnId, DataProvider<T> dataProvider) {
 			super();
-			this.columnKey = columnKey;
+			this.columnId = columnId;
 			this.dataProvider = dataProvider;
 		}
 		
@@ -80,9 +75,15 @@ public class HeaderNode<T> {
 		public ObservableList<Object> getFilterValues() {
 			return filterValues;
 		}
-	}
 
-	private final ColumnId columnId;
+		/**
+		 * @return the columnId
+		 */
+		public ColumnId getColumnId() {
+			return columnId;
+		}
+	}
+	
 	private final TreeTableColumn<RefexDynamicGUI, ?> column;
 	private final Scene scene;
 	private final DataProvider<T> dataProvider;
@@ -91,12 +92,17 @@ public class HeaderNode<T> {
 	
 	private final ImageView image = Images.FILTER_16.createImageView();
 
+	@SuppressWarnings("unchecked")
+	private Filter<T> castFilterFromCache(Filter<?> filter) {
+		return (Filter<T>)filter;
+	}
+	
 	public HeaderNode(
+			ObservableMap<ColumnId, Filter<?>> filterCache,
 			TreeTableColumn<RefexDynamicGUI, ?> col,
 			ColumnId columnId,
 			Scene scene,
 			DataProvider<T> dataProvider) {
-		this.columnId = columnId;
 		this.column = col;
 		this.scene = scene;
 		
@@ -105,16 +111,12 @@ public class HeaderNode<T> {
 		this.dataProvider = dataProvider;
 		
 		if (filterCache.get(columnId) != null) {
-			this.filter = (Filter<T>)filterCache.get(columnId);
+			this.filter = castFilterFromCache(filterCache.get(columnId));
 			this.filter.dataProvider = dataProvider;
 		} else {
-			this.filter = new Filter(columnId, dataProvider);
+			this.filter = new Filter<>(columnId, dataProvider);
 			filterCache.put(columnId, filter);
 		}
-
-//		if (label.getText().startsWith("info model property ")) {
-//			label.setText(label.getText().replace("info model property ",""));
-//		}
 		
 		filterConfigurationButton.setGraphic(image);
 		
@@ -129,16 +131,6 @@ public class HeaderNode<T> {
 		
 		filterConfigurationButton.setOnAction(event -> { setUserFilters(column.getText()); });
 	}
-	
-//	public boolean filter(RefexDynamicGUI dataToFilter) {
-//		for (String valueToFilter : valuesToFilter) {
-//			if (stringProvider.getString(dataToFilter).equals(valueToFilter)) {
-//				return true;
-//			}
-//		}
-//		
-//		return false;
-//	}
 	
 	private void updateButton() {
 		if (filter.getFilterValues().size() > 0) {

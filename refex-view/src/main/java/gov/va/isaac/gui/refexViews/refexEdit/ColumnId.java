@@ -42,13 +42,13 @@ public class ColumnId {
 	private final String columnDescriptionUuidOrColumnType;
 	private final Integer columnOrder;
 
-	public static ColumnId getInstance(DynamicRefexColumnType aDynamicRefexColumnType) {
+	public synchronized static ColumnId getInstance(DynamicRefexColumnType aDynamicRefexColumnType) {
 		return getInstance(aDynamicRefexColumnType.toString(), null);
 	}
-	public static ColumnId getInstance(UUID columnDescriptionUuid, Integer columnOrder) {
+	public synchronized static ColumnId getInstance(UUID columnDescriptionUuid, Integer columnOrder) {
 		return getInstance((Object)columnDescriptionUuid, columnOrder);
 	}
-	private static ColumnId getInstance(Object columnDescriptionUuidOrColumnType, Integer columnOrder) {
+	private synchronized static ColumnId getInstance(Object columnDescriptionUuidOrColumnType, Integer columnOrder) {
 		ColumnId tempKey = new ColumnId(columnDescriptionUuidOrColumnType.toString(), columnOrder);
 		
 		for (ColumnId cachedInstance : instanceCache) {

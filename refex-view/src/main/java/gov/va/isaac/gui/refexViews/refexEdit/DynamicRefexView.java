@@ -51,6 +51,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
+import com.sun.javafx.collections.ObservableMapWrapper;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -134,6 +136,8 @@ public class DynamicRefexView implements RefexViewI
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
 
+	private final ObservableMap<ColumnId, Filter<?>> filterCache_ = new ObservableMapWrapper<>(new HashMap<>());
+	
 	private final MapChangeListener<ColumnId, Filter<?>> filterCacheListener = new MapChangeListener<ColumnId, Filter<?>>() {
 		@Override
 		public void onChanged(
@@ -161,14 +165,14 @@ public class DynamicRefexView implements RefexViewI
 	};
 	private void addFilterCacheListeners() {
 		removeFilterCacheListeners();
-		HeaderNode.getFilterCache().addListener(filterCacheListener);
-		for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+		filterCache_.addListener(filterCacheListener);
+		for (HeaderNode.Filter<?> filter : filterCache_.values()) {
 			filter.getFilterValues().addListener(filterListener);
 		}
 	}
 	private void removeFilterCacheListeners() {
-		HeaderNode.getFilterCache().removeListener(filterCacheListener);
-		for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+		filterCache_.removeListener(filterCacheListener);
+		for (HeaderNode.Filter<?> filter : filterCache_.values()) {
 			filter.getFilterValues().removeListener(filterListener);
 		}
 	}
@@ -204,7 +208,7 @@ public class DynamicRefexView implements RefexViewI
 			
 			clearColumnHeaderNodesButton_.setOnAction(event -> {
 				removeFilterCacheListeners();
-				for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+				for (HeaderNode.Filter<?> filter : filterCache_.values()) {
 					filter.getFilterValues().clear();
 				}
 				refresh();
@@ -677,6 +681,7 @@ public class DynamicRefexView implements RefexViewI
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
 					HeaderNode<String> headerNode = new HeaderNode<>(
+							filterCache_,
 							ttCol,
 							ColumnId.getInstance(DynamicRefexColumnType.COMPONENT),
 							rootNode_.getScene(),
@@ -695,6 +700,7 @@ public class DynamicRefexView implements RefexViewI
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
 					HeaderNode<String> headerNode = new HeaderNode<>(
+							filterCache_,
 							ttCol,
 							ColumnId.getInstance(DynamicRefexColumnType.ASSEMBLAGE),
 							rootNode_.getScene(),
@@ -807,6 +813,7 @@ public class DynamicRefexView implements RefexViewI
 
 						final Integer listItem = i;
 						HeaderNode<String> ttNestedColHeaderNode = new HeaderNode<>(
+								filterCache_,
 								nestedCol,
 								columnKey,
 								rootNode_.getScene(),
@@ -911,6 +918,7 @@ public class DynamicRefexView implements RefexViewI
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.STATUS_STRING.toString());
 				HeaderNode<String> nestedColHeaderNode = new HeaderNode<>(
+						filterCache_,
 						nestedCol,
 						ColumnId.getInstance(DynamicRefexColumnType.STATUS_STRING),
 						rootNode_.getScene(),
@@ -933,6 +941,7 @@ public class DynamicRefexView implements RefexViewI
 				nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.TIME.toString());
 				nestedColHeaderNode = new HeaderNode<>(
+						filterCache_,
 						nestedCol,
 						ColumnId.getInstance(DynamicRefexColumnType.TIME),
 						rootNode_.getScene(),
@@ -1182,7 +1191,7 @@ public class DynamicRefexView implements RefexViewI
 				
 				// HeaderNode FILTERING DONE HERE
 				boolean filterOut = false;
-				for (HeaderNode.Filter<?> filter : HeaderNode.getFilterCache().values()) {
+				for (HeaderNode.Filter<?> filter : filterCache_.values()) {
 					if (filter.getFilterValues().size() > 0) {
 						if (! filter.accept(newRefexDynamicGUI)) {
 							filterOut = true;
