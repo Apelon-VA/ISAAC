@@ -82,7 +82,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
         for (String s : allValues) {
         	CheckMenuItem item = new CheckMenuItem(s);
         	if (alreadySelectedValues.contains(s)) {
-        		item.isSelected();
+        		item.setSelected(true);
         	}
     		checkItems.add(item);
         }
