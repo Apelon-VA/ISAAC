@@ -275,7 +275,7 @@ public class EnhancedConceptBuilder {
 	private void createConceptContextMenu() {
 		final ContextMenu rtClickMenu = new ContextMenu();
 
-		MenuItem refexDynamicItem = new MenuItem("Open Dynamic Refexes");
+		MenuItem refexDynamicItem = new MenuItem("Open Dynamic Sememes");
 		refexDynamicItem.setOnAction(new EventHandler<ActionEvent>()
 		{
 			@Override

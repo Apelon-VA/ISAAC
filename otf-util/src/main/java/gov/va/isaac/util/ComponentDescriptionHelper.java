@@ -93,7 +93,7 @@ public class ComponentDescriptionHelper {
 			int assemblageNid = refexVersion.getAssemblageNid();
 			ComponentVersionBI assemblageComponentVersion = WBUtility.getComponentVersion(assemblageNid);
 			UUID assemblageUuid = assemblageComponentVersion.getPrimordialUuid();
-			description = ComponentType.SEMEME.toString() + " member " + refexVersion.getPrimordialUuid() + " \nwith referenced component " + referencedComponent + " \nin refex " + assemblageUuid;
+			description = ComponentType.SEMEME.toString() + " member " + refexVersion.getPrimordialUuid() + " \nwith referenced component " + referencedComponent + " \nin sememe " + assemblageUuid;
 			break;
 
 		case SEMEME_DYNAMIC:
@@ -105,12 +105,12 @@ public class ComponentDescriptionHelper {
 			UUID assemblageDynamicUuid = assemblageDynamicComponentVersion.getPrimordialUuid();
 			try {
 				if (assemblageDynamicComponentVersion.isAnnotationStyleRefex()) {
-					description = ComponentType.SEMEME_DYNAMIC.toString() + " annotated member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+					description = ComponentType.SEMEME_DYNAMIC.toString() + " annotated member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin sememe " + assemblageDynamicUuid;
 				} else {
-					description = ComponentType.SEMEME_DYNAMIC.toString() + " regular member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+					description = ComponentType.SEMEME_DYNAMIC.toString() + " regular member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin sememe " + assemblageDynamicUuid;
 				}
 			} catch (Exception e) {
-				description = "Error accessing Refex Annotation type\n" + ComponentType.SEMEME_DYNAMIC.toString() + " member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+				description = "Error accessing Dynamic Sememe Annotation type\n" + ComponentType.SEMEME_DYNAMIC.toString() + " member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin sememe " + assemblageDynamicUuid;
 			}
 			break;
 

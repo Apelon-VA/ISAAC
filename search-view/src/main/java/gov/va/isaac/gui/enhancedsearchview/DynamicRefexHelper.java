@@ -91,8 +91,8 @@ public class DynamicRefexHelper {
 		}
 		RefexDynamicColumnInfo[] colInfo = dud.getColumnInfo();
 		RefexDynamicDataBI[] data = refex.getData();
-		LOG.debug(indent + "dynamic refex nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
-		LOG.debug(indent + "dynamic refex name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
+		LOG.debug(indent + "dynamic sememe nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
+		LOG.debug(indent + "dynamic sememe name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
 		for (int colIndex = 0; colIndex < colInfo.length; ++colIndex) {
 			RefexDynamicColumnInfo currentCol = colInfo[colIndex];
 			String name = currentCol.getColumnName();
@@ -100,7 +100,7 @@ public class DynamicRefexHelper {
 			UUID colUuid = currentCol.getColumnDescriptionConcept();
 			RefexDynamicDataBI colData = data[colIndex];
 
-			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + (colData != null ? colData.getDataObject() : null));
+			LOG.debug(indent + "\t" + "dynamic sememe: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + (colData != null ? colData.getDataObject() : null));
 		}
 		
 		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;

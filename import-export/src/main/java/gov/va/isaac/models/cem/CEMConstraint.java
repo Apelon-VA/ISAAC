@@ -125,7 +125,7 @@ public class CEMConstraint {
 				try {
 					// Create Enumeration
 					AppContext.getRuntimeGlobals().disableAllCommitListeners();
-					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, "Value Set Refex for " + value, 
+					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, "Value Set Sememe for " + value, 
 																									 new RefexDynamicColumnInfo[] {},
 																									 InformationModels.CEM_ENUMERATIONS.getUuids()[0], false);
 				} catch (IOException | ContradictionException | InvalidCAB

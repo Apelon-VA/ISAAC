@@ -195,7 +195,7 @@ public class IsMemberOfWithTypeEvaluatorDefinition extends IsaacBaseEvaluatorDef
 					}
 					else
 					{
-						throw new UnsupportedOperationException("Can only handle refex type of concept, string, integer, and boolean. "
+						throw new UnsupportedOperationException("Can only handle sememe type of concept, string, integer, and boolean. "
 								+ "Given type did not match any of these");
 					}
 				}
@@ -280,7 +280,7 @@ public class IsMemberOfWithTypeEvaluatorDefinition extends IsaacBaseEvaluatorDef
 					}
 					else
 					{
-						throw new UnsupportedOperationException("Can only handle refex type of concept, string, integer, and boolean. "
+						throw new UnsupportedOperationException("Can only handle sememe type of concept, string, integer, and boolean. "
 								+ "Given type did not match any of these");
 					}
 				}

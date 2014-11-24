@@ -8,6 +8,7 @@ import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -26,21 +27,34 @@ public class RefexContentFilterPrompt extends UserPrompt {
 
 	final List<String> alreadySelectedValues = new ArrayList<>();
 
-//	protected RefexContentFilterPrompt(String columnName, List<String> allValues) {
-//		this(columnName, allValues, null);
-//	}
 	protected RefexContentFilterPrompt(String columnName, List<String> allValues, List<?> alreadySelectedValues) {
-		super("Filter");
+		super("Apply");
 		this.columnName = columnName;
 		this.allValues = allValues;
-		this.cancelButtonText = "Clear";
 		
 		for (Object obj : alreadySelectedValues) {
 			if (obj != null) {
 				this.alreadySelectedValues.add(obj.toString());
 			}
 		}
+		
+//		setCommitButtonDisabledState();
+//		selectedValues.getItems().addListener(new ListChangeListener<String>() {
+//			@Override
+//			public void onChanged(
+//					javafx.collections.ListChangeListener.Change<? extends String> c) {
+//				setCommitButtonDisabledState();
+//			}
+//		});
 	}
+	
+//	protected void setCommitButtonDisabledState() {
+//		if (selectedValues.getItems().size() > 0) {
+//			commitButton.setDisable(false);
+//		} else {
+//			commitButton.setDisable(true);
+//		}
+//	}
 
 	protected Node createUserInterface() {
 		VBox vb = new VBox(10);
@@ -67,7 +81,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
         for (String s : allValues) {
         	CheckMenuItem item = new CheckMenuItem(s);
         	if (alreadySelectedValues.contains(s)) {
-        		item.isSelected();
+        		item.setSelected(true);
         	}
     		checkItems.add(item);
         }
@@ -104,7 +118,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
 	@Override
 	protected boolean isSelectedValuesValid() {
 		// Because always returns true, if a test ever changes, need to update displayInvalidMessage() accordingly
-		return !selectedValues.getItems().isEmpty();
+		return true; //!selectedValues.getItems().isEmpty();
 	}
 	
 	@Override

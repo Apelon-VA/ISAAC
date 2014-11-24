@@ -353,7 +353,7 @@ public class BdbInformationModelService implements InformationModelService {
         .getRefexDynamicAnnotations()) {
       RefexDynamicVersionBI<?> refexVersion =
           refex.getVersion(WBUtility.getViewCoordinate());
-      LOG.debug("  refex = " + refex.toUserString());
+      LOG.debug("  sememe = " + refex.toUserString());
       // Look for matching refex id and "active" flag
       if (refexVersion != null
           && refex.getAssemblageNid() == propertyRefset
@@ -773,7 +773,7 @@ public class BdbInformationModelService implements InformationModelService {
         refexBlueprint.setRetired();
         RefexDynamicChronicleBI<?> refex2 =
             WBUtility.getBuilder().construct(refexBlueprint);
-        LOG.debug("  Retire refex UUID = " + refex2.getPrimordialUuid());
+        LOG.debug("  Retire sememe UUID = " + refex2.getPrimordialUuid());
       }
     }
   }

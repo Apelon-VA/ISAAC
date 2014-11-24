@@ -27,12 +27,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.image.ImageView;
@@ -52,6 +54,7 @@ public class HeaderNode<T> {
 		public T getData(RefexDynamicGUI source);
 	}
 	public static class Filter<T> {
+		private final Set<T> allPotentialFilterValues = new HashSet<>();
 		private final ObservableList<Object> filterValues = new ObservableListWrapper<>(new ArrayList<>());
 		private final ColumnId columnId;
 		private DataProvider<T> dataProvider;
@@ -74,6 +77,13 @@ public class HeaderNode<T> {
 		
 		public ObservableList<Object> getFilterValues() {
 			return filterValues;
+		}
+
+		/**
+		 * @return the allPotentialFilterValues
+		 */
+		public Set<T> getAllPotentialFilterValues() {
+			return allPotentialFilterValues;
 		}
 
 		/**
@@ -119,6 +129,10 @@ public class HeaderNode<T> {
 		}
 		
 		filterConfigurationButton.setGraphic(image);
+		Platform.runLater(() ->
+		{
+			filterConfigurationButton.setTooltip(new Tooltip("Press to configure filters for " + col.getText()));
+		});
 		
 		filter.getFilterValues().addListener(new ListChangeListener<Object>() {
 			@Override
@@ -128,7 +142,7 @@ public class HeaderNode<T> {
 			}
 		});
 		updateButton();
-		
+
 		filterConfigurationButton.setOnAction(event -> { setUserFilters(column.getText()); });
 	}
 	
@@ -136,25 +150,23 @@ public class HeaderNode<T> {
 		if (filter.getFilterValues().size() > 0) {
 			filterConfigurationButton.setStyle(
 					"-fx-background-color: red;"
-							//+ "-fx-text-fill: white;"
 							+ "-fx-padding: 0 0 0 0;");
 		} else {
 			filterConfigurationButton.setStyle(
 					"-fx-background-color: white;"
-							//+ "-fx-text-fill: white;"
 							+ "-fx-padding: 0 0 0 0;");
 		}
 	}
 
-	private static Set<Object> getUniqueDisplayObjects(TreeItem<RefexDynamicGUI> item, DataProvider<?> dataProvider) {
-		Set<Object> stringSet = new HashSet<>();
+	private static <T> Set<T> getUniqueDisplayObjects(TreeItem<RefexDynamicGUI> item, DataProvider<T> dataProvider) {
+		Set<T> stringSet = new HashSet<>();
 		
 		if (item == null) {
 			return stringSet;
 		}
 
 		if (item.getValue() != null) {
-			stringSet.add(dataProvider.getData(item.getValue()).toString());
+			stringSet.add(dataProvider.getData(item.getValue()));
 		}
 		
 		for (TreeItem<RefexDynamicGUI> childItem : item.getChildren()) {
@@ -167,10 +179,14 @@ public class HeaderNode<T> {
 	private void setUserFilters(String text) {
 		List<String> testList = new ArrayList<String>();
 
-		for (Object obj : getUniqueDisplayObjects(column.getTreeTableView().getRoot(), dataProvider)) {
+		for (T obj : getUniqueDisplayObjects(column.getTreeTableView().getRoot(), dataProvider)) {
 			if (obj != null) {
-				testList.add(obj.toString());
+				filter.allPotentialFilterValues.add(obj);
 			}
+		}
+
+		for (T obj : filter.allPotentialFilterValues) {
+			testList.add(obj.toString());
 		}
 		
 		Collections.sort(testList);
@@ -180,8 +196,8 @@ public class HeaderNode<T> {
 
 		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 			filter.getFilterValues().setAll(prompt.getSelectedValues());
-		} else {		
-			filter.getFilterValues().clear();
+		} else {
+			//filter.getFilterValues().clear();
 		}
 	}
 
