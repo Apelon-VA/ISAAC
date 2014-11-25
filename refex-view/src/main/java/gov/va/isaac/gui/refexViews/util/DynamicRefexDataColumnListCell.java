@@ -78,26 +78,26 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 
 			int row = 0;
 
-			gp.add(wrapAndStyle(makeBoldLabel("Column Name"), row), 0, row);
+			gp.add(wrapAndStyle(makeBoldLabel("Attribute Name"), row), 0, row);
 			Label name = new Label(item.getColumnName());
 			name.setWrapText(true);
 			name.maxWidthProperty().bind(this.widthProperty().subtract(210));
 			gp.add(wrapAndStyle(name, row), 1, row++);
 
-			gp.add(wrapAndStyle(makeBoldLabel("Column Description"), row), 0, row);
+			gp.add(wrapAndStyle(makeBoldLabel("Attribute Description"), row), 0, row);
 			Label description = new Label(item.getColumnDescription());
 			description.setWrapText(true);
 			description.maxWidthProperty().bind(this.widthProperty().subtract(210));
 
 			gp.add(wrapAndStyle(description, row), 1, row++);
 
-			gp.add(wrapAndStyle(makeBoldLabel("Column Order"), row), 0, row);
+			gp.add(wrapAndStyle(makeBoldLabel("Attribute Order"), row), 0, row);
 			gp.add(wrapAndStyle(new Label(item.getColumnOrder() + 1 + ""), row), 1, row++);
 
 			gp.add(wrapAndStyle(makeBoldLabel("Data Type"), row), 0, row);
 			gp.add(wrapAndStyle(new Label(item.getColumnDataType().getDisplayName()), row), 1, row++);
 
-			gp.add(wrapAndStyle(makeBoldLabel("Column Required"), row), 0, row);
+			gp.add(wrapAndStyle(makeBoldLabel("Attribute Required"), row), 0, row);
 			gp.add(wrapAndStyle(new Label(item.isColumnRequired() + ""), row), 1, row++);
 
 			gp.add(wrapAndStyle(makeBoldLabel("Default Value"), row), 0, row);

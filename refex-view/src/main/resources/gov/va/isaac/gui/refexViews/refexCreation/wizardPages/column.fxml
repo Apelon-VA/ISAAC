@@ -34,8 +34,8 @@
 				<RowConstraints minHeight="25.0" vgrow="NEVER" />
 			</rowConstraints>
 			<children>
-				<Label text="Column Name" />
-				<Label text="Column Description" GridPane.rowIndex="1" />
+				<Label text="Attribute Name" />
+				<Label text="Attribute Description" GridPane.rowIndex="1" />
 				<Label text="Type" GridPane.rowIndex="2" />
 				<Label text="Default Value" GridPane.rowIndex="3" />
 				<Button fx:id="newColNameButton" alignment="CENTER_RIGHT" minWidth="-Infinity" mnemonicParsing="false" text="Create Column" GridPane.columnIndex="2" GridPane.halignment="RIGHT" />

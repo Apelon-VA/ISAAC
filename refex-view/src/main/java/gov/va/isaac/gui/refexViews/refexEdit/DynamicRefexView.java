@@ -340,7 +340,7 @@ public class DynamicRefexView implements RefexViewI
 			
 			stampButton_ = new ToggleButton("");
 			stampButton_.setGraphic(Images.STAMP.createImageView());
-			stampButton_.setTooltip(new Tooltip("Show / Hide Stamp Columns"));
+			stampButton_.setTooltip(new Tooltip("Show / Hide Stamp Attributes"));
 			stampButton_.setVisible(false);
 			stampButton_.setSelected(true);
 			t.getItems().add(stampButton_);
@@ -841,7 +841,7 @@ public class DynamicRefexView implements RefexViewI
 								}
 								catch (Exception e)
 								{
-									logger_.error("Unexpected error getting string data from column", e);
+									logger_.error("Unexpected error getting string data from attribute", e);
 								}
 								return null;  //not applicable / blank row
 							}
@@ -878,7 +878,7 @@ public class DynamicRefexView implements RefexViewI
 								}
 								catch (Exception e)
 								{
-									logger_.error("Unexpected error sorting data columns", e);
+									logger_.error("Unexpected error sorting data attributes", e);
 								}
 								return 1;  //not applicable / blank row
 								

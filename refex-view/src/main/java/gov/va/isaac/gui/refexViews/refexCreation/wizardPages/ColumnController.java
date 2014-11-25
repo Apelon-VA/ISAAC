@@ -147,7 +147,7 @@ public class ColumnController implements PanelControllersI {
 			{
 				if (typeOption.getValue() == RefexDynamicDataType.UNKNOWN)
 				{
-					return "You must select the column type";
+					return "You must select the attribute type";
 				}
 				return "";
 			}
@@ -440,8 +440,8 @@ public class ColumnController implements PanelControllersI {
 				columnNameSelection_.set(sdc);
 			}
 		} catch (IOException e) {
-			logger.error("Unexpected error creating new column concept", e);
-			AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating column concept.  Please see logs.", e);
+			logger.error("Unexpected error creating new attribute concept", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating attribute concept.  Please see logs.", e);
 		}
 	}
 
@@ -455,7 +455,7 @@ public class ColumnController implements PanelControllersI {
 			}
 			columnNameSelection_.set(columnNameChoices.get(0));
 		} catch (Exception e1) {
-			logger.error("Unable to access column concepts", e1);
+			logger.error("Unable to access attribute concepts", e1);
 		}
 	}
 
@@ -543,7 +543,7 @@ public class ColumnController implements PanelControllersI {
 
 	public void setColumnNumber(int colNum) {
 		columnNumber_ = colNum;
-		columnTitle.setText("Column #" + (columnNumber_ + 1) + " Definition");
+		columnTitle.setText("Attribute #" + (columnNumber_ + 1) + " Definition");
 		//don't do this slow task during JavaFX init.
 		if (columnNameChoices.size() == 0)
 		{

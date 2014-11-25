@@ -53,7 +53,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
 		
 		HBox columnHBox = new HBox(10);
 		columnHBox.setAlignment(Pos.CENTER);
-		Label columnAttrLabel= createLabel("Column:");
+		Label columnAttrLabel= createLabel("Attribute:");
 		Label columnValLabel = new Label(columnName);
 		columnHBox.getChildren().addAll(columnAttrLabel, columnValLabel);
 		
