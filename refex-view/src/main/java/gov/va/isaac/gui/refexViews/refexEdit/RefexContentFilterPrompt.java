@@ -28,15 +28,19 @@ import javafx.util.Callback;
 public class RefexContentFilterPrompt extends UserPrompt {
     final ListView<String> selectedValues = new ListView<>();
 	private String columnName;
-	private List<String> allValues;
+	private List<String> allValues = new ArrayList<String>();
 
 	final List<String> alreadySelectedValues = new ArrayList<>();
 
 	protected RefexContentFilterPrompt(String columnName, List<String> allValues, List<?> alreadySelectedValues) {
 		super("Apply");
 		this.columnName = columnName;
-		this.allValues = allValues;
-		
+		for (String s : allValues) {
+			if (!s.trim().isEmpty()) {
+				this.allValues.add(s.trim());
+			}
+		}
+				
 		for (Object obj : alreadySelectedValues) {
 			if (obj != null) {
 				this.alreadySelectedValues.add(obj.toString());
