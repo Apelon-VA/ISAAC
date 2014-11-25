@@ -352,7 +352,7 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 							RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, enumerationDesc.toString(), 
 																											 new RefexDynamicColumnInfo[] {},
 																											 InformationModels.HED_ENUMERATIONS.getUuids()[0], 
-																											 false);
+																											 false, null);
 						} catch (IOException | ContradictionException | InvalidCAB
 								| PropertyVetoException e) {
 							LOG.error("Unable to create HED Enumeration for " + value);

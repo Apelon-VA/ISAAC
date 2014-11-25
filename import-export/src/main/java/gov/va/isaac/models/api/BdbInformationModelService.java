@@ -892,7 +892,7 @@ public class BdbInformationModelService implements InformationModelService {
                   "Information model property refset",
                   "Used to capture information about information model properties",
                   columnArray, RefexDynamic.REFEX_DYNAMIC_IDENTITY.getLenient()
-                      .getPrimordialUuid(), true);
+                      .getPrimordialUuid(), true, null);
       ConceptVersionBI refexConcept =
           WBUtility.getConceptVersion(refex.getRefexUsageDescriptorNid());
       LOG.debug("    PT = " + refexConcept.getPreferredDescription().getText());

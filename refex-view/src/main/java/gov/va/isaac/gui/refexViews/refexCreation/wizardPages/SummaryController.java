@@ -135,7 +135,8 @@ public class SummaryController implements PanelControllersI {
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(refexData.getRefexName(),
 					refexData.getRefexName(), refexData.getRefexDescription(), refexData.getColumnInfo().toArray(new RefexDynamicColumnInfo[0]), 
 					refexData.getParentConcept().getPrimordialUuid(), 
-					refexData.isAnnotatedStyle());
+					refexData.isAnnotatedStyle(),
+					refexData.getComponentRestrictionType());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
 			AppContext.getCommonDialogs().showErrorDialog("Error Creating Sememe", "Unexpected error creating the Sememe", e.getMessage(), summaryPane.getScene().getWindow());

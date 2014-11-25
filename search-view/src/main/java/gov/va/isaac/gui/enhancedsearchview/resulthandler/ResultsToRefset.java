@@ -33,7 +33,8 @@ public class ResultsToRefset {
 																									 prompt.getDescTextField().getText(),
 																									 new RefexDynamicColumnInfo[] {},
 																									 prompt.getParentConcept().getConcept().getPrimordialUuid(),
-																									 prompt.getAnnot().isSelected());
+																									 prompt.getAnnot().isSelected(),
+																									 null);
 		    // Create a dynamic refex CAB for each result
 			for (CompositeSearchResult con : tableView.getItems()) {
 				RefexDynamicCAB refexBlueprint = new RefexDynamicCAB(con.getContainingConcept().getNid(), refset.getRefexUsageDescriptorNid());
