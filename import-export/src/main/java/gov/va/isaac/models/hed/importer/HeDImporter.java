@@ -357,8 +357,11 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 								| PropertyVetoException e) {
 							LOG.error("Unable to create HED Enumeration for " + value);
 						}
+						finally
+						{
+							AppContext.getRuntimeGlobals().enableAllCommitListeners();
+						}
 					}
-
 				}
 			}
 			
