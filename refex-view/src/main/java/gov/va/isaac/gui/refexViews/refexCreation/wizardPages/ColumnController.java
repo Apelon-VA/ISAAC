@@ -401,7 +401,8 @@ public class ColumnController implements PanelControllersI {
 	{
 		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) 
 		{
-			if (type.validatorSupportsType(dType))
+			// TODO: replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
+			if (type.validatorSupportsType(dType) && (!((dType == RefexDynamicDataType.UUID || dType == RefexDynamicDataType.NID) && type == RefexDynamicValidatorType.REGEXP)))
 			{
 				if (!validatorType.getItems().contains(type))
 				{
