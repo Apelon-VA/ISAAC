@@ -23,12 +23,12 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.refexViews.refexEdit.HeaderNode.Filter;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.gui.util.TableHeaderRowTooltipInstaller;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,10 +38,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.WeakHashMap;
-
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -53,9 +53,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-
-import com.sun.javafx.collections.ObservableMapWrapper;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -74,9 +71,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-
 import javax.inject.Named;
-
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
@@ -98,7 +93,7 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import com.sun.javafx.collections.ObservableMapWrapper;
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -634,6 +629,17 @@ public class DynamicRefexView implements RefexViewI
 		
 		loadData();
 	}
+	
+	private void storeTooltip(Map<String, List<String>> store, String key, String value)
+	{
+		List<String> list = store.get(key);
+		if (list == null)
+		{
+			list = new ArrayList<>();
+			store.put(key, list);
+		}
+		list.add(value);
+	}
 
 	private void loadData()
 	{
@@ -643,13 +649,11 @@ public class DynamicRefexView implements RefexViewI
 				removeFilterCacheListeners();
 				
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
-
+				Map<String, List<String>> toolTipStore = new HashMap<>();
+				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>(DynamicRefexColumnType.STATUS_CONDENSED.toString());
-				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
+				storeTooltip(toolTipStore, ttStatusCol.getText(), "Status Markers - for active / inactive and current / historical and uncommitted");
 
-//				Label l = new Label(DynamicRefexColumnType.STATUS_CONDENSED.toString());
-//				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
-//				ttStatusCol.setGraphic(l);
 				ttStatusCol.setSortable(true);
 				ttStatusCol.setResizable(true);
 				ttStatusCol.setComparator(new Comparator<RefexDynamicGUI>()
@@ -675,6 +679,7 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//If the component is null, the assemblage is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
+					storeTooltip(toolTipStore, ttCol.getText(), "The Referenced component of this Sememe");
 					HeaderNode<String> headerNode = new HeaderNode<>(
 							filterCache_,
 							ttCol,
@@ -694,6 +699,7 @@ public class DynamicRefexView implements RefexViewI
 				{
 					//if the assemblage is null, the component is always the same - don't show.
 					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
+					storeTooltip(toolTipStore, ttCol.getText(), "The Assemblage concept that defines this Sememe");
 					HeaderNode<String> headerNode = new HeaderNode<>(
 							filterCache_,
 							ttCol,
@@ -713,6 +719,7 @@ public class DynamicRefexView implements RefexViewI
 				TreeTableColumn<RefexDynamicGUI, String> ttStringCol = new TreeTableColumn<>();
 				ttStringCol = new TreeTableColumn<>();
 				ttStringCol.setText(DynamicRefexColumnType.ATTACHED_DATA.toString());
+				storeTooltip(toolTipStore, ttStringCol.getText(), "The various data fields attached to this Sememe instance");
 				ttStringCol.setSortable(false);
 				ttStringCol.setResizable(true);
 				//don't add yet - we might not need this column.  throw away later, if we don't need it
@@ -800,8 +807,7 @@ public class DynamicRefexView implements RefexViewI
 					{
 						final String name = col.values().iterator().next().get(0).getColumnName(); //all the same, just pick the first
 						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>(name);
-						//Label l = new Label(name);
-						//tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
+						storeTooltip(toolTipStore, nestedCol.getText(), col.values().iterator().next().get(0).getColumnDescription());
 						
 						// TODO: FILTER ID
 						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
@@ -905,6 +911,7 @@ public class DynamicRefexView implements RefexViewI
 				//Create the STAMP columns
 				ttStringCol = new TreeTableColumn<>();
 				ttStringCol.setText("STAMP");
+				storeTooltip(toolTipStore, "STAMP", "The Status, Time, Author, Module and Path columns");
 				ttStringCol.setSortable(false);
 				ttStringCol.setResizable(true);
 				stampColumn_ = ttStringCol;
@@ -912,6 +919,7 @@ public class DynamicRefexView implements RefexViewI
 				
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.STATUS_STRING.toString());
+				storeTooltip(toolTipStore, nestedCol.getText(), "The status of the instance");
 				HeaderNode<String> nestedColHeaderNode = new HeaderNode<>(
 						filterCache_,
 						nestedCol,
@@ -935,6 +943,7 @@ public class DynamicRefexView implements RefexViewI
 
 				nestedCol = new TreeTableColumn<>();
 				nestedCol.setText(DynamicRefexColumnType.TIME.toString());
+				storeTooltip(toolTipStore, nestedCol.getText(), "The time when the instance was created or edited");
 				nestedColHeaderNode = new HeaderNode<>(
 						filterCache_,
 						nestedCol,
@@ -956,13 +965,15 @@ public class DynamicRefexView implements RefexViewI
 				ttStringCol.getColumns().add(nestedCol);
 				
 				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.AUTHOR); 
-				nestedIntCol.setVisible(false);
+				storeTooltip(toolTipStore, nestedIntCol.getText(), "The author of the instance");
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.MODULE);
+				storeTooltip(toolTipStore, nestedIntCol.getText(), "The module of the instance");
 				ttStringCol.getColumns().add(nestedIntCol);
 				
 				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.PATH); 
+				storeTooltip(toolTipStore, nestedIntCol.getText(), "The path of the instance");
 				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
@@ -970,14 +981,6 @@ public class DynamicRefexView implements RefexViewI
 					for (TreeTableColumn<RefexDynamicGUI, ?> tc : treeColumns)
 					{
 						ttv_.getColumns().add(tc);
-					}
-					
-					for (Entry<Label, String> tooltips : tooltipsToInstall.entrySet())
-					{
-						Tooltip t = new Tooltip(tooltips.getValue());
-						t.setMaxWidth(400);
-						t.setWrapText(true);
-						tooltips.getKey().setTooltip(t);
 					}
 					
 					//Horrible hack to set a reasonable default size on the columns.
@@ -1054,8 +1057,11 @@ public class DynamicRefexView implements RefexViewI
 							}
 						}
 					}
+					
 					showStampColumns_.invalidate();
 				});
+				
+				TableHeaderRowTooltipInstaller.installTooltips(ttv_, toolTipStore);
 
 				ArrayList<TreeItem<RefexDynamicGUI>> rowData;
 				//Now add the data
