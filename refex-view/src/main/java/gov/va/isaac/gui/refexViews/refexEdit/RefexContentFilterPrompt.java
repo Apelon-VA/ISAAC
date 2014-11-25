@@ -8,17 +8,22 @@ import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 
 public class RefexContentFilterPrompt extends UserPrompt {
     final ListView<String> selectedValues = new ListView<>();
@@ -52,11 +57,69 @@ public class RefexContentFilterPrompt extends UserPrompt {
 		Label columnValLabel = new Label(columnName);
 		columnHBox.getChildren().addAll(columnAttrLabel, columnValLabel);
 		
-		vb.getChildren().addAll(panelName, columnHBox, createMenuBox());
+		vb.getChildren().addAll(panelName, columnHBox, createListView());
 		
 		return vb;
 	}
-
+	private ListView<String> createListView() {
+		ListView<String> listView = new ListView<>();
+		listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+			@Override
+			public ListCell<String> call(ListView<String> param) {
+				ListCell<String> cell = new ListCell<String>() {
+					@Override
+					public void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
+						if (empty) {
+							setText(null);
+							setGraphic(null);
+						} else {
+							setText(null);
+							Label label = new Label(item);
+				        	label.setMaxWidth(280);
+				        	label.setTooltip(new Tooltip(item));
+							setGraphic(label);
+						}
+					}
+				};
+				
+				return cell;
+			}
+		});
+		listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		listView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
+			@Override
+			public void onChanged(
+					javafx.collections.ListChangeListener.Change<? extends String> c) {
+				while (c.next()) {
+					if (c.wasPermutated()) {
+						// irrelevant
+						//	                     for (int i = c.getFrom(); i < c.getTo(); ++i) {
+						//	                          //permutate
+						//	                     }
+					} else if (c.wasUpdated()) {
+						// irrelevant
+					} else {
+						for (String item : c.getRemoved()) {
+							selectedValues.getItems().remove(item);
+						}
+						for (String item : c.getAddedSubList()) {
+							selectedValues.getItems().add(item);
+						}
+					}
+				}
+			}	
+		});
+		
+		for (String s : allValues)  {
+			listView.getItems().add(s);
+			if (alreadySelectedValues.contains(s)) {
+				listView.getSelectionModel().select(s);
+        	}
+		}
+       
+        return listView;
+    }
 	private MenuButton createMenuBox() {
         final MenuButton choicesMenuBox = new MenuButton("Potential Values");
         List<CheckMenuItem> checkItems = new ArrayList<CheckMenuItem>();
