@@ -84,6 +84,7 @@ public class DynamicRefexListViewController
 	@FXML private ListView<SimpleDisplayConcept> refexList;
 	@FXML private ChoiceBox<String> refexStyleFilter;
 	@FXML private Label refexStyleLabel;
+	@FXML private Label referencedComponentTypeLabel;
 	@FXML private AnchorPane rootPane;
 	@FXML private Button clearFilterButton;
 	@FXML private TextField descriptionMatchesFilter;
@@ -451,6 +452,7 @@ public class DynamicRefexListViewController
 		selectedRefexNameLabel.setText("");
 		selectedRefexDescriptionLabel.setText("");
 		refexStyleLabel.setText("");
+		referencedComponentTypeLabel.setText("");
 		extensionFields.getItems().clear();
 		
 		if (sdn == null)
@@ -479,6 +481,8 @@ public class DynamicRefexListViewController
 					selectedRefexNameLabel.setText(rdud.getRefexName());
 					selectedRefexDescriptionLabel.setText(rdud.getRefexUsageDescription());
 					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Embedded");
+					referencedComponentTypeLabel.setText(rdud.getReferencedComponentTypeRestriction() == null ? "No restriction" : 
+						"Must be " + rdud.getReferencedComponentTypeRestriction().toString());
 				});
 				
 				//now fill in the data column details...

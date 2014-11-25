@@ -82,8 +82,11 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.index.service.IndexedGenerationCallable;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -185,6 +188,19 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						{
 							assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(selectableConcept_.getConceptNoWait().getNid());
 							assemblageIsValid_.set(true);
+							if (assemblageInfo_.getReferencedComponentTypeRestriction() != null)
+							{
+								String result = RefexDynamicValidatorType.COMPONENT_TYPE.passesValidatorStringReturn(new RefexDynamicNid(createRefexFocus_.getComponentNid()), 
+										new RefexDynamicString(assemblageInfo_.getReferencedComponentTypeRestriction().name()), null);  //component type validator doesn't use vc, so null is ok
+								if (result.length() > 0)
+								{
+									selectableConcept_.isValid().setInvalid("The selected assemblage requires the component type to be " 
+											+ assemblageInfo_.getReferencedComponentTypeRestriction().toString() + ", which doesn't match the referenced component.");
+									logger_.info("The selected assemblage requires the component type to be " 
+											+ assemblageInfo_.getReferencedComponentTypeRestriction().toString() + ", which doesn't match the referenced component.");
+									assemblageIsValid_.set(false);
+								}
+							}
 						}
 						catch (Exception e)
 						{
