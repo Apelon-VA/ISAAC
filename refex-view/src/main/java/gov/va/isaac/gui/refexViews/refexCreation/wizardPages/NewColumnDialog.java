@@ -45,7 +45,7 @@ public class NewColumnDialog extends Stage
 	{
 		super();
 
-		setTitle("New Column Creation");
+		setTitle("New Attribute Creation");
 		setResizable(true);
 
 		initOwner(owner);

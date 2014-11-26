@@ -379,7 +379,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     } catch (Exception e) {
       throw e;
     } finally {
-      AppContext.getRuntimeGlobals().disableAllCommitListeners();
+      AppContext.getRuntimeGlobals().enableAllCommitListeners();
     }
 
     // Get classifier path relationships

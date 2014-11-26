@@ -3,7 +3,6 @@ package gov.va.isaac.gui.enhancedsearchview.model.type;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
-import gov.va.isaac.gui.enhancedsearchview.model.SearchResultsTable;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.refspec.RefsetSpecSearchTypeView;

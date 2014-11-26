@@ -25,14 +25,7 @@
 package gov.va.isaac.util;
 
 import java.util.UUID;
-
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
-import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 
 /**
  * ComponentTypeHelper
@@ -43,27 +36,11 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 public class ComponentTypeHelper {
 	private ComponentTypeHelper() {}
 	
-	public static ComponentType getComponentType(ComponentVersionBI component) {
-		if (component instanceof DescriptionVersionBI) {
-			return ComponentType.Description;
-		} else if (component instanceof ConceptVersionBI || component instanceof ConceptAttributeVersionBI) {
-			return ComponentType.Concept;
-		} else if (component instanceof RefexVersionBI) {
-			return ComponentType.Refex;
-		} else if (component instanceof RefexDynamicVersionBI) {
-			return ComponentType.RefexDynamic;
-		} else if  (component instanceof RelationshipVersionBI) {
-			return ComponentType.Relationship;
-		} else {
-			throw new IllegalArgumentException("Unsupported ComponentVersionBI: " + component.getClass().getName());
-		}
-	}
-	
 	public static ComponentType getComponentType(int nid) {
-		return getComponentType(WBUtility.getComponentVersion(nid));
+		return ComponentType.getComponentVersionType(WBUtility.getComponentVersion(nid));
 	}
 	
 	public static ComponentType getComponentType(UUID uuid) {
-		return getComponentType(WBUtility.getComponentVersion(uuid));
+		return ComponentType.getComponentVersionType(WBUtility.getComponentVersion(uuid));
 	}
 }

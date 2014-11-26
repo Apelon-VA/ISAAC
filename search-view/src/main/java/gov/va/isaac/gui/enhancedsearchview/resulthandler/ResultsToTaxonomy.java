@@ -35,7 +35,7 @@ public class ResultsToTaxonomy {
 
 	private static Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
 
-	private static BorderPane taxonomyPanelBorderPane = new BorderPane();
+	private final static BorderPane taxonomyPanelBorderPane = new BorderPane();
 	private static SplitPane searchResultsAndTaxonomySplitPane;
 
 	private static SearchModel searchModel = new SearchModel();
@@ -134,11 +134,14 @@ public class ResultsToTaxonomy {
 		Utility.execute(configureDisplayPoliciesTask);
 
 	}
+	
+	public static BorderPane getTaxonomyPanelBorderPane() {
+		return taxonomyPanelBorderPane;
+	}
 
 	public static void initializeTaxonomyPanel() {
 		initializeTaxonomyViewModeComboBox();
 		
-		taxonomyPanelBorderPane = new BorderPane();
 		taxonomyPanelBorderPane.setTop(taxonomyPanelViewModeComboBox);
 		taxonomyPanelCloseButton = new Button("Close");
 		taxonomyPanelCloseButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -217,9 +220,5 @@ public class ResultsToTaxonomy {
 	
 	public static void setSearchAndTaxonomySplitPane(SplitPane pane) {
 		searchResultsAndTaxonomySplitPane = pane;
-	}
-	
-	public static void setTaxonomyPanelBorderPane(BorderPane pane) {
-		taxonomyPanelBorderPane = pane;
 	}
 }

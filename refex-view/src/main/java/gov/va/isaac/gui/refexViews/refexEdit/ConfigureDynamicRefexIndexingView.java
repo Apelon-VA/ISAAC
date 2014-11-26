@@ -115,8 +115,8 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			
 			for (RefexDynamicColumnInfo col : rdud.getColumnInfo())
 			{
-				CheckBox cb = new CheckBox("Index Column: " + col.getColumnName());
-				cb.setTooltip(new Tooltip("Column Type: " + col.getColumnDataType().getDisplayName() + "\nColumn Description: " + col.getColumnDescription()));
+				CheckBox cb = new CheckBox("Index Attribute: " + col.getColumnName());
+				cb.setTooltip(new Tooltip("Attribute Type: " + col.getColumnDataType().getDisplayName() + "\nAttribute Description: " + col.getColumnDescription()));
 				
 				
 				if (!LuceneDynamicRefexIndexerConfiguration.isColumnTypeIndexable(col.getColumnDataType()))
@@ -126,7 +126,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 					silly.getChildren().add(cb);
 					cb.setDisable(true);
 					cb.setMaxWidth(Double.MAX_VALUE);
-					Tooltip.install(silly, new Tooltip("The datatype for this column isn't indexable"));
+					Tooltip.install(silly, new Tooltip("The datatype for this attribute isn't indexable"));
 					vbox.getChildren().add(silly);
 				}
 				else

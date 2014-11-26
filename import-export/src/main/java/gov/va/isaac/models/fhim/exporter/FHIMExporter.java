@@ -99,7 +99,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
         // Expect a RefexChronicle.
         if (! (focusComponent instanceof RefexChronicleBI<?>)) {
-            LOG.warn("Expected FHIM model to ge a refex: " + modelUUID);
+            LOG.warn("Expected FHIM model to get a sememe: " + modelUUID);
             return;
         }
         RefexChronicleBI<?> modelRefex = (RefexChronicleBI<?>) focusComponent;

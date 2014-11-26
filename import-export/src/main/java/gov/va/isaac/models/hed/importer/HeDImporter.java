@@ -338,7 +338,7 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 					if (!ExtendedAppContext.getDataStore().hasUuid(WBUtility.getUuidForFsn(value, value))) {
 						// Create Refex's Description
 						StringBuilder enumerationDesc = new StringBuilder();
-						enumerationDesc.append("Enumeration Refex for " + auth + "'s " + id);
+						enumerationDesc.append("Enumeration Sememe for " + auth + "'s " + id);
 						if (vs.getDescription() != null) {
 							enumerationDesc.append("\r\n" + vs.getDescription());
 						}
@@ -352,13 +352,16 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 							RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, enumerationDesc.toString(), 
 																											 new RefexDynamicColumnInfo[] {},
 																											 InformationModels.HED_ENUMERATIONS.getUuids()[0], 
-																											 false);
+																											 false, null);
 						} catch (IOException | ContradictionException | InvalidCAB
 								| PropertyVetoException e) {
 							LOG.error("Unable to create HED Enumeration for " + value);
 						}
+						finally
+						{
+							AppContext.getRuntimeGlobals().enableAllCommitListeners();
+						}
 					}
-
 				}
 			}
 			

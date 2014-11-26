@@ -517,6 +517,10 @@ public class RefexDataTypeFXNodeBuilder
 				}
 				else
 				{
+					if (cn.isValid().get() && valueIsRequired != null)
+					{
+						valueIsRequired.setValue("");
+					}
 					if (validatorType != null && validatorType.get() != null && cn.isValid().get() && cn.getConceptProperty().get() != null &&
 							validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 					{

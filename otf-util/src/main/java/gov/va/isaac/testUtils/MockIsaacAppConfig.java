@@ -23,11 +23,10 @@ import java.util.UUID;
 import org.jvnet.hk2.annotations.Service;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
-// TODO: Auto-generated Javadoc
 /**
  * {@link MockIsaacAppConfig}
  * 
- * A mock service to simplify testing of things outside of a full ISAAC env.
+ * A mock service to simplify testing of things outside of a full ISAAC env.  Most things are not implemented.
  * 
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
@@ -142,7 +141,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getArchetypeGroupId() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -151,7 +150,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getArchetypeArtifactId() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -160,7 +159,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getArchetypeVersion() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -169,7 +168,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getIsaacVersion() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -178,7 +177,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getScmConnection() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -187,7 +186,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getScmUrl() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -196,7 +195,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public URL getScmUrlAsURL() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -205,7 +204,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDbGroupId() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -214,7 +213,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDbArtifactId() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -223,7 +222,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDbVersion() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -232,7 +231,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDbClassifier() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -241,7 +240,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getPreviousReleaseVersion() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -250,7 +249,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getReleaseVersion() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -259,7 +258,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getExtensionNamespace() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -268,7 +267,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getModuleId() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -277,7 +276,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public URL getChangeSetUrlAsURL() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -286,7 +285,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDefaultEditPathName() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -295,7 +294,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDefaultEditPathUuid() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -304,7 +303,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDefaultViewPathName() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -313,7 +312,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getDefaultViewPathUuid() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -322,7 +321,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getUserSchemaLocation() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -331,31 +330,31 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
    */
   @Override
   public String getWorkflowServerUrl() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
   @Override
   public String getWorkflowPromotionPathName() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
   @Override
   public String getWorkflowPromotionPathUuid() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
   @Override
   public String getAppSchemaLocation() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
   @Override
   public String getDbType() {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
@@ -363,7 +362,7 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
   @Override
   public String getChangeSetUrlTypeName()
   {
-    // TODO Auto-generated method stub
+
     return null;
   }
 

@@ -22,14 +22,12 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.CommonDialogs;
 import gov.va.isaac.gui.download.DownloadDialog;
+import gov.va.isaac.init.SystemInit;
 import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
-import gov.va.isaac.util.DBLocator;
 import gov.va.isaac.util.Utility;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.function.Consumer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -41,12 +39,9 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
  * ISAAC {@link Application} class.
@@ -130,7 +125,7 @@ public class App extends Application implements ApplicationWindowI{
                         dataStoreLocationInitException_ = null;
                         try
                         {
-                            configDataStorePaths(new File("berkeley-db"));
+                            SystemInit.configDataStorePaths(new File("berkeley-db"));
                         }
                         catch (IOException e)
                         {
@@ -199,49 +194,7 @@ public class App extends Application implements ApplicationWindowI{
         t.start();
     }
 
-    private static void configDataStorePaths(File bdbFolder) throws IOException {
 
-        // Default value if null.
-        if (bdbFolder == null) {
-            //do nothing... let the store use its own default
-            //TODO OTF fix: note - the BDB defaults are not in sync with the Lucene defaults...  lucene will init in the wrong place and fail....
-            //https://jira.ihtsdotools.org/browse/OTFISSUE-12
-        }
-        else
-        {
-            File localBDBLocation = DBLocator.findDBFolder(bdbFolder);
-            File localLuceneLocation = DBLocator.findLuceneIndexFolder(localBDBLocation);
-            
-            if (!localBDBLocation.exists())
-            {
-                throw new FileNotFoundException("Couldn't find a bdb data store in '" + localBDBLocation.getAbsoluteFile().getParentFile().getAbsolutePath() + "'");
-            }
-            if (!localBDBLocation.isDirectory())
-            {
-                throw new IOException("The specified bdb data store: '" + localBDBLocation.getAbsolutePath() + "' is not a folder");
-            }
-            
-            if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
-            {
-                System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, localBDBLocation.getCanonicalPath());
-            }
-            else
-            {
-                LOG.warn("The application specified '" + localBDBLocation.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY 
-                        + "is set to " + System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY + " this will override the application path"));
-            }
-            if (System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) == null)
-            {
-                System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, localLuceneLocation.getCanonicalPath());
-            }
-            else
-            {
-                LOG.warn("The application specified '" + localLuceneLocation.getCanonicalPath() + "' but the system property " + LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY 
-                        + "is set to " + System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) + " this will override the application path");
-            }
-            
-        }
-    }
 
     protected void shutdown() {
         LOG.info("Shutting down");
@@ -297,32 +250,12 @@ public class App extends Application implements ApplicationWindowI{
     }
 
     public static void main(String[] args) throws Exception {
-        //Configure Java logging into logback
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-        SLF4JBridgeHandler.install();
-        AppContext.setup();
-        // TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
-        Field f = Hk2Looker.class.getDeclaredField("looker");
-        f.setAccessible(true);
-        f.set(null, AppContext.getServiceLocator());
-        //This has to be done _very_ early, otherwise, any code that hits it via H2K will kick off the init process, on the wrong path
-        //Which is made worse by the fact that the defaults in OTF are inconsistent between BDB and lucene...
-        
-        try
+        dataStoreLocationInitException_ = SystemInit.doBasicSystemInit();
+        if (dataStoreLocationInitException_ != null)
         {
-            if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
-            {
-                configDataStorePaths(new File(BdbTerminologyStore.DEFAULT_BDB_LOCATION));
-            } else {
-                configDataStorePaths(new File(System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY)));
-            }
+            System.err.println("Configuration of datastore path failed.  DB will not be able to start properly!  " + dataStoreLocationInitException_);
+        }
 
-        }
-        catch (IOException e)
-        {
-            System.err.println("Configuration of datastore path failed.  DB will not be able to start properly!  " + e);
-            dataStoreLocationInitException_ = e;
-        }
         Application.launch(args);
     }
 }

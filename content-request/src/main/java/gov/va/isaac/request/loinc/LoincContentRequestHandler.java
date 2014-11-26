@@ -170,7 +170,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     sb.append("\r\n");
 
     for (RefexChronicleBI<?> refex : concept.getAnnotations()) {
-      LOG.debug("  refex = " + refex.toUserString());
+      LOG.debug("  Sememe = " + refex.toUserString());
     }
 
     for (IdBI id : concept.getAllIds()) {

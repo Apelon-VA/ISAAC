@@ -1,6 +1,5 @@
 package gov.va.isaac.gui.enhancedsearchview.model.type.sememe;
 
-import gov.va.isaac.gui.enhancedsearchview.filters.SememeContentSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSpecificView;
 import javafx.scene.control.Label;

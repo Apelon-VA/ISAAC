@@ -24,8 +24,8 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -38,10 +38,8 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.text.Text;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
 import org.slf4j.Logger;
@@ -87,42 +85,50 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 					if (UUIDToNid(uuid) == item.getRefex().getAssemblageNid())
 					{
 						List<RefexDynamicColumnInfo> colInfo =  columnInfo_.get(uuid);
-						RefexDynamicDataBI data = (colInfo.size() > listItem_ ? 
+						Integer refexColumnOrder = (colInfo.size() > listItem_ ? 
 								(item.getRefex().getData().length <= colInfo.get(listItem_).getColumnOrder() ? null 
-										: item.getRefex().getData()[colInfo.get(listItem_).getColumnOrder()]) 
-								: null);
+									: colInfo.get(listItem_).getColumnOrder()): null);
+						RefexDynamicDataBI data = (refexColumnOrder == null ? null : item.getRefex().getData()[refexColumnOrder]); 
 						if (data != null)
 						{
-							if (data instanceof RefexDynamicByteArrayBI)
+							if (data instanceof RefexDynamicNidBI)
 							{
-								
-								setText("[Binary]");
-								setGraphic(null);
-							}
-							else if (data instanceof RefexDynamicNidBI)
-							{
-								conceptLookup(data);
+								conceptLookup(item, refexColumnOrder);
 							}
 							else if (data instanceof RefexDynamicUUIDBI)
 							{
-								conceptLookup(data);
+								conceptLookup(item, refexColumnOrder);
 							}
 							else
 							{
-								//default text is a label, which doesn't wrap properly.
-								setText(null);
-								Text textHolder = new Text(data.getDataObject().toString());
-								textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
-								setGraphic(textHolder);
-								ContextMenu cm = new ContextMenu();
-								MenuItem mi = new MenuItem("Copy");
-								mi.setGraphic(Images.COPY.createImageView());
-								mi.setOnAction((action) -> 
+								AbstractMap.SimpleImmutableEntry<String, String> texts = item.getDisplayStrings(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder);
+								
+								if (texts == null || texts.getKey() == null)
 								{
-									CustomClipboard.set(data.getDataObject().toString());
-								});
-								cm.getItems().add(mi);
-								setContextMenu(cm);
+									setText("");
+									setGraphic(null);
+								}
+								else
+								{
+									//default text is a label, which doesn't wrap properly.
+									setText(null);
+									Text textHolder = new Text(texts.getKey());
+									textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
+									setGraphic(textHolder);
+									ContextMenu cm = new ContextMenu();
+									MenuItem mi = new MenuItem("Copy");
+									mi.setGraphic(Images.COPY.createImageView());
+									mi.setOnAction((action) -> 
+									{
+										CustomClipboard.set(texts.getKey());
+									});
+									cm.getItems().add(mi);
+									setContextMenu(cm);
+									if (texts.getValue() != null && texts.getValue().length() > 0)
+									{
+										setTooltip(new Tooltip(texts.getValue()));
+									}
+								}
 							}
 						}
 						else
@@ -147,28 +153,14 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 		}
 	}
 	
-	private void conceptLookup(RefexDynamicDataBI data)
+	private void conceptLookup(final RefexDynamicGUI item, final Integer refexColumnOrder)
 	{
 		setGraphic(new ProgressBar());
 		setText(null);
 		ContextMenu cm = new ContextMenu();
 		Utility.execute(() ->
 		{
-			String value;
-			
-			if (data instanceof RefexDynamicNidBI)
-			{
-				value = WBUtility.getDescription(((RefexDynamicNidBI)data).getDataNid());
-			}
-			else if (data instanceof RefexDynamicUUIDBI)
-			{
-				value = WBUtility.getDescription(((RefexDynamicUUIDBI)data).getDataUUID());
-			}
-			else
-			{
-				value = null;
-			}
-			
+			AbstractMap.SimpleImmutableEntry<String, String> value = item.getDisplayStrings(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder);
 				
 			CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
 			{
@@ -176,22 +168,10 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 				@Override
 				public Collection<Integer> getNIds()
 				{
-					Integer nid = null;
-					
-					if (data instanceof RefexDynamicNidBI)
-					{
-						nid = ((RefexDynamicNidBI)data).getDataNid();
-					}
-					else if (data instanceof RefexDynamicUUIDBI)
-					{
-						ConceptVersionBI c = WBUtility.getConceptVersion(((RefexDynamicUUIDBI)data).getDataUUID());
-						if (c != null)
-						{
-							nid = c.getNid();
-						}
-					}
+					int nid = item.getNidFetcher(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder).applyAsInt(item.getRefex());
+
 					ArrayList<Integer> nids = new ArrayList<>();
-					if (nid != null)
+					if (nid != 0)
 					{
 						nids.add(nid);
 					}
@@ -201,21 +181,15 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 
 			Platform.runLater(() ->
 			{
-				String textValue;
-				if (value == null)
+				if (value.getValue() != null && value.getValue().length() > 0)
 				{
-					textValue = data.getDataObject().toString();
+					setTooltip(new Tooltip(value.getValue()));
 				}
-				else
+				if (cm.getItems().size() > 0)
 				{
-					textValue = value;
-					setTooltip(new Tooltip(data.getDataObject().toString()));
-					if (cm.getItems().size() > 0)
-					{
-						setContextMenu(cm);
-					}
+					setContextMenu(cm);
 				}
-				Text textHolder = new Text(textValue);
+				Text textHolder = new Text(value.getKey());
 				textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
 				setGraphic(textHolder);
 				setText(null);

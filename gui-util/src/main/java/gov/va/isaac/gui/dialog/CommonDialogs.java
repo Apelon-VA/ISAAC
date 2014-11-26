@@ -24,16 +24,15 @@ import gov.va.isaac.interfaces.gui.ApplicationWindowI;
 import gov.va.isaac.interfaces.gui.CommonDialogsI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
-import com.sun.javafx.tk.Toolkit;
 import java.io.IOException;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.stage.Window;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.sun.javafx.tk.Toolkit;
 
 /**
  * CommonDialogs
@@ -52,13 +51,28 @@ public class CommonDialogs implements CommonDialogsI
 	private InformationDialog informationDialog_;
 	private YesNoDialog yesNoDialog_;
 
-	@Inject
-	private CommonDialogs(ApplicationWindowI mainAppWindow) throws IOException
+
+	private CommonDialogs() throws IOException
 	{
 		// hidden - constructed by HK2
-		this.errorDialog_ = new ErrorDialog(mainAppWindow.getPrimaryStage());
-		this.informationDialog_ = new InformationDialog(mainAppWindow.getPrimaryStage());
-		this.yesNoDialog_ = new YesNoDialog(mainAppWindow.getPrimaryStage());
+	}
+	
+	private void init()
+	{
+		if (errorDialog_ == null)
+		{
+			try
+			{
+				ApplicationWindowI mainAppWindow = AppContext.getService(ApplicationWindowI.class);
+				this.errorDialog_ = new ErrorDialog(mainAppWindow == null ? null : mainAppWindow.getPrimaryStage());
+				this.informationDialog_ = new InformationDialog(mainAppWindow == null ? null : mainAppWindow.getPrimaryStage());
+				this.yesNoDialog_ = new YesNoDialog(mainAppWindow == null ? null : mainAppWindow.getPrimaryStage());
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	/**
@@ -69,7 +83,7 @@ public class CommonDialogs implements CommonDialogsI
 	{
 		// Make sure in application thread.
 		FxUtils.checkFxUserThread();
-
+		init();
 		informationDialog_.setVariables(title, message);
 		informationDialog_.showAndWait();
 	}
@@ -98,7 +112,7 @@ public class CommonDialogs implements CommonDialogsI
 			public void run()
 			{
 				ErrorDialog ed;
-				
+				init();
 				//If we already have our cached one up, create a new one.
 				if (errorDialog_.isShowing())
 				{
@@ -188,6 +202,7 @@ public class CommonDialogs implements CommonDialogsI
 	@Override
 	public DialogResponse showYesNoDialog(String title, String question)
 	{
+		init();
 		return yesNoDialog_.showYesNoDialog(title, question);
 	}
 

@@ -39,7 +39,7 @@ public class RegExpSearchTypeFilter extends SearchTypeFilter<RegExpSearchTypeFil
 					ObservableValue<? extends String> observable,
 					String oldValue,
 					String newValue) {
-				if (newValue != null && newValue.trim().length() > 0) {
+				if (isValid()) {
 					isValid.set(true);
 				} else {
 					isValid.set(false);
@@ -83,5 +83,13 @@ public class RegExpSearchTypeFilter extends SearchTypeFilter<RegExpSearchTypeFil
 	@Override
 	public SearchType getSearchType() {
 		return SearchType.TEXT;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValid()
+	 */
+	@Override
+	public boolean isValid() {
+		return searchParameter.get() != null && searchParameter.get().trim().length() > 0;
 	}
 }

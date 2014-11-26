@@ -44,8 +44,8 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 		refsetSpecParentPane.setPrefHeight(200);
 		refsetSpecParentPane.setMinHeight(200);
 		refsetSpecParentPane.setMaxHeight(200);
-		refsetSpecParentPane.setMargin(refsetSpecModel.getNodeEditorGridPane(), new Insets(10));
-		refsetSpecParentPane.setAlignment(refsetSpecModel.getNodeEditorGridPane(), Pos.CENTER_LEFT);
+		BorderPane.setMargin(refsetSpecModel.getNodeEditorGridPane(), new Insets(10));
+		BorderPane.setAlignment(refsetSpecModel.getNodeEditorGridPane(), Pos.CENTER_LEFT);
 		
 		loadMenus(refsetSpecModel);
 		
@@ -61,8 +61,8 @@ public class RefsetSpecSearchTypeView implements SearchTypeSpecificView {
 		topLevelGridPane.setHgap(15);
 		topLevelGridPane.setPadding(new Insets(15));
 
-		topLevelGridPane.setConstraints(rootExp,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		topLevelGridPane.setConstraints(refsetSpecModel.getRootNodeTypeComboBox(),  1,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(rootExp,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(refsetSpecModel.getRootNodeTypeComboBox(),  1,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		topLevelGridPane.addRow(0, rootExp, refsetSpecModel.getRootNodeTypeComboBox());
 
 		return topLevelGridPane;

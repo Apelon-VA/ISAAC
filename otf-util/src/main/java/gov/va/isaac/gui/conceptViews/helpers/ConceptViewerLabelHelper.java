@@ -23,21 +23,18 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.enhanced.EnhancedConceptView;
 import gov.va.isaac.gui.conceptViews.enhanced.PreferredAcceptabilityPrompt;
 import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt;
-import gov.va.isaac.gui.conceptViews.enhanced.RetireConceptPrompt.RetireConceptResponse;
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.modeling.ConceptModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.DescriptionModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.ModelingPopup;
 import gov.va.isaac.gui.conceptViews.modeling.RelationshipModelingPopup;
+import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.Collection;
-
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -50,7 +47,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -65,6 +61,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
@@ -281,9 +278,11 @@ public class ConceptViewerLabelHelper {
 						if (!WBUtility.getAllChildrenOfConcept(con, false).isEmpty()) {
 							AppContext.getCommonDialogs().showInformationDialog("Retire Concept Failure", "Cannot retire concept until it has no children");
 						} else {
-							RetireConceptPrompt.retireConcept((Stage)pane.getScene().getWindow(), "Retire Concept: " + WBUtility.getConPrefTerm(comp.getNid()));
+							RetireConceptPrompt prompt = new RetireConceptPrompt();
 							
-							if (RetireConceptPrompt.getButtonSelected() == RetireConceptResponse.COMMIT) {
+							prompt.showUserPrompt((Stage)pane.getScene().getWindow(), "Retire Concept: " + WBUtility.getConPrefTerm(comp.getNid()));
+							
+							if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 								// Retire Stated Parent Rels
 								Collection<? extends RelationshipVersionBI<?>> rels = con.getRelationshipsOutgoingActiveIsa();
 								for (RelationshipVersionBI<?> r : rels) {
@@ -293,7 +292,7 @@ public class ConceptViewerLabelHelper {
 								}
 								
 								// Add new Rel
-								int retirementConceptNid = RetireConceptPrompt.getRetirementConceptNid();
+								int retirementConceptNid = prompt.getRetirementConceptNid();
 								WBUtility.createNewParent(conceptNid, retirementConceptNid);
 
 								// Retire Con
