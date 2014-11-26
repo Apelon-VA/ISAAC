@@ -118,7 +118,6 @@ public class SSHFriendlyUsernamePasswordCredsProvider extends CredentialsProvide
 				}
 			}
 			if (i instanceof CredentialItem.YesNoType) {
-				//TODO - if we have a GUI - prompt the user
 				if (i.getPromptText().startsWith("The authenticity of host '")) { //$NON-NLS-1$
 					((CredentialItem.YesNoType) i).setValue(true);
 					continue;
