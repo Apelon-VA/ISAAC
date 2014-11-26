@@ -18,12 +18,9 @@
  */
 package gov.va.isaac.search;
 
-import gov.va.isaac.util.WBUtility;
-
-import java.io.IOException;
 import java.util.Comparator;
-
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.apache.commons.lang3.ObjectUtils;
+import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,23 +48,34 @@ public class CompositeSearchResultComparator implements Comparator<CompositeSear
 		
 		if (o1.getContainingConcept() == null || o2.getContainingConcept() == null)
 		{
-			//can't do anything.... 
-			return 0;
+			if (o1.getContainingConcept() == null && o2.getContainingConcept() != null)
+			{
+				return 1;
+			}
+			else if (o1.getContainingConcept() != null && o2.getContainingConcept() == null)
+			{
+				return -1;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		// else same score
 		String o1FSN = null;
 		try {
 			o1FSN = o1.getContainingConcept().getFullySpecifiedDescription().getText().trim();
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
+		} catch (Exception e) {
+			LOG.warn("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
 		}
 		String o2FSN = null;
 		try {
 			o2FSN = o2.getContainingConcept().getFullySpecifiedDescription().getText().trim();
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
+		} catch (Exception e) {
+			LOG.warn("Failed calling getFullySpecifiedDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
 		}
-		int fsnComparison = o1FSN.compareTo(o2FSN);
+		
+		int fsnComparison = ObjectUtils.compare(o1FSN, o2FSN);
 		if (fsnComparison != 0) {
 			return fsnComparison;
 		}
@@ -76,43 +84,26 @@ public class CompositeSearchResultComparator implements Comparator<CompositeSear
 		String o1PreferredDescription = null;
 		try {
 			o1PreferredDescription = o1.getContainingConcept().getPreferredDescription().getText().trim();
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
+		} catch (Exception e) {
+			LOG.debug("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o1, e);
 		}
 
 		String o2PreferredDescription = null;
 		try {
 			o2PreferredDescription = o2.getContainingConcept().getPreferredDescription().getText().trim();
-		} catch (IOException | ContradictionException e) {
-			LOG.error("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
-			e.printStackTrace();
+		} catch (Exception e) {
+			LOG.debug("Failed calling getPreferredDescription() (" + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\") on concept " + o2, e);
 		}
 		
-		int prefDescComparison = o1PreferredDescription.compareTo(o2PreferredDescription);
+		int prefDescComparison = ObjectUtils.compare(o1PreferredDescription, o2PreferredDescription);
 		if (prefDescComparison != 0) {
 			return prefDescComparison;
 		}
 		
-		// else same score and FSN and preferred description
-		String o1matchingComponentType = WBUtility.getConPrefTerm(o1.getMatchingDescriptionComponents().iterator().next().getTypeNid()).trim();
-		String o2matchingComponentType = WBUtility.getConPrefTerm(o2.getMatchingDescriptionComponents().iterator().next().getTypeNid()).trim();
+		// else same score and FSN and preferred description - sort on type
+		String comp1String = o1.getMatchingComponents().iterator().next().toUserString();
+		String comp2String = o2.getMatchingComponents().iterator().next().toUserString();
 
-		final String fullySpecifiedNameStr = "Fully specified name";
-		if (o1matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {
-			return -1;
-		} else if (o2matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {
-			return 1;
-		}
-		
-		// else same score and FSN and preferred description and both FSNs
-		final String synonymStr = "Synonym";
-		if (o1matchingComponentType.equalsIgnoreCase(synonymStr)) {
-			return -1;
-		} else if (o2matchingComponentType.equalsIgnoreCase(synonymStr)) {
-			return 1;
-		}
-		
-		// else same score and FSN and preferred description and both Synonyms
-		return 0;
+		return ObjectUtils.compare(comp1String, comp2String);
 	}
 }
