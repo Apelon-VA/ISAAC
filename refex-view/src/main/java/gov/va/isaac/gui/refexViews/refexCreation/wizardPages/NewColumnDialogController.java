@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.BooleanBinding;
@@ -88,14 +89,19 @@ public class NewColumnDialogController implements Initializable
 			}
 
 			private void createNewColumnConcept() {
-				try {
-					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColName.getText().trim(), 
-						newColDesc.getText().trim());
+			    try
+				{
+					AppContext.getRuntimeGlobals().disableAllCommitListeners();
+					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColName.getText().trim(), newColDesc.getText().trim());
 				} catch (InvalidCAB e) {
 					AppContext.getCommonDialogs().showInformationDialog("Concept Creation Error", e.getMessage(), rootPane.getScene().getWindow());
 					newColumnConcept = null;
 				} catch (Exception e1) {
 					logger.error("Unable to create concept in database", e1);
+				}
+				finally
+				{
+				    AppContext.getRuntimeGlobals().enableAllCommitListeners();
 				}
 			}
 		});

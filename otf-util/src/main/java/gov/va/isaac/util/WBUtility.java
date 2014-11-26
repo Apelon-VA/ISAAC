@@ -20,7 +20,6 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -31,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -55,6 +53,7 @@ import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf1;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
@@ -182,6 +181,10 @@ public class WBUtility {
 	
 	public static String getDescription(int nid) {
 		try {
+			if (!dataStore.hasConcept(nid))
+			{
+				return null;
+			}
 			ConceptVersionBI conceptVersion = dataStore.getConceptVersion(getViewCoordinate(), nid);
 			return getDescription(conceptVersion);
 		} catch (Exception ex) {
@@ -1046,23 +1049,23 @@ public class WBUtility {
 		
 		for (ComponentVersionBI comp : componentsInConcept) {
 			if (comp.getPathNid() == devPathNid) {
-				ComponentType type = ComponentTypeHelper.getComponentType(comp);
+				ComponentType type = ComponentType.getComponentVersionType(comp);
 				@SuppressWarnings("unused")
 				ComponentChronicleBI<?> cbi = null;
 	
-				if (type == ComponentType.Concept) {
+				if (type == ComponentType.CONCEPT) {
 					ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 					cbi = getBuilder().construct(cab);
-				} else if (type == ComponentType.Description) {
+				} else if (type == ComponentType.DESCRIPTION) {
 					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 					cbi = getBuilder().construct(cab);
-				} else if (type == ComponentType.Relationship) {
+				} else if (type == ComponentType.RELATIONSHIP) {
 					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 					cbi = getBuilder().construct(cab);
-				} else if (type == ComponentType.Refex) {
+				} else if (type == ComponentType.SEMEME) {
 					RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 					cbi = getBuilder().construct(cab);
-				} else if (type == ComponentType.RefexDynamic) {
+				} else if (type == ComponentType.SEMEME_DYNAMIC) {
 					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 					cbi = getBuilder().construct(cab);
 				}

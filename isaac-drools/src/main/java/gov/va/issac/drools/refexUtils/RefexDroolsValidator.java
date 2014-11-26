@@ -38,7 +38,6 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicUUIDBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.jvnet.hk2.annotations.Service;
@@ -106,7 +105,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 				StringBuilder sb = new StringBuilder();
 				for (ResultsItem r : rc.getResultsItems())
 				{
-					logger.debug("Drools rule fired during refex validation with severity {}, error code {}, rule ID {}, message {}", r.getSeverity().getName(),
+					logger.debug("Drools rule fired during sememe validation with severity {}, error code {}, rule ID {}, message {}", r.getSeverity().getName(),
 							r.getErrorCode(), r.getRuleUuid(), r.getMessage());
 					sb.append(r.getMessage());
 					sb.append(", ");
@@ -211,5 +210,27 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 		}
 
 		throw new RuntimeException("The selected drools validator doesn't apply to the datatype '" + userData.getRefexDataType().getDisplayName() + "'");
+	}
+
+	/**
+	 * @see org.ihtsdo.otf.tcc.api.refexDynamic.data.ExternalValidatorBI#validatorSupportsType(org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI, org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType)
+	 */
+	@Override
+	public boolean validatorSupportsType(RefexDynamicStringBI validatorDefinitionData, RefexDynamicDataType dataType)
+	{
+		RefexDroolsValidatorImplInfo rdvi = readFromData(validatorDefinitionData);
+		if (rdvi == null)
+		{
+			throw new RuntimeException("The specified validator is not mapped - cannot validate");
+		}
+
+		for (RefexDynamicDataType rddt : rdvi.getApplicableDataTypes())
+		{
+			if (rddt == dataType)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }

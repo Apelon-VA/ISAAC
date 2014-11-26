@@ -6,7 +6,7 @@
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy of the License at 
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -21,7 +21,9 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.dialog.YesNoDialog;
+import gov.va.isaac.gui.refexViews.refexEdit.HeaderNode.Filter;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.gui.util.TableHeaderRowTooltipInstaller;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
@@ -32,13 +34,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -46,7 +49,10 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -87,6 +93,7 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.sun.javafx.collections.ObservableMapWrapper;
 import com.sun.javafx.tk.Toolkit;
 
 /**
@@ -110,11 +117,13 @@ public class DynamicRefexView implements RefexViewI
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_;
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
-	
+
 	private Text placeholderText = new Text("No Dynamic Sememes were found associated with the component");
 	private Button backgroundSearchCancelButton_;
 	private ProgressBar progressBar_;
 	private RefexAnnotationSearcher processor_;
+	
+	private Button clearColumnHeaderNodesButton_ = new Button("Clear Filters");
 	
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
 
@@ -124,7 +133,48 @@ public class DynamicRefexView implements RefexViewI
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
+
+	private final ObservableMap<ColumnId, Filter<?>> filterCache_ = new ObservableMapWrapper<>(new WeakHashMap<>());
 	
+	private final MapChangeListener<ColumnId, Filter<?>> filterCacheListener_ = new MapChangeListener<ColumnId, Filter<?>>() {
+		@Override
+		public void onChanged(
+				javafx.collections.MapChangeListener.Change<? extends ColumnId, ? extends Filter<?>> c) {
+			if (c.wasAdded() || c.wasRemoved()) {
+				refresh();
+			}
+		}
+	};
+	private final ListChangeListener<Object> filterListener_ = new ListChangeListener<Object>() {
+		@Override
+		public void onChanged(
+				javafx.collections.ListChangeListener.Change<? extends Object> c) {
+			while (c.next()) {
+				if (c.wasPermutated()) {
+					// irrelevant
+				} else if (c.wasUpdated()) {
+					// irrelevant
+				} else {
+					refresh();
+					break;
+				}
+			}
+		}
+	};
+	private void addFilterCacheListeners() {
+		removeFilterCacheListeners();
+		filterCache_.addListener(filterCacheListener_);
+		for (HeaderNode.Filter<?> filter : filterCache_.values()) {
+			filter.getFilterValues().addListener(filterListener_);
+		}
+	}
+	private void removeFilterCacheListeners() {
+		filterCache_.removeListener(filterCacheListener_);
+		for (HeaderNode.Filter<?> filter : filterCache_.values()) {
+			filter.getFilterValues().removeListener(filterListener_);
+		}
+	}
+
 	private DynamicRefexView() 
 	{
 		//Created by HK2 - no op - delay till getView called
@@ -153,6 +203,15 @@ public class DynamicRefexView implements RefexViewI
 			VBox.setVgrow(ttv_, Priority.ALWAYS);
 			
 			ToolBar t = new ToolBar();
+			
+			clearColumnHeaderNodesButton_.setOnAction(event -> {
+				removeFilterCacheListeners();
+				for (HeaderNode.Filter<?> filter : filterCache_.values()) {
+					filter.getFilterValues().clear();
+				}
+				refresh();
+			});
+			t.getItems().add(clearColumnHeaderNodesButton_);
 			
 			currentRowSelected_ = new UpdateableBooleanBinding()
 			{
@@ -189,7 +248,7 @@ public class DynamicRefexView implements RefexViewI
 						}
 						catch (IOException e)
 						{
-							logger_.error("Unexpeted error!", e);
+							logger_.error("Unexpected error!", e);
 							return false;
 						}
 					}
@@ -276,8 +335,9 @@ public class DynamicRefexView implements RefexViewI
 			
 			stampButton_ = new ToggleButton("");
 			stampButton_.setGraphic(Images.STAMP.createImageView());
-			stampButton_.setTooltip(new Tooltip("Show / Hide Stamp Columns"));
+			stampButton_.setTooltip(new Tooltip("Show / Hide Stamp Attributes"));
 			stampButton_.setVisible(false);
+			stampButton_.setSelected(true);
 			t.getItems().add(stampButton_);
 			
 			showStampColumns_ = new UpdateableBooleanBinding()
@@ -569,23 +629,41 @@ public class DynamicRefexView implements RefexViewI
 		
 		loadData();
 	}
+	
+	private void storeTooltip(Map<String, List<String>> store, String key, String value)
+	{
+		List<String> list = store.get(key);
+		if (list == null)
+		{
+			list = new ArrayList<>();
+			store.put(key, list);
+		}
+		list.add(value);
+	}
 
 	private void loadData()
 	{
 		Utility.execute(() -> {
 			try
-			{
+			{				
+				removeFilterCacheListeners();
+				
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
+				Map<String, List<String>> toolTipStore = new HashMap<>();
 				
-				
-				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>();
-				HashMap<Label , String> tooltipsToInstall = new HashMap<>();
-				Label l = new Label("s"); 
-				tooltipsToInstall.put(l, "Status Markers - for active / inactive and current / historical and uncommitted");
-				ttStatusCol.setGraphic(l);
-				ttStatusCol.setText(null);
+				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttStatusCol = new TreeTableColumn<>(DynamicRefexColumnType.STATUS_CONDENSED.toString());
+				storeTooltip(toolTipStore, ttStatusCol.getText(), "Status Markers - for active / inactive and current / historical and uncommitted");
+
 				ttStatusCol.setSortable(true);
 				ttStatusCol.setResizable(true);
+				ttStatusCol.setComparator(new Comparator<RefexDynamicGUI>()
+				{
+					@Override
+					public int compare(RefexDynamicGUI o1, RefexDynamicGUI o2)
+					{
+						return o1.compareTo(DynamicRefexColumnType.STATUS_CONDENSED, null, o2);
+					}
+				});
 				ttStatusCol.setCellFactory((colInfo) -> 
 				{
 					return new StatusCell();
@@ -600,50 +678,49 @@ public class DynamicRefexView implements RefexViewI
 				if (setFromType_.getComponentNid() == null)
 				{
 					//If the component is null, the assemblage is always the same - don't show.
-					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					ttCol.setText("Component");
-					ttCol.setSortable(true);
-					ttCol.setResizable(true);
-					ttCol.setCellFactory((colInfo) -> 
-					{
-						return new ComponentDataCell((refex) ->
-						{
-							return refex.getReferencedComponentNid();
-						});
-						
+					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.COMPONENT);
+					storeTooltip(toolTipStore, ttCol.getText(), "The Referenced component of this Sememe");
+					HeaderNode<String> headerNode = new HeaderNode<>(
+							filterCache_,
+							ttCol,
+							ColumnId.getInstance(DynamicRefexColumnType.COMPONENT),
+							rootNode_.getScene(),
+							new HeaderNode.DataProvider<String>() {
+						@Override
+						public String getData(RefexDynamicGUI source) {
+							return source.getDisplayStrings(DynamicRefexColumnType.COMPONENT, null).getKey();
+						}
 					});
-					ttCol.setCellValueFactory((callback) ->
-					{
-						return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-					});
+					ttCol.setGraphic(headerNode.getNode());
+					
 					treeColumns.add(ttCol);
 				}
 				else
 				{
 					//if the assemblage is null, the component is always the same - don't show.
-					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = new TreeTableColumn<>();
-					ttCol.setText("Assemblage");
-					ttCol.setSortable(true);
-					ttCol.setResizable(true);
-					ttCol.setCellFactory((colInfo) -> 
-					{
-						return new ComponentDataCell(true, (refex) ->
-						{
-							return refex.getAssemblageNid();
-						});
-						
+					TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI>  ttCol = buildComponentCellColumn(DynamicRefexColumnType.ASSEMBLAGE);
+					storeTooltip(toolTipStore, ttCol.getText(), "The Assemblage concept that defines this Sememe");
+					HeaderNode<String> headerNode = new HeaderNode<>(
+							filterCache_,
+							ttCol,
+							ColumnId.getInstance(DynamicRefexColumnType.ASSEMBLAGE),
+							rootNode_.getScene(),
+							new HeaderNode.DataProvider<String>() {
+						@Override
+						public String getData(RefexDynamicGUI source) {
+							return source.getDisplayStrings(DynamicRefexColumnType.ASSEMBLAGE, null).getKey();
+						}
 					});
-					ttCol.setCellValueFactory((callback) ->
-					{
-						return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-					});
+					ttCol.setGraphic(headerNode.getNode());
+
 					treeColumns.add(ttCol);
 				}
 				
 				TreeTableColumn<RefexDynamicGUI, String> ttStringCol = new TreeTableColumn<>();
 				ttStringCol = new TreeTableColumn<>();
-				ttStringCol.setText("Attached Data");
-				ttStringCol.setSortable(true);
+				ttStringCol.setText(DynamicRefexColumnType.ATTACHED_DATA.toString());
+				storeTooltip(toolTipStore, ttStringCol.getText(), "The various data fields attached to this Sememe instance");
+				ttStringCol.setSortable(false);
 				ttStringCol.setResizable(true);
 				//don't add yet - we might not need this column.  throw away later, if we don't need it
 				
@@ -728,12 +805,91 @@ public class DynamicRefexView implements RefexViewI
 					
 					for (int i = 0; i < max; i++)
 					{
-						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>();
-						l = new Label(col.values().iterator().next().get(0).getColumnName());  //all the same, just pick the first
-						tooltipsToInstall.put(l, col.values().iterator().next().get(0).getColumnDescription());
-						nestedCol.setGraphic(l);
+						final String name = col.values().iterator().next().get(0).getColumnName(); //all the same, just pick the first
+						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>(name);
+						storeTooltip(toolTipStore, nestedCol.getText(), col.values().iterator().next().get(0).getColumnDescription());
+						
+						// TODO: FILTER ID
+						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
+
+						final Integer listItem = i;
+						HeaderNode<String> ttNestedColHeaderNode = new HeaderNode<>(
+								filterCache_,
+								nestedCol,
+								columnKey,
+								rootNode_.getScene(),
+								new HeaderNode.DataProvider<String>() {
+							@Override
+							public String getData(RefexDynamicGUI source) {
+								if (source == null) {
+									return null;
+								}
+								try
+								{
+									for (UUID uuid : col.keySet())
+									{
+										assert source != null;
+										assert source.getRefex() != null;
+										
+										if (ExtendedAppContext.getDataStore().getNidForUuids(uuid) == source.getRefex().getAssemblageNid())
+										{
+											List<RefexDynamicColumnInfo> colInfo =  col.get(uuid);
+											Integer refexColumnOrder = (colInfo.size() > listItem ? 
+													(source.getRefex().getData().length <= colInfo.get(listItem).getColumnOrder() ? null 
+														: colInfo.get(listItem).getColumnOrder()): null);
+											
+											if (refexColumnOrder != null)
+											{
+												return source.getDisplayStrings(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder).getKey();
+											}
+										}
+									}
+								}
+								catch (Exception e)
+								{
+									logger_.error("Unexpected error getting string data from attribute", e);
+								}
+								return null;  //not applicable / blank row
+							}
+						});
+						nestedCol.setGraphic(ttNestedColHeaderNode.getNode());
+						
 						nestedCol.setSortable(true);
 						nestedCol.setResizable(true);
+						nestedCol.setComparator(new Comparator<RefexDynamicGUI>()
+						{
+							@Override
+							public int compare(RefexDynamicGUI o1, RefexDynamicGUI o2)
+							{
+								try
+								{
+									for (UUID uuid : col.keySet())
+									{
+										assert o1 != null;
+										assert o1.getRefex() != null;
+										
+										if (ExtendedAppContext.getDataStore().getNidForUuids(uuid) == o1.getRefex().getAssemblageNid())
+										{
+											List<RefexDynamicColumnInfo> colInfo =  col.get(uuid);
+											Integer refexColumnOrder = (colInfo.size() > listItem ? 
+													(o1.getRefex().getData().length <= colInfo.get(listItem).getColumnOrder() ? null 
+														: colInfo.get(listItem).getColumnOrder()): null);
+											
+											if (refexColumnOrder != null)
+											{
+												return o1.compareTo(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder, o2);
+											}
+										}
+									}
+								}
+								catch (Exception e)
+								{
+									logger_.error("Unexpected error sorting data attributes", e);
+								}
+								return 1;  //not applicable / blank row
+								
+							}
+						});
 						
 						nestedCol.setCellFactory(new AttachedDataCellFactory(col, i));
 						
@@ -755,95 +911,69 @@ public class DynamicRefexView implements RefexViewI
 				//Create the STAMP columns
 				ttStringCol = new TreeTableColumn<>();
 				ttStringCol.setText("STAMP");
-				ttStringCol.setSortable(true);
+				storeTooltip(toolTipStore, "STAMP", "The Status, Time, Author, Module and Path columns");
+				ttStringCol.setSortable(false);
 				ttStringCol.setResizable(true);
 				stampColumn_ = ttStringCol;
 				treeColumns.add(ttStringCol);
 				
 				TreeTableColumn<RefexDynamicGUI, String> nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Status");
+				nestedCol.setText(DynamicRefexColumnType.STATUS_STRING.toString());
+				storeTooltip(toolTipStore, nestedCol.getText(), "The status of the instance");
+				HeaderNode<String> nestedColHeaderNode = new HeaderNode<>(
+						filterCache_,
+						nestedCol,
+						ColumnId.getInstance(DynamicRefexColumnType.STATUS_STRING),
+						rootNode_.getScene(),
+						new HeaderNode.DataProvider<String>() {
+							@Override
+							public String getData(RefexDynamicGUI source) {
+								return source.getDisplayStrings(DynamicRefexColumnType.STATUS_STRING, null).getKey();
+							}
+						});
+				nestedCol.setGraphic(nestedColHeaderNode.getNode());
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					return new ReadOnlyStringWrapper(callback.getValue().getValue().getRefex().getStatus().toString());
+					return new ReadOnlyStringWrapper(callback.getValue().getValue().getDisplayStrings(DynamicRefexColumnType.STATUS_STRING, null).getKey());
 				});
 				ttStringCol.getColumns().add(nestedCol);
 				
 
 				nestedCol = new TreeTableColumn<>();
-				nestedCol.setText("Time");
+				nestedCol.setText(DynamicRefexColumnType.TIME.toString());
+				storeTooltip(toolTipStore, nestedCol.getText(), "The time when the instance was created or edited");
+				nestedColHeaderNode = new HeaderNode<>(
+						filterCache_,
+						nestedCol,
+						ColumnId.getInstance(DynamicRefexColumnType.TIME),
+						rootNode_.getScene(),
+						new HeaderNode.DataProvider<String>() {
+							@Override
+							public String getData(RefexDynamicGUI source) {
+								return source.getDisplayStrings(DynamicRefexColumnType.TIME, null).getKey();
+							}
+						});
+				nestedCol.setGraphic(nestedColHeaderNode.getNode());
 				nestedCol.setSortable(true);
 				nestedCol.setResizable(true);
 				nestedCol.setCellValueFactory((callback) ->
 				{
-					long time = callback.getValue().getValue().getRefex().getTime();
-					if (time == Long.MAX_VALUE)
-					{
-						return new ReadOnlyStringWrapper("-Uncommitted-");
-					}
-					else
-					{
-						return new ReadOnlyStringWrapper(new Date(time).toString());
-					}
+					return new ReadOnlyStringWrapper(callback.getValue().getValue().getDisplayStrings(DynamicRefexColumnType.TIME, null).getKey());
 				});
 				ttStringCol.getColumns().add(nestedCol);
 				
-				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Author");
-				nestedIntCol.setSortable(true);
-				nestedIntCol.setResizable(true);
-				nestedIntCol.setCellFactory((colInfo) -> 
-				{
-					return new ComponentDataCell((refex) ->
-					{
-						return refex.getAuthorNid();
-					});
-					
-				});
-				nestedIntCol.setCellValueFactory((callback) ->
-				{
-					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-				});
-
+				TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.AUTHOR); 
+				storeTooltip(toolTipStore, nestedIntCol.getText(), "The author of the instance");
 				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Module");
-				nestedIntCol.setSortable(true);
-				nestedIntCol.setResizable(true);
-				nestedIntCol.setVisible(false);
-				nestedIntCol.setCellFactory((colInfo) -> 
-				{
-					return new ComponentDataCell((refex) ->
-					{
-						return refex.getModuleNid();
-					});
-					
-				});
-				nestedIntCol.setCellValueFactory((callback) ->
-				{
-					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-				});
+				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.MODULE);
+				storeTooltip(toolTipStore, nestedIntCol.getText(), "The module of the instance");
 				ttStringCol.getColumns().add(nestedIntCol);
 				
-				nestedIntCol = new TreeTableColumn<>();
-				nestedIntCol.setText("Path");
-				nestedIntCol.setSortable(true);
-				nestedIntCol.setResizable(true);
-				nestedIntCol.setVisible(false);
-				nestedIntCol.setCellFactory((colInfo) -> 
-				{
-					return new ComponentDataCell((refex) ->
-					{
-						return refex.getPathNid();
-					});
-					
-				});
-				nestedIntCol.setCellValueFactory((callback) ->
-				{
-					return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());
-				});
+				nestedIntCol = buildComponentCellColumn(DynamicRefexColumnType.PATH); 
+				storeTooltip(toolTipStore, nestedIntCol.getText(), "The path of the instance");
 				ttStringCol.getColumns().add(nestedIntCol);
 
 				Platform.runLater(() ->
@@ -853,14 +983,6 @@ public class DynamicRefexView implements RefexViewI
 						ttv_.getColumns().add(tc);
 					}
 					
-					for (Entry<Label, String> tooltips : tooltipsToInstall.entrySet())
-					{
-						Tooltip t = new Tooltip(tooltips.getValue());
-						t.setMaxWidth(400);
-						t.setWrapText(true);
-						tooltips.getKey().setTooltip(t);
-					}
-					
 					//Horrible hack to set a reasonable default size on the columns.
 					//Min width to the width of the header column.
 					Font f = new Font("System Bold", 13.0);
@@ -868,8 +990,12 @@ public class DynamicRefexView implements RefexViewI
 					{
 						for (TreeTableColumn<RefexDynamicGUI, ?> nCol : col.getColumns())
 						{
-							String text = (nCol.getGraphic() != null && nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() : nCol.getText());
-							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+							String text = (nCol.getGraphic() != null 
+									&& (nCol.getGraphic() instanceof Label || nCol.getGraphic() instanceof HBox) 
+										? (nCol.getGraphic() instanceof Label ? ((Label)nCol.getGraphic()).getText() 
+												: ((Label)((HBox)nCol.getGraphic()).getChildren().get(0)).getText()) 
+										: nCol.getText());
+							nCol.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 70);
 						}
 						
 						if (col.getColumns().size() > 0)
@@ -894,7 +1020,7 @@ public class DynamicRefexView implements RefexViewI
 											temp += nCol.getWidth();
 										}
 									}
-									float parentColWidth = Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 10;
+									float parentColWidth = Toolkit.getToolkit().getFontLoader().computeStringWidth(col.getText(), f) + 70;
 									if (temp < parentColWidth)
 									{
 										//bump the size of the first nested column, so the parent doesn't get clipped
@@ -907,8 +1033,16 @@ public class DynamicRefexView implements RefexViewI
 						}
 						else
 						{
-							String text = (col.getGraphic() != null && col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : col.getText());
-							if (text.equalsIgnoreCase("Assemblage") || text.equalsIgnoreCase("Component"))
+							String text = col.getText();
+							
+							if (text == null) {
+								text = (col.getGraphic() != null && (col.getGraphic() instanceof Label || col.getGraphic() instanceof HBox)
+										? (col.getGraphic() instanceof Label ? ((Label)col.getGraphic()).getText() : ((Label)((HBox)col.getGraphic()).getChildren().get(0)).getText()) 
+										: col.getText());
+							}
+							
+							if (text.equalsIgnoreCase(DynamicRefexColumnType.ASSEMBLAGE.toString()) 
+									|| text.equalsIgnoreCase(DynamicRefexColumnType.COMPONENT.toString()))
 							{
 								col.setPrefWidth(250);
 							}
@@ -919,12 +1053,15 @@ public class DynamicRefexView implements RefexViewI
 							}
 							else
 							{
-								col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 10);
+								col.setMinWidth(Toolkit.getToolkit().getFontLoader().computeStringWidth(text, f) + 70);
 							}
 						}
 					}
+					
 					showStampColumns_.invalidate();
 				});
+				
+				TableHeaderRowTooltipInstaller.installTooltips(ttv_, toolTipStore);
 
 				ArrayList<TreeItem<RefexDynamicGUI>> rowData;
 				//Now add the data
@@ -948,6 +1085,9 @@ public class DynamicRefexView implements RefexViewI
 					ttv_.setPlaceholder(placeholderText);
 					ttv_.getSelectionModel().clearAndSelect(0);
 				});
+				
+				// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
+				addFilterCacheListeners();
 			}
 			catch (Exception e)
 			{
@@ -958,6 +1098,38 @@ public class DynamicRefexView implements RefexViewI
 			}
 		});
 	}
+	
+	private TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> buildComponentCellColumn(DynamicRefexColumnType type)
+	{
+		TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> ttCol = new TreeTableColumn<>(type.toString());
+		HeaderNode<String> headerNode = new HeaderNode<>(
+				filterCache_,
+				ttCol,
+				ColumnId.getInstance(type),
+				rootNode_.getScene(),
+				new HeaderNode.DataProvider<String>() {
+					@Override
+					public String getData(RefexDynamicGUI source) {
+						return source.getDisplayStrings(type, null).getKey();
+					}
+				});
+		ttCol.setGraphic(headerNode.getNode());
+		
+		ttCol.setSortable(true);
+		ttCol.setResizable(true);
+		ttCol.setComparator(new Comparator<RefexDynamicGUI>()
+		{
+			@Override
+			public int compare(RefexDynamicGUI o1, RefexDynamicGUI o2)
+			{
+				return o1.compareTo(type, null, o2);
+			}
+		});
+		ttCol.setCellFactory((colInfo) -> {return new ComponentDataCell(type);});
+		ttCol.setCellValueFactory((callback) -> {return new ReadOnlyObjectWrapper<RefexDynamicGUI>(callback.getValue().getValue());});
+		return ttCol;
+	}
+
 	
 	private ArrayList<TreeItem<RefexDynamicGUI>> getDataRows(ComponentChronicleBI<?> component, TreeItem<RefexDynamicGUI> nestUnder) 
 			throws IOException, ContradictionException
@@ -972,7 +1144,7 @@ public class DynamicRefexView implements RefexViewI
 			return (nestUnder == null ? new ArrayList<>() : null);
 		}
 
-		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createVersionFilteredRowData(component.getRefexesDynamic());
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createFilteredRowData(component.getRefexesDynamic());
 		
 		if (nestUnder != null)
 		{
@@ -985,7 +1157,7 @@ public class DynamicRefexView implements RefexViewI
 		}
 	}
 	
-	private ArrayList<TreeItem<RefexDynamicGUI>> createVersionFilteredRowData(Collection<? extends RefexDynamicChronicleBI<?>> refexChronicles) throws IOException, 
+	private ArrayList<TreeItem<RefexDynamicGUI>> createFilteredRowData(Collection<? extends RefexDynamicChronicleBI<?>> refexChronicles) throws IOException, 
 		ContradictionException
 	{
 		ArrayList<TreeItem<RefexDynamicGUI>> rowData = new ArrayList<>();
@@ -1015,7 +1187,6 @@ public class DynamicRefexView implements RefexViewI
 				{
 					return o1.getPrimordialUuid().compareTo(o2.getPrimordialUuid());
 				}
-				
 			}
 		});
 		
@@ -1029,11 +1200,27 @@ public class DynamicRefexView implements RefexViewI
 			}
 			if (showActiveOnly_.get() == false || r.isActive())
 			{
-				TreeItem<RefexDynamicGUI> ti = new TreeItem<>();
-				ti.setValue(new RefexDynamicGUI(r, !r.getPrimordialUuid().equals(lastSeenRefex)));  //first one we see with a new UUID is current, others are historical
-				//recurse
-				getDataRows(r, ti);  
-				rowData.add(ti);
+				RefexDynamicGUI newRefexDynamicGUI = new RefexDynamicGUI(r, !r.getPrimordialUuid().equals(lastSeenRefex));  //first one we see with a new UUID is current, others are historical
+				
+				// HeaderNode FILTERING DONE HERE
+				boolean filterOut = false;
+				for (HeaderNode.Filter<?> filter : filterCache_.values()) {
+					if (filter.getFilterValues().size() > 0) {
+						if (! filter.accept(newRefexDynamicGUI)) {
+							filterOut = true;
+							break;
+						}
+					}
+				}
+				
+				if (! filterOut) {
+					TreeItem<RefexDynamicGUI> ti = new TreeItem<>();
+
+					ti.setValue(newRefexDynamicGUI);
+					//recurse
+					getDataRows(r, ti);  
+					rowData.add(ti);
+				}
 			}
 			lastSeenRefex = r.getPrimordialUuid();
 		}
@@ -1318,7 +1505,7 @@ public class DynamicRefexView implements RefexViewI
 			}
 		}
 		
-		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createVersionFilteredRowData(refexMembers);
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData = createFilteredRowData(refexMembers);
 
 		if (rowData.size() == 0)
 		{

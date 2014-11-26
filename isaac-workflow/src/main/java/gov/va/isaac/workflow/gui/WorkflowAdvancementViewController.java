@@ -343,6 +343,7 @@ public class WorkflowAdvancementViewController
 	}
 
 	private void addToPromotionPath() {
-		// TODO Auto-generated method stub
+		// TODO implement
+		logger.error("addtoPromotionPath is not implemented!");
 	}
 }

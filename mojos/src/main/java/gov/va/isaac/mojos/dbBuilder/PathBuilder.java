@@ -219,7 +219,7 @@ public class PathBuilder extends AbstractMojo {
         paths.getVersion(StandardViewCoordinates.getSnomedStatedLatest());
     getLog().info("paths: " + paths.getNid() + " " + paths.toUserString());
     for (RefexChronicleBI<?> refex : pathsVersion.getRefsetMembers()) {
-      getLog().info("  refex : " + refex.toUserString());
+      getLog().info("  sememe : " + refex.toUserString());
     }
 
     getLog().info("WRITE path origin refset info");
@@ -230,7 +230,7 @@ public class PathBuilder extends AbstractMojo {
     getLog().info(
         "paths: " + pathOrigins.getNid() + " " + pathOrigins.toUserString());
     for (RefexChronicleBI<?> refex : pathOriginsVersion.getRefsetMembers()) {
-      getLog().info("  refex : " + refex.toUserString());
+      getLog().info("  sememe : " + refex.toUserString());
     }
     
   }

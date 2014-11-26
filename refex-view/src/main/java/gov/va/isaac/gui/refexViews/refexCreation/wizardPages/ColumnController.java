@@ -147,7 +147,7 @@ public class ColumnController implements PanelControllersI {
 			{
 				if (typeOption.getValue() == RefexDynamicDataType.UNKNOWN)
 				{
-					return "You must select the column type";
+					return "You must select the attribute type";
 				}
 				return "";
 			}
@@ -306,10 +306,14 @@ public class ColumnController implements PanelControllersI {
 					l.setAlignment(Pos.CENTER_LEFT);
 					l.setMinHeight(25.0);
 					defaultValueHolder.getChildren().add(l);
+				
+					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+					validatorType.setDisable(true);
 				}
 				else if (newValue == RefexDynamicDataType.UNKNOWN)
 				{
-					//noop
+					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+					validatorType.setDisable(true);
 				}
 				else
 				{
@@ -321,6 +325,7 @@ public class ColumnController implements PanelControllersI {
 					else
 					{
 						validatorType.setDisable(false);
+						updateValidationValues(newValue);
 					}
 					
 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, null, 
@@ -332,6 +337,7 @@ public class ColumnController implements PanelControllersI {
 			}
 		});
 		
+		validatorType.setDisable(true);
 		validatorType.setConverter(new StringConverter<RefexDynamicValidatorType>()
 		{
 			
@@ -368,6 +374,8 @@ public class ColumnController implements PanelControllersI {
 				allValid_.removeBinding(binding);
 			}
 			
+			processController_.getWizardData().getColumnInfo().get(columnNumber_).setValidatorData(null);
+			
 			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
 			{
 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
@@ -388,16 +396,34 @@ public class ColumnController implements PanelControllersI {
 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
 	}
 	
+	
+	private void updateValidationValues(RefexDynamicDataType dType) 
+	{
+		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) 
+		{
+			// TODO: replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
+			if (type.validatorSupportsType(dType) && (!((dType == RefexDynamicDataType.UUID || dType == RefexDynamicDataType.NID) && type == RefexDynamicValidatorType.REGEXP)))
+			{
+				if (!validatorType.getItems().contains(type))
+				{
+					validatorType.getItems().add(type);
+				}
+			}
+			else if (type != RefexDynamicValidatorType.UNKNOWN)  //always keep UNKNOWN
+			{
+				validatorType.getItems().remove(type);
+			}
+		}
+		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+	}
+
 	private void initializeTypeConcepts() {
 		for (RefexDynamicDataType type : RefexDynamicDataType.values()) {
 			typeOption.getItems().add(type);
 		}
 		typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
 		
-		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values())
-		{
-			validatorType.getItems().add(type);
-		}
+		validatorType.getItems().add(RefexDynamicValidatorType.UNKNOWN);
 		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
 	}
 
@@ -415,8 +441,8 @@ public class ColumnController implements PanelControllersI {
 				columnNameSelection_.set(sdc);
 			}
 		} catch (IOException e) {
-			logger.error("Unexpected error creating new column concept", e);
-			AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating column concept.  Please see logs.", e);
+			logger.error("Unexpected error creating new attribute concept", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating attribute concept.  Please see logs.", e);
 		}
 	}
 
@@ -430,7 +456,7 @@ public class ColumnController implements PanelControllersI {
 			}
 			columnNameSelection_.set(columnNameChoices.get(0));
 		} catch (Exception e1) {
-			logger.error("Unable to access column concepts", e1);
+			logger.error("Unable to access attribute concepts", e1);
 		}
 	}
 
@@ -518,7 +544,7 @@ public class ColumnController implements PanelControllersI {
 
 	public void setColumnNumber(int colNum) {
 		columnNumber_ = colNum;
-		columnTitle.setText("Column #" + (columnNumber_ + 1) + " Definition");
+		columnTitle.setText("Attribute #" + (columnNumber_ + 1) + " Definition");
 		//don't do this slow task during JavaFX init.
 		if (columnNameChoices.size() == 0)
 		{

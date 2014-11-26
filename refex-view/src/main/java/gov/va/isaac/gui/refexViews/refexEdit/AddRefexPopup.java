@@ -32,8 +32,11 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.UpdateableBooleanBinding;
+import gov.va.isaac.util.Utility;
+import gov.va.isaac.util.ValidBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 import java.util.ArrayList;
+import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -52,6 +55,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -76,14 +80,19 @@ import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicData;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.ihtsdo.otf.tcc.model.index.service.IndexedGenerationCallable;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -106,7 +115,14 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private RefexDynamicGUI editRefex_;
 	private Label unselectableComponentLabel_;;
 	private ScrollPane sp_;
+	//TODO improve 'ConceptNode' - this mess of Conceptnode or TextField will work for now, if they set a component type restriction
+	//But if they don't set a component type restriction, we still need the field (conceptNode) to allow nids or UUIDs of other types of things.
+	//both here, and in the GUI that creates the sememe - when specifying the default value.
 	private ConceptNode selectableConcept_;
+	private StackPane selectableComponentNode_;
+	private ValidBooleanBinding selectableComponentNodeValid_;
+	private TextField selectableComponent_;
+	private boolean conceptNodeIsConceptType_ = false;
 	private RefexDynamicUsageDescription assemblageInfo_;
 	private SimpleBooleanProperty assemblageIsValid_ = new SimpleBooleanProperty(false);
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
@@ -118,7 +134,6 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private GridPane gp_;
 	private Label title_;
 
-	//TODO use the word Sememe
 	private AddRefexPopup()
 	{
 		super();
@@ -186,6 +201,19 @@ public class AddRefexPopup extends Stage implements PopupViewI
 						{
 							assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(selectableConcept_.getConceptNoWait().getNid());
 							assemblageIsValid_.set(true);
+							if (assemblageInfo_.getReferencedComponentTypeRestriction() != null)
+							{
+								String result = RefexDynamicValidatorType.COMPONENT_TYPE.passesValidatorStringReturn(new RefexDynamicNid(createRefexFocus_.getComponentNid()), 
+										new RefexDynamicString(assemblageInfo_.getReferencedComponentTypeRestriction().name()), null);  //component type validator doesn't use vc, so null is ok
+								if (result.length() > 0)
+								{
+									selectableConcept_.isValid().setInvalid("The selected assemblage requires the component type to be " 
+											+ assemblageInfo_.getReferencedComponentTypeRestriction().toString() + ", which doesn't match the referenced component.");
+									logger_.info("The selected assemblage requires the component type to be " 
+											+ assemblageInfo_.getReferencedComponentTypeRestriction().toString() + ", which doesn't match the referenced component.");
+									assemblageIsValid_.set(false);
+								}
+							}
 						}
 						catch (Exception e)
 						{
@@ -204,7 +232,75 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 		});
 
-		//delay adding concept till we know where
+		selectableComponent_ = new TextField();
+		
+		selectableComponentNodeValid_ = new ValidBooleanBinding()
+		{
+			{
+				setComputeOnInvalidate(true);
+				bind(selectableComponent_.textProperty());
+				invalidate();
+			}
+			@Override
+			protected boolean computeValue()
+			{
+				if (createRefexFocus_ != null && createRefexFocus_.getAssemblyNid() != null && !conceptNodeIsConceptType_)
+				{
+					//If the assembly nid was what was set - the component node may vary - validate if we are using the text field 
+					String value = selectableComponent_.getText().trim();
+					if (value.length() > 0)
+					{
+						try
+						{
+							if (Utility.isUUID(value))
+							{
+								String result = RefexDynamicValidatorType.COMPONENT_TYPE.passesValidatorStringReturn(new RefexDynamicUUID(UUID.fromString(value)), 
+										new RefexDynamicString(assemblageInfo_.getReferencedComponentTypeRestriction().name()), null);  //component type validator doesn't use vc, so null is ok
+								if (result.length() > 0)
+								{
+									setInvalidReason(result);
+									logger_.info(result);
+									return false;
+								}
+							}
+							else if (Utility.isInt(value))
+							{
+								String result = RefexDynamicValidatorType.COMPONENT_TYPE.passesValidatorStringReturn(new RefexDynamicNid(Integer.parseInt(value)), 
+										new RefexDynamicString(assemblageInfo_.getReferencedComponentTypeRestriction().name()), null);  //component type validator doesn't use vc, so null is ok
+								if (result.length() > 0)
+								{
+									setInvalidReason(result);
+									logger_.info(result);
+									return false;
+								}
+							}
+							else
+							{
+								setInvalidReason("Value cannot be parsed as a component identifier.  Must be a UUID or a valid NID");
+								return false;
+							}
+						}
+						catch (Exception e)
+						{
+							logger_.error("Error checking component type validation", e);
+							setInvalidReason("Unexpected error validating entry");
+							return false;
+						}
+					}
+					else
+					{
+						setInvalidReason("Component identifier is required");
+						return false;
+					}
+				}
+				clearInvalidReason();
+				return true;
+			}
+		};
+		
+		selectableComponentNode_ = ErrorMarkerUtils.setupErrorMarker(selectableComponent_, null, selectableComponentNodeValid_);
+		
+		//delay adding concept / component till we know if / where
 		ColumnConstraints cc = new ColumnConstraints();
 		cc.setHgrow(Priority.NEVER);
 		cc.setMinWidth(FxUtils.calculateNecessaryWidthOfBoldLabel(referencedComponent));
@@ -230,13 +326,13 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		allValid_ = new UpdateableBooleanBinding()
 		{
 			{
-				addBinding(assemblageIsValid_, selectableConcept_.isValid());
+				addBinding(assemblageIsValid_, selectableConcept_.isValid(), selectableComponentNodeValid_);
 			}
 
 			@Override
 			protected boolean computeValue()
 			{
-				if (assemblageIsValid_.get() && selectableConcept_.isValid().get())
+				if (assemblageIsValid_.get() && (conceptNodeIsConceptType_ ? selectableConcept_.isValid().get() : selectableComponentNodeValid_.get()))
 				{
 					boolean allDataValid = true;
 					for (ReadOnlyStringProperty ssp : currentDataFieldWarnings_)
@@ -353,14 +449,28 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		}
 		else
 		{
-			gp_.add(unselectableComponentLabel_, 1, 1);
-			unselectableComponentLabel_.setText(WBUtility.getDescription(createRefexFocus_.getAssemblyNid()));
-			gp_.add(selectableConcept_.getNode(), 1, 0);
-			refexDropDownOptions.clear();
-			refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
 			try
 			{
 				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(createRefexFocus_.getAssemblyNid());
+				gp_.add(unselectableComponentLabel_, 1, 1);
+				unselectableComponentLabel_.setText(WBUtility.getDescription(createRefexFocus_.getAssemblyNid()));
+				if (assemblageInfo_.getReferencedComponentTypeRestriction() != null 
+						&& ComponentType.CONCEPT != assemblageInfo_.getReferencedComponentTypeRestriction() 
+						&& ComponentType.CONCEPT_ATTRIBUTES != assemblageInfo_.getReferencedComponentTypeRestriction())
+				{
+					conceptNodeIsConceptType_ = false;
+					gp_.add(selectableComponentNode_, 1, 0);
+					selectableComponent_.setPromptText("UUID or NID of a " + assemblageInfo_.getReferencedComponentTypeRestriction().toString());
+					selectableComponent_.setTooltip(new Tooltip("UUID or NID of a " + assemblageInfo_.getReferencedComponentTypeRestriction().toString()));
+					selectableComponentNodeValid_.invalidate();
+				}
+				else
+				{
+					conceptNodeIsConceptType_ = true;
+					gp_.add(selectableConcept_.getNode(), 1, 0);
+				}
+				refexDropDownOptions.clear();
+				refexDropDownOptions.addAll(AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts());
 				assemblageIsValid_.set(true);
 				buildDataFields(true, null);
 			}
@@ -548,7 +658,23 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				if (createRefexFocus_.getComponentNid() == null)
 				{
-					componentNid = selectableConcept_.getConcept().getNid();
+					if (conceptNodeIsConceptType_)
+					{
+						componentNid = selectableConcept_.getConcept().getNid();
+					}
+					else
+					{
+						String value = selectableComponent_.getText().trim();
+						if (Utility.isUUID(value))
+						{
+							componentNid = ExtendedAppContext.getDataStore().getNidForUuids(UUID.fromString(value));
+						}
+						else
+						{
+							componentNid = Integer.parseInt(value);
+						}
+					}
+					
 					assemblageNid = createRefexFocus_.getAssemblyNid();
 				}
 				else

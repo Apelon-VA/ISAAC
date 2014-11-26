@@ -22,23 +22,6 @@ public class ConceptViewerHelper {
 	private static Integer snomedAssemblageNid;
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
 
-	public enum ComponentType {
-		CONCEPT, DESCRIPTION, RELATIONSHIP;
-		
-		@Override
-		public String toString() {
-			if (this.equals(CONCEPT)) {
-				return "Concept";				
-			} else if (this.equals(DESCRIPTION)) {
-				return "Description";
-			} else if (this.equals(RELATIONSHIP)) {
-				return "Relationship";
-			}
-			
-			return "";
-		}
-	}
-	
 	private ConceptViewerHelper()
 	{
 		//helper, don't construct....

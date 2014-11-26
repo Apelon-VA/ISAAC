@@ -254,7 +254,7 @@ public class SearchViewController implements TaskCompleteCallback
 				}
 				catch (Exception e1)
 				{
-					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Sememe Assemblage concept types."
+					searchInRefex.isValid().setInvalid("Sememe searches can only be limited to valid Dynamic Sememe Assemblage concept types."
 							+ "  The current value is not a Dynamic Sememe Assemblage concept.");
 					currentlyEnteredAssemblageNid = null;
 					optionsContentVBox.getChildren().remove(searchInColumnsHolder);
@@ -699,7 +699,7 @@ public class SearchViewController implements TaskCompleteCallback
 					catch (NumberFormatException e1) 
 					{
 						//run it as a string search
-						LOG.debug("Doing a refex search as a string search");
+						LOG.debug("Doing a sememe search as a string search");
 						ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 						{
 							try

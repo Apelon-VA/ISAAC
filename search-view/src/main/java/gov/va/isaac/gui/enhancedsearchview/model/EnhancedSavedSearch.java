@@ -3,6 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview.model;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
+import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchDisplayConcept;
@@ -171,20 +172,21 @@ public class EnhancedSavedSearch {
 	}
 
 	private String getSaveSearchRequest() throws SearchConceptException {
-		SaveSearchPrompt.showContentGatheringDialog(AppContext.getMainApplicationWindow().getPrimaryStage(), "Define Refset");
+		SaveSearchPrompt prompt = new SaveSearchPrompt();
+		prompt.showUserPrompt(AppContext.getMainApplicationWindow().getPrimaryStage(), "Define Refset");
 
 
-		if (SaveSearchPrompt.getButtonSelected() == SaveSearchPrompt.Response.SAVE) {
+		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss");
 			LocalDateTime dateTime = LocalDateTime.now();
 			String formattedDateTime = dateTime.format(formatter);
 			String user = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getUserLogonName();
-			final String nameToSave = SaveSearchPrompt.getNameTextField().getText() + " by " + user + " on " + formattedDateTime;
+			final String nameToSave = prompt.getNameTextField().getText() + " by " + user + " on " + formattedDateTime;
 
-			SearchConceptHelper.buildAndSaveSearchConcept(searchModel, nameToSave, SaveSearchPrompt.getDescTextField().getText());
+			SearchConceptHelper.buildAndSaveSearchConcept(searchModel, nameToSave, prompt.getDescTextField().getText());
 			refreshSavedSearchComboBox();
 
-			return SaveSearchPrompt.getNameTextField().getText();
+			return prompt.getNameTextField().getText();
 		}
 		
 		return null;
