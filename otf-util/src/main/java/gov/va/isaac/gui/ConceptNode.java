@@ -104,6 +104,7 @@ public class ConceptNode implements ConceptLookupCallback
 	private volatile boolean disableChangeListener_ = false;
 	private Function<ConceptVersionBI, String> descriptionReader_;
 	private ObservableList<SimpleDisplayConcept> dropDownOptions_;
+	private ContextMenu cm_;
 	
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank)
 	{
@@ -173,7 +174,7 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
 		cb_.setVisibleRowCount(11);
 		
-		ContextMenu cm = new ContextMenu();
+		cm_ = new ContextMenu();
 		
 		MenuItem copyText = new MenuItem("Copy Description");
 		copyText.setGraphic(Images.COPY.createImageView());
@@ -185,8 +186,8 @@ public class ConceptNode implements ConceptLookupCallback
 				CustomClipboard.set(cb_.getEditor().getText());
 			}
 		});
-		cm.getItems().add(copyText);
-
+		cm_.getItems().add(copyText);
+		
 		CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 			@Override
 			public Set<Integer> getNIds() {
@@ -199,9 +200,9 @@ public class ConceptNode implements ConceptLookupCallback
 		};
 		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 		menuBuilder.setInvisibleWhenFalse(isValid);
-		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
+		CommonMenus.addCommonMenus(cm_, menuBuilder, nidProvider);
 		
-		cb_.getEditor().setContextMenu(cm);
+		cb_.getEditor().setContextMenu(cm_);
 
 		updateGUI();
 		
@@ -303,6 +304,11 @@ public class ConceptNode implements ConceptLookupCallback
 
 		hbox_.getChildren().add(sp);
 		HBox.setHgrow(sp, Priority.SOMETIMES);
+	}
+	
+	public void addMenu(MenuItem mi)
+	{
+		cm_.getItems().add(mi);
 	}
 
 	private void updateGUI()
@@ -477,14 +483,23 @@ public class ConceptNode implements ConceptLookupCallback
 	public void clear()
 	{
 		logger.debug("Clear called");
-		Platform.runLater(new Runnable()
+		Runnable r = new Runnable()
 		{
 			@Override
 			public void run()
 			{
 				cb_.setValue(new SimpleDisplayConcept("", 0));
 			}
-		});
+		};
+		
+		if (Platform.isFxApplicationThread())
+		{
+			r.run();
+		}
+		else
+		{
+			Platform.runLater(r);
+		}
 	}
 
 	public void disableEdit() {
