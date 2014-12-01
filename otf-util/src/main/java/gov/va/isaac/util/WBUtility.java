@@ -63,6 +63,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.relationship.RelAssertionType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -708,6 +709,7 @@ public class WBUtility {
 						UUID.fromString(AppContext.getAppConfiguration()
 							.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
 				vc.setViewPosition(position);
+				vc.setRelationshipAssertionType(RelAssertionType.INFERRED_THEN_STATED); 
 				}
 			} catch (NullPointerException e) {
 			LOG.error("View path UUID does not exist", e);
