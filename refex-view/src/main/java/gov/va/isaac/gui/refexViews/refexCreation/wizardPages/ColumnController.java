@@ -374,10 +374,13 @@ public class ColumnController implements PanelControllersI {
 				allValid_.removeBinding(binding);
 			}
 			
-			processController_.getWizardData().getColumnInfo().get(columnNumber_).setValidatorData(null);
-			
 			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
 			{
+				if (processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidator() != validatorType.getValue())
+				{
+					//If the validator type has changed, clear the stored value.
+					processController_.getWizardData().getColumnInfo().get(columnNumber_).setValidatorData(null);
+				}
 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
 						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(),
 						typeOption.valueProperty(), allValid_));
@@ -513,7 +516,7 @@ public class ColumnController implements PanelControllersI {
 		if (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
 		{
 			validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), 
+					rdci.getValidatorData(), 
 					typeOption.valueProperty(), allValid_));
 			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
 			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);

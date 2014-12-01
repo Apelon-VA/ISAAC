@@ -742,8 +742,8 @@ public class SyncServiceGIT implements ProfileSyncI
 			Set<String> filesChangedInCommit = listFilesChangedInCommit(git.getRepository(), commitWithPotentialNote.getId(), rc);
 			
 			//When we auto resolve to KEEP_REMOTE - these will have changed - make sure they are in the list.
-			//TODO seems like this shouldn't really be necessary - need to look into the listFilesChangedInCommit algorithm closer.
-			//this might already be fixed by the rework on 11/12/14, but no time to validate at the moment.
+			//seems like this shouldn't really be necessary - need to look into the listFilesChangedInCommit algorithm closer.
+			//this might already be fixed by the rework on 11/12/14, but no time to validate at the moment. - doesn't do any harm.
 			for (Entry<String, MergeFailOption> r : resolutions.entrySet())
 			{
 				if (MergeFailOption.KEEP_REMOTE == r.getValue())

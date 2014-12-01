@@ -87,9 +87,7 @@ public class Search {
 			new String[] { "uuid" }, 
 			new String[] { "uuid column" },
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-	
-	//TODO [JOEL] On all of these that define refex columns, are the column values required, or optional?  I made everything optional, for now...
-	//when I added the new feature for optional / required
+
 	public static DynamicRefexConceptSpec SEARCH_GLOBAL_ATTRIBUTES = new DynamicRefexConceptSpec("Search Global Attributes", 
 			UUID.fromString("27316605-16ea-536e-9acd-40f0277e20ad"),
 			true, 

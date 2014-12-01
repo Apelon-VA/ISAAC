@@ -132,6 +132,10 @@ public class CEMConstraint {
 						| PropertyVetoException e) {
 					LOGGER.error("Unable to create CEM enumeration for " + value);
 				}
+				finally
+				{
+					AppContext.getRuntimeGlobals().enableAllCommitListeners();
+				}
 			}
 		}
 	}

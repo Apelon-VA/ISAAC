@@ -21,9 +21,9 @@ package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
-import gov.va.isaac.gui.refexViews.refexEdit.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
@@ -320,6 +320,11 @@ public class DynamicRefexListViewController
 					for (SearchResult sr : refexes)
 					{
 						RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
+						if (rc == null)
+						{
+							log.info("Out of date index?  Search result for refexes contained a NID that can't be resolved: {}" + sr.getNid());
+							continue;
+						}
 						//These are nested refex references - it returns a description component - concept we want is the parent of that.
 						allRefexDefinitions.add(new SimpleDisplayConcept(
 								ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(),
