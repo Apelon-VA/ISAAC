@@ -171,6 +171,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {	
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		searchText.textProperty().addListener(new ChangeListener<String>() {
@@ -178,6 +179,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 			public void changed(ObservableValue<? extends String> observable,
 					String oldValue, String newValue) {
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		
@@ -187,6 +189,15 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 					Boolean oldValue, Boolean newValue) {
 				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
 					SearchModel.isSearchRunnableProperty().set(newValue);
+				}
+			}
+		});
+		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
+					SearchModel.isSearchSavableProperty().set(newValue);
 				}
 			}
 		});

@@ -29,9 +29,10 @@ public class EnhancedSearchViewTopPane {
 	
 	private Font boldFont = new Font("System Bold", 13.0);
 
+	private final EnhancedSavedSearch searchSaver;
 
 	public EnhancedSearchViewTopPane() {
-		EnhancedSavedSearch savedSearch = new EnhancedSavedSearch();
+		searchSaver = new EnhancedSavedSearch();
 
 		topPanelVBox = new VBox(10);
 		topPanelVBox.setAlignment(Pos.CENTER);
@@ -52,16 +53,18 @@ public class EnhancedSearchViewTopPane {
 		staticTopPanePortionGridPane.setConstraints(searchTypeHBox,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(maxResultsHBox,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(searchModel.getResultsTypeComboBox(),  2,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		staticTopPanePortionGridPane.setConstraints(savedSearch.getSaveButton(),  3,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		staticTopPanePortionGridPane.setConstraints(searchSaver.getSaveButton(),  3,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(searchButton,  4,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
 
-		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), savedSearch.getSaveButton(), searchButton);
+		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), searchSaver.getSaveButton(), searchButton);
 		topPanelVBox.getChildren().add(staticTopPanePortionGridPane);
 
 		searchModel.initializeCriteriaPane(maxResultsHBox, searchModel.getResultsTypeComboBox(), searchModel.getSearchResultsTable());
-		topPanelVBox.getChildren().add(searchModel.getSearchTypeSelector().getResultsPane());
+		topPanelVBox.getChildren().add(SearchModel.getSearchTypeSelector().getResultsPane());
 	}
 
+	public EnhancedSavedSearch getSearchSaver() { return searchSaver; }
+	
 	private void initializeMaxResultsComboBox() {
 		maxResultsHBox = new HBox(5);
 		maxResultsHBox.setAlignment(Pos.CENTER);

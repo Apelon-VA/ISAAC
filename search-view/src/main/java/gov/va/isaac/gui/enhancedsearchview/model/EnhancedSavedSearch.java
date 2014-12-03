@@ -92,7 +92,11 @@ public class EnhancedSavedSearch {
 		saveSearchButton.setMinWidth(Control.USE_PREF_SIZE);
 
 		saveSearchButton.setOnAction((e) -> {
-			saveSearch(); 
+			if (! SearchModel.getSearchTypeSelector().getTypeSpecificModel().isSavableSearch()) {
+				AppContext.getCommonDialogs().showErrorDialog("Save of Search Failed", "Search is not savable", SearchModel.getSearchTypeSelector().getTypeSpecificModel().getSearchSavabilityValidationFailureMessage());
+			} else {
+				saveSearch();
+			}
 		});
 		
 		restoreSearchButton = new Button("Restore Search");
@@ -115,7 +119,7 @@ public class EnhancedSavedSearch {
 
 		
 		if (! searchTypeComboBoxChangeListenerSet) {
-			searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchType>() {
+			SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchType>() {
 				@Override
 				public void changed(
 						ObservableValue<? extends SearchType> observable,
@@ -138,9 +142,9 @@ public class EnhancedSavedSearch {
 		try {
 			model = SearchConceptHelper.loadSavedSearch(searchToRestore);
 			
-			SearchType currentType = model.getSearchTypeSelector().getCurrentType();
-			model.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(null);
-			model.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(currentType);
+			SearchType currentType = SearchModel.getSearchTypeSelector().getCurrentType();
+			SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(null);
+			SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(currentType);
 		} catch (SearchConceptException e) {
 			LOG.error("Failed loading saved search. Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 			e.printStackTrace();
@@ -247,7 +251,7 @@ public class EnhancedSavedSearch {
 						boolean addSearchToList = true;
 						if (currentSearchType == SearchType.TEXT) {
 							ComponentSearchType currentlyViewedComponentSearchType = TextSearchTypeModel.getCurrentComponentSearchType();
-							ComponentSearchType loadedComponentSearchType = getComponentSearchTypeFromSearchConcept(concept);
+							ComponentSearchType loadedComponentSearchType = getCachedComponentSearchTypeFromSearchConcept(concept);
 							
 							if (currentlyViewedComponentSearchType != null && loadedComponentSearchType != null) {
 								if (currentlyViewedComponentSearchType != loadedComponentSearchType) {
@@ -280,12 +284,12 @@ public class EnhancedSavedSearch {
 	}
 
 	void refreshSearchViewModelBindings() {
-		Bindings.bindBidirectional(searchSaveNameTextField.textProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getNameProperty());
-		Bindings.bindBidirectional(searchSaveDescriptionTextField.textProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getDescriptionProperty());
+		Bindings.bindBidirectional(searchSaveNameTextField.textProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getNameProperty());
+		Bindings.bindBidirectional(searchSaveDescriptionTextField.textProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescriptionProperty());
 
-		Bindings.bindBidirectional(searchModel.getMaxResultsCustomTextField().valueProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResultsProperty());
+		Bindings.bindBidirectional(searchModel.getMaxResultsCustomTextField().valueProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResultsProperty());
 
-		Bindings.bindBidirectional(droolsExprTextField.textProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExprProperty());
+		Bindings.bindBidirectional(droolsExprTextField.textProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExprProperty());
 	}
 
 	public Button getSaveButton() {
@@ -298,10 +302,12 @@ public class EnhancedSavedSearch {
 	
 	private static Map<Integer, SearchType> conceptSearchTypeCache = new HashMap<>();
 	private static SearchType getCachedSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
-		if (conceptSearchTypeCache.get(concept.getNid()) == null) {
-			conceptSearchTypeCache.put(concept.getConceptNid(), getSearchTypeFromSearchConcept(concept));
+		synchronized (conceptSearchTypeCache) {
+			if (conceptSearchTypeCache.get(concept.getNid()) == null) {
+				conceptSearchTypeCache.put(concept.getConceptNid(), getSearchTypeFromSearchConcept(concept));
+			}
 		}
-		
+
 		return conceptSearchTypeCache.get(concept.getNid());
 	}
 	private static SearchType getSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
@@ -322,6 +328,8 @@ public class EnhancedSavedSearch {
 				return SearchType.TEXT;
 			} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription())) {
 				return SearchType.SEMEME;
+			} else {
+				LOG.debug("getSearchTypeFromSearchConcept() ignoring refex \"" + dud.getRefexName() + "\" on search filter concept nid=" + concept.getConceptNid() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\""); 
 			}
 		}
 		
@@ -332,8 +340,10 @@ public class EnhancedSavedSearch {
 	
 	private static Map<Integer, ComponentSearchType> componentSearchTypeCache = new HashMap<>();
 	private static ComponentSearchType getCachedComponentSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
-		if (componentSearchTypeCache.get(concept.getNid()) == null) {
-			componentSearchTypeCache.put(concept.getConceptNid(), getComponentSearchTypeFromSearchConcept(concept));
+		synchronized (componentSearchTypeCache) {
+			if (componentSearchTypeCache.get(concept.getNid()) == null) {
+				componentSearchTypeCache.put(concept.getConceptNid(), getComponentSearchTypeFromSearchConcept(concept));
+			}
 		}
 		
 		return componentSearchTypeCache.get(concept.getNid());
