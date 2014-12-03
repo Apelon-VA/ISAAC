@@ -72,13 +72,13 @@
 <a class="jxr_linenumber" name="62" href="#62">62</a>  			getLog().info(<span class="jxr_string">"  Shutting Down"</span>);
 <a class="jxr_linenumber" name="63" href="#63">63</a>  			getLog().info(<span class="jxr_string">"wait so we don't trigger an OTF bug...."</span>);
 <a class="jxr_linenumber" name="64" href="#64">64</a>  			<em class="jxr_comment">//TODO get these silly OTF bugs fixed, so we don't have to arbitrarily wait...</em>
-<a class="jxr_linenumber" name="65" href="#65">65</a>  			Thread.sleep(5000);
+<a class="jxr_linenumber" name="65" href="#65">65</a>  			Thread.sleep(10000);
 <a class="jxr_linenumber" name="66" href="#66">66</a>  			store.shutdown();
 <a class="jxr_linenumber" name="67" href="#67">67</a>  
 <a class="jxr_linenumber" name="68" href="#68">68</a>  			<strong class="jxr_keyword">if</strong> (moveToReadOnly)
 <a class="jxr_linenumber" name="69" href="#69">69</a>  			{
 <a class="jxr_linenumber" name="70" href="#70">70</a>  				getLog().info(<span class="jxr_string">"wait so we don't trigger an OTF bug...."</span>);
-<a class="jxr_linenumber" name="71" href="#71">71</a>  				Thread.sleep(5000);
+<a class="jxr_linenumber" name="71" href="#71">71</a>  				Thread.sleep(10000);
 <a class="jxr_linenumber" name="72" href="#72">72</a>  				getLog().info(<span class="jxr_string">"moving mutable to read-only"</span>);
 <a class="jxr_linenumber" name="73" href="#73">73</a>  
 <a class="jxr_linenumber" name="74" href="#74">74</a>  				String bdbFolderLocation = System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY);

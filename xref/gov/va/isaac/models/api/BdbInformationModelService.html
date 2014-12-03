@@ -275,633 +275,666 @@
 <a class="jxr_linenumber" name="265" href="#265">265</a>     }
 <a class="jxr_linenumber" name="266" href="#266">266</a>     LOG.info(<span class="jxr_string">"Save information model: "</span> + model.getType().getDisplayName()
 <a class="jxr_linenumber" name="267" href="#267">267</a>         + <span class="jxr_string">", "</span> + model.getKey());
-<a class="jxr_linenumber" name="268" href="#268">268</a>     syncInformationModelConcept(model);
-<a class="jxr_linenumber" name="269" href="#269">269</a>   }
-<a class="jxr_linenumber" name="270" href="#270">270</a> 
-<a class="jxr_linenumber" name="271" href="#271">271</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="272" href="#272">272</a> <em class="jxr_javadoccomment">   * Concept to information model.</em>
-<a class="jxr_linenumber" name="273" href="#273">273</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="274" href="#274">274</a> <em class="jxr_javadoccomment">   * @param modelConcept the model concept</em>
-<a class="jxr_linenumber" name="275" href="#275">275</a> <em class="jxr_javadoccomment">   * @return the information model</em>
-<a class="jxr_linenumber" name="276" href="#276">276</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="277" href="#277">277</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="278" href="#278">278</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="279" href="#279">279</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> conceptToInformationModel(
-<a class="jxr_linenumber" name="280" href="#280">280</a>     ConceptChronicleBI modelConcept) <strong class="jxr_keyword">throws</strong> IOException, ContradictionException {
-<a class="jxr_linenumber" name="281" href="#281">281</a>     <strong class="jxr_keyword">if</strong> (modelConcept == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="282" href="#282">282</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept unexpectedly null"</span>);
-<a class="jxr_linenumber" name="283" href="#283">283</a>     }
-<a class="jxr_linenumber" name="284" href="#284">284</a> 
-<a class="jxr_linenumber" name="285" href="#285">285</a>     LOG.info(<span class="jxr_string">"Convert concept to information model: "</span>
-<a class="jxr_linenumber" name="286" href="#286">286</a>         + modelConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="287" href="#287">287</a> 
-<a class="jxr_linenumber" name="288" href="#288">288</a>     <em class="jxr_comment">// Key is the FN</em>
-<a class="jxr_linenumber" name="289" href="#289">289</a>     String key = WBUtility.getFullySpecifiedName(modelConcept);
-<a class="jxr_linenumber" name="290" href="#290">290</a>     LOG.debug(<span class="jxr_string">"  key = "</span> + key);
-<a class="jxr_linenumber" name="291" href="#291">291</a>     <em class="jxr_comment">// Name is the PT</em>
-<a class="jxr_linenumber" name="292" href="#292">292</a>     String name = WBUtility.getConPrefTerm(modelConcept.getNid());
-<a class="jxr_linenumber" name="293" href="#293">293</a>     LOG.debug(<span class="jxr_string">"  name = "</span> + name);
-<a class="jxr_linenumber" name="294" href="#294">294</a>     <em class="jxr_comment">// UUID of the concept</em>
-<a class="jxr_linenumber" name="295" href="#295">295</a>     UUID uuid = modelConcept.getPrimordialUuid();
-<a class="jxr_linenumber" name="296" href="#296">296</a>     LOG.debug(<span class="jxr_string">"  uuid = "</span> + uuid);
-<a class="jxr_linenumber" name="297" href="#297">297</a>     <em class="jxr_comment">// information model type - obtain by walking up the tree</em>
-<a class="jxr_linenumber" name="298" href="#298">298</a>     <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a> type = computeInformationModelType(modelConcept);
-<a class="jxr_linenumber" name="299" href="#299">299</a>     LOG.debug(<span class="jxr_string">"  type = "</span> + type.getDisplayName());
-<a class="jxr_linenumber" name="300" href="#300">300</a>     <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/models/util/DefaultInformationModel.html">DefaultInformationModel</a>(key, name, uuid, type);
-<a class="jxr_linenumber" name="301" href="#301">301</a> 
-<a class="jxr_linenumber" name="302" href="#302">302</a>     <em class="jxr_comment">// Assemble Metadata</em>
-<a class="jxr_linenumber" name="303" href="#303">303</a>     <em class="jxr_comment">// Need to look at stamp nid for concept attributes instead of concept</em>
-<a class="jxr_linenumber" name="304" href="#304">304</a>     <strong class="jxr_keyword">int</strong> stampNid =
-<a class="jxr_linenumber" name="305" href="#305">305</a>         modelConcept.getConceptAttributes()
-<a class="jxr_linenumber" name="306" href="#306">306</a>             .getVersion(WBUtility.getViewCoordinate()).getStamp();
-<a class="jxr_linenumber" name="307" href="#307">307</a>     <a href="../../../../../gov/va/isaac/models/InformationModelMetadata.html">InformationModelMetadata</a> metadata =
-<a class="jxr_linenumber" name="308" href="#308">308</a>         InformationModelMetadata.newInstance(stampNid, dataStore,
-<a class="jxr_linenumber" name="309" href="#309">309</a>             WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="310" href="#310">310</a>     model.setMetadata(metadata);
-<a class="jxr_linenumber" name="311" href="#311">311</a> 
-<a class="jxr_linenumber" name="312" href="#312">312</a>     <em class="jxr_comment">// Check super-model</em>
-<a class="jxr_linenumber" name="313" href="#313">313</a>     <em class="jxr_comment">// Build associated concept UUIDs from relationships</em>
-<a class="jxr_linenumber" name="314" href="#314">314</a>     <strong class="jxr_keyword">for</strong> (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
-<a class="jxr_linenumber" name="315" href="#315">315</a>       RelationshipVersionBI&lt;?&gt; relVersion =
-<a class="jxr_linenumber" name="316" href="#316">316</a>           rel.getVersion(WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="317" href="#317">317</a>       <em class="jxr_comment">// Look for matching typeId and "active" flag</em>
-<a class="jxr_linenumber" name="318" href="#318">318</a>       <strong class="jxr_keyword">if</strong> (relVersion.getTypeNid() == Snomed.IS_A.getLenient().getNid()
-<a class="jxr_linenumber" name="319" href="#319">319</a>           &amp;&amp; relVersion.isActive()) {
-<a class="jxr_linenumber" name="320" href="#320">320</a>         UUID superModelUuid =
-<a class="jxr_linenumber" name="321" href="#321">321</a>             WBUtility.getConceptVersion(relVersion.getDestinationNid())
-<a class="jxr_linenumber" name="322" href="#322">322</a>                 .getPrimordialUuid();
-<a class="jxr_linenumber" name="323" href="#323">323</a>         <em class="jxr_comment">// Avoid assigning uuid if parent is the info model type concept</em>
-<a class="jxr_linenumber" name="324" href="#324">324</a>         <strong class="jxr_keyword">if</strong> (!superModelUuid.equals(model.getType().getUuid())) {
-<a class="jxr_linenumber" name="325" href="#325">325</a>           <em class="jxr_comment">// set the super model uuid unless already set</em>
-<a class="jxr_linenumber" name="326" href="#326">326</a>           <strong class="jxr_keyword">if</strong> (model.getSuperModelUuid() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="327" href="#327">327</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(
-<a class="jxr_linenumber" name="328" href="#328">328</a>                 <span class="jxr_string">"Unexpected multiple lineage in information model concept: "</span>
-<a class="jxr_linenumber" name="329" href="#329">329</a>                     + model.getUuid());
-<a class="jxr_linenumber" name="330" href="#330">330</a>           } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="331" href="#331">331</a>             model.setSuperModelUuid(superModelUuid);
-<a class="jxr_linenumber" name="332" href="#332">332</a>           }
-<a class="jxr_linenumber" name="333" href="#333">333</a>         }
-<a class="jxr_linenumber" name="334" href="#334">334</a>       }
-<a class="jxr_linenumber" name="335" href="#335">335</a>     }
-<a class="jxr_linenumber" name="336" href="#336">336</a> 
-<a class="jxr_linenumber" name="337" href="#337">337</a>     <em class="jxr_comment">// Get property information from dynamic refset members</em>
-<a class="jxr_linenumber" name="338" href="#338">338</a>     <em class="jxr_comment">// Create refex entries for properties</em>
-<a class="jxr_linenumber" name="339" href="#339">339</a>     RefexDynamicUsageDescription propertyRefset =
-<a class="jxr_linenumber" name="340" href="#340">340</a>         RefexDynamicUsageDescriptionBuilder
-<a class="jxr_linenumber" name="341" href="#341">341</a>             .readRefexDynamicUsageDescriptionConcept(InformationModelAux.INFORMATION_MODEL_PROPERTIES_REFSET
-<a class="jxr_linenumber" name="342" href="#342">342</a>                 .getLenient().getNid());
-<a class="jxr_linenumber" name="343" href="#343">343</a>     LOG.debug(<span class="jxr_string">"  property refset = "</span> + propertyRefset.getRefexName());
-<a class="jxr_linenumber" name="344" href="#344">344</a>     <strong class="jxr_keyword">for</strong> (RefexDynamicChronicleBI&lt;?&gt; refex : modelConcept
-<a class="jxr_linenumber" name="345" href="#345">345</a>         .getRefexDynamicAnnotations()) {
-<a class="jxr_linenumber" name="346" href="#346">346</a>       RefexDynamicVersionBI&lt;?&gt; refexVersion =
-<a class="jxr_linenumber" name="347" href="#347">347</a>           refex.getVersion(WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="348" href="#348">348</a>       LOG.debug(<span class="jxr_string">"  refex = "</span> + refex.toUserString());
-<a class="jxr_linenumber" name="349" href="#349">349</a>       <em class="jxr_comment">// Look for matching refex id and "active" flag</em>
-<a class="jxr_linenumber" name="350" href="#350">350</a>       <strong class="jxr_keyword">if</strong> (refexVersion != <strong class="jxr_keyword">null</strong>
-<a class="jxr_linenumber" name="351" href="#351">351</a>           &amp;&amp; refex.getAssemblageNid() == propertyRefset
-<a class="jxr_linenumber" name="352" href="#352">352</a>               .getRefexUsageDescriptorNid() &amp;&amp; refexVersion.isActive()) {
-<a class="jxr_linenumber" name="353" href="#353">353</a>         <em class="jxr_comment">// Create properties for each annotation</em>
-<a class="jxr_linenumber" name="354" href="#354">354</a>         <a href="../../../../../gov/va/isaac/models/InformationModelProperty.html">InformationModelProperty</a> property =
-<a class="jxr_linenumber" name="355" href="#355">355</a>             <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/models/DefaultInformationModelProperty.html">DefaultInformationModelProperty</a>();
-<a class="jxr_linenumber" name="356" href="#356">356</a>         RefexDynamicDataBI[] data = refexVersion.getData();
-<a class="jxr_linenumber" name="357" href="#357">357</a>         <strong class="jxr_keyword">if</strong> (data[0] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="358" href="#358">358</a>           property.setLabel(((RefexDynamicString) data[0]).getDataString());
-<a class="jxr_linenumber" name="359" href="#359">359</a>         <strong class="jxr_keyword">if</strong> (data[1] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="360" href="#360">360</a>           property.setType(((RefexDynamicString) data[1]).getDataString());
-<a class="jxr_linenumber" name="361" href="#361">361</a>         <strong class="jxr_keyword">if</strong> (data[2] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="362" href="#362">362</a>           property.setName(((RefexDynamicString) data[2]).getDataString());
-<a class="jxr_linenumber" name="363" href="#363">363</a>         <strong class="jxr_keyword">if</strong> (data[3] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="364" href="#364">364</a>           property.setDefaultValue(((RefexDynamicString) data[3])
-<a class="jxr_linenumber" name="365" href="#365">365</a>               .getDataString());
-<a class="jxr_linenumber" name="366" href="#366">366</a>         <strong class="jxr_keyword">if</strong> (data[4] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="367" href="#367">367</a>           property.setValue(((RefexDynamicString) data[4]).getDataString());
-<a class="jxr_linenumber" name="368" href="#368">368</a>         <strong class="jxr_keyword">if</strong> (data[5] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="369" href="#369">369</a>           property.setCardinalityMin(((RefexDynamicString) data[5])
-<a class="jxr_linenumber" name="370" href="#370">370</a>               .getDataString());
-<a class="jxr_linenumber" name="371" href="#371">371</a>         <strong class="jxr_keyword">if</strong> (data[6] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="372" href="#372">372</a>           property.setCardinalityMax(((RefexDynamicString) data[6])
+<a class="jxr_linenumber" name="268" href="#268">268</a>     <em class="jxr_comment">// disable commit listeners for this operation</em>
+<a class="jxr_linenumber" name="269" href="#269">269</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="270" href="#270">270</a>       AppContext.getRuntimeGlobals().disableAllCommitListeners();
+<a class="jxr_linenumber" name="271" href="#271">271</a>       syncInformationModelConcept(model);
+<a class="jxr_linenumber" name="272" href="#272">272</a>     } <strong class="jxr_keyword">catch</strong> (Exception e) {
+<a class="jxr_linenumber" name="273" href="#273">273</a>       LOG.error(<span class="jxr_string">"Coudn't Disable WF Init &amp; Commit CEM Information Model"</span>, e);
+<a class="jxr_linenumber" name="274" href="#274">274</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="275" href="#275">275</a>       AppContext.getRuntimeGlobals().enableAllCommitListeners();
+<a class="jxr_linenumber" name="276" href="#276">276</a>     }
+<a class="jxr_linenumber" name="277" href="#277">277</a>   }
+<a class="jxr_linenumber" name="278" href="#278">278</a> 
+<a class="jxr_linenumber" name="279" href="#279">279</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="280" href="#280">280</a> <em class="jxr_javadoccomment">   * Concept to information model.</em>
+<a class="jxr_linenumber" name="281" href="#281">281</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="282" href="#282">282</a> <em class="jxr_javadoccomment">   * @param modelConcept the model concept</em>
+<a class="jxr_linenumber" name="283" href="#283">283</a> <em class="jxr_javadoccomment">   * @return the information model</em>
+<a class="jxr_linenumber" name="284" href="#284">284</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="285" href="#285">285</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="286" href="#286">286</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="287" href="#287">287</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> conceptToInformationModel(
+<a class="jxr_linenumber" name="288" href="#288">288</a>     ConceptChronicleBI modelConcept) <strong class="jxr_keyword">throws</strong> IOException, ContradictionException {
+<a class="jxr_linenumber" name="289" href="#289">289</a>     <strong class="jxr_keyword">if</strong> (modelConcept == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="290" href="#290">290</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept unexpectedly null"</span>);
+<a class="jxr_linenumber" name="291" href="#291">291</a>     }
+<a class="jxr_linenumber" name="292" href="#292">292</a> 
+<a class="jxr_linenumber" name="293" href="#293">293</a>     LOG.info(<span class="jxr_string">"Convert concept to information model: "</span>
+<a class="jxr_linenumber" name="294" href="#294">294</a>         + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="295" href="#295">295</a> 
+<a class="jxr_linenumber" name="296" href="#296">296</a>     <em class="jxr_comment">// Key is the FN</em>
+<a class="jxr_linenumber" name="297" href="#297">297</a>     String key = WBUtility.getFullySpecifiedName(modelConcept);
+<a class="jxr_linenumber" name="298" href="#298">298</a>     LOG.debug(<span class="jxr_string">"  key = "</span> + key);
+<a class="jxr_linenumber" name="299" href="#299">299</a>     <em class="jxr_comment">// Name is the PT</em>
+<a class="jxr_linenumber" name="300" href="#300">300</a>     String name = WBUtility.getConPrefTerm(modelConcept.getNid());
+<a class="jxr_linenumber" name="301" href="#301">301</a>     LOG.debug(<span class="jxr_string">"  name = "</span> + name);
+<a class="jxr_linenumber" name="302" href="#302">302</a>     <em class="jxr_comment">// UUID of the concept</em>
+<a class="jxr_linenumber" name="303" href="#303">303</a>     UUID uuid = modelConcept.getPrimordialUuid();
+<a class="jxr_linenumber" name="304" href="#304">304</a>     LOG.debug(<span class="jxr_string">"  uuid = "</span> + uuid);
+<a class="jxr_linenumber" name="305" href="#305">305</a>     <em class="jxr_comment">// information model type - obtain by walking up the tree</em>
+<a class="jxr_linenumber" name="306" href="#306">306</a>     <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a> type = computeInformationModelType(modelConcept);
+<a class="jxr_linenumber" name="307" href="#307">307</a>     LOG.debug(<span class="jxr_string">"  type = "</span> + type.getDisplayName());
+<a class="jxr_linenumber" name="308" href="#308">308</a>     <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/models/util/DefaultInformationModel.html">DefaultInformationModel</a>(key, name, uuid, type);
+<a class="jxr_linenumber" name="309" href="#309">309</a> 
+<a class="jxr_linenumber" name="310" href="#310">310</a>     <em class="jxr_comment">// Assemble Metadata</em>
+<a class="jxr_linenumber" name="311" href="#311">311</a>     <em class="jxr_comment">// Need to look at stamp nid for concept attributes instead of concept</em>
+<a class="jxr_linenumber" name="312" href="#312">312</a>     <strong class="jxr_keyword">int</strong> stampNid =
+<a class="jxr_linenumber" name="313" href="#313">313</a>         modelConcept.getConceptAttributes()
+<a class="jxr_linenumber" name="314" href="#314">314</a>             .getVersion(WBUtility.getViewCoordinate()).getStamp();
+<a class="jxr_linenumber" name="315" href="#315">315</a>     <a href="../../../../../gov/va/isaac/models/InformationModelMetadata.html">InformationModelMetadata</a> metadata =
+<a class="jxr_linenumber" name="316" href="#316">316</a>         InformationModelMetadata.newInstance(stampNid, dataStore,
+<a class="jxr_linenumber" name="317" href="#317">317</a>             WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="318" href="#318">318</a>     model.setMetadata(metadata);
+<a class="jxr_linenumber" name="319" href="#319">319</a> 
+<a class="jxr_linenumber" name="320" href="#320">320</a>     <em class="jxr_comment">// Check super-model</em>
+<a class="jxr_linenumber" name="321" href="#321">321</a>     <em class="jxr_comment">// Build associated concept UUIDs from relationships</em>
+<a class="jxr_linenumber" name="322" href="#322">322</a>     <strong class="jxr_keyword">for</strong> (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
+<a class="jxr_linenumber" name="323" href="#323">323</a>       RelationshipVersionBI&lt;?&gt; relVersion =
+<a class="jxr_linenumber" name="324" href="#324">324</a>           rel.getVersion(WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="325" href="#325">325</a>       <em class="jxr_comment">// Look for matching typeId and "active" flag</em>
+<a class="jxr_linenumber" name="326" href="#326">326</a>       <strong class="jxr_keyword">if</strong> (relVersion.getTypeNid() == Snomed.IS_A.getLenient().getNid()
+<a class="jxr_linenumber" name="327" href="#327">327</a>           &amp;&amp; relVersion.isActive()) {
+<a class="jxr_linenumber" name="328" href="#328">328</a>         UUID superModelUuid =
+<a class="jxr_linenumber" name="329" href="#329">329</a>             WBUtility.getConceptVersion(relVersion.getDestinationNid())
+<a class="jxr_linenumber" name="330" href="#330">330</a>                 .getPrimordialUuid();
+<a class="jxr_linenumber" name="331" href="#331">331</a>         <em class="jxr_comment">// Avoid assigning uuid if parent is the info model type concept</em>
+<a class="jxr_linenumber" name="332" href="#332">332</a>         <strong class="jxr_keyword">if</strong> (!superModelUuid.equals(model.getType().getUuid())) {
+<a class="jxr_linenumber" name="333" href="#333">333</a>           <em class="jxr_comment">// set the super model uuid unless already set</em>
+<a class="jxr_linenumber" name="334" href="#334">334</a>           <strong class="jxr_keyword">if</strong> (model.getSuperModelUuid() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="335" href="#335">335</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(
+<a class="jxr_linenumber" name="336" href="#336">336</a>                 <span class="jxr_string">"Unexpected multiple lineage in information model concept: "</span>
+<a class="jxr_linenumber" name="337" href="#337">337</a>                     + model.getUuid());
+<a class="jxr_linenumber" name="338" href="#338">338</a>           } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="339" href="#339">339</a>             model.setSuperModelUuid(superModelUuid);
+<a class="jxr_linenumber" name="340" href="#340">340</a>           }
+<a class="jxr_linenumber" name="341" href="#341">341</a>         }
+<a class="jxr_linenumber" name="342" href="#342">342</a>       }
+<a class="jxr_linenumber" name="343" href="#343">343</a>     }
+<a class="jxr_linenumber" name="344" href="#344">344</a> 
+<a class="jxr_linenumber" name="345" href="#345">345</a>     <em class="jxr_comment">// Get property information from dynamic refset members</em>
+<a class="jxr_linenumber" name="346" href="#346">346</a>     <em class="jxr_comment">// Create refex entries for properties</em>
+<a class="jxr_linenumber" name="347" href="#347">347</a>     RefexDynamicUsageDescription propertyRefset =
+<a class="jxr_linenumber" name="348" href="#348">348</a>         RefexDynamicUsageDescriptionBuilder
+<a class="jxr_linenumber" name="349" href="#349">349</a>             .readRefexDynamicUsageDescriptionConcept(InformationModelAux.INFORMATION_MODEL_PROPERTIES_REFSET
+<a class="jxr_linenumber" name="350" href="#350">350</a>                 .getLenient().getNid());
+<a class="jxr_linenumber" name="351" href="#351">351</a>     LOG.debug(<span class="jxr_string">"  property refset = "</span> + propertyRefset.getRefexName());
+<a class="jxr_linenumber" name="352" href="#352">352</a>     <strong class="jxr_keyword">for</strong> (RefexDynamicChronicleBI&lt;?&gt; refex : modelConcept
+<a class="jxr_linenumber" name="353" href="#353">353</a>         .getRefexDynamicAnnotations()) {
+<a class="jxr_linenumber" name="354" href="#354">354</a>       RefexDynamicVersionBI&lt;?&gt; refexVersion =
+<a class="jxr_linenumber" name="355" href="#355">355</a>           refex.getVersion(WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="356" href="#356">356</a>       LOG.debug(<span class="jxr_string">"  sememe = "</span> + refex.toUserString());
+<a class="jxr_linenumber" name="357" href="#357">357</a>       <em class="jxr_comment">// Look for matching refex id and "active" flag</em>
+<a class="jxr_linenumber" name="358" href="#358">358</a>       <strong class="jxr_keyword">if</strong> (refexVersion != <strong class="jxr_keyword">null</strong>
+<a class="jxr_linenumber" name="359" href="#359">359</a>           &amp;&amp; refex.getAssemblageNid() == propertyRefset
+<a class="jxr_linenumber" name="360" href="#360">360</a>               .getRefexUsageDescriptorNid() &amp;&amp; refexVersion.isActive()) {
+<a class="jxr_linenumber" name="361" href="#361">361</a>         <em class="jxr_comment">// Create properties for each annotation</em>
+<a class="jxr_linenumber" name="362" href="#362">362</a>         <a href="../../../../../gov/va/isaac/models/InformationModelProperty.html">InformationModelProperty</a> property =
+<a class="jxr_linenumber" name="363" href="#363">363</a>             <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/models/DefaultInformationModelProperty.html">DefaultInformationModelProperty</a>();
+<a class="jxr_linenumber" name="364" href="#364">364</a>         RefexDynamicDataBI[] data = refexVersion.getData();
+<a class="jxr_linenumber" name="365" href="#365">365</a>         <strong class="jxr_keyword">if</strong> (data[0] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="366" href="#366">366</a>           property.setLabel(((RefexDynamicString) data[0]).getDataString());
+<a class="jxr_linenumber" name="367" href="#367">367</a>         <strong class="jxr_keyword">if</strong> (data[1] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="368" href="#368">368</a>           property.setType(((RefexDynamicString) data[1]).getDataString());
+<a class="jxr_linenumber" name="369" href="#369">369</a>         <strong class="jxr_keyword">if</strong> (data[2] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="370" href="#370">370</a>           property.setName(((RefexDynamicString) data[2]).getDataString());
+<a class="jxr_linenumber" name="371" href="#371">371</a>         <strong class="jxr_keyword">if</strong> (data[3] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="372" href="#372">372</a>           property.setDefaultValue(((RefexDynamicString) data[3])
 <a class="jxr_linenumber" name="373" href="#373">373</a>               .getDataString());
-<a class="jxr_linenumber" name="374" href="#374">374</a>         <strong class="jxr_keyword">if</strong> (data[7] != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="375" href="#375">375</a>           property
-<a class="jxr_linenumber" name="376" href="#376">376</a>               .setVisibility(((RefexDynamicString) data[7]).getDataString());
-<a class="jxr_linenumber" name="377" href="#377">377</a>         LOG.debug(<span class="jxr_string">"    property "</span> + property.getLabel() + <span class="jxr_string">", "</span>
-<a class="jxr_linenumber" name="378" href="#378">378</a>             + property.getName());
-<a class="jxr_linenumber" name="379" href="#379">379</a>         model.addProperty(property);
-<a class="jxr_linenumber" name="380" href="#380">380</a>       }
-<a class="jxr_linenumber" name="381" href="#381">381</a>     }
-<a class="jxr_linenumber" name="382" href="#382">382</a> 
-<a class="jxr_linenumber" name="383" href="#383">383</a>     <em class="jxr_comment">// Build associated concept UUIDs from relationships</em>
-<a class="jxr_linenumber" name="384" href="#384">384</a>     <strong class="jxr_keyword">for</strong> (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
-<a class="jxr_linenumber" name="385" href="#385">385</a>       RelationshipVersionBI&lt;?&gt; relVersion =
-<a class="jxr_linenumber" name="386" href="#386">386</a>           rel.getVersion(WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="387" href="#387">387</a>       <em class="jxr_comment">// Look for matching typeId and "active" flag</em>
-<a class="jxr_linenumber" name="388" href="#388">388</a>       <strong class="jxr_keyword">if</strong> (relVersion.getTypeNid() == InformationModelAux.HAS_TERMINOLOGY_CONCEPT
-<a class="jxr_linenumber" name="389" href="#389">389</a>           .getLenient().getNid() &amp;&amp; relVersion.isActive()) {
-<a class="jxr_linenumber" name="390" href="#390">390</a>         <em class="jxr_comment">// Add the destination UUID</em>
-<a class="jxr_linenumber" name="391" href="#391">391</a>         model.addAssociatedConceptUuid(WBUtility.getConceptVersion(
-<a class="jxr_linenumber" name="392" href="#392">392</a>             relVersion.getDestinationNid()).getPrimordialUuid());
-<a class="jxr_linenumber" name="393" href="#393">393</a>       }
-<a class="jxr_linenumber" name="394" href="#394">394</a>     }
-<a class="jxr_linenumber" name="395" href="#395">395</a> 
-<a class="jxr_linenumber" name="396" href="#396">396</a>     <strong class="jxr_keyword">return</strong> model;
-<a class="jxr_linenumber" name="397" href="#397">397</a>   }
-<a class="jxr_linenumber" name="398" href="#398">398</a> 
-<a class="jxr_linenumber" name="399" href="#399">399</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="400" href="#400">400</a> <em class="jxr_javadoccomment">   * Returns the information model type. Walks up the tree from the</em>
-<a class="jxr_linenumber" name="401" href="#401">401</a> <em class="jxr_javadoccomment">   * corresponding concept to the level just below "information models" root and</em>
-<a class="jxr_linenumber" name="402" href="#402">402</a> <em class="jxr_javadoccomment">   * returns the type corresponding with the preferred name of the concept at</em>
-<a class="jxr_linenumber" name="403" href="#403">403</a> <em class="jxr_javadoccomment">   * that level.</em>
-<a class="jxr_linenumber" name="404" href="#404">404</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="405" href="#405">405</a> <em class="jxr_javadoccomment">   * @param modelConcept the model concept</em>
-<a class="jxr_linenumber" name="406" href="#406">406</a> <em class="jxr_javadoccomment">   * @return the information model type</em>
-<a class="jxr_linenumber" name="407" href="#407">407</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="408" href="#408">408</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="409" href="#409">409</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="410" href="#410">410</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a> computeInformationModelType(
-<a class="jxr_linenumber" name="411" href="#411">411</a>     ConceptChronicleBI modelConcept) <strong class="jxr_keyword">throws</strong> IOException, ContradictionException {
-<a class="jxr_linenumber" name="412" href="#412">412</a>     <strong class="jxr_keyword">if</strong> (modelConcept == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="413" href="#413">413</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept unexpectedly null"</span>);
-<a class="jxr_linenumber" name="414" href="#414">414</a>     }
-<a class="jxr_linenumber" name="415" href="#415">415</a>     LOG.info(<span class="jxr_string">"Compute information model type: "</span>
-<a class="jxr_linenumber" name="416" href="#416">416</a>         + modelConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="417" href="#417">417</a>     ConceptVersionBI concept =
-<a class="jxr_linenumber" name="418" href="#418">418</a>         WBUtility.getConceptVersion(modelConcept.getNid());
-<a class="jxr_linenumber" name="419" href="#419">419</a>     <strong class="jxr_keyword">if</strong> (concept == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="420" href="#420">420</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept version unexpectedly null "</span>
-<a class="jxr_linenumber" name="421" href="#421">421</a>           + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="374" href="#374">374</a>         <strong class="jxr_keyword">if</strong> (data[4] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="375" href="#375">375</a>           property.setValue(((RefexDynamicString) data[4]).getDataString());
+<a class="jxr_linenumber" name="376" href="#376">376</a>         <strong class="jxr_keyword">if</strong> (data[5] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="377" href="#377">377</a>           property.setCardinalityMin(((RefexDynamicString) data[5])
+<a class="jxr_linenumber" name="378" href="#378">378</a>               .getDataString());
+<a class="jxr_linenumber" name="379" href="#379">379</a>         <strong class="jxr_keyword">if</strong> (data[6] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="380" href="#380">380</a>           property.setCardinalityMax(((RefexDynamicString) data[6])
+<a class="jxr_linenumber" name="381" href="#381">381</a>               .getDataString());
+<a class="jxr_linenumber" name="382" href="#382">382</a>         <strong class="jxr_keyword">if</strong> (data[7] != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="383" href="#383">383</a>           property
+<a class="jxr_linenumber" name="384" href="#384">384</a>               .setVisibility(((RefexDynamicString) data[7]).getDataString());
+<a class="jxr_linenumber" name="385" href="#385">385</a>         LOG.debug(<span class="jxr_string">"    property "</span> + property.getLabel() + <span class="jxr_string">", "</span>
+<a class="jxr_linenumber" name="386" href="#386">386</a>             + property.getName());
+<a class="jxr_linenumber" name="387" href="#387">387</a>         model.addProperty(property);
+<a class="jxr_linenumber" name="388" href="#388">388</a>       }
+<a class="jxr_linenumber" name="389" href="#389">389</a>     }
+<a class="jxr_linenumber" name="390" href="#390">390</a> 
+<a class="jxr_linenumber" name="391" href="#391">391</a>     <em class="jxr_comment">// Build associated concept UUIDs from relationships</em>
+<a class="jxr_linenumber" name="392" href="#392">392</a>     <strong class="jxr_keyword">for</strong> (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
+<a class="jxr_linenumber" name="393" href="#393">393</a>       RelationshipVersionBI&lt;?&gt; relVersion =
+<a class="jxr_linenumber" name="394" href="#394">394</a>           rel.getVersion(WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="395" href="#395">395</a>       <em class="jxr_comment">// Look for matching typeId and "active" flag</em>
+<a class="jxr_linenumber" name="396" href="#396">396</a>       <strong class="jxr_keyword">if</strong> (relVersion.getTypeNid() == InformationModelAux.HAS_TERMINOLOGY_CONCEPT
+<a class="jxr_linenumber" name="397" href="#397">397</a>           .getLenient().getNid() &amp;&amp; relVersion.isActive()) {
+<a class="jxr_linenumber" name="398" href="#398">398</a>         <em class="jxr_comment">// Add the destination UUID</em>
+<a class="jxr_linenumber" name="399" href="#399">399</a>         model.addAssociatedConceptUuid(WBUtility.getConceptVersion(
+<a class="jxr_linenumber" name="400" href="#400">400</a>             relVersion.getDestinationNid()).getPrimordialUuid());
+<a class="jxr_linenumber" name="401" href="#401">401</a>       }
+<a class="jxr_linenumber" name="402" href="#402">402</a>     }
+<a class="jxr_linenumber" name="403" href="#403">403</a> 
+<a class="jxr_linenumber" name="404" href="#404">404</a>     <strong class="jxr_keyword">return</strong> model;
+<a class="jxr_linenumber" name="405" href="#405">405</a>   }
+<a class="jxr_linenumber" name="406" href="#406">406</a> 
+<a class="jxr_linenumber" name="407" href="#407">407</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="408" href="#408">408</a> <em class="jxr_javadoccomment">   * Returns the information model type. Walks up the tree from the</em>
+<a class="jxr_linenumber" name="409" href="#409">409</a> <em class="jxr_javadoccomment">   * corresponding concept to the level just below "information models" root and</em>
+<a class="jxr_linenumber" name="410" href="#410">410</a> <em class="jxr_javadoccomment">   * returns the type corresponding with the preferred name of the concept at</em>
+<a class="jxr_linenumber" name="411" href="#411">411</a> <em class="jxr_javadoccomment">   * that level.</em>
+<a class="jxr_linenumber" name="412" href="#412">412</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="413" href="#413">413</a> <em class="jxr_javadoccomment">   * @param modelConcept the model concept</em>
+<a class="jxr_linenumber" name="414" href="#414">414</a> <em class="jxr_javadoccomment">   * @return the information model type</em>
+<a class="jxr_linenumber" name="415" href="#415">415</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="416" href="#416">416</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="417" href="#417">417</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="418" href="#418">418</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a> computeInformationModelType(
+<a class="jxr_linenumber" name="419" href="#419">419</a>     ConceptChronicleBI modelConcept) <strong class="jxr_keyword">throws</strong> IOException, ContradictionException {
+<a class="jxr_linenumber" name="420" href="#420">420</a>     <strong class="jxr_keyword">if</strong> (modelConcept == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="421" href="#421">421</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept unexpectedly null"</span>);
 <a class="jxr_linenumber" name="422" href="#422">422</a>     }
-<a class="jxr_linenumber" name="423" href="#423">423</a>     <strong class="jxr_keyword">if</strong> (!concept.isActive()) {
-<a class="jxr_linenumber" name="424" href="#424">424</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept is inactive "</span>
-<a class="jxr_linenumber" name="425" href="#425">425</a>           + modelConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="426" href="#426">426</a>     }
-<a class="jxr_linenumber" name="427" href="#427">427</a> 
-<a class="jxr_linenumber" name="428" href="#428">428</a>     <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a>[] values = InformationModelType.values();
-<a class="jxr_linenumber" name="429" href="#429">429</a>     <em class="jxr_comment">// Walk up tree until we encounter a "type" concept</em>
-<a class="jxr_linenumber" name="430" href="#430">430</a>     <strong class="jxr_keyword">while</strong> (<strong class="jxr_keyword">true</strong>) {
-<a class="jxr_linenumber" name="431" href="#431">431</a>       <em class="jxr_comment">// Look for match (the pref name will match an information model type)</em>
-<a class="jxr_linenumber" name="432" href="#432">432</a>       String prefName = WBUtility.getConPrefTerm(concept.getNid());
-<a class="jxr_linenumber" name="433" href="#433">433</a>       <strong class="jxr_keyword">if</strong> (prefName == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="434" href="#434">434</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Concept preferred name unexepectedly null "</span>
-<a class="jxr_linenumber" name="435" href="#435">435</a>             + concept.getPrimordialUuid());
-<a class="jxr_linenumber" name="436" href="#436">436</a>       }
-<a class="jxr_linenumber" name="437" href="#437">437</a>       <strong class="jxr_keyword">for</strong> (InformationModelType type : values) {
-<a class="jxr_linenumber" name="438" href="#438">438</a>         <strong class="jxr_keyword">if</strong> (prefName.equals(type.getDisplayName())) {
-<a class="jxr_linenumber" name="439" href="#439">439</a>           LOG.debug(<span class="jxr_string">"  FOUND TYPE: "</span> + type.getDisplayName());
-<a class="jxr_linenumber" name="440" href="#440">440</a>           <strong class="jxr_keyword">return</strong> type;
-<a class="jxr_linenumber" name="441" href="#441">441</a>         }
-<a class="jxr_linenumber" name="442" href="#442">442</a>       }
-<a class="jxr_linenumber" name="443" href="#443">443</a> 
-<a class="jxr_linenumber" name="444" href="#444">444</a>       <em class="jxr_comment">// continue walking</em>
-<a class="jxr_linenumber" name="445" href="#445">445</a>       @SuppressWarnings(<span class="jxr_string">"rawtypes"</span>)
-<a class="jxr_linenumber" name="446" href="#446">446</a>       Collection&lt;? <strong class="jxr_keyword">extends</strong> RelationshipVersionBI&gt; rels =
-<a class="jxr_linenumber" name="447" href="#447">447</a>           concept.getRelationshipsOutgoingActiveIsa();
-<a class="jxr_linenumber" name="448" href="#448">448</a>       <strong class="jxr_keyword">if</strong> (rels.size() &lt; 1) {
-<a class="jxr_linenumber" name="449" href="#449">449</a>         <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="423" href="#423">423</a>     LOG.info(<span class="jxr_string">"Compute information model type: "</span>
+<a class="jxr_linenumber" name="424" href="#424">424</a>         + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="425" href="#425">425</a>     ConceptVersionBI concept =
+<a class="jxr_linenumber" name="426" href="#426">426</a>         WBUtility.getConceptVersion(modelConcept.getNid());
+<a class="jxr_linenumber" name="427" href="#427">427</a>     <strong class="jxr_keyword">if</strong> (concept == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="428" href="#428">428</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept version unexpectedly null "</span>
+<a class="jxr_linenumber" name="429" href="#429">429</a>           + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="430" href="#430">430</a>     }
+<a class="jxr_linenumber" name="431" href="#431">431</a>     <strong class="jxr_keyword">if</strong> (!concept.isActive()) {
+<a class="jxr_linenumber" name="432" href="#432">432</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model concept is inactive "</span>
+<a class="jxr_linenumber" name="433" href="#433">433</a>           + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="434" href="#434">434</a>     }
+<a class="jxr_linenumber" name="435" href="#435">435</a> 
+<a class="jxr_linenumber" name="436" href="#436">436</a>     <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a>[] values = InformationModelType.values();
+<a class="jxr_linenumber" name="437" href="#437">437</a>     <em class="jxr_comment">// Walk up tree until we encounter a "type" concept</em>
+<a class="jxr_linenumber" name="438" href="#438">438</a>     <strong class="jxr_keyword">while</strong> (<strong class="jxr_keyword">true</strong>) {
+<a class="jxr_linenumber" name="439" href="#439">439</a>       <em class="jxr_comment">// Look for match (the pref name will match an information model type)</em>
+<a class="jxr_linenumber" name="440" href="#440">440</a>       String prefName = WBUtility.getConPrefTerm(concept.getNid());
+<a class="jxr_linenumber" name="441" href="#441">441</a>       <strong class="jxr_keyword">if</strong> (prefName == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="442" href="#442">442</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Concept preferred name unexepectedly null "</span>
+<a class="jxr_linenumber" name="443" href="#443">443</a>             + concept.getPrimordialUuid());
+<a class="jxr_linenumber" name="444" href="#444">444</a>       }
+<a class="jxr_linenumber" name="445" href="#445">445</a>       <strong class="jxr_keyword">for</strong> (InformationModelType type : values) {
+<a class="jxr_linenumber" name="446" href="#446">446</a>         <strong class="jxr_keyword">if</strong> (prefName.equals(type.getDisplayName())) {
+<a class="jxr_linenumber" name="447" href="#447">447</a>           LOG.debug(<span class="jxr_string">"  FOUND TYPE: "</span> + type.getDisplayName());
+<a class="jxr_linenumber" name="448" href="#448">448</a>           <strong class="jxr_keyword">return</strong> type;
+<a class="jxr_linenumber" name="449" href="#449">449</a>         }
 <a class="jxr_linenumber" name="450" href="#450">450</a>       }
-<a class="jxr_linenumber" name="451" href="#451">451</a>       concept =
-<a class="jxr_linenumber" name="452" href="#452">452</a>           WBUtility.getConceptVersion(rels.iterator().next()
-<a class="jxr_linenumber" name="453" href="#453">453</a>               .getDestinationNid());
-<a class="jxr_linenumber" name="454" href="#454">454</a>       LOG.debug(<span class="jxr_string">"  "</span> + concept.getPrimordialUuid());
-<a class="jxr_linenumber" name="455" href="#455">455</a>     }
-<a class="jxr_linenumber" name="456" href="#456">456</a>     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Information model type not found for "</span>
-<a class="jxr_linenumber" name="457" href="#457">457</a>         + modelConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="458" href="#458">458</a>   }
-<a class="jxr_linenumber" name="459" href="#459">459</a> 
-<a class="jxr_linenumber" name="460" href="#460">460</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="461" href="#461">461</a> <em class="jxr_javadoccomment">   * Synchronizes the current state of the information model with the underlying</em>
-<a class="jxr_linenumber" name="462" href="#462">462</a> <em class="jxr_javadoccomment">   * strored concept representation. If it does not exist, it creates it. If it</em>
-<a class="jxr_linenumber" name="463" href="#463">463</a> <em class="jxr_javadoccomment">   * has changed, it updates it.</em>
-<a class="jxr_linenumber" name="464" href="#464">464</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="465" href="#465">465</a> <em class="jxr_javadoccomment">   * TODO: to properly implement sync, we should take the old version of the</em>
-<a class="jxr_linenumber" name="466" href="#466">466</a> <em class="jxr_javadoccomment">   * model and the new version of the model and compare each field to see</em>
-<a class="jxr_linenumber" name="467" href="#467">467</a> <em class="jxr_javadoccomment">   * whether its changed. either retire or add the appropriate underlying data</em>
-<a class="jxr_linenumber" name="468" href="#468">468</a> <em class="jxr_javadoccomment">   * element.</em>
-<a class="jxr_linenumber" name="469" href="#469">469</a> <em class="jxr_javadoccomment">   * @param modelConcept the model concept</em>
-<a class="jxr_linenumber" name="470" href="#470">470</a> <em class="jxr_javadoccomment">   * @return the information model</em>
-<a class="jxr_linenumber" name="471" href="#471">471</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="472" href="#472">472</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
-<a class="jxr_linenumber" name="473" href="#473">473</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="474" href="#474">474</a> <em class="jxr_javadoccomment">   * @throws UnsupportedEncodingException</em>
-<a class="jxr_linenumber" name="475" href="#475">475</a> <em class="jxr_javadoccomment">   * @throws NoSuchAlgorithmException</em>
-<a class="jxr_linenumber" name="476" href="#476">476</a> <em class="jxr_javadoccomment">   * @throws PropertyVetoException</em>
-<a class="jxr_linenumber" name="477" href="#477">477</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="478" href="#478">478</a>   <strong class="jxr_keyword">private</strong> ConceptChronicleBI syncInformationModelConcept(<a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model)
-<a class="jxr_linenumber" name="479" href="#479">479</a>     <strong class="jxr_keyword">throws</strong> NoSuchAlgorithmException, UnsupportedEncodingException, IOException,
-<a class="jxr_linenumber" name="480" href="#480">480</a>     InvalidCAB, ContradictionException, PropertyVetoException {
-<a class="jxr_linenumber" name="481" href="#481">481</a>     <strong class="jxr_keyword">if</strong> (model == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="482" href="#482">482</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model unexpectedly null"</span>);
-<a class="jxr_linenumber" name="483" href="#483">483</a>     }
-<a class="jxr_linenumber" name="484" href="#484">484</a>     LOG.info(<span class="jxr_string">"Convert information model to concept"</span>);
-<a class="jxr_linenumber" name="485" href="#485">485</a> 
-<a class="jxr_linenumber" name="486" href="#486">486</a>     <em class="jxr_comment">// Determine parent - either model type or super model uuid</em>
-<a class="jxr_linenumber" name="487" href="#487">487</a>     ConceptChronicleBI parent = determineParent(model);
-<a class="jxr_linenumber" name="488" href="#488">488</a> 
-<a class="jxr_linenumber" name="489" href="#489">489</a>     <em class="jxr_comment">// Acquire concept blueprint - either load from DB or create new one</em>
-<a class="jxr_linenumber" name="490" href="#490">490</a>     LOG.debug(<span class="jxr_string">"  parent = "</span> + parent.getPrimordialUuid());
-<a class="jxr_linenumber" name="491" href="#491">491</a>     LOG.debug(<span class="jxr_string">"  FN = "</span> + model.getKey());
-<a class="jxr_linenumber" name="492" href="#492">492</a>     LOG.debug(<span class="jxr_string">"  PT = "</span> + model.getName());
-<a class="jxr_linenumber" name="493" href="#493">493</a>     ConceptCB modelConceptCB = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="494" href="#494">494</a>     ConceptChronicleBI modelConcept = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="495" href="#495">495</a>     <em class="jxr_comment">// handle case where model concept exists already</em>
-<a class="jxr_linenumber" name="496" href="#496">496</a>     <strong class="jxr_keyword">if</strong> (exists(model)) {
-<a class="jxr_linenumber" name="497" href="#497">497</a>       <em class="jxr_comment">// Obtain the UUID</em>
-<a class="jxr_linenumber" name="498" href="#498">498</a>       UUID modelUuid =
-<a class="jxr_linenumber" name="499" href="#499">499</a>           <strong class="jxr_keyword">this</strong>.getInformationModel(model.getType(), model.getKey()).getUuid();
-<a class="jxr_linenumber" name="500" href="#500">500</a>       LOG.debug(<span class="jxr_string">"  Model exists already, UUID = "</span> + modelUuid);
-<a class="jxr_linenumber" name="501" href="#501">501</a>       <em class="jxr_comment">// Look it up by UUID0</em>
-<a class="jxr_linenumber" name="502" href="#502">502</a>       modelConcept = dataStore.getConcept(modelUuid);
-<a class="jxr_linenumber" name="503" href="#503">503</a>       ConceptVersionBI modelConceptVersion =
-<a class="jxr_linenumber" name="504" href="#504">504</a>           modelConcept.getVersion(WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="505" href="#505">505</a>       modelConceptCB =
-<a class="jxr_linenumber" name="506" href="#506">506</a>           modelConceptVersion.makeBlueprint(WBUtility.getViewCoordinate(),
-<a class="jxr_linenumber" name="507" href="#507">507</a>               IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-<a class="jxr_linenumber" name="508" href="#508">508</a>       <em class="jxr_comment">// synchronize descriptions (in case name or key changed)</em>
-<a class="jxr_linenumber" name="509" href="#509">509</a>       syncDescriptions(modelConceptCB, model);
-<a class="jxr_linenumber" name="510" href="#510">510</a> 
-<a class="jxr_linenumber" name="511" href="#511">511</a>       <em class="jxr_comment">// Sync super model UUID</em>
-<a class="jxr_linenumber" name="512" href="#512">512</a>       syncSuperModel(modelConceptCB, model, parent);
-<a class="jxr_linenumber" name="513" href="#513">513</a> 
-<a class="jxr_linenumber" name="514" href="#514">514</a>       <em class="jxr_comment">// Sync "has terminology concept" relationships</em>
-<a class="jxr_linenumber" name="515" href="#515">515</a>       syncConnectedTerminologyConcepts(modelConceptCB, model);
-<a class="jxr_linenumber" name="516" href="#516">516</a> 
-<a class="jxr_linenumber" name="517" href="#517">517</a>     }
-<a class="jxr_linenumber" name="518" href="#518">518</a>     <em class="jxr_comment">// handle case where model concept does not exist</em>
-<a class="jxr_linenumber" name="519" href="#519">519</a>     <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="520" href="#520">520</a>       LOG.debug(<span class="jxr_string">"  Model concept does not exist yet, create it"</span>);
-<a class="jxr_linenumber" name="521" href="#521">521</a>       modelConceptCB =
-<a class="jxr_linenumber" name="522" href="#522">522</a>           createNewConceptBlueprint(parent, model.getKey(), model.getName());
-<a class="jxr_linenumber" name="523" href="#523">523</a>       <em class="jxr_comment">// Apply concept changes</em>
-<a class="jxr_linenumber" name="524" href="#524">524</a>       modelConcept = WBUtility.getBuilder().construct(modelConceptCB);
-<a class="jxr_linenumber" name="525" href="#525">525</a>       model.setUuid(modelConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="526" href="#526">526</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + modelConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="527" href="#527">527</a>     }
-<a class="jxr_linenumber" name="528" href="#528">528</a> 
-<a class="jxr_linenumber" name="529" href="#529">529</a>     <em class="jxr_comment">// Apply refex changes - modelConcept has been set above</em>
-<a class="jxr_linenumber" name="530" href="#530">530</a>     syncRefexes(modelConcept, model);
-<a class="jxr_linenumber" name="531" href="#531">531</a> 
-<a class="jxr_linenumber" name="532" href="#532">532</a>     LOG.debug(<span class="jxr_string">"  add uncommitted"</span>);
-<a class="jxr_linenumber" name="533" href="#533">533</a>     WBUtility.addUncommitted(modelConcept);
-<a class="jxr_linenumber" name="534" href="#534">534</a>     LOG.debug(<span class="jxr_string">"  commit"</span>);
-<a class="jxr_linenumber" name="535" href="#535">535</a>     WBUtility.commit();
+<a class="jxr_linenumber" name="451" href="#451">451</a> 
+<a class="jxr_linenumber" name="452" href="#452">452</a>       <em class="jxr_comment">// continue walking</em>
+<a class="jxr_linenumber" name="453" href="#453">453</a>       @SuppressWarnings(<span class="jxr_string">"rawtypes"</span>)
+<a class="jxr_linenumber" name="454" href="#454">454</a>       Collection&lt;? <strong class="jxr_keyword">extends</strong> RelationshipVersionBI&gt; rels =
+<a class="jxr_linenumber" name="455" href="#455">455</a>           concept.getRelationshipsOutgoingActiveIsa();
+<a class="jxr_linenumber" name="456" href="#456">456</a>       <strong class="jxr_keyword">if</strong> (rels.size() &lt; 1) {
+<a class="jxr_linenumber" name="457" href="#457">457</a>         <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="458" href="#458">458</a>       }
+<a class="jxr_linenumber" name="459" href="#459">459</a>       concept =
+<a class="jxr_linenumber" name="460" href="#460">460</a>           WBUtility.getConceptVersion(rels.iterator().next()
+<a class="jxr_linenumber" name="461" href="#461">461</a>               .getDestinationNid());
+<a class="jxr_linenumber" name="462" href="#462">462</a>       LOG.debug(<span class="jxr_string">"  "</span> + concept.getPrimordialUuid());
+<a class="jxr_linenumber" name="463" href="#463">463</a>     }
+<a class="jxr_linenumber" name="464" href="#464">464</a>     <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Information model type not found for "</span>
+<a class="jxr_linenumber" name="465" href="#465">465</a>         + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="466" href="#466">466</a>   }
+<a class="jxr_linenumber" name="467" href="#467">467</a> 
+<a class="jxr_linenumber" name="468" href="#468">468</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="469" href="#469">469</a> <em class="jxr_javadoccomment">   * Synchronizes the current state of the information model with the underlying</em>
+<a class="jxr_linenumber" name="470" href="#470">470</a> <em class="jxr_javadoccomment">   * strored concept representation. If it does not exist, it creates it. If it</em>
+<a class="jxr_linenumber" name="471" href="#471">471</a> <em class="jxr_javadoccomment">   * has changed, it updates it.</em>
+<a class="jxr_linenumber" name="472" href="#472">472</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="473" href="#473">473</a> <em class="jxr_javadoccomment">   * TODO: to properly implement sync, we should take the old version of the</em>
+<a class="jxr_linenumber" name="474" href="#474">474</a> <em class="jxr_javadoccomment">   * model and the new version of the model and compare each field to see</em>
+<a class="jxr_linenumber" name="475" href="#475">475</a> <em class="jxr_javadoccomment">   * whether its changed. either retire or add the appropriate underlying data</em>
+<a class="jxr_linenumber" name="476" href="#476">476</a> <em class="jxr_javadoccomment">   * element.</em>
+<a class="jxr_linenumber" name="477" href="#477">477</a> <em class="jxr_javadoccomment">   * @param modelConcept the model concept</em>
+<a class="jxr_linenumber" name="478" href="#478">478</a> <em class="jxr_javadoccomment">   * @return the information model</em>
+<a class="jxr_linenumber" name="479" href="#479">479</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="480" href="#480">480</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
+<a class="jxr_linenumber" name="481" href="#481">481</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="482" href="#482">482</a> <em class="jxr_javadoccomment">   * @throws UnsupportedEncodingException</em>
+<a class="jxr_linenumber" name="483" href="#483">483</a> <em class="jxr_javadoccomment">   * @throws NoSuchAlgorithmException</em>
+<a class="jxr_linenumber" name="484" href="#484">484</a> <em class="jxr_javadoccomment">   * @throws PropertyVetoException</em>
+<a class="jxr_linenumber" name="485" href="#485">485</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="486" href="#486">486</a>   <strong class="jxr_keyword">private</strong> ConceptChronicleBI syncInformationModelConcept(<a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model)
+<a class="jxr_linenumber" name="487" href="#487">487</a>     <strong class="jxr_keyword">throws</strong> NoSuchAlgorithmException, UnsupportedEncodingException, IOException,
+<a class="jxr_linenumber" name="488" href="#488">488</a>     InvalidCAB, ContradictionException, PropertyVetoException {
+<a class="jxr_linenumber" name="489" href="#489">489</a>     <strong class="jxr_keyword">if</strong> (model == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="490" href="#490">490</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Model unexpectedly null"</span>);
+<a class="jxr_linenumber" name="491" href="#491">491</a>     }
+<a class="jxr_linenumber" name="492" href="#492">492</a>     LOG.info(<span class="jxr_string">"Convert information model to concept"</span>);
+<a class="jxr_linenumber" name="493" href="#493">493</a> 
+<a class="jxr_linenumber" name="494" href="#494">494</a>     <em class="jxr_comment">// Determine parent - either model type or super model uuid</em>
+<a class="jxr_linenumber" name="495" href="#495">495</a>     ConceptChronicleBI parent = determineParent(model);
+<a class="jxr_linenumber" name="496" href="#496">496</a> 
+<a class="jxr_linenumber" name="497" href="#497">497</a>     <em class="jxr_comment">// Acquire concept blueprint - either load from DB or create new one</em>
+<a class="jxr_linenumber" name="498" href="#498">498</a>     LOG.debug(<span class="jxr_string">"  parent = "</span> + parent.getPrimordialUuid());
+<a class="jxr_linenumber" name="499" href="#499">499</a>     LOG.debug(<span class="jxr_string">"  FN = "</span> + model.getKey());
+<a class="jxr_linenumber" name="500" href="#500">500</a>     LOG.debug(<span class="jxr_string">"  PT = "</span> + model.getName());
+<a class="jxr_linenumber" name="501" href="#501">501</a>     ConceptCB modelConceptCB = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="502" href="#502">502</a>     ConceptChronicleBI modelConcept = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="503" href="#503">503</a>     <em class="jxr_comment">// handle case where model concept exists already</em>
+<a class="jxr_linenumber" name="504" href="#504">504</a>     <strong class="jxr_keyword">if</strong> (exists(model)) {
+<a class="jxr_linenumber" name="505" href="#505">505</a>       <em class="jxr_comment">// Obtain the UUID</em>
+<a class="jxr_linenumber" name="506" href="#506">506</a>       UUID modelUuid =
+<a class="jxr_linenumber" name="507" href="#507">507</a>           <strong class="jxr_keyword">this</strong>.getInformationModel(model.getType(), model.getKey()).getUuid();
+<a class="jxr_linenumber" name="508" href="#508">508</a>       LOG.debug(<span class="jxr_string">"  Model exists already, UUID = "</span> + modelUuid);
+<a class="jxr_linenumber" name="509" href="#509">509</a>       <em class="jxr_comment">// Look it up by UUID0</em>
+<a class="jxr_linenumber" name="510" href="#510">510</a>       modelConcept = dataStore.getConcept(modelUuid);
+<a class="jxr_linenumber" name="511" href="#511">511</a>       ConceptVersionBI modelConceptVersion =
+<a class="jxr_linenumber" name="512" href="#512">512</a>           modelConcept.getVersion(WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="513" href="#513">513</a>       modelConceptCB =
+<a class="jxr_linenumber" name="514" href="#514">514</a>           modelConceptVersion.makeBlueprint(WBUtility.getViewCoordinate(),
+<a class="jxr_linenumber" name="515" href="#515">515</a>               IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+<a class="jxr_linenumber" name="516" href="#516">516</a>       <em class="jxr_comment">// synchronize descriptions (in case name or key changed)</em>
+<a class="jxr_linenumber" name="517" href="#517">517</a>       syncDescriptions(modelConceptCB, model);
+<a class="jxr_linenumber" name="518" href="#518">518</a> 
+<a class="jxr_linenumber" name="519" href="#519">519</a>       <em class="jxr_comment">// Sync super model UUID</em>
+<a class="jxr_linenumber" name="520" href="#520">520</a>       syncSuperModel(modelConceptCB, model, parent);
+<a class="jxr_linenumber" name="521" href="#521">521</a> 
+<a class="jxr_linenumber" name="522" href="#522">522</a>       <em class="jxr_comment">// Sync "has terminology concept" relationships</em>
+<a class="jxr_linenumber" name="523" href="#523">523</a>       syncConnectedTerminologyConcepts(modelConceptCB, model);
+<a class="jxr_linenumber" name="524" href="#524">524</a> 
+<a class="jxr_linenumber" name="525" href="#525">525</a>     }
+<a class="jxr_linenumber" name="526" href="#526">526</a>     <em class="jxr_comment">// handle case where model concept does not exist</em>
+<a class="jxr_linenumber" name="527" href="#527">527</a>     <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="528" href="#528">528</a>       LOG.debug(<span class="jxr_string">"  Model concept does not exist yet, create it"</span>);
+<a class="jxr_linenumber" name="529" href="#529">529</a>       modelConceptCB =
+<a class="jxr_linenumber" name="530" href="#530">530</a>           createNewConceptBlueprint(parent, model.getKey(), model.getName());
+<a class="jxr_linenumber" name="531" href="#531">531</a>       <em class="jxr_comment">// Apply concept changes</em>
+<a class="jxr_linenumber" name="532" href="#532">532</a>       modelConcept = WBUtility.getBuilder().construct(modelConceptCB);
+<a class="jxr_linenumber" name="533" href="#533">533</a>       model.setUuid(modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="534" href="#534">534</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + modelConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="535" href="#535">535</a>     }
 <a class="jxr_linenumber" name="536" href="#536">536</a> 
-<a class="jxr_linenumber" name="537" href="#537">537</a>     <strong class="jxr_keyword">return</strong> modelConcept;
-<a class="jxr_linenumber" name="538" href="#538">538</a>   }
+<a class="jxr_linenumber" name="537" href="#537">537</a>     <em class="jxr_comment">// Apply refex changes - modelConcept has been set above</em>
+<a class="jxr_linenumber" name="538" href="#538">538</a>     syncRefexes(modelConcept, model);
 <a class="jxr_linenumber" name="539" href="#539">539</a> 
-<a class="jxr_linenumber" name="540" href="#540">540</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="541" href="#541">541</a> <em class="jxr_javadoccomment">   * Determines the parent concept. (there will be only one)</em>
-<a class="jxr_linenumber" name="542" href="#542">542</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="543" href="#543">543</a> <em class="jxr_javadoccomment">   * @param model the model</em>
-<a class="jxr_linenumber" name="544" href="#544">544</a> <em class="jxr_javadoccomment">   * @return the concept chronicle bi</em>
-<a class="jxr_linenumber" name="545" href="#545">545</a> <em class="jxr_javadoccomment">   * @throws Exception the exception</em>
-<a class="jxr_linenumber" name="546" href="#546">546</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="547" href="#547">547</a>   <strong class="jxr_keyword">private</strong> ConceptChronicleBI determineParent(<a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model)
-<a class="jxr_linenumber" name="548" href="#548">548</a>     <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="549" href="#549">549</a>     <em class="jxr_comment">// Determine parent - either model type or super model uuid</em>
-<a class="jxr_linenumber" name="550" href="#550">550</a>     <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a> type = model.getType();
-<a class="jxr_linenumber" name="551" href="#551">551</a>     ConceptChronicleBI parent = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="552" href="#552">552</a>     <strong class="jxr_keyword">if</strong> (model.getSuperModelUuid() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="553" href="#553">553</a>       parent = dataStore.getConcept(model.getSuperModelUuid());
-<a class="jxr_linenumber" name="554" href="#554">554</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="555" href="#555">555</a>       parent = dataStore.getConcept(type.getUuid());
-<a class="jxr_linenumber" name="556" href="#556">556</a>     }
-<a class="jxr_linenumber" name="557" href="#557">557</a>     <strong class="jxr_keyword">if</strong> (parent == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="558" href="#558">558</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Something went wrong determining parent concept "</span>
-<a class="jxr_linenumber" name="559" href="#559">559</a>           + type.getUuid() + <span class="jxr_string">", "</span> + model.getSuperModelUuid());
-<a class="jxr_linenumber" name="560" href="#560">560</a>     }
-<a class="jxr_linenumber" name="561" href="#561">561</a>     <strong class="jxr_keyword">return</strong> parent;
-<a class="jxr_linenumber" name="562" href="#562">562</a>   }
-<a class="jxr_linenumber" name="563" href="#563">563</a> 
-<a class="jxr_linenumber" name="564" href="#564">564</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="565" href="#565">565</a> <em class="jxr_javadoccomment">   * Sync descriptions. Retire descriptions no longer matching key or name.</em>
-<a class="jxr_linenumber" name="566" href="#566">566</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
-<a class="jxr_linenumber" name="567" href="#567">567</a> <em class="jxr_javadoccomment">   * @param model the model</em>
-<a class="jxr_linenumber" name="568" href="#568">568</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="569" href="#569">569</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
-<a class="jxr_linenumber" name="570" href="#570">570</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="571" href="#571">571</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="572" href="#572">572</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncDescriptions(ConceptCB modelConceptCB, <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model)
-<a class="jxr_linenumber" name="573" href="#573">573</a>     <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB, ContradictionException {
-<a class="jxr_linenumber" name="574" href="#574">574</a>     <strong class="jxr_keyword">for</strong> (DescriptionCAB descCAB : modelConceptCB.getDescriptionCABs()) {
-<a class="jxr_linenumber" name="575" href="#575">575</a>       <strong class="jxr_keyword">if</strong> (descCAB.getText().equals(model.getKey())) {
-<a class="jxr_linenumber" name="576" href="#576">576</a>         <strong class="jxr_keyword">continue</strong>;
-<a class="jxr_linenumber" name="577" href="#577">577</a>       }
-<a class="jxr_linenumber" name="578" href="#578">578</a>       <strong class="jxr_keyword">if</strong> (descCAB.getText().equals(model.getName())) {
-<a class="jxr_linenumber" name="579" href="#579">579</a>         <strong class="jxr_keyword">continue</strong>;
-<a class="jxr_linenumber" name="580" href="#580">580</a>       }
-<a class="jxr_linenumber" name="581" href="#581">581</a>       descCAB.setRetired();
-<a class="jxr_linenumber" name="582" href="#582">582</a>       WBUtility.getBuilder().constructIfNotCurrent(descCAB);
-<a class="jxr_linenumber" name="583" href="#583">583</a>     }
-<a class="jxr_linenumber" name="584" href="#584">584</a>   }
-<a class="jxr_linenumber" name="585" href="#585">585</a> 
-<a class="jxr_linenumber" name="586" href="#586">586</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="587" href="#587">587</a> <em class="jxr_javadoccomment">   * Sync super model relationships</em>
-<a class="jxr_linenumber" name="588" href="#588">588</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="589" href="#589">589</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
-<a class="jxr_linenumber" name="590" href="#590">590</a> <em class="jxr_javadoccomment">   * @param model the model</em>
-<a class="jxr_linenumber" name="591" href="#591">591</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="592" href="#592">592</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="593" href="#593">593</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
-<a class="jxr_linenumber" name="594" href="#594">594</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="595" href="#595">595</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncSuperModel(ConceptCB modelConceptCB, <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model,
-<a class="jxr_linenumber" name="596" href="#596">596</a>     ConceptChronicleBI parent) <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB,
-<a class="jxr_linenumber" name="597" href="#597">597</a>     ContradictionException {
-<a class="jxr_linenumber" name="598" href="#598">598</a> 
-<a class="jxr_linenumber" name="599" href="#599">599</a>     LOG.debug(<span class="jxr_string">"  Handle super-model UUID"</span>);
-<a class="jxr_linenumber" name="600" href="#600">600</a>     LOG.debug(<span class="jxr_string">"    parent UUID = "</span> + parent.getPrimordialUuid());
-<a class="jxr_linenumber" name="601" href="#601">601</a> 
-<a class="jxr_linenumber" name="602" href="#602">602</a>     <em class="jxr_comment">// Retire any active Isa relationships to non-type UUIDs that are not the</em>
-<a class="jxr_linenumber" name="603" href="#603">603</a>     <em class="jxr_comment">// super model UUID</em>
-<a class="jxr_linenumber" name="604" href="#604">604</a>     <strong class="jxr_keyword">boolean</strong> found = false;
-<a class="jxr_linenumber" name="605" href="#605">605</a>     <strong class="jxr_keyword">for</strong> (RelationshipCAB relCAB : modelConceptCB.getRelationshipCABs()) {
-<a class="jxr_linenumber" name="606" href="#606">606</a>       <em class="jxr_comment">// LOG.debug("    rel cab type nid = " + relCAB.getTypeNid());</em>
-<a class="jxr_linenumber" name="607" href="#607">607</a>       <em class="jxr_comment">// LOG.debug("    TermAux.IS_A = " + TermAux.IS_A.getLenient().getNid());</em>
-<a class="jxr_linenumber" name="608" href="#608">608</a>       <em class="jxr_comment">// LOG.debug("    Snomed.IS_A = " + Snomed.IS_A.getLenient().getNid());</em>
-<a class="jxr_linenumber" name="609" href="#609">609</a>       <em class="jxr_comment">// LOG.debug("    SnomedRelType.IS_A = " +</em>
-<a class="jxr_linenumber" name="610" href="#610">610</a>       <em class="jxr_comment">// SnomedRelType.IS_A.getLenient().getNid());</em>
-<a class="jxr_linenumber" name="611" href="#611">611</a> 
-<a class="jxr_linenumber" name="612" href="#612">612</a>       <em class="jxr_comment">// Look for matching typeId flag</em>
-<a class="jxr_linenumber" name="613" href="#613">613</a>       <strong class="jxr_keyword">if</strong> (relCAB.getTypeNid() == Snomed.IS_A.getLenient().getNid()) {
-<a class="jxr_linenumber" name="614" href="#614">614</a> 
-<a class="jxr_linenumber" name="615" href="#615">615</a>         UUID uuid =
-<a class="jxr_linenumber" name="616" href="#616">616</a>             WBUtility.getConceptVersion(relCAB.getTargetNid())
-<a class="jxr_linenumber" name="617" href="#617">617</a>                 .getPrimordialUuid();
-<a class="jxr_linenumber" name="618" href="#618">618</a>         LOG.debug(<span class="jxr_string">"    target UUID = "</span> + uuid);
+<a class="jxr_linenumber" name="540" href="#540">540</a>     LOG.debug(<span class="jxr_string">"  add uncommitted"</span>);
+<a class="jxr_linenumber" name="541" href="#541">541</a>     WBUtility.addUncommitted(modelConcept);
+<a class="jxr_linenumber" name="542" href="#542">542</a>     LOG.debug(<span class="jxr_string">"  commit"</span>);
+<a class="jxr_linenumber" name="543" href="#543">543</a>     WBUtility.commit();
+<a class="jxr_linenumber" name="544" href="#544">544</a> 
+<a class="jxr_linenumber" name="545" href="#545">545</a>     <strong class="jxr_keyword">return</strong> modelConcept;
+<a class="jxr_linenumber" name="546" href="#546">546</a>   }
+<a class="jxr_linenumber" name="547" href="#547">547</a> 
+<a class="jxr_linenumber" name="548" href="#548">548</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="549" href="#549">549</a> <em class="jxr_javadoccomment">   * Determines the parent concept. (there will be only one)</em>
+<a class="jxr_linenumber" name="550" href="#550">550</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="551" href="#551">551</a> <em class="jxr_javadoccomment">   * @param model the model</em>
+<a class="jxr_linenumber" name="552" href="#552">552</a> <em class="jxr_javadoccomment">   * @return the concept chronicle bi</em>
+<a class="jxr_linenumber" name="553" href="#553">553</a> <em class="jxr_javadoccomment">   * @throws Exception the exception</em>
+<a class="jxr_linenumber" name="554" href="#554">554</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="555" href="#555">555</a>   <strong class="jxr_keyword">private</strong> ConceptChronicleBI determineParent(<a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model)
+<a class="jxr_linenumber" name="556" href="#556">556</a>     <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="557" href="#557">557</a>     <em class="jxr_comment">// Determine parent - either model type or super model uuid</em>
+<a class="jxr_linenumber" name="558" href="#558">558</a>     <a href="../../../../../gov/va/isaac/model/InformationModelType.html">InformationModelType</a> type = model.getType();
+<a class="jxr_linenumber" name="559" href="#559">559</a>     ConceptChronicleBI parent = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="560" href="#560">560</a>     <strong class="jxr_keyword">if</strong> (model.getSuperModelUuid() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="561" href="#561">561</a>       parent = dataStore.getConcept(model.getSuperModelUuid());
+<a class="jxr_linenumber" name="562" href="#562">562</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="563" href="#563">563</a>       parent = dataStore.getConcept(type.getUuid());
+<a class="jxr_linenumber" name="564" href="#564">564</a>     }
+<a class="jxr_linenumber" name="565" href="#565">565</a>     <strong class="jxr_keyword">if</strong> (parent == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="566" href="#566">566</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Something went wrong determining parent concept "</span>
+<a class="jxr_linenumber" name="567" href="#567">567</a>           + type.getUuid() + <span class="jxr_string">", "</span> + model.getSuperModelUuid());
+<a class="jxr_linenumber" name="568" href="#568">568</a>     }
+<a class="jxr_linenumber" name="569" href="#569">569</a>     <strong class="jxr_keyword">return</strong> parent;
+<a class="jxr_linenumber" name="570" href="#570">570</a>   }
+<a class="jxr_linenumber" name="571" href="#571">571</a> 
+<a class="jxr_linenumber" name="572" href="#572">572</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="573" href="#573">573</a> <em class="jxr_javadoccomment">   * Sync descriptions. Retire descriptions no longer matching key or name.</em>
+<a class="jxr_linenumber" name="574" href="#574">574</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
+<a class="jxr_linenumber" name="575" href="#575">575</a> <em class="jxr_javadoccomment">   * @param model the model</em>
+<a class="jxr_linenumber" name="576" href="#576">576</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="577" href="#577">577</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
+<a class="jxr_linenumber" name="578" href="#578">578</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="579" href="#579">579</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="580" href="#580">580</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncDescriptions(ConceptCB modelConceptCB, <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model)
+<a class="jxr_linenumber" name="581" href="#581">581</a>     <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB, ContradictionException {
+<a class="jxr_linenumber" name="582" href="#582">582</a>     <strong class="jxr_keyword">for</strong> (DescriptionCAB descCAB : modelConceptCB.getDescriptionCABs()) {
+<a class="jxr_linenumber" name="583" href="#583">583</a>       <strong class="jxr_keyword">if</strong> (descCAB.getText().equals(model.getKey())) {
+<a class="jxr_linenumber" name="584" href="#584">584</a>         <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="585" href="#585">585</a>       }
+<a class="jxr_linenumber" name="586" href="#586">586</a>       <strong class="jxr_keyword">if</strong> (descCAB.getText().equals(model.getName())) {
+<a class="jxr_linenumber" name="587" href="#587">587</a>         <strong class="jxr_keyword">continue</strong>;
+<a class="jxr_linenumber" name="588" href="#588">588</a>       }
+<a class="jxr_linenumber" name="589" href="#589">589</a>       descCAB.setRetired();
+<a class="jxr_linenumber" name="590" href="#590">590</a>       WBUtility.getBuilder().constructIfNotCurrent(descCAB);
+<a class="jxr_linenumber" name="591" href="#591">591</a>     }
+<a class="jxr_linenumber" name="592" href="#592">592</a>   }
+<a class="jxr_linenumber" name="593" href="#593">593</a> 
+<a class="jxr_linenumber" name="594" href="#594">594</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="595" href="#595">595</a> <em class="jxr_javadoccomment">   * Sync super model relationships</em>
+<a class="jxr_linenumber" name="596" href="#596">596</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="597" href="#597">597</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
+<a class="jxr_linenumber" name="598" href="#598">598</a> <em class="jxr_javadoccomment">   * @param model the model</em>
+<a class="jxr_linenumber" name="599" href="#599">599</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="600" href="#600">600</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="601" href="#601">601</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
+<a class="jxr_linenumber" name="602" href="#602">602</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="603" href="#603">603</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncSuperModel(ConceptCB modelConceptCB, <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model,
+<a class="jxr_linenumber" name="604" href="#604">604</a>     ConceptChronicleBI parent) <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB,
+<a class="jxr_linenumber" name="605" href="#605">605</a>     ContradictionException {
+<a class="jxr_linenumber" name="606" href="#606">606</a> 
+<a class="jxr_linenumber" name="607" href="#607">607</a>     LOG.debug(<span class="jxr_string">"  Handle super-model UUID"</span>);
+<a class="jxr_linenumber" name="608" href="#608">608</a>     LOG.debug(<span class="jxr_string">"    parent UUID = "</span> + parent.getPrimordialUuid());
+<a class="jxr_linenumber" name="609" href="#609">609</a> 
+<a class="jxr_linenumber" name="610" href="#610">610</a>     <em class="jxr_comment">// Retire any active Isa relationships to non-type UUIDs that are not the</em>
+<a class="jxr_linenumber" name="611" href="#611">611</a>     <em class="jxr_comment">// super model UUID</em>
+<a class="jxr_linenumber" name="612" href="#612">612</a>     <strong class="jxr_keyword">boolean</strong> found = false;
+<a class="jxr_linenumber" name="613" href="#613">613</a>     <strong class="jxr_keyword">for</strong> (RelationshipCAB relCAB : modelConceptCB.getRelationshipCABs()) {
+<a class="jxr_linenumber" name="614" href="#614">614</a>       <em class="jxr_comment">// LOG.debug("    rel cab type nid = " + relCAB.getTypeNid());</em>
+<a class="jxr_linenumber" name="615" href="#615">615</a>       <em class="jxr_comment">// LOG.debug("    TermAux.IS_A = " + TermAux.IS_A.getLenient().getNid());</em>
+<a class="jxr_linenumber" name="616" href="#616">616</a>       <em class="jxr_comment">// LOG.debug("    Snomed.IS_A = " + Snomed.IS_A.getLenient().getNid());</em>
+<a class="jxr_linenumber" name="617" href="#617">617</a>       <em class="jxr_comment">// LOG.debug("    SnomedRelType.IS_A = " +</em>
+<a class="jxr_linenumber" name="618" href="#618">618</a>       <em class="jxr_comment">// SnomedRelType.IS_A.getLenient().getNid());</em>
 <a class="jxr_linenumber" name="619" href="#619">619</a> 
-<a class="jxr_linenumber" name="620" href="#620">620</a>         <em class="jxr_comment">// If the target of this rel doesn't match the computed parent, retire</em>
-<a class="jxr_linenumber" name="621" href="#621">621</a>         <em class="jxr_comment">// it</em>
-<a class="jxr_linenumber" name="622" href="#622">622</a>         <strong class="jxr_keyword">if</strong> (!parent.getPrimordialUuid().equals(uuid)) {
-<a class="jxr_linenumber" name="623" href="#623">623</a>           relCAB.setRetired();
-<a class="jxr_linenumber" name="624" href="#624">624</a>           WBUtility.getBuilder().constructIfNotCurrent(relCAB);
-<a class="jxr_linenumber" name="625" href="#625">625</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="626" href="#626">626</a>           found = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="627" href="#627">627</a>         }
-<a class="jxr_linenumber" name="628" href="#628">628</a>       }
-<a class="jxr_linenumber" name="629" href="#629">629</a>     }
-<a class="jxr_linenumber" name="630" href="#630">630</a> 
-<a class="jxr_linenumber" name="631" href="#631">631</a>     <em class="jxr_comment">// if we didn't find it, create a new rel</em>
-<a class="jxr_linenumber" name="632" href="#632">632</a>     <strong class="jxr_keyword">if</strong> (!found) {
-<a class="jxr_linenumber" name="633" href="#633">633</a>       RelationshipCAB relCAB =
-<a class="jxr_linenumber" name="634" href="#634">634</a>           <strong class="jxr_keyword">new</strong> RelationshipCAB(modelConceptCB.getComponentUuid(),
-<a class="jxr_linenumber" name="635" href="#635">635</a>               Snomed.IS_A.getUuids()[0], parent.getPrimordialUuid(), 0,
-<a class="jxr_linenumber" name="636" href="#636">636</a>               RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
-<a class="jxr_linenumber" name="637" href="#637">637</a>       WBUtility.getBuilder().constructIfNotCurrent(relCAB);
-<a class="jxr_linenumber" name="638" href="#638">638</a>     }
-<a class="jxr_linenumber" name="639" href="#639">639</a>   }
-<a class="jxr_linenumber" name="640" href="#640">640</a> 
-<a class="jxr_linenumber" name="641" href="#641">641</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="642" href="#642">642</a> <em class="jxr_javadoccomment">   * Sync connected terminology concepts.</em>
-<a class="jxr_linenumber" name="643" href="#643">643</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="644" href="#644">644</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
-<a class="jxr_linenumber" name="645" href="#645">645</a> <em class="jxr_javadoccomment">   * @param model the model</em>
-<a class="jxr_linenumber" name="646" href="#646">646</a> <em class="jxr_javadoccomment">   * @throws IOException Signals that an I/O exception has occurred.</em>
-<a class="jxr_linenumber" name="647" href="#647">647</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="648" href="#648">648</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
-<a class="jxr_linenumber" name="649" href="#649">649</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="650" href="#650">650</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncConnectedTerminologyConcepts(ConceptCB modelConceptCB,
-<a class="jxr_linenumber" name="651" href="#651">651</a>     <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model) <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB,
-<a class="jxr_linenumber" name="652" href="#652">652</a>     ContradictionException {
-<a class="jxr_linenumber" name="653" href="#653">653</a> 
-<a class="jxr_linenumber" name="654" href="#654">654</a>     LOG.debug(<span class="jxr_string">"  Iterate through associated UUIDs"</span>);
-<a class="jxr_linenumber" name="655" href="#655">655</a>     Set&lt;UUID&gt; associatedConceptUuids = model.getAssociatedConceptUuids();
-<a class="jxr_linenumber" name="656" href="#656">656</a>     <em class="jxr_comment">// Retire any active relationships to UUIDs no longer in this set</em>
-<a class="jxr_linenumber" name="657" href="#657">657</a>     <strong class="jxr_keyword">for</strong> (RelationshipCAB relCAB : modelConceptCB.getRelationshipCABs()) {
-<a class="jxr_linenumber" name="658" href="#658">658</a>       <em class="jxr_comment">// Look for matching typeId and "active" flag</em>
-<a class="jxr_linenumber" name="659" href="#659">659</a>       <strong class="jxr_keyword">if</strong> (relCAB.getTypeNid() == InformationModelAux.HAS_TERMINOLOGY_CONCEPT
-<a class="jxr_linenumber" name="660" href="#660">660</a>           .getLenient().getNid()) {
-<a class="jxr_linenumber" name="661" href="#661">661</a>         UUID uuid =
-<a class="jxr_linenumber" name="662" href="#662">662</a>             WBUtility.getConceptVersion(relCAB.getTargetNid())
-<a class="jxr_linenumber" name="663" href="#663">663</a>                 .getPrimordialUuid();
-<a class="jxr_linenumber" name="664" href="#664">664</a> 
-<a class="jxr_linenumber" name="665" href="#665">665</a>         <em class="jxr_comment">// If the UUID is not in range, retire the rel</em>
-<a class="jxr_linenumber" name="666" href="#666">666</a>         <strong class="jxr_keyword">if</strong> (!associatedConceptUuids.contains(uuid)) {
-<a class="jxr_linenumber" name="667" href="#667">667</a>           LOG.debug(<span class="jxr_string">"    Found relationship to retire - "</span>
-<a class="jxr_linenumber" name="668" href="#668">668</a>               + WBUtility.getConPrefTerm(relCAB.getTargetNid()));
-<a class="jxr_linenumber" name="669" href="#669">669</a>           relCAB.setRetired();
-<a class="jxr_linenumber" name="670" href="#670">670</a>           WBUtility.getBuilder().constructIfNotCurrent(relCAB);
-<a class="jxr_linenumber" name="671" href="#671">671</a>         }
+<a class="jxr_linenumber" name="620" href="#620">620</a>       <em class="jxr_comment">// Look for matching typeId flag</em>
+<a class="jxr_linenumber" name="621" href="#621">621</a>       <strong class="jxr_keyword">if</strong> (relCAB.getTypeNid() == Snomed.IS_A.getLenient().getNid()) {
+<a class="jxr_linenumber" name="622" href="#622">622</a> 
+<a class="jxr_linenumber" name="623" href="#623">623</a>         UUID uuid =
+<a class="jxr_linenumber" name="624" href="#624">624</a>             WBUtility.getConceptVersion(relCAB.getTargetNid())
+<a class="jxr_linenumber" name="625" href="#625">625</a>                 .getPrimordialUuid();
+<a class="jxr_linenumber" name="626" href="#626">626</a>         LOG.debug(<span class="jxr_string">"    target UUID = "</span> + uuid);
+<a class="jxr_linenumber" name="627" href="#627">627</a> 
+<a class="jxr_linenumber" name="628" href="#628">628</a>         <em class="jxr_comment">// If the target of this rel doesn't match the computed parent, retire</em>
+<a class="jxr_linenumber" name="629" href="#629">629</a>         <em class="jxr_comment">// it</em>
+<a class="jxr_linenumber" name="630" href="#630">630</a>         <strong class="jxr_keyword">if</strong> (!parent.getPrimordialUuid().equals(uuid)) {
+<a class="jxr_linenumber" name="631" href="#631">631</a>           relCAB.setRetired();
+<a class="jxr_linenumber" name="632" href="#632">632</a>           WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+<a class="jxr_linenumber" name="633" href="#633">633</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="634" href="#634">634</a>           found = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="635" href="#635">635</a>         }
+<a class="jxr_linenumber" name="636" href="#636">636</a>       }
+<a class="jxr_linenumber" name="637" href="#637">637</a>     }
+<a class="jxr_linenumber" name="638" href="#638">638</a> 
+<a class="jxr_linenumber" name="639" href="#639">639</a>     <em class="jxr_comment">// if we didn't find it, create a new rel</em>
+<a class="jxr_linenumber" name="640" href="#640">640</a>     <strong class="jxr_keyword">if</strong> (!found) {
+<a class="jxr_linenumber" name="641" href="#641">641</a>       RelationshipCAB relCAB =
+<a class="jxr_linenumber" name="642" href="#642">642</a>           <strong class="jxr_keyword">new</strong> RelationshipCAB(modelConceptCB.getComponentUuid(),
+<a class="jxr_linenumber" name="643" href="#643">643</a>               Snomed.IS_A.getUuids()[0], parent.getPrimordialUuid(), 0,
+<a class="jxr_linenumber" name="644" href="#644">644</a>               RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
+<a class="jxr_linenumber" name="645" href="#645">645</a>       WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+<a class="jxr_linenumber" name="646" href="#646">646</a>     }
+<a class="jxr_linenumber" name="647" href="#647">647</a>   }
+<a class="jxr_linenumber" name="648" href="#648">648</a> 
+<a class="jxr_linenumber" name="649" href="#649">649</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="650" href="#650">650</a> <em class="jxr_javadoccomment">   * Sync connected terminology concepts.</em>
+<a class="jxr_linenumber" name="651" href="#651">651</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="652" href="#652">652</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
+<a class="jxr_linenumber" name="653" href="#653">653</a> <em class="jxr_javadoccomment">   * @param model the model</em>
+<a class="jxr_linenumber" name="654" href="#654">654</a> <em class="jxr_javadoccomment">   * @throws IOException Signals that an I/O exception has occurred.</em>
+<a class="jxr_linenumber" name="655" href="#655">655</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="656" href="#656">656</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
+<a class="jxr_linenumber" name="657" href="#657">657</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="658" href="#658">658</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncConnectedTerminologyConcepts(ConceptCB modelConceptCB,
+<a class="jxr_linenumber" name="659" href="#659">659</a>     <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model) <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB,
+<a class="jxr_linenumber" name="660" href="#660">660</a>     ContradictionException {
+<a class="jxr_linenumber" name="661" href="#661">661</a> 
+<a class="jxr_linenumber" name="662" href="#662">662</a>     LOG.debug(<span class="jxr_string">"  Iterate through associated UUIDs"</span>);
+<a class="jxr_linenumber" name="663" href="#663">663</a>     Set&lt;UUID&gt; associatedConceptUuids = model.getAssociatedConceptUuids();
+<a class="jxr_linenumber" name="664" href="#664">664</a>     <em class="jxr_comment">// Retire any active relationships to UUIDs no longer in this set</em>
+<a class="jxr_linenumber" name="665" href="#665">665</a>     <strong class="jxr_keyword">for</strong> (RelationshipCAB relCAB : modelConceptCB.getRelationshipCABs()) {
+<a class="jxr_linenumber" name="666" href="#666">666</a>       <em class="jxr_comment">// Look for matching typeId and "active" flag</em>
+<a class="jxr_linenumber" name="667" href="#667">667</a>       <strong class="jxr_keyword">if</strong> (relCAB.getTypeNid() == InformationModelAux.HAS_TERMINOLOGY_CONCEPT
+<a class="jxr_linenumber" name="668" href="#668">668</a>           .getLenient().getNid()) {
+<a class="jxr_linenumber" name="669" href="#669">669</a>         UUID uuid =
+<a class="jxr_linenumber" name="670" href="#670">670</a>             WBUtility.getConceptVersion(relCAB.getTargetNid())
+<a class="jxr_linenumber" name="671" href="#671">671</a>                 .getPrimordialUuid();
 <a class="jxr_linenumber" name="672" href="#672">672</a> 
-<a class="jxr_linenumber" name="673" href="#673">673</a>         <em class="jxr_comment">// Otherwise, remove from list, no need to create it</em>
-<a class="jxr_linenumber" name="674" href="#674">674</a>         <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="675" href="#675">675</a>           associatedConceptUuids.remove(uuid);
-<a class="jxr_linenumber" name="676" href="#676">676</a>         }
-<a class="jxr_linenumber" name="677" href="#677">677</a>       }
-<a class="jxr_linenumber" name="678" href="#678">678</a>     }
-<a class="jxr_linenumber" name="679" href="#679">679</a> 
-<a class="jxr_linenumber" name="680" href="#680">680</a>     <em class="jxr_comment">// Create rels for any UUIDs not accounted for, make new rels</em>
-<a class="jxr_linenumber" name="681" href="#681">681</a>     <strong class="jxr_keyword">for</strong> (UUID destinationUuid : associatedConceptUuids) {
-<a class="jxr_linenumber" name="682" href="#682">682</a>       LOG.debug(<span class="jxr_string">"  Create relationship for "</span>
-<a class="jxr_linenumber" name="683" href="#683">683</a>           + modelConceptCB.getComponentUuid() + <span class="jxr_string">" =&gt; "</span> + destinationUuid);
-<a class="jxr_linenumber" name="684" href="#684">684</a>       UUID typeUid =
-<a class="jxr_linenumber" name="685" href="#685">685</a>           InformationModelAux.HAS_TERMINOLOGY_CONCEPT.getLenient()
-<a class="jxr_linenumber" name="686" href="#686">686</a>               .getPrimordialUuid();
-<a class="jxr_linenumber" name="687" href="#687">687</a>       RelationshipCAB relCAB =
-<a class="jxr_linenumber" name="688" href="#688">688</a>           <strong class="jxr_keyword">new</strong> RelationshipCAB(modelConceptCB.getComponentUuid(), typeUid,
-<a class="jxr_linenumber" name="689" href="#689">689</a>               destinationUuid, 0, RelationshipType.STATED_ROLE,
-<a class="jxr_linenumber" name="690" href="#690">690</a>               IdDirective.GENERATE_HASH);
-<a class="jxr_linenumber" name="691" href="#691">691</a>       WBUtility.getBuilder().constructIfNotCurrent(relCAB);
-<a class="jxr_linenumber" name="692" href="#692">692</a>       modelConceptCB.setRelationshipCAB(relCAB);
-<a class="jxr_linenumber" name="693" href="#693">693</a>     }
-<a class="jxr_linenumber" name="694" href="#694">694</a>   }
-<a class="jxr_linenumber" name="695" href="#695">695</a> 
-<a class="jxr_linenumber" name="696" href="#696">696</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="697" href="#697">697</a> <em class="jxr_javadoccomment">   * Sync refexes. Determine which one should exist, add them if they do not,</em>
-<a class="jxr_linenumber" name="698" href="#698">698</a> <em class="jxr_javadoccomment">   * retire them if they do.</em>
-<a class="jxr_linenumber" name="699" href="#699">699</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
-<a class="jxr_linenumber" name="700" href="#700">700</a> <em class="jxr_javadoccomment">   * @param modelCB the model cb</em>
-<a class="jxr_linenumber" name="701" href="#701">701</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
-<a class="jxr_linenumber" name="702" href="#702">702</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
-<a class="jxr_linenumber" name="703" href="#703">703</a> <em class="jxr_javadoccomment">   * @throws ValidationException</em>
-<a class="jxr_linenumber" name="704" href="#704">704</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
-<a class="jxr_linenumber" name="705" href="#705">705</a> <em class="jxr_javadoccomment">   * @throws PropertyVetoException</em>
-<a class="jxr_linenumber" name="706" href="#706">706</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="707" href="#707">707</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncRefexes(ConceptChronicleBI modelConcept,
-<a class="jxr_linenumber" name="708" href="#708">708</a>     <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model) <strong class="jxr_keyword">throws</strong> ValidationException, IOException,
-<a class="jxr_linenumber" name="709" href="#709">709</a>     ContradictionException, InvalidCAB, PropertyVetoException {
-<a class="jxr_linenumber" name="710" href="#710">710</a>     <em class="jxr_comment">// Create refex entries for properties</em>
-<a class="jxr_linenumber" name="711" href="#711">711</a>     RefexDynamicUsageDescription propertyRefset =
-<a class="jxr_linenumber" name="712" href="#712">712</a>         RefexDynamicUsageDescriptionBuilder
-<a class="jxr_linenumber" name="713" href="#713">713</a>             .readRefexDynamicUsageDescriptionConcept(InformationModelAux.INFORMATION_MODEL_PROPERTIES_REFSET
-<a class="jxr_linenumber" name="714" href="#714">714</a>                 .getLenient().getNid());
-<a class="jxr_linenumber" name="715" href="#715">715</a>     LOG.debug(<span class="jxr_string">"  Found "</span> + propertyRefset.getRefexName());
-<a class="jxr_linenumber" name="716" href="#716">716</a>     <em class="jxr_comment">// Iterate through information model properties and add refexes</em>
-<a class="jxr_linenumber" name="717" href="#717">717</a>     LOG.debug(<span class="jxr_string">"  Iterate through properties"</span>);
-<a class="jxr_linenumber" name="718" href="#718">718</a>     <em class="jxr_comment">// Create a dynamic refex CAB for each entry</em>
-<a class="jxr_linenumber" name="719" href="#719">719</a>     <em class="jxr_comment">// If these already exist, then the construct will have no practical effect</em>
-<a class="jxr_linenumber" name="720" href="#720">720</a>     Set&lt;UUID&gt; refexUuids = <strong class="jxr_keyword">new</strong> HashSet&lt;&gt;();
-<a class="jxr_linenumber" name="721" href="#721">721</a>     <strong class="jxr_keyword">for</strong> (InformationModelProperty property : model.getProperties()) {
-<a class="jxr_linenumber" name="722" href="#722">722</a>       LOG.debug(<span class="jxr_string">"    "</span> + property.getLabel() + <span class="jxr_string">", "</span> + property.getName());
-<a class="jxr_linenumber" name="723" href="#723">723</a>       <em class="jxr_comment">// Need better understanding of what IdDirective to use here</em>
-<a class="jxr_linenumber" name="724" href="#724">724</a>       RefexDynamicCAB refexBlueprint =
-<a class="jxr_linenumber" name="725" href="#725">725</a>           <strong class="jxr_keyword">new</strong> RefexDynamicCAB(modelConcept.getNid(),
-<a class="jxr_linenumber" name="726" href="#726">726</a>               propertyRefset.getRefexUsageDescriptorNid());
-<a class="jxr_linenumber" name="727" href="#727">727</a> 
-<a class="jxr_linenumber" name="728" href="#728">728</a>       <em class="jxr_comment">// The order of these columns is tightly bound to the definition,</em>
-<a class="jxr_linenumber" name="729" href="#729">729</a>       <em class="jxr_comment">// if the definition changes, this has to be updated as well.</em>
-<a class="jxr_linenumber" name="730" href="#730">730</a>       <strong class="jxr_keyword">if</strong> (propertyRefset.getColumnInfo().length != 8) {
-<a class="jxr_linenumber" name="731" href="#731">731</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(
-<a class="jxr_linenumber" name="732" href="#732">732</a>             <span class="jxr_string">"Information model properties refset has unexpected number of columns"</span>);
-<a class="jxr_linenumber" name="733" href="#733">733</a>       }
-<a class="jxr_linenumber" name="734" href="#734">734</a>       RefexDynamicDataBI[] data =
-<a class="jxr_linenumber" name="735" href="#735">735</a>           <strong class="jxr_keyword">new</strong> RefexDynamicDataBI[propertyRefset.getColumnInfo().length];
-<a class="jxr_linenumber" name="736" href="#736">736</a>       data[0] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getLabel());
-<a class="jxr_linenumber" name="737" href="#737">737</a>       data[1] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getType());
-<a class="jxr_linenumber" name="738" href="#738">738</a>       data[2] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getName());
-<a class="jxr_linenumber" name="739" href="#739">739</a>       data[3] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getDefaultValue());
-<a class="jxr_linenumber" name="740" href="#740">740</a>       data[4] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getValue());
-<a class="jxr_linenumber" name="741" href="#741">741</a>       data[5] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getCardinalityMin());
-<a class="jxr_linenumber" name="742" href="#742">742</a>       data[6] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getCardinalityMax());
-<a class="jxr_linenumber" name="743" href="#743">743</a>       data[7] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getVisibility());
-<a class="jxr_linenumber" name="744" href="#744">744</a>       refexBlueprint.setData(data, WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="745" href="#745">745</a> 
-<a class="jxr_linenumber" name="746" href="#746">746</a>       <em class="jxr_comment">// Construct and wire the dynamic refex</em>
-<a class="jxr_linenumber" name="747" href="#747">747</a>       RefexDynamicChronicleBI&lt;?&gt; refex =
-<a class="jxr_linenumber" name="748" href="#748">748</a>           WBUtility.getBuilder().construct(refexBlueprint);
-<a class="jxr_linenumber" name="749" href="#749">749</a>       modelConcept.addDynamicAnnotation(refex);
-<a class="jxr_linenumber" name="750" href="#750">750</a>       refexUuids.add(refex.getPrimordialUuid());
-<a class="jxr_linenumber" name="751" href="#751">751</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + refex.getPrimordialUuid());
-<a class="jxr_linenumber" name="752" href="#752">752</a>     }
+<a class="jxr_linenumber" name="673" href="#673">673</a>         <em class="jxr_comment">// If the UUID is not in range, retire the rel</em>
+<a class="jxr_linenumber" name="674" href="#674">674</a>         <strong class="jxr_keyword">if</strong> (!associatedConceptUuids.contains(uuid)) {
+<a class="jxr_linenumber" name="675" href="#675">675</a>           LOG.debug(<span class="jxr_string">"    Found relationship to retire - "</span>
+<a class="jxr_linenumber" name="676" href="#676">676</a>               + WBUtility.getConPrefTerm(relCAB.getTargetNid()));
+<a class="jxr_linenumber" name="677" href="#677">677</a>           relCAB.setRetired();
+<a class="jxr_linenumber" name="678" href="#678">678</a>           WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+<a class="jxr_linenumber" name="679" href="#679">679</a>         }
+<a class="jxr_linenumber" name="680" href="#680">680</a> 
+<a class="jxr_linenumber" name="681" href="#681">681</a>         <em class="jxr_comment">// Otherwise, remove from list, no need to create it</em>
+<a class="jxr_linenumber" name="682" href="#682">682</a>         <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="683" href="#683">683</a>           associatedConceptUuids.remove(uuid);
+<a class="jxr_linenumber" name="684" href="#684">684</a>         }
+<a class="jxr_linenumber" name="685" href="#685">685</a>       }
+<a class="jxr_linenumber" name="686" href="#686">686</a>     }
+<a class="jxr_linenumber" name="687" href="#687">687</a> 
+<a class="jxr_linenumber" name="688" href="#688">688</a>     <em class="jxr_comment">// Create rels for any UUIDs not accounted for, make new rels</em>
+<a class="jxr_linenumber" name="689" href="#689">689</a>     <strong class="jxr_keyword">for</strong> (UUID destinationUuid : associatedConceptUuids) {
+<a class="jxr_linenumber" name="690" href="#690">690</a>       LOG.debug(<span class="jxr_string">"  Create relationship for "</span>
+<a class="jxr_linenumber" name="691" href="#691">691</a>           + modelConceptCB.getComponentUuid() + <span class="jxr_string">" =&gt; "</span> + destinationUuid);
+<a class="jxr_linenumber" name="692" href="#692">692</a>       UUID typeUid =
+<a class="jxr_linenumber" name="693" href="#693">693</a>           InformationModelAux.HAS_TERMINOLOGY_CONCEPT.getLenient()
+<a class="jxr_linenumber" name="694" href="#694">694</a>               .getPrimordialUuid();
+<a class="jxr_linenumber" name="695" href="#695">695</a>       RelationshipCAB relCAB =
+<a class="jxr_linenumber" name="696" href="#696">696</a>           <strong class="jxr_keyword">new</strong> RelationshipCAB(modelConceptCB.getComponentUuid(), typeUid,
+<a class="jxr_linenumber" name="697" href="#697">697</a>               destinationUuid, 0, RelationshipType.STATED_ROLE,
+<a class="jxr_linenumber" name="698" href="#698">698</a>               IdDirective.GENERATE_HASH);
+<a class="jxr_linenumber" name="699" href="#699">699</a>       WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+<a class="jxr_linenumber" name="700" href="#700">700</a>       modelConceptCB.setRelationshipCAB(relCAB);
+<a class="jxr_linenumber" name="701" href="#701">701</a>     }
+<a class="jxr_linenumber" name="702" href="#702">702</a>   }
+<a class="jxr_linenumber" name="703" href="#703">703</a> 
+<a class="jxr_linenumber" name="704" href="#704">704</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="705" href="#705">705</a> <em class="jxr_javadoccomment">   * Sync refexes. Determine which one should exist, add them if they do not,</em>
+<a class="jxr_linenumber" name="706" href="#706">706</a> <em class="jxr_javadoccomment">   * retire them if they do.</em>
+<a class="jxr_linenumber" name="707" href="#707">707</a> <em class="jxr_javadoccomment">   * @param modelConceptCB the model concept cb</em>
+<a class="jxr_linenumber" name="708" href="#708">708</a> <em class="jxr_javadoccomment">   * @param modelCB the model cb</em>
+<a class="jxr_linenumber" name="709" href="#709">709</a> <em class="jxr_javadoccomment">   * @throws ContradictionException</em>
+<a class="jxr_linenumber" name="710" href="#710">710</a> <em class="jxr_javadoccomment">   * @throws IOException</em>
+<a class="jxr_linenumber" name="711" href="#711">711</a> <em class="jxr_javadoccomment">   * @throws ValidationException</em>
+<a class="jxr_linenumber" name="712" href="#712">712</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB</em>
+<a class="jxr_linenumber" name="713" href="#713">713</a> <em class="jxr_javadoccomment">   * @throws PropertyVetoException</em>
+<a class="jxr_linenumber" name="714" href="#714">714</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="715" href="#715">715</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> syncRefexes(ConceptChronicleBI modelConcept,
+<a class="jxr_linenumber" name="716" href="#716">716</a>     <a href="../../../../../gov/va/isaac/models/InformationModel.html">InformationModel</a> model) <strong class="jxr_keyword">throws</strong> ValidationException, IOException,
+<a class="jxr_linenumber" name="717" href="#717">717</a>     ContradictionException, InvalidCAB, PropertyVetoException {
+<a class="jxr_linenumber" name="718" href="#718">718</a>     <em class="jxr_comment">// Create refex entries for properties</em>
+<a class="jxr_linenumber" name="719" href="#719">719</a>     RefexDynamicUsageDescription propertyRefset =
+<a class="jxr_linenumber" name="720" href="#720">720</a>         RefexDynamicUsageDescriptionBuilder
+<a class="jxr_linenumber" name="721" href="#721">721</a>             .readRefexDynamicUsageDescriptionConcept(InformationModelAux.INFORMATION_MODEL_PROPERTIES_REFSET
+<a class="jxr_linenumber" name="722" href="#722">722</a>                 .getLenient().getNid());
+<a class="jxr_linenumber" name="723" href="#723">723</a>     LOG.debug(<span class="jxr_string">"  Found "</span> + propertyRefset.getRefexName());
+<a class="jxr_linenumber" name="724" href="#724">724</a>     <em class="jxr_comment">// Iterate through information model properties and add refexes</em>
+<a class="jxr_linenumber" name="725" href="#725">725</a>     LOG.debug(<span class="jxr_string">"  Iterate through properties"</span>);
+<a class="jxr_linenumber" name="726" href="#726">726</a>     <em class="jxr_comment">// Create a dynamic refex CAB for each entry</em>
+<a class="jxr_linenumber" name="727" href="#727">727</a>     <em class="jxr_comment">// If these already exist, then the construct will have no practical effect</em>
+<a class="jxr_linenumber" name="728" href="#728">728</a>     Set&lt;UUID&gt; refexUuids = <strong class="jxr_keyword">new</strong> HashSet&lt;&gt;();
+<a class="jxr_linenumber" name="729" href="#729">729</a>     <strong class="jxr_keyword">for</strong> (InformationModelProperty property : model.getProperties()) {
+<a class="jxr_linenumber" name="730" href="#730">730</a>       LOG.debug(<span class="jxr_string">"    "</span> + property.getLabel() + <span class="jxr_string">", "</span> + property.getName());
+<a class="jxr_linenumber" name="731" href="#731">731</a>       <em class="jxr_comment">// Need better understanding of what IdDirective to use here</em>
+<a class="jxr_linenumber" name="732" href="#732">732</a>       RefexDynamicCAB refexBlueprint =
+<a class="jxr_linenumber" name="733" href="#733">733</a>           <strong class="jxr_keyword">new</strong> RefexDynamicCAB(modelConcept.getNid(),
+<a class="jxr_linenumber" name="734" href="#734">734</a>               propertyRefset.getRefexUsageDescriptorNid());
+<a class="jxr_linenumber" name="735" href="#735">735</a> 
+<a class="jxr_linenumber" name="736" href="#736">736</a>       <em class="jxr_comment">// The order of these columns is tightly bound to the definition,</em>
+<a class="jxr_linenumber" name="737" href="#737">737</a>       <em class="jxr_comment">// if the definition changes, this has to be updated as well.</em>
+<a class="jxr_linenumber" name="738" href="#738">738</a>       <strong class="jxr_keyword">if</strong> (propertyRefset.getColumnInfo().length != 8) {
+<a class="jxr_linenumber" name="739" href="#739">739</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(
+<a class="jxr_linenumber" name="740" href="#740">740</a>             <span class="jxr_string">"Information model properties refset has unexpected number of columns"</span>);
+<a class="jxr_linenumber" name="741" href="#741">741</a>       }
+<a class="jxr_linenumber" name="742" href="#742">742</a>       RefexDynamicDataBI[] data =
+<a class="jxr_linenumber" name="743" href="#743">743</a>           <strong class="jxr_keyword">new</strong> RefexDynamicDataBI[propertyRefset.getColumnInfo().length];
+<a class="jxr_linenumber" name="744" href="#744">744</a>       data[0] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getLabel());
+<a class="jxr_linenumber" name="745" href="#745">745</a>       data[1] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getType());
+<a class="jxr_linenumber" name="746" href="#746">746</a>       data[2] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getName());
+<a class="jxr_linenumber" name="747" href="#747">747</a>       data[3] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getDefaultValue());
+<a class="jxr_linenumber" name="748" href="#748">748</a>       data[4] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getValue());
+<a class="jxr_linenumber" name="749" href="#749">749</a>       data[5] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getCardinalityMin());
+<a class="jxr_linenumber" name="750" href="#750">750</a>       data[6] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getCardinalityMax());
+<a class="jxr_linenumber" name="751" href="#751">751</a>       data[7] = <strong class="jxr_keyword">new</strong> RefexDynamicString(property.getVisibility());
+<a class="jxr_linenumber" name="752" href="#752">752</a>       refexBlueprint.setData(data, WBUtility.getViewCoordinate());
 <a class="jxr_linenumber" name="753" href="#753">753</a> 
-<a class="jxr_linenumber" name="754" href="#754">754</a>     <em class="jxr_comment">// Now iterate through all refexes and retire those that do not</em>
-<a class="jxr_linenumber" name="755" href="#755">755</a>     <em class="jxr_comment">// have uuids from the code above</em>
-<a class="jxr_linenumber" name="756" href="#756">756</a>     <strong class="jxr_keyword">for</strong> (RefexDynamicChronicleBI&lt;?&gt; refex : modelConcept
-<a class="jxr_linenumber" name="757" href="#757">757</a>         .getRefexDynamicAnnotations()) {
-<a class="jxr_linenumber" name="758" href="#758">758</a>       RefexDynamicVersionBI&lt;?&gt; refexVersion =
-<a class="jxr_linenumber" name="759" href="#759">759</a>           refex.getVersion(WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="760" href="#760">760</a>       <strong class="jxr_keyword">if</strong> (refexVersion != <strong class="jxr_keyword">null</strong>
-<a class="jxr_linenumber" name="761" href="#761">761</a>           &amp;&amp; !refexUuids.contains(refex.getPrimordialUuid())) {
-<a class="jxr_linenumber" name="762" href="#762">762</a>         RefexDynamicCAB refexBlueprint =
-<a class="jxr_linenumber" name="763" href="#763">763</a>             refexVersion.makeBlueprint(WBUtility.getViewCoordinate(),
-<a class="jxr_linenumber" name="764" href="#764">764</a>                 IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-<a class="jxr_linenumber" name="765" href="#765">765</a>         refexBlueprint.setRetired();
-<a class="jxr_linenumber" name="766" href="#766">766</a>         RefexDynamicChronicleBI&lt;?&gt; refex2 =
-<a class="jxr_linenumber" name="767" href="#767">767</a>             WBUtility.getBuilder().construct(refexBlueprint);
-<a class="jxr_linenumber" name="768" href="#768">768</a>         LOG.debug(<span class="jxr_string">"  Retire refex UUID = "</span> + refex2.getPrimordialUuid());
-<a class="jxr_linenumber" name="769" href="#769">769</a>       }
-<a class="jxr_linenumber" name="770" href="#770">770</a>     }
-<a class="jxr_linenumber" name="771" href="#771">771</a>   }
-<a class="jxr_linenumber" name="772" href="#772">772</a> 
-<a class="jxr_linenumber" name="773" href="#773">773</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="774" href="#774">774</a> <em class="jxr_javadoccomment">   * Creates the new concept blueprint</em>
-<a class="jxr_linenumber" name="775" href="#775">775</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="776" href="#776">776</a> <em class="jxr_javadoccomment">   * @param parent the parent</em>
-<a class="jxr_linenumber" name="777" href="#777">777</a> <em class="jxr_javadoccomment">   * @param fsn the fsn</em>
-<a class="jxr_linenumber" name="778" href="#778">778</a> <em class="jxr_javadoccomment">   * @param prefTerm the pref term</em>
-<a class="jxr_linenumber" name="779" href="#779">779</a> <em class="jxr_javadoccomment">   * @return the concept cb</em>
-<a class="jxr_linenumber" name="780" href="#780">780</a> <em class="jxr_javadoccomment">   * @throws ValidationException the validation exception</em>
-<a class="jxr_linenumber" name="781" href="#781">781</a> <em class="jxr_javadoccomment">   * @throws IOException Signals that an I/O exception has occurred.</em>
-<a class="jxr_linenumber" name="782" href="#782">782</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB the invalid cab</em>
-<a class="jxr_linenumber" name="783" href="#783">783</a> <em class="jxr_javadoccomment">   * @throws ContradictionException the contradiction exception</em>
-<a class="jxr_linenumber" name="784" href="#784">784</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="785" href="#785">785</a>   <strong class="jxr_keyword">private</strong> ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent,
-<a class="jxr_linenumber" name="786" href="#786">786</a>     String fsn, String prefTerm) <strong class="jxr_keyword">throws</strong> ValidationException, IOException,
-<a class="jxr_linenumber" name="787" href="#787">787</a>     InvalidCAB, ContradictionException {
-<a class="jxr_linenumber" name="788" href="#788">788</a>     <strong class="jxr_keyword">if</strong> (parent == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="789" href="#789">789</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Parent is unexpectedly null"</span>);
-<a class="jxr_linenumber" name="790" href="#790">790</a>     }
-<a class="jxr_linenumber" name="791" href="#791">791</a>     <strong class="jxr_keyword">if</strong> (fsn == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="792" href="#792">792</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"FN is unexpectedly null"</span>);
-<a class="jxr_linenumber" name="793" href="#793">793</a>     }
-<a class="jxr_linenumber" name="794" href="#794">794</a>     <strong class="jxr_keyword">if</strong> (prefTerm == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="795" href="#795">795</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"PT is unexpectedly null"</span>);
-<a class="jxr_linenumber" name="796" href="#796">796</a>     }
-<a class="jxr_linenumber" name="797" href="#797">797</a>     <em class="jxr_comment">// Assume language US English</em>
-<a class="jxr_linenumber" name="798" href="#798">798</a>     LanguageCode lc = LanguageCode.EN_US;
-<a class="jxr_linenumber" name="799" href="#799">799</a>     <em class="jxr_comment">// Assume hierarchy is represented as IS_A rel</em>
-<a class="jxr_linenumber" name="800" href="#800">800</a>     UUID isA = Snomed.IS_A.getUuids()[0];
-<a class="jxr_linenumber" name="801" href="#801">801</a>     <em class="jxr_comment">// Compute UUIDs in standard way</em>
-<a class="jxr_linenumber" name="802" href="#802">802</a>     IdDirective idDir = IdDirective.GENERATE_HASH;
-<a class="jxr_linenumber" name="803" href="#803">803</a>     <em class="jxr_comment">// Assume module should be SNOMED core module (this may be something to</em>
-<a class="jxr_linenumber" name="804" href="#804">804</a>     <em class="jxr_comment">// change)</em>
-<a class="jxr_linenumber" name="805" href="#805">805</a>     UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
-<a class="jxr_linenumber" name="806" href="#806">806</a>     <em class="jxr_comment">// Create single parent</em>
-<a class="jxr_linenumber" name="807" href="#807">807</a>     UUID parentUUIDs[] = <strong class="jxr_keyword">new</strong> UUID[1];
-<a class="jxr_linenumber" name="808" href="#808">808</a>     parentUUIDs[0] = parent.getPrimordialUuid();
-<a class="jxr_linenumber" name="809" href="#809">809</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
-<a class="jxr_linenumber" name="810" href="#810">810</a>   }
-<a class="jxr_linenumber" name="811" href="#811">811</a> 
-<a class="jxr_linenumber" name="812" href="#812">812</a>   <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="813" href="#813">813</a> <em class="jxr_comment">   * (non-Javadoc)</em>
-<a class="jxr_linenumber" name="814" href="#814">814</a> <em class="jxr_comment">   * </em>
-<a class="jxr_linenumber" name="815" href="#815">815</a> <em class="jxr_comment">   * @see</em>
-<a class="jxr_linenumber" name="816" href="#816">816</a> <em class="jxr_comment">   * gov.va.isaac.models.api.InformationModelService#createMetadataConcepts()</em>
-<a class="jxr_linenumber" name="817" href="#817">817</a> <em class="jxr_comment">   */</em>
-<a class="jxr_linenumber" name="818" href="#818">818</a>   @Override
-<a class="jxr_linenumber" name="819" href="#819">819</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> createMetadataConcepts() <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB,
-<a class="jxr_linenumber" name="820" href="#820">820</a>     ContradictionException, PropertyVetoException {
-<a class="jxr_linenumber" name="821" href="#821">821</a>     LOG.info(<span class="jxr_string">"Create information models metadata concepts"</span>);
-<a class="jxr_linenumber" name="822" href="#822">822</a> 
-<a class="jxr_linenumber" name="823" href="#823">823</a>     <em class="jxr_comment">// Create columns for dynamic refsets</em>
-<a class="jxr_linenumber" name="824" href="#824">824</a>     String[] columnNames =
-<a class="jxr_linenumber" name="825" href="#825">825</a>         <strong class="jxr_keyword">new</strong> String[] {
-<a class="jxr_linenumber" name="826" href="#826">826</a>             <span class="jxr_string">"info model property label"</span>, <span class="jxr_string">"info model property type"</span>,
-<a class="jxr_linenumber" name="827" href="#827">827</a>             <span class="jxr_string">"info model property name"</span>, <span class="jxr_string">"info model property default value"</span>,
-<a class="jxr_linenumber" name="828" href="#828">828</a>             <span class="jxr_string">"info model property value"</span>, <span class="jxr_string">"info model property cardinality min"</span>,
-<a class="jxr_linenumber" name="829" href="#829">829</a>             <span class="jxr_string">"info model property cardinality max"</span>,
-<a class="jxr_linenumber" name="830" href="#830">830</a>             <span class="jxr_string">"info model property visibility"</span>
-<a class="jxr_linenumber" name="831" href="#831">831</a>         };
-<a class="jxr_linenumber" name="832" href="#832">832</a>     String[] columnDescriptions =
-<a class="jxr_linenumber" name="833" href="#833">833</a>         <strong class="jxr_keyword">new</strong> String[] {
-<a class="jxr_linenumber" name="834" href="#834">834</a>             <span class="jxr_string">"Used to capture the label for a property as used by the native information model type, e.g. 'qual' in CEM"</span>,
-<a class="jxr_linenumber" name="835" href="#835">835</a>             <span class="jxr_string">"Used to capture the property type as expressed in the model, e.g. 'MethodDevice' in CEM"</span>,
-<a class="jxr_linenumber" name="836" href="#836">836</a>             <span class="jxr_string">"Used to capture the property name as expressed in the model"</span>,
-<a class="jxr_linenumber" name="837" href="#837">837</a>             <span class="jxr_string">"Used to capture any default value the property has in the model"</span>,
-<a class="jxr_linenumber" name="838" href="#838">838</a>             <span class="jxr_string">"Used to capture any actual value the property has (for demo purposes)"</span>,
-<a class="jxr_linenumber" name="839" href="#839">839</a>             <span class="jxr_string">"Used to capture the cardinality lower limit in the model"</span>,
-<a class="jxr_linenumber" name="840" href="#840">840</a>             <span class="jxr_string">"Used to capture the cardinality upper limit in the model"</span>,
-<a class="jxr_linenumber" name="841" href="#841">841</a>             <span class="jxr_string">"Used to capture the property visibility in the model"</span>
-<a class="jxr_linenumber" name="842" href="#842">842</a>         };
-<a class="jxr_linenumber" name="843" href="#843">843</a>     List&lt;RefexDynamicColumnInfo&gt; columns = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
-<a class="jxr_linenumber" name="844" href="#844">844</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; columnNames.length; i++) {
-<a class="jxr_linenumber" name="845" href="#845">845</a>       LOG.debug(<span class="jxr_string">"  Attempting to create COLUMN "</span> + columnNames[i]);
-<a class="jxr_linenumber" name="846" href="#846">846</a>       ConceptChronicleBI columnConcept =
-<a class="jxr_linenumber" name="847" href="#847">847</a>           RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(
-<a class="jxr_linenumber" name="848" href="#848">848</a>               columnNames[i], columnDescriptions[i]);
-<a class="jxr_linenumber" name="849" href="#849">849</a>       LOG.debug(<span class="jxr_string">"    PT = "</span> + WBUtility.getConPrefTerm(columnConcept.getNid()));
-<a class="jxr_linenumber" name="850" href="#850">850</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + columnConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="851" href="#851">851</a>       RefexDynamicColumnInfo column =
-<a class="jxr_linenumber" name="852" href="#852">852</a>           <strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo(i, columnConcept.getPrimordialUuid(),
-<a class="jxr_linenumber" name="853" href="#853">853</a>               RefexDynamicDataType.STRING, <strong class="jxr_keyword">null</strong>, false, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="854" href="#854">854</a>       columns.add(column);
-<a class="jxr_linenumber" name="855" href="#855">855</a>     }
-<a class="jxr_linenumber" name="856" href="#856">856</a> 
-<a class="jxr_linenumber" name="857" href="#857">857</a>     <em class="jxr_comment">// Create dynamic refset for information model properties</em>
-<a class="jxr_linenumber" name="858" href="#858">858</a>     RefexDynamicColumnInfo[] columnArray =
-<a class="jxr_linenumber" name="859" href="#859">859</a>         columns.toArray(<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo[] {});
-<a class="jxr_linenumber" name="860" href="#860">860</a>     LOG.debug(<span class="jxr_string">"  Attempting to create info model property refset"</span>);
-<a class="jxr_linenumber" name="861" href="#861">861</a>     RefexDynamicUsageDescription refex =
-<a class="jxr_linenumber" name="862" href="#862">862</a>         RefexDynamicUsageDescriptionBuilder
-<a class="jxr_linenumber" name="863" href="#863">863</a>             .createNewRefexDynamicUsageDescriptionConcept(
-<a class="jxr_linenumber" name="864" href="#864">864</a>                 <span class="jxr_string">"Information model property refset"</span>,
-<a class="jxr_linenumber" name="865" href="#865">865</a>                 <span class="jxr_string">"Information model property refset"</span>,
-<a class="jxr_linenumber" name="866" href="#866">866</a>                 <span class="jxr_string">"Used to capture information about information model properties"</span>,
-<a class="jxr_linenumber" name="867" href="#867">867</a>                 columnArray, RefexDynamic.REFEX_DYNAMIC_IDENTITY.getLenient()
-<a class="jxr_linenumber" name="868" href="#868">868</a>                     .getPrimordialUuid(), <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="869" href="#869">869</a>     ConceptVersionBI refexConcept =
-<a class="jxr_linenumber" name="870" href="#870">870</a>         WBUtility.getConceptVersion(refex.getRefexUsageDescriptorNid());
-<a class="jxr_linenumber" name="871" href="#871">871</a>     LOG.debug(<span class="jxr_string">"    PT = "</span> + refexConcept.getPreferredDescription().getText());
-<a class="jxr_linenumber" name="872" href="#872">872</a>     LOG.debug(<span class="jxr_string">"    UUID = "</span> + refexConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="873" href="#873">873</a> 
-<a class="jxr_linenumber" name="874" href="#874">874</a>     <em class="jxr_comment">// Create relationship type metadata for connecting</em>
-<a class="jxr_linenumber" name="875" href="#875">875</a>     <em class="jxr_comment">// info models to terminology - this is to avoid having</em>
-<a class="jxr_linenumber" name="876" href="#876">876</a>     <em class="jxr_comment">// a dependency on a SNOMED relationship - though there is</em>
-<a class="jxr_linenumber" name="877" href="#877">877</a>     <em class="jxr_comment">// now a dependency on term aux.</em>
-<a class="jxr_linenumber" name="878" href="#878">878</a>     LOG.debug(<span class="jxr_string">"  Create rel type concept"</span>);
-<a class="jxr_linenumber" name="879" href="#879">879</a>     UUID parentUuid = UUID.fromString(<span class="jxr_string">"4c3152a8-c927-330f-868d-b065a3362558"</span>);
-<a class="jxr_linenumber" name="880" href="#880">880</a>     ConceptChronicleBI parent = WBUtility.getConceptVersion(parentUuid);
-<a class="jxr_linenumber" name="881" href="#881">881</a>     ConceptCB relTypeConceptCB =
-<a class="jxr_linenumber" name="882" href="#882">882</a>         createNewConceptBlueprint(parent, <span class="jxr_string">"Has terminology concept"</span>,
-<a class="jxr_linenumber" name="883" href="#883">883</a>             <span class="jxr_string">"Has terminology concept"</span>);
-<a class="jxr_linenumber" name="884" href="#884">884</a>     ConceptChronicleBI relTypeConcept =
-<a class="jxr_linenumber" name="885" href="#885">885</a>         WBUtility.getBuilder().constructIfNotCurrent(relTypeConceptCB);
-<a class="jxr_linenumber" name="886" href="#886">886</a> 
-<a class="jxr_linenumber" name="887" href="#887">887</a>     LOG.debug(<span class="jxr_string">"    PT = "</span> + WBUtility.getConPrefTerm(relTypeConcept.getNid()));
-<a class="jxr_linenumber" name="888" href="#888">888</a>     LOG.debug(<span class="jxr_string">"    UUID = "</span> + relTypeConcept.getPrimordialUuid());
-<a class="jxr_linenumber" name="889" href="#889">889</a>     dataStore.addUncommitted(relTypeConcept);
-<a class="jxr_linenumber" name="890" href="#890">890</a>     dataStore.commit(relTypeConcept);
-<a class="jxr_linenumber" name="891" href="#891">891</a> 
-<a class="jxr_linenumber" name="892" href="#892">892</a>   }
-<a class="jxr_linenumber" name="893" href="#893">893</a> 
-<a class="jxr_linenumber" name="894" href="#894">894</a> }
+<a class="jxr_linenumber" name="754" href="#754">754</a>       <em class="jxr_comment">// Construct and wire the dynamic refex</em>
+<a class="jxr_linenumber" name="755" href="#755">755</a>       RefexDynamicChronicleBI&lt;?&gt; refex =
+<a class="jxr_linenumber" name="756" href="#756">756</a>           WBUtility.getBuilder().construct(refexBlueprint);
+<a class="jxr_linenumber" name="757" href="#757">757</a>       modelConcept.addDynamicAnnotation(refex);
+<a class="jxr_linenumber" name="758" href="#758">758</a>       refexUuids.add(refex.getPrimordialUuid());
+<a class="jxr_linenumber" name="759" href="#759">759</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + refex.getPrimordialUuid());
+<a class="jxr_linenumber" name="760" href="#760">760</a>     }
+<a class="jxr_linenumber" name="761" href="#761">761</a> 
+<a class="jxr_linenumber" name="762" href="#762">762</a>     <em class="jxr_comment">// Now iterate through all refexes and retire those that do not</em>
+<a class="jxr_linenumber" name="763" href="#763">763</a>     <em class="jxr_comment">// have uuids from the code above</em>
+<a class="jxr_linenumber" name="764" href="#764">764</a>     <strong class="jxr_keyword">for</strong> (RefexDynamicChronicleBI&lt;?&gt; refex : modelConcept
+<a class="jxr_linenumber" name="765" href="#765">765</a>         .getRefexDynamicAnnotations()) {
+<a class="jxr_linenumber" name="766" href="#766">766</a>       RefexDynamicVersionBI&lt;?&gt; refexVersion =
+<a class="jxr_linenumber" name="767" href="#767">767</a>           refex.getVersion(WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="768" href="#768">768</a>       <strong class="jxr_keyword">if</strong> (refexVersion != <strong class="jxr_keyword">null</strong>
+<a class="jxr_linenumber" name="769" href="#769">769</a>           &amp;&amp; !refexUuids.contains(refex.getPrimordialUuid())) {
+<a class="jxr_linenumber" name="770" href="#770">770</a>         RefexDynamicCAB refexBlueprint =
+<a class="jxr_linenumber" name="771" href="#771">771</a>             refexVersion.makeBlueprint(WBUtility.getViewCoordinate(),
+<a class="jxr_linenumber" name="772" href="#772">772</a>                 IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+<a class="jxr_linenumber" name="773" href="#773">773</a>         refexBlueprint.setRetired();
+<a class="jxr_linenumber" name="774" href="#774">774</a>         RefexDynamicChronicleBI&lt;?&gt; refex2 =
+<a class="jxr_linenumber" name="775" href="#775">775</a>             WBUtility.getBuilder().construct(refexBlueprint);
+<a class="jxr_linenumber" name="776" href="#776">776</a>         LOG.debug(<span class="jxr_string">"  Retire sememe UUID = "</span> + refex2.getPrimordialUuid());
+<a class="jxr_linenumber" name="777" href="#777">777</a>       }
+<a class="jxr_linenumber" name="778" href="#778">778</a>     }
+<a class="jxr_linenumber" name="779" href="#779">779</a>   }
+<a class="jxr_linenumber" name="780" href="#780">780</a> 
+<a class="jxr_linenumber" name="781" href="#781">781</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="782" href="#782">782</a> <em class="jxr_javadoccomment">   * Creates the new concept blueprint</em>
+<a class="jxr_linenumber" name="783" href="#783">783</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="784" href="#784">784</a> <em class="jxr_javadoccomment">   * @param parent the parent</em>
+<a class="jxr_linenumber" name="785" href="#785">785</a> <em class="jxr_javadoccomment">   * @param fsn the fsn</em>
+<a class="jxr_linenumber" name="786" href="#786">786</a> <em class="jxr_javadoccomment">   * @param prefTerm the pref term</em>
+<a class="jxr_linenumber" name="787" href="#787">787</a> <em class="jxr_javadoccomment">   * @return the concept cb</em>
+<a class="jxr_linenumber" name="788" href="#788">788</a> <em class="jxr_javadoccomment">   * @throws ValidationException the validation exception</em>
+<a class="jxr_linenumber" name="789" href="#789">789</a> <em class="jxr_javadoccomment">   * @throws IOException Signals that an I/O exception has occurred.</em>
+<a class="jxr_linenumber" name="790" href="#790">790</a> <em class="jxr_javadoccomment">   * @throws InvalidCAB the invalid cab</em>
+<a class="jxr_linenumber" name="791" href="#791">791</a> <em class="jxr_javadoccomment">   * @throws ContradictionException the contradiction exception</em>
+<a class="jxr_linenumber" name="792" href="#792">792</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="793" href="#793">793</a>   <strong class="jxr_keyword">private</strong> ConceptCB createNewConceptBlueprint(ConceptChronicleBI parent,
+<a class="jxr_linenumber" name="794" href="#794">794</a>     String fsn, String prefTerm) <strong class="jxr_keyword">throws</strong> ValidationException, IOException,
+<a class="jxr_linenumber" name="795" href="#795">795</a>     InvalidCAB, ContradictionException {
+<a class="jxr_linenumber" name="796" href="#796">796</a>     <strong class="jxr_keyword">if</strong> (parent == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="797" href="#797">797</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"Parent is unexpectedly null"</span>);
+<a class="jxr_linenumber" name="798" href="#798">798</a>     }
+<a class="jxr_linenumber" name="799" href="#799">799</a>     <strong class="jxr_keyword">if</strong> (fsn == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="800" href="#800">800</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"FN is unexpectedly null"</span>);
+<a class="jxr_linenumber" name="801" href="#801">801</a>     }
+<a class="jxr_linenumber" name="802" href="#802">802</a>     <strong class="jxr_keyword">if</strong> (prefTerm == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="803" href="#803">803</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IOException(<span class="jxr_string">"PT is unexpectedly null"</span>);
+<a class="jxr_linenumber" name="804" href="#804">804</a>     }
+<a class="jxr_linenumber" name="805" href="#805">805</a>     <em class="jxr_comment">// Assume language US English</em>
+<a class="jxr_linenumber" name="806" href="#806">806</a>     LanguageCode lc = LanguageCode.EN_US;
+<a class="jxr_linenumber" name="807" href="#807">807</a>     <em class="jxr_comment">// Assume hierarchy is represented as IS_A rel</em>
+<a class="jxr_linenumber" name="808" href="#808">808</a>     UUID isA = Snomed.IS_A.getUuids()[0];
+<a class="jxr_linenumber" name="809" href="#809">809</a>     <em class="jxr_comment">// Compute UUIDs in standard way</em>
+<a class="jxr_linenumber" name="810" href="#810">810</a>     IdDirective idDir = IdDirective.GENERATE_HASH;
+<a class="jxr_linenumber" name="811" href="#811">811</a>     <em class="jxr_comment">// Assume module should be SNOMED core module (this may be something to</em>
+<a class="jxr_linenumber" name="812" href="#812">812</a>     <em class="jxr_comment">// change)</em>
+<a class="jxr_linenumber" name="813" href="#813">813</a>     UUID module = Snomed.CORE_MODULE.getLenient().getPrimordialUuid();
+<a class="jxr_linenumber" name="814" href="#814">814</a>     <em class="jxr_comment">// Create single parent</em>
+<a class="jxr_linenumber" name="815" href="#815">815</a>     UUID parentUUIDs[] = <strong class="jxr_keyword">new</strong> UUID[1];
+<a class="jxr_linenumber" name="816" href="#816">816</a>     parentUUIDs[0] = parent.getPrimordialUuid();
+<a class="jxr_linenumber" name="817" href="#817">817</a>     <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ConceptCB(fsn, prefTerm, lc, isA, idDir, module, parentUUIDs);
+<a class="jxr_linenumber" name="818" href="#818">818</a>   }
+<a class="jxr_linenumber" name="819" href="#819">819</a> 
+<a class="jxr_linenumber" name="820" href="#820">820</a>   <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="821" href="#821">821</a> <em class="jxr_comment">   * (non-Javadoc)</em>
+<a class="jxr_linenumber" name="822" href="#822">822</a> <em class="jxr_comment">   * </em>
+<a class="jxr_linenumber" name="823" href="#823">823</a> <em class="jxr_comment">   * @see</em>
+<a class="jxr_linenumber" name="824" href="#824">824</a> <em class="jxr_comment">   * gov.va.isaac.models.api.InformationModelService#createMetadataConcepts()</em>
+<a class="jxr_linenumber" name="825" href="#825">825</a> <em class="jxr_comment">   */</em>
+<a class="jxr_linenumber" name="826" href="#826">826</a>   @Override
+<a class="jxr_linenumber" name="827" href="#827">827</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> createMetadataConcepts() <strong class="jxr_keyword">throws</strong> IOException, InvalidCAB,
+<a class="jxr_linenumber" name="828" href="#828">828</a>     ContradictionException, PropertyVetoException {
+<a class="jxr_linenumber" name="829" href="#829">829</a>     LOG.info(<span class="jxr_string">"Create information models metadata concepts"</span>);
+<a class="jxr_linenumber" name="830" href="#830">830</a>     <em class="jxr_comment">// disable commit listeners</em>
+<a class="jxr_linenumber" name="831" href="#831">831</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="832" href="#832">832</a>       AppContext.getRuntimeGlobals().disableAllCommitListeners();
+<a class="jxr_linenumber" name="833" href="#833">833</a> 
+<a class="jxr_linenumber" name="834" href="#834">834</a>       <em class="jxr_comment">// TODO Dan notes - this should be moved to the InformationModels class in</em>
+<a class="jxr_linenumber" name="835" href="#835">835</a>       <em class="jxr_comment">// isaac-constants.</em>
+<a class="jxr_linenumber" name="836" href="#836">836</a>       <em class="jxr_comment">// None of this building code is necessary - dynamic refexes that are</em>
+<a class="jxr_linenumber" name="837" href="#837">837</a>       <em class="jxr_comment">// properly specified as ConceptSpec entries are automatically created</em>
+<a class="jxr_linenumber" name="838" href="#838">838</a>       <em class="jxr_comment">// during the DB build.</em>
+<a class="jxr_linenumber" name="839" href="#839">839</a> 
+<a class="jxr_linenumber" name="840" href="#840">840</a>       <em class="jxr_comment">// TODO Dan asks - when are we doing all of this work, instead of just</em>
+<a class="jxr_linenumber" name="841" href="#841">841</a>       <em class="jxr_comment">// checking to see if it already exists up front?</em>
+<a class="jxr_linenumber" name="842" href="#842">842</a> 
+<a class="jxr_linenumber" name="843" href="#843">843</a>       <em class="jxr_comment">// Create columns for dynamic refsets</em>
+<a class="jxr_linenumber" name="844" href="#844">844</a>       String[] columnNames =
+<a class="jxr_linenumber" name="845" href="#845">845</a>           <strong class="jxr_keyword">new</strong> String[] {
+<a class="jxr_linenumber" name="846" href="#846">846</a>               <span class="jxr_string">"info model property label"</span>, <span class="jxr_string">"info model property type"</span>,
+<a class="jxr_linenumber" name="847" href="#847">847</a>               <span class="jxr_string">"info model property name"</span>, <span class="jxr_string">"info model property default value"</span>,
+<a class="jxr_linenumber" name="848" href="#848">848</a>               <span class="jxr_string">"info model property value"</span>,
+<a class="jxr_linenumber" name="849" href="#849">849</a>               <span class="jxr_string">"info model property cardinality min"</span>,
+<a class="jxr_linenumber" name="850" href="#850">850</a>               <span class="jxr_string">"info model property cardinality max"</span>,
+<a class="jxr_linenumber" name="851" href="#851">851</a>               <span class="jxr_string">"info model property visibility"</span>
+<a class="jxr_linenumber" name="852" href="#852">852</a>           };
+<a class="jxr_linenumber" name="853" href="#853">853</a>       String[] columnDescriptions =
+<a class="jxr_linenumber" name="854" href="#854">854</a>           <strong class="jxr_keyword">new</strong> String[] {
+<a class="jxr_linenumber" name="855" href="#855">855</a>               <span class="jxr_string">"Used to capture the label for a property as used by the native information model type, e.g. 'qual' in CEM"</span>,
+<a class="jxr_linenumber" name="856" href="#856">856</a>               <span class="jxr_string">"Used to capture the property type as expressed in the model, e.g. 'MethodDevice' in CEM"</span>,
+<a class="jxr_linenumber" name="857" href="#857">857</a>               <span class="jxr_string">"Used to capture the property name as expressed in the model"</span>,
+<a class="jxr_linenumber" name="858" href="#858">858</a>               <span class="jxr_string">"Used to capture any default value the property has in the model"</span>,
+<a class="jxr_linenumber" name="859" href="#859">859</a>               <span class="jxr_string">"Used to capture any actual value the property has (for demo purposes)"</span>,
+<a class="jxr_linenumber" name="860" href="#860">860</a>               <span class="jxr_string">"Used to capture the cardinality lower limit in the model"</span>,
+<a class="jxr_linenumber" name="861" href="#861">861</a>               <span class="jxr_string">"Used to capture the cardinality upper limit in the model"</span>,
+<a class="jxr_linenumber" name="862" href="#862">862</a>               <span class="jxr_string">"Used to capture the property visibility in the model"</span>
+<a class="jxr_linenumber" name="863" href="#863">863</a>           };
+<a class="jxr_linenumber" name="864" href="#864">864</a>       <em class="jxr_comment">// TODO Dan notes - this was never tested to see what it does when you ask</em>
+<a class="jxr_linenumber" name="865" href="#865">865</a>       <em class="jxr_comment">// it to recreate column concepts that already exist... its probably doing</em>
+<a class="jxr_linenumber" name="866" href="#866">866</a>       <em class="jxr_comment">// the wrong thing.</em>
+<a class="jxr_linenumber" name="867" href="#867">867</a>       List&lt;RefexDynamicColumnInfo&gt; columns = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
+<a class="jxr_linenumber" name="868" href="#868">868</a>       <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; columnNames.length; i++) {
+<a class="jxr_linenumber" name="869" href="#869">869</a>         LOG.debug(<span class="jxr_string">"  Attempting to create COLUMN "</span> + columnNames[i]);
+<a class="jxr_linenumber" name="870" href="#870">870</a>         ConceptChronicleBI columnConcept =
+<a class="jxr_linenumber" name="871" href="#871">871</a>             RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(
+<a class="jxr_linenumber" name="872" href="#872">872</a>                 columnNames[i], columnDescriptions[i]);
+<a class="jxr_linenumber" name="873" href="#873">873</a>         LOG.debug(<span class="jxr_string">"    PT = "</span>
+<a class="jxr_linenumber" name="874" href="#874">874</a>             + WBUtility.getConPrefTerm(columnConcept.getNid()));
+<a class="jxr_linenumber" name="875" href="#875">875</a>         LOG.debug(<span class="jxr_string">"    UUID = "</span> + columnConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="876" href="#876">876</a>         RefexDynamicColumnInfo column =
+<a class="jxr_linenumber" name="877" href="#877">877</a>             <strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo(i, columnConcept.getPrimordialUuid(),
+<a class="jxr_linenumber" name="878" href="#878">878</a>                 RefexDynamicDataType.STRING, <strong class="jxr_keyword">null</strong>, false, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="879" href="#879">879</a>         columns.add(column);
+<a class="jxr_linenumber" name="880" href="#880">880</a>       }
+<a class="jxr_linenumber" name="881" href="#881">881</a> 
+<a class="jxr_linenumber" name="882" href="#882">882</a>       <em class="jxr_comment">// Create dynamic refset for information model properties</em>
+<a class="jxr_linenumber" name="883" href="#883">883</a>       RefexDynamicColumnInfo[] columnArray =
+<a class="jxr_linenumber" name="884" href="#884">884</a>           columns.toArray(<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo[] {});
+<a class="jxr_linenumber" name="885" href="#885">885</a>       LOG.debug(<span class="jxr_string">"  Attempting to create info model property refset"</span>);
+<a class="jxr_linenumber" name="886" href="#886">886</a>       RefexDynamicUsageDescription refex =
+<a class="jxr_linenumber" name="887" href="#887">887</a>           RefexDynamicUsageDescriptionBuilder
+<a class="jxr_linenumber" name="888" href="#888">888</a>               .createNewRefexDynamicUsageDescriptionConcept(
+<a class="jxr_linenumber" name="889" href="#889">889</a>                   <em class="jxr_comment">// TODO Dan notes this also doesn't check to see if it already</em>
+<a class="jxr_linenumber" name="890" href="#890">890</a>                   <em class="jxr_comment">// exists - not sure what it does in that case</em>
+<a class="jxr_linenumber" name="891" href="#891">891</a>                   <span class="jxr_string">"Information model property refset"</span>,
+<a class="jxr_linenumber" name="892" href="#892">892</a>                   <span class="jxr_string">"Information model property refset"</span>,
+<a class="jxr_linenumber" name="893" href="#893">893</a>                   <span class="jxr_string">"Used to capture information about information model properties"</span>,
+<a class="jxr_linenumber" name="894" href="#894">894</a>                   columnArray, RefexDynamic.REFEX_DYNAMIC_IDENTITY.getLenient()
+<a class="jxr_linenumber" name="895" href="#895">895</a>                       .getPrimordialUuid(), <strong class="jxr_keyword">true</strong>, <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="896" href="#896">896</a>       ConceptVersionBI refexConcept =
+<a class="jxr_linenumber" name="897" href="#897">897</a>           WBUtility.getConceptVersion(refex.getRefexUsageDescriptorNid());
+<a class="jxr_linenumber" name="898" href="#898">898</a>       LOG.debug(<span class="jxr_string">"    PT = "</span> + refexConcept.getPreferredDescription().getText());
+<a class="jxr_linenumber" name="899" href="#899">899</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + refexConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="900" href="#900">900</a> 
+<a class="jxr_linenumber" name="901" href="#901">901</a>       <em class="jxr_comment">// Create relationship type metadata for connecting</em>
+<a class="jxr_linenumber" name="902" href="#902">902</a>       <em class="jxr_comment">// info models to terminology - this is to avoid having</em>
+<a class="jxr_linenumber" name="903" href="#903">903</a>       <em class="jxr_comment">// a dependency on a SNOMED relationship - though there is</em>
+<a class="jxr_linenumber" name="904" href="#904">904</a>       <em class="jxr_comment">// now a dependency on term aux.</em>
+<a class="jxr_linenumber" name="905" href="#905">905</a>       LOG.debug(<span class="jxr_string">"  Create rel type concept"</span>);
+<a class="jxr_linenumber" name="906" href="#906">906</a>       UUID parentUuid = UUID.fromString(<span class="jxr_string">"4c3152a8-c927-330f-868d-b065a3362558"</span>);
+<a class="jxr_linenumber" name="907" href="#907">907</a>       ConceptChronicleBI parent = WBUtility.getConceptVersion(parentUuid);
+<a class="jxr_linenumber" name="908" href="#908">908</a>       ConceptCB relTypeConceptCB =
+<a class="jxr_linenumber" name="909" href="#909">909</a>           createNewConceptBlueprint(parent, <span class="jxr_string">"Has terminology concept"</span>,
+<a class="jxr_linenumber" name="910" href="#910">910</a>               <span class="jxr_string">"Has terminology concept"</span>);
+<a class="jxr_linenumber" name="911" href="#911">911</a>       ConceptChronicleBI relTypeConcept =
+<a class="jxr_linenumber" name="912" href="#912">912</a>           WBUtility.getBuilder().constructIfNotCurrent(relTypeConceptCB);
+<a class="jxr_linenumber" name="913" href="#913">913</a> 
+<a class="jxr_linenumber" name="914" href="#914">914</a>       LOG.debug(<span class="jxr_string">"    PT = "</span> + WBUtility.getConPrefTerm(relTypeConcept.getNid()));
+<a class="jxr_linenumber" name="915" href="#915">915</a>       LOG.debug(<span class="jxr_string">"    UUID = "</span> + relTypeConcept.getPrimordialUuid());
+<a class="jxr_linenumber" name="916" href="#916">916</a>       dataStore.addUncommitted(relTypeConcept);
+<a class="jxr_linenumber" name="917" href="#917">917</a>       dataStore.commit(relTypeConcept);
+<a class="jxr_linenumber" name="918" href="#918">918</a> 
+<a class="jxr_linenumber" name="919" href="#919">919</a>     } <strong class="jxr_keyword">catch</strong> (Exception e) {
+<a class="jxr_linenumber" name="920" href="#920">920</a>       <strong class="jxr_keyword">throw</strong> e;
+<a class="jxr_linenumber" name="921" href="#921">921</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="922" href="#922">922</a>       AppContext.getRuntimeGlobals().enableAllCommitListeners();
+<a class="jxr_linenumber" name="923" href="#923">923</a>     }
+<a class="jxr_linenumber" name="924" href="#924">924</a> 
+<a class="jxr_linenumber" name="925" href="#925">925</a>   }
+<a class="jxr_linenumber" name="926" href="#926">926</a> 
+<a class="jxr_linenumber" name="927" href="#927">927</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

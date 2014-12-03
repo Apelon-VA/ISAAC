@@ -32,7 +32,7 @@
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.ApplicationMenus;
 <a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.MenuItemI;
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.RefexCreationViewI;
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexCreationViewI;
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
 <a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> java.util.List;
@@ -94,13 +94,13 @@
 <a class="jxr_linenumber" name="84" href="#84">84</a>  			@Override
 <a class="jxr_linenumber" name="85" href="#85">85</a>  			<strong class="jxr_keyword">public</strong> String getMenuName()
 <a class="jxr_linenumber" name="86" href="#86">86</a>  			{
-<a class="jxr_linenumber" name="87" href="#87">87</a>  				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Define Refex Assemblage"</span>;
+<a class="jxr_linenumber" name="87" href="#87">87</a>  				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Define Sememe Assemblage"</span>;
 <a class="jxr_linenumber" name="88" href="#88">88</a>  			}
 <a class="jxr_linenumber" name="89" href="#89">89</a>  			
 <a class="jxr_linenumber" name="90" href="#90">90</a>  			@Override
 <a class="jxr_linenumber" name="91" href="#91">91</a>  			<strong class="jxr_keyword">public</strong> String getMenuId()
 <a class="jxr_linenumber" name="92" href="#92">92</a>  			{
-<a class="jxr_linenumber" name="93" href="#93">93</a>  				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"defineRefexExtensionMenu"</span>;
+<a class="jxr_linenumber" name="93" href="#93">93</a>  				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"defineSememeExtensionMenu"</span>;
 <a class="jxr_linenumber" name="94" href="#94">94</a>  			}
 <a class="jxr_linenumber" name="95" href="#95">95</a>  			
 <a class="jxr_linenumber" name="96" href="#96">96</a>  			@Override
@@ -125,7 +125,7 @@
 <a class="jxr_linenumber" name="115" href="#115">115</a> 			stage.initModality(Modality.NONE);
 <a class="jxr_linenumber" name="116" href="#116">116</a> 			ScreensController sc = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/refexViews/refexCreation/ScreensController.html">ScreensController</a>();
 <a class="jxr_linenumber" name="117" href="#117">117</a> 			stage.setScene(<strong class="jxr_keyword">new</strong> Scene(sc, 600, 400));
-<a class="jxr_linenumber" name="118" href="#118">118</a> 			stage.setTitle(<span class="jxr_string">"Define Refex Assemblage"</span>);
+<a class="jxr_linenumber" name="118" href="#118">118</a> 			stage.setTitle(<span class="jxr_string">"Define Sememe Assemblage"</span>);
 <a class="jxr_linenumber" name="119" href="#119">119</a> 			stage.getScene().getStylesheets().add(RefexCreationWizard.<strong class="jxr_keyword">class</strong>.getResource(<span class="jxr_string">"/isaac-shared-styles.css"</span>).toString());
 <a class="jxr_linenumber" name="120" href="#120">120</a> 			stage.show();
 <a class="jxr_linenumber" name="121" href="#121">121</a> 			sc.showFirstScreen();

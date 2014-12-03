@@ -157,7 +157,7 @@
 <a class="jxr_linenumber" name="147" href="#147">147</a> 			{
 <a class="jxr_linenumber" name="148" href="#148">148</a> 				<strong class="jxr_keyword">if</strong> (typeOption.getValue() == RefexDynamicDataType.UNKNOWN)
 <a class="jxr_linenumber" name="149" href="#149">149</a> 				{
-<a class="jxr_linenumber" name="150" href="#150">150</a> 					<strong class="jxr_keyword">return</strong> <span class="jxr_string">"You must select the column type"</span>;
+<a class="jxr_linenumber" name="150" href="#150">150</a> 					<strong class="jxr_keyword">return</strong> <span class="jxr_string">"You must select the attribute type"</span>;
 <a class="jxr_linenumber" name="151" href="#151">151</a> 				}
 <a class="jxr_linenumber" name="152" href="#152">152</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">""</span>;
 <a class="jxr_linenumber" name="153" href="#153">153</a> 			}
@@ -316,246 +316,275 @@
 <a class="jxr_linenumber" name="306" href="#306">306</a> 					l.setAlignment(Pos.CENTER_LEFT);
 <a class="jxr_linenumber" name="307" href="#307">307</a> 					l.setMinHeight(25.0);
 <a class="jxr_linenumber" name="308" href="#308">308</a> 					defaultValueHolder.getChildren().add(l);
-<a class="jxr_linenumber" name="309" href="#309">309</a> 				}
-<a class="jxr_linenumber" name="310" href="#310">310</a> 				<strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (newValue == RefexDynamicDataType.UNKNOWN)
-<a class="jxr_linenumber" name="311" href="#311">311</a> 				{
-<a class="jxr_linenumber" name="312" href="#312">312</a> 					<em class="jxr_comment">//noop</em>
-<a class="jxr_linenumber" name="313" href="#313">313</a> 				}
-<a class="jxr_linenumber" name="314" href="#314">314</a> 				<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="315" href="#315">315</a> 				{
-<a class="jxr_linenumber" name="316" href="#316">316</a> 					<strong class="jxr_keyword">if</strong> (newValue == RefexDynamicDataType.BOOLEAN || newValue == RefexDynamicDataType.BYTEARRAY)
-<a class="jxr_linenumber" name="317" href="#317">317</a> 					{
-<a class="jxr_linenumber" name="318" href="#318">318</a> 						validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
-<a class="jxr_linenumber" name="319" href="#319">319</a> 						validatorType.setDisable(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="320" href="#320">320</a> 					}
-<a class="jxr_linenumber" name="321" href="#321">321</a> 					<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="322" href="#322">322</a> 					{
-<a class="jxr_linenumber" name="323" href="#323">323</a> 						validatorType.setDisable(false);
+<a class="jxr_linenumber" name="309" href="#309">309</a> 				
+<a class="jxr_linenumber" name="310" href="#310">310</a> 					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+<a class="jxr_linenumber" name="311" href="#311">311</a> 					validatorType.setDisable(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="312" href="#312">312</a> 				}
+<a class="jxr_linenumber" name="313" href="#313">313</a> 				<strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (newValue == RefexDynamicDataType.UNKNOWN)
+<a class="jxr_linenumber" name="314" href="#314">314</a> 				{
+<a class="jxr_linenumber" name="315" href="#315">315</a> 					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+<a class="jxr_linenumber" name="316" href="#316">316</a> 					validatorType.setDisable(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="317" href="#317">317</a> 				}
+<a class="jxr_linenumber" name="318" href="#318">318</a> 				<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="319" href="#319">319</a> 				{
+<a class="jxr_linenumber" name="320" href="#320">320</a> 					<strong class="jxr_keyword">if</strong> (newValue == RefexDynamicDataType.BOOLEAN || newValue == RefexDynamicDataType.BYTEARRAY)
+<a class="jxr_linenumber" name="321" href="#321">321</a> 					{
+<a class="jxr_linenumber" name="322" href="#322">322</a> 						validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+<a class="jxr_linenumber" name="323" href="#323">323</a> 						validatorType.setDisable(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="324" href="#324">324</a> 					}
-<a class="jxr_linenumber" name="325" href="#325">325</a> 					
-<a class="jxr_linenumber" name="326" href="#326">326</a> 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, <strong class="jxr_keyword">null</strong>, 
-<a class="jxr_linenumber" name="327" href="#327">327</a> 							processController_.getWizardData().getColumnInfo().get(columnNumber_).getDefaultColumnValue(), <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, allValid_,
-<a class="jxr_linenumber" name="328" href="#328">328</a> 							validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
-<a class="jxr_linenumber" name="329" href="#329">329</a> 					defaultValueHolder.getChildren().add(currentDefaultNodeDetails_.getNodeForDisplay());
-<a class="jxr_linenumber" name="330" href="#330">330</a> 					HBox.setHgrow(currentDefaultNodeDetails_.getNodeForDisplay(), Priority.ALWAYS);
-<a class="jxr_linenumber" name="331" href="#331">331</a> 				}
-<a class="jxr_linenumber" name="332" href="#332">332</a> 			}
-<a class="jxr_linenumber" name="333" href="#333">333</a> 		});
-<a class="jxr_linenumber" name="334" href="#334">334</a> 		
-<a class="jxr_linenumber" name="335" href="#335">335</a> 		validatorType.setConverter(<strong class="jxr_keyword">new</strong> StringConverter&lt;RefexDynamicValidatorType&gt;()
-<a class="jxr_linenumber" name="336" href="#336">336</a> 		{
-<a class="jxr_linenumber" name="337" href="#337">337</a> 			
-<a class="jxr_linenumber" name="338" href="#338">338</a> 			@Override
-<a class="jxr_linenumber" name="339" href="#339">339</a> 			<strong class="jxr_keyword">public</strong> String toString(RefexDynamicValidatorType object)
-<a class="jxr_linenumber" name="340" href="#340">340</a> 			{
-<a class="jxr_linenumber" name="341" href="#341">341</a> 				<strong class="jxr_keyword">if</strong> (object == RefexDynamicValidatorType.UNKNOWN)
-<a class="jxr_linenumber" name="342" href="#342">342</a> 				{
-<a class="jxr_linenumber" name="343" href="#343">343</a> 					<strong class="jxr_keyword">return</strong> <span class="jxr_string">"No Validator"</span>;
-<a class="jxr_linenumber" name="344" href="#344">344</a> 				}
-<a class="jxr_linenumber" name="345" href="#345">345</a> 				<strong class="jxr_keyword">if</strong> (object == RefexDynamicValidatorType.EXTERNAL)
-<a class="jxr_linenumber" name="346" href="#346">346</a> 				{
-<a class="jxr_linenumber" name="347" href="#347">347</a> 					<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Drools"</span>;
-<a class="jxr_linenumber" name="348" href="#348">348</a> 				}
-<a class="jxr_linenumber" name="349" href="#349">349</a> 				<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="350" href="#350">350</a> 				{
-<a class="jxr_linenumber" name="351" href="#351">351</a> 					<strong class="jxr_keyword">return</strong> object.getDisplayName();
-<a class="jxr_linenumber" name="352" href="#352">352</a> 				}
-<a class="jxr_linenumber" name="353" href="#353">353</a> 			}
-<a class="jxr_linenumber" name="354" href="#354">354</a> 			
-<a class="jxr_linenumber" name="355" href="#355">355</a> 			@Override
-<a class="jxr_linenumber" name="356" href="#356">356</a> 			<strong class="jxr_keyword">public</strong> RefexDynamicValidatorType fromString(String string)
-<a class="jxr_linenumber" name="357" href="#357">357</a> 			{
-<a class="jxr_linenumber" name="358" href="#358">358</a> 				<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(<span class="jxr_string">"unecessary"</span>);
+<a class="jxr_linenumber" name="325" href="#325">325</a> 					<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="326" href="#326">326</a> 					{
+<a class="jxr_linenumber" name="327" href="#327">327</a> 						validatorType.setDisable(false);
+<a class="jxr_linenumber" name="328" href="#328">328</a> 						updateValidationValues(newValue);
+<a class="jxr_linenumber" name="329" href="#329">329</a> 					}
+<a class="jxr_linenumber" name="330" href="#330">330</a> 					
+<a class="jxr_linenumber" name="331" href="#331">331</a> 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, <strong class="jxr_keyword">null</strong>, 
+<a class="jxr_linenumber" name="332" href="#332">332</a> 							processController_.getWizardData().getColumnInfo().get(columnNumber_).getDefaultColumnValue(), <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, allValid_,
+<a class="jxr_linenumber" name="333" href="#333">333</a> 							validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
+<a class="jxr_linenumber" name="334" href="#334">334</a> 					defaultValueHolder.getChildren().add(currentDefaultNodeDetails_.getNodeForDisplay());
+<a class="jxr_linenumber" name="335" href="#335">335</a> 					HBox.setHgrow(currentDefaultNodeDetails_.getNodeForDisplay(), Priority.ALWAYS);
+<a class="jxr_linenumber" name="336" href="#336">336</a> 				}
+<a class="jxr_linenumber" name="337" href="#337">337</a> 			}
+<a class="jxr_linenumber" name="338" href="#338">338</a> 		});
+<a class="jxr_linenumber" name="339" href="#339">339</a> 		
+<a class="jxr_linenumber" name="340" href="#340">340</a> 		validatorType.setDisable(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="341" href="#341">341</a> 		validatorType.setConverter(<strong class="jxr_keyword">new</strong> StringConverter&lt;RefexDynamicValidatorType&gt;()
+<a class="jxr_linenumber" name="342" href="#342">342</a> 		{
+<a class="jxr_linenumber" name="343" href="#343">343</a> 			
+<a class="jxr_linenumber" name="344" href="#344">344</a> 			@Override
+<a class="jxr_linenumber" name="345" href="#345">345</a> 			<strong class="jxr_keyword">public</strong> String toString(RefexDynamicValidatorType object)
+<a class="jxr_linenumber" name="346" href="#346">346</a> 			{
+<a class="jxr_linenumber" name="347" href="#347">347</a> 				<strong class="jxr_keyword">if</strong> (object == RefexDynamicValidatorType.UNKNOWN)
+<a class="jxr_linenumber" name="348" href="#348">348</a> 				{
+<a class="jxr_linenumber" name="349" href="#349">349</a> 					<strong class="jxr_keyword">return</strong> <span class="jxr_string">"No Validator"</span>;
+<a class="jxr_linenumber" name="350" href="#350">350</a> 				}
+<a class="jxr_linenumber" name="351" href="#351">351</a> 				<strong class="jxr_keyword">if</strong> (object == RefexDynamicValidatorType.EXTERNAL)
+<a class="jxr_linenumber" name="352" href="#352">352</a> 				{
+<a class="jxr_linenumber" name="353" href="#353">353</a> 					<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Drools"</span>;
+<a class="jxr_linenumber" name="354" href="#354">354</a> 				}
+<a class="jxr_linenumber" name="355" href="#355">355</a> 				<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="356" href="#356">356</a> 				{
+<a class="jxr_linenumber" name="357" href="#357">357</a> 					<strong class="jxr_keyword">return</strong> object.getDisplayName();
+<a class="jxr_linenumber" name="358" href="#358">358</a> 				}
 <a class="jxr_linenumber" name="359" href="#359">359</a> 			}
-<a class="jxr_linenumber" name="360" href="#360">360</a> 		});
-<a class="jxr_linenumber" name="361" href="#361">361</a> 		
-<a class="jxr_linenumber" name="362" href="#362">362</a> 		validatorType.valueProperty().addListener((change) -&gt;
-<a class="jxr_linenumber" name="363" href="#363">363</a> 		{
-<a class="jxr_linenumber" name="364" href="#364">364</a> 			validatorDataHolder.getChildren().clear();
-<a class="jxr_linenumber" name="365" href="#365">365</a> 			
-<a class="jxr_linenumber" name="366" href="#366">366</a> 			<strong class="jxr_keyword">for</strong> (ReadOnlyStringProperty binding : validatorTypeNode.getBoundToAllValid())
-<a class="jxr_linenumber" name="367" href="#367">367</a> 			{
-<a class="jxr_linenumber" name="368" href="#368">368</a> 				allValid_.removeBinding(binding);
-<a class="jxr_linenumber" name="369" href="#369">369</a> 			}
-<a class="jxr_linenumber" name="370" href="#370">370</a> 			
-<a class="jxr_linenumber" name="371" href="#371">371</a> 			<strong class="jxr_keyword">if</strong> (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
-<a class="jxr_linenumber" name="372" href="#372">372</a> 			{
-<a class="jxr_linenumber" name="373" href="#373">373</a> 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-<a class="jxr_linenumber" name="374" href="#374">374</a> 						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(),
-<a class="jxr_linenumber" name="375" href="#375">375</a> 						typeOption.valueProperty(), allValid_));
-<a class="jxr_linenumber" name="376" href="#376">376</a> 				validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
-<a class="jxr_linenumber" name="377" href="#377">377</a> 				HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
-<a class="jxr_linenumber" name="378" href="#378">378</a> 			}
-<a class="jxr_linenumber" name="379" href="#379">379</a> 			<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="380" href="#380">380</a> 			{
-<a class="jxr_linenumber" name="381" href="#381">381</a> 				validatorTypeNode.update(<strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="382" href="#382">382</a> 			}
-<a class="jxr_linenumber" name="383" href="#383">383</a> 			allValid_.invalidate();
-<a class="jxr_linenumber" name="384" href="#384">384</a> 		});
-<a class="jxr_linenumber" name="385" href="#385">385</a> 		
-<a class="jxr_linenumber" name="386" href="#386">386</a> 		StackPane sp = <strong class="jxr_keyword">new</strong> StackPane();
-<a class="jxr_linenumber" name="387" href="#387">387</a> 		ErrorMarkerUtils.swapGridPaneComponents(typeOption, sp, gridPane);
-<a class="jxr_linenumber" name="388" href="#388">388</a> 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
-<a class="jxr_linenumber" name="389" href="#389">389</a> 	}
-<a class="jxr_linenumber" name="390" href="#390">390</a> 	
-<a class="jxr_linenumber" name="391" href="#391">391</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> initializeTypeConcepts() {
-<a class="jxr_linenumber" name="392" href="#392">392</a> 		<strong class="jxr_keyword">for</strong> (RefexDynamicDataType type : RefexDynamicDataType.values()) {
-<a class="jxr_linenumber" name="393" href="#393">393</a> 			typeOption.getItems().add(type);
-<a class="jxr_linenumber" name="394" href="#394">394</a> 		}
-<a class="jxr_linenumber" name="395" href="#395">395</a> 		typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
+<a class="jxr_linenumber" name="360" href="#360">360</a> 			
+<a class="jxr_linenumber" name="361" href="#361">361</a> 			@Override
+<a class="jxr_linenumber" name="362" href="#362">362</a> 			<strong class="jxr_keyword">public</strong> RefexDynamicValidatorType fromString(String string)
+<a class="jxr_linenumber" name="363" href="#363">363</a> 			{
+<a class="jxr_linenumber" name="364" href="#364">364</a> 				<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(<span class="jxr_string">"unecessary"</span>);
+<a class="jxr_linenumber" name="365" href="#365">365</a> 			}
+<a class="jxr_linenumber" name="366" href="#366">366</a> 		});
+<a class="jxr_linenumber" name="367" href="#367">367</a> 		
+<a class="jxr_linenumber" name="368" href="#368">368</a> 		validatorType.valueProperty().addListener((change) -&gt;
+<a class="jxr_linenumber" name="369" href="#369">369</a> 		{
+<a class="jxr_linenumber" name="370" href="#370">370</a> 			validatorDataHolder.getChildren().clear();
+<a class="jxr_linenumber" name="371" href="#371">371</a> 			
+<a class="jxr_linenumber" name="372" href="#372">372</a> 			<strong class="jxr_keyword">for</strong> (ReadOnlyStringProperty binding : validatorTypeNode.getBoundToAllValid())
+<a class="jxr_linenumber" name="373" href="#373">373</a> 			{
+<a class="jxr_linenumber" name="374" href="#374">374</a> 				allValid_.removeBinding(binding);
+<a class="jxr_linenumber" name="375" href="#375">375</a> 			}
+<a class="jxr_linenumber" name="376" href="#376">376</a> 			
+<a class="jxr_linenumber" name="377" href="#377">377</a> 			<strong class="jxr_keyword">if</strong> (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
+<a class="jxr_linenumber" name="378" href="#378">378</a> 			{
+<a class="jxr_linenumber" name="379" href="#379">379</a> 				<strong class="jxr_keyword">if</strong> (processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidator() != validatorType.getValue())
+<a class="jxr_linenumber" name="380" href="#380">380</a> 				{
+<a class="jxr_linenumber" name="381" href="#381">381</a> 					<em class="jxr_comment">//If the validator type has changed, clear the stored value.</em>
+<a class="jxr_linenumber" name="382" href="#382">382</a> 					processController_.getWizardData().getColumnInfo().get(columnNumber_).setValidatorData(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="383" href="#383">383</a> 				}
+<a class="jxr_linenumber" name="384" href="#384">384</a> 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
+<a class="jxr_linenumber" name="385" href="#385">385</a> 						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(),
+<a class="jxr_linenumber" name="386" href="#386">386</a> 						typeOption.valueProperty(), allValid_));
+<a class="jxr_linenumber" name="387" href="#387">387</a> 				validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
+<a class="jxr_linenumber" name="388" href="#388">388</a> 				HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
+<a class="jxr_linenumber" name="389" href="#389">389</a> 			}
+<a class="jxr_linenumber" name="390" href="#390">390</a> 			<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="391" href="#391">391</a> 			{
+<a class="jxr_linenumber" name="392" href="#392">392</a> 				validatorTypeNode.update(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="393" href="#393">393</a> 			}
+<a class="jxr_linenumber" name="394" href="#394">394</a> 			allValid_.invalidate();
+<a class="jxr_linenumber" name="395" href="#395">395</a> 		});
 <a class="jxr_linenumber" name="396" href="#396">396</a> 		
-<a class="jxr_linenumber" name="397" href="#397">397</a> 		<strong class="jxr_keyword">for</strong> (RefexDynamicValidatorType type : RefexDynamicValidatorType.values())
-<a class="jxr_linenumber" name="398" href="#398">398</a> 		{
-<a class="jxr_linenumber" name="399" href="#399">399</a> 			validatorType.getItems().add(type);
-<a class="jxr_linenumber" name="400" href="#400">400</a> 		}
-<a class="jxr_linenumber" name="401" href="#401">401</a> 		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
-<a class="jxr_linenumber" name="402" href="#402">402</a> 	}
-<a class="jxr_linenumber" name="403" href="#403">403</a> 
-<a class="jxr_linenumber" name="404" href="#404">404</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> createNewColumnConcept() {
-<a class="jxr_linenumber" name="405" href="#405">405</a> 		<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="406" href="#406">406</a> 			NewColumnDialog dialog = <strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/va/isaac/gui/refexViews/refexCreation/wizardPages/NewColumnDialog.html">NewColumnDialog</a>(processController_.getScene().getWindow());
-<a class="jxr_linenumber" name="407" href="#407">407</a> 			dialog.showAndWait();
-<a class="jxr_linenumber" name="408" href="#408">408</a> 
-<a class="jxr_linenumber" name="409" href="#409">409</a> 			ConceptChronicleBI newCon = dialog.getNewColumnConcept();
-<a class="jxr_linenumber" name="410" href="#410">410</a> 			
-<a class="jxr_linenumber" name="411" href="#411">411</a> 			<strong class="jxr_keyword">if</strong> (newCon != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="412" href="#412">412</a> 				
-<a class="jxr_linenumber" name="413" href="#413">413</a> 				SimpleDisplayConcept sdc = <strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/va/isaac/gui/SimpleDisplayConcept.html">SimpleDisplayConcept</a>(newCon, colNameReader_); 
-<a class="jxr_linenumber" name="414" href="#414">414</a> 				columnNameChoices.add(sdc);
-<a class="jxr_linenumber" name="415" href="#415">415</a> 				columnNameSelection_.set(sdc);
-<a class="jxr_linenumber" name="416" href="#416">416</a> 			}
-<a class="jxr_linenumber" name="417" href="#417">417</a> 		} <strong class="jxr_keyword">catch</strong> (IOException e) {
-<a class="jxr_linenumber" name="418" href="#418">418</a> 			logger.error(<span class="jxr_string">"Unexpected error creating new column concept"</span>, e);
-<a class="jxr_linenumber" name="419" href="#419">419</a> 			AppContext.getCommonDialogs().showErrorDialog(<span class="jxr_string">"Unexpected error creating column concept.  Please see logs."</span>, e);
-<a class="jxr_linenumber" name="420" href="#420">420</a> 		}
+<a class="jxr_linenumber" name="397" href="#397">397</a> 		StackPane sp = <strong class="jxr_keyword">new</strong> StackPane();
+<a class="jxr_linenumber" name="398" href="#398">398</a> 		ErrorMarkerUtils.swapGridPaneComponents(typeOption, sp, gridPane);
+<a class="jxr_linenumber" name="399" href="#399">399</a> 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
+<a class="jxr_linenumber" name="400" href="#400">400</a> 	}
+<a class="jxr_linenumber" name="401" href="#401">401</a> 	
+<a class="jxr_linenumber" name="402" href="#402">402</a> 	
+<a class="jxr_linenumber" name="403" href="#403">403</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> updateValidationValues(RefexDynamicDataType dType) 
+<a class="jxr_linenumber" name="404" href="#404">404</a> 	{
+<a class="jxr_linenumber" name="405" href="#405">405</a> 		<strong class="jxr_keyword">for</strong> (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) 
+<a class="jxr_linenumber" name="406" href="#406">406</a> 		{
+<a class="jxr_linenumber" name="407" href="#407">407</a> 			<em class="jxr_comment">// TODO: replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp</em>
+<a class="jxr_linenumber" name="408" href="#408">408</a> 			<strong class="jxr_keyword">if</strong> (type.validatorSupportsType(dType) &amp;&amp; (!((dType == RefexDynamicDataType.UUID || dType == RefexDynamicDataType.NID) &amp;&amp; type == RefexDynamicValidatorType.REGEXP)))
+<a class="jxr_linenumber" name="409" href="#409">409</a> 			{
+<a class="jxr_linenumber" name="410" href="#410">410</a> 				<strong class="jxr_keyword">if</strong> (!validatorType.getItems().contains(type))
+<a class="jxr_linenumber" name="411" href="#411">411</a> 				{
+<a class="jxr_linenumber" name="412" href="#412">412</a> 					validatorType.getItems().add(type);
+<a class="jxr_linenumber" name="413" href="#413">413</a> 				}
+<a class="jxr_linenumber" name="414" href="#414">414</a> 			}
+<a class="jxr_linenumber" name="415" href="#415">415</a> 			<strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (type != RefexDynamicValidatorType.UNKNOWN)  <em class="jxr_comment">//always keep UNKNOWN</em>
+<a class="jxr_linenumber" name="416" href="#416">416</a> 			{
+<a class="jxr_linenumber" name="417" href="#417">417</a> 				validatorType.getItems().remove(type);
+<a class="jxr_linenumber" name="418" href="#418">418</a> 			}
+<a class="jxr_linenumber" name="419" href="#419">419</a> 		}
+<a class="jxr_linenumber" name="420" href="#420">420</a> 		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
 <a class="jxr_linenumber" name="421" href="#421">421</a> 	}
 <a class="jxr_linenumber" name="422" href="#422">422</a> 
-<a class="jxr_linenumber" name="423" href="#423">423</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> initializeColumnConcepts() {
-<a class="jxr_linenumber" name="424" href="#424">424</a> 		<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="425" href="#425">425</a> 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-<a class="jxr_linenumber" name="426" href="#426">426</a> 			ArrayList&lt;ConceptVersionBI&gt; colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
-<a class="jxr_linenumber" name="427" href="#427">427</a> 
-<a class="jxr_linenumber" name="428" href="#428">428</a> 			<strong class="jxr_keyword">for</strong> (ConceptVersionBI col : colCons) {
-<a class="jxr_linenumber" name="429" href="#429">429</a> 				columnNameChoices.add(<strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/va/isaac/gui/SimpleDisplayConcept.html">SimpleDisplayConcept</a>(col, colNameReader_));
-<a class="jxr_linenumber" name="430" href="#430">430</a> 			}
-<a class="jxr_linenumber" name="431" href="#431">431</a> 			columnNameSelection_.set(columnNameChoices.get(0));
-<a class="jxr_linenumber" name="432" href="#432">432</a> 		} <strong class="jxr_keyword">catch</strong> (Exception e1) {
-<a class="jxr_linenumber" name="433" href="#433">433</a> 			logger.error(<span class="jxr_string">"Unable to access column concepts"</span>, e1);
-<a class="jxr_linenumber" name="434" href="#434">434</a> 		}
-<a class="jxr_linenumber" name="435" href="#435">435</a> 	}
-<a class="jxr_linenumber" name="436" href="#436">436</a> 
-<a class="jxr_linenumber" name="437" href="#437">437</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> updatePreviousContent() {
-<a class="jxr_linenumber" name="438" href="#438">438</a> 		
-<a class="jxr_linenumber" name="439" href="#439">439</a> 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
-<a class="jxr_linenumber" name="440" href="#440">440</a> 		
-<a class="jxr_linenumber" name="441" href="#441">441</a> 		<em class="jxr_comment">//TODO this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... </em>
-<a class="jxr_linenumber" name="442" href="#442">442</a> 		<em class="jxr_comment">//The Platform.runLater should _NOT_ be necessary, but it seems to prevent the infinite loop for now.</em>
-<a class="jxr_linenumber" name="443" href="#443">443</a> 		<strong class="jxr_keyword">if</strong> (rdci.getColumnDescriptionConcept() != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="444" href="#444">444</a> 		{
-<a class="jxr_linenumber" name="445" href="#445">445</a> 			Platform.runLater(() -&gt; {columnNameSelection_.set(<strong class="jxr_keyword">new</strong> SimpleDisplayConcept(rdci.getColumnDescriptionConcept().toString()));});
-<a class="jxr_linenumber" name="446" href="#446">446</a> 		}
-<a class="jxr_linenumber" name="447" href="#447">447</a> 		<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="448" href="#448">448</a> 		{
-<a class="jxr_linenumber" name="449" href="#449">449</a> 			columnNameSelection_.clear();
-<a class="jxr_linenumber" name="450" href="#450">450</a> 		}
-<a class="jxr_linenumber" name="451" href="#451">451</a> 		<strong class="jxr_keyword">if</strong> (rdci.getColumnDataType() != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="452" href="#452">452</a> 		{
-<a class="jxr_linenumber" name="453" href="#453">453</a> 			typeOption.getSelectionModel().select(rdci.getColumnDataType());
-<a class="jxr_linenumber" name="454" href="#454">454</a> 		}
-<a class="jxr_linenumber" name="455" href="#455">455</a> 		<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="456" href="#456">456</a> 		{
-<a class="jxr_linenumber" name="457" href="#457">457</a> 			typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
-<a class="jxr_linenumber" name="458" href="#458">458</a> 		}
-<a class="jxr_linenumber" name="459" href="#459">459</a> 		defaultValueHolder.getChildren().clear();
-<a class="jxr_linenumber" name="460" href="#460">460</a> 		<strong class="jxr_keyword">if</strong> (typeOption.getSelectionModel().getSelectedItem() != RefexDynamicDataType.UNKNOWN)
-<a class="jxr_linenumber" name="461" href="#461">461</a> 		{
-<a class="jxr_linenumber" name="462" href="#462">462</a> 			<strong class="jxr_keyword">if</strong> (typeOption.getSelectionModel().getSelectedItem() == RefexDynamicDataType.POLYMORPHIC)
-<a class="jxr_linenumber" name="463" href="#463">463</a> 			{
-<a class="jxr_linenumber" name="464" href="#464">464</a> 				Label l = <strong class="jxr_keyword">new</strong> Label(<span class="jxr_string">"No defaults allowed for polymorphic data"</span>);
-<a class="jxr_linenumber" name="465" href="#465">465</a> 				l.setAlignment(Pos.CENTER_LEFT);
-<a class="jxr_linenumber" name="466" href="#466">466</a> 				l.setMinHeight(25.0);
-<a class="jxr_linenumber" name="467" href="#467">467</a> 				defaultValueHolder.getChildren().add(l);
-<a class="jxr_linenumber" name="468" href="#468">468</a> 			}
-<a class="jxr_linenumber" name="469" href="#469">469</a> 			<strong class="jxr_keyword">else</strong> 
-<a class="jxr_linenumber" name="470" href="#470">470</a> 			{
-<a class="jxr_linenumber" name="471" href="#471">471</a> 				currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(typeOption.getSelectionModel().getSelectedItem(), <strong class="jxr_keyword">null</strong>, rdci.getDefaultColumnValue(), 
-<a class="jxr_linenumber" name="472" href="#472">472</a> 					<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, allValid_, validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
-<a class="jxr_linenumber" name="473" href="#473">473</a> 				defaultValueHolder.getChildren().add(currentDefaultNodeDetails_.getNodeForDisplay());
-<a class="jxr_linenumber" name="474" href="#474">474</a> 				HBox.setHgrow(currentDefaultNodeDetails_.getNodeForDisplay(), Priority.ALWAYS);
-<a class="jxr_linenumber" name="475" href="#475">475</a> 			}
-<a class="jxr_linenumber" name="476" href="#476">476</a> 		}
-<a class="jxr_linenumber" name="477" href="#477">477</a> 		isMandatory.setSelected(rdci.isColumnRequired());
-<a class="jxr_linenumber" name="478" href="#478">478</a> 		<strong class="jxr_keyword">if</strong> (rdci.getValidator() != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="479" href="#479">479</a> 		{
-<a class="jxr_linenumber" name="480" href="#480">480</a> 			validatorType.getSelectionModel().select(rdci.getValidator());
-<a class="jxr_linenumber" name="481" href="#481">481</a> 		}
-<a class="jxr_linenumber" name="482" href="#482">482</a> 		<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="483" href="#483">483</a> 		{
-<a class="jxr_linenumber" name="484" href="#484">484</a> 			validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
-<a class="jxr_linenumber" name="485" href="#485">485</a> 		}
-<a class="jxr_linenumber" name="486" href="#486">486</a> 		validatorDataHolder.getChildren().clear();
-<a class="jxr_linenumber" name="487" href="#487">487</a> 		<strong class="jxr_keyword">if</strong> (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
-<a class="jxr_linenumber" name="488" href="#488">488</a> 		{
-<a class="jxr_linenumber" name="489" href="#489">489</a> 			validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-<a class="jxr_linenumber" name="490" href="#490">490</a> 					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), 
-<a class="jxr_linenumber" name="491" href="#491">491</a> 					typeOption.valueProperty(), allValid_));
-<a class="jxr_linenumber" name="492" href="#492">492</a> 			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
-<a class="jxr_linenumber" name="493" href="#493">493</a> 			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
-<a class="jxr_linenumber" name="494" href="#494">494</a> 		}
-<a class="jxr_linenumber" name="495" href="#495">495</a> 	}
-<a class="jxr_linenumber" name="496" href="#496">496</a> 
-<a class="jxr_linenumber" name="497" href="#497">497</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> storeValues() <strong class="jxr_keyword">throws</strong> PropertyVetoException {
-<a class="jxr_linenumber" name="498" href="#498">498</a> 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
-<a class="jxr_linenumber" name="499" href="#499">499</a> 		
-<a class="jxr_linenumber" name="500" href="#500">500</a> 		rdci.setColumnDescriptionConcept(columnNameSelection_.isValid().get() ? columnNameSelection_.getConcept().getPrimordialUuid() : <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="501" href="#501">501</a> 		rdci.setColumnDataType(typeOption.getSelectionModel().getSelectedItem());
-<a class="jxr_linenumber" name="502" href="#502">502</a> 		rdci.setColumnDefaultData(<strong class="jxr_keyword">null</strong>);<em class="jxr_comment">//make sure it doesn't read this when parsing below</em>
-<a class="jxr_linenumber" name="503" href="#503">503</a> 		<strong class="jxr_keyword">if</strong> (currentDefaultNodeDetails_ != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="504" href="#504">504</a> 		{
-<a class="jxr_linenumber" name="505" href="#505">505</a> 			rdci.setColumnDefaultData(RefexDataTypeFXNodeBuilder.getDataForType(currentDefaultNodeDetails_.getDataField(), rdci));
-<a class="jxr_linenumber" name="506" href="#506">506</a> 		}
-<a class="jxr_linenumber" name="507" href="#507">507</a> 		rdci.setColumnRequired(isMandatory.isSelected());
-<a class="jxr_linenumber" name="508" href="#508">508</a> 		rdci.setValidatorType((validatorType.getValue() == RefexDynamicValidatorType.UNKNOWN ? <strong class="jxr_keyword">null</strong> : validatorType.getSelectionModel().getSelectedItem()));
-<a class="jxr_linenumber" name="509" href="#509">509</a> 		<strong class="jxr_keyword">if</strong> (rdci.getValidator() == <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="510" href="#510">510</a> 		{
-<a class="jxr_linenumber" name="511" href="#511">511</a> 			rdci.setValidatorData(<strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="512" href="#512">512</a> 		}
-<a class="jxr_linenumber" name="513" href="#513">513</a> 		<strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="514" href="#514">514</a> 		{
-<a class="jxr_linenumber" name="515" href="#515">515</a> 			rdci.setValidatorData(validatorTypeNode.getValidatorDataProperty().get());
-<a class="jxr_linenumber" name="516" href="#516">516</a> 		}
-<a class="jxr_linenumber" name="517" href="#517">517</a> 	}
-<a class="jxr_linenumber" name="518" href="#518">518</a> 
-<a class="jxr_linenumber" name="519" href="#519">519</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setColumnNumber(<strong class="jxr_keyword">int</strong> colNum) {
-<a class="jxr_linenumber" name="520" href="#520">520</a> 		columnNumber_ = colNum;
-<a class="jxr_linenumber" name="521" href="#521">521</a> 		columnTitle.setText(<span class="jxr_string">"Column #"</span> + (columnNumber_ + 1) + <span class="jxr_string">" Definition"</span>);
-<a class="jxr_linenumber" name="522" href="#522">522</a> 		<em class="jxr_comment">//don't do this slow task during JavaFX init.</em>
-<a class="jxr_linenumber" name="523" href="#523">523</a> 		<strong class="jxr_keyword">if</strong> (columnNameChoices.size() == 0)
-<a class="jxr_linenumber" name="524" href="#524">524</a> 		{
-<a class="jxr_linenumber" name="525" href="#525">525</a> 			initializeColumnConcepts();
-<a class="jxr_linenumber" name="526" href="#526">526</a> 		}
-<a class="jxr_linenumber" name="527" href="#527">527</a> 		updatePreviousContent();
-<a class="jxr_linenumber" name="528" href="#528">528</a> 	}
-<a class="jxr_linenumber" name="529" href="#529">529</a> 
-<a class="jxr_linenumber" name="530" href="#530">530</a> 	<em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="531" href="#531">531</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI#finishInit(gov.va.isaac.gui.refexViews.refexCreation.ScreensController, javafx.scene.Parent)</em>
-<a class="jxr_linenumber" name="532" href="#532">532</a> <em class="jxr_javadoccomment">	 */</em>
-<a class="jxr_linenumber" name="533" href="#533">533</a> 	@Override
-<a class="jxr_linenumber" name="534" href="#534">534</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> finishInit(<a href="../../../../../../../gov/va/isaac/gui/refexViews/refexCreation/ScreensController.html">ScreensController</a> screenController, Region parent)
-<a class="jxr_linenumber" name="535" href="#535">535</a> 	{
-<a class="jxr_linenumber" name="536" href="#536">536</a> 		processController_ = screenController;
-<a class="jxr_linenumber" name="537" href="#537">537</a> 		sceneParent_ = parent;
-<a class="jxr_linenumber" name="538" href="#538">538</a> 	}
-<a class="jxr_linenumber" name="539" href="#539">539</a> 
-<a class="jxr_linenumber" name="540" href="#540">540</a> 	<em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="541" href="#541">541</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI#getParent()</em>
-<a class="jxr_linenumber" name="542" href="#542">542</a> <em class="jxr_javadoccomment">	 */</em>
-<a class="jxr_linenumber" name="543" href="#543">543</a> 	@Override
-<a class="jxr_linenumber" name="544" href="#544">544</a> 	<strong class="jxr_keyword">public</strong> Region getParent()
-<a class="jxr_linenumber" name="545" href="#545">545</a> 	{
-<a class="jxr_linenumber" name="546" href="#546">546</a> 		<strong class="jxr_keyword">return</strong> sceneParent_;
-<a class="jxr_linenumber" name="547" href="#547">547</a> 	}
-<a class="jxr_linenumber" name="548" href="#548">548</a> }
+<a class="jxr_linenumber" name="423" href="#423">423</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> initializeTypeConcepts() {
+<a class="jxr_linenumber" name="424" href="#424">424</a> 		<strong class="jxr_keyword">for</strong> (RefexDynamicDataType type : RefexDynamicDataType.values()) {
+<a class="jxr_linenumber" name="425" href="#425">425</a> 			typeOption.getItems().add(type);
+<a class="jxr_linenumber" name="426" href="#426">426</a> 		}
+<a class="jxr_linenumber" name="427" href="#427">427</a> 		typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
+<a class="jxr_linenumber" name="428" href="#428">428</a> 		
+<a class="jxr_linenumber" name="429" href="#429">429</a> 		validatorType.getItems().add(RefexDynamicValidatorType.UNKNOWN);
+<a class="jxr_linenumber" name="430" href="#430">430</a> 		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+<a class="jxr_linenumber" name="431" href="#431">431</a> 	}
+<a class="jxr_linenumber" name="432" href="#432">432</a> 
+<a class="jxr_linenumber" name="433" href="#433">433</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> createNewColumnConcept() {
+<a class="jxr_linenumber" name="434" href="#434">434</a> 		<strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="435" href="#435">435</a> 			NewColumnDialog dialog = <strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/va/isaac/gui/refexViews/refexCreation/wizardPages/NewColumnDialog.html">NewColumnDialog</a>(processController_.getScene().getWindow());
+<a class="jxr_linenumber" name="436" href="#436">436</a> 			dialog.showAndWait();
+<a class="jxr_linenumber" name="437" href="#437">437</a> 
+<a class="jxr_linenumber" name="438" href="#438">438</a> 			ConceptChronicleBI newCon = dialog.getNewColumnConcept();
+<a class="jxr_linenumber" name="439" href="#439">439</a> 			
+<a class="jxr_linenumber" name="440" href="#440">440</a> 			<strong class="jxr_keyword">if</strong> (newCon != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="441" href="#441">441</a> 				
+<a class="jxr_linenumber" name="442" href="#442">442</a> 				SimpleDisplayConcept sdc = <strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/va/isaac/gui/SimpleDisplayConcept.html">SimpleDisplayConcept</a>(newCon, colNameReader_); 
+<a class="jxr_linenumber" name="443" href="#443">443</a> 				columnNameChoices.add(sdc);
+<a class="jxr_linenumber" name="444" href="#444">444</a> 				columnNameSelection_.set(sdc);
+<a class="jxr_linenumber" name="445" href="#445">445</a> 			}
+<a class="jxr_linenumber" name="446" href="#446">446</a> 		} <strong class="jxr_keyword">catch</strong> (IOException e) {
+<a class="jxr_linenumber" name="447" href="#447">447</a> 			logger.error(<span class="jxr_string">"Unexpected error creating new attribute concept"</span>, e);
+<a class="jxr_linenumber" name="448" href="#448">448</a> 			AppContext.getCommonDialogs().showErrorDialog(<span class="jxr_string">"Unexpected error creating attribute concept.  Please see logs."</span>, e);
+<a class="jxr_linenumber" name="449" href="#449">449</a> 		}
+<a class="jxr_linenumber" name="450" href="#450">450</a> 	}
+<a class="jxr_linenumber" name="451" href="#451">451</a> 
+<a class="jxr_linenumber" name="452" href="#452">452</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> initializeColumnConcepts() {
+<a class="jxr_linenumber" name="453" href="#453">453</a> 		<strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="454" href="#454">454</a> 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
+<a class="jxr_linenumber" name="455" href="#455">455</a> 			ArrayList&lt;ConceptVersionBI&gt; colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+<a class="jxr_linenumber" name="456" href="#456">456</a> 
+<a class="jxr_linenumber" name="457" href="#457">457</a> 			<strong class="jxr_keyword">for</strong> (ConceptVersionBI col : colCons) {
+<a class="jxr_linenumber" name="458" href="#458">458</a> 				columnNameChoices.add(<strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/va/isaac/gui/SimpleDisplayConcept.html">SimpleDisplayConcept</a>(col, colNameReader_));
+<a class="jxr_linenumber" name="459" href="#459">459</a> 			}
+<a class="jxr_linenumber" name="460" href="#460">460</a> 			columnNameSelection_.set(columnNameChoices.get(0));
+<a class="jxr_linenumber" name="461" href="#461">461</a> 		} <strong class="jxr_keyword">catch</strong> (Exception e1) {
+<a class="jxr_linenumber" name="462" href="#462">462</a> 			logger.error(<span class="jxr_string">"Unable to access attribute concepts"</span>, e1);
+<a class="jxr_linenumber" name="463" href="#463">463</a> 		}
+<a class="jxr_linenumber" name="464" href="#464">464</a> 	}
+<a class="jxr_linenumber" name="465" href="#465">465</a> 
+<a class="jxr_linenumber" name="466" href="#466">466</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> updatePreviousContent() {
+<a class="jxr_linenumber" name="467" href="#467">467</a> 		
+<a class="jxr_linenumber" name="468" href="#468">468</a> 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
+<a class="jxr_linenumber" name="469" href="#469">469</a> 		
+<a class="jxr_linenumber" name="470" href="#470">470</a> 		<em class="jxr_comment">//TODO this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... </em>
+<a class="jxr_linenumber" name="471" href="#471">471</a> 		<em class="jxr_comment">//The Platform.runLater should _NOT_ be necessary, but it seems to prevent the infinite loop for now.</em>
+<a class="jxr_linenumber" name="472" href="#472">472</a> 		<strong class="jxr_keyword">if</strong> (rdci.getColumnDescriptionConcept() != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="473" href="#473">473</a> 		{
+<a class="jxr_linenumber" name="474" href="#474">474</a> 			Platform.runLater(() -&gt; {columnNameSelection_.set(<strong class="jxr_keyword">new</strong> SimpleDisplayConcept(rdci.getColumnDescriptionConcept().toString()));});
+<a class="jxr_linenumber" name="475" href="#475">475</a> 		}
+<a class="jxr_linenumber" name="476" href="#476">476</a> 		<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="477" href="#477">477</a> 		{
+<a class="jxr_linenumber" name="478" href="#478">478</a> 			columnNameSelection_.clear();
+<a class="jxr_linenumber" name="479" href="#479">479</a> 		}
+<a class="jxr_linenumber" name="480" href="#480">480</a> 		<strong class="jxr_keyword">if</strong> (rdci.getColumnDataType() != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="481" href="#481">481</a> 		{
+<a class="jxr_linenumber" name="482" href="#482">482</a> 			typeOption.getSelectionModel().select(rdci.getColumnDataType());
+<a class="jxr_linenumber" name="483" href="#483">483</a> 		}
+<a class="jxr_linenumber" name="484" href="#484">484</a> 		<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="485" href="#485">485</a> 		{
+<a class="jxr_linenumber" name="486" href="#486">486</a> 			typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
+<a class="jxr_linenumber" name="487" href="#487">487</a> 		}
+<a class="jxr_linenumber" name="488" href="#488">488</a> 		defaultValueHolder.getChildren().clear();
+<a class="jxr_linenumber" name="489" href="#489">489</a> 		<strong class="jxr_keyword">if</strong> (typeOption.getSelectionModel().getSelectedItem() != RefexDynamicDataType.UNKNOWN)
+<a class="jxr_linenumber" name="490" href="#490">490</a> 		{
+<a class="jxr_linenumber" name="491" href="#491">491</a> 			<strong class="jxr_keyword">if</strong> (typeOption.getSelectionModel().getSelectedItem() == RefexDynamicDataType.POLYMORPHIC)
+<a class="jxr_linenumber" name="492" href="#492">492</a> 			{
+<a class="jxr_linenumber" name="493" href="#493">493</a> 				Label l = <strong class="jxr_keyword">new</strong> Label(<span class="jxr_string">"No defaults allowed for polymorphic data"</span>);
+<a class="jxr_linenumber" name="494" href="#494">494</a> 				l.setAlignment(Pos.CENTER_LEFT);
+<a class="jxr_linenumber" name="495" href="#495">495</a> 				l.setMinHeight(25.0);
+<a class="jxr_linenumber" name="496" href="#496">496</a> 				defaultValueHolder.getChildren().add(l);
+<a class="jxr_linenumber" name="497" href="#497">497</a> 			}
+<a class="jxr_linenumber" name="498" href="#498">498</a> 			<strong class="jxr_keyword">else</strong> 
+<a class="jxr_linenumber" name="499" href="#499">499</a> 			{
+<a class="jxr_linenumber" name="500" href="#500">500</a> 				currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(typeOption.getSelectionModel().getSelectedItem(), <strong class="jxr_keyword">null</strong>, rdci.getDefaultColumnValue(), 
+<a class="jxr_linenumber" name="501" href="#501">501</a> 					<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>, allValid_, validatorType.valueProperty(), validatorTypeNode.getValidatorDataProperty());
+<a class="jxr_linenumber" name="502" href="#502">502</a> 				defaultValueHolder.getChildren().add(currentDefaultNodeDetails_.getNodeForDisplay());
+<a class="jxr_linenumber" name="503" href="#503">503</a> 				HBox.setHgrow(currentDefaultNodeDetails_.getNodeForDisplay(), Priority.ALWAYS);
+<a class="jxr_linenumber" name="504" href="#504">504</a> 			}
+<a class="jxr_linenumber" name="505" href="#505">505</a> 		}
+<a class="jxr_linenumber" name="506" href="#506">506</a> 		isMandatory.setSelected(rdci.isColumnRequired());
+<a class="jxr_linenumber" name="507" href="#507">507</a> 		<strong class="jxr_keyword">if</strong> (rdci.getValidator() != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="508" href="#508">508</a> 		{
+<a class="jxr_linenumber" name="509" href="#509">509</a> 			validatorType.getSelectionModel().select(rdci.getValidator());
+<a class="jxr_linenumber" name="510" href="#510">510</a> 		}
+<a class="jxr_linenumber" name="511" href="#511">511</a> 		<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="512" href="#512">512</a> 		{
+<a class="jxr_linenumber" name="513" href="#513">513</a> 			validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+<a class="jxr_linenumber" name="514" href="#514">514</a> 		}
+<a class="jxr_linenumber" name="515" href="#515">515</a> 		validatorDataHolder.getChildren().clear();
+<a class="jxr_linenumber" name="516" href="#516">516</a> 		<strong class="jxr_keyword">if</strong> (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
+<a class="jxr_linenumber" name="517" href="#517">517</a> 		{
+<a class="jxr_linenumber" name="518" href="#518">518</a> 			validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
+<a class="jxr_linenumber" name="519" href="#519">519</a> 					rdci.getValidatorData(), 
+<a class="jxr_linenumber" name="520" href="#520">520</a> 					typeOption.valueProperty(), allValid_));
+<a class="jxr_linenumber" name="521" href="#521">521</a> 			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
+<a class="jxr_linenumber" name="522" href="#522">522</a> 			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
+<a class="jxr_linenumber" name="523" href="#523">523</a> 		}
+<a class="jxr_linenumber" name="524" href="#524">524</a> 	}
+<a class="jxr_linenumber" name="525" href="#525">525</a> 
+<a class="jxr_linenumber" name="526" href="#526">526</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> storeValues() <strong class="jxr_keyword">throws</strong> PropertyVetoException {
+<a class="jxr_linenumber" name="527" href="#527">527</a> 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
+<a class="jxr_linenumber" name="528" href="#528">528</a> 		
+<a class="jxr_linenumber" name="529" href="#529">529</a> 		rdci.setColumnDescriptionConcept(columnNameSelection_.isValid().get() ? columnNameSelection_.getConcept().getPrimordialUuid() : <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="530" href="#530">530</a> 		rdci.setColumnDataType(typeOption.getSelectionModel().getSelectedItem());
+<a class="jxr_linenumber" name="531" href="#531">531</a> 		rdci.setColumnDefaultData(<strong class="jxr_keyword">null</strong>);<em class="jxr_comment">//make sure it doesn't read this when parsing below</em>
+<a class="jxr_linenumber" name="532" href="#532">532</a> 		<strong class="jxr_keyword">if</strong> (currentDefaultNodeDetails_ != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="533" href="#533">533</a> 		{
+<a class="jxr_linenumber" name="534" href="#534">534</a> 			rdci.setColumnDefaultData(RefexDataTypeFXNodeBuilder.getDataForType(currentDefaultNodeDetails_.getDataField(), rdci));
+<a class="jxr_linenumber" name="535" href="#535">535</a> 		}
+<a class="jxr_linenumber" name="536" href="#536">536</a> 		rdci.setColumnRequired(isMandatory.isSelected());
+<a class="jxr_linenumber" name="537" href="#537">537</a> 		rdci.setValidatorType((validatorType.getValue() == RefexDynamicValidatorType.UNKNOWN ? <strong class="jxr_keyword">null</strong> : validatorType.getSelectionModel().getSelectedItem()));
+<a class="jxr_linenumber" name="538" href="#538">538</a> 		<strong class="jxr_keyword">if</strong> (rdci.getValidator() == <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="539" href="#539">539</a> 		{
+<a class="jxr_linenumber" name="540" href="#540">540</a> 			rdci.setValidatorData(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="541" href="#541">541</a> 		}
+<a class="jxr_linenumber" name="542" href="#542">542</a> 		<strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="543" href="#543">543</a> 		{
+<a class="jxr_linenumber" name="544" href="#544">544</a> 			rdci.setValidatorData(validatorTypeNode.getValidatorDataProperty().get());
+<a class="jxr_linenumber" name="545" href="#545">545</a> 		}
+<a class="jxr_linenumber" name="546" href="#546">546</a> 	}
+<a class="jxr_linenumber" name="547" href="#547">547</a> 
+<a class="jxr_linenumber" name="548" href="#548">548</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setColumnNumber(<strong class="jxr_keyword">int</strong> colNum) {
+<a class="jxr_linenumber" name="549" href="#549">549</a> 		columnNumber_ = colNum;
+<a class="jxr_linenumber" name="550" href="#550">550</a> 		columnTitle.setText(<span class="jxr_string">"Attribute #"</span> + (columnNumber_ + 1) + <span class="jxr_string">" Definition"</span>);
+<a class="jxr_linenumber" name="551" href="#551">551</a> 		<em class="jxr_comment">//don't do this slow task during JavaFX init.</em>
+<a class="jxr_linenumber" name="552" href="#552">552</a> 		<strong class="jxr_keyword">if</strong> (columnNameChoices.size() == 0)
+<a class="jxr_linenumber" name="553" href="#553">553</a> 		{
+<a class="jxr_linenumber" name="554" href="#554">554</a> 			initializeColumnConcepts();
+<a class="jxr_linenumber" name="555" href="#555">555</a> 		}
+<a class="jxr_linenumber" name="556" href="#556">556</a> 		updatePreviousContent();
+<a class="jxr_linenumber" name="557" href="#557">557</a> 	}
+<a class="jxr_linenumber" name="558" href="#558">558</a> 
+<a class="jxr_linenumber" name="559" href="#559">559</a> 	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="560" href="#560">560</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI#finishInit(gov.va.isaac.gui.refexViews.refexCreation.ScreensController, javafx.scene.Parent)</em>
+<a class="jxr_linenumber" name="561" href="#561">561</a> <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="562" href="#562">562</a> 	@Override
+<a class="jxr_linenumber" name="563" href="#563">563</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> finishInit(<a href="../../../../../../../gov/va/isaac/gui/refexViews/refexCreation/ScreensController.html">ScreensController</a> screenController, Region parent)
+<a class="jxr_linenumber" name="564" href="#564">564</a> 	{
+<a class="jxr_linenumber" name="565" href="#565">565</a> 		processController_ = screenController;
+<a class="jxr_linenumber" name="566" href="#566">566</a> 		sceneParent_ = parent;
+<a class="jxr_linenumber" name="567" href="#567">567</a> 	}
+<a class="jxr_linenumber" name="568" href="#568">568</a> 
+<a class="jxr_linenumber" name="569" href="#569">569</a> 	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="570" href="#570">570</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI#getParent()</em>
+<a class="jxr_linenumber" name="571" href="#571">571</a> <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="572" href="#572">572</a> 	@Override
+<a class="jxr_linenumber" name="573" href="#573">573</a> 	<strong class="jxr_keyword">public</strong> Region getParent()
+<a class="jxr_linenumber" name="574" href="#574">574</a> 	{
+<a class="jxr_linenumber" name="575" href="#575">575</a> 		<strong class="jxr_keyword">return</strong> sceneParent_;
+<a class="jxr_linenumber" name="576" href="#576">576</a> 	}
+<a class="jxr_linenumber" name="577" href="#577">577</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

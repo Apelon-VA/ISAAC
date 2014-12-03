@@ -34,7 +34,7 @@
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.dialog.InformationModelDetailsDialog;
 <a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.util.FxUtils;
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.ie.FetchHandler;
-<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.InfoModelViewI;
+<a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI;
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.model.InformationModelType;
 <a class="jxr_linenumber" name="29" href="#29">29</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.models.InformationModel;
 <a class="jxr_linenumber" name="30" href="#30">30</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.util.CommonMenuBuilderI;
@@ -162,7 +162,7 @@
 <a class="jxr_linenumber" name="152" href="#152">152</a>                         listView.getSelectionModel().getSelectedItem();
 <a class="jxr_linenumber" name="153" href="#153">153</a>                     <strong class="jxr_keyword">if</strong> (item != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="154" href="#154">154</a>                       <strong class="jxr_keyword">if</strong> (item.getType() == InformationModelType.CEM) {
-<a class="jxr_linenumber" name="155" href="#155">155</a>                         <a href="../../../../../gov/va/isaac/interfaces/gui/views/InfoModelViewI.html">InfoModelViewI</a> imv =
+<a class="jxr_linenumber" name="155" href="#155">155</a>                         <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/InfoModelViewI.html">InfoModelViewI</a> imv =
 <a class="jxr_linenumber" name="156" href="#156">156</a>                             AppContext.getService(InfoModelViewI.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="157" href="#157">157</a>                         imv.showView(parent);
 <a class="jxr_linenumber" name="158" href="#158">158</a>                       }

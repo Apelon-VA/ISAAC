@@ -28,9 +28,9 @@
 <a class="jxr_linenumber" name="18" href="#18">18</a>  <em class="jxr_javadoccomment"> */</em>
 <a class="jxr_linenumber" name="19" href="#19">19</a>  <strong class="jxr_keyword">package</strong> gov.va.isaac.gui.treeview;
 <a class="jxr_linenumber" name="20" href="#20">20</a>  
-<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.TaxonomyViewI;
-<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.ViewI;
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+<a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+<a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
+<a class="jxr_linenumber" name="23" href="#23">23</a>  
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.util.WBUtility;
 <a class="jxr_linenumber" name="25" href="#25">25</a>  
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> java.util.UUID;
@@ -92,7 +92,7 @@
 <a class="jxr_linenumber" name="82" href="#82">82</a>  <em class="jxr_comment">	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#setDisplayPolicies(gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies)</em>
 <a class="jxr_linenumber" name="83" href="#83">83</a>  <em class="jxr_comment">	 */</em>
 <a class="jxr_linenumber" name="84" href="#84">84</a>  	@Override
-<a class="jxr_linenumber" name="85" href="#85">85</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDisplayPolicies(<a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> policies) {
+<a class="jxr_linenumber" name="85" href="#85">85</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDisplayPolicies(<a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> policies) {
 <a class="jxr_linenumber" name="86" href="#86">86</a>  		sctTreeView_.setDisplayPolicies(policies);
 <a class="jxr_linenumber" name="87" href="#87">87</a>  	}
 <a class="jxr_linenumber" name="88" href="#88">88</a>  
@@ -108,7 +108,7 @@
 <a class="jxr_linenumber" name="98" href="#98">98</a>  <em class="jxr_comment">	 * @see gov.va.isaac.interfaces.gui.TaxonomyViewI#getDefaultDisplayPolicies()</em>
 <a class="jxr_linenumber" name="99" href="#99">99</a>  <em class="jxr_comment">	 */</em>
 <a class="jxr_linenumber" name="100" href="#100">100</a> 	@Override
-<a class="jxr_linenumber" name="101" href="#101">101</a> 	<strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> getDefaultDisplayPolicies() {
+<a class="jxr_linenumber" name="101" href="#101">101</a> 	<strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> getDefaultDisplayPolicies() {
 <a class="jxr_linenumber" name="102" href="#102">102</a> 		<strong class="jxr_keyword">return</strong> SctTreeView.getDefaultDisplayPolicies();
 <a class="jxr_linenumber" name="103" href="#103">103</a> 	}
 <a class="jxr_linenumber" name="104" href="#104">104</a> }

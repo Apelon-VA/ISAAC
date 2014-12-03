@@ -111,187 +111,198 @@
 <a class="jxr_linenumber" name="101" href="#101">101</a>     <strong class="jxr_keyword">super</strong>();
 <a class="jxr_linenumber" name="102" href="#102">102</a> 
 <a class="jxr_linenumber" name="103" href="#103">103</a>     <em class="jxr_comment">// GUI placeholders.</em>
-<a class="jxr_linenumber" name="104" href="#104">104</a>     <a href="../../../../../gov/va/isaac/gui/util/GridPaneBuilder.html">GridPaneBuilder</a> builder = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/util/GridPaneBuilder.html">GridPaneBuilder</a>(<strong class="jxr_keyword">this</strong>);
-<a class="jxr_linenumber" name="105" href="#105">105</a>     builder.addRow(<span class="jxr_string">"Export Type: "</span>, exportTypeLabel);
-<a class="jxr_linenumber" name="106" href="#106">106</a>     builder.addRow(<span class="jxr_string">"Path Name: "</span>, pathNameLabel);
-<a class="jxr_linenumber" name="107" href="#107">107</a>     builder.addRow(<span class="jxr_string">"Folder Name: "</span>, folderNameLabel);
-<a class="jxr_linenumber" name="108" href="#108">108</a>     builder.addRow(<span class="jxr_string">"Progress: "</span>, progressBar);
-<a class="jxr_linenumber" name="109" href="#109">109</a>     progressBar.setMinWidth(400);
-<a class="jxr_linenumber" name="110" href="#110">110</a>     builder.addRow(<span class="jxr_string">"Status: "</span>, statusLabel);
-<a class="jxr_linenumber" name="111" href="#111">111</a>     builder.addRow(<span class="jxr_string">"Result: "</span>, resultLabel);
-<a class="jxr_linenumber" name="112" href="#112">112</a>     builder.addRow(<span class="jxr_string">""</span>, cancelButton);
-<a class="jxr_linenumber" name="113" href="#113">113</a>     cancelButton.setOnAction(<strong class="jxr_keyword">new</strong> EventHandler&lt;ActionEvent&gt;() {
-<a class="jxr_linenumber" name="114" href="#114">114</a>       @Override
-<a class="jxr_linenumber" name="115" href="#115">115</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> handle(ActionEvent event) {
-<a class="jxr_linenumber" name="116" href="#116">116</a>         doCancel();
-<a class="jxr_linenumber" name="117" href="#117">117</a>       }
-<a class="jxr_linenumber" name="118" href="#118">118</a>     });
-<a class="jxr_linenumber" name="119" href="#119">119</a>     setConstraints();
-<a class="jxr_linenumber" name="120" href="#120">120</a> 
-<a class="jxr_linenumber" name="121" href="#121">121</a>     <em class="jxr_comment">// Set minimum dimensions.</em>
-<a class="jxr_linenumber" name="122" href="#122">122</a>     setMinHeight(100);
-<a class="jxr_linenumber" name="123" href="#123">123</a>     setMinWidth(600);
-<a class="jxr_linenumber" name="124" href="#124">124</a>   }
-<a class="jxr_linenumber" name="125" href="#125">125</a> 
-<a class="jxr_linenumber" name="126" href="#126">126</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="127" href="#127">127</a> <em class="jxr_javadoccomment">   * Perform an export according the specifed parameters.</em>
-<a class="jxr_linenumber" name="128" href="#128">128</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="129" href="#129">129</a> <em class="jxr_javadoccomment">   * @param exportType the export type</em>
-<a class="jxr_linenumber" name="130" href="#130">130</a> <em class="jxr_javadoccomment">   * @param pathNid the path nid</em>
-<a class="jxr_linenumber" name="131" href="#131">131</a> <em class="jxr_javadoccomment">   * @param folderName the file name</em>
-<a class="jxr_linenumber" name="132" href="#132">132</a> <em class="jxr_javadoccomment">   * @param zipChecked the flag indicating whether to compress output</em>
-<a class="jxr_linenumber" name="133" href="#133">133</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="134" href="#134">134</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> doExport(<a href="../../../../../gov/va/isaac/model/ExportType.html">ExportType</a> exportType, <strong class="jxr_keyword">int</strong> pathNid,
-<a class="jxr_linenumber" name="135" href="#135">135</a>     <strong class="jxr_keyword">final</strong> String folderName, <strong class="jxr_keyword">boolean</strong> zipChecked) {
-<a class="jxr_linenumber" name="136" href="#136">136</a>     Preconditions.checkNotNull(exportType);
-<a class="jxr_linenumber" name="137" href="#137">137</a>     Preconditions.checkNotNull(folderName);
-<a class="jxr_linenumber" name="138" href="#138">138</a> 
-<a class="jxr_linenumber" name="139" href="#139">139</a>     <em class="jxr_comment">// Make sure in application thread.</em>
-<a class="jxr_linenumber" name="140" href="#140">140</a>     FxUtils.checkFxUserThread();
-<a class="jxr_linenumber" name="141" href="#141">141</a> 
-<a class="jxr_linenumber" name="142" href="#142">142</a>     <em class="jxr_comment">// Update UI.</em>
-<a class="jxr_linenumber" name="143" href="#143">143</a>     exportTypeLabel.setText(exportType.getDisplayName());
-<a class="jxr_linenumber" name="144" href="#144">144</a>     pathNameLabel.setText(WBUtility.getConPrefTerm(pathNid));
-<a class="jxr_linenumber" name="145" href="#145">145</a>     folderNameLabel.setText(folderName);
-<a class="jxr_linenumber" name="146" href="#146">146</a> 
-<a class="jxr_linenumber" name="147" href="#147">147</a>     File folder = <strong class="jxr_keyword">new</strong> File(folderName);
-<a class="jxr_linenumber" name="148" href="#148">148</a>     <em class="jxr_comment">// Inject into an ExportFileHandler.</em>
-<a class="jxr_linenumber" name="149" href="#149">149</a>     exportFileHandler =
-<a class="jxr_linenumber" name="150" href="#150">150</a>         <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/ie/ExportFileHandler.html">ExportFileHandler</a>(pathNid, exportType, folder, zipChecked);
-<a class="jxr_linenumber" name="151" href="#151">151</a> 
-<a class="jxr_linenumber" name="152" href="#152">152</a>     <em class="jxr_comment">// Do work in background.</em>
-<a class="jxr_linenumber" name="153" href="#153">153</a>     task = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/dialog/ExportView.html">ExporterTask</a>(exportFileHandler);
-<a class="jxr_linenumber" name="154" href="#154">154</a> 
-<a class="jxr_linenumber" name="155" href="#155">155</a>     <em class="jxr_comment">// Bind cursor to task state.</em>
-<a class="jxr_linenumber" name="156" href="#156">156</a>     ObjectBinding&lt;Cursor&gt; cursorBinding =
-<a class="jxr_linenumber" name="157" href="#157">157</a>         Bindings.when(task.runningProperty()).then(Cursor.WAIT)
-<a class="jxr_linenumber" name="158" href="#158">158</a>             .otherwise(Cursor.DEFAULT);
-<a class="jxr_linenumber" name="159" href="#159">159</a>     <strong class="jxr_keyword">this</strong>.getScene().cursorProperty().bind(cursorBinding);
-<a class="jxr_linenumber" name="160" href="#160">160</a> 
-<a class="jxr_linenumber" name="161" href="#161">161</a>     taskThread = <strong class="jxr_keyword">new</strong> Thread(task, <span class="jxr_string">"Exporter_"</span> + exportType);
-<a class="jxr_linenumber" name="162" href="#162">162</a>     taskThread.setDaemon(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="163" href="#163">163</a>     taskThread.start();
-<a class="jxr_linenumber" name="164" href="#164">164</a>   }
-<a class="jxr_linenumber" name="165" href="#165">165</a> 
-<a class="jxr_linenumber" name="166" href="#166">166</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="167" href="#167">167</a> <em class="jxr_javadoccomment">   * Do cancel.</em>
-<a class="jxr_linenumber" name="168" href="#168">168</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="169" href="#169">169</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> doCancel() {
-<a class="jxr_linenumber" name="170" href="#170">170</a>     LOG.info(<span class="jxr_string">"Cancel import."</span>);
-<a class="jxr_linenumber" name="171" href="#171">171</a>     <strong class="jxr_keyword">if</strong> (requestCancel) {
-<a class="jxr_linenumber" name="172" href="#172">172</a>       <em class="jxr_comment">// complete the process</em>
-<a class="jxr_linenumber" name="173" href="#173">173</a>       ((Stage) getScene().getWindow()).close();
-<a class="jxr_linenumber" name="174" href="#174">174</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="175" href="#175">175</a>     }
-<a class="jxr_linenumber" name="176" href="#176">176</a> 
-<a class="jxr_linenumber" name="177" href="#177">177</a>     <em class="jxr_comment">// Set requestCancel to true and cancel task</em>
-<a class="jxr_linenumber" name="178" href="#178">178</a>     requestCancel = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="179" href="#179">179</a>     exportFileHandler.doCancel();
-<a class="jxr_linenumber" name="180" href="#180">180</a>     cancelButton.setText(<span class="jxr_string">"Close"</span>);
-<a class="jxr_linenumber" name="181" href="#181">181</a>   }
-<a class="jxr_linenumber" name="182" href="#182">182</a> 
-<a class="jxr_linenumber" name="183" href="#183">183</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="184" href="#184">184</a> <em class="jxr_javadoccomment">   * Sets the FX constraints.</em>
-<a class="jxr_linenumber" name="185" href="#185">185</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="186" href="#186">186</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> setConstraints() {
-<a class="jxr_linenumber" name="187" href="#187">187</a> 
-<a class="jxr_linenumber" name="188" href="#188">188</a>     <em class="jxr_comment">// Column 1 has empty constraints.</em>
-<a class="jxr_linenumber" name="189" href="#189">189</a>     <strong class="jxr_keyword">this</strong>.getColumnConstraints().add(<strong class="jxr_keyword">new</strong> ColumnConstraints());
-<a class="jxr_linenumber" name="190" href="#190">190</a> 
-<a class="jxr_linenumber" name="191" href="#191">191</a>     <em class="jxr_comment">// Column 2 should grow to fill space.</em>
-<a class="jxr_linenumber" name="192" href="#192">192</a>     ColumnConstraints column2 = <strong class="jxr_keyword">new</strong> ColumnConstraints();
-<a class="jxr_linenumber" name="193" href="#193">193</a>     column2.setHgrow(Priority.ALWAYS);
-<a class="jxr_linenumber" name="194" href="#194">194</a>     <strong class="jxr_keyword">this</strong>.getColumnConstraints().add(column2);
-<a class="jxr_linenumber" name="195" href="#195">195</a> 
-<a class="jxr_linenumber" name="196" href="#196">196</a>     <em class="jxr_comment">// Rows 1-4 have empty constraints.</em>
-<a class="jxr_linenumber" name="197" href="#197">197</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
-<a class="jxr_linenumber" name="198" href="#198">198</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
-<a class="jxr_linenumber" name="199" href="#199">199</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
-<a class="jxr_linenumber" name="200" href="#200">200</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
-<a class="jxr_linenumber" name="201" href="#201">201</a> 
-<a class="jxr_linenumber" name="202" href="#202">202</a>     <em class="jxr_comment">// Row 5 should</em>
-<a class="jxr_linenumber" name="203" href="#203">203</a>     RowConstraints row5 = <strong class="jxr_keyword">new</strong> RowConstraints();
-<a class="jxr_linenumber" name="204" href="#204">204</a>     row5.setVgrow(Priority.ALWAYS);
-<a class="jxr_linenumber" name="205" href="#205">205</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(row5);
-<a class="jxr_linenumber" name="206" href="#206">206</a>   }
-<a class="jxr_linenumber" name="207" href="#207">207</a> 
-<a class="jxr_linenumber" name="208" href="#208">208</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="209" href="#209">209</a> <em class="jxr_javadoccomment">   * Inner class to handle the export task.</em>
-<a class="jxr_linenumber" name="210" href="#210">210</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="211" href="#211">211</a>   <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/gui/dialog/ExportView.html">ExporterTask</a> <strong class="jxr_keyword">extends</strong> Task&lt;Boolean&gt; {
-<a class="jxr_linenumber" name="212" href="#212">212</a> 
-<a class="jxr_linenumber" name="213" href="#213">213</a>     <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> The export handler. */</em>
-<a class="jxr_linenumber" name="214" href="#214">214</a>     <a href="../../../../../gov/va/isaac/gui/dialog/ExportView.html">ExporterTask</a>(<a href="../../../../../gov/va/isaac/ie/ExportFileHandler.html">ExportFileHandler</a> exportFileHandler) {
-<a class="jxr_linenumber" name="215" href="#215">215</a>       <em class="jxr_comment">// do nothing</em>
-<a class="jxr_linenumber" name="216" href="#216">216</a>     }
-<a class="jxr_linenumber" name="217" href="#217">217</a> 
-<a class="jxr_linenumber" name="218" href="#218">218</a>     <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="219" href="#219">219</a> <em class="jxr_comment">     * (non-Javadoc)</em>
-<a class="jxr_linenumber" name="220" href="#220">220</a> <em class="jxr_comment">     * </em>
-<a class="jxr_linenumber" name="221" href="#221">221</a> <em class="jxr_comment">     * @see javafx.concurrent.Task#call()</em>
-<a class="jxr_linenumber" name="222" href="#222">222</a> <em class="jxr_comment">     */</em>
-<a class="jxr_linenumber" name="223" href="#223">223</a>     @Override
-<a class="jxr_linenumber" name="224" href="#224">224</a>     <strong class="jxr_keyword">protected</strong> Boolean call() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="225" href="#225">225</a> 
-<a class="jxr_linenumber" name="226" href="#226">226</a>       <a href="../../../../../gov/va/isaac/util/ProgressListener.html">ProgressListener</a> listener = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/util/ProgressListener.html">ProgressListener</a>() {
-<a class="jxr_linenumber" name="227" href="#227">227</a>         @Override
-<a class="jxr_linenumber" name="228" href="#228">228</a>         <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> updateProgress(<a href="../../../../../gov/va/isaac/util/ProgressEvent.html">ProgressEvent</a> pe) {
-<a class="jxr_linenumber" name="229" href="#229">229</a>           Platform.runLater(() -&gt; {
-<a class="jxr_linenumber" name="230" href="#230">230</a>             progressBar.setProgress(((<strong class="jxr_keyword">double</strong>) pe.getProgress()) / 100);
-<a class="jxr_linenumber" name="231" href="#231">231</a>             statusLabel.setText(pe.getNote());
-<a class="jxr_linenumber" name="232" href="#232">232</a>           });
-<a class="jxr_linenumber" name="233" href="#233">233</a>         }
-<a class="jxr_linenumber" name="234" href="#234">234</a>       };
-<a class="jxr_linenumber" name="235" href="#235">235</a>       Platform.runLater(() -&gt; {
-<a class="jxr_linenumber" name="236" href="#236">236</a>         statusLabel.setText(<span class="jxr_string">"Starting..."</span>);
-<a class="jxr_linenumber" name="237" href="#237">237</a>         progressBar.setProgress(0);
-<a class="jxr_linenumber" name="238" href="#238">238</a>       });
-<a class="jxr_linenumber" name="239" href="#239">239</a>       exportFileHandler.doExport(listener);
-<a class="jxr_linenumber" name="240" href="#240">240</a>       Platform.runLater(() -&gt; {
-<a class="jxr_linenumber" name="241" href="#241">241</a>         statusLabel.setText(<span class="jxr_string">"Finished"</span>);
-<a class="jxr_linenumber" name="242" href="#242">242</a>         progressBar.setProgress(1);
-<a class="jxr_linenumber" name="243" href="#243">243</a>       });
-<a class="jxr_linenumber" name="244" href="#244">244</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="245" href="#245">245</a>     }
-<a class="jxr_linenumber" name="246" href="#246">246</a> 
-<a class="jxr_linenumber" name="247" href="#247">247</a>     <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="248" href="#248">248</a> <em class="jxr_comment">     * (non-Javadoc)</em>
-<a class="jxr_linenumber" name="249" href="#249">249</a> <em class="jxr_comment">     * </em>
-<a class="jxr_linenumber" name="250" href="#250">250</a> <em class="jxr_comment">     * @see javafx.concurrent.Task#succeeded()</em>
-<a class="jxr_linenumber" name="251" href="#251">251</a> <em class="jxr_comment">     */</em>
-<a class="jxr_linenumber" name="252" href="#252">252</a>     @Override
-<a class="jxr_linenumber" name="253" href="#253">253</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> succeeded() {
-<a class="jxr_linenumber" name="254" href="#254">254</a>       <em class="jxr_comment">// Update UI.</em>
-<a class="jxr_linenumber" name="255" href="#255">255</a>       progressBar.setProgress(100);
-<a class="jxr_linenumber" name="256" href="#256">256</a>       <strong class="jxr_keyword">if</strong> (requestCancel) {
-<a class="jxr_linenumber" name="257" href="#257">257</a>         resultLabel.setText(<span class="jxr_string">"Successfully cancelled export"</span>);
-<a class="jxr_linenumber" name="258" href="#258">258</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="259" href="#259">259</a>         statusLabel.setText(<span class="jxr_string">""</span>);
-<a class="jxr_linenumber" name="260" href="#260">260</a>         resultLabel.setText(<span class="jxr_string">"Successfully exported data"</span>);
-<a class="jxr_linenumber" name="261" href="#261">261</a>       }
-<a class="jxr_linenumber" name="262" href="#262">262</a>     }
-<a class="jxr_linenumber" name="263" href="#263">263</a> 
-<a class="jxr_linenumber" name="264" href="#264">264</a>     <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="265" href="#265">265</a> <em class="jxr_comment">     * (non-Javadoc)</em>
-<a class="jxr_linenumber" name="266" href="#266">266</a> <em class="jxr_comment">     * </em>
-<a class="jxr_linenumber" name="267" href="#267">267</a> <em class="jxr_comment">     * @see javafx.concurrent.Task#failed()</em>
-<a class="jxr_linenumber" name="268" href="#268">268</a> <em class="jxr_comment">     */</em>
-<a class="jxr_linenumber" name="269" href="#269">269</a>     @Override
-<a class="jxr_linenumber" name="270" href="#270">270</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> failed() {
-<a class="jxr_linenumber" name="271" href="#271">271</a>       Throwable ex = getException();
-<a class="jxr_linenumber" name="272" href="#272">272</a>       progressBar.setProgress(100);
-<a class="jxr_linenumber" name="273" href="#273">273</a>       <em class="jxr_comment">// leave last comment on failure, e.g. do not set status label here</em>
-<a class="jxr_linenumber" name="274" href="#274">274</a>       resultLabel.setText(<span class="jxr_string">"Failed to export data"</span>);
-<a class="jxr_linenumber" name="275" href="#275">275</a> 
-<a class="jxr_linenumber" name="276" href="#276">276</a>       String title = ex.getClass().getName();
-<a class="jxr_linenumber" name="277" href="#277">277</a>       String msg = String.format(<span class="jxr_string">"Unexpected error exporting to file"</span>);
-<a class="jxr_linenumber" name="278" href="#278">278</a>       LOG.error(msg, ex);
-<a class="jxr_linenumber" name="279" href="#279">279</a>       AppContext.getCommonDialogs()
-<a class="jxr_linenumber" name="280" href="#280">280</a>           .showErrorDialog(title, msg, ex.getMessage());
-<a class="jxr_linenumber" name="281" href="#281">281</a>     }
-<a class="jxr_linenumber" name="282" href="#282">282</a> 
-<a class="jxr_linenumber" name="283" href="#283">283</a>   }
-<a class="jxr_linenumber" name="284" href="#284">284</a> }
+<a class="jxr_linenumber" name="104" href="#104">104</a>     <strong class="jxr_keyword">this</strong>.setHgap(10);
+<a class="jxr_linenumber" name="105" href="#105">105</a>     <strong class="jxr_keyword">this</strong>.setVgap(10);
+<a class="jxr_linenumber" name="106" href="#106">106</a>     <strong class="jxr_keyword">this</strong>.setPadding(<strong class="jxr_keyword">new</strong> javafx.geometry.Insets(10, 10, 10, 10));
+<a class="jxr_linenumber" name="107" href="#107">107</a>     <a href="../../../../../gov/va/isaac/gui/util/GridPaneBuilder.html">GridPaneBuilder</a> builder = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/util/GridPaneBuilder.html">GridPaneBuilder</a>(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="108" href="#108">108</a>     builder.addRow(<span class="jxr_string">"Export Type: "</span>, exportTypeLabel);
+<a class="jxr_linenumber" name="109" href="#109">109</a>     builder.addRow(<span class="jxr_string">"Path Name: "</span>, pathNameLabel);
+<a class="jxr_linenumber" name="110" href="#110">110</a>     builder.addRow(<span class="jxr_string">"Folder Name: "</span>, folderNameLabel);
+<a class="jxr_linenumber" name="111" href="#111">111</a>     builder.addRow(<span class="jxr_string">"Progress: "</span>, progressBar);
+<a class="jxr_linenumber" name="112" href="#112">112</a>     progressBar.setMinWidth(500);
+<a class="jxr_linenumber" name="113" href="#113">113</a>     builder.addRow(<span class="jxr_string">"Status: "</span>, statusLabel);
+<a class="jxr_linenumber" name="114" href="#114">114</a>     builder.addRow(<span class="jxr_string">"Result: "</span>, resultLabel);
+<a class="jxr_linenumber" name="115" href="#115">115</a>     @SuppressWarnings(<span class="jxr_string">"deprecation"</span>)
+<a class="jxr_linenumber" name="116" href="#116">116</a>     javafx.scene.layout.HBox hbox = javafx.scene.layout.HBoxBuilder.create()
+<a class="jxr_linenumber" name="117" href="#117">117</a>     .alignment(javafx.geometry.Pos.TOP_CENTER).children(cancelButton).build();
+<a class="jxr_linenumber" name="118" href="#118">118</a> 
+<a class="jxr_linenumber" name="119" href="#119">119</a>     builder.addRow(hbox);
+<a class="jxr_linenumber" name="120" href="#120">120</a>     cancelButton.setOnAction(<strong class="jxr_keyword">new</strong> EventHandler&lt;ActionEvent&gt;() {
+<a class="jxr_linenumber" name="121" href="#121">121</a>       @Override
+<a class="jxr_linenumber" name="122" href="#122">122</a>       <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> handle(ActionEvent event) {
+<a class="jxr_linenumber" name="123" href="#123">123</a>         doCancel();
+<a class="jxr_linenumber" name="124" href="#124">124</a>       }
+<a class="jxr_linenumber" name="125" href="#125">125</a>     });
+<a class="jxr_linenumber" name="126" href="#126">126</a>     setConstraints();
+<a class="jxr_linenumber" name="127" href="#127">127</a> 
+<a class="jxr_linenumber" name="128" href="#128">128</a>     <em class="jxr_comment">// Set minimum dimensions.</em>
+<a class="jxr_linenumber" name="129" href="#129">129</a>     setMinHeight(100);
+<a class="jxr_linenumber" name="130" href="#130">130</a>     setMinWidth(600);
+<a class="jxr_linenumber" name="131" href="#131">131</a>   }
+<a class="jxr_linenumber" name="132" href="#132">132</a> 
+<a class="jxr_linenumber" name="133" href="#133">133</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="134" href="#134">134</a> <em class="jxr_javadoccomment">   * Perform an export according the specifed parameters.</em>
+<a class="jxr_linenumber" name="135" href="#135">135</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="136" href="#136">136</a> <em class="jxr_javadoccomment">   * @param exportType the export type</em>
+<a class="jxr_linenumber" name="137" href="#137">137</a> <em class="jxr_javadoccomment">   * @param pathNid the path nid</em>
+<a class="jxr_linenumber" name="138" href="#138">138</a> <em class="jxr_javadoccomment">   * @param folderName the file name</em>
+<a class="jxr_linenumber" name="139" href="#139">139</a> <em class="jxr_javadoccomment">   * @param zipChecked the flag indicating whether to compress output</em>
+<a class="jxr_linenumber" name="140" href="#140">140</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="141" href="#141">141</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> doExport(<a href="../../../../../gov/va/isaac/model/ExportType.html">ExportType</a> exportType, <strong class="jxr_keyword">int</strong> pathNid,
+<a class="jxr_linenumber" name="142" href="#142">142</a>     <strong class="jxr_keyword">final</strong> String folderName, <strong class="jxr_keyword">boolean</strong> zipChecked) {
+<a class="jxr_linenumber" name="143" href="#143">143</a>     Preconditions.checkNotNull(exportType);
+<a class="jxr_linenumber" name="144" href="#144">144</a>     Preconditions.checkNotNull(folderName);
+<a class="jxr_linenumber" name="145" href="#145">145</a> 
+<a class="jxr_linenumber" name="146" href="#146">146</a>     <em class="jxr_comment">// Make sure in application thread.</em>
+<a class="jxr_linenumber" name="147" href="#147">147</a>     FxUtils.checkFxUserThread();
+<a class="jxr_linenumber" name="148" href="#148">148</a> 
+<a class="jxr_linenumber" name="149" href="#149">149</a>     <em class="jxr_comment">// Update UI.</em>
+<a class="jxr_linenumber" name="150" href="#150">150</a>     exportTypeLabel.setText(exportType.getDisplayName());
+<a class="jxr_linenumber" name="151" href="#151">151</a>     pathNameLabel.setText(WBUtility.getConPrefTerm(pathNid));
+<a class="jxr_linenumber" name="152" href="#152">152</a>     folderNameLabel.setText(folderName);
+<a class="jxr_linenumber" name="153" href="#153">153</a> 
+<a class="jxr_linenumber" name="154" href="#154">154</a>     File folder = <strong class="jxr_keyword">new</strong> File(folderName);
+<a class="jxr_linenumber" name="155" href="#155">155</a>     <em class="jxr_comment">// Inject into an ExportFileHandler.</em>
+<a class="jxr_linenumber" name="156" href="#156">156</a>     exportFileHandler =
+<a class="jxr_linenumber" name="157" href="#157">157</a>         <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/ie/ExportFileHandler.html">ExportFileHandler</a>(pathNid, exportType, folder, zipChecked);
+<a class="jxr_linenumber" name="158" href="#158">158</a> 
+<a class="jxr_linenumber" name="159" href="#159">159</a>     <em class="jxr_comment">// Do work in background.</em>
+<a class="jxr_linenumber" name="160" href="#160">160</a>     task = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/dialog/ExportView.html">ExporterTask</a>(exportFileHandler);
+<a class="jxr_linenumber" name="161" href="#161">161</a> 
+<a class="jxr_linenumber" name="162" href="#162">162</a>     <em class="jxr_comment">// Bind cursor to task state.</em>
+<a class="jxr_linenumber" name="163" href="#163">163</a>     ObjectBinding&lt;Cursor&gt; cursorBinding =
+<a class="jxr_linenumber" name="164" href="#164">164</a>         Bindings.when(task.runningProperty()).then(Cursor.WAIT)
+<a class="jxr_linenumber" name="165" href="#165">165</a>             .otherwise(Cursor.DEFAULT);
+<a class="jxr_linenumber" name="166" href="#166">166</a>     <strong class="jxr_keyword">this</strong>.getScene().cursorProperty().bind(cursorBinding);
+<a class="jxr_linenumber" name="167" href="#167">167</a> 
+<a class="jxr_linenumber" name="168" href="#168">168</a>     taskThread = <strong class="jxr_keyword">new</strong> Thread(task, <span class="jxr_string">"Exporter_"</span> + exportType);
+<a class="jxr_linenumber" name="169" href="#169">169</a>     taskThread.setDaemon(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="170" href="#170">170</a>     taskThread.start();
+<a class="jxr_linenumber" name="171" href="#171">171</a>   }
+<a class="jxr_linenumber" name="172" href="#172">172</a> 
+<a class="jxr_linenumber" name="173" href="#173">173</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="174" href="#174">174</a> <em class="jxr_javadoccomment">   * Do cancel.</em>
+<a class="jxr_linenumber" name="175" href="#175">175</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="176" href="#176">176</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> doCancel() {
+<a class="jxr_linenumber" name="177" href="#177">177</a>     LOG.info(<span class="jxr_string">"Cancel import."</span>);
+<a class="jxr_linenumber" name="178" href="#178">178</a>     <strong class="jxr_keyword">if</strong> (requestCancel) {
+<a class="jxr_linenumber" name="179" href="#179">179</a>       <em class="jxr_comment">// complete the process</em>
+<a class="jxr_linenumber" name="180" href="#180">180</a>       ((Stage) getScene().getWindow()).close();
+<a class="jxr_linenumber" name="181" href="#181">181</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="182" href="#182">182</a>     }
+<a class="jxr_linenumber" name="183" href="#183">183</a> 
+<a class="jxr_linenumber" name="184" href="#184">184</a>     <em class="jxr_comment">// Set requestCancel to true and cancel task</em>
+<a class="jxr_linenumber" name="185" href="#185">185</a>     requestCancel = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="186" href="#186">186</a>     exportFileHandler.doCancel();
+<a class="jxr_linenumber" name="187" href="#187">187</a>     cancelButton.setText(<span class="jxr_string">"Close"</span>);
+<a class="jxr_linenumber" name="188" href="#188">188</a>   }
+<a class="jxr_linenumber" name="189" href="#189">189</a> 
+<a class="jxr_linenumber" name="190" href="#190">190</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="191" href="#191">191</a> <em class="jxr_javadoccomment">   * Sets the FX constraints.</em>
+<a class="jxr_linenumber" name="192" href="#192">192</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="193" href="#193">193</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> setConstraints() {
+<a class="jxr_linenumber" name="194" href="#194">194</a> 
+<a class="jxr_linenumber" name="195" href="#195">195</a>     <em class="jxr_comment">// Column 1 has empty constraints.</em>
+<a class="jxr_linenumber" name="196" href="#196">196</a>     <strong class="jxr_keyword">this</strong>.getColumnConstraints().add(<strong class="jxr_keyword">new</strong> ColumnConstraints());
+<a class="jxr_linenumber" name="197" href="#197">197</a> 
+<a class="jxr_linenumber" name="198" href="#198">198</a>     <em class="jxr_comment">// Column 2 should grow to fill space.</em>
+<a class="jxr_linenumber" name="199" href="#199">199</a>     ColumnConstraints column2 = <strong class="jxr_keyword">new</strong> ColumnConstraints();
+<a class="jxr_linenumber" name="200" href="#200">200</a>     column2.setHgrow(Priority.ALWAYS);
+<a class="jxr_linenumber" name="201" href="#201">201</a>     <strong class="jxr_keyword">this</strong>.getColumnConstraints().add(column2);
+<a class="jxr_linenumber" name="202" href="#202">202</a> 
+<a class="jxr_linenumber" name="203" href="#203">203</a>     <em class="jxr_comment">// Rows 1-4 have empty constraints.</em>
+<a class="jxr_linenumber" name="204" href="#204">204</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
+<a class="jxr_linenumber" name="205" href="#205">205</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
+<a class="jxr_linenumber" name="206" href="#206">206</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
+<a class="jxr_linenumber" name="207" href="#207">207</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(<strong class="jxr_keyword">new</strong> RowConstraints());
+<a class="jxr_linenumber" name="208" href="#208">208</a> 
+<a class="jxr_linenumber" name="209" href="#209">209</a>     <em class="jxr_comment">// Row 5 should</em>
+<a class="jxr_linenumber" name="210" href="#210">210</a>     RowConstraints row5 = <strong class="jxr_keyword">new</strong> RowConstraints();
+<a class="jxr_linenumber" name="211" href="#211">211</a>     row5.setVgrow(Priority.ALWAYS);
+<a class="jxr_linenumber" name="212" href="#212">212</a>     <strong class="jxr_keyword">this</strong>.getRowConstraints().add(row5);
+<a class="jxr_linenumber" name="213" href="#213">213</a>   }
+<a class="jxr_linenumber" name="214" href="#214">214</a> 
+<a class="jxr_linenumber" name="215" href="#215">215</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="216" href="#216">216</a> <em class="jxr_javadoccomment">   * Inner class to handle the export task.</em>
+<a class="jxr_linenumber" name="217" href="#217">217</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="218" href="#218">218</a>   <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/gui/dialog/ExportView.html">ExporterTask</a> <strong class="jxr_keyword">extends</strong> Task&lt;Boolean&gt; {
+<a class="jxr_linenumber" name="219" href="#219">219</a> 
+<a class="jxr_linenumber" name="220" href="#220">220</a>     <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> The export handler. */</em>
+<a class="jxr_linenumber" name="221" href="#221">221</a>     <a href="../../../../../gov/va/isaac/gui/dialog/ExportView.html">ExporterTask</a>(<a href="../../../../../gov/va/isaac/ie/ExportFileHandler.html">ExportFileHandler</a> exportFileHandler) {
+<a class="jxr_linenumber" name="222" href="#222">222</a>       <em class="jxr_comment">// do nothing</em>
+<a class="jxr_linenumber" name="223" href="#223">223</a>     }
+<a class="jxr_linenumber" name="224" href="#224">224</a> 
+<a class="jxr_linenumber" name="225" href="#225">225</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="226" href="#226">226</a> <em class="jxr_comment">     * (non-Javadoc)</em>
+<a class="jxr_linenumber" name="227" href="#227">227</a> <em class="jxr_comment">     * </em>
+<a class="jxr_linenumber" name="228" href="#228">228</a> <em class="jxr_comment">     * @see javafx.concurrent.Task#call()</em>
+<a class="jxr_linenumber" name="229" href="#229">229</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="230" href="#230">230</a>     @Override
+<a class="jxr_linenumber" name="231" href="#231">231</a>     <strong class="jxr_keyword">protected</strong> Boolean call() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="232" href="#232">232</a> 
+<a class="jxr_linenumber" name="233" href="#233">233</a>       <a href="../../../../../gov/va/isaac/util/ProgressListener.html">ProgressListener</a> listener = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/util/ProgressListener.html">ProgressListener</a>() {
+<a class="jxr_linenumber" name="234" href="#234">234</a>         @Override
+<a class="jxr_linenumber" name="235" href="#235">235</a>         <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> updateProgress(<a href="../../../../../gov/va/isaac/util/ProgressEvent.html">ProgressEvent</a> pe) {
+<a class="jxr_linenumber" name="236" href="#236">236</a>           Platform.runLater(() -&gt; {
+<a class="jxr_linenumber" name="237" href="#237">237</a>             progressBar.setProgress(((<strong class="jxr_keyword">double</strong>) pe.getProgress()) / 100);
+<a class="jxr_linenumber" name="238" href="#238">238</a>             statusLabel.setText(pe.getNote());
+<a class="jxr_linenumber" name="239" href="#239">239</a>           });
+<a class="jxr_linenumber" name="240" href="#240">240</a>         }
+<a class="jxr_linenumber" name="241" href="#241">241</a>       };
+<a class="jxr_linenumber" name="242" href="#242">242</a>       Platform.runLater(() -&gt; {
+<a class="jxr_linenumber" name="243" href="#243">243</a>         statusLabel.setText(<span class="jxr_string">"Starting..."</span>);
+<a class="jxr_linenumber" name="244" href="#244">244</a>         progressBar.setProgress(0);
+<a class="jxr_linenumber" name="245" href="#245">245</a>       });
+<a class="jxr_linenumber" name="246" href="#246">246</a>       exportFileHandler.doExport(listener);
+<a class="jxr_linenumber" name="247" href="#247">247</a>       Platform.runLater(() -&gt; {
+<a class="jxr_linenumber" name="248" href="#248">248</a>         statusLabel.setText(<span class="jxr_string">"Finished"</span>);
+<a class="jxr_linenumber" name="249" href="#249">249</a>         progressBar.setProgress(1);
+<a class="jxr_linenumber" name="250" href="#250">250</a>       });
+<a class="jxr_linenumber" name="251" href="#251">251</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="252" href="#252">252</a>     }
+<a class="jxr_linenumber" name="253" href="#253">253</a> 
+<a class="jxr_linenumber" name="254" href="#254">254</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="255" href="#255">255</a> <em class="jxr_comment">     * (non-Javadoc)</em>
+<a class="jxr_linenumber" name="256" href="#256">256</a> <em class="jxr_comment">     * </em>
+<a class="jxr_linenumber" name="257" href="#257">257</a> <em class="jxr_comment">     * @see javafx.concurrent.Task#succeeded()</em>
+<a class="jxr_linenumber" name="258" href="#258">258</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="259" href="#259">259</a>     @Override
+<a class="jxr_linenumber" name="260" href="#260">260</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> succeeded() {
+<a class="jxr_linenumber" name="261" href="#261">261</a>       <em class="jxr_comment">// Update UI.</em>
+<a class="jxr_linenumber" name="262" href="#262">262</a>       progressBar.setProgress(100);
+<a class="jxr_linenumber" name="263" href="#263">263</a>       cancelButton.setText(<span class="jxr_string">"Close"</span>);
+<a class="jxr_linenumber" name="264" href="#264">264</a>       <strong class="jxr_keyword">if</strong> (requestCancel) {
+<a class="jxr_linenumber" name="265" href="#265">265</a>         resultLabel.setText(<span class="jxr_string">"Successfully cancelled export"</span>);
+<a class="jxr_linenumber" name="266" href="#266">266</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="267" href="#267">267</a>         statusLabel.setText(<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="268" href="#268">268</a>         resultLabel.setText(<span class="jxr_string">"Successfully exported data"</span>);
+<a class="jxr_linenumber" name="269" href="#269">269</a>       }
+<a class="jxr_linenumber" name="270" href="#270">270</a>       requestCancel = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="271" href="#271">271</a>     }
+<a class="jxr_linenumber" name="272" href="#272">272</a> 
+<a class="jxr_linenumber" name="273" href="#273">273</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="274" href="#274">274</a> <em class="jxr_comment">     * (non-Javadoc)</em>
+<a class="jxr_linenumber" name="275" href="#275">275</a> <em class="jxr_comment">     * </em>
+<a class="jxr_linenumber" name="276" href="#276">276</a> <em class="jxr_comment">     * @see javafx.concurrent.Task#failed()</em>
+<a class="jxr_linenumber" name="277" href="#277">277</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="278" href="#278">278</a>     @Override
+<a class="jxr_linenumber" name="279" href="#279">279</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> failed() {
+<a class="jxr_linenumber" name="280" href="#280">280</a>       Throwable ex = getException();
+<a class="jxr_linenumber" name="281" href="#281">281</a>       progressBar.setProgress(100);
+<a class="jxr_linenumber" name="282" href="#282">282</a>       cancelButton.setText(<span class="jxr_string">"Close"</span>);
+<a class="jxr_linenumber" name="283" href="#283">283</a>       requestCancel = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="284" href="#284">284</a>       <em class="jxr_comment">// leave last comment on failure, e.g. do not set status label here</em>
+<a class="jxr_linenumber" name="285" href="#285">285</a>       resultLabel.setText(<span class="jxr_string">"Failed to export data"</span>);
+<a class="jxr_linenumber" name="286" href="#286">286</a> 
+<a class="jxr_linenumber" name="287" href="#287">287</a>       String title = ex.getClass().getName();
+<a class="jxr_linenumber" name="288" href="#288">288</a>       String msg = String.format(<span class="jxr_string">"Unexpected error exporting to file"</span>);
+<a class="jxr_linenumber" name="289" href="#289">289</a>       LOG.error(msg, ex);
+<a class="jxr_linenumber" name="290" href="#290">290</a>       AppContext.getCommonDialogs()
+<a class="jxr_linenumber" name="291" href="#291">291</a>           .showErrorDialog(title, msg, ex.getMessage());
+<a class="jxr_linenumber" name="292" href="#292">292</a>     }
+<a class="jxr_linenumber" name="293" href="#293">293</a> 
+<a class="jxr_linenumber" name="294" href="#294">294</a>   }
+<a class="jxr_linenumber" name="295" href="#295">295</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

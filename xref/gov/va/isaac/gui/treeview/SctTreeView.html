@@ -32,7 +32,7 @@
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.ExtendedAppContext;
 <a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.constants.ISAAC;
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.util.Images;
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 <a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.util.Utility;
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.util.WBUtility;
@@ -77,7 +77,7 @@
 <a class="jxr_linenumber" name="67" href="#67">67</a>  
 <a class="jxr_linenumber" name="68" href="#68">68</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger LOG = LoggerFactory.getLogger(SctTreeView.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="69" href="#69">69</a>  
-<a class="jxr_linenumber" name="70" href="#70">70</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> defaultDisplayPolicies = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/treeview/DefaultSctTreeItemDisplayPolicies.html">DefaultSctTreeItemDisplayPolicies</a>();
+<a class="jxr_linenumber" name="70" href="#70">70</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> defaultDisplayPolicies = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/treeview/DefaultSctTreeItemDisplayPolicies.html">DefaultSctTreeItemDisplayPolicies</a>();
 <a class="jxr_linenumber" name="71" href="#71">71</a>  
 <a class="jxr_linenumber" name="72" href="#72">72</a>      <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> Package access for other classes. */</em>
 <a class="jxr_linenumber" name="73" href="#73">73</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">volatile</strong> <strong class="jxr_keyword">boolean</strong> shutdownRequested = false;
@@ -88,11 +88,11 @@
 <a class="jxr_linenumber" name="78" href="#78">78</a>      <strong class="jxr_keyword">private</strong> StackPane sp_;
 <a class="jxr_linenumber" name="79" href="#79">79</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/gui/treeview/SctTreeItem.html">SctTreeItem</a> rootTreeItem;
 <a class="jxr_linenumber" name="80" href="#80">80</a>      <strong class="jxr_keyword">private</strong> TreeView&lt;TaxonomyReferenceWithConcept&gt; treeView_;
-<a class="jxr_linenumber" name="81" href="#81">81</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> displayPolicies = defaultDisplayPolicies;
+<a class="jxr_linenumber" name="81" href="#81">81</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> displayPolicies = defaultDisplayPolicies;
 <a class="jxr_linenumber" name="82" href="#82">82</a>  
 <a class="jxr_linenumber" name="83" href="#83">83</a>      <strong class="jxr_keyword">protected</strong> <a href="../../../../../gov/va/isaac/gui/treeview/SctTreeView.html">SctTreeView</a>() {
 <a class="jxr_linenumber" name="84" href="#84">84</a>          treeView_ = <strong class="jxr_keyword">new</strong> TreeView&lt;&gt;();
-<a class="jxr_linenumber" name="85" href="#85">85</a>          AppContext.getMainApplicationWindow().registerShutdownListener(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="85" href="#85">85</a>          AppContext.getRuntimeGlobals().registerShutdownListener(<strong class="jxr_keyword">this</strong>);
 <a class="jxr_linenumber" name="86" href="#86">86</a>          sp_ = <strong class="jxr_keyword">new</strong> StackPane();
 <a class="jxr_linenumber" name="87" href="#87">87</a>          ProgressIndicator pi = <strong class="jxr_keyword">new</strong> ProgressIndicator();
 <a class="jxr_linenumber" name="88" href="#88">88</a>          pi.setMaxHeight(100.0);
@@ -484,11 +484,11 @@
 <a class="jxr_linenumber" name="474" href="#474">474</a>                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
 <a class="jxr_linenumber" name="475" href="#475">475</a>     }
 <a class="jxr_linenumber" name="476" href="#476">476</a> 
-<a class="jxr_linenumber" name="477" href="#477">477</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDisplayPolicies(<a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> policies) {
+<a class="jxr_linenumber" name="477" href="#477">477</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDisplayPolicies(<a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> policies) {
 <a class="jxr_linenumber" name="478" href="#478">478</a> 		<strong class="jxr_keyword">this</strong>.displayPolicies = policies;
 <a class="jxr_linenumber" name="479" href="#479">479</a> 	}
 <a class="jxr_linenumber" name="480" href="#480">480</a> 
-<a class="jxr_linenumber" name="481" href="#481">481</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> getDefaultDisplayPolicies() {
+<a class="jxr_linenumber" name="481" href="#481">481</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> getDefaultDisplayPolicies() {
 <a class="jxr_linenumber" name="482" href="#482">482</a> 		<strong class="jxr_keyword">return</strong> defaultDisplayPolicies;
 <a class="jxr_linenumber" name="483" href="#483">483</a> 	}
 <a class="jxr_linenumber" name="484" href="#484">484</a> 	

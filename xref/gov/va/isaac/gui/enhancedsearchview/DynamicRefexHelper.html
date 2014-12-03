@@ -76,7 +76,7 @@
 <a class="jxr_linenumber" name="66" href="#66">66</a>  				DynamicRefexHelper.displayDynamicRefex(refex);
 <a class="jxr_linenumber" name="67" href="#67">67</a>  			}
 <a class="jxr_linenumber" name="68" href="#68">68</a>  		} <strong class="jxr_keyword">catch</strong> (IOException e) {
-<a class="jxr_linenumber" name="69" href="#69">69</a>  			LOG.warn(<span class="jxr_string">"Failed diplaying refexes in concept "</span> + (desc != <strong class="jxr_keyword">null</strong> ? desc : <span class="jxr_string">""</span>) + <span class="jxr_string">". Caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="69" href="#69">69</a>  			LOG.warn(<span class="jxr_string">"Failed diplaying sememes in concept "</span> + (desc != <strong class="jxr_keyword">null</strong> ? desc : <span class="jxr_string">""</span>) + <span class="jxr_string">". Caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>);
 <a class="jxr_linenumber" name="70" href="#70">70</a>  			e.printStackTrace();
 <a class="jxr_linenumber" name="71" href="#71">71</a>  		}
 <a class="jxr_linenumber" name="72" href="#72">72</a>  	}
@@ -101,8 +101,8 @@
 <a class="jxr_linenumber" name="91" href="#91">91</a>  		}
 <a class="jxr_linenumber" name="92" href="#92">92</a>  		RefexDynamicColumnInfo[] colInfo = dud.getColumnInfo();
 <a class="jxr_linenumber" name="93" href="#93">93</a>  		RefexDynamicDataBI[] data = refex.getData();
-<a class="jxr_linenumber" name="94" href="#94">94</a>  		LOG.debug(indent + <span class="jxr_string">"dynamic refex nid="</span> + refex.getNid() + <span class="jxr_string">", uuid="</span> + refex.getPrimordialUuid());
-<a class="jxr_linenumber" name="95" href="#95">95</a>  		LOG.debug(indent + <span class="jxr_string">"dynamic refex name=\&quot;"</span> + dud.getRefexName() + <span class="jxr_string">"\&quot;: "</span> + refex.toUserString() + <span class="jxr_string">" with "</span> + colInfo.length + <span class="jxr_string">" columns:"</span>);
+<a class="jxr_linenumber" name="94" href="#94">94</a>  		LOG.debug(indent + <span class="jxr_string">"dynamic sememe nid="</span> + refex.getNid() + <span class="jxr_string">", uuid="</span> + refex.getPrimordialUuid());
+<a class="jxr_linenumber" name="95" href="#95">95</a>  		LOG.debug(indent + <span class="jxr_string">"dynamic sememe name=\&quot;"</span> + dud.getRefexName() + <span class="jxr_string">"\&quot;: "</span> + refex.toUserString() + <span class="jxr_string">" with "</span> + colInfo.length + <span class="jxr_string">" columns:"</span>);
 <a class="jxr_linenumber" name="96" href="#96">96</a>  		<strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> colIndex = 0; colIndex &lt; colInfo.length; ++colIndex) {
 <a class="jxr_linenumber" name="97" href="#97">97</a>  			RefexDynamicColumnInfo currentCol = colInfo[colIndex];
 <a class="jxr_linenumber" name="98" href="#98">98</a>  			String name = currentCol.getColumnName();
@@ -110,7 +110,7 @@
 <a class="jxr_linenumber" name="100" href="#100">100</a> 			UUID colUuid = currentCol.getColumnDescriptionConcept();
 <a class="jxr_linenumber" name="101" href="#101">101</a> 			RefexDynamicDataBI colData = data[colIndex];
 <a class="jxr_linenumber" name="102" href="#102">102</a> 
-<a class="jxr_linenumber" name="103" href="#103">103</a> 			LOG.debug(indent + <span class="jxr_string">"\t"</span> + <span class="jxr_string">"dynamic refex: "</span> + refex.toUserString() + <span class="jxr_string">" col #"</span> + colIndex + <span class="jxr_string">" (uuid="</span> + colUuid + <span class="jxr_string">", type="</span> + type.getDisplayName() + <span class="jxr_string">"): "</span> + name + <span class="jxr_string">"="</span> + (colData != <strong class="jxr_keyword">null</strong> ? colData.getDataObject() : <strong class="jxr_keyword">null</strong>));
+<a class="jxr_linenumber" name="103" href="#103">103</a> 			LOG.debug(indent + <span class="jxr_string">"\t"</span> + <span class="jxr_string">"dynamic sememe: "</span> + refex.toUserString() + <span class="jxr_string">" col #"</span> + colIndex + <span class="jxr_string">" (uuid="</span> + colUuid + <span class="jxr_string">", type="</span> + type.getDisplayName() + <span class="jxr_string">"): "</span> + name + <span class="jxr_string">"="</span> + (colData != <strong class="jxr_keyword">null</strong> ? colData.getDataObject() : <strong class="jxr_keyword">null</strong>));
 <a class="jxr_linenumber" name="104" href="#104">104</a> 		}
 <a class="jxr_linenumber" name="105" href="#105">105</a> 		
 <a class="jxr_linenumber" name="106" href="#106">106</a> 		Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexDynamicVersionBI&lt;?&gt;&gt; embeddedRefexes = <strong class="jxr_keyword">null</strong>;

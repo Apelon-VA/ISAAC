@@ -36,8 +36,8 @@
 <a class="jxr_linenumber" name="26" href="#26">26</a>  
 <a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> javafx.scene.Node;
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.util.Images;
-<a class="jxr_linenumber" name="29" href="#29">29</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies;
-<a class="jxr_linenumber" name="30" href="#30">30</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.treeview.SctTreeItemI;
+<a class="jxr_linenumber" name="29" href="#29">29</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
+<a class="jxr_linenumber" name="30" href="#30">30</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 <a class="jxr_linenumber" name="31" href="#31">31</a>  
 <a class="jxr_linenumber" name="32" href="#32">32</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="33" href="#33">33</a>  <em class="jxr_javadoccomment"> * DefaultSctTreeItemDisplayPolicies</em>
@@ -45,12 +45,12 @@
 <a class="jxr_linenumber" name="35" href="#35">35</a>  <em class="jxr_javadoccomment"> * @author &lt;a href="<a href="mailto:joel.kniaz@gmail.com" target="alexandria_uri">mailto:joel.kniaz@gmail.com</a>"&gt;Joel Kniaz&lt;/a&gt;</em>
 <a class="jxr_linenumber" name="36" href="#36">36</a>  <em class="jxr_javadoccomment"> *</em>
 <a class="jxr_linenumber" name="37" href="#37">37</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="38" href="#38">38</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/gui/treeview/DefaultSctTreeItemDisplayPolicies.html">DefaultSctTreeItemDisplayPolicies</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> {
+<a class="jxr_linenumber" name="38" href="#38">38</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/gui/treeview/DefaultSctTreeItemDisplayPolicies.html">DefaultSctTreeItemDisplayPolicies</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemDisplayPolicies.html">SctTreeItemDisplayPolicies</a> {
 <a class="jxr_linenumber" name="39" href="#39">39</a>  	<em class="jxr_comment">/*<em class="jxr_comment"> (non-Javadoc)</em></em>
 <a class="jxr_linenumber" name="40" href="#40">40</a>  <em class="jxr_comment">	 * @see gov.va.isaac.interfaces.treeview.SctTreeItemDisplayPolicies#computeGraphic(gov.va.isaac.interfaces.treeview.SctTreeItemI)</em>
 <a class="jxr_linenumber" name="41" href="#41">41</a>  <em class="jxr_comment">	 */</em>
 <a class="jxr_linenumber" name="42" href="#42">42</a>  	@Override
-<a class="jxr_linenumber" name="43" href="#43">43</a>  	<strong class="jxr_keyword">public</strong> Node computeGraphic(<a href="../../../../../gov/va/isaac/interfaces/treeview/SctTreeItemI.html">SctTreeItemI</a> item) {
+<a class="jxr_linenumber" name="43" href="#43">43</a>  	<strong class="jxr_keyword">public</strong> Node computeGraphic(<a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/taxonomyView/SctTreeItemI.html">SctTreeItemI</a> item) {
 <a class="jxr_linenumber" name="44" href="#44">44</a>  		<strong class="jxr_keyword">if</strong> (item.isRoot()) {
 <a class="jxr_linenumber" name="45" href="#45">45</a>  			<strong class="jxr_keyword">return</strong> Images.ROOT.createImageView();
 <a class="jxr_linenumber" name="46" href="#46">46</a>  		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (item.isDefined() &amp;&amp; (item.isMultiParent() || item.getMultiParentDepth() &gt; 0)) {

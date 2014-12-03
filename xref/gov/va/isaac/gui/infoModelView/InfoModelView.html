@@ -30,8 +30,8 @@
 <a class="jxr_linenumber" name="20" href="#20">20</a>  
 <a class="jxr_linenumber" name="21" href="#21">21</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.refsetview.RefsetView;
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.gui.util.DragResizer;
-<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.InfoModelViewI;
-<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.PopupViewI;
+<a class="jxr_linenumber" name="23" href="#23">23</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.PopupViewI;
+<a class="jxr_linenumber" name="24" href="#24">24</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI;
 <a class="jxr_linenumber" name="25" href="#25">25</a>  <strong class="jxr_keyword">import</strong> gov.va.isaac.util.WBUtility;
 <a class="jxr_linenumber" name="26" href="#26">26</a>  
 <a class="jxr_linenumber" name="27" href="#27">27</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
@@ -78,7 +78,7 @@
 <a class="jxr_linenumber" name="68" href="#68">68</a>  
 <a class="jxr_linenumber" name="69" href="#69">69</a>  @Service
 <a class="jxr_linenumber" name="70" href="#70">70</a>  @PerLookup
-<a class="jxr_linenumber" name="71" href="#71">71</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/gui/infoModelView/InfoModelView.html">InfoModelView</a> <strong class="jxr_keyword">implements</strong> PopupViewI, <a href="../../../../../gov/va/isaac/interfaces/gui/views/InfoModelViewI.html">InfoModelViewI</a>
+<a class="jxr_linenumber" name="71" href="#71">71</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/gui/infoModelView/InfoModelView.html">InfoModelView</a> <strong class="jxr_keyword">implements</strong> PopupViewI, <a href="../../../../../gov/va/isaac/interfaces/gui/views/commonFunctionality/InfoModelViewI.html">InfoModelViewI</a>
 <a class="jxr_linenumber" name="72" href="#72">72</a>  {
 <a class="jxr_linenumber" name="73" href="#73">73</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Logger logger = LoggerFactory.getLogger(InfoModelView.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="74" href="#74">74</a>  	<strong class="jxr_keyword">private</strong> Stage stage;
@@ -103,7 +103,7 @@
 <a class="jxr_linenumber" name="93" href="#93">93</a>  	}
 <a class="jxr_linenumber" name="94" href="#94">94</a>  
 <a class="jxr_linenumber" name="95" href="#95">95</a>  	<em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="96" href="#96">96</a>  <em class="jxr_javadoccomment">	 * @see gov.va.isaac.interfaces.gui.views.InfoModelViewI#setConcept(java.util.UUID)</em>
+<a class="jxr_linenumber" name="96" href="#96">96</a>  <em class="jxr_javadoccomment">	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI#setConcept(java.util.UUID)</em>
 <a class="jxr_linenumber" name="97" href="#97">97</a>  <em class="jxr_javadoccomment">	 */</em>
 <a class="jxr_linenumber" name="98" href="#98">98</a>  	@Override
 <a class="jxr_linenumber" name="99" href="#99">99</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setConcept(UUID conceptID)
