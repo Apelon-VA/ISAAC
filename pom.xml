@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>Sprint_17.2</version>
+    <version>Sprint_16.1</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -267,27 +267,12 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.4.1</version>
-                <configuration>
-                    <preparationGoals>clean validate</preparationGoals>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <!- - TODO disable this by default, only enable by option in maestrodev, otherwise, other branches of our code overwrite our gh-pages site - ->
-                    <!- - TODO figure out what is wrong with maven now....https://support.maestrodev.com/browse/VA-110 - ->
-                    <goals>deploy</goals> <!- - Disabled ' site site:stage scm-publish:publish-scm' for the moment - ->
-                </configuration>
-            </plugin-->
-            
             <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>1.0-m4.3</version>
                 <configuration>
-                    <pushReleases>false</pushReleases>
-                <noDeploy>true</noDeploy>
-            <noTag>true</noTag>
+                    <pushReleases>true</pushReleases>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <scmCommentPrefix>[jgitflow-plugin]</scmCommentPrefix>
                     <enableSshAgent>true</enableSshAgent>

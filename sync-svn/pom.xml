@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>Sprint_17.2</version>
+		<version>Sprint_16.1</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>sync-svn</artifactId>
