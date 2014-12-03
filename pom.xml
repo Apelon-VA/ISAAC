@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>1.0-Sprint_17-SNAPSHOT</version>
+    <version>Sprint_17.1</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -27,10 +27,7 @@
     </description>
 
     <scm>
-        <connection>scm:git:git@github.com:Apelon-VA/ISAAC.git</connection>
-        <developerConnection>scm:git:git@github.com:Apelon-VA/ISAAC.git</developerConnection>
         <url>https://github.com/Apelon-VA/ISAAC</url>
-        <tag>master</tag>
     </scm>
     <distributionManagement>
         <site>
@@ -41,8 +38,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.10-SNAPSHOT</otf-query.version>
-        <otf-versioning.version>1.1-va-1.10-SNAPSHOT</otf-versioning.version>
+        <otf-query.version>1.1-va-1.9.1</otf-query.version>
+        <otf-versioning.version>1.1-va-1.9.1</otf-versioning.version>
         <kie.version>6.0.1.Final</kie.version>  <!-- Workflow, drools, etc -->
     </properties>
     
@@ -270,18 +267,40 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!--plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.4.1</version>
                 <configuration>
                     <preparationGoals>clean validate</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <!-- TODO disable this by default, only enable by option in maestrodev, otherwise, other branches of our code overwrite our gh-pages site -->
-                    <!-- TODO figure out what is wrong with maven now....https://support.maestrodev.com/browse/VA-110 -->
-                    <goals>deploy</goals> <!-- Disabled ' site site:stage scm-publish:publish-scm' for the moment -->
+                    <!- - TODO disable this by default, only enable by option in maestrodev, otherwise, other branches of our code overwrite our gh-pages site - ->
+                    <!- - TODO figure out what is wrong with maven now....https://support.maestrodev.com/browse/VA-110 - ->
+                    <goals>deploy</goals> <!- - Disabled ' site site:stage scm-publish:publish-scm' for the moment - ->
+                </configuration>
+            </plugin-->
+            
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>1.0-m4.3</version>
+                <configuration>
+                    <pushReleases>false</pushReleases>
+                <noDeploy>true</noDeploy>
+            <noTag>true</noTag>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <scmCommentPrefix>[jgitflow-plugin]</scmCommentPrefix>
+                    <enableSshAgent>true</enableSshAgent>
+                    <flowInitContext>
+                        <masterBranchName>master</masterBranchName>
+                        <developBranchName>develop</developBranchName>
+                        <featureBranchPrefix>feature-</featureBranchPrefix>
+                        <releaseBranchPrefix>release-</releaseBranchPrefix>
+                        <hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
+                    </flowInitContext>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 
