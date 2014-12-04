@@ -21,8 +21,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -310,7 +312,16 @@ public class EnhancedSavedSearch {
 
 		return conceptSearchTypeCache.get(concept.getNid());
 	}
+	private static Set<Integer> badSearchConceptsToIgnore = new HashSet<>();
 	private static SearchType getSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		synchronized (badSearchConceptsToIgnore) {
+			if (badSearchConceptsToIgnore.contains(concept.getConceptNid())) {
+				LOG.debug("Ignoring invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"");
+			
+				return null;
+			}
+		}
+
 		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
 		for (RefexDynamicVersionBI<?> refex : refexes) {
 			RefexDynamicUsageDescription dud = null;
@@ -329,12 +340,45 @@ public class EnhancedSavedSearch {
 			} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription())) {
 				return SearchType.SEMEME;
 			} else {
-				LOG.debug("getSearchTypeFromSearchConcept() ignoring refex \"" + dud.getRefexName() + "\" on search filter concept nid=" + concept.getConceptNid() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\""); 
+				LOG.debug("getSearchTypeFromSearchConcept() ignoring refex \"" + dud.getRefexName() + "\" on search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\""); 
 			}
 		}
 		
-		String error = "Invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
-		LOG.error(error);
+		//String warn = "Automatically RETIRING invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
+		String warn = "Invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
+
+		LOG.warn(warn);
+		
+		synchronized (badSearchConceptsToIgnore) {
+			// Retire Concept for bad search refex
+//			RuntimeGlobalsI globals = AppContext.getService(RuntimeGlobalsI.class);
+			try {
+				// disable WorkflowInitiationPropertyChangeListener
+//				globals.disableAllCommitListeners();
+
+				// TODO: Make retirement of bad search concepts work
+//				ConceptAttributeAB cab = new ConceptAttributeAB(concept.getConceptNid(), /* concept.getConceptAttributesActive().isDefined() */ true, RefexDirective.EXCLUDE);
+//				ConceptAttributeChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+//				
+//				//ConceptCB cab = concept.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+//				//ConceptChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+//				
+//				cab.setStatus(Status.INACTIVE);
+//				
+//				WBUtility.addUncommitted(cabi.getEnclosingConcept());
+//				
+//				// Commit
+//				WBUtility.commit(concept);
+			} catch (Exception e) {
+				String error = "FAILED to automatically retire invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
+				LOG.error(error, e);
+				e.printStackTrace();
+			} finally {
+//				globals.enableAllCommitListeners();
+
+				badSearchConceptsToIgnore.add(concept.getConceptNid());
+			}
+		}
 		return null;
 	}
 	
