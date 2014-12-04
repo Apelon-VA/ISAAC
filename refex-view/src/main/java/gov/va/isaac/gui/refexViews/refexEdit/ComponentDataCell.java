@@ -19,6 +19,7 @@
 package gov.va.isaac.gui.refexViews.refexEdit;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.gui.util.Images;

@@ -16,10 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.refexViews.refexEdit;
+package gov.va.isaac.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
@@ -262,7 +261,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 		Scene scene = new Scene(root_);
 		stage.setScene(scene);
 		stage.setTitle("Configure Dynamic Sememe Indexing");
-		stage.getScene().getStylesheets().add(DynamicReferencedItemsView.class.getResource("/isaac-shared-styles.css").toString());
+		stage.getScene().getStylesheets().add(ConfigureDynamicRefexIndexingView.class.getResource("/isaac-shared-styles.css").toString());
 		stage.sizeToScene();
 		stage.show();
 	}

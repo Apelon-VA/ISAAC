@@ -38,6 +38,10 @@ public class SSHFriendlyUsernamePasswordCredsProvider extends CredentialsProvide
 
 	private char[] password;
 
+	//TODO look into using a SSHAgentConnector - to see if this lets us run on maestrodev without credentials
+	//See https://bitbucket.org/atlassian/jgit-flow/src/4e6a60287aaa219fa17c43f45edfc90b0aa192eb/jgitflow-maven-plugin/src/main/java/com/atlassian/maven/plugins/jgitflow/util/SshCredentialsProvider.java?at=develop
+	//for example usage
+	
 	/**
 	 * Initialize the provider with a single username and password.
 	 *

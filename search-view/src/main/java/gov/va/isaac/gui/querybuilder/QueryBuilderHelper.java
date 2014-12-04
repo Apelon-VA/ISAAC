@@ -291,11 +291,11 @@ public class QueryBuilderHelper {
 							}
 						}
 					});
-					nodeEditorGridPane.addRow(rowIndex++, new Label("Source Concept"), sourceConceptNode.getNode());
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Target Concept"), sourceConceptNode.getNode());
 				}
 				{
 					CheckBox destinationSubsumptionCheckBox = new CheckBox();
-					destinationSubsumptionCheckBox.setText("Use Destination Subsumption");
+					destinationSubsumptionCheckBox.setText("Use Target Subsumption");
 					destinationSubsumptionCheckBox.setSelected(relRestrictionNode.getUseDestinationSubsumption());
 
 					destinationSubsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
@@ -383,7 +383,7 @@ public class QueryBuilderHelper {
 				}
 				{
 					CheckBox subsumptionCheckBox = new CheckBox();
-					subsumptionCheckBox.setText("Use Subsumption");
+					subsumptionCheckBox.setText("Use RelType Subsumption");
 					subsumptionCheckBox.setSelected(relTypeNode.getUseSubsumption());
 
 					subsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
