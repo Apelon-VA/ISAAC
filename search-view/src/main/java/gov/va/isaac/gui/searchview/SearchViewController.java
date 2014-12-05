@@ -770,7 +770,7 @@ public class SearchViewController implements TaskCompleteCallback
 		}
 	}
 	
-	//TODO a listener to trigger this after a user makes a new one...
+	//TODO (artf231420) a listener to trigger this after a user makes a new one...
 	private void populateDynamicRefexList()
 	{
 		Task<Void> t = new Task<Void>()

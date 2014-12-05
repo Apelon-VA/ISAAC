@@ -55,36 +55,34 @@ public class EnhancedSearchView implements DockedViewI
 	}
 	
 	//TODO Dans big list of Enhanced Search View cleanup things.....
-	//1) the width.            seriously.                           the                  width                             is                          terrible                        and                                  needs                           to                        be                   fixed
-	//2) stop telling the user the settings are wrong after they click search.  Don't let them click search in the first place, and tell them why they can't click search
-	//3) Styling into css files
-	//4) Use HK2 properly - stop passing around references to components here and there and using static variables all over.  What if I want an enhanced search in a pop
-	// up window to put on my second monitor?  The current use of static makes that impossible.
-	//5) fix the look - buttons aren't aligned, buttons jump around in size randomly, standard icons we are using elsewhere for things like add/remove haven't been used
-	//6) Add filter button is in a bizarre place.  Search button is in a bizarre place.  typing enter doesn't perform a search.
-	//7) Fix the default widths on the columns on the result table
+	//1) (artf231406) EnhancedSearchView is too wide and not shrinkable
+	//2) (artf231407) Search and Search-criteria-save buttons disableProperty are properly bound, but buttons should have Tooltips describing why buttons are disabled
+	//3) (artf231408) Styling into css files
+	//4) (artf231410) Refactor to replace use of statics with proper use of HK2 in order to allow multiple instances - stop passing around references to components here and there and using static variables all over.  What if I want an enhanced search in a pop
+	// up window to put on my second monitor?  The current use of static makes that impossible
+	//5) (artf231412) fix the look - buttons aren't aligned, buttons jump around in size randomly, standard icons we are using elsewhere for things like add/remove haven't been used
+	//6.1) (artf231412) Add filter button is in a bizarre place
+	//6.2) (artf231412) Search button is in a bizarre place.
+	//6.3) (artf231412) Typing enter doesn't perform a search.
+	//7) (artf231412) Fix the default widths on the columns on the result table
 	//8) Why would save search even be an option before you perform the search?  move it to the bottom (along with many other fixes for the bottom)
-	//9) turn the bottom into a toolbar.  Handle results should be one 16x16 icon.  Clicking, presents a menu of options.  Same with restore searches.
-	//10) Tooltips... where are they?  Features and functions should be self documenting if not obvious.
+	//9) (artf231412) turn the bottom into a toolbar.  Handle results should be one 16x16 icon.  Clicking, presents a menu of options.  Same with restore searches.
+	//10) (artf231412) Tooltips... where are they?  Features and functions should be self documenting if not obvious.
 	//11) Reset Display Table?  How about "Clear Results"
-	//12) Fix the SCTID column.  We need "Native ID", and proper handling for SCTID, Loinc and RxNorm
-	//13) FSN / Term / Text.  I still can't figure out what on earth Text is supposed to be.  Is is supposed to be the matching description?
-	//14) Refset Specification Search is a terrible name.  We aren't searching the content of a refset.  This should be called OTF Query Search, 
+	//12) (artf231413) Fix the SCTID column.  We need "Native ID", and proper handling for SCTID, Loinc and RxNorm
+	//13) (artf231412) FSN / Term / Text.  I still can't figure out what on earth Text is supposed to be.  Is is supposed to be the matching description?
+	//14) (artf231412) Refset Specification Search is a terrible name.  We aren't searching the content of a refset.  This should be called OTF Query Search, 
 	//with a prominent option to store the search 
 	//15) did we have the feature to turn an OTF Query result into a refset?  I can't find it.
 	
-	//TODO bug - why do I have to right-click twice to get context menus?
-	//TODO bug - changing search types and other settings randomly leaves the search button permanently disabled with no way to recover.
-	//TODO bug - Find in taxonomy is broken from the right-click context menu:
+	//TODO bug (artf231414) - Find in taxonomy is broken from the right-click context menu:
 	//Exception in thread "JavaFX Application Thread" java.lang.IllegalArgumentException: Children: duplicate children added: parent = StackPane@5a7dd09f
 	//at javafx.scene.Parent$2.onProposedChange(Parent.java:450)
 	//at com.sun.javafx.collections.VetoableListDecorator.add(VetoableListDecorator.java:206)
 	// gov.va.isaac.gui.treeview.SctTreeView.finishTreeSetup(SctTreeView.java:268)
-	//TODO bug context menu Content Request menus aren't working - display view - if you right click on FSN - and click content request, it send the wrong nid
+	//TODO (artf231416) bug context menu Content Request menus aren't working in component/description display view mode - if you right click on FSN - and click content request, it send the wrong nid
 	//sending the nid of the description, rather than the concept.
-	//TODO bug content request options need to better handle getting a nid that isn't a concept... currently, they just present a silly error to the users.
-	//TODO bug save bug when clicking save on refset spec:  00:43:12.629 ERROR [Background-Thread-66] EnhancedSavedSearch.java:327 - Invalid/unsupported search filter concept nid=-2127069465, uuid=5dce6ade-bb27-55a0-a3a9-56675592c5c8, desc="Concept "a by darmbrust on 2014-11-15 @ 00:43:12" 
-	//TODO bug after bug above, on the next launch, this error was repeated 5 (why?) times:  00:44:30.682 ERROR [Background-Thread-51] EnhancedSavedSearch.java:327 - Invalid/unsupported search filter concept nid=-2127069465, uuid=5dce6ade-bb27-55a0-a3a9-56675592c5c8, desc="Concept "a by darmbrust on 2014-11-15 @ 00:43:12" 
+	//TODO (artf231416?) bug content request options need to better handle getting a nid that isn't a concept... currently, they just present a silly error to the users.
 	//
 	
 	/**

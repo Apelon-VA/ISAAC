@@ -356,7 +356,7 @@ public class EnhancedSavedSearch {
 				// disable WorkflowInitiationPropertyChangeListener
 //				globals.disableAllCommitListeners();
 
-				// TODO: Make retirement of bad search concepts work
+				// TODO: Make retirement of bad search concepts work: https://csfe.aceworkspace.net/sf/go/artf231405
 //				ConceptAttributeAB cab = new ConceptAttributeAB(concept.getConceptNid(), /* concept.getConceptAttributesActive().isDefined() */ true, RefexDirective.EXCLUDE);
 //				ConceptAttributeChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
 //				
