@@ -36,8 +36,10 @@ import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.ExternalValidatorBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicArrayBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicNidBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicArray;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.jvnet.hk2.annotations.Service;
@@ -136,11 +138,12 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 		return true;
 	}
 
-	public static RefexDynamicStringBI createValidatorDefinitionData(RefexDroolsValidatorImplInfo rdvii)
+	public static RefexDynamicArray<RefexDynamicString> createValidatorDefinitionData(RefexDroolsValidatorImplInfo rdvii)
 	{
 		try
 		{
-			return new RefexDynamicString("RefexDroolsValidator|" + rdvii.name());
+			return new RefexDynamicArray<RefexDynamicString>(
+					new RefexDynamicString[]{new RefexDynamicString("RefexDroolsValidator"), new RefexDynamicString(rdvii.name())});
 		}
 		catch (PropertyVetoException e)
 		{
@@ -153,7 +156,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 	/**
 	 * In our implementation - the validatorDefinitionData contains two things - the first - is the @name of this implementation of an
 	 * {@link ExternalValidatorBI} - for example "RefexDroolsValidator" - the rest is corresponding name from the 
-	 * {@link RefexDroolsValidatorImplInfo} enum (separated by a |) - so it would look like "RefexDroolsValidator|REFEX_STRING_RULES"
+	 * {@link RefexDroolsValidatorImplInfo} enum String[]{"RefexDroolsValidator", "REFEX_STRING_RULES"}
 	 * 
 	 * @param validatorDefinitionData
 	 * @throws RuntimeException if the input data can't be parsed as expected.
@@ -167,18 +170,18 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 			{
 				return null;
 			}
-			String temp = validatorDefinitionData.getDataObject().toString();
-			String[] parts = temp.split("\\|");
-			if (parts[0].equals("RefexDroolsValidator"))
+			@SuppressWarnings("unchecked")
+			RefexDynamicStringBI[] validatorInfo = ((RefexDynamicArrayBI<RefexDynamicStringBI>)validatorDefinitionData).getDataArray();
+			if (validatorInfo[0].getDataString().equals("RefexDroolsValidator"))
 			{
-				return RefexDroolsValidatorImplInfo.valueOf(parts[1]);
+				return RefexDroolsValidatorImplInfo.valueOf(validatorInfo[1].getDataString());
 			}
 			else
 			{
 				throw new RuntimeException("The name mapping for the validator does not match this class!");
 			}
 		}
-		catch (IndexOutOfBoundsException e)
+		catch (ClassCastException | IndexOutOfBoundsException e)
 		{
 			throw new RuntimeException("The incoming value (" + validatorDefinitionData.getDataObject().toString() + " doesn't match the expected format");
 		}
@@ -193,7 +196,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 	 * org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI, org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate)
 	 */
 	@Override
-	public boolean validate(RefexDynamicDataBI userData, RefexDynamicStringBI validatorDefinitionData, ViewCoordinate vc) throws RuntimeException
+	public boolean validate(RefexDynamicDataBI userData, RefexDynamicArrayBI<RefexDynamicStringBI> validatorDefinitionData, ViewCoordinate vc) throws RuntimeException
 	{
 		RefexDroolsValidatorImplInfo rdvi = readFromData(validatorDefinitionData);
 		if (rdvi == null)
@@ -216,7 +219,7 @@ public class RefexDroolsValidator implements ExternalValidatorBI
 	 * @see org.ihtsdo.otf.tcc.api.refexDynamic.data.ExternalValidatorBI#validatorSupportsType(org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI, org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType)
 	 */
 	@Override
-	public boolean validatorSupportsType(RefexDynamicStringBI validatorDefinitionData, RefexDynamicDataType dataType)
+	public boolean validatorSupportsType(RefexDynamicArrayBI<RefexDynamicStringBI> validatorDefinitionData, RefexDynamicDataType dataType)
 	{
 		RefexDroolsValidatorImplInfo rdvi = readFromData(validatorDefinitionData);
 		if (rdvi == null)
