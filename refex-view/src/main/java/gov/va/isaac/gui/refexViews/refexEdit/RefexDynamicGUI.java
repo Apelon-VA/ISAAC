@@ -24,6 +24,7 @@ import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.function.ToIntFunction;
@@ -34,6 +35,7 @@ import org.ihtsdo.otf.tcc.api.media.MediaVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicArrayBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicByteArrayBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicDoubleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicFloatBI;
@@ -315,6 +317,52 @@ public class RefexDynamicGUI
 							desc = ((RefexDynamicUUIDBI)data).getDataUUID() + "";
 						}
 						returnValue = new AbstractMap.SimpleImmutableEntry<String, String>(desc, data.getDataObject().toString());
+					}
+					else if (data instanceof RefexDynamicArrayBI<?>)
+					{
+						RefexDynamicArrayBI<?> instanceData = (RefexDynamicArrayBI<?>)data;
+						switch (instanceData.getArrayDataType())
+						{
+							case ARRAY:
+								//Could recurse... but I can't imagine a use case at the moment.
+								returnValue = new AbstractMap.SimpleImmutableEntry<String, String>("[" + instanceData.getDataArray().length + " nested arrays]",
+										"An array of nested arrays");
+								break;
+							case STRING: case BOOLEAN: case DOUBLE: case FLOAT: case INTEGER: case LONG: case NID: case UUID:
+							{
+								//NID and UUID could be turned into strings... but, unusual use case... leave like this for now.
+								StringBuilder sb = new StringBuilder();
+								sb.append("[");
+								for (RefexDynamicDataBI d : instanceData.getDataArray())
+								{
+									sb.append(d.getDataObject().toString());
+									sb.append(", ");
+								}
+								if (sb.length() > 1)
+								{
+									sb.setLength(sb.length() - 2);
+								}
+								sb.append("]");
+								returnValue = new AbstractMap.SimpleImmutableEntry<String, String>(sb.toString(), "Array of " + instanceData.getDataArray().length + " items: " + sb.toString());
+								break;
+							}
+							
+							case BYTEARRAY:
+								returnValue = new AbstractMap.SimpleImmutableEntry<String, String>("[" + instanceData.getDataArray().length + " Binary items]",
+										"An array of binary objects");
+								break;
+							case UNKNOWN: case POLYMORPHIC:
+							{
+								//shouldn't happen - but just do the toString
+								returnValue = new AbstractMap.SimpleImmutableEntry<String, String>("[" + instanceData.getDataArray().length + " items]",
+										"An array of unknown data elements");
+								break;
+							}
+							default:
+								logger_.error("Unhandled case: {}, {}", instanceData, Arrays.toString(instanceData.getDataArray()));
+								returnValue = new AbstractMap.SimpleImmutableEntry<String, String>("-ERROR-", "Internal error computing value");
+								break;
+						}
 					}
 					else
 					{
