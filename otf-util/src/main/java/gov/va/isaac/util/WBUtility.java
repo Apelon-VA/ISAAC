@@ -584,7 +584,7 @@ public class WBUtility {
 			// Nothing like an undocumented getter which, rather than returning null when
 			// the thing you are asking for doesn't exist - it goes off and returns
 			// essentially a new, empty, useless node. Sigh.
-			if (componentVersion.getUUIDs().size() == 0)
+			if (componentVersion == null || componentVersion.getUUIDs().size() == 0)
 			{
 				return null;
 			} else {
