@@ -232,7 +232,7 @@ public class RefexDynamicGUI
 		}
 		catch (IOException e)
 		{
-			//TODO how to handle?
+			//TODO (artf231428) how to handle?
 			throw new RuntimeException("Sort error", e);
 		}
 	}

@@ -497,7 +497,7 @@ public class RefexDataTypeFXNodeBuilder
 			
 			if (currentValue != null)
 			{
-				//TODO this doesn't work, if the nid isn't a concept nid.  We need a NidNode, rather than a ConceptNode
+				//TODO (artf231429) this doesn't work, if the nid isn't a concept nid.  We need a NidNode, rather than a ConceptNode
 				cn.set(WBUtility.getConceptVersion(((RefexDynamicNidBI)currentValue).getDataNid()));
 			}
 			

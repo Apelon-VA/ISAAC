@@ -404,7 +404,7 @@ public class ColumnController implements PanelControllersI {
 	{
 		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) 
 		{
-			// TODO: replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
+			// TODO (artf231424) replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
 			if (type.validatorSupportsType(dType) && (!((dType == RefexDynamicDataType.UUID || dType == RefexDynamicDataType.NID) && type == RefexDynamicValidatorType.REGEXP)))
 			{
 				if (!validatorType.getItems().contains(type))
@@ -467,7 +467,7 @@ public class ColumnController implements PanelControllersI {
 		
 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
 		
-		//TODO this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
+		//TODO (artf231425) this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
 		//The Platform.runLater should _NOT_ be necessary, but it seems to prevent the infinite loop for now.
 		if (rdci.getColumnDescriptionConcept() != null)
 		{

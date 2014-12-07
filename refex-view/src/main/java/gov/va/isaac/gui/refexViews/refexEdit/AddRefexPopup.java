@@ -115,7 +115,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 	private RefexDynamicGUI editRefex_;
 	private Label unselectableComponentLabel_;;
 	private ScrollPane sp_;
-	//TODO improve 'ConceptNode' - this mess of Conceptnode or TextField will work for now, if they set a component type restriction
+	//TODO (artf231426) improve 'ConceptNode' - this mess of Conceptnode or TextField will work for now, if they set a component type restriction
 	//But if they don't set a component type restriction, we still need the field (conceptNode) to allow nids or UUIDs of other types of things.
 	//both here, and in the GUI that creates the sememe - when specifying the default value.
 	private ConceptNode selectableConcept_;
