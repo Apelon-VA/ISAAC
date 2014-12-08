@@ -26,9 +26,12 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTre
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
@@ -41,6 +44,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -72,9 +76,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
-    private Object lock_ = new Object();
-    private boolean initRun = false;
-    private boolean initialLoadComplete_ = false;
+    private final CountDownLatch initialLoadComplete_ = new CountDownLatch(1);
+    private volatile boolean initRun = false;
     private StackPane sp_;
     private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
@@ -95,7 +98,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     public StackPane getView()
     {
     	if (! initRun) {
-    		LOG.warn("getView() called before init() run");
+    		LOG.warn("getView() called before init() completed");
     	}
         return sp_;
     }
@@ -110,18 +113,15 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
             protected Object call() throws Exception {
                 LOG.debug("Ensuring init completed");
                 
-                synchronized (lock_)
+                if (initialLoadComplete_.getCount() != 0)
                 {
-                    if (!initialLoadComplete_)
-                    {
-                    	try {
-                    		LOG.info("Waiting for init() to complete...");
-                    		lock_.wait();
-                    		LOG.info("Completed waiting for init() to complete");
-                    	} catch (Exception e) {
-                    		LOG.error("Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\" while waiting for init() to complete");
-                    	}
-                    }
+                	try {
+                		LOG.info("Waiting for init() to complete...");
+                		initialLoadComplete_.await();
+                		LOG.info("Completed waiting for init() to complete");
+                	} catch (Exception e) {
+                		LOG.error("Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\" while waiting for init() to complete");
+                	}
                 }
                 
                 LOG.debug("Finished ensuring init completed");
@@ -167,9 +167,21 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         init(ISAAC.ISAAC_ROOT.getUuids()[0]);
     }
 
-    private void init(final UUID rootConcept) {
-    	initRun = true;
-    	
+	private void init(final UUID rootConcept) {
+		if (initRun) {
+			LOG.warn("init({}) called a subsequent time", rootConcept);
+			try {
+				initialLoadComplete_.await();
+			} catch (InterruptedException e) {
+				LOG.error("Wait for initialLoadComplete_ countdown interrupted", e);
+				e.printStackTrace();
+			}
+
+    		return;
+    	} else {
+    		initRun = true;
+    	}
+
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
 
@@ -267,11 +279,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 });
         sp_.getChildren().add(treeView_);
         sp_.getChildren().remove(0);  //remove the progress indicator
-        synchronized (lock_)
-        {
-            initialLoadComplete_ = true;
-            lock_.notifyAll();
-        }
+
+        initialLoadComplete_.countDown();
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
@@ -284,13 +293,10 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
             @Override
             protected SctTreeItem call() throws Exception {
-                synchronized (lock_)
-                {
-                    if (!initialLoadComplete_)
-                    {
-                        lock_.wait();
-                    }
-                }
+            	if (initialLoadComplete_.getCount() != 0)
+            	{
+            		initialLoadComplete_.await();
+            	}
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
                 pathToRoot.add(conceptUUID);
 
