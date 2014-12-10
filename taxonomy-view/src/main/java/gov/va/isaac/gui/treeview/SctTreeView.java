@@ -169,7 +169,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 		if (initializationCountDownLatch_.getCount() == 0) {
 			LOG.warn("Ignoring call to init({}) after previous init() already completed", rootConcept);
 			return;
-		} else if (initializationCountDownLatch_.getCount() == 1) {
+		} else if (initializationCountDownLatch_.getCount() <= 1) {
 			LOG.warn("Ignoring call to init({}) while initial init() still running", rootConcept);
 			return;
 		} else if (initializationCountDownLatch_.getCount() == 2) {
