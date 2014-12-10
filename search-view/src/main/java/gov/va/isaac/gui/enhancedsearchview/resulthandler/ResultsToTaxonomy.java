@@ -38,8 +38,6 @@ public class ResultsToTaxonomy {
 	private final static BorderPane taxonomyPanelBorderPane = new BorderPane();
 	private static SplitPane searchResultsAndTaxonomySplitPane;
 
-	private static SearchModel searchModel = new SearchModel();
-
 	private static ComboBox<TaxonomyViewMode> taxonomyPanelViewModeComboBox;
 	private static Button taxonomyPanelCloseButton;
 
@@ -78,7 +76,8 @@ public class ResultsToTaxonomy {
 				HashSet<Integer> searchResultAncestors = new HashSet<>();
 				HashSet<Integer> searchResults = new HashSet<>();
 
-				for (CompositeSearchResult c : searchModel.getSearchResultsTable().getResults().getItems()) {
+				// TODO this throws ConcurrentModificationException if called before prior export completed
+				for (CompositeSearchResult c : SearchModel.getSearchResultsTable().getResults().getItems()) {
 					if (cancelled) {
 						return taxonomyDisplayPolicies;
 					}
@@ -120,7 +119,7 @@ public class ResultsToTaxonomy {
 				
 				if (e != null) {
 					String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-					String msg = "Failed sending " + searchModel.getSearchResultsTable().getResults().getItems().size() + " search results to SearchResultsTaxonomy Panel";
+					String msg = "Failed sending " + SearchModel.getSearchResultsTable().getResults().getItems().size() + " search results to SearchResultsTaxonomy Panel";
 					String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
 					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 

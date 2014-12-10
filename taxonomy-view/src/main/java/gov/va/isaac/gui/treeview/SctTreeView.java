@@ -76,8 +76,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
-    private final CountDownLatch initialLoadComplete_ = new CountDownLatch(1);
-    private volatile boolean initRun = false;
+    // initializationCountDownLatch_ begins with count of 2, indicating init() not yet run
+    // initializationCountDownLatch_ count is decremented to 1 during init, indicating that init() started
+    // initializationCountDownLatch_ count is decremented to 0 upon completion of init
+    //
+    // Calls to init() while count is less than 2 return immediately
+    // Methods requiring that init() be completed must run init() if count > 1 and block on await()
+    private final CountDownLatch initializationCountDownLatch_ = new CountDownLatch(2);
+
     private StackPane sp_;
     private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
@@ -97,36 +103,28 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     
     public StackPane getView()
     {
-    	if (! initRun) {
-    		LOG.warn("getView() called before init() completed");
-    	}
+		// TODO Determine if these warnings are still necessary
+		if (initializationCountDownLatch_.getCount() > 1) {
+			LOG.warn("getView() called before initial init() started");
+		} else if (initializationCountDownLatch_.getCount() > 0) {
+			LOG.warn("getView() called before initial init() completed");
+		}
         return sp_;
     }
 
     public void refresh() {
-    	if (! initRun) {
-    		init();
-    	}
+		if (initializationCountDownLatch_.getCount() > 1) {
+			// called before initial init() run, so run init()
+			init();
+		}
 
-    	Task<Object> task = new Task<Object>() {
-            @Override
-            protected Object call() throws Exception {
-                LOG.debug("Ensuring init completed");
-                
-                if (initialLoadComplete_.getCount() != 0)
-                {
-                	try {
-                		LOG.info("Waiting for init() to complete...");
-                		initialLoadComplete_.await();
-                		LOG.info("Completed waiting for init() to complete");
-                	} catch (Exception e) {
-                		LOG.error("Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\" while waiting for init() to complete");
-                	}
-                }
-                
-                LOG.debug("Finished ensuring init completed");
-                return new Object();
-            }
+		Task<Object> task = new Task<Object>() {
+			@Override
+			protected Object call() throws Exception {
+				// Waiting to ensure that init() completed
+				initializationCountDownLatch_.await();
+				return new Object();
+			}
 
             @Override
             protected void succeeded() {
@@ -167,20 +165,20 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         init(ISAAC.ISAAC_ROOT.getUuids()[0]);
     }
 
-	private void init(final UUID rootConcept) {
-		if (initRun) {
-			LOG.warn("init({}) called a subsequent time", rootConcept);
-			try {
-				initialLoadComplete_.await();
-			} catch (InterruptedException e) {
-				LOG.error("Wait for initialLoadComplete_ countdown interrupted", e);
-				e.printStackTrace();
-			}
-
-    		return;
-    	} else {
-    		initRun = true;
-    	}
+	private synchronized void init(final UUID rootConcept) {
+		if (initializationCountDownLatch_.getCount() == 0) {
+			LOG.warn("Ignoring call to init({}) after previous init() already completed", rootConcept);
+			return;
+		} else if (initializationCountDownLatch_.getCount() == 1) {
+			LOG.warn("Ignoring call to init({}) while initial init() still running", rootConcept);
+			return;
+		} else if (initializationCountDownLatch_.getCount() == 2) {
+			initializationCountDownLatch_.countDown();
+			LOG.debug("Performing initial init({})", rootConcept);
+		} else {
+			// this should never happen
+			throw new RuntimeException("SctTreeView initializationCountDownLatch_ has unexpected count " + initializationCountDownLatch_.getCount() + " which is not 0, 1 or 2");
+		}
 
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
@@ -280,11 +278,16 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         sp_.getChildren().add(treeView_);
         sp_.getChildren().remove(0);  //remove the progress indicator
 
-        initialLoadComplete_.countDown();
+        // Final decrement of initializationCountDownLatch_ to 0,
+        // indicating that initial init() is complete
+        initializationCountDownLatch_.countDown();
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
-		if (! initRun) {
+		if (initializationCountDownLatch_.getCount() > 1) {
+			// Called before initial init() run, so run init().
+			// showConcept Task will internally await() init() completion.
+
     		init();
     	}
 
@@ -293,10 +296,9 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
             @Override
             protected SctTreeItem call() throws Exception {
-            	if (initialLoadComplete_.getCount() != 0)
-            	{
-            		initialLoadComplete_.await();
-            	}
+            	// await() init() completion.
+            	initializationCountDownLatch_.await();
+
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
                 pathToRoot.add(conceptUUID);
 
