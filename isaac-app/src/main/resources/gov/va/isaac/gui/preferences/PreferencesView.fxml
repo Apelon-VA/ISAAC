@@ -36,6 +36,10 @@
 		</HBox>
 	</bottom>
    <center>
-      <TabPane fx:id="tabPane_" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" />
+      <ScrollPane prefViewportHeight="200.0" prefViewportWidth="500.0">
+         <content>
+            <TabPane fx:id="tabPane_" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" />
+         </content>
+      </ScrollPane>
    </center>
 </BorderPane>
