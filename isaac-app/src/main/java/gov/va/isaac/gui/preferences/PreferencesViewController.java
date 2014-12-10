@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
@@ -98,8 +97,11 @@ public class PreferencesViewController {
 		// in case plugin.validationFailureMessageProperty() initialized by getNode()
 		tabPane_.getTabs().clear();
 		for (PreferencesPluginViewI plugin : plugins_) {
+			logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
 			Tab pluginTab = new Tab(plugin.getName());
-			pluginTab.setGraphic(plugin.getNode());
+			pluginTab.setContent(plugin.getNode());
+			
+			tabPane_.getTabs().add(pluginTab);
 		}
 
 		allValid_ = new ValidBooleanBinding() {
@@ -108,19 +110,23 @@ public class PreferencesViewController {
 				for (PreferencesPluginViewI plugin : plugins_) {
 					pluginValidationFailureMessages.add(plugin.validationFailureMessageProperty());
 				}
-				bind(pluginValidationFailureMessages.toArray(new StringProperty[pluginValidationFailureMessages.size()]));
+				bind(pluginValidationFailureMessages.toArray(new ReadOnlyStringProperty[pluginValidationFailureMessages.size()]));
 				setComputeOnInvalidate(true);
 			}
 			
 			@Override
 			protected boolean computeValue() {
 				for (PreferencesPluginViewI plugin : plugins_) {
-					if (plugin.validationFailureMessageProperty().get() != null) {
+					if (plugin.validationFailureMessageProperty().get() != null && plugin.validationFailureMessageProperty().get().length() > 0) {
 						this.setInvalidReason(plugin.validationFailureMessageProperty().get());
+						
+						logger.debug("Setting PreferencesView allValid_ to false because \"{}\"", this.getReasonWhyInvalid().get());
 						return false;
 					}
 				}
 				
+				logger.debug("Setting PreferencesView allValid_ to true");
+
 				this.clearInvalidReason();
 				return true;
 			}
@@ -132,7 +138,7 @@ public class PreferencesViewController {
 	}
 	
 	private void saveAll() {
-		System.out.println("performing save...");
+		logger.debug("performing save...");
 		
 		final Map<PreferencesPluginViewI, Exception> caughtExceptions = Collections.synchronizedMap(new WeakHashMap<>());
 		

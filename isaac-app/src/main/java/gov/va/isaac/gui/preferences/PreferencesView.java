@@ -32,6 +32,7 @@ import java.util.List;
 import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Service;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -55,7 +56,7 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesViewI;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-@Contract
+@Service
 @Singleton
 public class PreferencesView extends Stage implements PreferencesViewI {
 	private PreferencesViewController controller = null;

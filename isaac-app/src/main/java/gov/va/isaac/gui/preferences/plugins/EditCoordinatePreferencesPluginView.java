@@ -31,6 +31,8 @@ import java.util.Collection;
 import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * EditCoordinatePreferencesPluginView
@@ -42,6 +44,8 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @Singleton
 public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPluginView {
+	private Logger logger = LoggerFactory.getLogger(EditCoordinatePreferencesPluginView.class);
+
 	/**
 	 * 
 	 */
@@ -63,7 +67,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	@Override
 	public void save() throws IOException {
 		// TODO implement EditCoordinatePreferencesPluginView.save()
-		System.out.println("Saving ViewCoordinatePreferencesPluginView data");
+		logger.debug("Saving EditCoordinatePreferencesPluginView data");
 	}
 
 	/* (non-Javadoc)

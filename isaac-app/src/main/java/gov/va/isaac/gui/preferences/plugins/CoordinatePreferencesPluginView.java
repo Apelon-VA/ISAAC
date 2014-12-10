@@ -44,6 +44,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 /**
  * ViewCoordinatePreferencesPlugin
@@ -97,11 +98,13 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 				}
 			};
 			
+			VBox statedInferredToggleGroupVBox = new VBox();
 			ToggleGroup statedInferredToggleGroup = new ToggleGroup();
 			for (StatedInferredOptions option : StatedInferredOptions.values()) {
 				RadioButton optionButton = new RadioButton(option.value());
 				optionButton.setUserData(option);
 				statedInferredToggleGroup.getToggles().add(optionButton);
+				statedInferredToggleGroupVBox.getChildren().add(optionButton);
 			}
 			statedInferredToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 				@Override
@@ -125,6 +128,9 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			
 			// ComboBox
 			//pathComboBox.getSelectionModel().select(STOREDVALUE);
+			
+			hBox = new HBox();
+			hBox.getChildren().addAll(pathComboBox, statedInferredToggleGroupVBox);
 		}
 		
 		return hBox;
