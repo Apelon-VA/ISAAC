@@ -385,7 +385,7 @@ public class UserProfile
 	{
 		if (viewCoordinatePath == null)
 		{
-			return UUID.fromString(AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId());
+			return UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid());
 		}
 		return viewCoordinatePath;
 	}

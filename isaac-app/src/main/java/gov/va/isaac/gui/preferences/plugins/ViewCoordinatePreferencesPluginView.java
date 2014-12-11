@@ -31,6 +31,7 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,7 +98,8 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	@Override
 	protected Collection<String> getPathOptions() {
 		// TODO load ViewCoordinate path options
-		List<String> list = Arrays.asList("bogus vc 1", "bogus vc 2", "bogus vc 3", "bogus vc 4");
+		List<String> list = new ArrayList<>();
+		list.addAll(Arrays.asList("bogus vc 1", "bogus vc 2", "bogus vc 3", "bogus vc 4"));
 		
 		// Add currently-stored value to list of options, if not already there
 		String storedPath = getStoredPath();
