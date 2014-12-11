@@ -1033,7 +1033,7 @@ public class WBUtility {
 	public static void addToPromotionPath(UUID compUuid) throws IOException, ContradictionException, InvalidCAB {
 		// Setup Edit Path to be promotion path
 		List<ConceptSpec> origPaths = getEC().getEditPathListSpecs();
-		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID());
+		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getCurrentWorkflowPromotionPathUuidAsUUID());
 		ConceptSpec cs = new ConceptSpec(pp.getNid());
 		
 		List<ConceptSpec> editPaths = new ArrayList<ConceptSpec>();

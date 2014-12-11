@@ -86,13 +86,13 @@ public class LocalWfEngine implements LocalWorkflowRuntimeEngineBI {
             newInstance = session.startProcess(instanceRequest.getProcessName(), params);
             procApi.updateRequestStatus(instanceRequest.getId(),
                     ProcessInstanceCreationRequestI.RequestStatus.CREATED,
-                    "Instance created on KIE Server: " + AppContext.getAppConfiguration().getWorkflowServerUrl().toString(), newInstance.getId());
+                    "Instance created on KIE Server: " + AppContext.getAppConfiguration().getCurrentWorkflowServerUrl().toString(), newInstance.getId());
         }
         catch (RuntimeException e)
             {
                 procApi.updateRequestStatus(instanceRequest.getId(),
                         ProcessInstanceCreationRequestI.RequestStatus.REJECTED,
-                        "Instance rejected by KIE Server: " + AppContext.getAppConfiguration().getWorkflowServerUrl().toString() + " - " + e.getMessage(), newInstance != null ? newInstance.getId() : 0);
+                        "Instance rejected by KIE Server: " + AppContext.getAppConfiguration().getCurrentWorkflowServerUrl().toString() + " - " + e.getMessage(), newInstance != null ? newInstance.getId() : 0);
                 throw new RemoteException("Server error", e);
         }
     }

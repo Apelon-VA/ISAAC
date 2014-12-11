@@ -366,7 +366,7 @@ public class UserProfile
 	{
 		if (StringUtils.isBlank(workflowServerDeploymentId))
 		{
-			return AppContext.getAppConfiguration().getWorkflowServerDeploymentId();
+			return AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId();
 		}
 		return workflowServerDeploymentId;
 	}
@@ -385,7 +385,7 @@ public class UserProfile
 	{
 		if (viewCoordinatePath == null)
 		{
-			return UUID.fromString(AppContext.getAppConfiguration().getWorkflowServerDeploymentId());
+			return UUID.fromString(AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId());
 		}
 		return viewCoordinatePath;
 	}

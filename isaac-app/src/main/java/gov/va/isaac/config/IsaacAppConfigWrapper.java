@@ -20,13 +20,12 @@ package gov.va.isaac.config;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.UUID;
-
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -35,7 +34,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,8 +61,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		
 		try
 		{
-			@SuppressWarnings("resource")
-            InputStream in = AppContext.class.getResourceAsStream("/app.xml");
+			InputStream in = AppContext.class.getResourceAsStream("/app.xml");
 			if (in != null)
 			{
 				IsaacAppConfig temp = unmarshallStream(in);
@@ -110,8 +107,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	 */
 	private void copyHack(IsaacAppConfig read)
 	{
-		//TODO we will need a way for the user to change some of these parameters later (and a place to save them) like the two 
-		//workflow ones.	where and how?
 		if (read.getApplicationTitle() != null && read.getApplicationTitle().length() > 0)
 		{
 			setApplicationTitle(read.getApplicationTitle());
@@ -130,8 +125,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setApplicationTitle(read.getApplicationTitle());
 		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
 		setReleaseVersion(read.getReleaseVersion());
-        setExtensionNamespace(read.getExtensionNamespace());
-        setModuleId(read.getModuleId());
+		setExtensionNamespace(read.getExtensionNamespace());
+		setModuleId(read.getModuleId());
 		setChangeSetUrl(read.getChangeSetUrl());
 		setChangeSetUrlType(read.getChangeSetUrlType());
 		setAppSchemaLocation(read.getAppSchemaLocation());
@@ -147,11 +142,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrlAsURL()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerUrlAsURL()
 	 */
 	@Override
-	public URL getWorkflowServerUrlAsURL() {
-		return IsaacAppConfigI.getUrlForString(getWorkflowServerUrl());
+	public URL getDefaultWorkflowServerUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getDefaultWorkflowServerUrl());
 	}
 
 	/* (non-Javadoc)
@@ -163,19 +158,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
-	 */
-	@Override
-	public URL getChangeSetUrlAsURL() {
-		return IsaacAppConfigI.getUrlForString(getChangeSetUrl());
-	}
-
-	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
 	 */
 	@Override
-	public UUID getWorkflowPromotionPathUuidAsUUID() {
-		return IsaacAppConfigI.getUuidForString(getWorkflowPromotionPathUuid());
+	public UUID getDefaultWorkflowPromotionPathUuidAsUUID() {
+		return IsaacAppConfigI.getUuidForString(getDefaultWorkflowPromotionPathUuid());
 	}
 
 	/*
@@ -185,5 +172,193 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	public String getChangeSetUrlTypeName()
 	{
 		return getChangeSetUrlType().name();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultReleaseVersion()
+	 */
+	@Override
+	public String getDefaultReleaseVersion()
+	{
+		return getReleaseVersion();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentReleaseVersion()
+	 */
+	@Override
+	public String getCurrentReleaseVersion()
+	{
+		// TODO From User Profile
+		return getDefaultReleaseVersion();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultExtensionNamespace()
+	 */
+	@Override
+	public String getDefaultExtensionNamespace()
+	{
+		return getExtensionNamespace();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentExtensionNamespace()
+	 */
+	@Override
+	public String getCurrentExtensionNamespace()
+	{
+		// TODO from user profile
+		return getDefaultExtensionNamespace();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultChangeSetUrl()
+	 */
+	@Override
+	public String getDefaultChangeSetUrl()
+	{
+		return getChangeSetUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentChangeSetUrl()
+	 */
+	@Override
+	public String getCurrentChangeSetUrl()
+	{
+		// TODO from user profile
+		return getDefaultChangeSetUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentEditPathName()
+	 */
+	@Override
+	public String getCurrentEditPathName()
+	{
+		//TODO from UserProfile
+		return getDefaultEditPathName();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentEditPathUuid()
+	 */
+	@Override
+	public String getCurrentEditPathUuid()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getEditCoordinatePath().toString();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentViewPathName()
+	 */
+	@Override
+	public String getCurrentViewPathName()
+	{
+		//TODO from UserProfile
+		return getDefaultViewPathName();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentViewPathUuid()
+	 */
+	@Override
+	public String getCurrentViewPathUuid()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getViewCoordinatePath().toString();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerUrl()
+	 */
+	@Override
+	public String getDefaultWorkflowServerUrl()
+	{
+		return getWorkflowServerUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerUrl()
+	 */
+	@Override
+	public String getCurrentWorkflowServerUrl()
+	{
+		// TODO from UserProfile
+		return getDefaultWorkflowServerUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerUrlAsURL()
+	 */
+	@Override
+	public URL getCurrentWorkflowServerUrlAsURL()
+	{
+		return IsaacAppConfigI.getUrlForString(getCurrentWorkflowServerUrl());
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerDeploymentId()
+	 */
+	@Override
+	public String getDefaultWorkflowServerDeploymentId()
+	{
+		return getWorkflowServerDeploymentId();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerDeploymentId()
+	 */
+	@Override
+	public String getCurrentWorkflowServerDeploymentId()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getWorkflowServerDeploymentId();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathName()
+	 */
+	@Override
+	public String getDefaultWorkflowPromotionPathName()
+	{
+		return getWorkflowPromotionPathName();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathName()
+	 */
+	@Override
+	public String getCurrentWorkflowPromotionPathName()
+	{
+		// TODO from UserPrefs
+		return getDefaultWorkflowPromotionPathName();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathUuid()
+	 */
+	@Override
+	public String getDefaultWorkflowPromotionPathUuid()
+	{
+		return getWorkflowPromotionPathUuid();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathUuid()
+	 */
+	@Override
+	public String getCurrentWorkflowPromotionPathUuid()
+	{
+		// TODO from UserPrefs
+		return getDefaultWorkflowPromotionPathUuid();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathUuidAsUUID()
+	 */
+	@Override
+	public UUID getCurrentWorkflowPromotionPathUuidAsUUID()
+	{
+		return IsaacAppConfigI.getUuidForString(getCurrentWorkflowPromotionPathUuid());
 	}
 }
