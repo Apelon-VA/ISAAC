@@ -26,7 +26,6 @@ package gov.va.isaac.gui.preferences;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
 
 import java.io.IOException;
