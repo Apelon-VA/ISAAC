@@ -37,6 +37,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicByteArray;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicNid;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link DynamicRefexDataColumnListCell}
@@ -142,25 +143,31 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 			if (item.getValidator() != null)
 			{
 				gp.add(wrapAndStyle(makeBoldLabel("Validator Data"), row), 0, row);
-				String validiatorData = "";
-				if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.BYTEARRAY)
+				String validatorData = "";
+				if (item.getValidatorData() == null)
 				{
-					validiatorData = "Byte array of size " + ((RefexDynamicByteArray) item.getValidatorData()).getDataByteArray().length;
+					validatorData = "[null]";
+					LoggerFactory.getLogger(this.getClass()).warn("Null validator data on " + item.getColumnName() + " - " + item.getColumnOrder());
+					//I saw this case once, but had a odd DB state at the time.  Leave warning, as it shouldn't happen in normal use.
+				}
+				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.BYTEARRAY)
+				{
+					validatorData = "Byte array of size " + ((RefexDynamicByteArray) item.getValidatorData()).getDataByteArray().length;
 				}
 				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.NID)
 				{
-					validiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
-					if (validiatorData == null)
+					validatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
+					if (validatorData == null)
 					{
-						validiatorData = "NID: " + item.getValidatorData().getDataObject().toString();
+						validatorData = "NID: " + item.getValidatorData().getDataObject().toString();
 					}
 				}
 				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.UUID)
 				{
-					validiatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
-					if (validiatorData == null)
+					validatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
+					if (validatorData == null)
 					{
-						validiatorData = "UUID: " + item.getValidatorData().getDataObject().toString();
+						validatorData = "UUID: " + item.getValidatorData().getDataObject().toString();
 					}
 				}
 				else if (item.getValidator() == RefexDynamicValidatorType.EXTERNAL)
@@ -169,19 +176,19 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 					if (rdvi == null)
 					{
 						//this should be impossible....
-						validiatorData = "!ERROR!";
+						validatorData = "!ERROR!";
 					}
 					else
 					{
-						validiatorData = rdvi.getDisplayName();
+						validatorData = rdvi.getDisplayName();
 					}
 				}
 						
 				else
 				{
-					validiatorData = item.getValidatorData().getDataObject().toString();
+					validatorData = item.getValidatorData().getDataObject().toString();
 				}
-				Label valData = new Label(validiatorData);
+				Label valData = new Label(validatorData);
 				valData.setWrapText(true);
 				valData.maxWidthProperty().bind(this.widthProperty().subtract(210));
 				gp.add(wrapAndStyle(valData, row), 1, row++);
