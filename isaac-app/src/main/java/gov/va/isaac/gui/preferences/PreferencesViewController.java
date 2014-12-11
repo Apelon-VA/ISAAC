@@ -72,7 +72,7 @@ public class PreferencesViewController {
 	private ValidBooleanBinding allValid_ = null;
 	
 	public PreferencesViewController() {
-        AppContext.getServiceLocator().inject(this);
+		AppContext.getServiceLocator().inject(this);
 	}
 
 	@FXML
@@ -96,52 +96,54 @@ public class PreferencesViewController {
 	
 	public void aboutToShow()
 	{
-		// load fields before initializing allValid_
-		// in case plugin.validationFailureMessageProperty() initialized by getNode()
-		tabPane_.getTabs().clear();
-		for (PreferencesPluginViewI plugin : plugins_) {
-			logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
-			Label tabLabel = new Label(plugin.getName());
-			tabLabel.setMaxHeight(Integer.MAX_VALUE);
-			tabLabel.setMaxWidth(Integer.MAX_VALUE);
-			Tab pluginTab = new Tab();
-			pluginTab.setGraphic(tabLabel);
-			Node node = plugin.getNode();
-			pluginTab.setContent(node);
-			tabPane_.getTabs().add(pluginTab);
-		}
-
-		allValid_ = new ValidBooleanBinding() {
-			{
-				ArrayList<ReadOnlyStringProperty> pluginValidationFailureMessages = new ArrayList<>();
-				for (PreferencesPluginViewI plugin : plugins_) {
-					pluginValidationFailureMessages.add(plugin.validationFailureMessageProperty());
-				}
-				bind(pluginValidationFailureMessages.toArray(new ReadOnlyStringProperty[pluginValidationFailureMessages.size()]));
-				setComputeOnInvalidate(true);
+		if (allValid_ == null) {
+			// load fields before initializing allValid_
+			// in case plugin.validationFailureMessageProperty() initialized by getNode()
+			tabPane_.getTabs().clear();
+			for (PreferencesPluginViewI plugin : plugins_) {
+				logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
+				Label tabLabel = new Label(plugin.getName());
+				tabLabel.setMaxHeight(Integer.MAX_VALUE);
+				tabLabel.setMaxWidth(Integer.MAX_VALUE);
+				Tab pluginTab = new Tab();
+				pluginTab.setGraphic(tabLabel);
+				Node node = plugin.getNode();
+				pluginTab.setContent(node);
+				tabPane_.getTabs().add(pluginTab);
 			}
-			
-			@Override
-			protected boolean computeValue() {
-				for (PreferencesPluginViewI plugin : plugins_) {
-					if (plugin.validationFailureMessageProperty().get() != null && plugin.validationFailureMessageProperty().get().length() > 0) {
-						this.setInvalidReason(plugin.validationFailureMessageProperty().get());
-						
-						logger.debug("Setting PreferencesView allValid_ to false because \"{}\"", this.getReasonWhyInvalid().get());
-						return false;
+
+			allValid_ = new ValidBooleanBinding() {
+				{
+					ArrayList<ReadOnlyStringProperty> pluginValidationFailureMessages = new ArrayList<>();
+					for (PreferencesPluginViewI plugin : plugins_) {
+						pluginValidationFailureMessages.add(plugin.validationFailureMessageProperty());
 					}
+					bind(pluginValidationFailureMessages.toArray(new ReadOnlyStringProperty[pluginValidationFailureMessages.size()]));
+					setComputeOnInvalidate(true);
 				}
-				
-				logger.debug("Setting PreferencesView allValid_ to true");
 
-				this.clearInvalidReason();
-				return true;
-			}
-		};
+				@Override
+				protected boolean computeValue() {
+					for (PreferencesPluginViewI plugin : plugins_) {
+						if (plugin.validationFailureMessageProperty().get() != null && plugin.validationFailureMessageProperty().get().length() > 0) {
+							this.setInvalidReason(plugin.validationFailureMessageProperty().get());
 
-		okButton_.disableProperty().bind(allValid_.not());
-		// set focus on default
-		// Platform.runLater(...);
+							logger.debug("Setting PreferencesView allValid_ to false because \"{}\"", this.getReasonWhyInvalid().get());
+							return false;
+						}
+					}
+
+					logger.debug("Setting PreferencesView allValid_ to true");
+
+					this.clearInvalidReason();
+					return true;
+				}
+			};
+
+			okButton_.disableProperty().bind(allValid_.not());
+			// set focus on default
+			// Platform.runLater(...);
+		}
 	}
 	
 	private void saveAndExitIfSuccessful() {
@@ -149,19 +151,12 @@ public class PreferencesViewController {
 		
 		final Map<PreferencesPluginViewI, Exception> caughtExceptions = Collections.synchronizedMap(new WeakHashMap<>());
 		
-		for (PreferencesPluginViewI plugin : plugins_) {
-			Runnable r = new Runnable() {
-				@Override
-				public void run() {
-					try {
-						plugin.save();
-					} catch (IOException e) {
-						caughtExceptions.put(plugin, e);
-					}
-				}
-			};
-			
-			Utility.execute(r);
+		for (PreferencesPluginViewI plugin : plugins_) {		
+			try {
+				plugin.save();
+			} catch (IOException e) {
+				caughtExceptions.put(plugin, e);
+			}
 		}
 		
 		if (caughtExceptions.size() > 0) {

@@ -95,7 +95,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		return new String(loggedInUser_.getUserLogonName());
 	}
 	
-	public void saveChanges(UserProfile userProfile) throws InvalidUserException, IOException
+	public synchronized void saveChanges(UserProfile userProfile) throws InvalidUserException, IOException
 	{
 		if (isAutomationModeEnabled())
 		{

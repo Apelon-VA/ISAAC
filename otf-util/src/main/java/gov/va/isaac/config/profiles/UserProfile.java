@@ -88,6 +88,13 @@ public class UserProfile
 	
 	@XmlElement 
 	private String workflowServerDeploymentId = null;
+
+	@XmlElement 
+	private String viewCoordinatePath = null;
+	
+	@XmlElement 
+	private String editCoordinatePath = null;
+	
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
 	 */
@@ -334,23 +341,6 @@ public class UserProfile
 	{
 		this.launchWorkflowForEachCommit = launchWorkflowForEachCommit;
 	}
-	
-	/**
-	 * @return workflowServerDeploymentId
-	 */
-	public String getWorkflowServerDeploymentId()
-	{
-		return workflowServerDeploymentId;
-	}
-
-	/**
-	 * @param workflowServerDeploymentId
-	 */
-	public void setWorkflowServerDeploymentId(String workflowServerDeploymentId)
-	{
-		this.workflowServerDeploymentId = workflowServerDeploymentId;
-	}
-	
 
 	/**
 	 * @return the runDroolsBeforeEachCommit
@@ -368,7 +358,52 @@ public class UserProfile
 		this.runDroolsBeforeEachCommit = runDroolsBeforeEachCommit;
 	}
 
+	/**
+	 * @return workflowServerDeploymentId
+	 */
+	public String getWorkflowServerDeploymentId()
+	{
+		return workflowServerDeploymentId;
+	}
+	/**
+	 * @param workflowServerDeploymentId
+	 */
+	public void setWorkflowServerDeploymentId(String workflowServerDeploymentId)
+	{
+		this.workflowServerDeploymentId = workflowServerDeploymentId;
+	}
 
+	/**
+	 * @return viewCoordinatePath
+	 */
+	public String getViewCoordinatePath()
+	{
+		return viewCoordinatePath;
+	}
+	/**
+	 * @param viewCoordinatePath
+	 */
+	public void setViewCoordinatePath(String viewCoordinatePath)
+	{
+		this.viewCoordinatePath = viewCoordinatePath;
+	}
+
+	/**
+	 * @return editCoordinatePath
+	 */
+	public String getEditCoordinatePath()
+	{
+		return editCoordinatePath;
+	}
+	/**
+	 * @param editCoordinatePath
+	 */
+	public void setEditCoordinatePath(String editCoordinatePath)
+	{
+		this.editCoordinatePath = editCoordinatePath;
+	}
+	
+	
 	protected void store(File fileToWrite) throws IOException
 	{
 		try
@@ -420,6 +455,8 @@ public class UserProfile
 		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
 		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
 		clone.workflowServerDeploymentId = this.workflowServerDeploymentId;
+		clone.viewCoordinatePath = this.viewCoordinatePath;
+		clone.editCoordinatePath = this.editCoordinatePath;
 		
 		return clone;
 	}
