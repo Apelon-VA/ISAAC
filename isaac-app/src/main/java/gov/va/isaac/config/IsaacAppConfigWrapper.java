@@ -22,6 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
+import gov.va.isaac.util.WBUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -237,8 +238,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentEditPathName()
 	{
-		//TODO from UserProfile
-		return getDefaultEditPathName();
+		return WBUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentEditPathUuid()));
 	}
 
 	/**
@@ -256,8 +256,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentViewPathName()
 	{
-		//TODO from UserProfile
-		return getDefaultViewPathName();
+		return WBUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentViewPathUuid()));
 	}
 
 	/**
@@ -330,8 +329,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentWorkflowPromotionPathName()
 	{
-		// TODO from UserPrefs
-		return getDefaultWorkflowPromotionPathName();
+		return WBUtility.getDescriptionIfConceptExists(getCurrentWorkflowPromotionPathUuidAsUUID());
 	}
 
 	/**
