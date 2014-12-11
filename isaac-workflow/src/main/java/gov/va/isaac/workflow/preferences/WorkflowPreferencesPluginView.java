@@ -22,7 +22,7 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.preferences.plugins;
+package gov.va.isaac.workflow.preferences;
 
 import java.io.IOException;
 
