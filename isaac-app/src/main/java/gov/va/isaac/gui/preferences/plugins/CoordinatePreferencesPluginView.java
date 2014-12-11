@@ -53,7 +53,6 @@ import javafx.scene.layout.VBox;
  *
  */
 public abstract class CoordinatePreferencesPluginView implements PreferencesPluginViewI {
-	
 	private HBox hBox = null;
 	protected ValidBooleanBinding allValid_ = null;
 	
@@ -138,7 +137,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 
 	protected abstract Collection<String> getCoordinatePathOptions();
 
-	public ReadOnlyObjectProperty<StatedInferredOptions> getCurrentStatedInferredOptionProperty() {
+	public ReadOnlyObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty() {
 		return currentStatedInferredOptionProperty;
 	}
 	

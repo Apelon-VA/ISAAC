@@ -59,7 +59,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	public String getName() {
-		return getClass().getName().replaceAll(".*\\.", "").replaceAll(".*\\$", "");
+		return "View Coordinate";
 	}
 
 	/* (non-Javadoc)

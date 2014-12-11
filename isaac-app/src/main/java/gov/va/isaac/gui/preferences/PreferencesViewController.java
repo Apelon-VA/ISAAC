@@ -38,6 +38,8 @@ import java.util.WeakHashMap;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -81,6 +83,7 @@ public class PreferencesViewController {
 		assert cancelButton_ != null : "fx:id=\"cancelButton_\" was not injected: check your FXML file 'PreferencesView.fxml'.";
 
 		tabPane_.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+		tabPane_.setMaxWidth(Integer.MAX_VALUE);
 
 		okButton_.setOnAction((e) -> saveAll());
 
@@ -98,9 +101,13 @@ public class PreferencesViewController {
 		tabPane_.getTabs().clear();
 		for (PreferencesPluginViewI plugin : plugins_) {
 			logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
-			Tab pluginTab = new Tab(plugin.getName());
-			pluginTab.setContent(plugin.getNode());
-			
+			Label tabLabel = new Label(plugin.getName());
+			tabLabel.setMaxHeight(Integer.MAX_VALUE);
+			tabLabel.setMaxWidth(Integer.MAX_VALUE);
+			Tab pluginTab = new Tab();
+			pluginTab.setGraphic(tabLabel);
+			Node node = plugin.getNode();
+			pluginTab.setContent(node);
 			tabPane_.getTabs().add(pluginTab);
 		}
 

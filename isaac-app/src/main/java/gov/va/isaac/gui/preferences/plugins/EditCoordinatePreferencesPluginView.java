@@ -58,7 +58,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	public String getName() {
-		return getClass().getName().replaceAll(".*\\.", "").replaceAll(".*\\$", "");
+		return "Edit Coordinate";
 	}
 
 	/* (non-Javadoc)

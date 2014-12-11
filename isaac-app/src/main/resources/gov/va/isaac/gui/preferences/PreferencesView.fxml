@@ -36,9 +36,9 @@
 		</HBox>
 	</bottom>
    <center>
-      <ScrollPane prefViewportHeight="200.0" prefViewportWidth="500.0">
+      <ScrollPane maxWidth="1.7976931348623157E308">
          <content>
-            <TabPane fx:id="tabPane_" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" />
+            <TabPane fx:id="tabPane_" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="999.0" tabMaxWidth="999.0" BorderPane.alignment="CENTER" />
          </content>
       </ScrollPane>
    </center>
