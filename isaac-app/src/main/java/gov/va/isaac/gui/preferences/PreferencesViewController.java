@@ -85,7 +85,7 @@ public class PreferencesViewController {
 		tabPane_.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 		tabPane_.setMaxWidth(Integer.MAX_VALUE);
 
-		okButton_.setOnAction((e) -> saveAll());
+		okButton_.setOnAction((e) -> saveAndExitIfSuccessful());
 
 		cancelButton_.setOnAction((e) -> stage_.close());
 	}
@@ -144,7 +144,7 @@ public class PreferencesViewController {
 		// Platform.runLater(...);
 	}
 	
-	private void saveAll() {
+	private void saveAndExitIfSuccessful() {
 		logger.debug("performing save...");
 		
 		final Map<PreferencesPluginViewI, Exception> caughtExceptions = Collections.synchronizedMap(new WeakHashMap<>());
@@ -175,6 +175,8 @@ public class PreferencesViewController {
 			}
 			
 			AppContext.getCommonDialogs().showErrorDialog("Preferences Save Error", msg, builder.toString(), stage_);
+		} else {
+			stage_.close();
 		}
 	}
 }

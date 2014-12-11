@@ -85,6 +85,9 @@ public class UserProfile
 	
 	@XmlElement
 	private boolean runDroolsBeforeEachCommit = true;
+	
+	@XmlElement 
+	private String workflowServerDeploymentId = null;
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
 	 */
@@ -333,6 +336,23 @@ public class UserProfile
 	}
 	
 	/**
+	 * @return workflowServerDeploymentId
+	 */
+	public String getWorkflowServerDeploymentId()
+	{
+		return workflowServerDeploymentId;
+	}
+
+	/**
+	 * @param workflowServerDeploymentId
+	 */
+	public void setWorkflowServerDeploymentId(String workflowServerDeploymentId)
+	{
+		this.workflowServerDeploymentId = workflowServerDeploymentId;
+	}
+	
+
+	/**
 	 * @return the runDroolsBeforeEachCommit
 	 */
 	public boolean isRunDroolsBeforeEachCommit()
@@ -347,6 +367,7 @@ public class UserProfile
 	{
 		this.runDroolsBeforeEachCommit = runDroolsBeforeEachCommit;
 	}
+
 
 	protected void store(File fileToWrite) throws IOException
 	{
@@ -398,6 +419,7 @@ public class UserProfile
 		clone.conceptUUID = this.conceptUUID;
 		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
 		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
+		clone.workflowServerDeploymentId = this.workflowServerDeploymentId;
 		
 		return clone;
 	}

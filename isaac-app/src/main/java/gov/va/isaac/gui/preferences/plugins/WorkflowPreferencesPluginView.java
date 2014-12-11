@@ -32,6 +32,11 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -99,10 +104,9 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 			workflowServerDeploymentIdTextField.textProperty().bindBidirectional(workflowServerDeploymentIdProperty);
 
 			// TODO load/set current preferences values
-			
-			// ComboBox
-			//pathComboBox.getSelectionModel().select(STOREDVALUE);
-			
+			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+			workflowServerDeploymentIdProperty.set(loggedIn.getWorkflowServerDeploymentId());
+
 			gridPane.addRow(0, workflowServerDeploymentIdlabel, workflowServerDeploymentIdTextField);
 		}
 		
@@ -127,5 +131,16 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 	@Override
 	public void save() throws IOException {
 		logger.debug("Saving {} preferences", getName());
+		
+		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+		loggedIn.setWorkflowServerDeploymentId(workflowServerDeploymentIdProperty.get());
+		try {
+			AppContext.getService(UserProfileManager.class).saveChanges(loggedIn);
+		} catch (InvalidUserException e) {
+			String msg = "Caught " + e.getClass().getName() + " " + e.getLocalizedMessage() + " attempting to save UserProfile";
+			
+			logger.error(msg, e);
+			throw new IOException(msg, e);
+		}
 	}
 }
