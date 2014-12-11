@@ -24,7 +24,9 @@
  */
 package gov.va.isaac.gui.preferences.plugins;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
@@ -53,7 +55,6 @@ import javafx.scene.layout.VBox;
  *
  */
 public abstract class CoordinatePreferencesPluginView implements PreferencesPluginViewI {
-	
 	private HBox hBox = null;
 	protected ValidBooleanBinding allValid_ = null;
 	
@@ -116,18 +117,22 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			});
 
 			ComboBox<String> pathComboBox = new ComboBox<>();
-			pathComboBox.getItems().addAll(getCoordinatePathOptions());
+			pathComboBox.getItems().addAll(getPathOptions());
 			currentPathProperty.bind(pathComboBox.getSelectionModel().selectedItemProperty());
 			
 			// TODO load/set current preferences values
+			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+
+			final StatedInferredOptions storedStatedInferredOption = getStoredStatedInferredOption();
 			for (Toggle toggle : statedInferredToggleGroup.getToggles()) {
-				//if (toggle.getUserData() == STOREDVALUE) {
-				//	toggle.setSelected(true);
-				//}
+				if (toggle.getUserData() == storedStatedInferredOption) {
+					toggle.setSelected(true);
+				}
 			}
 			
 			// ComboBox
-			//pathComboBox.getSelectionModel().select(STOREDVALUE);
+			final String storedPath = getStoredPath();
+			pathComboBox.getSelectionModel().select(storedPath);
 			
 			hBox = new HBox();
 			hBox.getChildren().addAll(pathComboBox, statedInferredToggleGroupVBox);
@@ -136,9 +141,12 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 		return hBox;
 	}
 
-	protected abstract Collection<String> getCoordinatePathOptions();
+	protected abstract Collection<String> getPathOptions();
+	protected abstract String getStoredPath();
+	
+	protected abstract StatedInferredOptions getStoredStatedInferredOption();
 
-	public ReadOnlyObjectProperty<StatedInferredOptions> getCurrentStatedInferredOptionProperty() {
+	public ReadOnlyObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty() {
 		return currentStatedInferredOptionProperty;
 	}
 	

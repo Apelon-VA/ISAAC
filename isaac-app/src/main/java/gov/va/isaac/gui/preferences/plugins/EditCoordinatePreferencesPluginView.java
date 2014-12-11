@@ -24,9 +24,18 @@
  */
 package gov.va.isaac.gui.preferences.plugins;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.config.users.InvalidUserException;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Singleton;
 
@@ -58,7 +67,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	public String getName() {
-		return getClass().getName().replaceAll(".*\\.", "").replaceAll(".*\\$", "");
+		return "Edit Coordinate";
 	}
 
 	/* (non-Javadoc)
@@ -68,15 +77,53 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	public void save() throws IOException {
 		// TODO implement EditCoordinatePreferencesPluginView.save()
 		logger.debug("Saving EditCoordinatePreferencesPluginView data");
+		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+		logger.debug("Setting stored EC path (currently \"{}\") to {}", loggedIn.getEditCoordinatePath(), currentPathProperty().get()); 
+		loggedIn.setEditCoordinatePath(currentPathProperty().get());
+		//logger.debug("Setting stored EC StatedInferredPolicy (currently \"{}\") to {}", loggedIn.getStatedInferredPolicy(), currentStatedInferredOptionProperty().get()); 
+		//loggedIn.setStatedInferredPolicy(currentStatedInferredOptionProperty().get());
+		try {
+			AppContext.getService(UserProfileManager.class).saveChanges(loggedIn);
+		} catch (InvalidUserException e) {
+			String msg = "Caught " + e.getClass().getName() + " " + e.getLocalizedMessage() + " attempting to save UserProfile for " + getName();
+			
+			logger.error(msg, e);
+			throw new IOException(msg, e);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getCoordinatePathOptions()
 	 */
 	@Override
-	protected Collection<String> getCoordinatePathOptions() {
+	protected Collection<String> getPathOptions() {
 		// TODO load EditCoordinate path options
-		
-		return Arrays.asList("bogus ec 1", "bogus ec 2", "bogus ec 3", "bogus ec 4");
+		List<String> list = Arrays.asList("bogus ec 1", "bogus ec 2", "bogus ec 3", "bogus ec 4");
+
+		// Add currently-stored value to list of options, if not already there
+		String storedPath = getStoredPath();
+		if (storedPath != null && ! list.contains(storedPath)) {
+			list.add(storedPath);
+		}
+
+		Collections.sort(list);
+		return list;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getStoredPath()
+	 */
+	@Override
+	protected String getStoredPath() {
+		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+		return loggedIn.getEditCoordinatePath();
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getStoredStatedInferredOption()
+	 */
+	@Override
+	protected StatedInferredOptions getStoredStatedInferredOption() {
+		return null;
 	}
 }
