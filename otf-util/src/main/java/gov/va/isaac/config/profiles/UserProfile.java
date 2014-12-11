@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,10 +91,10 @@ public class UserProfile
 	private String workflowServerDeploymentId = null;
 
 	@XmlElement 
-	private String viewCoordinatePath = null;
+	private UUID viewCoordinatePath = null;
 	
 	@XmlElement 
-	private String editCoordinatePath = null;
+	private UUID editCoordinatePath = null;
 	
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
@@ -363,6 +364,10 @@ public class UserProfile
 	 */
 	public String getWorkflowServerDeploymentId()
 	{
+		if (StringUtils.isBlank(workflowServerDeploymentId))
+		{
+			return AppContext.getAppConfiguration().getWorkflowServerDeploymentId();
+		}
 		return workflowServerDeploymentId;
 	}
 	/**
@@ -376,14 +381,18 @@ public class UserProfile
 	/**
 	 * @return viewCoordinatePath
 	 */
-	public String getViewCoordinatePath()
+	public UUID getViewCoordinatePath()
 	{
+		if (viewCoordinatePath == null)
+		{
+			return UUID.fromString(AppContext.getAppConfiguration().getWorkflowServerDeploymentId());
+		}
 		return viewCoordinatePath;
 	}
 	/**
 	 * @param viewCoordinatePath
 	 */
-	public void setViewCoordinatePath(String viewCoordinatePath)
+	public void setViewCoordinatePath(UUID viewCoordinatePath)
 	{
 		this.viewCoordinatePath = viewCoordinatePath;
 	}
@@ -391,14 +400,18 @@ public class UserProfile
 	/**
 	 * @return editCoordinatePath
 	 */
-	public String getEditCoordinatePath()
+	public UUID getEditCoordinatePath()
 	{
+		if (editCoordinatePath == null)
+		{
+			return UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid());
+		}
 		return editCoordinatePath;
 	}
 	/**
 	 * @param editCoordinatePath
 	 */
-	public void setEditCoordinatePath(String editCoordinatePath)
+	public void setEditCoordinatePath(UUID editCoordinatePath)
 	{
 		this.editCoordinatePath = editCoordinatePath;
 	}

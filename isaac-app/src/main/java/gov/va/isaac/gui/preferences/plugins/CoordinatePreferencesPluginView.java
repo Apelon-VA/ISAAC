@@ -117,6 +117,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			});
 
 			ComboBox<String> pathComboBox = new ComboBox<>();
+			//TODO - please add a Tooltip that will show the default value for this item - which comes from IsaacAppConfig.
 			pathComboBox.getItems().addAll(getPathOptions());
 			currentPathProperty.bind(pathComboBox.getSelectionModel().selectedItemProperty());
 			

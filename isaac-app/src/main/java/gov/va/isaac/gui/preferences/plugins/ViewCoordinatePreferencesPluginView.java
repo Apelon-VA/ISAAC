@@ -30,15 +30,13 @@ import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
+import java.util.UUID;
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +77,8 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 		logger.debug("Saving ViewCoordinatePreferencesPluginView data");
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 		logger.debug("Setting stored VC path (currently \"{}\") to {}", loggedIn.getViewCoordinatePath(), currentPathProperty().get()); 
-		loggedIn.setViewCoordinatePath(currentPathProperty().get());
+		//TODO Joel - you will have to reconcile how to display a string name, but store the UUID
+		loggedIn.setViewCoordinatePath(UUID.fromString(currentPathProperty().get()));
 		logger.debug("Setting stored VC StatedInferredPolicy (currently \"{}\") to {}", loggedIn.getStatedInferredPolicy(), currentStatedInferredOptionProperty().get()); 
 		loggedIn.setStatedInferredPolicy(currentStatedInferredOptionProperty().get());
 		try {
@@ -116,7 +115,8 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	@Override
 	protected String getStoredPath() {
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-		return loggedIn.getViewCoordinatePath();
+		//TODO Joel - you will have to reconcile how to display a string name, but store the UUID
+		return loggedIn.getViewCoordinatePath().toString();
 	}
 
 	/* (non-Javadoc)
