@@ -22,7 +22,7 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.preferences.plugins;
+package gov.va.isaac.drools.preferences;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
@@ -35,12 +35,12 @@ import gov.va.isaac.util.ValidBooleanBinding;
 
 import java.io.IOException;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -48,13 +48,12 @@ import javafx.scene.layout.Region;
 
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * SyncPreferencesPluginView
+ * WorkflowPreferencesPluginView
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
@@ -62,13 +61,13 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Singleton
-public class SyncPreferencesPluginView implements PreferencesPluginViewI {
-	private Logger logger = LoggerFactory.getLogger(SyncPreferencesPluginView.class);
+public class DroolsPreferencesPluginView implements PreferencesPluginViewI {
+	private Logger logger = LoggerFactory.getLogger(DroolsPreferencesPluginView.class);
 
 	private GridPane gridPane = null;
 	protected ValidBooleanBinding allValid_ = null;
 	
-	private final StringProperty changeSetUrlProperty = new SimpleStringProperty();
+	private final BooleanProperty runDroolsBeforeEachCommitProperty = new SimpleBooleanProperty();
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getValidationFailureMessage()
@@ -88,54 +87,36 @@ public class SyncPreferencesPluginView implements PreferencesPluginViewI {
 			
 			allValid_ = new ValidBooleanBinding() {
 				{
-					bind(changeSetUrlProperty);
 					setComputeOnInvalidate(true);
 				}
 				
 				@Override
 				protected boolean computeValue() {
-					if (StringUtils.isBlank(changeSetUrlProperty.get())) {
-						this.setInvalidReason("Null/unset/empty changeSetUrl");
-
-						return false;
-					}
-
 					this.clearInvalidReason();
 					return true;
 				}
 			};
 			
-			Label syncUserNameLabelLabel = new Label("Sync User");
-			syncUserNameLabelLabel.setPadding(new Insets(5, 5, 5, 5));
-			Label syncUserNameLabel = new Label();
-			syncUserNameLabel.setPadding(new Insets(5, 5, 5, 5));
+			Label runDroolsBeforeEachCommitCheckBoxLabel = new Label("Run Drools Before Each Commit");
+			runDroolsBeforeEachCommitCheckBoxLabel.setPadding(new Insets(5, 5, 5, 5));
+			CheckBox runDroolsBeforeEachCommitCheckBox = new CheckBox();
+			runDroolsBeforeEachCommitCheckBox.setPadding(new Insets(5, 5, 5, 5));
+			runDroolsBeforeEachCommitCheckBox.setMaxWidth(Double.MAX_VALUE);
+			runDroolsBeforeEachCommitCheckBox.setTooltip(new Tooltip("Default is " + UserProfileDefaults.getDefaultRunDroolsBeforeEachCommit()));
+			runDroolsBeforeEachCommitCheckBox.selectedProperty().bindBidirectional(runDroolsBeforeEachCommitProperty);
 			
-			Label changeSetUrlLabel = new Label("ChangeSet URL");
-			changeSetUrlLabel.setPadding(new Insets(5, 5, 5, 5));
-			TextField changeSetUrlTextField = new TextField();
-			changeSetUrlTextField.setPadding(new Insets(5, 5, 5, 5));
-			changeSetUrlTextField.setMaxWidth(Double.MAX_VALUE);
-			changeSetUrlTextField.setTooltip(new Tooltip("Default is " + UserProfileDefaults.getDefaultChangeSetUrl()));
-			changeSetUrlTextField.textProperty().bindBidirectional(changeSetUrlProperty);
-
 			// load/set current preferences values
 			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-			syncUserNameLabel.textProperty().set(loggedIn.getSyncUsername());
-			changeSetUrlTextField.textProperty().set(loggedIn.getChangeSetUrl());
-			
+			runDroolsBeforeEachCommitCheckBox.selectedProperty().set(loggedIn.isRunDroolsBeforeEachCommit());
+
 			// Format GridPane
 			int row = 0;
 			gridPane.setMaxWidth(Double.MAX_VALUE);
 
-			gridPane.addRow(row++, syncUserNameLabelLabel, syncUserNameLabel);
-			GridPane.setHgrow(syncUserNameLabelLabel, Priority.NEVER);
-			GridPane.setFillWidth(syncUserNameLabel, true);
-			GridPane.setHgrow(syncUserNameLabel, Priority.NEVER);
-			
-			gridPane.addRow(row++, changeSetUrlLabel, changeSetUrlTextField);
-			GridPane.setHgrow(changeSetUrlLabel, Priority.NEVER);
-			GridPane.setFillWidth(changeSetUrlTextField, true);
-			GridPane.setHgrow(changeSetUrlTextField, Priority.ALWAYS);
+			gridPane.addRow(row++, runDroolsBeforeEachCommitCheckBoxLabel, runDroolsBeforeEachCommitCheckBox);
+			GridPane.setHgrow(runDroolsBeforeEachCommitCheckBoxLabel, Priority.NEVER);
+			GridPane.setFillWidth(runDroolsBeforeEachCommitCheckBox, true);
+			GridPane.setHgrow(runDroolsBeforeEachCommitCheckBox, Priority.ALWAYS);
 		}
 		
 		return gridPane;
@@ -146,7 +127,7 @@ public class SyncPreferencesPluginView implements PreferencesPluginViewI {
 	 */
 	@Override
 	public String getName() {
-		return "Sync";
+		return "Drools";
 	}
 
 	/* (non-Javadoc)
@@ -157,7 +138,7 @@ public class SyncPreferencesPluginView implements PreferencesPluginViewI {
 		logger.debug("Saving {} preferences", getName());
 		
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-		loggedIn.setChangeSetUrl(changeSetUrlProperty.get());
+		loggedIn.setRunDroolsBeforeEachCommit(this.runDroolsBeforeEachCommitProperty.get());
 
 		try {
 			AppContext.getService(UserProfileManager.class).saveChanges(loggedIn);
