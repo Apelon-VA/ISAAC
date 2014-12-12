@@ -30,6 +30,8 @@ import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.util.WBUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +39,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
 import javax.inject.Singleton;
+
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,15 +103,24 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	protected Collection<UUID> getPathOptions() {
 		// TODO load ViewCoordinate path options
 		List<UUID> list = new ArrayList<>();
-		list.addAll(Arrays.asList(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()), UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid())));
-		
+		//list.addAll(Arrays.asList(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()), UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid())));
+
+		try {
+			List<ConceptChronicleBI> pathConcepts = WBUtility.getPathConcepts();
+			for (ConceptChronicleBI cc : pathConcepts) {
+				list.add(cc.getPrimordialUuid());
+			}
+		} catch (IOException | ContradictionException e) {
+			logger.error("Failed loading path concepts. Caught {} {}", e.getClass().getName(), e.getLocalizedMessage());
+			e.printStackTrace();
+		}
 		// Add currently-stored value to list of options, if not already there
 		UUID storedPath = getStoredPath();
 		if (storedPath != null && ! list.contains(storedPath)) {
 			list.add(storedPath);
 		}
-		
-		Collections.sort(list);
+
+		//Collections.sort(list);
 		return list;
 	}
 

@@ -82,7 +82,7 @@ public class PreferencesViewController {
 		assert cancelButton_ != null : "fx:id=\"cancelButton_\" was not injected: check your FXML file 'PreferencesView.fxml'.";
 
 		tabPane_.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-		tabPane_.setMaxWidth(Integer.MAX_VALUE);
+		tabPane_.setMaxWidth(Double.MAX_VALUE);
 
 		okButton_.setOnAction((e) -> saveAndExitIfSuccessful());
 
@@ -102,8 +102,8 @@ public class PreferencesViewController {
 			for (PreferencesPluginViewI plugin : plugins_) {
 				logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
 				Label tabLabel = new Label(plugin.getName());
-				tabLabel.setMaxHeight(Integer.MAX_VALUE);
-				tabLabel.setMaxWidth(Integer.MAX_VALUE);
+				tabLabel.setMaxHeight(Double.MAX_VALUE);
+				tabLabel.setMaxWidth(Double.MAX_VALUE);
 				Tab pluginTab = new Tab();
 				pluginTab.setGraphic(tabLabel);
 				Node node = plugin.getNode();
