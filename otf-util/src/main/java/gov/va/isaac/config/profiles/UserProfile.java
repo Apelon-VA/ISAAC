@@ -48,10 +48,6 @@ public class UserProfile
 {
 	private static Logger logger = LoggerFactory.getLogger(UserProfile.class);
 
-	public static StatedInferredOptions getDefaultStatedInferredPolicy() {
-		return StatedInferredOptions.INFERRED_THEN_STATED;
-	}
-	
 	//This is a cache of what they typed when the logged in - so it can be used later for logging into workflow, or sync.
 	private transient char[] clearTextPassword;
 	
@@ -66,10 +62,10 @@ public class UserProfile
 	private UUID conceptUUID;
 
 	@XmlElement 
-	private StatedInferredOptions statedInferredPolicy = getDefaultStatedInferredPolicy();
+	private StatedInferredOptions statedInferredPolicy = UserProfileDefaults.getDefaultStatedInferredPolicy();
 	
 	@XmlElement 
-	private boolean displayFSN = true;
+	private boolean displayFSN = UserProfileDefaults.getDefaultDisplayFSN();
 	
 	@XmlElement 
 	private String workflowUsername = null;
@@ -86,10 +82,10 @@ public class UserProfile
 	private String syncPasswordEncrypted = null;
 	
 	@XmlElement
-	private boolean launchWorkflowForEachCommit = true;
+	private boolean launchWorkflowForEachCommit = UserProfileDefaults.getDefaultLaunchWorkflowForEachCommit();
 	
 	@XmlElement
-	private boolean runDroolsBeforeEachCommit = true;
+	private boolean runDroolsBeforeEachCommit = UserProfileDefaults.getDefaultRunDroolsBeforeEachCommit();
 	
 	@XmlElement 
 	private String workflowServerDeploymentId = null;
@@ -99,6 +95,21 @@ public class UserProfile
 	
 	@XmlElement 
 	private UUID editCoordinatePath = null;
+
+	@XmlElement 
+	private UUID workflowPromotionPath = null;
+	
+	@XmlElement
+	public String workflowServerUrl = null;
+
+	@XmlElement
+	public String changeSetUrl = null;
+	
+	@XmlElement
+	public String releaseVersion = null;
+
+	@XmlElement
+	public String extensionNamespace = null;
 	
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
@@ -369,7 +380,7 @@ public class UserProfile
 	{
 		if (StringUtils.isBlank(workflowServerDeploymentId))
 		{
-			return AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId();
+			return UserProfileDefaults.getDefaultWorkflowServerDeploymentId();
 		}
 		return workflowServerDeploymentId;
 	}
@@ -388,7 +399,7 @@ public class UserProfile
 	{
 		if (viewCoordinatePath == null)
 		{
-			return UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid());
+			return UserProfileDefaults.getDefaultViewCoordinatePath();
 		}
 		return viewCoordinatePath;
 	}
@@ -407,7 +418,7 @@ public class UserProfile
 	{
 		if (editCoordinatePath == null)
 		{
-			return UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid());
+			return UserProfileDefaults.getDefaultEditCoordinatePath();
 		}
 		return editCoordinatePath;
 	}
@@ -418,7 +429,103 @@ public class UserProfile
 	{
 		this.editCoordinatePath = editCoordinatePath;
 	}
+
+	/**
+	 * @return workflowPromotionPath
+	 */
+	public UUID getWorkflowPromotionPathPath()
+	{
+		if (workflowPromotionPath == null)
+		{
+			return UserProfileDefaults.getDefaultWorkflowPromotionPathPath();
+		}
+		return workflowPromotionPath;
+	}
+	/**
+	 * @param workflowPromotionPath
+	 */
+	public void setWorkflowPromotionPathPath(UUID workflowPromotionPath)
+	{
+		this.workflowPromotionPath = workflowPromotionPath;
+	}
 	
+	/**
+	 * @return workflowServerUrl
+	 */
+	public String getWorkflowServerUrl()
+	{
+		if (StringUtils.isBlank(workflowServerUrl))
+		{
+			return UserProfileDefaults.getDefaultWorkflowServerUrl();
+		}
+		return workflowServerUrl;
+	}
+	/**
+	 * @param workflowServerUrl
+	 */
+	public void setWorkflowServerUrl(String workflowServerUrl)
+	{
+		this.workflowServerUrl = workflowServerUrl;
+	}
+
+	/**
+	 * @return changeSetUrl
+	 */
+	public String getChangeSetUrl()
+	{
+		if (StringUtils.isBlank(changeSetUrl))
+		{
+			return UserProfileDefaults.getDefaultChangeSetUrl();
+		}
+		return changeSetUrl;
+	}
+	/**
+	 * @param changeSetUrl
+	 */
+	public void setChangeSetUrl(String changeSetUrl)
+	{
+		this.changeSetUrl = changeSetUrl;
+	}
+
+	/**
+	 * @return releaseVersion
+	 */
+	public String getReleaseVersion()
+	{
+		if (StringUtils.isBlank(releaseVersion))
+		{
+			return UserProfileDefaults.getDefaultReleaseVersion();
+		}
+		return releaseVersion;
+	}
+	/**
+	 * @param releaseVersion
+	 */
+	public void setReleaseVersion(String releaseVersion)
+	{
+		this.releaseVersion = releaseVersion;
+	}
+
+	/**
+	 * @return extensionNamespace
+	 */
+	public String getExtensionNamespace()
+	{
+		if (StringUtils.isBlank(extensionNamespace))
+		{
+			return UserProfileDefaults.getDefaultExtensionNamespace();
+		}
+		return extensionNamespace;
+	}
+	/**
+	 * @param extensionNamespace
+	 */
+	public void setExtensionNamespace(String extensionNamespace)
+	{
+		this.extensionNamespace = extensionNamespace;
+	}
+
+	// Persistence methods
 	protected void store(File fileToWrite) throws IOException
 	{
 		try
@@ -472,7 +579,12 @@ public class UserProfile
 		clone.workflowServerDeploymentId = this.workflowServerDeploymentId;
 		clone.viewCoordinatePath = this.viewCoordinatePath;
 		clone.editCoordinatePath = this.editCoordinatePath;
-		
+		clone.workflowPromotionPath = this.workflowPromotionPath;
+		clone.workflowServerUrl = this.workflowServerUrl;
+		clone.changeSetUrl = this.changeSetUrl;
+		clone.releaseVersion = this.releaseVersion;
+		clone.extensionNamespace = this.extensionNamespace;
+
 		return clone;
 	}
 }

@@ -28,15 +28,14 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -101,9 +100,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	protected Collection<UUID> getPathOptions() {
-		// TODO load EditCoordinate path options
 		List<UUID> list = new ArrayList<>();
-		//list.addAll(Arrays.asList(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()), UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid())));
 
 		try {
 			List<ConceptChronicleBI> pathConcepts = WBUtility.getPathConcepts();
@@ -146,7 +143,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	protected UUID getDefaultPath() {
-		return UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid());
+		return UserProfileDefaults.getDefaultEditCoordinatePath();
 	}
 
 	/* (non-Javadoc)

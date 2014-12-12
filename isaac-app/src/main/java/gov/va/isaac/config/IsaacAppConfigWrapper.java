@@ -190,7 +190,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentReleaseVersion()
 	{
-		// TODO From User Profile
 		return getDefaultReleaseVersion();
 	}
 
@@ -209,7 +208,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentExtensionNamespace()
 	{
-		// TODO from user profile
 		return getDefaultExtensionNamespace();
 	}
 
@@ -228,7 +226,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentChangeSetUrl()
 	{
-		// TODO from user profile
 		return getDefaultChangeSetUrl();
 	}
 
@@ -283,7 +280,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentWorkflowServerUrl()
 	{
-		// TODO from UserProfile
 		return getDefaultWorkflowServerUrl();
 	}
 
@@ -347,7 +343,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentWorkflowPromotionPathUuid()
 	{
-		// TODO from UserPrefs
 		return getDefaultWorkflowPromotionPathUuid();
 	}
 

@@ -150,11 +150,9 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 					}
 				}
 			});
-			//TODO - please add a Tooltip that will show the default value for this item - which comes from IsaacAppConfig.
 			pathComboBox.getItems().addAll(getPathOptions());
 			currentPathProperty.bind(pathComboBox.getSelectionModel().selectedItemProperty());
 			
-			// TODO load/set current preferences values
 			final StatedInferredOptions storedStatedInferredOption = getStoredStatedInferredOption();
 			for (Toggle toggle : statedInferredToggleGroup.getToggles()) {
 				if (toggle.getUserData() == storedStatedInferredOption) {
