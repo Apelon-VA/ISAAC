@@ -30,6 +30,7 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 import gov.va.isaac.util.WBUtility;
@@ -104,41 +105,7 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 	public Region getContent() {
 		if (gridPane == null) {
 			gridPane = new GridPane();
-			
-			allValid_ = new ValidBooleanBinding() {
-				{
-					bind(workflowServerDeploymentIdProperty, workflowServerUrlProperty, workflowPromotionPathProperty);
-					setComputeOnInvalidate(true);
-				}
-				
-				@Override
-				protected boolean computeValue() {
-					if (StringUtils.isBlank(workflowServerDeploymentIdProperty.get())) {
-						this.setInvalidReason("Null/unset/unselected workflowServerDeploymentId");
 
-						return false;
-					}
-					if (StringUtils.isBlank(workflowServerUrlProperty.get())) {
-						this.setInvalidReason("Null/unset/unselected workflowServerUrl");
-
-						return false;
-					}
-					if (workflowPromotionPathProperty.get() == null) {
-						this.setInvalidReason("Null/unset/unselected workflowServerUrl");
-
-						return false;
-					}
-					if (WBUtility.getConceptVersion(workflowPromotionPathProperty.get()) == null) {
-						this.setInvalidReason("Invalid workflowServerUrl (no corresponding concept)");
-
-						return false;
-					}
-
-					this.clearInvalidReason();
-					return true;
-				}
-			};
-			
 			Label workflowUserNameLabelLabel = new Label("Workflow User");
 			workflowUserNameLabelLabel.setPadding(new Insets(5, 5, 5, 5));
 			Label workflowUserNameLabel = new Label();
@@ -244,6 +211,56 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 			GridPane.setHgrow(workflowPromotionPathComboBoxLabel, Priority.NEVER);
 			GridPane.setFillWidth(workflowPromotionPathComboBox, true);
 			GridPane.setHgrow(workflowPromotionPathComboBox, Priority.ALWAYS);
+			
+			allValid_ = new ValidBooleanBinding() {
+				{
+					bind(workflowServerDeploymentIdProperty, workflowServerUrlProperty, workflowPromotionPathProperty);
+					setComputeOnInvalidate(true);
+				}
+				
+				@Override
+				protected boolean computeValue() {
+					if (StringUtils.isBlank(workflowServerDeploymentIdProperty.get())) {
+						this.setInvalidReason("Null/unset/unselected workflowServerDeploymentId");
+
+						TextErrorColorHelper.setTextErrorColor(workflowServerDeploymentIdLabel);
+						
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(workflowServerDeploymentIdLabel);
+					}
+					if (StringUtils.isBlank(workflowServerUrlProperty.get())) {
+						this.setInvalidReason("Null/unset/unselected workflowServerUrl");
+						
+						TextErrorColorHelper.setTextErrorColor(workflowServerUrlLabel);
+
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(workflowServerUrlLabel);
+					}
+					if (workflowPromotionPathProperty.get() == null) {
+						this.setInvalidReason("Null/unset/unselected workflowPromotionPathProperty");
+
+						TextErrorColorHelper.setTextErrorColor(workflowPromotionPathComboBoxLabel);
+
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(workflowPromotionPathComboBoxLabel);
+					}
+					if (WBUtility.getConceptVersion(workflowPromotionPathProperty.get()) == null) {
+						this.setInvalidReason("Invalid workflowPromotionPathProperty (no corresponding concept)");
+
+						TextErrorColorHelper.setTextErrorColor(workflowPromotionPathComboBoxLabel);
+
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(workflowPromotionPathComboBoxLabel);
+					}
+
+					this.clearInvalidReason();
+					return true;
+				}
+			};
 		}
 		
 		return gridPane;

@@ -25,11 +25,16 @@
 package gov.va.isaac.gui.preferences.plugins;
 
 import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 import gov.va.isaac.util.WBUtility;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -75,38 +80,16 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 	@Override
 	public Region getContent() {
 		if (hBox == null) {
-			allValid_ = new ValidBooleanBinding() {
-				{
-					bind(currentStatedInferredOptionProperty, currentPathProperty);
-					setComputeOnInvalidate(true);
-				}
-				
-				@Override
-				protected boolean computeValue() {
-					if (currentStatedInferredOptionProperty.get() == null) {
-						this.setInvalidReason("Null/unset/unselected StatedInferredOption");
-
-						return false;
-					}
-					if (currentPathProperty.get() == null) {
-						this.setInvalidReason("Null/unset/unselected path");
-
-						return false;
-					}
-
-					this.clearInvalidReason();
-					return true;
-				}
-			};
-			
 			VBox statedInferredToggleGroupVBox = new VBox();
 			ToggleGroup statedInferredToggleGroup = new ToggleGroup();
+			List<RadioButton> statedInferredOptionButtons = new ArrayList<>();
 			for (StatedInferredOptions option : StatedInferredOptions.values()) {
 				RadioButton optionButton = new RadioButton(option.value());
 				optionButton.setUserData(option);
 				optionButton.setTooltip(new Tooltip("Default StatedInferredOption is " + getDefaultStatedInferredOption()));
 				statedInferredToggleGroup.getToggles().add(optionButton);
 				statedInferredToggleGroupVBox.getChildren().add(optionButton);
+				statedInferredOptionButtons.add(optionButton);
 			}
 			statedInferredToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 				@Override
@@ -167,6 +150,47 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			
 			hBox = new HBox();
 			hBox.getChildren().addAll(pathComboBox, statedInferredToggleGroupVBox);
+
+			allValid_ = new ValidBooleanBinding() {
+				{
+					bind(currentStatedInferredOptionProperty, currentPathProperty);
+					setComputeOnInvalidate(true);
+				}
+
+				@Override
+				protected boolean computeValue() {
+					if (currentStatedInferredOptionProperty.get() == null) {
+						this.setInvalidReason("Null/unset/unselected StatedInferredOption");
+						for (RadioButton button : statedInferredOptionButtons) {
+							TextErrorColorHelper.setTextErrorColor(button);
+						}
+						return false;
+					} else {
+						for (RadioButton button : statedInferredOptionButtons) {
+							TextErrorColorHelper.clearTextErrorColor(button);
+						}
+					}
+					if (currentPathProperty.get() == null) {
+						this.setInvalidReason("Null/unset/unselected path");
+						TextErrorColorHelper.setTextErrorColor(pathComboBox);
+
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(pathComboBox);
+					}
+					if (WBUtility.getConceptVersion(currentPathProperty.get()) == null) {
+						this.setInvalidReason("Invalid path");
+						TextErrorColorHelper.setTextErrorColor(pathComboBox);
+
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(pathComboBox);
+					}
+
+					this.clearInvalidReason();
+					return true;
+				}
+			};
 		}
 		
 		return hBox;

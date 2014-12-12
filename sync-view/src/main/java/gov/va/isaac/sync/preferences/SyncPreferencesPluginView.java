@@ -30,6 +30,7 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
@@ -86,25 +87,6 @@ public class SyncPreferencesPluginView implements PreferencesPluginViewI {
 		if (gridPane == null) {
 			gridPane = new GridPane();
 			
-			allValid_ = new ValidBooleanBinding() {
-				{
-					bind(changeSetUrlProperty);
-					setComputeOnInvalidate(true);
-				}
-				
-				@Override
-				protected boolean computeValue() {
-					if (StringUtils.isBlank(changeSetUrlProperty.get())) {
-						this.setInvalidReason("Null/unset/empty changeSetUrl");
-
-						return false;
-					}
-
-					this.clearInvalidReason();
-					return true;
-				}
-			};
-			
 			Label syncUserNameLabelLabel = new Label("Sync User");
 			syncUserNameLabelLabel.setPadding(new Insets(5, 5, 5, 5));
 			Label syncUserNameLabel = new Label();
@@ -136,6 +118,29 @@ public class SyncPreferencesPluginView implements PreferencesPluginViewI {
 			GridPane.setHgrow(changeSetUrlLabel, Priority.NEVER);
 			GridPane.setFillWidth(changeSetUrlTextField, true);
 			GridPane.setHgrow(changeSetUrlTextField, Priority.ALWAYS);
+			
+			allValid_ = new ValidBooleanBinding() {
+				{
+					bind(changeSetUrlProperty);
+					setComputeOnInvalidate(true);
+				}
+				
+				@Override
+				protected boolean computeValue() {
+					if (StringUtils.isBlank(changeSetUrlProperty.get())) {
+						this.setInvalidReason("Null/unset/empty changeSetUrl");
+
+						TextErrorColorHelper.setTextErrorColor(changeSetUrlLabel);
+						
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(changeSetUrlLabel);
+					}
+
+					this.clearInvalidReason();
+					return true;
+				}
+			};
 		}
 		
 		return gridPane;

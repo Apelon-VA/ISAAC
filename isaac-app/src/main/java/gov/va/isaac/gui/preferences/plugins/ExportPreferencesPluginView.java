@@ -30,6 +30,7 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
@@ -87,30 +88,6 @@ public class ExportPreferencesPluginView implements PreferencesPluginViewI {
 		if (gridPane == null) {
 			gridPane = new GridPane();
 			
-			allValid_ = new ValidBooleanBinding() {
-				{
-					bind(releaseVersionProperty, extensionNamespaceProperty);
-					setComputeOnInvalidate(true);
-				}
-				
-				@Override
-				protected boolean computeValue() {
-					if (StringUtils.isBlank(releaseVersionProperty.get())) {
-						this.setInvalidReason("Null/empty releaseVersionProperty");
-
-						return false;
-					}
-					if (StringUtils.isBlank(extensionNamespaceProperty.get())) {
-						this.setInvalidReason("Null/empty extensionNamespaceProperty");
-
-						return false;
-					}
-
-					this.clearInvalidReason();
-					return true;
-				}
-			};
-			
 			Label releaseVersionTextFieldLabel = new Label("Release Version");
 			releaseVersionTextFieldLabel.setPadding(new Insets(5, 5, 5, 5));
 			TextField releaseVersionTextField = new TextField();
@@ -145,6 +122,38 @@ public class ExportPreferencesPluginView implements PreferencesPluginViewI {
 			GridPane.setHgrow(extensionNamespaceTextFieldLabel, Priority.NEVER);
 			GridPane.setFillWidth(extensionNamespaceTextField, true);
 			GridPane.setHgrow(extensionNamespaceTextField, Priority.ALWAYS);
+			
+			allValid_ = new ValidBooleanBinding() {
+				{
+					bind(releaseVersionProperty, extensionNamespaceProperty);
+					setComputeOnInvalidate(true);
+				}
+				
+				@Override
+				protected boolean computeValue() {
+					if (StringUtils.isBlank(releaseVersionProperty.get())) {
+						this.setInvalidReason("Null/empty releaseVersionProperty");
+
+						TextErrorColorHelper.setTextErrorColor(releaseVersionTextFieldLabel);
+						
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(releaseVersionTextFieldLabel);
+					}
+					if (StringUtils.isBlank(extensionNamespaceProperty.get())) {
+						this.setInvalidReason("Null/empty extensionNamespaceProperty");
+
+						TextErrorColorHelper.setTextErrorColor(extensionNamespaceTextFieldLabel);
+						
+						return false;
+					} else {
+						TextErrorColorHelper.clearTextErrorColor(extensionNamespaceTextFieldLabel);
+					}
+
+					this.clearInvalidReason();
+					return true;
+				}
+			};
 		}
 		
 		return gridPane;
