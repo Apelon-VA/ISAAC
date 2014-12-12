@@ -55,11 +55,11 @@ import javafx.util.Callback;
  *
  */
 public abstract class CoordinatePreferencesPluginView implements PreferencesPluginViewI {
-	private HBox hBox = null;
+	protected HBox hBox = null;
 	protected ValidBooleanBinding allValid_ = null;
 	
-	private final ObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty = new SimpleObjectProperty<>();
-	private final ObjectProperty<UUID> currentPathProperty = new SimpleObjectProperty<>();
+	protected final ObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty = new SimpleObjectProperty<>();
+	protected final ObjectProperty<UUID> currentPathProperty = new SimpleObjectProperty<>();
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getValidationFailureMessage()

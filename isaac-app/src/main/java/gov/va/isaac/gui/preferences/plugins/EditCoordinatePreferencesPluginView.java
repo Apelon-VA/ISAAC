@@ -31,6 +31,7 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.util.ValidBooleanBinding;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -38,6 +39,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 
 import javax.inject.Singleton;
 
@@ -67,6 +82,79 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	}
 
 	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getRegion()
+	 */
+	@Override
+	public Region getContent() {
+		if (hBox == null) {
+			allValid_ = new ValidBooleanBinding() {
+				{
+					bind(currentPathProperty);
+					setComputeOnInvalidate(true);
+				}
+				
+				@Override
+				protected boolean computeValue() {
+					if (currentPathProperty.get() == null) {
+						this.setInvalidReason("Null/unset/unselected path");
+
+						return false;
+					}
+
+					this.clearInvalidReason();
+					return true;
+				}
+			};
+			
+			ComboBox<UUID> pathComboBox = new ComboBox<>();
+			pathComboBox.setCellFactory(new Callback<ListView<UUID>, ListCell<UUID>> () {
+				@Override
+				public ListCell<UUID> call(ListView<UUID> param) {
+					final ListCell<UUID> cell = new ListCell<UUID>() {
+						@Override
+						protected void updateItem(UUID c, boolean emptyRow) {
+							super.updateItem(c, emptyRow);
+
+							if(c == null) {
+								setText(null);
+							}else {
+								String desc = WBUtility.getDescription(c);
+								setText(desc);
+							}
+						}
+					};
+
+					return cell;
+				}
+			});
+			pathComboBox.setButtonCell(new ListCell<UUID>() {
+				@Override
+				protected void updateItem(UUID c, boolean emptyRow) {
+					super.updateItem(c, emptyRow); 
+					if (emptyRow) {
+						setText("");
+					} else {
+						String desc = WBUtility.getDescription(c);
+						setText(desc);
+					}
+				}
+			});
+			pathComboBox.getItems().addAll(getPathOptions());
+			currentPathProperty.bind(pathComboBox.getSelectionModel().selectedItemProperty());
+			
+			// ComboBox
+			final UUID storedPath = getStoredPath();
+			pathComboBox.getSelectionModel().select(storedPath);
+			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
+			
+			hBox = new HBox();
+			hBox.getChildren().addAll(pathComboBox);
+		}
+		
+		return hBox;
+	}
+
+	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getName()
 	 */
 	@Override
@@ -83,8 +171,6 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 		logger.debug("Setting stored EC path (currently \"{}\") to {}", loggedIn.getEditCoordinatePath(), currentPathProperty().get()); 
 		loggedIn.setEditCoordinatePath(currentPathProperty().get());
-		//logger.debug("Setting stored EC StatedInferredPolicy (currently \"{}\") to {}", loggedIn.getStatedInferredPolicy(), currentStatedInferredOptionProperty().get()); 
-		//loggedIn.setStatedInferredPolicy(currentStatedInferredOptionProperty().get());
 		try {
 			AppContext.getService(UserProfileManager.class).saveChanges(loggedIn);
 		} catch (InvalidUserException e) {
