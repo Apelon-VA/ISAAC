@@ -27,21 +27,30 @@ package gov.va.isaac.gui.preferences;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.layout.Region;
+
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +108,7 @@ public class PreferencesViewController {
 			for (PreferencesPluginViewI plugin : plugins_) {
 				logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
 				Label tabLabel = new Label(plugin.getName());
+				
 				tabLabel.setMaxHeight(Double.MAX_VALUE);
 				tabLabel.setMaxWidth(Double.MAX_VALUE);
 				Tab pluginTab = new Tab();
@@ -107,7 +117,31 @@ public class PreferencesViewController {
 				content.setMaxWidth(Double.MAX_VALUE);
 				content.setMaxHeight(Double.MAX_VALUE);
 				content.setPadding(new Insets(5.0));
-				pluginTab.setContent(content);
+				
+				Label errorMessageLabel = new Label();
+				errorMessageLabel.textProperty().bind(plugin.validationFailureMessageProperty());
+				errorMessageLabel.setAlignment(Pos.BOTTOM_CENTER);
+				errorMessageLabel.setStyle("-fx-text-fill: red;");
+
+				VBox vBox = new VBox();
+				vBox.getChildren().addAll(errorMessageLabel, content);
+				vBox.setMaxWidth(Double.MAX_VALUE);
+				vBox.setAlignment(Pos.TOP_CENTER);
+
+				plugin.validationFailureMessageProperty().addListener(new ChangeListener<String>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends String> observable,
+							String oldValue,
+							String newValue) {
+						if (newValue != null && ! StringUtils.isEmpty(newValue)) {
+							tabLabel.setStyle("-fx-text-fill: red;");
+						} else {
+							tabLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
+						}
+					}
+				});
+				pluginTab.setContent(vBox);
 				tabPane_.getTabs().add(pluginTab);
 			}
 
