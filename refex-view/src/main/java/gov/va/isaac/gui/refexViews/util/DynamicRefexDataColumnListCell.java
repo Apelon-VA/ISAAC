@@ -18,9 +18,9 @@
  */
 package gov.va.isaac.gui.refexViews.util;
 
+import gov.va.isaac.drools.refexUtils.RefexDroolsValidator;
+import gov.va.isaac.drools.refexUtils.RefexDroolsValidatorImplInfo;
 import gov.va.isaac.util.WBUtility;
-import gov.va.issac.drools.refexUtils.RefexDroolsValidator;
-import gov.va.issac.drools.refexUtils.RefexDroolsValidatorImplInfo;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -31,6 +31,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;

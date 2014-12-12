@@ -19,18 +19,20 @@
 package gov.va.isaac.gui.refexViews.util;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.drools.manager.DroolsExecutorsManager;
+import gov.va.isaac.drools.refexUtils.RefexDroolsValidator;
+import gov.va.isaac.drools.refexUtils.RefexDroolsValidatorImplInfo;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-import gov.va.issac.drools.manager.DroolsExecutorsManager;
-import gov.va.issac.drools.refexUtils.RefexDroolsValidator;
-import gov.va.issac.drools.refexUtils.RefexDroolsValidatorImplInfo;
+
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -47,6 +49,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
+
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;

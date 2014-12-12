@@ -18,8 +18,11 @@
  */
 package gov.va.issac.drools.helper;
 
+import gov.va.isaac.drools.helper.MatchParen;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.junit.Test;
 import org.junit.Assert;
