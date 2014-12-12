@@ -42,6 +42,7 @@ import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -101,7 +102,9 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 			};
 			
 			Label workflowServerDeploymentIdlabel = new Label("Workflow Server Deployment ID");
+			workflowServerDeploymentIdlabel.setPadding(new Insets(5, 5, 5, 5));
 			TextField workflowServerDeploymentIdTextField = new TextField();
+			workflowServerDeploymentIdTextField.setPadding(new Insets(5, 5, 5, 5));
 			workflowServerDeploymentIdTextField.setMaxWidth(Double.MAX_VALUE);
 			workflowServerDeploymentIdTextField.setTooltip(new Tooltip("Default is " + AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId()));
 			workflowServerDeploymentIdTextField.textProperty().bindBidirectional(workflowServerDeploymentIdProperty);
