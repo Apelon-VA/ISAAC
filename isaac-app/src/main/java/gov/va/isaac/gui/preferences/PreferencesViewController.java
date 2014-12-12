@@ -31,6 +31,8 @@ import gov.va.isaac.util.ValidBooleanBinding;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -105,7 +107,22 @@ public class PreferencesViewController {
 			// load fields before initializing allValid_
 			// in case plugin.validationFailureMessageProperty() initialized by getNode()
 			tabPane_.getTabs().clear();
+			List<PreferencesPluginViewI> sortableList = new ArrayList<>();
+			Comparator<PreferencesPluginViewI> comparator = new Comparator<PreferencesPluginViewI>() {
+				@Override
+				public int compare(PreferencesPluginViewI o1, PreferencesPluginViewI o2) {
+					if (o1.getTabOrder() == o2.getTabOrder()) {
+						return o1.getName().compareTo(o2.getName());
+					} else {
+						return o1.getTabOrder() - o2.getTabOrder();
+					}
+				}
+			};
 			for (PreferencesPluginViewI plugin : plugins_) {
+				sortableList.add(plugin);
+			}
+			Collections.sort(sortableList, comparator);
+			for (PreferencesPluginViewI plugin : sortableList) {
 				logger.debug("Adding PreferencesPluginView tab \"{}\"", plugin.getName());
 				Label tabLabel = new Label(plugin.getName());
 				

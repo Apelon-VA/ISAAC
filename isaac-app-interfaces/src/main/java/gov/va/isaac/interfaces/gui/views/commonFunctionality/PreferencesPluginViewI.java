@@ -35,4 +35,8 @@ public interface PreferencesPluginViewI {
 	ReadOnlyStringProperty validationFailureMessageProperty();
 	Region getContent();
 	void save() throws IOException;
+
+	default int getTabOrder() {
+		return Integer.MAX_VALUE;
+	}
 }
