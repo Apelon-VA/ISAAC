@@ -433,18 +433,18 @@ public class UserProfile
 	/**
 	 * @return workflowPromotionPath
 	 */
-	public UUID getWorkflowPromotionPathPath()
+	public UUID getWorkflowPromotionPath()
 	{
 		if (workflowPromotionPath == null)
 		{
-			return UserProfileDefaults.getDefaultWorkflowPromotionPathPath();
+			return UserProfileDefaults.getDefaultWorkflowPromotionPath();
 		}
 		return workflowPromotionPath;
 	}
 	/**
 	 * @param workflowPromotionPath
 	 */
-	public void setWorkflowPromotionPathPath(UUID workflowPromotionPath)
+	public void setWorkflowPromotionPath(UUID workflowPromotionPath)
 	{
 		this.workflowPromotionPath = workflowPromotionPath;
 	}

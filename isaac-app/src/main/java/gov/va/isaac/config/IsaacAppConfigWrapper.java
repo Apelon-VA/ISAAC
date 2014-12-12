@@ -190,7 +190,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentReleaseVersion()
 	{
-		return getDefaultReleaseVersion();
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getReleaseVersion();
 	}
 
 	/**
@@ -208,7 +208,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentExtensionNamespace()
 	{
-		return getDefaultExtensionNamespace();
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getExtensionNamespace();
 	}
 
 	/**
@@ -226,7 +226,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentChangeSetUrl()
 	{
-		return getDefaultChangeSetUrl();
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getChangeSetUrl();
 	}
 
 	/**
@@ -280,7 +280,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentWorkflowServerUrl()
 	{
-		return getDefaultWorkflowServerUrl();
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getWorkflowServerUrl();
 	}
 
 	/**
@@ -343,7 +343,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentWorkflowPromotionPathUuid()
 	{
-		return getDefaultWorkflowPromotionPathUuid();
+		UUID current = AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getWorkflowPromotionPath();
+		return current != null ? current.toString() : null;
 	}
 
 	/**

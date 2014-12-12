@@ -66,7 +66,7 @@ public final class UserProfileDefaults {
 		return UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid());
 	}
 
-	public static UUID getDefaultWorkflowPromotionPathPath() {
+	public static UUID getDefaultWorkflowPromotionPath() {
 		return AppContext.getAppConfiguration().getDefaultWorkflowPromotionPathUuidAsUUID();
 	}
 
