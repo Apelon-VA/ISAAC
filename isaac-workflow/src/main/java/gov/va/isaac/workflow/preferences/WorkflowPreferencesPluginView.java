@@ -45,6 +45,7 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 
 /**
@@ -101,6 +102,7 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 			
 			Label workflowServerDeploymentIdlabel = new Label("Workflow Server Deployment ID");
 			TextField workflowServerDeploymentIdTextField = new TextField();
+			workflowServerDeploymentIdTextField.setTooltip(new Tooltip("Default is " + AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId()));
 			workflowServerDeploymentIdTextField.textProperty().bindBidirectional(workflowServerDeploymentIdProperty);
 
 			// TODO load/set current preferences values

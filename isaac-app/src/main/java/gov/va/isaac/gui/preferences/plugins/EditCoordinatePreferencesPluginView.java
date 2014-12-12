@@ -30,6 +30,7 @@ import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +38,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
 import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,12 +77,10 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	public void save() throws IOException {
-		// TODO implement EditCoordinatePreferencesPluginView.save()
 		logger.debug("Saving EditCoordinatePreferencesPluginView data");
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 		logger.debug("Setting stored EC path (currently \"{}\") to {}", loggedIn.getEditCoordinatePath(), currentPathProperty().get()); 
-		//TODO Joel - you will have to reconcile how to display a string name, but store the UUID
-		loggedIn.setEditCoordinatePath(UUID.fromString(currentPathProperty().get()));
+		loggedIn.setEditCoordinatePath(currentPathProperty().get());
 		//logger.debug("Setting stored EC StatedInferredPolicy (currently \"{}\") to {}", loggedIn.getStatedInferredPolicy(), currentStatedInferredOptionProperty().get()); 
 		//loggedIn.setStatedInferredPolicy(currentStatedInferredOptionProperty().get());
 		try {
@@ -96,13 +97,13 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getCoordinatePathOptions()
 	 */
 	@Override
-	protected Collection<String> getPathOptions() {
+	protected Collection<UUID> getPathOptions() {
 		// TODO load EditCoordinate path options
-		List<String> list = new ArrayList<>();
-		list.addAll(Arrays.asList("bogus ec 1", "bogus ec 2", "bogus ec 3", "bogus ec 4"));
+		List<UUID> list = new ArrayList<>();
+		list.addAll(Arrays.asList(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()), UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid())));
 
 		// Add currently-stored value to list of options, if not already there
-		String storedPath = getStoredPath();
+		UUID storedPath = getStoredPath();
 		if (storedPath != null && ! list.contains(storedPath)) {
 			list.add(storedPath);
 		}
@@ -115,10 +116,9 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getStoredPath()
 	 */
 	@Override
-	protected String getStoredPath() {
+	protected UUID getStoredPath() {
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-		//TODO Joel - you will have to reconcile how to display a string name, but store the UUID
-		return loggedIn.getEditCoordinatePath().toString();
+		return loggedIn.getEditCoordinatePath();
 	}
 
 	/* (non-Javadoc)
@@ -126,6 +126,22 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	 */
 	@Override
 	protected StatedInferredOptions getStoredStatedInferredOption() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getDefaultPath()
+	 */
+	@Override
+	protected UUID getDefaultPath() {
+		return UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid());
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.preferences.plugins.CoordinatePreferencesPluginView#getDefaultStatedInferredOption()
+	 */
+	@Override
+	protected StatedInferredOptions getDefaultStatedInferredOption() {
 		return null;
 	}
 }

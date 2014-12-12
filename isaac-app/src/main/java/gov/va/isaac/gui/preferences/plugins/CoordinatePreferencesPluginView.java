@@ -24,29 +24,31 @@
  */
 package gov.va.isaac.gui.preferences.plugins;
 
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
-import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
+import gov.va.isaac.util.WBUtility;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 
 /**
  * ViewCoordinatePreferencesPlugin
@@ -59,7 +61,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 	protected ValidBooleanBinding allValid_ = null;
 	
 	private final ObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty = new SimpleObjectProperty<>();
-	private final StringProperty currentPathProperty = new SimpleStringProperty();
+	private final ObjectProperty<UUID> currentPathProperty = new SimpleObjectProperty<>();
 
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getValidationFailureMessage()
@@ -88,7 +90,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 
 						return false;
 					}
-					if (currentPathProperty.get() == null || currentPathProperty.get().length() == 0) {
+					if (currentPathProperty.get() == null) {
 						this.setInvalidReason("Null/unset/unselected path");
 
 						return false;
@@ -104,6 +106,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			for (StatedInferredOptions option : StatedInferredOptions.values()) {
 				RadioButton optionButton = new RadioButton(option.value());
 				optionButton.setUserData(option);
+				optionButton.setTooltip(new Tooltip("Default StatedInferredOption is " + getDefaultStatedInferredOption()));
 				statedInferredToggleGroup.getToggles().add(optionButton);
 				statedInferredToggleGroupVBox.getChildren().add(optionButton);
 			}
@@ -116,14 +119,44 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 				}	
 			});
 
-			ComboBox<String> pathComboBox = new ComboBox<>();
+			ComboBox<UUID> pathComboBox = new ComboBox<>();
+			pathComboBox.setCellFactory(new Callback<ListView<UUID>, ListCell<UUID>> () {
+				@Override
+				public ListCell<UUID> call(ListView<UUID> param) {
+					final ListCell<UUID> cell = new ListCell<UUID>() {
+						@Override
+						protected void updateItem(UUID c, boolean emptyRow) {
+							super.updateItem(c, emptyRow);
+
+							if(c == null) {
+								setText(null);
+							}else {
+								String desc = WBUtility.getDescription(c);
+								setText(desc);
+							}
+						}
+					};
+
+					return cell;
+				}
+			});
+			pathComboBox.setButtonCell(new ListCell<UUID>() {
+				@Override
+				protected void updateItem(UUID c, boolean emptyRow) {
+					super.updateItem(c, emptyRow); 
+					if (emptyRow) {
+						setText("");
+					} else {
+						String desc = WBUtility.getDescription(c);
+						setText(desc);
+					}
+				}
+			});
 			//TODO - please add a Tooltip that will show the default value for this item - which comes from IsaacAppConfig.
 			pathComboBox.getItems().addAll(getPathOptions());
 			currentPathProperty.bind(pathComboBox.getSelectionModel().selectedItemProperty());
 			
 			// TODO load/set current preferences values
-			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-
 			final StatedInferredOptions storedStatedInferredOption = getStoredStatedInferredOption();
 			for (Toggle toggle : statedInferredToggleGroup.getToggles()) {
 				if (toggle.getUserData() == storedStatedInferredOption) {
@@ -132,8 +165,9 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			}
 			
 			// ComboBox
-			final String storedPath = getStoredPath();
+			final UUID storedPath = getStoredPath();
 			pathComboBox.getSelectionModel().select(storedPath);
+			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
 			
 			hBox = new HBox();
 			hBox.getChildren().addAll(pathComboBox, statedInferredToggleGroupVBox);
@@ -142,16 +176,18 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 		return hBox;
 	}
 
-	protected abstract Collection<String> getPathOptions();
-	protected abstract String getStoredPath();
+	protected abstract Collection<UUID> getPathOptions();
+	protected abstract UUID getStoredPath();
+	protected abstract UUID getDefaultPath();
 	
 	protected abstract StatedInferredOptions getStoredStatedInferredOption();
+	protected abstract StatedInferredOptions getDefaultStatedInferredOption();
 
 	public ReadOnlyObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty() {
 		return currentStatedInferredOptionProperty;
 	}
 	
-	public ReadOnlyStringProperty currentPathProperty() {
+	public ReadOnlyObjectProperty<UUID> currentPathProperty() {
 		return currentPathProperty;
 	}
 }

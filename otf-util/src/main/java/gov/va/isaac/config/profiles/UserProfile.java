@@ -48,6 +48,10 @@ public class UserProfile
 {
 	private static Logger logger = LoggerFactory.getLogger(UserProfile.class);
 
+	public static StatedInferredOptions getDefaultStatedInferredPolicy() {
+		return StatedInferredOptions.INFERRED_THEN_STATED;
+	}
+	
 	//This is a cache of what they typed when the logged in - so it can be used later for logging into workflow, or sync.
 	private transient char[] clearTextPassword;
 	
@@ -62,7 +66,7 @@ public class UserProfile
 	private UUID conceptUUID;
 
 	@XmlElement 
-	private StatedInferredOptions statedInferredPolicy = StatedInferredOptions.INFERRED_THEN_STATED;
+	private StatedInferredOptions statedInferredPolicy = getDefaultStatedInferredPolicy();
 	
 	@XmlElement 
 	private boolean displayFSN = true;
@@ -325,7 +329,6 @@ public class UserProfile
 		//TODO implement role checking - probably store these on the user concept in a refex?
 		return true;
 	}
-	
 
 	/**
 	 * @return the launchWorkflowForEachCommit
@@ -415,7 +418,6 @@ public class UserProfile
 	{
 		this.editCoordinatePath = editCoordinatePath;
 	}
-	
 	
 	protected void store(File fileToWrite) throws IOException
 	{
