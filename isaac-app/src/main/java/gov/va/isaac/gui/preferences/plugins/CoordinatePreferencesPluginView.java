@@ -28,17 +28,14 @@ import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 import gov.va.isaac.util.WBUtility;
-
 import java.util.Collection;
 import java.util.UUID;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -47,6 +44,7 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 
@@ -72,10 +70,10 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getNode()
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getRegion()
 	 */
 	@Override
-	public Node getNode() {
+	public Region getContent() {
 		if (hBox == null) {
 			allValid_ = new ValidBooleanBinding() {
 				{

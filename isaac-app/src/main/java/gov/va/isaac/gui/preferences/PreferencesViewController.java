@@ -27,24 +27,21 @@ package gov.va.isaac.gui.preferences;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-
+import javafx.scene.layout.Region;
 import javax.inject.Inject;
-
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,8 +103,11 @@ public class PreferencesViewController {
 				tabLabel.setMaxWidth(Double.MAX_VALUE);
 				Tab pluginTab = new Tab();
 				pluginTab.setGraphic(tabLabel);
-				Node node = plugin.getNode();
-				pluginTab.setContent(node);
+				Region content = plugin.getContent();
+				content.setMaxWidth(Double.MAX_VALUE);
+				content.setMaxHeight(Double.MAX_VALUE);
+				content.setPadding(new Insets(5.0));
+				pluginTab.setContent(content);
 				tabPane_.getTabs().add(pluginTab);
 			}
 

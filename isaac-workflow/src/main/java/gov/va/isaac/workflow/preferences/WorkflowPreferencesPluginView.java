@@ -24,14 +24,6 @@
  */
 package gov.va.isaac.workflow.preferences;
 
-import java.io.IOException;
-
-import javax.inject.Singleton;
-
-import org.jvnet.hk2.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
@@ -39,15 +31,21 @@ import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
+import java.io.IOException;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javax.inject.Singleton;
+import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * WorkflowPreferencesPluginView
@@ -78,7 +76,7 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getNode()
 	 */
 	@Override
-	public Node getNode() {
+	public Region getContent() {
 		if (gridPane == null) {
 			gridPane = new GridPane();
 			
@@ -115,6 +113,9 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 
 			gridPane.setMaxWidth(Double.MAX_VALUE);
 			gridPane.addRow(0, workflowServerDeploymentIdlabel, workflowServerDeploymentIdTextField);
+			GridPane.setFillWidth(workflowServerDeploymentIdTextField, true);
+			GridPane.setHgrow(workflowServerDeploymentIdTextField, Priority.ALWAYS);
+			GridPane.setHgrow(workflowServerDeploymentIdlabel, Priority.NEVER);
 		}
 		
 		return gridPane;

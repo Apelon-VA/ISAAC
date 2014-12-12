@@ -71,8 +71,8 @@ public class PreferencesView extends Stage implements PreferencesViewI {
 
 		Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
 		initOwner(owner);
-		initModality(Modality.NONE);
-		initStyle(StageStyle.UTILITY);
+		initModality(Modality.WINDOW_MODAL);  //Changed to modal because it kept accidently hiding behind things for me on linux - maybe make a full fledged window
+		initStyle(StageStyle.UTILITY);  //with a bottom tab instead (at the OS level)
 
 		// Load from FXML.
 		URL resource = this.getClass().getResource("PreferencesView.fxml");

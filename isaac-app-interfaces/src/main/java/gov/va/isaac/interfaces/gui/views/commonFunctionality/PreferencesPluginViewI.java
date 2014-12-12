@@ -19,11 +19,8 @@ package gov.va.isaac.interfaces.gui.views.commonFunctionality;
  */
 
 import java.io.IOException;
-
-import javafx.scene.Node;
-
 import javafx.beans.property.ReadOnlyStringProperty;
-
+import javafx.scene.layout.Region;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -36,6 +33,6 @@ import org.jvnet.hk2.annotations.Contract;
 public interface PreferencesPluginViewI {
 	String getName();
 	ReadOnlyStringProperty validationFailureMessageProperty();
-	Node getNode();
+	Region getContent();
 	void save() throws IOException;
 }
