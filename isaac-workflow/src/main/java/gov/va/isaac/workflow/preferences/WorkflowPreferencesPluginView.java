@@ -102,6 +102,7 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 			
 			Label workflowServerDeploymentIdlabel = new Label("Workflow Server Deployment ID");
 			TextField workflowServerDeploymentIdTextField = new TextField();
+			workflowServerDeploymentIdTextField.setMaxWidth(Double.MAX_VALUE);
 			workflowServerDeploymentIdTextField.setTooltip(new Tooltip("Default is " + AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId()));
 			workflowServerDeploymentIdTextField.textProperty().bindBidirectional(workflowServerDeploymentIdProperty);
 
@@ -109,6 +110,7 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 			workflowServerDeploymentIdProperty.set(loggedIn.getWorkflowServerDeploymentId());
 
+			gridPane.setMaxWidth(Double.MAX_VALUE);
 			gridPane.addRow(0, workflowServerDeploymentIdlabel, workflowServerDeploymentIdTextField);
 		}
 		

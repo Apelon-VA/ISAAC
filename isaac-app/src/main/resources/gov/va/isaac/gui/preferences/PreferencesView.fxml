@@ -38,7 +38,7 @@
    <center>
       <ScrollPane maxWidth="1.7976931348623157E308">
          <content>
-            <TabPane fx:id="tabPane_" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="999.0" tabMaxWidth="999.0" BorderPane.alignment="CENTER" />
+            <TabPane fx:id="tabPane_" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="999.0" tabMaxWidth="999.0" BorderPane.alignment="CENTER" />
          </content>
       </ScrollPane>
    </center>
