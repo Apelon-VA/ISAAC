@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 
-@Service
+//@Service
 @Singleton
 public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPluginView {
 	private static Logger logger = LoggerFactory.getLogger(ExampleAbstractPreferencesPluginView.class);
