@@ -25,6 +25,7 @@
 package gov.va.isaac.gui.preferences;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
@@ -138,7 +139,7 @@ public class PreferencesViewController {
 				Label errorMessageLabel = new Label();
 				errorMessageLabel.textProperty().bind(plugin.validationFailureMessageProperty());
 				errorMessageLabel.setAlignment(Pos.BOTTOM_CENTER);
-				errorMessageLabel.setStyle("-fx-text-fill: red;");
+				TextErrorColorHelper.setTextErrorColor(errorMessageLabel);
 
 				VBox vBox = new VBox();
 				vBox.getChildren().addAll(errorMessageLabel, content);
@@ -152,9 +153,9 @@ public class PreferencesViewController {
 							String oldValue,
 							String newValue) {
 						if (newValue != null && ! StringUtils.isEmpty(newValue)) {
-							tabLabel.setStyle("-fx-text-fill: red;");
+							TextErrorColorHelper.setTextErrorColor(tabLabel);
 						} else {
-							tabLabel.setStyle("-fx-text-fill: -fx-text-base-color;");
+							TextErrorColorHelper.clearTextErrorColor(tabLabel);
 						}
 					}
 				});
