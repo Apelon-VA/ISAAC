@@ -694,7 +694,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			}
 			
 			cab.setData(data, WBUtility.getViewCoordinate());
-			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 			RefexDynamicChronicleBI<?> rdc = builder.construct(cab);
 			
 			boolean isAnnotationStyle = WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex();

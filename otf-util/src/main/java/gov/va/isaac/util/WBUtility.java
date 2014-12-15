@@ -119,13 +119,13 @@ public class WBUtility {
 
 	public static TerminologyBuilderBI getBuilder() {
 		if (dataBuilder == null) {
-			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
+			dataBuilder = new BdbTermBuilder(getEditCoordinate(), getViewCoordinate());
 		}
 		
 		return dataBuilder;
 	}
 	
-	public static EditCoordinate getEC() {
+	public static EditCoordinate getEditCoordinate() {
 		if (editCoord == null) {
 			try {
 				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
@@ -1032,7 +1032,7 @@ public class WBUtility {
 
 	public static void addToPromotionPath(UUID compUuid) throws IOException, ContradictionException, InvalidCAB {
 		// Setup Edit Path to be promotion path
-		List<ConceptSpec> origPaths = getEC().getEditPathListSpecs();
+		List<ConceptSpec> origPaths = getEditCoordinate().getEditPathListSpecs();
 		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getCurrentWorkflowPromotionPathUuidAsUUID());
 		ConceptSpec cs = new ConceptSpec(pp.getNid());
 		
@@ -1077,7 +1077,7 @@ public class WBUtility {
 		// Revert to original Edit path
 		editPaths.clear();
 		editPaths.addAll(origPaths);
-		getEC().setEditPathListSpecs(editPaths);
+		getEditCoordinate().setEditPathListSpecs(editPaths);
 	}
 	
 	

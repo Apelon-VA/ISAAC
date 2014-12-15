@@ -192,7 +192,7 @@ public class SearchConceptHelper {
 
 				conceptAttributeBlueprintAmender.addAnnotationBlueprint(globalAttributesCAB);
 
-				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 				builder.construct(globalAttributesCAB);
 			}
 
@@ -358,7 +358,7 @@ public class SearchConceptHelper {
 
 		filterRefexCAB.addAnnotationBlueprint(nestedFilterAttributesCAB);
 
-		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 		builder.construct(filterRefexCAB);
 	}
 
