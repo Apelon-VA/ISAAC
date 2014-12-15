@@ -41,6 +41,7 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -87,6 +88,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 				RadioButton optionButton = new RadioButton(option.value());
 				optionButton.setUserData(option);
 				optionButton.setTooltip(new Tooltip("Default StatedInferredOption is " + getDefaultStatedInferredOption()));
+				optionButton.setPadding(new Insets(5,5,5,5));
 				statedInferredToggleGroup.getToggles().add(optionButton);
 				statedInferredToggleGroupVBox.getChildren().add(optionButton);
 				statedInferredOptionButtons.add(optionButton);
@@ -147,7 +149,8 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			final UUID storedPath = getStoredPath();
 			pathComboBox.getSelectionModel().select(storedPath);
 			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
-			
+			pathComboBox.setPadding(new Insets(5,5,5,5));
+
 			hBox = new HBox();
 			hBox.getChildren().addAll(pathComboBox, statedInferredToggleGroupVBox);
 

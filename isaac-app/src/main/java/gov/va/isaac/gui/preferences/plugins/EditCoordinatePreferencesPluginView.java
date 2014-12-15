@@ -42,6 +42,7 @@ import java.util.UUID;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -146,7 +147,8 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 			final UUID storedPath = getStoredPath();
 			pathComboBox.getSelectionModel().select(storedPath);
 			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
-			
+			pathComboBox.setPadding(new Insets(5,5,5,5));
+
 			hBox = new HBox();
 			hBox.getChildren().addAll(pathComboBox);
 		}
