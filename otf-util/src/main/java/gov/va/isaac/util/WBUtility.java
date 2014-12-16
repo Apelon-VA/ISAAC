@@ -20,6 +20,9 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
+
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -30,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -108,9 +112,10 @@ public class WBUtility {
 	private static Integer synonymRf1Nid = null;
 	
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+	
 	private static TerminologyBuilderBI dataBuilder;
-
 	private static EditCoordinate editCoord = null;
+	
 	private static ViewCoordinate vc = null;
 
 	static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
@@ -124,7 +129,56 @@ public class WBUtility {
 		
 		return dataBuilder;
 	}
-	
+
+	/**
+	 * Currently configured to return InferredThenStatedLatest + INACTIVE status
+	 */
+	public static ViewCoordinate getViewCoordinate()
+	{
+		if (vc == null) {
+			try {
+				UserProfile userProfile = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+				StatedInferredOptions policy = userProfile.getStatedInferredPolicy();
+				switch(policy) {
+				case STATED:
+					vc = StandardViewCoordinates.getSnomedStatedLatest();
+					break;
+				case INFERRED:
+					vc = StandardViewCoordinates.getSnomedInferredLatest();
+					break;
+				case INFERRED_THEN_STATED:
+					vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+					break;
+				default: // Should never happen unless a new policy has been coded
+					throw new RuntimeException("Unsupported StatedInferredOptions policy " + policy);
+				}
+
+				LOG.info("Using {} policy for view coordinate", policy);
+				
+				// Use the default view path in the configuration
+				LOG.info("	DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
+				if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
+					LOG.info("Using path "
+							+ AppContext.getAppConfiguration().getDefaultViewPathName()
+							+ " as the View Coordinate");
+					// Start with standard view coordinate and override the path setting to
+					// use the ISAAC development path
+					Position position = 
+							dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
+									UUID.fromString(AppContext.getAppConfiguration()
+											.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
+					vc.setViewPosition(position);
+				}
+			} catch (NullPointerException e) {
+				LOG.error("View path UUID does not exist", e);
+			} catch (IOException e) {
+				LOG.error("Unexpected error fetching view coordinates!", e);
+			}
+		}
+
+		return vc;
+	}
+
 	public static EditCoordinate getEditCoordinate() {
 		if (editCoord == null) {
 			try {
@@ -687,38 +741,6 @@ public class WBUtility {
 		}
 	}
 	
-	/**
-	 * Currently configured to return InferredThenStatedLatest + INACTIVE status
-	 */
-	public static ViewCoordinate getViewCoordinate()
-	{
-		if (vc == null) {
-			try {
-				vc = StandardViewCoordinates.getSnomedStatedLatest();
-				// Use the default view path in the configuration
-				LOG.info("	DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
-				if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
-				LOG.info("Using path "
-					+ AppContext.getAppConfiguration().getDefaultViewPathName()
-					+ " as the View Coordinate");
-				// Start with standard view coordinate and override the path setting to
-				// use the ISAAC development path
-				Position position = 
-					dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
-						UUID.fromString(AppContext.getAppConfiguration()
-							.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
-				vc.setViewPosition(position);
-				}
-			} catch (NullPointerException e) {
-			LOG.error("View path UUID does not exist", e);
-			} catch (IOException e) {
-			LOG.error("Unexpected error fetching view coordinates!", e);
-			}
-		}
-		
-		return vc;
-	}
-
 	public static RefexVersionBI<?> getRefsetMember(int nid) {
 		try {
 			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
