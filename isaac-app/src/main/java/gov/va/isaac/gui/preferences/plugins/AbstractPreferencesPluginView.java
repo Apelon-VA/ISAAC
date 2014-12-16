@@ -132,15 +132,12 @@ public abstract class AbstractPreferencesPluginView implements PreferencesPlugin
 				@Override
 				protected boolean computeValue() {
 					for (PreferencesPluginProperty<?, ? extends Control> property : properties) {
-						//logger.debug("Plugin \"{}\" checking bound property \"{}\"", getName(), property.getName());
 						if (! property.getValidator().get()) {
 							this.setInvalidReason(property.getValidator().getReasonWhyInvalid().get());
 
 							logger.debug("Plugin \"{}\" invalidated because {}", getName(), property.getValidator().getReasonWhyInvalid().get());
 
 							return false;
-						} else {
-							//logger.debug("Plugin \"{}\" bound property \"{}\" is OK", getName(), property.getName());
 						}
 					}
 

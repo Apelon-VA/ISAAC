@@ -24,36 +24,24 @@
  */
 package gov.va.isaac.gui.preferences.plugins;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
-import gov.va.isaac.config.profiles.UserProfileManager;
-import gov.va.isaac.config.users.InvalidUserException;
-import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
-import gov.va.isaac.util.ValidBooleanBinding;
+import gov.va.isaac.gui.preferences.properties.PreferencesPluginCheckBoxProperty;
+import gov.va.isaac.gui.preferences.properties.PreferencesPluginProperty;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.geometry.Insets;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.control.Control;
 
 import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * WorkflowPreferencesPluginView
+ * ExampleAbstractPreferencesPluginView
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
@@ -61,92 +49,41 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Singleton
-public class MiscellaneousPreferencesPluginView implements PreferencesPluginViewI {
-	private Logger logger = LoggerFactory.getLogger(MiscellaneousPreferencesPluginView.class);
-
-	private GridPane gridPane = null;
-	protected ValidBooleanBinding allValid_ = null;
+public class MiscellaneousPreferencesPluginView extends AbstractPreferencesPluginView {
+	//private static Logger logger = LoggerFactory.getLogger(MiscellaneousPreferencesPluginView2.class);
 	
-	private final BooleanProperty displayFSNProperty = new SimpleBooleanProperty();
+	private static Collection<PreferencesPluginProperty<?, ? extends Control>> createProperties() {
+		List<PreferencesPluginProperty<?, ? extends Control>> properties = new ArrayList<>();
 
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getValidationFailureMessage()
-	 */
-	@Override
-	public ReadOnlyStringProperty validationFailureMessageProperty() {
-		return allValid_.getReasonWhyInvalid();
+		PreferencesPluginCheckBoxProperty displayFSNProperty =
+				new PreferencesPluginCheckBoxProperty("Display FSN") {
+
+			@Override
+			public Boolean readFromPersistedPreferences() {
+				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+				return loggedIn.getDisplayFSN();
+			}
+
+			@Override
+			public Boolean readFromDefaults() {
+				return UserProfileDefaults.getDefaultDisplayFSN();
+			}
+
+			@Override
+			public void writeToUnpersistedPreferences(UserProfile userProfile) {
+				userProfile.setDisplayFSN(getProperty().getValue());
+			}
+		};
+		properties.add(displayFSNProperty);
+
+		return properties;
 	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getNode()
+	
+	/**
+	 * @param name
+	 * @param properties
 	 */
-	@Override
-	public Region getContent() {
-		if (gridPane == null) {
-			gridPane = new GridPane();
-			
-			allValid_ = new ValidBooleanBinding() {
-				{
-					setComputeOnInvalidate(true);
-				}
-				
-				@Override
-				protected boolean computeValue() {
-					this.clearInvalidReason();
-					return true;
-				}
-			};
-			
-			Label displayFSNCheckBoxLabel = new Label("Display FSN");
-			displayFSNCheckBoxLabel.setPadding(new Insets(5, 5, 5, 5));
-			CheckBox displayFSNCheckBox = new CheckBox();
-			displayFSNCheckBox.setPadding(new Insets(5, 5, 5, 5));
-			displayFSNCheckBox.setMaxWidth(Double.MAX_VALUE);
-			displayFSNCheckBox.setTooltip(new Tooltip("Default is " + UserProfileDefaults.getDefaultDisplayFSN()));
-			displayFSNCheckBox.selectedProperty().bindBidirectional(displayFSNProperty);
-			
-			// load/set current preferences values
-			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-			displayFSNCheckBox.selectedProperty().set(loggedIn.getDisplayFSN());
-
-			// Format GridPane
-			int row = 0;
-			gridPane.setMaxWidth(Double.MAX_VALUE);
-
-			gridPane.addRow(row++, displayFSNCheckBoxLabel, displayFSNCheckBox);
-			GridPane.setHgrow(displayFSNCheckBoxLabel, Priority.NEVER);
-			GridPane.setFillWidth(displayFSNCheckBox, true);
-			GridPane.setHgrow(displayFSNCheckBox, Priority.ALWAYS);
-		}
-		
-		return gridPane;
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getName()
-	 */
-	@Override
-	public String getName() {
-		return "Misc";
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#save()
-	 */
-	@Override
-	public void save() throws IOException {
-		logger.debug("Saving {} preferences", getName());
-		
-		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-		loggedIn.setDisplayFSN(this.displayFSNProperty.get());
-
-		try {
-			AppContext.getService(UserProfileManager.class).saveChanges(loggedIn);
-		} catch (InvalidUserException e) {
-			String msg = "Caught " + e.getClass().getName() + " " + e.getLocalizedMessage() + " attempting to save UserProfile";
-			
-			logger.error(msg, e);
-			throw new IOException(msg, e);
-		}
+	protected MiscellaneousPreferencesPluginView() {
+		super("Misc", createProperties());
 	}
 }

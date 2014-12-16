@@ -47,7 +47,7 @@ import javax.inject.Singleton;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.jvnet.hk2.annotations.Service;
+//import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
