@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.gui.preferences.properties;
 
+import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.Property;
 import javafx.scene.control.Control;
@@ -54,16 +55,53 @@ public abstract class PreferencesPluginProperty<T, C extends Control> {
 
 	final StringConverter<T> stringConverter;
 
-	//final PropertyAndControl<T, C> binder;
 	final PropertyAction<T, C> binder;
 
-	final PropertyAction<T, C> controlCurrentValueSetter;
+	final PropertyAction<T, C> controlPersistedValueSetter;
 
 	final PropertyAction<T, C> guiFormattingApplicator;
 
-	public abstract T readFromPreferences();
+	// Helper methods
+	public void bindPropertyToControl() {
+		if (binder != null) {
+			binder.apply(this);
+		}
+	}
+	public void setControlPersistedValue() {
+		if (controlPersistedValueSetter != null) {
+			controlPersistedValueSetter.apply(this);
+		}
+	}
+	public void applyGuiFormatting() {
+		if (guiFormattingApplicator != null) {
+			guiFormattingApplicator.apply(this);
+		}
+	}
+	public String getStringValueOfDefault() {
+		return getStringConverter().convertToString(readFromDefaults());
+	}
+	
+	/**
+	 * @return T reads property value from persisted preferences
+	 * 
+	 * This method is not meant to interact with writeToUnpersistedPreferences(UserProfile userProfile)
+	 * It is meant solely to initialize the Control,
+	 * so there is no need for it to read from a UserProfile that may have been changed in memory
+	 */
+	public abstract T readFromPersistedPreferences();
+	
 	public abstract T readFromDefaults();
-	public abstract void writeToPreferences();
+	
+	/**
+	 * @param userProfile
+	 * 
+	 * This method is not meant to interact with readFromPersistedPreferences().
+	 * It is meant solely to be used just before persisting the entire preferences file,
+	 * so before any property values are written for a given plugin,
+	 * the entire property file should be loaded in order to ensure that values previously modified
+	 * by other plugins are not overwritten with stale data loaded earlier by this one.
+	 */
+	public abstract void writeToUnpersistedPreferences(UserProfile userProfile);
 
 	/**
 	 * @param name
@@ -72,16 +110,16 @@ public abstract class PreferencesPluginProperty<T, C extends Control> {
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
-	public PreferencesPluginProperty(String name,
+	protected PreferencesPluginProperty(String name,
 			C control,
 			Property<T> property,
 			ValidBooleanBinding validator,
 			StringConverter<T> stringConverter,
 			PropertyAction<T, C> binder,
-			PropertyAction<T, C> controlCurrentValueSetter,
+			PropertyAction<T, C> controlPersistedValueSetter,
 			PropertyAction<T, C> guiFormattingApplicator) {
 		this(
 				new Label(name),
@@ -90,7 +128,7 @@ public abstract class PreferencesPluginProperty<T, C extends Control> {
 				validator,
 				stringConverter,
 				binder,
-				controlCurrentValueSetter,
+				controlPersistedValueSetter,
 				guiFormattingApplicator);
 	}
 
@@ -101,16 +139,16 @@ public abstract class PreferencesPluginProperty<T, C extends Control> {
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentPreferenceValueSetter
+	 * @param controlPersistedPreferenceValueSetter
 	 * @param guiFormattingApplicator
 	 */
-	public PreferencesPluginProperty(Label label,
+	protected PreferencesPluginProperty(Label label,
 			C control,
 			Property<T> property,
 			ValidBooleanBinding validator,
 			StringConverter<T> stringConverter,
 			PropertyAction<T, C> binder,
-			PropertyAction<T, C> controlCurrentPreferenceValueSetter,
+			PropertyAction<T, C> controlPersistedPreferenceValueSetter,
 			PropertyAction<T, C> guiFormattingApplicator) {
 		super();
 		this.name = label.getText();
@@ -120,7 +158,7 @@ public abstract class PreferencesPluginProperty<T, C extends Control> {
 		this.validator = validator;
 		this.stringConverter = stringConverter;
 		this.binder = binder;
-		this.controlCurrentValueSetter = controlCurrentPreferenceValueSetter;
+		this.controlPersistedValueSetter = controlPersistedPreferenceValueSetter;
 		this.guiFormattingApplicator = guiFormattingApplicator;
 	}
 
@@ -189,10 +227,10 @@ public abstract class PreferencesPluginProperty<T, C extends Control> {
 	}
 
 	/**
-	 * @return the controlCurrentValueSetter
+	 * @return the controlPersistedValueSetter
 	 */
-	public PropertyAction<T, C> getControlCurrentPreferenceValueSetter() {
-		return controlCurrentValueSetter;
+	public PropertyAction<T, C> getControlPersistedPreferenceValueSetter() {
+		return controlPersistedValueSetter;
 	}
 	/**
 	 * @return the guiFormattingApplicator

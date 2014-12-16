@@ -51,7 +51,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
 	public PreferencesPluginCheckBoxProperty(
@@ -61,7 +61,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 			ValidBooleanBinding validator,
 			StringConverter<Boolean> stringConverter,
 			PropertyAction<Boolean, CheckBox> binder,
-			PropertyAction<Boolean, CheckBox> controlCurrentValueSetter,
+			PropertyAction<Boolean, CheckBox> controlPersistedValueSetter,
 			PropertyAction<Boolean, CheckBox> guiFormattingApplicator) {
 		super(
 				label, 
@@ -70,7 +70,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 				validator, 
 				stringConverter, 
 				binder,
-				controlCurrentValueSetter, 
+				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
 	
@@ -81,7 +81,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
 	public PreferencesPluginCheckBoxProperty(
@@ -91,7 +91,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 			ValidBooleanBinding validator,
 			StringConverter<Boolean> stringConverter,
 			PropertyAction<Boolean, CheckBox> binder,
-			PropertyAction<Boolean, CheckBox> controlCurrentValueSetter,
+			PropertyAction<Boolean, CheckBox> controlPersistedValueSetter,
 			PropertyAction<Boolean, CheckBox> guiFormattingApplicator) {
 		this(
 				new Label(name),
@@ -100,7 +100,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 				validator, 
 				stringConverter, 
 				binder,
-				controlCurrentValueSetter, 
+				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
 
@@ -129,7 +129,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 				new PropertyAction<Boolean, CheckBox>() {
 					@Override
 					public void apply(PreferencesPluginProperty<Boolean, CheckBox> property) {
-						property.getControl().selectedProperty().set(property.readFromPreferences());
+						property.getControl().selectedProperty().set(property.readFromPersistedPreferences());
 					}
 				}, 
 				new PropertyAction<Boolean, CheckBox>() {
@@ -148,7 +148,7 @@ public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPlugi
 			@Override
 			protected boolean computeValue() {
 				if (getProperty().getValue() == null) {
-					this.setInvalidReason("Null/unset/unselected " + name);
+					this.setInvalidReason("null/unset/unselected " + name);
 					logger.debug(getReasonWhyInvalid().get());
 
 					TextErrorColorHelper.setTextErrorColor(label);

@@ -37,6 +37,7 @@ import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,12 +63,12 @@ import org.slf4j.LoggerFactory;
 public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPluginView {
 	private static Logger logger = LoggerFactory.getLogger(ExampleAbstractPreferencesPluginView.class);
 	
-	private static PreferencesPluginProperty<?, ? extends Control>[] createProperties() {
+	private static Collection<PreferencesPluginProperty<?, ? extends Control>> createProperties() {
 		List<PreferencesPluginProperty<?, ? extends Control>> properties = new ArrayList<>();
 
 		PreferencesPluginLabelProperty syncUserProperty = new PreferencesPluginLabelProperty("Sync User") {
 			@Override
-			public String readFromPreferences() {
+			public String readFromPersistedPreferences() {
 				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 				return loggedIn.getSyncUsername();
 			}
@@ -84,7 +85,7 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 				new PreferencesPluginCheckBoxProperty("Display FSN") {
 
 			@Override
-			public Boolean readFromPreferences() {
+			public Boolean readFromPersistedPreferences() {
 				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 				return loggedIn.getDisplayFSN();
 			}
@@ -95,9 +96,8 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 			}
 
 			@Override
-			public void writeToPreferences() {
-				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-				loggedIn.setDisplayFSN(getProperty().getValue());
+			public void writeToUnpersistedPreferences(UserProfile userProfile) {
+				userProfile.setDisplayFSN(getProperty().getValue());
 			}
 		};
 		properties.add(displayFSNProperty);
@@ -105,7 +105,7 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 		PreferencesPluginTextFieldProperty workflowServerDeploymentIdProperty = 
 				new PreferencesPluginTextFieldProperty("Workflow Server Deployment ID") {
 			@Override
-			public String readFromPreferences() {
+			public String readFromPersistedPreferences() {
 				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 				return loggedIn.getWorkflowServerDeploymentId();
 			}
@@ -116,9 +116,8 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 			}
 
 			@Override
-			public void writeToPreferences() {
-				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-				loggedIn.setWorkflowServerDeploymentId(getProperty().getValue());
+			public void writeToUnpersistedPreferences(UserProfile userProfile) {
+				userProfile.setWorkflowServerDeploymentId(getProperty().getValue());
 			}
 		};
 		properties.add(workflowServerDeploymentIdProperty);
@@ -132,7 +131,7 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 					}
 				}) {
 			@Override
-			public UUID readFromPreferences() {
+			public UUID readFromPersistedPreferences() {
 				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 				return loggedIn.getViewCoordinatePath();
 			}
@@ -143,9 +142,8 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 			}
 
 			@Override
-			public void writeToPreferences() {
-				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-				loggedIn.setViewCoordinatePath(getProperty().getValue());
+			public void writeToUnpersistedPreferences(UserProfile userProfile) {
+				userProfile.setViewCoordinatePath(getProperty().getValue());
 			}
 		};
 		List<UUID> list = new ArrayList<>();
@@ -159,14 +157,14 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 			logger.error("Failed loading path concepts. Caught {} {}", e.getClass().getName(), e.getLocalizedMessage());
 			e.printStackTrace();
 		}
-		UUID current = viewCoordinatePathProperty.readFromPreferences();
+		UUID current = viewCoordinatePathProperty.readFromPersistedPreferences();
 		if (current != null && ! list.contains(current)) {
 			list.add(current);
 		}
 		viewCoordinatePathProperty.getControl().getItems().addAll(list);
 		properties.add(viewCoordinatePathProperty);
 
-		return properties.toArray(new PreferencesPluginProperty[properties.size()]);
+		return properties;
 	}
 	
 	/**

@@ -42,6 +42,10 @@ import org.slf4j.LoggerFactory;
 /**
  * PreferencesPluginComboBoxProperty
  * 
+ * Helper Constructors greatly simplify construction of properties
+ * governed by ComboBox control.  The only additional work needed after construction
+ * is population of the dropdown item list
+ * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
@@ -55,17 +59,17 @@ public abstract class PreferencesPluginComboBoxProperty<T> extends PreferencesPl
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
-	public PreferencesPluginComboBoxProperty(
+	protected PreferencesPluginComboBoxProperty(
 			Label label,
 			ComboBox<T> control,
 			Property<T> property,
 			ValidBooleanBinding validator,
 			StringConverter<T> stringConverter,
 			PropertyAction<T, ComboBox<T>> binder,
-			PropertyAction<T, ComboBox<T>> controlCurrentValueSetter,
+			PropertyAction<T, ComboBox<T>> controlPersistedValueSetter,
 			PropertyAction<T, ComboBox<T>> guiFormattingApplicator) {
 		super(
 				label, 
@@ -74,7 +78,7 @@ public abstract class PreferencesPluginComboBoxProperty<T> extends PreferencesPl
 				validator, 
 				stringConverter, 
 				binder,
-				controlCurrentValueSetter, 
+				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
 	
@@ -85,17 +89,17 @@ public abstract class PreferencesPluginComboBoxProperty<T> extends PreferencesPl
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
-	public PreferencesPluginComboBoxProperty(
+	protected PreferencesPluginComboBoxProperty(
 			String name,
 			ComboBox<T> control,
 			Property<T> property,
 			ValidBooleanBinding validator,
 			StringConverter<T> stringConverter,
 			PropertyAction<T, ComboBox<T>> binder,
-			PropertyAction<T, ComboBox<T>> controlCurrentValueSetter,
+			PropertyAction<T, ComboBox<T>> controlPersistedValueSetter,
 			PropertyAction<T, ComboBox<T>> guiFormattingApplicator) {
 		this(
 				new Label(name),
@@ -104,23 +108,53 @@ public abstract class PreferencesPluginComboBoxProperty<T> extends PreferencesPl
 				validator, 
 				stringConverter, 
 				binder,
-				controlCurrentValueSetter, 
+				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
 	
-	public PreferencesPluginComboBoxProperty(String name) {
+	/**
+	 * @param name
+	 * 
+	 * Constructor for simple String value ComboBox
+	 */
+	protected PreferencesPluginComboBoxProperty(String name) {
 		this(new Label(name), (StringConverter<T>)null);
 	}
-	public PreferencesPluginComboBoxProperty(
+	
+	/**
+	 * @param name
+	 * @param stringConverter
+	 * 
+	 * Constructor for ComboBox that displays a String
+	 * that must be derived/converted from its underlying value
+	 */
+	protected PreferencesPluginComboBoxProperty(
 			String name,
 			StringConverter<T> stringConverter) {
 		this(new Label(name), stringConverter);
 	}
 
-	public PreferencesPluginComboBoxProperty(Label label) {
+	/**
+	 * @param name
+	 * 
+	 * Constructor for simple String value ComboBox
+	 * 
+	 * Allows a preexisting Label to be used
+	 */
+	protected PreferencesPluginComboBoxProperty(Label label) {
 		this(label, (StringConverter<T>)null);
 	}
-	public PreferencesPluginComboBoxProperty(
+
+	/**
+	 * @param name
+	 * @param stringConverter
+	 * 
+	 * Constructor for ComboBox that displays a String
+	 * that must be derived/converted from its underlying value
+	 * 
+	 * Allows a preexisting Label to be used
+	 */
+	protected PreferencesPluginComboBoxProperty(
 			Label label,
 			StringConverter<T> stringConverter) {
 		super(
@@ -138,7 +172,7 @@ public abstract class PreferencesPluginComboBoxProperty<T> extends PreferencesPl
 				new PropertyAction<T, ComboBox<T>>() {
 					@Override
 					public void apply(PreferencesPluginProperty<T, ComboBox<T>> property) {
-						property.getControl().getSelectionModel().select(property.readFromPreferences());
+						property.getControl().getSelectionModel().select(property.readFromPersistedPreferences());
 					}
 				}, 
 				new PropertyAction<T, ComboBox<T>>() {
@@ -157,7 +191,7 @@ public abstract class PreferencesPluginComboBoxProperty<T> extends PreferencesPl
 			@Override
 			protected boolean computeValue() {
 				if (getProperty().getValue() == null) {
-					this.setInvalidReason("Null/unset/unselected " + name);
+					this.setInvalidReason("null/unset/unselected " + name);
 
 					logger.debug(getReasonWhyInvalid().get());
 

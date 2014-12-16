@@ -24,6 +24,7 @@
  */
 package gov.va.isaac.gui.preferences.properties;
 
+import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -109,7 +110,7 @@ public abstract class PreferencesPluginLabelProperty extends PreferencesPluginPr
 				label, 
 				new Label(), 
 				new SimpleStringProperty(), 
-				null, // validator handled below
+				null, // noop validator handled below
 				new StringConverter<String>() {
 					@Override
 					public String convertToString(String value) {
@@ -125,7 +126,7 @@ public abstract class PreferencesPluginLabelProperty extends PreferencesPluginPr
 				new PropertyAction<String, Label>() {
 					@Override
 					public void apply(PreferencesPluginProperty<String, Label> property) {
-						property.getControl().textProperty().set(property.readFromPreferences());
+						property.getControl().textProperty().set(property.readFromPersistedPreferences());
 					}
 				}, 
 				new PropertyAction<String, Label>() {
@@ -153,7 +154,7 @@ public abstract class PreferencesPluginLabelProperty extends PreferencesPluginPr
 	 * @see gov.va.isaac.gui.preferences.properties.PreferencesPluginProperty#writeToPreferences()
 	 */
 	@Override
-	final public void writeToPreferences() {
+	final public void writeToUnpersistedPreferences(UserProfile userProfile) {
 		// noop
 	}
 }

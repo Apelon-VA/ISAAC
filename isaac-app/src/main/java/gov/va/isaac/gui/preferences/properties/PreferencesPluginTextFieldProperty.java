@@ -52,7 +52,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
 	public PreferencesPluginTextFieldProperty(
@@ -62,7 +62,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 			ValidBooleanBinding validator,
 			StringConverter<String> stringConverter,
 			PropertyAction<String, TextField> binder,
-			PropertyAction<String, TextField> controlCurrentValueSetter,
+			PropertyAction<String, TextField> controlPersistedValueSetter,
 			PropertyAction<String, TextField> guiFormattingApplicator) {
 		super(
 				label, 
@@ -71,7 +71,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 				validator, 
 				stringConverter, 
 				binder,
-				controlCurrentValueSetter, 
+				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
 	
@@ -82,7 +82,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 	 * @param validator
 	 * @param stringConverter
 	 * @param binder
-	 * @param controlCurrentValueSetter
+	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
 	public PreferencesPluginTextFieldProperty(
@@ -92,7 +92,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 			ValidBooleanBinding validator,
 			StringConverter<String> stringConverter,
 			PropertyAction<String, TextField> binder,
-			PropertyAction<String, TextField> controlCurrentValueSetter,
+			PropertyAction<String, TextField> controlPersistedValueSetter,
 			PropertyAction<String, TextField> guiFormattingApplicator) {
 		this(
 				new Label(name),
@@ -101,7 +101,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 				validator, 
 				stringConverter, 
 				binder,
-				controlCurrentValueSetter, 
+				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
 
@@ -130,7 +130,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 				new PropertyAction<String, TextField>() {
 					@Override
 					public void apply(PreferencesPluginProperty<String, TextField> property) {
-						property.getControl().textProperty().set(property.readFromPreferences());
+						property.getControl().textProperty().set(property.readFromPersistedPreferences());
 					}
 				}, 
 				new PropertyAction<String, TextField>() {
@@ -149,7 +149,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 			@Override
 			protected boolean computeValue() {
 				if (StringUtils.isBlank(getProperty().getValue())) {
-					this.setInvalidReason("Null/unset/unselected " + name);
+					this.setInvalidReason("null/unset/unselected " + name);
 					logger.debug(getReasonWhyInvalid().get());
 
 					TextErrorColorHelper.setTextErrorColor(label);

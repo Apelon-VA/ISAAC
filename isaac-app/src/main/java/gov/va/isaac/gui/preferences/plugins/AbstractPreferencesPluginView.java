@@ -35,7 +35,7 @@ import gov.va.isaac.util.ValidBooleanBinding;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,11 +67,26 @@ public abstract class AbstractPreferencesPluginView implements PreferencesPlugin
 
 	private final Set<PreferencesPluginProperty<?, ? extends Control>> properties = new HashSet<>();
 
-	protected AbstractPreferencesPluginView(String name, PreferencesPluginProperty<?, ? extends Control>...properties) {
+	protected AbstractPreferencesPluginView(String name, Collection<PreferencesPluginProperty<?, ? extends Control>> properties) {
 		this.name = name;
-		this.properties.addAll(Arrays.asList(properties));
+		this.properties.addAll(properties);
+	}
+	protected AbstractPreferencesPluginView(String name, PreferencesPluginProperty<?, ? extends Control> firstProperty, PreferencesPluginProperty<?, ? extends Control>...otherProperties) {
+		this(name, toList(firstProperty, otherProperties));
 	}
 
+	private static Collection<PreferencesPluginProperty<?, ? extends Control>> toList(PreferencesPluginProperty<?, ? extends Control> firstProperty, PreferencesPluginProperty<?, ? extends Control>[] otherProperties) {
+		List<PreferencesPluginProperty<?, ? extends Control>> list = new ArrayList<>();
+		list.add(firstProperty);
+		if (otherProperties != null) {
+			for (PreferencesPluginProperty<?, ? extends Control> property : otherProperties) {
+				list.add(property);
+			}
+		}
+		
+		return list;
+	}
+	
 	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getValidationFailureMessage()
 	 */
@@ -89,18 +104,18 @@ public abstract class AbstractPreferencesPluginView implements PreferencesPlugin
 			gridPane = new GridPane();
 
 			int row = 0;
-			for (PreferencesPluginProperty property : properties) {
+			for (PreferencesPluginProperty<?, ? extends Control> property : properties) {
 				property.getLabel().setPadding(new Insets(5, 5, 5, 5));
-				property.getControl().setTooltip(new Tooltip("Default is " + property.getStringConverter().convertToString(property.readFromDefaults())));
+				property.getControl().setTooltip(new Tooltip("Default is " + property.getStringValueOfDefault()));
 
-				property.getBinder().apply(property);
-				property.getControlCurrentPreferenceValueSetter().apply(property);
+				property.bindPropertyToControl();
+				property.setControlPersistedValue();
 			
 				gridPane.setMaxWidth(Double.MAX_VALUE);
 				
 				gridPane.addRow(row++, property.getLabel(), property.getControl());
 				
-				property.getGuiFormattingApplicator().apply(property);
+				property.applyGuiFormatting();
 			}
 
 			allValid_ = new ValidBooleanBinding() {
@@ -152,12 +167,12 @@ public abstract class AbstractPreferencesPluginView implements PreferencesPlugin
 	@Override
 	public void save() throws IOException {
 		logger.debug("Saving {} preferences", getName());
-		
-		for (PreferencesPluginProperty property : properties) {
-			property.writeToPreferences();
+
+		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+		for (PreferencesPluginProperty<?, ? extends Control> property : properties) {
+			property.writeToUnpersistedPreferences(loggedIn);
 		}
 		try {
-			UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 			AppContext.getService(UserProfileManager.class).saveChanges(loggedIn);
 		} catch (InvalidUserException e) {
 			String msg = "Caught " + e.getClass().getName() + " " + e.getLocalizedMessage() + " attempting to save UserProfile";
