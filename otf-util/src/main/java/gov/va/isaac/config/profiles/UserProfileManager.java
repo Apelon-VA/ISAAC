@@ -113,9 +113,12 @@ public class UserProfileManager implements ServicesToPreloadI
 			throw new InvalidUserException("Not allowed to change the user login name!");
 		}
 		
+		rereadProfile();
+
+		UserProfile old = loggedInUser_;
+		
 		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
 		
-		UserProfile old = loggedInUser_;
 		loggedInUser_ = temp;
 
 		fireUserProfilePropertyChanges(old, loggedInUser_);
