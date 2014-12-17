@@ -31,7 +31,6 @@ import java.util.List;
 
 import javax.inject.Singleton;
 
-import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 
 import javafx.application.Platform;
@@ -48,7 +47,8 @@ import gov.va.isaac.gui.users.AddUserDialog;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;
 import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesViewI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 
 /**
  * PreferencesView
@@ -58,7 +58,7 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesViewI;
  */
 @Service
 @Singleton
-public class PreferencesView extends Stage implements PreferencesViewI {
+public class PreferencesView extends Stage implements PopupViewI, IsaacViewWithMenusI {
 	private PreferencesViewController controller = null;
 	
 	private PreferencesView() throws IOException

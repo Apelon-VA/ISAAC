@@ -260,7 +260,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         try {
             WBUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
         } catch (Exception e) {
-            log.error("Error promoting concept to promption path for task: " + task, e);
+            log.error("Error promoting concept to promotion path for task: " + task, e);
             throw new DatastoreException("Unexpected error adding a new version of the concept onto the promotion path for task " + task, e);
         }
     }

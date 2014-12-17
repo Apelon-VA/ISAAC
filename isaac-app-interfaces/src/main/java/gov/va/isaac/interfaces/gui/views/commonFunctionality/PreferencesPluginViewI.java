@@ -18,14 +18,23 @@ package gov.va.isaac.interfaces.gui.views.commonFunctionality;
  * limitations under the License.
  */
 
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
+
 import java.io.IOException;
+
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.scene.layout.Region;
+
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * PreferencesPluginViewI
  * 
+ * An interface that allows the creation of a PreferencesPluginViewI implementation, which 
+ * will be a POJO component that contains a data model representing a set of UserProfile preference
+ * values, the GUI Region required to view and (optionally) modify them, and the ability to
+ * load and save them.  It is intended to populate a tab in the PreferencesView window.
+ *
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */

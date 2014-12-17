@@ -112,97 +112,88 @@ public class WBUtility {
 	private static Integer synonymRf1Nid = null;
 	
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-	
-	private static TerminologyBuilderBI dataBuilder;
-	private static EditCoordinate editCoord = null;
-	
-	private static ViewCoordinate vc = null;
 
-	static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+	private static final Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
 
 	private static Set<UUID> rootNodeList = null;
 
 	public static TerminologyBuilderBI getBuilder() {
-		if (dataBuilder == null) {
-			dataBuilder = new BdbTermBuilder(getEditCoordinate(), getViewCoordinate());
-		}
-		
-		return dataBuilder;
+		return new BdbTermBuilder(getEditCoordinate(), getViewCoordinate());
+	}
+	public static TerminologyBuilderBI getBuilder(EditCoordinate ec, ViewCoordinate vc) {
+		return new BdbTermBuilder(ec, vc);
 	}
 
-	/**
-	 * Currently configured to return InferredThenStatedLatest + INACTIVE status
-	 */
-	public static ViewCoordinate getViewCoordinate()
-	{
-		if (vc == null) {
-			try {
-				UserProfile userProfile = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-				StatedInferredOptions policy = userProfile.getStatedInferredPolicy();
-				switch(policy) {
-				case STATED:
-					vc = StandardViewCoordinates.getSnomedStatedLatest();
-					break;
-				case INFERRED:
-					vc = StandardViewCoordinates.getSnomedInferredLatest();
-					break;
-				case INFERRED_THEN_STATED:
-					vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
-					break;
-				default: // Should never happen unless a new policy has been coded
-					throw new RuntimeException("Unsupported StatedInferredOptions policy " + policy);
-				}
-
-				LOG.info("Using {} policy for view coordinate", policy);
-				
-				// Use the default view path in the configuration
-				LOG.info("	DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
-				if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
-					LOG.info("Using path "
-							+ AppContext.getAppConfiguration().getDefaultViewPathName()
-							+ " as the View Coordinate");
-					// Start with standard view coordinate and override the path setting to
-					// use the ISAAC development path
-					Position position = 
-							dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
-									UUID.fromString(AppContext.getAppConfiguration()
-											.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
-					vc.setViewPosition(position);
-				}
-			} catch (NullPointerException e) {
-				LOG.error("View path UUID does not exist", e);
-			} catch (IOException e) {
-				LOG.error("Unexpected error fetching view coordinates!", e);
+	public static ViewCoordinate getViewCoordinate() {
+		ViewCoordinate vc = null;
+		try {
+			UserProfile userProfile = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+			StatedInferredOptions policy = userProfile.getStatedInferredPolicy();
+			switch(policy) {
+			case STATED:
+				vc = StandardViewCoordinates.getSnomedStatedLatest();
+				break;
+			case INFERRED:
+				vc = StandardViewCoordinates.getSnomedInferredLatest();
+				break;
+			case INFERRED_THEN_STATED:
+				vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+				break;
+			default: // Should never happen unless a new policy has been coded
+				throw new RuntimeException("Unsupported StatedInferredOptions policy " + policy);
 			}
+
+			LOG.info("Using {} policy for view coordinate", policy);
+
+			final UUID pathUuid = userProfile.getViewCoordinatePath();
+			final ConceptChronicleBI pathChronicle = dataStore.getConcept(pathUuid);
+			final int pathNid = pathChronicle.getNid();
+
+			// Start with standard view coordinate and override the path setting to
+			// use the preferred path
+			Position position = dataStore.newPosition(dataStore.getPath(pathNid), Long.MAX_VALUE);
+
+			vc.setViewPosition(position);
+
+			LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
+		} catch (NullPointerException e) {
+			LOG.error("View path UUID does not exist", e);
+		} catch (IOException e) {
+			LOG.error("Unexpected error fetching view coordinates!", e);
 		}
 
 		return vc;
 	}
 
 	public static EditCoordinate getEditCoordinate() {
-		if (editCoord == null) {
-			try {
-				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
-				int module = Snomed.CORE_MODULE.getLenient().getNid();
-				int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
+		try {
+			UserProfile userProfile = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 
-				// Use the default edit path in the configuration
-				LOG.info("DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
-				if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
-					editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
-					LOG.info("Using path " + 
-					AppContext.getAppConfiguration().getDefaultEditPathName()
-					+ " as the Edit Coordinate");
-				}
-				// Override edit path nid 
-				editCoord = new EditCoordinate(authorNid, module, editPathNid);
-			} catch (NullPointerException e) {
-				LOG.error("Edit path UUID does not exist", e);
-			} catch (IOException e) {
-				LOG.error("error configuring edit coordinate", e);
+			int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
+			int module = Snomed.CORE_MODULE.getLenient().getNid();
+
+			int pathNid = 0;
+			ConceptChronicleBI pathChronicle = null;
+			UUID pathUuid = userProfile.getEditCoordinatePath();
+			if (pathUuid != null && (pathChronicle = dataStore.getConcept(pathUuid)) != null) {
+				pathNid = pathChronicle.getNid();
+			} else {
+				pathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
+				pathChronicle = dataStore.getConcept(pathNid);
+				pathUuid = pathChronicle.getPrimordialUuid();
 			}
+
+			LOG.info("Using EditCoordinate path nid={}, uuid={}, desc={}", pathNid, pathUuid, WBUtility2.getDescription(pathChronicle));
+
+			// Override edit path
+			return new EditCoordinate(authorNid, module, pathNid);
+		} catch (NullPointerException e) {
+			LOG.error("Edit path UUID does not exist", e);
+		} catch (IOException e) {
+			LOG.error("error configuring edit coordinate", e);
 		}
-		return editCoord;
+
+		return null;
 	}
 	
 	/**
@@ -746,11 +737,9 @@ public class WBUtility {
 			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
-				getViewCoordinate().getAllowedStatus().add(Status.INACTIVE);
-				
-				RefexVersionBI<?> refexChronVersion = refexChron.getVersion(getViewCoordinate());
-				
-				getViewCoordinate().getAllowedStatus().remove(Status.INACTIVE);
+				ViewCoordinate tempVc = getViewCoordinate();
+				tempVc.getAllowedStatus().add(Status.INACTIVE);
+				RefexVersionBI<?> refexChronVersion = refexChron.getVersion(tempVc);
 				
 				return refexChronVersion;
 			}
@@ -1054,14 +1043,14 @@ public class WBUtility {
 
 	public static void addToPromotionPath(UUID compUuid) throws IOException, ContradictionException, InvalidCAB {
 		// Setup Edit Path to be promotion path
-		List<ConceptSpec> origPaths = getEditCoordinate().getEditPathListSpecs();
 		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getCurrentWorkflowPromotionPathUuidAsUUID());
 		ConceptSpec cs = new ConceptSpec(pp.getNid());
 		
 		List<ConceptSpec> editPaths = new ArrayList<ConceptSpec>();
 		editPaths.add(cs);
+		EditCoordinate editCoord = getEditCoordinate();
 		editCoord.setEditPathListSpecs(editPaths);
-		
+		TerminologyBuilderBI builder = getBuilder(editCoord, getViewCoordinate());
 		
 		// Create new version of all uncommitted components in concept
 		ConceptVersionBI conceptWithComp = WBUtility.getConceptVersion(getComponentVersion(compUuid).getConceptNid());
@@ -1076,30 +1065,30 @@ public class WBUtility {
 				ComponentChronicleBI<?> cbi = null;
 	
 				if (type == ComponentType.CONCEPT) {
-					ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					ConceptCB cab = (ConceptCB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.DESCRIPTION) {
-					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.RELATIONSHIP) {
-					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.SEMEME) {
-					RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					RefexCAB cab = (RefexCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.SEMEME_DYNAMIC) {
-					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				}
 			}	
 		}
 		
-		commit(conceptWithComp.getVersion(vc));
+		commit(conceptWithComp.getVersion(getViewCoordinate()));
 		
 		// Revert to original Edit path
-		editPaths.clear();
-		editPaths.addAll(origPaths);
-		getEditCoordinate().setEditPathListSpecs(editPaths);
+//		editPaths.clear();
+//		editPaths.addAll(origPaths);
+//		getEditCoordinate().setEditPathListSpecs(editPaths);
 	}
 	
 	

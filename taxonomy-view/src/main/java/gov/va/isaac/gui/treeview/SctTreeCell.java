@@ -82,10 +82,13 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         //Allow drags
         AppContext.getService(DragRegistry.class).setupDragOnly(this, new SingleConceptIdProvider()
         {
-            
             @Override
             public String getConceptId()
             {
+            	assert SctTreeCell.this.getItem() != null;
+            	assert SctTreeCell.this.getItem().getConcept() != null;
+            	assert SctTreeCell.this.getItem().getConcept().getPrimordialUuid() != null;
+            	
                 return SctTreeCell.this.getItem().getConcept().getPrimordialUuid().toString();
             }
         });
