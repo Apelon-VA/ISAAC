@@ -40,11 +40,49 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface PreferencesPluginViewI {
+	/**
+	 * @return String name of PreferencesView plugin tab
+	 * 
+	 * Serves as Tab label and default sort within getTabOrder()
+	 */
 	String getName();
+	
+	/**
+	 * @return ReadOnlyStringProperty validationFailureMessageProperty text of validation failure message
+	 * 
+	 * The validationFailureMessageProperty is non-empty if-and-only-if the plugin is in an invalid, non-savable state.
+	 * In such case, it will usually contain the validation failure message of one of its constituent properties,
+	 * but may also be coded to detect invalid value combinations of its constituent properties.
+	 * 
+	 * A binding to the validationFailureMessageProperty is used by the PreferencesView to detect transition
+	 * of the plugin into and out of an invalid, non-savable state.
+	 */
 	ReadOnlyStringProperty validationFailureMessageProperty();
+	
+	
+	/**
+	 * @return Region JavaFX displayable Region required to view and (optionally) modify the plugin's constituent properties
+	 * 
+	 * The getContent() method preferably loads and populates the Region, lazily initializing it
+	 */
 	Region getContent();
+	
+	
+	/**
+	 * @throws IOException Appropriately persists all constituent properties (usually to UserProfile)
+	 * 
+	 *  If the save() method persists to UserProfile then it should always first load the most recent version
+	 *  then write to it this plugins values in order to avoid saving stale values of properties not handled by this plugin.
+	 */
 	void save() throws IOException;
 
+	/**
+	 * @return int Sort order of tab within the PreferencesView TabPane
+	 * 
+	 * Plugins with getTabOrder() values will be displayed in tabs to the left
+	 * of plugins with higher getTabOrder() values. Plugins with identical getTabOrder()
+	 * will be sorted alphabetically by tab name (getName())
+	 */
 	default int getTabOrder() {
 		return Integer.MAX_VALUE;
 	}

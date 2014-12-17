@@ -25,10 +25,14 @@
 package gov.va.isaac.gui.preferences;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.gui.util.TextErrorColorHelper;
+import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,7 +108,19 @@ public class PreferencesViewController {
 	
 	public void aboutToShow()
 	{
+		// Using allValid_ to prevent rerunning content of aboutToShow()
 		if (allValid_ == null) {
+			// These listeners are for debug and testing only. They may be removed at any time.
+			UserProfileManager  userProfileManager = AppContext.getService(UserProfileManager.class);
+			for (UserProfileProperty property : UserProfileProperty.values()) {
+				userProfileManager.addUserProfilePropertyChangeListener(property, new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						logger.debug("{} property changed from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+					}
+				});
+			}
+
 			// load fields before initializing allValid_
 			// in case plugin.validationFailureMessageProperty() initialized by getNode()
 			tabPane_.getTabs().clear();

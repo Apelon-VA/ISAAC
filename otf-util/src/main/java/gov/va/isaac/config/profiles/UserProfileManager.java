@@ -23,8 +23,11 @@ import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.User;
 import gov.va.isaac.config.users.GenerateUsers;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
+
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,10 +37,13 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
 import javax.inject.Singleton;
+
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
@@ -106,8 +112,13 @@ public class UserProfileManager implements ServicesToPreloadI
 		{
 			throw new InvalidUserException("Not allowed to change the user login name!");
 		}
+		
 		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
+		
+		UserProfile old = loggedInUser_;
 		loggedInUser_ = temp;
+
+		fireUserProfilePropertyChanges(old, loggedInUser_);
 	}
 	
 	/**
@@ -498,5 +509,34 @@ public class UserProfileManager implements ServicesToPreloadI
 	public File getProfilesFolder()
 	{
 		return profilesFolder_;
+	}
+
+	private static Object getPropertyValue(UserProfile userProfile, UserProfileProperty property) {
+		switch(property) {
+		case statedInferredPolicy:
+			return userProfile.getStatedInferredPolicy();
+		case displayFSN:
+			return userProfile.getDisplayFSN();
+		case workflowUsername:
+			return userProfile.getWorkflowUsername();
+		case viewCoordinatePath:
+			return userProfile.getViewCoordinatePath();
+		case editCoordinatePath:
+			return userProfile.getEditCoordinatePath();
+		default:
+			throw new IllegalArgumentException("Unsupported UserProfileProperty " + property);
+		}
+	}
+
+	public void addUserProfilePropertyChangeListener(UserProfileProperty eventType, PropertyChangeListener listener) {
+		UserProfilePropertyChange.addPropertyChangeListener(eventType, listener);
+	}
+	public void removeUserProfilePropertyChangeListener(PropertyChangeListener listener) {
+		UserProfilePropertyChange.removePropertyChangeListener(listener);
+	}
+	private static void fireUserProfilePropertyChanges(UserProfile oldUserProfile, UserProfile newUserProfile) {
+		for (UserProfileProperty property : UserProfileProperty.values()) {
+			UserProfilePropertyChange.firePropertyChange(property, getPropertyValue(oldUserProfile, property), getPropertyValue(newUserProfile, property));
+		}
 	}
 }

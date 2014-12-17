@@ -85,11 +85,10 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public String getConceptId()
             {
-            	assert SctTreeCell.this.getItem() != null;
-            	assert SctTreeCell.this.getItem().getConcept() != null;
-            	assert SctTreeCell.this.getItem().getConcept().getPrimordialUuid() != null;
-            	
-                return SctTreeCell.this.getItem().getConcept().getPrimordialUuid().toString();
+            	final ConceptChronicleDdo conceptChronicle = SctTreeCell.this.getItem().getConcept();
+            	final UUID conceptUuid = conceptChronicle.getPrimordialUuid();
+
+            	return conceptUuid.toString();
             }
         });
     }

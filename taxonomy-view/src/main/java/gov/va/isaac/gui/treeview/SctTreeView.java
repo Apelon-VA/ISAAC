@@ -193,6 +193,10 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
                 LOG.debug("Finished loading root concept");
+                
+                if (rootConceptCC.getDestinationRelationships().size() == 0) {
+                	LOG.warn("ROOT CONCEPT {} HAS NO DESTINATION RELATIONSHIPS.  MAY BE A PROBLEM WITH VIEWCOORDINATE RELATIONSHIP ASSERTION TYPE ({})", WBUtility.getDescription(rootConceptCC), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+                }
                 return rootConceptCC;
             }
 
