@@ -183,7 +183,7 @@ public class WBUtility {
 				pathUuid = pathChronicle.getPrimordialUuid();
 			}
 
-			LOG.info("Using EditCoordinate path nid={}, uuid={}, desc={}", pathNid, pathUuid, WBUtility2.getDescription(pathChronicle));
+			LOG.info("Using EditCoordinate path nid={}, uuid={}, desc={}", pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
 
 			// Override edit path
 			return new EditCoordinate(authorNid, module, pathNid);
