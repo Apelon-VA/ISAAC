@@ -22,28 +22,27 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.preferences.properties;
+package gov.va.isaac.gui.preferences.plugins.properties;
 
 import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.CheckBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
- * PreferencesPluginTextFieldProperty
+ * PreferencesPluginCheckBoxProperty
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public abstract class PreferencesPluginTextFieldProperty extends PreferencesPluginProperty<String, TextField> {
-	private Logger logger = LoggerFactory.getLogger(PreferencesPluginTextFieldProperty.class);
+public abstract class PreferencesPluginCheckBoxProperty extends PreferencesPluginProperty<Boolean, CheckBox> {
+	private Logger logger = LoggerFactory.getLogger(PreferencesPluginCheckBoxProperty.class);
 	
 	/**
 	 * @param label
@@ -55,15 +54,15 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
-	public PreferencesPluginTextFieldProperty(
+	public PreferencesPluginCheckBoxProperty(
 			Label label,
-			TextField control,
-			Property<String> property,
+			CheckBox control,
+			Property<Boolean> property,
 			ValidBooleanBinding validator,
-			StringConverter<String> stringConverter,
-			PropertyAction<String, TextField> binder,
-			PropertyAction<String, TextField> controlPersistedValueSetter,
-			PropertyAction<String, TextField> guiFormattingApplicator) {
+			StringConverter<Boolean> stringConverter,
+			PropertyAction<Boolean, CheckBox> binder,
+			PropertyAction<Boolean, CheckBox> controlPersistedValueSetter,
+			PropertyAction<Boolean, CheckBox> guiFormattingApplicator) {
 		super(
 				label, 
 				control, 
@@ -85,15 +84,15 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 	 * @param controlPersistedValueSetter
 	 * @param guiFormattingApplicator
 	 */
-	public PreferencesPluginTextFieldProperty(
+	public PreferencesPluginCheckBoxProperty(
 			String name,
-			TextField control,
-			Property<String> property,
+			CheckBox control,
+			Property<Boolean> property,
 			ValidBooleanBinding validator,
-			StringConverter<String> stringConverter,
-			PropertyAction<String, TextField> binder,
-			PropertyAction<String, TextField> controlPersistedValueSetter,
-			PropertyAction<String, TextField> guiFormattingApplicator) {
+			StringConverter<Boolean> stringConverter,
+			PropertyAction<Boolean, CheckBox> binder,
+			PropertyAction<Boolean, CheckBox> controlPersistedValueSetter,
+			PropertyAction<Boolean, CheckBox> guiFormattingApplicator) {
 		this(
 				new Label(name),
 				control, 
@@ -105,40 +104,40 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 				guiFormattingApplicator);
 	}
 
-	public PreferencesPluginTextFieldProperty(String name) {
+	public PreferencesPluginCheckBoxProperty(String name) {
 		this(new Label(name));
 	}
 
-	public PreferencesPluginTextFieldProperty(Label label) {
+	public PreferencesPluginCheckBoxProperty(Label label) {
 		super(
 				label, 
-				new TextField(), 
-				new SimpleStringProperty(), 
+				new CheckBox(), 
+				new SimpleBooleanProperty(), 
 				null, // validator handled below
-				new StringConverter<String>() {
+				new StringConverter<Boolean>() {
 					@Override
-					public String convertToString(String value) {
+					public String convertToString(Boolean value) {
 						return value != null ? value.toString() : null;
 					}
 				}, 
-				new PropertyAction<String, TextField>() {
+				new PropertyAction<Boolean, CheckBox>() {
 					@Override
-					public void apply(PreferencesPluginProperty<String, TextField> property) {
-						property.getProperty().bind(property.getControl().textProperty());
+					public void apply(PreferencesPluginProperty<Boolean, CheckBox> property) {
+						property.getProperty().bind(property.getControl().selectedProperty());
 					}	
 				},
-				new PropertyAction<String, TextField>() {
+				new PropertyAction<Boolean, CheckBox>() {
 					@Override
-					public void apply(PreferencesPluginProperty<String, TextField> property) {
-						property.getControl().textProperty().set(property.readFromPersistedPreferences());
+					public void apply(PreferencesPluginProperty<Boolean, CheckBox> property) {
+						property.getControl().selectedProperty().set(property.readFromPersistedPreferences());
 					}
 				}, 
-				new PropertyAction<String, TextField>() {
+				new PropertyAction<Boolean, CheckBox>() {
 					@Override
-					public void apply(PreferencesPluginProperty<String, TextField> property) {
+					public void apply(PreferencesPluginProperty<Boolean, CheckBox> property) {
 						GridPane.setHgrow(property.getLabel(), Priority.NEVER);
 						GridPane.setFillWidth(property.getControl(), true);
-						GridPane.setHgrow(property.getControl(), Priority.ALWAYS);
+						GridPane.setHgrow(property.getControl(), Priority.NEVER);
 					}
 				});
 		validator = new ValidBooleanBinding() {
@@ -148,7 +147,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 			}
 			@Override
 			protected boolean computeValue() {
-				if (StringUtils.isBlank(getProperty().getValue())) {
+				if (getProperty().getValue() == null) {
 					this.setInvalidReason("null/unset/unselected " + name);
 					logger.debug(getReasonWhyInvalid().get());
 

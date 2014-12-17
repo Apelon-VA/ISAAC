@@ -27,8 +27,8 @@ package gov.va.isaac.gui.preferences.plugins;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginTextFieldProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginTextFieldProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -27,12 +27,11 @@ package gov.va.isaac.gui.preferences.plugins;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginCheckBoxProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginComboBoxProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginLabelProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginTextFieldProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginProperty.StringConverter;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginCheckBoxProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginComboBoxProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginLabelProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginTextFieldProperty;
 import gov.va.isaac.util.WBUtility;
 
 import java.io.IOException;
@@ -124,7 +123,7 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 
 		PreferencesPluginComboBoxProperty<UUID> viewCoordinatePathProperty = new PreferencesPluginComboBoxProperty<UUID>(
 				"View Coordinate Path",
-				new StringConverter<UUID>() {
+				new PreferencesPluginProperty.StringConverter<UUID>() {
 					@Override
 					public String convertToString(UUID value) {
 						return value != null ? WBUtility.getDescription(value) : null;
@@ -146,6 +145,7 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 				userProfile.setViewCoordinatePath(getProperty().getValue());
 			}
 		};
+		
 		List<UUID> list = new ArrayList<>();
 
 		try {

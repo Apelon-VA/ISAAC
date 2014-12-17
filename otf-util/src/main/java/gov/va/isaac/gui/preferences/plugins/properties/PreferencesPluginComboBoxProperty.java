@@ -22,7 +22,7 @@
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  */
-package gov.va.isaac.gui.preferences.properties;
+package gov.va.isaac.gui.preferences.plugins.properties;
 
 import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.util.ValidBooleanBinding;

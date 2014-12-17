@@ -27,8 +27,8 @@ package gov.va.isaac.gui.preferences.plugins;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginCheckBoxProperty;
-import gov.va.isaac.gui.preferences.properties.PreferencesPluginProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginCheckBoxProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
