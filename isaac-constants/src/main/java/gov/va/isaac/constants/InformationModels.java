@@ -19,7 +19,10 @@
 package gov.va.isaac.constants;
 
 import java.util.UUID;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
+import org.ihtsdo.otf.tcc.api.spec.RelSpec;
 
 /**
  * {@link InformationModels}
@@ -34,7 +37,13 @@ public class InformationModels
 {
 	//Information models is a top level child of root
 	public static ConceptSpec INFORMATION_MODELS = new ConceptSpec("Information Models", UUID.fromString("ab09b185-b93d-577b-a350-622be832e6c7"),
-			ISAAC.ISAAC_ROOT);
+			new RelSpec(null, Snomed.IS_A, ISAAC.ISAAC_ROOT), new RelSpec(null, Snomed.IS_A, ISAAC.ISAAC_ROOT, SnomedMetadataRf2.INFERRED_RELATIONSHIP_RF2));
+	static
+	{
+		//can't set these properly up above, without causing an infinite loop...
+		INFORMATION_MODELS.getRelSpecs()[0].setOriginSpec(INFORMATION_MODELS);
+		INFORMATION_MODELS.getRelSpecs()[1].setOriginSpec(INFORMATION_MODELS);
+	}
 	
 	//current information models
 	public static ConceptSpec CEM = new ConceptSpec("Clinical Element Model", UUID.fromString("0a9c9ba5-410e-5a40-88f4-b0cdd17325e1"),

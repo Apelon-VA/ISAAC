@@ -20,6 +20,7 @@ package gov.va.isaac.constants;
 
 import java.util.UUID;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.RelSpec;
@@ -43,12 +44,16 @@ public class ISAAC
 	private static ConceptSpec REFSET_AUXILLIARY_REF = Taxonomies.REFSET_AUX;
 	static 
 	{
-		REFSET_AUXILLIARY_REF.setRelSpecs(new RelSpec[] {new RelSpec(REFSET_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT)});
+		//Need to do stated and inferred, otherwise, we can't browse, on inferred mode, nor on inferred_then_stated mode
+		REFSET_AUXILLIARY_REF.setRelSpecs(new RelSpec[] {new RelSpec(REFSET_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT), //stated
+				new RelSpec(REFSET_AUXILLIARY_REF, Snomed.IS_A, ISAAC.ISAAC_ROOT, SnomedMetadataRf2.INFERRED_RELATIONSHIP_RF2)});  //inferred
 	}
 	
 	private static ConceptSpec TERMINOLOGY_AUXILLIARY_REF = Taxonomies.WB_AUX;
 	static 
 	{
-		TERMINOLOGY_AUXILLIARY_REF.setRelSpecs(new RelSpec[] {new RelSpec(TERMINOLOGY_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT)});
+		//Need to do stated and inferred, otherwise, we can't browse, on inferred mode, nor on inferred_then_stated mode
+		TERMINOLOGY_AUXILLIARY_REF.setRelSpecs(new RelSpec[] {new RelSpec(TERMINOLOGY_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT),  //stated
+				new RelSpec(TERMINOLOGY_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT, SnomedMetadataRf2.INFERRED_RELATIONSHIP_RF2)});  //inferred
 	}
 }
