@@ -103,46 +103,46 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     
     public StackPane getView()
     {
-		// TODO Determine if these warnings are still necessary
-		if (initializationCountDownLatch_.getCount() > 1) {
-			LOG.warn("getView() called before initial init() started");
-		} else if (initializationCountDownLatch_.getCount() > 0) {
-			LOG.warn("getView() called before initial init() completed");
-		}
+        // TODO Determine if these warnings are still necessary
+        if (initializationCountDownLatch_.getCount() > 1) {
+            LOG.warn("getView() called before initial init() started");
+        } else if (initializationCountDownLatch_.getCount() > 0) {
+            LOG.warn("getView() called before initial init() completed");
+        }
         return sp_;
     }
 
     public void refresh() {
-		if (initializationCountDownLatch_.getCount() > 1) {
-			// called before initial init() run, so run init()
-			init();
-		}
+        if (initializationCountDownLatch_.getCount() > 1) {
+            // called before initial init() run, so run init()
+            init();
+        }
 
-		Task<Object> task = new Task<Object>() {
-			@Override
-			protected Object call() throws Exception {
-				// Waiting to ensure that init() completed
-				initializationCountDownLatch_.await();
-				return new Object();
-			}
+        Task<Object> task = new Task<Object>() {
+            @Override
+            protected Object call() throws Exception {
+                // Waiting to ensure that init() completed
+                initializationCountDownLatch_.await();
+                return new Object();
+            }
 
             @Override
             protected void succeeded() {
-            	LOG.debug("Succeeded waiting for init() to complete");
+                LOG.debug("Succeeded waiting for init() to complete");
 
-            	if (rootTreeItem.getChildren().size() > 0) {
-                	LOG.debug("Removing existing grandchildren...");
-            		rootTreeItem.removeGrandchildren();
-                	LOG.debug("Removed existing grandchildren.");
-            	}
-            	
-            	LOG.debug("Removing existing children...");
-            	rootTreeItem.getChildren().clear();
-            	LOG.debug("Removed existing children.");
-            	
-            	LOG.debug("Re-adding children...");
-            	rootTreeItem.addChildren();
-            	LOG.debug("Re-added children.");
+                if (rootTreeItem.getChildren().size() > 0) {
+                    LOG.debug("Removing existing grandchildren...");
+                    rootTreeItem.removeGrandchildren();
+                    LOG.debug("Removed existing grandchildren.");
+                }
+                
+                LOG.debug("Removing existing children...");
+                rootTreeItem.getChildren().clear();
+                LOG.debug("Removed existing children.");
+                
+                LOG.debug("Re-adding children...");
+                rootTreeItem.addChildren();
+                LOG.debug("Re-added children.");
             }
 
             @Override
@@ -165,20 +165,20 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         init(ISAAC.ISAAC_ROOT.getUuids()[0]);
     }
 
-	private synchronized void init(final UUID rootConcept) {
-		if (initializationCountDownLatch_.getCount() == 0) {
-			LOG.warn("Ignoring call to init({}) after previous init() already completed", rootConcept);
-			return;
-		} else if (initializationCountDownLatch_.getCount() <= 1) {
-			LOG.warn("Ignoring call to init({}) while initial init() still running", rootConcept);
-			return;
-		} else if (initializationCountDownLatch_.getCount() == 2) {
-			initializationCountDownLatch_.countDown();
-			LOG.debug("Performing initial init({})", rootConcept);
-		} else {
-			// this should never happen
-			throw new RuntimeException("SctTreeView initializationCountDownLatch_ has unexpected count " + initializationCountDownLatch_.getCount() + " which is not 0, 1 or 2");
-		}
+    private synchronized void init(final UUID rootConcept) {
+        if (initializationCountDownLatch_.getCount() == 0) {
+            LOG.warn("Ignoring call to init({}) after previous init() already completed", rootConcept);
+            return;
+        } else if (initializationCountDownLatch_.getCount() <= 1) {
+            LOG.warn("Ignoring call to init({}) while initial init() still running", rootConcept);
+            return;
+        } else if (initializationCountDownLatch_.getCount() == 2) {
+            initializationCountDownLatch_.countDown();
+            LOG.debug("Performing initial init({})", rootConcept);
+        } else {
+            // this should never happen
+            throw new RuntimeException("SctTreeView initializationCountDownLatch_ has unexpected count " + initializationCountDownLatch_.getCount() + " which is not 0, 1 or 2");
+        }
 
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
@@ -195,14 +195,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 LOG.debug("Finished loading root concept");
                 
                 if (rootConceptCC.getDestinationRelationships().size() == 0) {
-                	LOG.warn("ROOT CONCEPT {} HAS NO DESTINATION RELATIONSHIPS.  MAY BE A PROBLEM WITH VIEWCOORDINATE RELATIONSHIP ASSERTION TYPE ({})", WBUtility.getDescription(rootConceptCC), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+                    LOG.warn("ROOT CONCEPT {} HAS NO DESTINATION RELATIONSHIPS.  MAY BE A PROBLEM WITH VIEWCOORDINATE RELATIONSHIP ASSERTION TYPE ({})", WBUtility.getDescription(rootConceptCC), WBUtility.getViewCoordinate().getRelationshipAssertionType());
                 }
                 return rootConceptCC;
             }
 
             @Override
             protected void succeeded() {
-            	LOG.debug("getFxConcept() (called by init()) succeeded");
+                LOG.debug("getFxConcept() (called by init()) succeeded");
 
                 ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
@@ -225,8 +225,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     }
     
     private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
-    	LOG.debug("Running finishTreeSetup()...");
-    	
+        LOG.debug("Running finishTreeSetup()...");
+        
         treeView_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         treeView_.setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
@@ -275,7 +275,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         p2.setProgress(-1);
                         sourceTreeItem.setProgressIndicator(p2);
                         if (sourceTreeItem.shouldDisplay()) {
-                        	sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                            sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
                         }
                     }
                 });
@@ -288,20 +288,20 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
-		if (initializationCountDownLatch_.getCount() > 1) {
-			// Called before initial init() run, so run init().
-			// showConcept Task will internally await() init() completion.
+        if (initializationCountDownLatch_.getCount() > 1) {
+            // Called before initial init() run, so run init().
+            // showConcept Task will internally await() init() completion.
 
-    		init();
-    	}
+            init();
+        }
 
         // Do work in background.
         Task<SctTreeItem> task = new Task<SctTreeItem>() {
 
             @Override
             protected SctTreeItem call() throws Exception {
-            	// await() init() completion.
-            	initializationCountDownLatch_.await();
+                // await() init() completion.
+                initializationCountDownLatch_.await();
 
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
                 pathToRoot.add(conceptUUID);
@@ -486,14 +486,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
     }
 
-	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
-		this.displayPolicies = policies;
-	}
+    public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
+        this.displayPolicies = policies;
+    }
 
-	public static SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
-		return defaultDisplayPolicies;
-	}
-	
+    public static SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
+        return defaultDisplayPolicies;
+    }
+    
     /**
      * Tell the tree to stop whatever threading operations it has running,
      * since the application is exiting.
