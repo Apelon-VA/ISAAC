@@ -32,15 +32,12 @@ import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
 import javax.inject.Singleton;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.jvnet.hk2.annotations.Service;
@@ -153,5 +150,14 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	@Override
 	protected StatedInferredOptions getDefaultStatedInferredOption() {
 		return UserProfileDefaults.getDefaultStatedInferredPolicy();
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getTabOrder()
+	 */
+	@Override
+	public int getTabOrder()
+	{
+		return 10;
 	}
 }

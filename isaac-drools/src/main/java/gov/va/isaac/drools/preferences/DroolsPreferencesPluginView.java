@@ -32,9 +32,7 @@ import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
-
 import java.io.IOException;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -45,9 +43,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,5 +144,14 @@ public class DroolsPreferencesPluginView implements PreferencesPluginViewI {
 			logger.error(msg, e);
 			throw new IOException(msg, e);
 		}
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getTabOrder()
+	 */
+	@Override
+	public int getTabOrder()
+	{
+		return 60;
 	}
 }

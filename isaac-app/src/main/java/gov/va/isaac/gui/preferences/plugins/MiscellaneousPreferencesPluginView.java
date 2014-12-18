@@ -29,15 +29,11 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginCheckBoxProperty;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import javafx.scene.control.Control;
-
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -84,6 +80,15 @@ public class MiscellaneousPreferencesPluginView extends AbstractPreferencesPlugi
 	 * @param properties
 	 */
 	protected MiscellaneousPreferencesPluginView() {
-		super("Misc", createProperties());
+		super("Display Options", createProperties());
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getTabOrder()
+	 */
+	@Override
+	public int getTabOrder()
+	{
+		return 50;
 	}
 }

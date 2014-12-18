@@ -235,4 +235,13 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	protected StatedInferredOptions getDefaultStatedInferredOption() {
 		return null;
 	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getTabOrder()
+	 */
+	@Override
+	public int getTabOrder()
+	{
+		return 20;
+	}
 }

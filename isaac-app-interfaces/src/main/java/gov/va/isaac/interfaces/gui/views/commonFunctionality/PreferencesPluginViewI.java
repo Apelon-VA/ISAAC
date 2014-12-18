@@ -83,7 +83,5 @@ public interface PreferencesPluginViewI {
 	 * of plugins with higher getTabOrder() values. Plugins with identical getTabOrder()
 	 * will be sorted alphabetically by tab name (getName())
 	 */
-	default int getTabOrder() {
-		return Integer.MAX_VALUE;
-	}
+	int getTabOrder() ;
 }

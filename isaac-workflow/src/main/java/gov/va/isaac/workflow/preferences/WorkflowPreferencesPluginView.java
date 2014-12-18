@@ -34,13 +34,11 @@ import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -60,9 +58,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
-
 import javax.inject.Singleton;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -321,5 +317,14 @@ public class WorkflowPreferencesPluginView implements PreferencesPluginViewI {
 	private UUID getStoredPath() {
 		UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
 		return loggedIn.getWorkflowPromotionPath();
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getTabOrder()
+	 */
+	@Override
+	public int getTabOrder()
+	{
+		return 30;
 	}
 }

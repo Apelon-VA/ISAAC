@@ -17,11 +17,7 @@
  * limitations under the License.
  */
 
-/**
- * ViewCoordinatePreferencesPlugin
- * 
- * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
- */
+
 package gov.va.isaac.gui.preferences.plugins;
 
 import gov.va.isaac.ExtendedAppContext;
@@ -33,17 +29,13 @@ import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginLabelPro
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginTextFieldProperty;
 import gov.va.isaac.util.WBUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
 import javafx.scene.control.Control;
-
 import javax.inject.Singleton;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 //import org.jvnet.hk2.annotations.Service;
@@ -57,6 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 
+//If you were to actually use this as a template, you would need to uncomment the following line
 //@Service
 @Singleton
 public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPluginView {
@@ -173,5 +166,14 @@ public class ExampleAbstractPreferencesPluginView extends AbstractPreferencesPlu
 	 */
 	protected ExampleAbstractPreferencesPluginView() {
 		super("Example", createProperties());
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI#getTabOrder()
+	 */
+	@Override
+	public int getTabOrder()
+	{
+		return 100;
 	}
 }
