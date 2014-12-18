@@ -26,7 +26,6 @@ import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
-
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -37,13 +36,11 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import javax.inject.Singleton;
-
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
@@ -495,6 +492,8 @@ public class UserProfileManager implements ServicesToPreloadI
 		}
 		UserProfile up = new UserProfile(TermAux.USER.getDescription(), TermAux.USER.getDescription(), TermAux.USER.getUuids()[0]);
 		up.setLaunchWorkflowForEachCommit(false);
+		up.setEditCoordinatePath(TermAux.WB_AUX_PATH.getUuids()[0]);
+		up.setViewCoordinatePath(Snomed.SNOMED_RELEASE_PATH.getUuids()[0]);
 		loggedInUser_ = up;
 		userNamesWithProfiles_.add(up.getUserLogonName());
 		Log.info("User Profile Manager automation mode enabled!");
