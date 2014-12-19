@@ -42,7 +42,6 @@ import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.jvnet.hk2.annotations.Service;
-//import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,7 @@ import org.slf4j.LoggerFactory;
 @Service
 @Singleton
 public class WorkflowPreferencesPluginView extends AbstractPreferencesPluginView {
-	private static Logger logger = LoggerFactory.getLogger(ExampleAbstractPreferencesPluginView.class);
+	private static Logger logger = LoggerFactory.getLogger(WorkflowPreferencesPluginView.class);
 	
 	private static Collection<PreferencesPluginProperty<?, ? extends Control>> createProperties() {
 		List<PreferencesPluginProperty<?, ? extends Control>> properties = new ArrayList<>();
