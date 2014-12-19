@@ -27,9 +27,11 @@ package gov.va.isaac.gui.preferences.plugins;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
+import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginTextFieldProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
@@ -55,6 +57,42 @@ import org.slf4j.LoggerFactory;
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
+ * AbstractPreferencesPluginView allows easy creation and management of PreferencesPluginView
+ * types, which are automatically pulled-in to populate (as constituent tabs in a TabPane)
+ * the PreferencesPluginView by allowing the programmer to focus on the plugin's constituent
+ * PreferencesPluginProperty components rather than on how they fit together.  Using existing abstract partial
+ * implementations, such as
+ * PreferencesPluginCheckBoxProperty,
+ * PreferencesPluginComboBoxProperty,
+ * PreferencesPluginTextFieldProperty
+ * and PreferencesPluginLabelProperty,
+ * it is possible to create and pass the vast majority of required
+ * GUI controls by simply overriding the intuitive methods.
+ * 
+ * For example to initialize a TextField property, all that is required is to override the
+ * methods readFromPersistedPreferences(), readFromDefaults() and writeToUnpersistedPreferences(UserProfile userProfile),
+ * and pass it, alone or in a list or array of other PreferencesPluginProperty properties,
+ * to the AbstractPreferencesPluginView base class constructor along with the desired name of the plugin Tab.
+ * The base class then manages presentation, validation and persistence automatically.
+ * 
+ * PreferencesPluginTextFieldProperty workflowServerDeploymentIdProperty = 
+				new PreferencesPluginTextFieldProperty("Workflow Server Deployment ID") {
+			@Override
+			public String readFromPersistedPreferences() {
+				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+				return loggedIn.getWorkflowServerDeploymentId();
+			}
+
+			@Override
+			public String readFromDefaults() {
+				return UserProfileDefaults.getDefaultWorkflowServerDeploymentId();
+			}
+
+			@Override
+			public void writeToUnpersistedPreferences(UserProfile userProfile) {
+				userProfile.setWorkflowServerDeploymentId(getProperty().getValue());
+			}
+		};
  */
 
 public abstract class AbstractPreferencesPluginView implements PreferencesPluginViewI {
