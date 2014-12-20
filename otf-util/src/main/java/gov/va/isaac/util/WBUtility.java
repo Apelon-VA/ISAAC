@@ -143,7 +143,7 @@ public class WBUtility {
 				throw new RuntimeException("Unsupported StatedInferredOptions policy " + policy);
 			}
 
-			LOG.info("Using {} policy for view coordinate", policy);
+			//LOG.info("Using {} policy for view coordinate", policy);
 
 			final UUID pathUuid = userProfile.getViewCoordinatePath();
 			final ConceptChronicleBI pathChronicle = dataStore.getConcept(pathUuid);
@@ -155,7 +155,7 @@ public class WBUtility {
 
 			vc.setViewPosition(position);
 
-			LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
+			//LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
 		} catch (NullPointerException e) {
 			LOG.error("View path UUID does not exist", e);
 		} catch (IOException e) {
