@@ -69,6 +69,14 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getIsaacVersion();
+  
+  /**
+   * The version of the entire ISAAC assembly.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getVersion();
 
   /**
    * Browsable URL for PA project code.

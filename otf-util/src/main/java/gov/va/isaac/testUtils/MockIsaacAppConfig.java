@@ -427,4 +427,13 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 		return null;
 	}
 
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getVersion()
+	 */
+	@Override
+	public String getVersion()
+	{
+		return null;
+	}
+
 }
