@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -104,6 +106,35 @@ public class SyncServiceGIT implements ProfileSyncI
 
 	private SyncServiceGIT()
 	{
+		//DEBUG code - remove later
+		File temp = null;
+		final String home = AccessController
+				.doPrivileged(new PrivilegedAction<String>() {
+					public String run() {
+						return System.getProperty("user.home"); //$NON-NLS-1$
+					}
+				});
+		if (home == null || home.length() == 0)
+		{
+			temp = null;
+		}
+		else
+		{
+			temp = new File(home).getAbsoluteFile();
+		}
+		
+		System.out.println("Calulated home: " + temp + "  " + temp.getAbsolutePath());
+		
+		File sshdir = new File(temp, ".ssh"); //$NON-NLS-1$
+		System.out.println(".ssh exists: " + sshdir.isDirectory());
+		if (sshdir.isDirectory()) {
+			System.out.println("identity exists: " + new File(sshdir, "identity").isFile());
+			System.out.println("id_rsa: " + new File(sshdir, "id_rsa").isFile());
+			System.out.println("id_rsa.pub: " + new File(sshdir, "id_rsa.pub").isFile());
+		}
+		//DEBUG code - remove later
+
+		
 		//For HK2
 		JSch.setLogger(new com.jcraft.jsch.Logger()
 		{
