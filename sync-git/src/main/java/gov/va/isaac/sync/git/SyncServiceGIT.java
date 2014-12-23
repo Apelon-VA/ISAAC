@@ -164,7 +164,6 @@ public class SyncServiceGIT implements ProfileSyncI
 				jschConfigured.countDown();
 			}
 		}
-		
 	}
 	
 	/**
