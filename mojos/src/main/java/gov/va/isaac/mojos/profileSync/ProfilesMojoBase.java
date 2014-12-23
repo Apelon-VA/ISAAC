@@ -52,6 +52,13 @@ import org.xml.sax.SAXException;
  * To prevent prompting during automated runs - set the system property 'profileSyncNoPrompt=true'
  * To set the username via system property - set 'profileSyncUsername=username'
  * To set the password via system property - set 'profileSyncPassword=password'
+ * 
+ * To enable authentication without prompts, using public keys - set both of the following 
+ *   'profileSyncUsername=username'
+ *   'profileSyncNoPrompt=true' 
+ *   
+ * This will cause a public key authentication to be attempted using the ssh credentials found 
+ * in the current users .ssh folder (in their home directory)
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
