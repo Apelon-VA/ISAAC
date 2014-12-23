@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import javax.naming.AuthenticationException;
@@ -67,7 +68,11 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.transport.OpenSshConfig.Host;
 import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.util.StringUtils;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.glassfish.hk2.api.PerLookup;
@@ -75,6 +80,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 
 /**
  * {@link SyncServiceGIT}
@@ -94,6 +100,8 @@ public class SyncServiceGIT implements ProfileSyncI
 	private final String NOTE_FAILED_MERGE_HAPPENED_ON_STASH = "Conflicted merge happened during stash merge";
 	private final String STASH_MARKER = ":STASH-";
 	
+	private static volatile CountDownLatch jschConfigured = new CountDownLatch(1);
+	
 	private File localFolder = null;
 	
 	public SyncServiceGIT(File localFolder)
@@ -104,38 +112,59 @@ public class SyncServiceGIT implements ProfileSyncI
 
 	private SyncServiceGIT()
 	{
-		//For HK2
-		JSch.setLogger(new com.jcraft.jsch.Logger()
+		//Constructor for HK2
+		
+		synchronized (jschConfigured)
 		{
-			private HashMap<Integer, Consumer<String>> logMap = new HashMap<>();
-			private HashMap<Integer, BooleanSupplier> enabledMap = new HashMap<>();
-			
+			if (jschConfigured.getCount() > 0)
 			{
-				//Note- JSCH is _really_  verbose at the INFO level, so I'm mapping info to DEBUG.
-				logMap.put(com.jcraft.jsch.Logger.DEBUG, log::debug);
-				logMap.put(com.jcraft.jsch.Logger.ERROR, log::error);
-				logMap.put(com.jcraft.jsch.Logger.FATAL, log::error);
-				logMap.put(com.jcraft.jsch.Logger.INFO, log::debug);
-				logMap.put(com.jcraft.jsch.Logger.WARN, log::warn);
+				log.debug("Disabling strict host key checking");
+				SshSessionFactory factory = new JschConfigSessionFactory()
+				{
+					@Override
+					protected void configure(Host hc, Session session)
+					{
+						session.setConfig("StrictHostKeyChecking", "no");
+					}
+				};
 				
-				enabledMap.put(com.jcraft.jsch.Logger.DEBUG, log::isDebugEnabled);
-				enabledMap.put(com.jcraft.jsch.Logger.ERROR, log::isErrorEnabled);
-				enabledMap.put(com.jcraft.jsch.Logger.FATAL, log::isErrorEnabled);
-				enabledMap.put(com.jcraft.jsch.Logger.INFO, log::isDebugEnabled);
-				enabledMap.put(com.jcraft.jsch.Logger.WARN, log::isWarnEnabled);
+				SshSessionFactory.setInstance(factory);
+				
+				JSch.setLogger(new com.jcraft.jsch.Logger()
+				{
+					private HashMap<Integer, Consumer<String>> logMap = new HashMap<>();
+					private HashMap<Integer, BooleanSupplier> enabledMap = new HashMap<>();
+					
+					{
+						//Note- JSCH is _really_  verbose at the INFO level, so I'm mapping info to DEBUG.
+						logMap.put(com.jcraft.jsch.Logger.DEBUG, log::debug);
+						logMap.put(com.jcraft.jsch.Logger.ERROR, log::error);
+						logMap.put(com.jcraft.jsch.Logger.FATAL, log::error);
+						logMap.put(com.jcraft.jsch.Logger.INFO, log::debug);
+						logMap.put(com.jcraft.jsch.Logger.WARN, log::warn);
+						
+						enabledMap.put(com.jcraft.jsch.Logger.DEBUG, log::isDebugEnabled);
+						enabledMap.put(com.jcraft.jsch.Logger.ERROR, log::isErrorEnabled);
+						enabledMap.put(com.jcraft.jsch.Logger.FATAL, log::isErrorEnabled);
+						enabledMap.put(com.jcraft.jsch.Logger.INFO, log::isDebugEnabled);
+						enabledMap.put(com.jcraft.jsch.Logger.WARN, log::isWarnEnabled);
+					}
+					@Override
+					public void log(int level, String message)
+					{
+						logMap.get(level).accept(message);
+					}
+					
+					@Override
+					public boolean isEnabled(int level)
+					{
+						return enabledMap.get(level).getAsBoolean();
+					}
+				});
+				jschConfigured.countDown();
 			}
-			@Override
-			public void log(int level, String message)
-			{
-				logMap.get(level).accept(message);
-			}
-			
-			@Override
-			public boolean isEnabled(int level)
-			{
-				return enabledMap.get(level).getAsBoolean();
-			}
-		});
+		}
+		
 	}
 	
 	/**
@@ -190,7 +219,7 @@ public class SyncServiceGIT implements ProfileSyncI
 
 			Git git = new Git(r);
 
-			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
+			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, (password == null ? new char[] {} : password.toCharArray()));
 
 			log.debug("Fetching");
 			FetchResult fr = git.fetch().setCheckFetchedObjects(true).setCredentialsProvider(cp).call();
@@ -427,7 +456,7 @@ public class SyncServiceGIT implements ProfileSyncI
 			Set<String> result = updateFromRemote(username, password, mergeFailOption);
 
 			log.debug("Pushing");
-			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
+			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, (password == null ? new char[] {} : password.toCharArray()));
 
 			Iterable<PushResult> pr = git.push().setCredentialsProvider(cp).call();
 			pr.forEach(new Consumer<PushResult>()
@@ -487,7 +516,7 @@ public class SyncServiceGIT implements ProfileSyncI
 				throw new MergeFailure(git.status().call().getConflicting(), new HashSet<>());
 			}
 			
-			CredentialsProvider cp = new SSHFriendlyUsernamePasswordCredsProvider(username, password);
+			CredentialsProvider cp = new UsernamePasswordCredentialsProvider(username, (password == null ? new char[] {} : password.toCharArray()));
 			log.debug("Fetch Message" + git.fetch().setCredentialsProvider(cp).call().getMessages());
 			
 			ObjectId masterIdBeforeMerge = git.getRepository().getRef("master").getObjectId();
