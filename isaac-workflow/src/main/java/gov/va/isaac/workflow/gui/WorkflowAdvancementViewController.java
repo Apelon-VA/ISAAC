@@ -110,9 +110,7 @@ public class WorkflowAdvancementViewController
 					try
 					{
 						taskService_.completeTask(taskModel.getTask().getId(), taskModel.getCurrentOutputVariables());
-						
-						addToPromotionPath();
-						
+												
 						Platform.runLater(() -> 
 						{
 							//refreshSaveActionButtonBinding();
@@ -340,10 +338,5 @@ public class WorkflowAdvancementViewController
 	
 	public Region getRootNode() {
 		return borderPane;
-	}
-
-	private void addToPromotionPath() {
-		// TODO implement
-		logger.error("addtoPromotionPath is not implemented!");
 	}
 }
