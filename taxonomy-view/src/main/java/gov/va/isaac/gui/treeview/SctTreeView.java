@@ -213,18 +213,18 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
                 UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
                 userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.statedInferredPolicy, new PropertyChangeListener() {
-                	@Override
-                	public void propertyChange(PropertyChangeEvent evt) {
-                		LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                		SctTreeView.this.refresh();
-                	}
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        SctTreeView.this.refresh();
+                    }
                 });
                 userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.viewCoordinatePath, new PropertyChangeListener() {
-                	@Override
-                	public void propertyChange(PropertyChangeEvent evt) {
-                		LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                		SctTreeView.this.refresh();
-                	}
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        SctTreeView.this.refresh();
+                    }
                 });
             }
 
