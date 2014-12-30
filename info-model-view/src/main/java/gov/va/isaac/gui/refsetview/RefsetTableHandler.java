@@ -78,13 +78,13 @@ public class RefsetTableHandler {
 		refsetNid = rNid;
 		
 		try {
-		  /** TODO - BAC
+		  /** TODO - BAC (artf231837)
 			if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid()) {
 				refsetType = RefexType.UNKNOWN;
 			}
 			*/
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			// TODO (artf231837) Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -238,7 +238,7 @@ public class RefsetTableHandler {
 
 						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
 							ComponentChronicleBI<?> compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
-/** TODO - BAC							
+/** TODO - BAC (artf231838)							
 							RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());

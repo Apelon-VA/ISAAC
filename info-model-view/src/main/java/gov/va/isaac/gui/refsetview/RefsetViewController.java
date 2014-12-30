@@ -189,7 +189,7 @@ public class RefsetViewController {
 					} else {
 						refCompCon = component;
 					}
-/** TODO - BAC
+					/** TODO - BAC (artf231839)
 					//TODO we shouldn't have any references to the CEM model here in the generic refset viewer.
 					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
 					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
@@ -198,7 +198,7 @@ public class RefsetViewController {
 					} else {
 						processMembers(member, previousMember, refCompCon);
 					}
-				**/	
+					 **/	
 					previousMember = member;
 				}
 			}

@@ -242,7 +242,7 @@ public class ConceptNode implements ConceptLookupCallback
 				
 				if (newValue == null)
 				{
-					//TODO - resolve if / when this happens - and what should we do about it?
+					//TODO (artf231844) - resolve if / when this happens - and what should we do about it?
 					logger.warn("Unexpected case!");
 					return;
 				}

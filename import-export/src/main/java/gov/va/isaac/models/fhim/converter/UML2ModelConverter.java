@@ -333,7 +333,7 @@ public class UML2ModelConverter implements FHIMUmlConstants {
 
     private Map<String, FHIMInformationModel.External> buildNameExternalMap() {
         Map<String, FHIMInformationModel.External> m = Maps.newHashMap();
-/** TODO - BAC
+/** TODO (artf231841) - BAC
         m.put(CODE, new External(CODE, FHIMMetadataBinding.FHIM_CODE));
         m.put(OBSERVATION_QUALIFIER, new External(OBSERVATION_QUALIFIER, FHIMMetadataBinding.FHIM_OBSERVATIONQUALIFIER));
         m.put(OBSERVATION_STATEMENT, new External(OBSERVATION_STATEMENT, FHIMMetadataBinding.FHIM_OBSERVATIONSTATEMENT));
