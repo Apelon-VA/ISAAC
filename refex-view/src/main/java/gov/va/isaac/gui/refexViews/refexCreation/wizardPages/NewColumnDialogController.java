@@ -19,7 +19,6 @@
 package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.binding.BooleanBinding;
@@ -89,7 +88,7 @@ public class NewColumnDialogController implements Initializable
 			}
 
 			private void createNewColumnConcept() {
-			    try
+				try
 				{
 					AppContext.getRuntimeGlobals().disableAllCommitListeners();
 					newColumnConcept = RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(newColName.getText().trim(), newColDesc.getText().trim());
