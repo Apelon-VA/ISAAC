@@ -18,6 +18,7 @@
  */
 package gov.va.isaac.gui;
 
+import gov.va.isaac.util.AlphanumComparator;
 import java.util.Comparator;
 
 /**
@@ -27,17 +28,14 @@ import java.util.Comparator;
  */
 public class SimpleDisplayConceptComparator implements Comparator<SimpleDisplayConcept>
 {
+	private static AlphanumComparator ac = new AlphanumComparator(true);
 	/**
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public int compare(SimpleDisplayConcept o1, SimpleDisplayConcept o2)
 	{
-		if (o1 == null && o2 == null)
-		{
-			return 0;
-		}
-		else if (o1 == null)
+		if (o1 == null)
 		{
 			return 1;
 		}
@@ -45,21 +43,9 @@ public class SimpleDisplayConceptComparator implements Comparator<SimpleDisplayC
 		{
 			return -1;
 		}
-		else if (o1.getDescription() == null && o2.getDescription() == null)
-		{
-			return 0;
-		}
-		else if (o1.getDescription() == null)
-		{
-			return -1;
-		}
-		else if (o2.getDescription() == null)
-		{
-			return 1;
-		}
 		else
 		{
-			return o1.getDescription().compareTo(o2.getDescription());
+			return ac.compare(o1.getDescription(), o2.getDescription());
 		}
 	}
 }
