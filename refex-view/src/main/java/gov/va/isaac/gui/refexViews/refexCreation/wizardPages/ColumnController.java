@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.SimpleDisplayConceptComparator;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
@@ -132,7 +133,7 @@ public class ColumnController implements PanelControllersI {
 
 		columnDescription.setEditable(false);
 		
-		columnNameSelection_ = new ConceptNode(null, true, columnNameChoices, colNameReader_);
+		columnNameSelection_ = new ConceptNode(null, true, columnNameChoices.sorted(new SimpleDisplayConceptComparator()), colNameReader_);
 		
 		columnNameHolder.getChildren().add(columnNameSelection_.getNode());
 		HBox.setHgrow(columnNameSelection_.getNode(), Priority.ALWAYS);
