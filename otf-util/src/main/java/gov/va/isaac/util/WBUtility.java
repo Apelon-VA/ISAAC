@@ -310,24 +310,14 @@ public class WBUtility {
 	
 	private static int getFSNNid() {
 		if (fsnNid == null) {
-			try {
-				fsnNid = dataStore.getNidForUuids(FSN_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for FSN UUID: " + FSN_UUID, ex);
-				fsnNid = -1;
-			}
+			fsnNid = dataStore.getNidForUuids(FSN_UUID);
 		}
 		return fsnNid;
 	}
 
 	private static int getFsnRf1Nid() {
 		if (fsnRf1Nid == null) {
-			try {
-				fsnRf1Nid = dataStore.getNidForUuids(FSN_RF1_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for RF1 FSN UUID: " + FSN_RF1_UUID, ex);
-				fsnRf1Nid = -1;
-			}
+			fsnRf1Nid = dataStore.getNidForUuids(FSN_RF1_UUID);
 		}
 		return fsnRf1Nid;
 	}
@@ -335,12 +325,7 @@ public class WBUtility {
 	private static int getSynonymTypeNid() {
 		// Lazily load.
 		if (synonymNid == null) {
-			try {
-				synonymNid = dataStore.getNidForUuids(SYNONYM_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for synonymNid UUID: " + SYNONYM_UUID, ex);
-				synonymNid = -1;
-			}
+			synonymNid = dataStore.getNidForUuids(SYNONYM_UUID);
 		}
 		return synonymNid;
 	}
@@ -348,12 +333,7 @@ public class WBUtility {
 	private static int getSynonymRf1TypeNid() {
 		// Lazily load.
 		if (synonymRf1Nid == null) {
-			try {
-				synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for Rf1 synonymNid UUID: " + SYNONYM_RF1_UUID, ex);
-				synonymRf1Nid = -1;
-			}
+			synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
 		}
 		return synonymRf1Nid;
 	}
@@ -361,12 +341,7 @@ public class WBUtility {
 	private static int getPreferredTypeNid() {
 		// Lazily load.
 		if (preferredNid == null) {
-			try {
-				preferredNid = dataStore.getNidForUuids(PREFERRED_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for Preferred UUID: " + PREFERRED_UUID, ex);
-				preferredNid = -1;
-			}
+			preferredNid = dataStore.getNidForUuids(PREFERRED_UUID);
 		}
 		return preferredNid;
 	}
@@ -374,12 +349,7 @@ public class WBUtility {
 	private static int getPreferredRf1TypeNid() {
 		// Lazily load.
 		if (preferredRf1Nid == null) {
-			try {
-				preferredRf1Nid = dataStore.getNidForUuids(PREFERRED_RF1_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for Rf1 Preferred UUID: " + PREFERRED_RF1_UUID, ex);
-				preferredRf1Nid = -1;
-			}
+			preferredRf1Nid = dataStore.getNidForUuids(PREFERRED_RF1_UUID);
 		}
 		return preferredRf1Nid;
 	}

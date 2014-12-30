@@ -302,15 +302,7 @@ public class RefexDynamicGUI
 						String desc;
 						if (ExtendedAppContext.getDataStore().hasUuid(((RefexDynamicUUIDBI)data).getDataUUID()))
 						{
-							try
-							{
-								desc = getComponentText(ExtendedAppContext.getDataStore().getNidForUuids(((RefexDynamicUUIDBI)data).getDataUUID()));
-							}
-							catch (IOException e)
-							{
-								logger_.error("Error looking up UUID", e);
-								desc = "-ERROR-";
-							}
+							desc = getComponentText(ExtendedAppContext.getDataStore().getNidForUuids(((RefexDynamicUUIDBI)data).getDataUUID()));
 						}
 						else
 						{
@@ -544,14 +536,7 @@ public class RefexDynamicGUI
 							{
 								if (ExtendedAppContext.getDataStore().hasUuid(((RefexDynamicUUIDBI)data).getDataUUID()))
 								{
-									try
-									{
-										return ExtendedAppContext.getDataStore().getNidForUuids(((RefexDynamicUUIDBI)data).getDataUUID());
-									}
-									catch (IOException e)
-									{
-										logger_.error("Unexpected error getting NID for UUID");
-									}
+									return ExtendedAppContext.getDataStore().getNidForUuids(((RefexDynamicUUIDBI)data).getDataUUID());
 								}
 							}
 						}
