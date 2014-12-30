@@ -458,7 +458,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem answer = answers.get(0);
                         treeView_.scrollTo(treeView_.getRow(answer));
                         answer.setExpanded(true);
-                        // uncommenting the following conditional seems to add duplicates to the display
+                        // TODO: uncommenting the following conditional seems to add duplicates to the display.  Should delete code?
 //                        if (! isLast) {
 //                            // Start fetching the next level.
 //                            answer.addChildren();
