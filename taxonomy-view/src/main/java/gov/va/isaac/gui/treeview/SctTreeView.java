@@ -20,13 +20,17 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -206,6 +210,22 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
 
                 ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
+
+                UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
+                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.statedInferredPolicy, new PropertyChangeListener() {
+                	@Override
+                	public void propertyChange(PropertyChangeEvent evt) {
+                		LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                		SctTreeView.this.refresh();
+                	}
+                });
+                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.viewCoordinatePath, new PropertyChangeListener() {
+                	@Override
+                	public void propertyChange(PropertyChangeEvent evt) {
+                		LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                		SctTreeView.this.refresh();
+                	}
+                });
             }
 
             @Override
@@ -224,6 +244,13 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         Utility.execute(task);
     }
     
+    /**
+     * @param rootConcept
+     * 
+     * This method should be called only by init() and only a single time.
+     * The only reason this is its own method is to make the init() more readable.
+     * 
+     */
     private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
         LOG.debug("Running finishTreeSetup()...");
         
@@ -431,10 +458,11 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem answer = answers.get(0);
                         treeView_.scrollTo(treeView_.getRow(answer));
                         answer.setExpanded(true);
-                        if (! isLast) {
-                            // Start fetching the next level.
-                            answer.addChildren();
-                        }
+                        // TODO: uncommenting the following conditional seems to add duplicates to the display.  Should delete code?
+//                        if (! isLast) {
+//                            // Start fetching the next level.
+//                            answer.addChildren();
+//                        }
                     }
 
                     answers.notify();

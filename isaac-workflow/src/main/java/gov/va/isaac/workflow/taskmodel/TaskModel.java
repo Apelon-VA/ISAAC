@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class TaskModel {
+	// TODO: change TaskModel to use ValidBooleanBinding
+
 	private final static Logger LOGGER = LoggerFactory.getLogger(TaskModel.class);
 
 	public enum UserActionOutputResponse {
@@ -93,7 +95,8 @@ public abstract class TaskModel {
 	}
 	
 	private static class ComponentsForOutputVariable {
-		private final String variableName;
+		// TODO: change ComponentsForOutputVariable to use ValidBooleanBinding
+//		private final String variableName;
 		private final Label label;
 		private Node inputNode = null;
 		private final StringProperty valueProperty = new SimpleStringProperty();
@@ -101,9 +104,9 @@ public abstract class TaskModel {
 		private Validator validator;
 		private ChangeListener<String> valuePropertyListener;
 		
-		String getVariableName() {
-			return variableName;
-		}
+//		String getVariableName() {
+//			return variableName;
+//		}
 		Label getLabel() {
 			return label;
 		}
@@ -119,7 +122,7 @@ public abstract class TaskModel {
 		BooleanProperty getStatusProperty() {
 			return statusProperty;
 		}
-		Validator getValidator() { return validator; }
+//		Validator getValidator() { return validator; }
 		void setValidator(Validator v) {
 			if (valuePropertyListener != null) {
 				valueProperty.removeListener(valuePropertyListener);
@@ -144,7 +147,7 @@ public abstract class TaskModel {
 		}
 		private ComponentsForOutputVariable(String variableName, Label label, Node inputNode, Validator validator) {
 			super();
-			this.variableName = variableName;
+//			this.variableName = variableName;
 			this.label = label;
 			this.inputNode = inputNode;
 			this.validator = validator;
