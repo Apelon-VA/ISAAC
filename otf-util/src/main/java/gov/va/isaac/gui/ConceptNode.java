@@ -503,7 +503,7 @@ public class ConceptNode implements ConceptLookupCallback
 	}
 
 	public void disableEdit() {
-		//TODO disable drag and drop
+		//TODO (artf231877) disable drag and drop
 		cb_.setEditable(false);
 		cb_.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(0), new Insets(0))));
 	}
