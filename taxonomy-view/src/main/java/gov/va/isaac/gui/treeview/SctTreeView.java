@@ -107,7 +107,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     
     public StackPane getView()
     {
-        // TODO Determine if these warnings are still necessary
+        // TODO (artf231881) Determine if these warnings are still necessary
         if (initializationCountDownLatch_.getCount() > 1) {
             LOG.warn("getView() called before initial init() started");
         } else if (initializationCountDownLatch_.getCount() > 0) {
@@ -296,7 +296,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
                         ProgressIndicator p2 = new ProgressIndicator();
 
-                        //TODO figure out what to do with the progress indicator
+                        //TODO (artf231880) figure out what to do with the progress indicator
 //                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
                         p2.setPrefSize(16, 16);
                         p2.setProgress(-1);
@@ -458,7 +458,8 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem answer = answers.get(0);
                         treeView_.scrollTo(treeView_.getRow(answer));
                         answer.setExpanded(true);
-                        // TODO: uncommenting the following conditional seems to add duplicates to the display.  Should delete code?
+                        // uncommenting the following conditional seems to add duplicates to the display.
+                        // Look here first if problem shows up in locateConcept() display
 //                        if (! isLast) {
 //                            // Start fetching the next level.
 //                            answer.addChildren();
@@ -496,7 +497,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
 
-        //TODO see if this is still the case... we should be using the Fx APIs directly....
+        //TODO (artf231882) see if this is still the case... we should be using the Fx APIs directly....
         ConceptVersionBI wbConcept = WBUtility.getConceptVersion(conceptUUID);
         if (wbConcept == null) {
             return null;

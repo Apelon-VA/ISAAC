@@ -62,7 +62,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
 
     private static final ThreadGroup sctTreeItemThreadGroup = new ThreadGroup("SctTreeItem child fetcher pool");
 
-    //TODO dan needs to fix this - the executors are static - but the shutdown registry is per-instance... which isn't right.
+    //TODO (artf231879) dan needs to fix this - the executors are static - but the shutdown registry is per-instance... which isn't right.
     //realistically, it shouldn't have its own executor service anyway, we should be using thread pools from OTF-UTIL.
     static ExecutorService childFetcherService;
     static ExecutorService conceptFetcherService;
@@ -102,7 +102,7 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         } else if (taxRef.getConcept() != null) {
             // Configure a new progress indicator.
             ProgressIndicator pi = new ProgressIndicator();
-            //TODO Figure out what to do with the progress indicator
+            //TODO (artf231880) Figure out what to do with the progress indicator
 //            pi.setSkin(new TaxonomyProgressIndicatorSkin(pi));
             pi.setPrefSize(16, 16);
             pi.setProgress(-1);
