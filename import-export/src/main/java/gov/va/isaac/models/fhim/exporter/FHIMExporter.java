@@ -170,7 +170,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         // Get all annotations on the model annotation.
 //        Collection<? extends RefexChronicleBI<?>> modelAnnotations = getLatestAnnotations(modelRefex);
 
-        /** TODO - BAC (artf231826)
+        /** TODO (artf231826) - BAC
         // Enumerations.
         List<StringMember> enumAnnotations = filterAnnotations(modelAnnotations,
                 FHIMMetadataBinding.FHIM_ENUMERATIONS_REFSET, StringMember.class);
@@ -246,7 +246,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         String name = associationAnnotation.getString1();
         Association a = new Association(name);
         LOG.debug("Association: " + name);
-/** TODO - BAC (artf231827)
+/** TODO (artf231827) - BAC
         // Association Ends.
         List<NidBooleanMember> associationEndAnnotations = filterAnnotations(
                 getLatestAnnotations(associationAnnotation),
@@ -294,7 +294,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         Class c = getClass(nid);
         LOG.debug("Class: " + c.getName());
 
-        /** TODO - BAC (artf231828)
+        /** TODO (artf231828) - BAC
         // Attributes.
         Collection<NidStringMember> attributeAnnotations = filterAnnotations(
                 getLatestAnnotations(classAnnotation),
@@ -378,7 +378,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
 
     private VisibilityKind getVisibility(Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
             throws ValidationException, IOException {
-      /** TODO - BAC (artf231829)
+      /** TODO (artf231829) - BAC
       StringMember visibilityAnnotation = getSingleAnnotation(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_VISIBILITY_REFSET, StringMember.class);
 
@@ -396,7 +396,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
     private Multiplicity buildMultiplicity(
             Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
             throws IOException {
-      /** TODO - BAC (artf231830)
+      /** TODO (artf231830) - BAC
         List<NidIntMember> multiplicityAnnotations = filterAnnotations(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_MULTIPLICITY_REFSET, NidIntMember.class);
 
@@ -433,7 +433,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
     private String getDefaultValue(
             Collection<? extends RefexChronicleBI<?>> attributeAnnotations)
             throws ValidationException, IOException {
-      /** TODO - BAC (artf231831)
+      /** TODO (artf231831) - BAC
       List<StringMember> defaultValueAnnotations = filterAnnotations(attributeAnnotations,
                 FHIMMetadataBinding.FHIM_DEFAULTVALUES_REFSET, StringMember.class);
 
@@ -505,7 +505,7 @@ public class FHIMExporter extends ExporterBase implements FHIMUmlConstants {
         String name = enumAnnotation.getString1();
         Enumeration e = new Enumeration(name);
         LOG.debug("Attribute: " + e.getName());
-/** TODO - BAC (artf231832)
+/** TODO (artf231832) - BAC
         // Enumeration values.
         Collection<StringMember> valueAnnotations = filterAnnotations(
                 getLatestAnnotations(enumAnnotation),

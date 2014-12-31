@@ -156,7 +156,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 	@Override
 	public void locateConcept(UUID uuid, BooleanProperty busyIndicator)
 	{
-		//TODO add a visible progress indicator while this happens
+		//TODO (artf231864) add a visible progress indicator while this happens
 		showConcept(uuid, busyIndicator);
 		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble(this);
 	}

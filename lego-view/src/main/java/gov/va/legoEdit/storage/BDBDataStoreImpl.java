@@ -987,7 +987,7 @@ public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastLi
 				}
 				if (s.getPath() == null || s.getPath().length() == 0)
 				{
-					//TODO [Lego edit] this isn't quite right...
+					//TODO (artf231852) [Lego edit] this isn't quite right...
 					s.setPath(WBUtility.getEditCoordinate().getEditPathListSpecs().get(0).getDescription());
 				}
 			}

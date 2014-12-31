@@ -126,7 +126,7 @@ public class RefsetViewController {
 //		try {
 //			this.isAnnotation = refset.isAnnotationStyleRefex();
 //		} catch (IOException e) {
-//			// TODO Auto-generated catch block
+//			// TODO (artf231876) Auto-generated catch block
 //			e.printStackTrace();
 //		}
 		
@@ -189,8 +189,8 @@ public class RefsetViewController {
 					} else {
 						refCompCon = component;
 					}
-					/** TODO - BAC (artf231839)
-					//TODO we shouldn't have any references to the CEM model here in the generic refset viewer.
+					/** TODO (artf231839) - BAC
+					//TODO (artf231839) we shouldn't have any references to the CEM model here in the generic refset viewer.
 					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
 					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
 						member.getAssemblageNid() == refset.getNid()) {
@@ -225,7 +225,7 @@ public class RefsetViewController {
 	private void processMembers(RefexVersionBI<?> member, RefexVersionBI<?> previousMember, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
 		if (member.getAssemblageNid() == refsetNid_) {
 			// Setup if Necessary
-			//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
+			//TODO (artf231876) The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
 			//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected 
 			//from the data in the table, so it can take into account multiple refex types.
 			if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {

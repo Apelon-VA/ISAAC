@@ -375,7 +375,7 @@ public class Model2UMLConverter implements FHIMUmlConstants {
 
     private Map<ConceptSpec, Class> buildConceptSpecClassMap() {
         Map<ConceptSpec, Class> m = Maps.newHashMap();
-/** TODO - BAC (artf231835)
+/** TODO (artf231835) - BAC
         m.put(FHIMMetadataBinding.FHIM_CODE,
                 datatypesPkg.createOwnedClass(CODE, false));  // Not abstract.
         m.put(FHIMMetadataBinding.FHIM_PHYSICALQUANTITY,

@@ -166,7 +166,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		BorderPane.setMargin(bp.getTop(), new Insets(5, 5, 5, 5));
 		
 		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-/** TODO - BAC (artf231833)
+/** TODO (artf231833) - BAC
 		//TODO this shouldn't require a hard import on the import-export project... need to refactor, use interfaces
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
@@ -200,7 +200,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		sp.setContent(refsetArea);
 		VBox.setVgrow(sp, Priority.ALWAYS);
 		root.getChildren().add(sp);
-/** TODO - BAC (artf231833)
+/** TODO (artf231833) - BAC
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs == CEMMetadataBinding.CEM_DATA_REFSET || cs == CEMMetadataBinding.CEM_TYPE_REFSET)
@@ -219,7 +219,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 				//manually compute what needs to change.  Sigh.
 				//TODO file a bug on JavaFX.  The old code here should have worked...
 				HashSet<String> all = new HashSet<>();
-				/** TODO - BAC (artf231833)
+				/** TODO (artf231833) - BAC
 				for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 				{
 					all.add(cs.getDescription());
@@ -245,7 +245,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	}
 	
 	private void addRefsetView(String name)
-	{/** TODO - BAC (artf231834)
+	{/** TODO (artf231834) - BAC
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs.getDescription().equals(name))
