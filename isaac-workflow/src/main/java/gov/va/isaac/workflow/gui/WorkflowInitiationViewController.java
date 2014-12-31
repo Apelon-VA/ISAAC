@@ -154,7 +154,7 @@ public class WorkflowInitiationViewController {
 	public void initialize() {
 		initializeWorkflowProcessesComboBox();
 
-		// TODO: must move to model to handle other WorkflowProcessModel types
+		// TODO (artf231901): must move to model to handle other WorkflowProcessModel types
 		instructionsTextArea.clear();
 
 		promotionPathCoordinateLabel.setText(getDefaultPromotionPathCoordinateTextFieldContent());
