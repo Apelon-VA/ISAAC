@@ -20,6 +20,8 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.Images;
@@ -28,27 +30,34 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTre
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -88,15 +97,104 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     // Methods requiring that init() be completed must run init() if count > 1 and block on await()
     private final CountDownLatch initializationCountDownLatch_ = new CountDownLatch(2);
 
+    private BorderPane bp_;
     private StackPane sp_;
+    private ToolBar tb_ = new ToolBar();
     private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
+    private SimpleBooleanProperty displayFSN = new SimpleBooleanProperty(true);
+    private SimpleIntegerProperty inferredStatedMode = new SimpleIntegerProperty(StatedInferredOptions.STATED.ordinal());
 
     protected SctTreeView() {
         treeView_ = new TreeView<>();
         AppContext.getRuntimeGlobals().registerShutdownListener(this);
+        bp_ = new BorderPane();
+        
+        Button descriptionType = new Button();
+        descriptionType.setPadding(new Insets(2.0));
+        ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
+        Tooltip.install(displayFsn, new Tooltip("Displaying the Fully Specified Name - click to display the Preferred Term"));
+        displayFsn.visibleProperty().bind(displayFSN);
+        ImageView displayPreferred = Images.DISPLAY_PREFERRED.createImageView();
+        displayPreferred.visibleProperty().bind(displayFSN.not());
+        Tooltip.install(displayPreferred, new Tooltip("Displaying the Preferred Term - click to display the Fully Specified Name"));
+        descriptionType.setGraphic(new StackPane(displayFsn, displayPreferred));
+        descriptionType.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                try
+                {
+                    UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+                    up.setDisplayFSN(displayFSN.not().get());
+                    ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+                    displayFSN.set(up.getDisplayFSN());
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Unexpected error storing pref change", e);
+                }
+            }
+        });
+        
+        tb_.getItems().add(descriptionType);
+        
+        Button taxonomyViewMode = new Button();
+        taxonomyViewMode.setPadding(new Insets(2.0));
+        ImageView taxonomyInferred = Images.TAXONOMY_INFERRED.createImageView();
+        taxonomyInferred.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.INFERRED.ordinal()));
+        Tooltip.install(taxonomyInferred, new Tooltip("Displaying the Inferred view- click to display the Inferred then Stated view"));
+        ImageView taxonomyStated = Images.TAXONOMY_STATED.createImageView();
+        taxonomyStated.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.STATED.ordinal()));
+        Tooltip.install(taxonomyStated, new Tooltip("Displaying the Stated view- click to display the Inferred view"));
+        ImageView taxonomyInferredThenStated = Images.TAXONOMY_INFERRED_THEN_STATED.createImageView();
+        taxonomyInferredThenStated.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.INFERRED_THEN_STATED.ordinal()));
+        Tooltip.install(taxonomyInferredThenStated, new Tooltip("Displaying the Inferred then Stated view- click to display the Stated view"));
+        taxonomyViewMode.setGraphic(new StackPane(taxonomyInferred, taxonomyStated, taxonomyInferredThenStated));
+        taxonomyViewMode.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                try
+                {
+                    UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+                    StatedInferredOptions sip = null;
+                    if (inferredStatedMode.get() == StatedInferredOptions.STATED.ordinal())
+                    {
+                        sip = StatedInferredOptions.INFERRED;
+                    }
+                    else if (inferredStatedMode.get() == StatedInferredOptions.INFERRED.ordinal())
+                    {
+                        sip = StatedInferredOptions.INFERRED_THEN_STATED;
+                    }
+                    else if (inferredStatedMode.get() == StatedInferredOptions.INFERRED_THEN_STATED.ordinal())
+                    {
+                        sip = StatedInferredOptions.STATED;
+                    }
+                    else
+                    {
+                        LOG.error("Unexpected error!");
+                        return;
+                    }
+                    up.setStatedInferredPolicy(sip);
+                    ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+                    inferredStatedMode.set(up.getStatedInferredPolicy().ordinal());
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Unexpected error storing pref change", e);
+                }
+            }
+        });
+        tb_.getItems().add(taxonomyViewMode);
+        
+        bp_.setTop(tb_);
+        
         sp_ = new StackPane();
+        bp_.setCenter(sp_);
         ProgressIndicator pi = new ProgressIndicator();
         pi.setMaxHeight(100.0);
         pi.setMaxWidth(100.0);
@@ -105,7 +203,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         sp_.getChildren().add(pi);
     }
     
-    public StackPane getView()
+    public BorderPane getView()
     {
         // TODO Determine if these warnings are still necessary
         if (initializationCountDownLatch_.getCount() > 1) {
@@ -113,7 +211,17 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         } else if (initializationCountDownLatch_.getCount() > 0) {
             LOG.warn("getView() called before initial init() completed");
         }
-        return sp_;
+        return bp_;
+    }
+    
+    /**
+     * Convenience method for other code to add buttons, etc to the tool bar displayed above
+     * the tree view 
+     * @param node
+     */
+    public void addToToolBar(Node node)
+    {
+        tb_.getItems().add(node);
     }
 
     public void refresh() {
@@ -216,6 +324,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        inferredStatedMode.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getStatedInferredPolicy().ordinal());
                         SctTreeView.this.refresh();
                     }
                 });
@@ -226,6 +335,16 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeView.this.refresh();
                     }
                 });
+                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.displayFSN, new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        displayFSN.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN());
+                        SctTreeView.this.refresh();
+                    }
+                });
+                displayFSN.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN());
+                inferredStatedMode.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getStatedInferredPolicy().ordinal());
             }
 
             @Override
