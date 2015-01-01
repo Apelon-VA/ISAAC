@@ -84,16 +84,6 @@
                 <HBox alignment="CENTER_LEFT" spacing="5.0">
                   <children>
                     <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Tree View" />
-                    <Button fx:id="showInTreeButton" mnemonicParsing="false" text="Find Concept">
-                      <HBox.margin>
-                        <Insets bottom="3.0" />
-                      </HBox.margin>
-                    </Button>
-                    <ProgressIndicator fx:id="treeViewProgress" maxHeight="16.0" maxWidth="16.0" visible="false">
-                      <HBox.margin>
-                        <Insets />
-                      </HBox.margin>
-                    </ProgressIndicator>
                   </children>
                 </HBox>
               </children>
