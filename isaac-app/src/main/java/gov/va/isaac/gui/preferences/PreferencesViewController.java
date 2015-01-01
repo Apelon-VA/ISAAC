@@ -211,6 +211,11 @@ public class PreferencesViewController {
 			// set focus on default
 			// Platform.runLater(...);
 		}
+		
+		// Reload persisted values every time view opened
+		for (PreferencesPluginViewI plugin : plugins_) {
+			plugin.getContent();
+		}
 	}
 	
 	private void saveAndExitIfSuccessful() {

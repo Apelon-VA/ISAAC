@@ -64,6 +64,9 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 	protected HBox hBox = null;
 	protected ValidBooleanBinding allValid_ = null;
 	
+	protected ToggleGroup statedInferredToggleGroup = null;
+	protected ComboBox<UUID> pathComboBox = null;
+	
 	protected final ObjectProperty<StatedInferredOptions> currentStatedInferredOptionProperty = new SimpleObjectProperty<>();
 	protected final ObjectProperty<UUID> currentPathProperty = new SimpleObjectProperty<>();
 
@@ -82,7 +85,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 	public Region getContent() {
 		if (hBox == null) {
 			VBox statedInferredToggleGroupVBox = new VBox();
-			ToggleGroup statedInferredToggleGroup = new ToggleGroup();
+			statedInferredToggleGroup = new ToggleGroup();
 			List<RadioButton> statedInferredOptionButtons = new ArrayList<>();
 			for (StatedInferredOptions option : StatedInferredOptions.values()) {
 				RadioButton optionButton = new RadioButton(option.value());
@@ -102,7 +105,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 				}	
 			});
 
-			ComboBox<UUID> pathComboBox = new ComboBox<>();
+			pathComboBox = new ComboBox<>();
 			pathComboBox.setCellFactory(new Callback<ListView<UUID>, ListCell<UUID>> () {
 				@Override
 				public ListCell<UUID> call(ListView<UUID> param) {
@@ -135,19 +138,10 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 					}
 				}
 			});
-			pathComboBox.getItems().addAll(getPathOptions());
 			currentPathProperty.bind(pathComboBox.getSelectionModel().selectedItemProperty());
 			
-			final StatedInferredOptions storedStatedInferredOption = getStoredStatedInferredOption();
-			for (Toggle toggle : statedInferredToggleGroup.getToggles()) {
-				if (toggle.getUserData() == storedStatedInferredOption) {
-					toggle.setSelected(true);
-				}
-			}
 			
 			// ComboBox
-			final UUID storedPath = getStoredPath();
-			pathComboBox.getSelectionModel().select(storedPath);
 			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
 			pathComboBox.setPadding(new Insets(5,5,5,5));
 
@@ -195,6 +189,33 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 				}
 			};
 		}
+		
+		// Don't know why this should be necessary, but without this the UUID itself is displayed
+		pathComboBox.setButtonCell(new ListCell<UUID>() {
+			@Override
+			protected void updateItem(UUID c, boolean emptyRow) {
+				super.updateItem(c, emptyRow); 
+				if (emptyRow) {
+					setText("");
+				} else {
+					String desc = WBUtility.getDescription(c);
+					setText(desc);
+				}
+			}
+		});
+
+		// Reload persisted values every time
+		final StatedInferredOptions storedStatedInferredOption = getStoredStatedInferredOption();
+		for (Toggle toggle : statedInferredToggleGroup.getToggles()) {
+			if (toggle.getUserData() == storedStatedInferredOption) {
+				toggle.setSelected(true);
+			}
+		}
+		
+		pathComboBox.getItems().clear();
+		pathComboBox.getItems().addAll(getPathOptions());
+		final UUID storedPath = getStoredPath();
+		pathComboBox.getSelectionModel().select(storedPath);
 		
 		return hBox;
 	}

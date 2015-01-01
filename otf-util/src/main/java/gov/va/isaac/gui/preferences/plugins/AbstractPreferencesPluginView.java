@@ -27,11 +27,9 @@ package gov.va.isaac.gui.preferences.plugins;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfile;
-import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
-import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginTextFieldProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
 
@@ -183,6 +181,11 @@ public abstract class AbstractPreferencesPluginView implements PreferencesPlugin
 					return true;
 				}
 			};
+		}
+		
+		// Reload persisted values every time opened
+		for (PreferencesPluginProperty<?, ? extends Control> property : properties) {
+			property.setControlPersistedValue();
 		}
 		
 		return gridPane;
