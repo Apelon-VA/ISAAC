@@ -61,6 +61,8 @@ public class ApproveContentTaskModel extends TaskModel {
 	}
 	
 	public enum OutputVariable {
+		// TODO (artf231904) out_submit_list should be restricted and/or defaulted and preferably actually used someplace.  Should also probably exist in ApproveContentTaskModel.
+
 		out_response("Response"),
 		out_comment("Comment");
 

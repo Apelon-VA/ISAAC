@@ -178,6 +178,7 @@ public class DualReviewAdjudicateContentTaskModel extends TaskModel {
 		}
 
 		case out_submit_list: {
+			// TODO (artf231904) out_submit_list should be restricted and/or defaulted and preferably actually used someplace.  Should also probably exist in ApproveContentTaskModel.
 			TextField outSubmitListTextField = new TextField();
 			
 			StringProperty outSubmitListText = getOutputVariableValueProperty(variableName);

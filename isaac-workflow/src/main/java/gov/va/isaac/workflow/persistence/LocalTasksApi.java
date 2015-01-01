@@ -86,7 +86,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     
     public void changeUserName(String oldWFUsername, String newWFUsername)
     {
-        //TODO DAN THIS MUST BE IMPLEMENTED before changing a WF username will work properly!!!!!
+        //TODO (artf231902) DAN THIS MUST BE IMPLEMENTED before changing a WF username will work properly!!!!!
         log.error("The change username functionality is not yet complete - WF state is now corrupt!!!!!!!");
     }
     

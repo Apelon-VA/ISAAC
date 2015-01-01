@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class TaskModel {
-	// TODO: change TaskModel to use ValidBooleanBinding
+	// TODO (artf231903): change TaskModel to use ValidBooleanBinding
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(TaskModel.class);
 
@@ -95,7 +95,7 @@ public abstract class TaskModel {
 	}
 	
 	private static class ComponentsForOutputVariable {
-		// TODO: change ComponentsForOutputVariable to use ValidBooleanBinding
+		// TODO (artf231903): change ComponentsForOutputVariable to use ValidBooleanBinding
 //		private final String variableName;
 		private final Label label;
 		private Node inputNode = null;

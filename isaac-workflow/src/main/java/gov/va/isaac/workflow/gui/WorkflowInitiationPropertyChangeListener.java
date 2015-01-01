@@ -96,7 +96,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 		if (enabled)
 		{
 			LOG.info("Disabling the workflow commit listener");
-			//TODO file yet another OTF bug - this doesn't work.  We still get property change notifications after calling remove... 
+			//TODO (artf231898) file yet another OTF bug - this doesn't work.  We still get property change notifications after calling remove... 
 			ExtendedAppContext.getDataStore().removePropertyChangeListener(this);
 			enabled = false;
 		}
@@ -123,7 +123,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)
 	{
-		//TODO this shouldn't be necessary, but OTF has a bug....
+		//TODO (artf231898) this shouldn't be necessary, but OTF has a bug....
 		if (!enabled)
 		{
 			return;
@@ -213,7 +213,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 							componentsToWf.add(currentConNid);
 						}
 					} catch (Exception ncnpe) {
-						// TODO: Handle Case of new Concept
+						// TODO (artf231899): Handle Case of new Concept
 					}
 				}
 			} catch (DatastoreException e) {

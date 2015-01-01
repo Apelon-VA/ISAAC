@@ -120,7 +120,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                                 				TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
                                 				treeItem.getDisplayPolicies());
                         ProgressIndicator indicator = new ProgressIndicator();
-//TODO figure out what we will do with this indicator skin
+//TODO (artf231878) figure out what we will do with this indicator skin
 //                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
                         indicator.setPrefSize(16, 16);
                         indicator.setProgress(-1);

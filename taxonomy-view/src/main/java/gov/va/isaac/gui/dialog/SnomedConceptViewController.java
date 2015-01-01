@@ -160,7 +160,7 @@ public class SnomedConceptViewController {
         historyToggle.setText("");
         historyToggle.setGraphic(Images.HISTORY.createImageView());
         historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
-        //TODO make the other view tables aware of the show/hide stamp call
+        //TODO (artf231887) make the other view tables aware of the show/hide stamp call
         
         ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
         AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
