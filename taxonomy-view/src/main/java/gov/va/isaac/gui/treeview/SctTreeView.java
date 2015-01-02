@@ -205,11 +205,10 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     
     public BorderPane getView()
     {
-        // TODO (artf231881) Determine if these warnings are still necessary
         if (initializationCountDownLatch_.getCount() > 1) {
-            LOG.warn("getView() called before initial init() started");
+            LOG.debug("getView() called before initial init() started");
         } else if (initializationCountDownLatch_.getCount() > 0) {
-            LOG.warn("getView() called before initial init() completed");
+            LOG.debug("getView() called before initial init() completed");
         }
         return bp_;
     }
