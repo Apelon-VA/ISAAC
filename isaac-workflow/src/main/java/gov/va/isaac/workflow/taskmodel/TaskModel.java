@@ -151,7 +151,7 @@ public abstract class TaskModel {
 			this.label = label;
 			this.inputNode = inputNode;
 			this.validator = validator;
-			
+
 			// Add default validator
 			if (validator == null) {
 				setValidator(new Validator() {
@@ -214,7 +214,7 @@ public abstract class TaskModel {
 	/**
 	 * 
 	 */
-	protected TaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+	private TaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
 		this.task = inputTask;
 		this.userActionOutputResponseComboBox = userActionOutputResponseComboBox;
 
@@ -235,6 +235,8 @@ public abstract class TaskModel {
 		
 		for (Enum<?> en : enumValues) {
 			addOutputVariable(en.name());
+			
+			initializeOutputVariableInputNode(en.name());
 		}
 	}
 
@@ -412,4 +414,15 @@ public abstract class TaskModel {
 	 * 
 	 */
 	protected abstract Node getOrCreateOutputVariableInputNode(String variableName);
+
+	/**
+	 * @param variableName
+	 * 
+	 * Initialize the input control value.
+	 * 
+	 * TODO Note that this method, in order to trigger appropriate change listeners,
+	 * should first set the control to some value other than its initial value then immediately set it
+	 * to its initial value.  This is a hack that should be addressed.
+	 */
+	protected abstract void initializeOutputVariableInputNode(String variableName);
 }

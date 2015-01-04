@@ -33,7 +33,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 
 /**
- * EditContentTaskModel
+ * ApproveContentTaskModel
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
@@ -82,6 +82,8 @@ public class ApproveContentTaskModel extends TaskModel {
 		}
 	}
 
+	TextArea commentTextArea = null;
+	
 	/**
 	 * @param inputTask
 	 */
@@ -114,14 +116,11 @@ public class ApproveContentTaskModel extends TaskModel {
 		
 		switch (outputVariable) {
 		case out_comment: {
-			TextArea commentTextArea = new TextArea();
+			commentTextArea = new TextArea();
 			
 			StringProperty commentProperty = getOutputVariableValueProperty(variableName);
 
 			commentProperty.bind(commentTextArea.textProperty());
-			
-			// Initialize state of input control, triggering handlers/listeners
-			commentTextArea.setText("");
 			
 			return commentTextArea;
 		}
@@ -160,13 +159,37 @@ public class ApproveContentTaskModel extends TaskModel {
 						UserActionOutputResponse newValue) {
 					responseProperty.set(newValue != null ? newValue.getUserActionOutputResponseValue() : null);
 				}});
-			// Initialize state of input control, triggering handlers/listeners
-			responseComboBox.getSelectionModel().select(null);
 			
 			return responseComboBox;
 		}
 
 		
+		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#initializeOutputVariableInputNode(java.lang.String)
+	 */
+	@Override
+	protected void initializeOutputVariableInputNode(String variableName) {
+		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
+		
+		switch (outputVariable) {
+		case out_comment: {
+			// Initialize state of input control, triggering handlers/listeners
+			commentTextArea.setText("unset"); // hack to trigger change listener
+			commentTextArea.setText("");
+			break;
+		}
+		case out_response: {
+			// Initialize state of input control, triggering handlers/listeners
+			ComboBox<UserActionOutputResponse> responseComboBox = getUserActionOutputResponseComboBox();
+			responseComboBox.getSelectionModel().clearAndSelect(0); // hack to trigger change listener
+			responseComboBox.getSelectionModel().select(null);
+			break;
+		}
+
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);
 		}
 	}
