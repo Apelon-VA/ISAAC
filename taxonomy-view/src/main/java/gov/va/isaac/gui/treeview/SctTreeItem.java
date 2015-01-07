@@ -265,33 +265,47 @@ public class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implemen
         conceptFetcherService.shutdown();
     }
 
+    /* (non-Javadoc)
+     * @see javafx.scene.control.TreeItem#toString()
+     * 
+     * WARNING: toString is currently used in compareTo()
+     * 
+     */
     @Override
     public String toString() {
-        if (getValue().getRelationshipVersion() != null) {
-            if (multiParentDepth > 0) {
-                ComponentReference destRef = getValue().getRelationshipVersion().getDestinationReference();
-                String temp = WBUtility.getDescription(destRef.getUuid());
-                if (temp == null) {
-                    return destRef.getText();
-                } else {
-                    return temp;
-                }
-            } else {
-                ComponentReference originRef = getValue().getRelationshipVersion().getOriginReference();
-                String temp = WBUtility.getDescription(originRef.getUuid());
-                if (temp == null) {
-                    return originRef.getText();
-                } else {
-                    return temp;
-                }
-            }
-        }
+    	try {
+    		if (getValue().getRelationshipVersion() != null) {
+    			if (multiParentDepth > 0) {
+    				ComponentReference destRef = getValue().getRelationshipVersion().getDestinationReference();
+    				String temp = WBUtility.getDescription(destRef.getUuid());
+    				if (temp == null) {
+    					return destRef.getText();
+    				} else {
+    					return temp;
+    				}
+    			} else {
+    				ComponentReference originRef = getValue().getRelationshipVersion().getOriginReference();
+    				String temp = WBUtility.getDescription(originRef.getUuid());
+    				if (temp == null) {
+    					return originRef.getText();
+    				} else {
+    					return temp;
+    				}
+    			}
+    		}
 
-        if (getValue().conceptProperty().get() != null) {
-            return WBUtility.getDescription(getValue().conceptProperty().get());
-        }
+    		if (getValue().conceptProperty().get() != null) {
+    			return WBUtility.getDescription(getValue().conceptProperty().get());
+    		}
 
-        return "root";
+    		return "root";
+    	} catch (RuntimeException re) {
+    		LOG.error("Caught {} \"{}\"", re.getClass().getName(), re.getLocalizedMessage());
+    		throw re;
+    	} catch (Error e) {
+    		LOG.error("Caught {} \"{}\"", e.getClass().getName(), e.getLocalizedMessage());
+    		throw e;
+    	}
     }
 
     public List<SctTreeItem> getExtraParents() {
