@@ -185,6 +185,8 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
             if (treeItem.isExpanded()) {
                 ImageView iv = Images.TAXONOMY_CLOSE.createImageView();
+                iv.setFitHeight(12);
+        		iv.setFitWidth(12);
 
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
@@ -195,7 +197,9 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 setDisclosureNode(disclosureBorderPane);
             } else {
                 ImageView iv = Images.TAXONOMY_OPEN.createImageView();
-
+                iv.setFitHeight(12);
+        		iv.setFitWidth(12);
+        		
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
                 } else {
