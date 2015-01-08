@@ -764,11 +764,63 @@ public class WBUtility {
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
+	public static Set<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
 	{
-		return getAllChildrenOfConcept(getConceptVersion(nid), recursive);
+		return getAllChildrenOfConcept(new HashSet<>(), getConceptVersion(nid), recursive);
+	}
+	public static Set<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
+	{
+		return getAllChildrenOfConcept(new HashSet<>(), concept, recursive);
 	}
 	
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	private static Set<ConceptVersionBI> getAllChildrenOfConcept(Set<Integer> handledConceptNids, ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		// This both prevents infinite recursion and avoids processing or returning of duplicates
+		if (handledConceptNids.contains(concept.getNid())) {
+			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(concept.getNid()));
+			return results;
+		}
+
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
+		{
+			if (handledConceptNids.contains(r.getOriginNid())) {
+				// avoids processing or returning of duplicates
+				LOG.debug("Encountered already-handled ORIGIN child concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(r.getOriginNid()));
+
+				continue;
+			}
+
+			ConceptVersionBI originConcept = getConceptVersion(r.getOriginNid());
+			results.add(originConcept);
+			if (recursive)
+			{
+				results.addAll(getAllChildrenOfConcept(handledConceptNids, originConcept, recursive));
+			}
+		}
+		
+		handledConceptNids.add(concept.getNid());
+		
+		return results;
+	}
+
+	public static Set<Integer> getAllChildrenOfConceptAsNids(Integer conceptNid, boolean recursive) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> resultsAsConceptVersions = getAllChildrenOfConcept(conceptNid, recursive);
+		Set<Integer> results = new HashSet<>();
+		
+		for (ConceptVersionBI conceptVersion : resultsAsConceptVersions) {
+			results.add(conceptVersion.getNid());
+		}
+
+		return results;
+	}
+
 	/**
 	 * Recursively get Is a parents of a concept
 	 */
@@ -776,55 +828,41 @@ public class WBUtility {
 	{
 		return getConceptAncestors(getConceptVersion(nid));
 	}
-	
-	/**
-	 * Recursively get Is a children of a concept
-	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
-	{
-		ArrayList<ConceptVersionBI> results = new ArrayList<>();
-		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
-		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
-		{
-			results.add(getConceptVersion(r.getOriginNid()));
-			if (recursive)
-			{
-				results.addAll(getAllChildrenOfConcept(r.getOriginNid(), recursive));
-			}
-		}
-		return results;
-	}
-
-	public static ArrayList<Integer> getAllChildrenOfConceptAsNids(Integer conceptNid, boolean recursive) throws IOException, ContradictionException
-	{
-		ArrayList<Integer> results = new ArrayList<>();
-		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
-		for (RelationshipVersionBI<?> r : WBUtility.getConceptVersion(conceptNid).getRelationshipsIncomingActiveIsa())
-		{
-			results.add(r.getOriginNid());
-			if (recursive)
-			{
-				results.addAll(getAllChildrenOfConceptAsNids(r.getOriginNid(), recursive));
-			}
-		}
-		return results;
-	}
-
 	/**
 	 * Recursively get Is a parents of a concept
 	 */
 	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
 	{
+		Set<Integer> handledNids = new HashSet<>();
+		
+		return getConceptAncestors(handledNids, concept);
+	}
+	private static Set<ConceptVersionBI> getConceptAncestors(Set<Integer> handledNids, ConceptVersionBI concept) throws IOException, ContradictionException
+	{
 		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		// This both prevents infinite recursion and avoids processing or returning of duplicates
+		if (handledNids.contains(concept.getNid())) {
+			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(concept.getNid()));
+			return results;
+		}
 		
 		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
 		{
-			results.add(getConceptVersion(r.getDestinationNid()));
-			results.addAll(getConceptAncestors(r.getDestinationNid()));
+			if (handledNids.contains(r.getDestinationNid())) {
+				// avoids processing or returning of duplicates
+				LOG.debug("Encountered already-handled DESTINATION ancestor concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(r.getDestinationNid()));
+				continue;
+			}
+
+			ConceptVersionBI destConcept = getConceptVersion(r.getDestinationNid());
+			results.add(destConcept);
+			results.addAll(getConceptAncestors(handledNids, destConcept));
 		}
+
+		handledNids.add(concept.getNid());
+
 		return results;
 	}
 
@@ -1054,11 +1092,6 @@ public class WBUtility {
 		}
 		
 		commit(conceptWithComp.getVersion(getViewCoordinate()));
-		
-		// Revert to original Edit path
-//		editPaths.clear();
-//		editPaths.addAll(origPaths);
-//		getEditCoordinate().setEditPathListSpecs(editPaths);
 	}
 	
 	

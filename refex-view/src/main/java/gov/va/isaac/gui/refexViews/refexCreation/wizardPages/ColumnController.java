@@ -31,11 +31,14 @@ import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -58,6 +61,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
@@ -66,6 +70,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
@@ -453,7 +458,7 @@ public class ColumnController implements PanelControllersI {
 	private void initializeColumnConcepts() {
 		try {
 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+			Set<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
 
 			for (ConceptVersionBI col : colCons) {
 				columnNameChoices.add(new SimpleDisplayConcept(col, colNameReader_));
