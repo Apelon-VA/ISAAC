@@ -64,11 +64,11 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  */
 @SuppressWarnings("deprecation")
-public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
+final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
-    public SctTreeCell() {
+    SctTreeCell() {
         super();
 
         // Handle left-clicks.
@@ -262,9 +262,14 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
                 try
                 {
-                	UUID uid = concept.getPrimordialUuid();
-
-                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uid)});
+                	UUID uuid = null;
+                	
+                	if (concept != null ) {
+                		uuid = concept.getPrimordialUuid();
+                		return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
+                	} else {
+                        return Arrays.asList(new Integer[] {});
+                	}
                 }
                 catch (Exception e)
                 {
