@@ -159,7 +159,9 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             setText("");
             setGraphic(null);
         }
-
+        else if (!empty && taxRef == null) {
+        	LOG.debug("TaxonomyReferenceWithConcept is null");
+        }
         else if (!empty && taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
 
@@ -218,7 +220,7 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             BorderPane graphicBorderPane = new BorderPane();
 
             if (treeItem.isLeaf()) {
-                int multiParentInset = treeItem.getMultiParentDepth() * 16;
+                int multiParentInset = treeItem.getMultiParentDepth() * 16 + 4;
                 Rectangle leftRect =
                         RectangleBuilder.create().width(multiParentInset).height(16).build();
 
