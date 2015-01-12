@@ -3,9 +3,10 @@
   elementFormDefault="qualified">
 
 
-<!-- Version 2014/10/08 -->
+<!-- Version 2014/12/20 -->
 <!-- 
   Changelog:
+  2014/12/20 - Removing things that should be read from other config files.
   2014/11/04 - Added changeSetUrlType 
   2014/10/08 - Aligned with archetype properties
   2014/09/30 - Initial version
@@ -51,142 +52,6 @@
           </xs:annotation>
         </xs:element>
 
-        <xs:element name="isaacVersion" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>ISAAC toolkit version.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>ISAAC toolkit version.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="scmConnection" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Code base for the PA project.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Code base for the PA project.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="scmUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Browsable URL for PA project code.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Browsable URL for PA project code.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="dbGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Database group id.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Database group id</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="dbArtifactId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Database artifact id.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Database artifact id.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="dbVersion" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Database version.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Database version.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="dbClassifier" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Database classifier.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Database classifier.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="dbType" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Database artifact type.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Database artifact type.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-        
-        <!-- Users - PLACEHOLDER -->       
-    
-        <!-- Drools configuration - PLACEHOLDER
-        <xs:element name="droolsGroupId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Drools group id.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Drools group id</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="droolsArtifactId" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Drools artifact id.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Drools artifact id.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="droolsVersion" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Drools version.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Drools version.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-
-        <xs:element name="droolsClassifier" type="xs:string" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>Drools classifier.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>Drools classifier.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
- -->
- 
         <xs:element name="applicationTitle" type="xs:string" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:appinfo>
@@ -267,28 +132,6 @@
             <xs:documentation>Specifies the type of source control system that should be used with the changeSetUrl</xs:documentation>
           </xs:annotation>
         </xs:element>
-
-        <xs:element name="appSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The URI to this document.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The URI to this document.</xs:documentation>
-          </xs:annotation>
-        </xs:element>  
-
-        <xs:element name="userSchemaLocation" type="xs:anyURI" minOccurs="0" maxOccurs="1">
-          <xs:annotation>
-            <xs:appinfo>
-              <jxb:property>
-                <jxb:javadoc>The URI to the users schema document.</jxb:javadoc>
-              </jxb:property>
-            </xs:appinfo>
-            <xs:documentation>The URI to this document.</xs:documentation>
-          </xs:annotation>
-        </xs:element>  
 
         <xs:element name="workflowServerUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1">
           <xs:annotation>

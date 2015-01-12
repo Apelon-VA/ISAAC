@@ -422,7 +422,7 @@ public class DynamicRefexView implements RefexViewI
 				try
 				{
 					ExtendedAppContext.getDataStore().cancel();
-					//TODO Cancel isn't working properly on annotation-style refexes - works on member style.
+					//TODO (artf231427) Cancel isn't working properly on annotation-style refexes - works on member style.
 					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
 					for (Integer i : componentNids)
 					{
@@ -809,7 +809,7 @@ public class DynamicRefexView implements RefexViewI
 						TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> nestedCol = new TreeTableColumn<>(name);
 						storeTooltip(toolTipStore, nestedCol.getText(), col.values().iterator().next().get(0).getColumnDescription());
 						
-						// TODO: FILTER ID
+						// FILTER ID
 						final ColumnId columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
 
 						final Integer listItem = i;

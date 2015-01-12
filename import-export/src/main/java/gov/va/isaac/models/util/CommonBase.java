@@ -60,7 +60,7 @@ public class CommonBase {
    * @return the edit coordinate
    */
   protected final EditCoordinate getEC() {
-    return WBUtility.getEC();
+    return WBUtility.getEditCoordinate();
   }
 
   /**

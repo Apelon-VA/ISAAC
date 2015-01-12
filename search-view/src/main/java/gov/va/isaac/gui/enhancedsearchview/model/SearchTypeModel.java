@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	//TODO rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
+	//TODO (artf231410) rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
 	//We obviously need a training session for some folks on what HK2 is good at.  
 	
 	protected static EnhancedSearchViewBottomPane bottomPane;
@@ -36,13 +36,36 @@ public abstract class SearchTypeModel {
 	protected final StringProperty description = new SimpleStringProperty();
 	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(WBUtility.getViewCoordinate());
 	protected final BooleanProperty isSearchTypeRunnableProperty = new SimpleBooleanProperty(false);
-	
+	protected final BooleanProperty isSearchTypeSavableProperty = new SimpleBooleanProperty(false);
+
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
 
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
 	abstract public void executeSearch(ResultsType resultsType, String modelMaxResults);
+
+	public boolean isSavableSearch() {
+		return isSavableSearch(null);
+	}
+	public boolean isSavableSearch(String errorDialogTitle) {
+		String validationError = getSearchSavabilityValidationFailureMessage();
+		if (validationError == null) {
+			return true;
+		} else {
+			String details = "Invalid search type model for save (name=" + getName() + "). " + validationError;
+			LOG.info(details);
+
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		}
+	}
+	public String getSearchSavabilityValidationFailureMessage() {
+		return getValidationFailureMessage();
+	}
 
 	abstract public String getValidationFailureMessage();
 	final protected boolean isValidSearch() {

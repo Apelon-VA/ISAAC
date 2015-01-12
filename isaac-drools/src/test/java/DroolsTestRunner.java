@@ -18,18 +18,20 @@
  */
 
 import gov.va.isaac.AppContext;
-import gov.va.issac.drools.helper.ResultsCollector;
-import gov.va.issac.drools.helper.ResultsItem;
-import gov.va.issac.drools.helper.templates.AbstractTemplate;
-import gov.va.issac.drools.helper.templates.DescriptionTemplate;
-import gov.va.issac.drools.manager.DroolsExecutor;
-import gov.va.issac.drools.manager.DroolsExecutorsManager;
-import gov.va.issac.drools.testmodel.DrDescription;
+import gov.va.isaac.drools.helper.ResultsCollector;
+import gov.va.isaac.drools.helper.ResultsItem;
+import gov.va.isaac.drools.helper.templates.AbstractTemplate;
+import gov.va.isaac.drools.helper.templates.DescriptionTemplate;
+import gov.va.isaac.drools.manager.DroolsExecutor;
+import gov.va.isaac.drools.manager.DroolsExecutorsManager;
+import gov.va.isaac.drools.testmodel.DrDescription;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 

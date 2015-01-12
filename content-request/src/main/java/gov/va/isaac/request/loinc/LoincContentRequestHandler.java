@@ -128,7 +128,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     // Reference #
     sb.append(concept.getPrimordialUuid()).append("\t");
 
-    // Local observation code - TODO: ??, do we have anything other than uuid?
+    // Local observation code - TODO (artf231892): ??, do we have anything other than uuid?
     sb.append(concept.getPrimordialUuid()).append("\t");
 
     // Local observation name - concept preferred name
@@ -257,7 +257,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
   @Override
   public ContentRequestTrackingInfo getContentRequestStatus(
     ContentRequestTrackingInfo info) {
-    // TODO:
+    // TODO (artf231893): Add getContentRequestStatus() functionality
     throw new UnsupportedOperationException(
         "PLACEHOLDER for future functionality");
   }

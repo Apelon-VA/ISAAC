@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class TaskModel {
+	// TODO (artf231903): change TaskModel to use ValidBooleanBinding
+
 	private final static Logger LOGGER = LoggerFactory.getLogger(TaskModel.class);
 
 	public enum UserActionOutputResponse {
@@ -93,7 +95,8 @@ public abstract class TaskModel {
 	}
 	
 	private static class ComponentsForOutputVariable {
-		private final String variableName;
+		// TODO (artf231903): change ComponentsForOutputVariable to use ValidBooleanBinding
+//		private final String variableName;
 		private final Label label;
 		private Node inputNode = null;
 		private final StringProperty valueProperty = new SimpleStringProperty();
@@ -101,9 +104,9 @@ public abstract class TaskModel {
 		private Validator validator;
 		private ChangeListener<String> valuePropertyListener;
 		
-		String getVariableName() {
-			return variableName;
-		}
+//		String getVariableName() {
+//			return variableName;
+//		}
 		Label getLabel() {
 			return label;
 		}
@@ -119,7 +122,7 @@ public abstract class TaskModel {
 		BooleanProperty getStatusProperty() {
 			return statusProperty;
 		}
-		Validator getValidator() { return validator; }
+//		Validator getValidator() { return validator; }
 		void setValidator(Validator v) {
 			if (valuePropertyListener != null) {
 				valueProperty.removeListener(valuePropertyListener);
@@ -144,11 +147,11 @@ public abstract class TaskModel {
 		}
 		private ComponentsForOutputVariable(String variableName, Label label, Node inputNode, Validator validator) {
 			super();
-			this.variableName = variableName;
+//			this.variableName = variableName;
 			this.label = label;
 			this.inputNode = inputNode;
 			this.validator = validator;
-			
+
 			// Add default validator
 			if (validator == null) {
 				setValidator(new Validator() {
@@ -211,7 +214,7 @@ public abstract class TaskModel {
 	/**
 	 * 
 	 */
-	protected TaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
+	private TaskModel(LocalTask inputTask, ComboBox<UserActionOutputResponse> userActionOutputResponseComboBox) {
 		this.task = inputTask;
 		this.userActionOutputResponseComboBox = userActionOutputResponseComboBox;
 
@@ -232,6 +235,8 @@ public abstract class TaskModel {
 		
 		for (Enum<?> en : enumValues) {
 			addOutputVariable(en.name());
+			
+			initializeOutputVariableInputNode(en.name());
 		}
 	}
 
@@ -409,4 +414,15 @@ public abstract class TaskModel {
 	 * 
 	 */
 	protected abstract Node getOrCreateOutputVariableInputNode(String variableName);
+
+	/**
+	 * @param variableName
+	 * 
+	 * Initialize the input control value.
+	 * 
+	 * TODO Note that this method, in order to trigger appropriate change listeners,
+	 * should first set the control to some value other than its initial value then immediately set it
+	 * to its initial value.  This is a hack that should be addressed.
+	 */
+	protected abstract void initializeOutputVariableInputNode(String variableName);
 }

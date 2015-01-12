@@ -22,7 +22,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * Common images for the taxonomy viewer.
+ * Common images for ISAAC
  *
  * @author kec
  * @author Dan Armbrust
@@ -41,7 +41,7 @@ public enum Images {
     TAXONOMY_OPEN(setupImage("/icons/fugue/16x16/icons-shadowless/plus-small.png")), 
     TAXONOMY_CLOSE(setupImage("/icons/fugue/16x16/icons-shadowless/minus-small.png")),
     TAXONOMY_SEARCH_RESULT(setupImage("/icons/fugue/16x16/icons-shadowless/application-search-result-hand.png")),
-    TAXONOMY_SEARCH_RESULT_ANCESTOR(setupImage("/icons/fugue/16x16/icons-shadowless/search-result-ancestor.png")),
+    TAXONOMY_SEARCH_RESULT_ANCESTOR(setupImage("/icons/fugue/16x16/icons-shadowless/search-result-ancestor-transparent.png")),
     
     //Other GUI Icons
     LEGO_ADD(setupImage("/icons/silk/16x16/brick_add.png")),
@@ -84,7 +84,14 @@ public enum Images {
     LOCK(setupImage("/icons/misc/16x16/lock.png")),
     KEYS(setupImage("/icons/misc/48x48/login.png")),
     SYNC_GREEN(setupImage("/icons/silk/16x16/arrow_refresh.png")),
-    SYNC_BLUE(setupImage("/icons/silk/16x16/arrow_refresh_blue.png"));
+    SYNC_BLUE(setupImage("/icons/silk/16x16/arrow_refresh_blue.png")),
+    
+    //Images from the old WB
+    DISPLAY_FSN(setupImage("/icons/wb-icons/16x16/plain/truck_red.png")),
+    DISPLAY_PREFERRED(setupImage("/icons/wb-icons/16x16/plain/car_compact_green.png")),
+    TAXONOMY_STATED(setupImage("/icons/wb-icons/16x16/plain/graph_edge.png")),
+    TAXONOMY_INFERRED(setupImage("/icons/wb-icons/16x16/plain/chrystal_ball.png")),
+    TAXONOMY_INFERRED_THEN_STATED(setupImage("/icons/wb-icons/16x16/plain/text_sum.png"));
 
     private final Image image;
 

@@ -103,7 +103,7 @@ public class DynamicRefexListViewController
 		IDLE, FILTER_UPDATE_PROGRESS, FULL_READ_IN_PROGRESS, DO_FILTER_READ, DO_FULL_READ
 	};
 
-	//TODO this needs some sort of hook to refresh the list when a new one is defined
+	//TODO (artf231423) this needs some sort of hook to refresh the list when a new one is defined
 	
 	private ConceptNode conceptNode;
 	private volatile boolean disableRead = true;

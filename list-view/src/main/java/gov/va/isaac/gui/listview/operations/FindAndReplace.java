@@ -273,7 +273,7 @@ public class FindAndReplace extends Operation
 						}
 					}
 				} catch (IOException | ContradictionException e) {
-					// TODO Auto-generated catch block
+					// TODO (artf231875) Auto-generated catch block
 					e.printStackTrace();
 				}
 				
@@ -281,7 +281,7 @@ public class FindAndReplace extends Operation
 			}
 
 			private DescriptionType getDescType(ConceptVersionBI con, DescriptionVersionBI<?> desc) throws IOException, ContradictionException {
-				// TODO Auto-generated method stub
+				// TODO (artf231875) Auto-generated method stub
 				if (con.getFullySpecifiedDescription().getNid() == desc.getNid()) {
 					return DescriptionType.FSN;
 				} else if ( con.getPreferredDescription().getNid() == desc.getNid()) {

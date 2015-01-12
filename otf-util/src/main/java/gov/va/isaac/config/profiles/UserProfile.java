@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,10 +62,10 @@ public class UserProfile
 	private UUID conceptUUID;
 
 	@XmlElement 
-	private StatedInferredOptions statedInferredPolicy = StatedInferredOptions.INFERRED_THEN_STATED;
+	private StatedInferredOptions statedInferredPolicy = UserProfileDefaults.getDefaultStatedInferredPolicy();
 	
 	@XmlElement 
-	private boolean displayFSN = true;
+	private boolean displayFSN = UserProfileDefaults.getDefaultDisplayFSN();
 	
 	@XmlElement 
 	private String workflowUsername = null;
@@ -81,10 +82,35 @@ public class UserProfile
 	private String syncPasswordEncrypted = null;
 	
 	@XmlElement
-	private boolean launchWorkflowForEachCommit = true;
+	private boolean launchWorkflowForEachCommit = UserProfileDefaults.getDefaultLaunchWorkflowForEachCommit();
 	
 	@XmlElement
-	private boolean runDroolsBeforeEachCommit = true;
+	private boolean runDroolsBeforeEachCommit = UserProfileDefaults.getDefaultRunDroolsBeforeEachCommit();
+	
+	@XmlElement 
+	private String workflowServerDeploymentId = null;
+
+	@XmlElement 
+	private UUID viewCoordinatePath = null;
+	
+	@XmlElement 
+	private UUID editCoordinatePath = null;
+
+	@XmlElement 
+	private UUID workflowPromotionPath = null;
+	
+	@XmlElement
+	public String workflowServerUrl = null;
+
+	@XmlElement
+	public String changeSetUrl = null;
+	
+	@XmlElement
+	public String releaseVersion = null;
+
+	@XmlElement
+	public String extensionNamespace = null;
+	
 	/*
 	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
 	 */
@@ -314,7 +340,6 @@ public class UserProfile
 		//TODO implement role checking - probably store these on the user concept in a refex?
 		return true;
 	}
-	
 
 	/**
 	 * @return the launchWorkflowForEachCommit
@@ -331,7 +356,7 @@ public class UserProfile
 	{
 		this.launchWorkflowForEachCommit = launchWorkflowForEachCommit;
 	}
-	
+
 	/**
 	 * @return the runDroolsBeforeEachCommit
 	 */
@@ -348,6 +373,159 @@ public class UserProfile
 		this.runDroolsBeforeEachCommit = runDroolsBeforeEachCommit;
 	}
 
+	/**
+	 * @return workflowServerDeploymentId
+	 */
+	public String getWorkflowServerDeploymentId()
+	{
+		if (StringUtils.isBlank(workflowServerDeploymentId))
+		{
+			return UserProfileDefaults.getDefaultWorkflowServerDeploymentId();
+		}
+		return workflowServerDeploymentId;
+	}
+	/**
+	 * @param workflowServerDeploymentId
+	 */
+	public void setWorkflowServerDeploymentId(String workflowServerDeploymentId)
+	{
+		this.workflowServerDeploymentId = workflowServerDeploymentId;
+	}
+
+	/**
+	 * @return viewCoordinatePath
+	 */
+	public UUID getViewCoordinatePath()
+	{
+		if (viewCoordinatePath == null)
+		{
+			return UserProfileDefaults.getDefaultViewCoordinatePath();
+		}
+		return viewCoordinatePath;
+	}
+	/**
+	 * @param viewCoordinatePath
+	 */
+	public void setViewCoordinatePath(UUID viewCoordinatePath)
+	{
+		this.viewCoordinatePath = viewCoordinatePath;
+	}
+
+	/**
+	 * @return editCoordinatePath
+	 */
+	public UUID getEditCoordinatePath()
+	{
+		if (editCoordinatePath == null)
+		{
+			return UserProfileDefaults.getDefaultEditCoordinatePath();
+		}
+		return editCoordinatePath;
+	}
+	/**
+	 * @param editCoordinatePath
+	 */
+	public void setEditCoordinatePath(UUID editCoordinatePath)
+	{
+		this.editCoordinatePath = editCoordinatePath;
+	}
+
+	/**
+	 * @return workflowPromotionPath
+	 */
+	public UUID getWorkflowPromotionPath()
+	{
+		if (workflowPromotionPath == null)
+		{
+			return UserProfileDefaults.getDefaultWorkflowPromotionPath();
+		}
+		return workflowPromotionPath;
+	}
+	/**
+	 * @param workflowPromotionPath
+	 */
+	public void setWorkflowPromotionPath(UUID workflowPromotionPath)
+	{
+		this.workflowPromotionPath = workflowPromotionPath;
+	}
+	
+	/**
+	 * @return workflowServerUrl
+	 */
+	public String getWorkflowServerUrl()
+	{
+		if (StringUtils.isBlank(workflowServerUrl))
+		{
+			return UserProfileDefaults.getDefaultWorkflowServerUrl();
+		}
+		return workflowServerUrl;
+	}
+	/**
+	 * @param workflowServerUrl
+	 */
+	public void setWorkflowServerUrl(String workflowServerUrl)
+	{
+		this.workflowServerUrl = workflowServerUrl;
+	}
+
+	/**
+	 * @return changeSetUrl
+	 */
+	public String getChangeSetUrl()
+	{
+		if (StringUtils.isBlank(changeSetUrl))
+		{
+			return UserProfileDefaults.getDefaultChangeSetUrl();
+		}
+		return changeSetUrl;
+	}
+	/**
+	 * @param changeSetUrl
+	 */
+	public void setChangeSetUrl(String changeSetUrl)
+	{
+		this.changeSetUrl = changeSetUrl;
+	}
+
+	/**
+	 * @return releaseVersion
+	 */
+	public String getReleaseVersion()
+	{
+		if (StringUtils.isBlank(releaseVersion))
+		{
+			return UserProfileDefaults.getDefaultReleaseVersion();
+		}
+		return releaseVersion;
+	}
+	/**
+	 * @param releaseVersion
+	 */
+	public void setReleaseVersion(String releaseVersion)
+	{
+		this.releaseVersion = releaseVersion;
+	}
+
+	/**
+	 * @return extensionNamespace
+	 */
+	public String getExtensionNamespace()
+	{
+		if (StringUtils.isBlank(extensionNamespace))
+		{
+			return UserProfileDefaults.getDefaultExtensionNamespace();
+		}
+		return extensionNamespace;
+	}
+	/**
+	 * @param extensionNamespace
+	 */
+	public void setExtensionNamespace(String extensionNamespace)
+	{
+		this.extensionNamespace = extensionNamespace;
+	}
+
+	// Persistence methods
 	protected void store(File fileToWrite) throws IOException
 	{
 		try
@@ -398,7 +576,15 @@ public class UserProfile
 		clone.conceptUUID = this.conceptUUID;
 		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
 		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
-		
+		clone.workflowServerDeploymentId = this.workflowServerDeploymentId;
+		clone.viewCoordinatePath = this.viewCoordinatePath;
+		clone.editCoordinatePath = this.editCoordinatePath;
+		clone.workflowPromotionPath = this.workflowPromotionPath;
+		clone.workflowServerUrl = this.workflowServerUrl;
+		clone.changeSetUrl = this.changeSetUrl;
+		clone.releaseVersion = this.releaseVersion;
+		clone.extensionNamespace = this.extensionNamespace;
+
 		return clone;
 	}
 }

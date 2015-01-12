@@ -31,7 +31,6 @@ import gov.va.legoEdit.model.schemaModel.Measurement;
 import gov.va.legoEdit.model.schemaModel.Relation;
 import gov.va.legoEdit.model.schemaModel.RelationGroup;
 import gov.va.legoEdit.model.schemaModel.Type;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -92,15 +91,7 @@ public class LegoWBUtility
 	{
 		if (snomedIdTypeNid == null)
 		{
-			try
-			{
-				snomedIdTypeNid = ExtendedAppContext.getDataStore().getNidForUuids(snomedIdType);
-			}
-			catch (IOException e)
-			{
-				logger.error("Couldn't find nid for snomed id UUID", e);
-				snomedIdTypeNid = -1;
-			}
+			snomedIdTypeNid = ExtendedAppContext.getDataStore().getNidForUuids(snomedIdType);
 		}
 		return snomedIdTypeNid;
 	}

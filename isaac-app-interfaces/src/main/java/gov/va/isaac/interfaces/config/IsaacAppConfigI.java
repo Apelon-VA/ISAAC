@@ -69,14 +69,14 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getIsaacVersion();
-
+  
   /**
-   * Code base for the PA project.
+   * The version of the entire ISAAC assembly.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getScmConnection();
+  public String getVersion();
 
   /**
    * Browsable URL for PA project code.
@@ -151,20 +151,38 @@ public interface IsaacAppConfigI {
   public String getPreviousReleaseVersion();
 
   /**
-   * Release version.
+   * The Default Release version.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getReleaseVersion();
+  public String getDefaultReleaseVersion();
+  
+  /**
+   * The Current Release version, which may differ from {@link #getDefaultReleaseVersion()}
+   * if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentReleaseVersion();
 
   /**
-   * Extension namespace.
+   * get Default Extension namespace.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getExtensionNamespace();
+  public String getDefaultExtensionNamespace();
+  
+  /**
+   * get Current Extension namespace, which may differ from {@link #getDefaultExtensionNamespace()}
+   * if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentExtensionNamespace();
 
   /**
    * Module id.
@@ -172,30 +190,38 @@ public interface IsaacAppConfigI {
    * @return possible object is {@link String }
    * 
    */
+  //TODO figure out what this is supposed to be used for... is it supposed to be a UUID?  Brian added it, 
+  //but never used it, never populated it with something reasonable.
   public String getModuleId();
 
   /**
-   * The SVN or GIT URL that will be used to synchronize user profiles and
-   * changesets for this bundle.
+   * The default SVN or GIT URL that will be used to synchronize user profiles and
+   * changesets for this bundle.  With SSH urls, such as "ssh://someuser@csfe.aceworkspace.net..." 
+   * the contents between 'ssh://' and '@' should be replaced with the currently logged in user's
+   * syncUserName - as specified in that users profile before using this value.  
+   * 
+   * This may may differ from {@link #getDefaultChangeSetUrl()} if the user has changed the value.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getChangeSetUrl();
-
-  /**
-   * The SVN or GIT URL that will be used to synchronize user profiles and
-   * changesets for this bundle.
-   * 
-   * @return the URL
-   * 
-   */
-  public URL getChangeSetUrlAsURL();
+  public String getDefaultChangeSetUrl();
   
   /**
-   * The SVN or GIT URL that will be used to synchronize user profiles and changesets for this bundle.  With SSH urls, such as
-   * "ssh://someuser@csfe.aceworkspace.net..." the contents between 'ssh://' and '@' should be replaced with the currently logged in user's
-   * syncUserName - as specified in that users profile before using this value.
+   * The current SVN or GIT URL that will be used to synchronize user profiles and
+   * changesets for this bundle.  With SSH urls, such as "ssh://someuser@csfe.aceworkspace.net..." 
+   * the contents between 'ssh://' and '@' should be replaced with the currently logged in user's
+   * syncUserName - as specified in that users profile before using this value.  
+   * 
+   * This may may differ from {@link #getDefaultChangeSetUrl()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentChangeSetUrl();
+
+  /**
+   * The type of sync service to use.  Currently, returns either SVN or GIT.W
    * @return the change set url type name
    */
   public String getChangeSetUrlTypeName();
@@ -207,6 +233,16 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getDefaultEditPathName();
+  
+  /**
+   * Current edit path name.
+   * 
+   * This may differ from {@link #getDefaultEditPathName()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentEditPathName();
 
   /**
    * Default edit path uuid.
@@ -215,6 +251,16 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getDefaultEditPathUuid();
+  
+  /**
+   * Current edit path uuid.
+   * 
+   * This may differ from {@link #getDefaultEditPathUuid()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentEditPathUuid();
 
   /**
    * Default view path name.
@@ -223,6 +269,16 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getDefaultViewPathName();
+  
+  /**
+   * Current view path name.
+   * 
+   * This may differ from {@link #getDefaultViewPathName()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentViewPathName();
 
   /**
    * Default view path uuid.
@@ -231,71 +287,126 @@ public interface IsaacAppConfigI {
    * 
    */
   public String getDefaultViewPathUuid();
-
+  
   /**
-   * The URI to the users.xml schema document.
+   * Current view path uuid.
+   * 
+   * This may differ from {@link #getDefaultViewPathUuid()} if the user has changed the value.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getUserSchemaLocation();
+  public String getCurrentViewPathUuid();
 
   /**
-   * The URI to the app.xml schema document.
+   * The default full URL for the REST API of the KIE Workflow server.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getAppSchemaLocation();
-
+  public String getDefaultWorkflowServerUrl();
+  
   /**
-   * The full URL for the REST API of the KIE Workflow server.
+   * The current full URL for the REST API of the KIE Workflow server.
+   * 
+   * This may differ from {@link #getDefaultWorkflowServerUrl()} if the user has changed the value.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getWorkflowServerUrl();
+  public String getCurrentWorkflowServerUrl();
 
   /**
-   * The full URL for the REST API of the KIE Workflow server.
+   * The default full URL for the REST API of the KIE Workflow server.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public URL getWorkflowServerUrlAsURL();
+  public URL getDefaultWorkflowServerUrlAsURL();
+  
+  /**
+   * The current full URL for the REST API of the KIE Workflow server.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public URL getCurrentWorkflowServerUrlAsURL();
 
   /**
-   * The deployment ID for the KIE workflow server.
+   * The default deployment ID for the KIE workflow server.
+   * 
+   * This may differ from {@link #getCurrentWorkflowServerUrlAsURL()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   */
+  public String getDefaultWorkflowServerDeploymentId();
+  
+  /**
+   * The default deployment ID for the KIE workflow server.
    *
    * @return possible object is {@link String }
    */
-  public String getWorkflowServerDeploymentId();
+  public String getCurrentWorkflowServerDeploymentId();
 
   /**
-   * The name for the Path to which content published via Workflow will
+   * The default name for the Path to which content published via Workflow will
+   * automatically be promoted to.
+   * 
+   * This may differ from {@link #getCurrentWorkflowServerDeploymentId()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getDefaultWorkflowPromotionPathName();
+  
+  /**
+   * The default name for the Path to which content published via Workflow will
    * automatically be promoted to.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getWorkflowPromotionPathName();
+  public String getCurrentWorkflowPromotionPathName();
 
   /**
-   * The UUID for the Path to which content published via Workflow will
+   * The default UUID for the Path to which content published via Workflow will
    * automatically be promoted to.
+   * 
+   * This may differ from {@link #getCurrentWorkflowPromotionPathName()} if the user has changed the value.
    * 
    * @return possible object is {@link String }
    * 
    */
-  public String getWorkflowPromotionPathUuid();
+  public String getDefaultWorkflowPromotionPathUuid();
+  
+  /**
+   * The current UUID for the Path to which content published via Workflow will
+   * automatically be promoted to.
+   * 
+   * This may differ from {@link #getDefaultWorkflowPromotionPathUuid()} if the user has changed the value.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getCurrentWorkflowPromotionPathUuid();
 
   /**
-   * The UUID for the Path to which content published via Workflow will
+   * The default UUID for the Path to which content published via Workflow will
    * automatically be promoted to.
    * 
    * @return the UUID
    */
-  public UUID getWorkflowPromotionPathUuidAsUUID();
+  public UUID getDefaultWorkflowPromotionPathUuidAsUUID();
+  
+  /**
+   * The current UUID for the Path to which content published via Workflow will
+   * automatically be promoted to.
+   * 
+   * This may differ from {@link #getDefaultWorkflowPromotionPathUuidAsUUID()} if the user has changed the value.
+   * 
+   * @return the UUID
+   */
+  public UUID getCurrentWorkflowPromotionPathUuidAsUUID();
 
   /**
    * Returns the url for string.

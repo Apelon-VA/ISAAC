@@ -64,7 +64,7 @@ public class RoleRetire extends Operation
 		FxUtils.preventColCollapse(root_, 0);
 		GridPane.setHgrow(roleValue_.getNode(), Priority.ALWAYS);
 		
-		//TODO are there restrictions on concepts that can be roles?
+		//TODO (artf231870) are there restrictions on concepts that can be roles?
 		allValid_ = new BooleanBinding()
 		{
 			{
