@@ -96,7 +96,7 @@
 <a class="jxr_linenumber" name="86" href="#86">86</a>  	@Override
 <a class="jxr_linenumber" name="87" href="#87">87</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setConcept(UUID conceptUUID)
 <a class="jxr_linenumber" name="88" href="#88">88</a>  	{
-<a class="jxr_linenumber" name="89" href="#89">89</a>  		<em class="jxr_comment">// TODO this needs to be rewritten so that the dialog displays immediately</em>
+<a class="jxr_linenumber" name="89" href="#89">89</a>  		<em class="jxr_comment">// TODO (artf231883) this needs to be rewritten so that the dialog displays immediately</em>
 <a class="jxr_linenumber" name="90" href="#90">90</a>  		<em class="jxr_comment">//but with a progress indicator while we wait for the concept to be found..</em>
 <a class="jxr_linenumber" name="91" href="#91">91</a>  		Task&lt;ConceptChronicleDdo&gt; task = <strong class="jxr_keyword">new</strong> Task&lt;ConceptChronicleDdo&gt;()
 <a class="jxr_linenumber" name="92" href="#92">92</a>  		{
@@ -143,8 +143,8 @@
 <a class="jxr_linenumber" name="133" href="#133">133</a> 		Utility.execute(task);
 <a class="jxr_linenumber" name="134" href="#134">134</a> 	}
 <a class="jxr_linenumber" name="135" href="#135">135</a> 
-<a class="jxr_linenumber" name="136" href="#136">136</a> 	<em class="jxr_comment">//TODO concept-view-tree is not stopping background threaded operations when this window is closed....</em>
-<a class="jxr_linenumber" name="137" href="#137">137</a> 	<em class="jxr_comment">//TODO is also seems to fall into infinite loops at times...</em>
+<a class="jxr_linenumber" name="136" href="#136">136</a> 	<em class="jxr_comment">//TODO (artf231884) concept-view-tree is not stopping background threaded operations when this window is closed....</em>
+<a class="jxr_linenumber" name="137" href="#137">137</a> 	<em class="jxr_comment">//TODO (artf231885) concept-view-tree also seems to fall into infinite loops at times...</em>
 <a class="jxr_linenumber" name="138" href="#138">138</a> 	
 <a class="jxr_linenumber" name="139" href="#139">139</a> 	<em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="140" href="#140">140</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptViewI#setConcept(int)</em>
@@ -152,7 +152,7 @@
 <a class="jxr_linenumber" name="142" href="#142">142</a> 	@Override
 <a class="jxr_linenumber" name="143" href="#143">143</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setConcept(<strong class="jxr_keyword">int</strong> conceptNid)
 <a class="jxr_linenumber" name="144" href="#144">144</a> 	{
-<a class="jxr_linenumber" name="145" href="#145">145</a> 		<em class="jxr_comment">//TODO fix threading issues on this too...</em>
+<a class="jxr_linenumber" name="145" href="#145">145</a> 		<em class="jxr_comment">//TODO (artf231886) fix threading issues on this too...</em>
 <a class="jxr_linenumber" name="146" href="#146">146</a> 		<strong class="jxr_keyword">try</strong>
 <a class="jxr_linenumber" name="147" href="#147">147</a> 		{
 <a class="jxr_linenumber" name="148" href="#148">148</a> 			ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);

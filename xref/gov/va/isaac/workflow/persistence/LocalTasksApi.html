@@ -96,7 +96,7 @@
 <a class="jxr_linenumber" name="86" href="#86">86</a>      
 <a class="jxr_linenumber" name="87" href="#87">87</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> changeUserName(String oldWFUsername, String newWFUsername)
 <a class="jxr_linenumber" name="88" href="#88">88</a>      {
-<a class="jxr_linenumber" name="89" href="#89">89</a>          <em class="jxr_comment">//TODO DAN THIS MUST BE IMPLEMENTED before changing a WF username will work properly!!!!!</em>
+<a class="jxr_linenumber" name="89" href="#89">89</a>          <em class="jxr_comment">//TODO (artf231902) DAN THIS MUST BE IMPLEMENTED before changing a WF username will work properly!!!!!</em>
 <a class="jxr_linenumber" name="90" href="#90">90</a>          log.error(<span class="jxr_string">"The change username functionality is not yet complete - WF state is now corrupt!!!!!!!"</span>);
 <a class="jxr_linenumber" name="91" href="#91">91</a>      }
 <a class="jxr_linenumber" name="92" href="#92">92</a>      
@@ -270,7 +270,7 @@
 <a class="jxr_linenumber" name="260" href="#260">260</a>         <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="261" href="#261">261</a>             WBUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
 <a class="jxr_linenumber" name="262" href="#262">262</a>         } <strong class="jxr_keyword">catch</strong> (Exception e) {
-<a class="jxr_linenumber" name="263" href="#263">263</a>             log.error(<span class="jxr_string">"Error promoting concept to promption path for task: "</span> + task, e);
+<a class="jxr_linenumber" name="263" href="#263">263</a>             log.error(<span class="jxr_string">"Error promoting concept to promotion path for task: "</span> + task, e);
 <a class="jxr_linenumber" name="264" href="#264">264</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/workflow/exceptions/DatastoreException.html">DatastoreException</a>(<span class="jxr_string">"Unexpected error adding a new version of the concept onto the promotion path for task "</span> + task, e);
 <a class="jxr_linenumber" name="265" href="#265">265</a>         }
 <a class="jxr_linenumber" name="266" href="#266">266</a>     }

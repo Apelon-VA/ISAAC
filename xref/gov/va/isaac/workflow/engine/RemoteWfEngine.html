@@ -79,8 +79,8 @@
 <a class="jxr_linenumber" name="69" href="#69">69</a>  		}
 <a class="jxr_linenumber" name="70" href="#70">70</a>  		<strong class="jxr_keyword">else</strong>
 <a class="jxr_linenumber" name="71" href="#71">71</a>  		{
-<a class="jxr_linenumber" name="72" href="#72">72</a>  			<strong class="jxr_keyword">final</strong> String deploymentId = AppContext.getAppConfiguration().getWorkflowServerDeploymentId();
-<a class="jxr_linenumber" name="73" href="#73">73</a>  			<strong class="jxr_keyword">final</strong> URL workflowServerUrlAsURL = AppContext.getAppConfiguration().getWorkflowServerUrlAsURL();
+<a class="jxr_linenumber" name="72" href="#72">72</a>  			<strong class="jxr_keyword">final</strong> String deploymentId = AppContext.getAppConfiguration().getCurrentWorkflowServerDeploymentId();
+<a class="jxr_linenumber" name="73" href="#73">73</a>  			<strong class="jxr_keyword">final</strong> URL workflowServerUrlAsURL = AppContext.getAppConfiguration().getCurrentWorkflowServerUrlAsURL();
 <a class="jxr_linenumber" name="74" href="#74">74</a>  			<strong class="jxr_keyword">final</strong> String workflowUserName = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
 <a class="jxr_linenumber" name="75" href="#75">75</a>  			<strong class="jxr_keyword">final</strong> String workflowPassword = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowPassword();
 <a class="jxr_linenumber" name="76" href="#76">76</a>  			<strong class="jxr_keyword">try</strong>

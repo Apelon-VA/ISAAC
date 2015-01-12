@@ -204,77 +204,76 @@
 <a class="jxr_linenumber" name="194" href="#194">194</a> 	}
 <a class="jxr_linenumber" name="195" href="#195">195</a> 
 <a class="jxr_linenumber" name="196" href="#196">196</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> initializeButtons(Stage stage) {
-<a class="jxr_linenumber" name="197" href="#197">197</a> 		<em class="jxr_comment">// TODO: either fix or remove exportSearchResultsToWorkflow</em>
-<a class="jxr_linenumber" name="198" href="#198">198</a> 		resultsToListButton.setOnAction((e) -&gt; resultsToList());
-<a class="jxr_linenumber" name="199" href="#199">199</a> 		resultsToReportButton.setOnAction((e) -&gt; ResultsToReport.resultsToReport());
-<a class="jxr_linenumber" name="200" href="#200">200</a> 		resultsToWorkflowButton.setOnAction((e) -&gt; ResultsToWorkflow.multipleResultsToWorkflow());
-<a class="jxr_linenumber" name="201" href="#201">201</a> 		resultsToTaxonomyButton.setOnAction((e) -&gt; ResultsToTaxonomy.resultsToSearchTaxonomy());
-<a class="jxr_linenumber" name="202" href="#202">202</a> 		resultsToSememeButton.setOnAction((e) -&gt; createSememe(stage));
-<a class="jxr_linenumber" name="203" href="#203">203</a> 		resultsToDroolsButton.setOnAction((e) -&gt; ResultsToDrools.createDroolsOnClipboard(searchModel));
-<a class="jxr_linenumber" name="204" href="#204">204</a> 		
-<a class="jxr_linenumber" name="205" href="#205">205</a> 		resultsToListButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
-<a class="jxr_linenumber" name="206" href="#206">206</a> 		resultsToReportButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
-<a class="jxr_linenumber" name="207" href="#207">207</a> 		resultsToWorkflowButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
-<a class="jxr_linenumber" name="208" href="#208">208</a> 		resultsToTaxonomyButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
-<a class="jxr_linenumber" name="209" href="#209">209</a> 		resultsToSememeButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
-<a class="jxr_linenumber" name="210" href="#210">210</a> 		resultsToDroolsButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
-<a class="jxr_linenumber" name="211" href="#211">211</a> 
-<a class="jxr_linenumber" name="212" href="#212">212</a> 		resultsToListButton.setMinWidth(Control.USE_PREF_SIZE);
-<a class="jxr_linenumber" name="213" href="#213">213</a> 		resultsToReportButton.setMinWidth(Control.USE_PREF_SIZE);
-<a class="jxr_linenumber" name="214" href="#214">214</a> 		resultsToWorkflowButton.setMinWidth(Control.USE_PREF_SIZE);
-<a class="jxr_linenumber" name="215" href="#215">215</a> 		resultsToTaxonomyButton.setMinWidth(Control.USE_PREF_SIZE);
-<a class="jxr_linenumber" name="216" href="#216">216</a> 		resultsToSememeButton.setMinWidth(Control.USE_PREF_SIZE);
-<a class="jxr_linenumber" name="217" href="#217">217</a> 		resultsToDroolsButton.setMinWidth(Control.USE_PREF_SIZE);
-<a class="jxr_linenumber" name="218" href="#218">218</a> 		disableButtons(<strong class="jxr_keyword">true</strong>);	
-<a class="jxr_linenumber" name="219" href="#219">219</a> }
+<a class="jxr_linenumber" name="197" href="#197">197</a> 		resultsToListButton.setOnAction((e) -&gt; resultsToList());
+<a class="jxr_linenumber" name="198" href="#198">198</a> 		resultsToReportButton.setOnAction((e) -&gt; ResultsToReport.resultsToReport());
+<a class="jxr_linenumber" name="199" href="#199">199</a> 		resultsToWorkflowButton.setOnAction((e) -&gt; ResultsToWorkflow.multipleResultsToWorkflow());
+<a class="jxr_linenumber" name="200" href="#200">200</a> 		resultsToTaxonomyButton.setOnAction((e) -&gt; ResultsToTaxonomy.resultsToSearchTaxonomy());
+<a class="jxr_linenumber" name="201" href="#201">201</a> 		resultsToSememeButton.setOnAction((e) -&gt; createSememe(stage));
+<a class="jxr_linenumber" name="202" href="#202">202</a> 		resultsToDroolsButton.setOnAction((e) -&gt; ResultsToDrools.createDroolsOnClipboard(searchModel));
+<a class="jxr_linenumber" name="203" href="#203">203</a> 		
+<a class="jxr_linenumber" name="204" href="#204">204</a> 		resultsToListButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+<a class="jxr_linenumber" name="205" href="#205">205</a> 		resultsToReportButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+<a class="jxr_linenumber" name="206" href="#206">206</a> 		resultsToWorkflowButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+<a class="jxr_linenumber" name="207" href="#207">207</a> 		resultsToTaxonomyButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+<a class="jxr_linenumber" name="208" href="#208">208</a> 		resultsToSememeButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+<a class="jxr_linenumber" name="209" href="#209">209</a> 		resultsToDroolsButton.setPrefWidth(Control.USE_COMPUTED_SIZE);
+<a class="jxr_linenumber" name="210" href="#210">210</a> 
+<a class="jxr_linenumber" name="211" href="#211">211</a> 		resultsToListButton.setMinWidth(Control.USE_PREF_SIZE);
+<a class="jxr_linenumber" name="212" href="#212">212</a> 		resultsToReportButton.setMinWidth(Control.USE_PREF_SIZE);
+<a class="jxr_linenumber" name="213" href="#213">213</a> 		resultsToWorkflowButton.setMinWidth(Control.USE_PREF_SIZE);
+<a class="jxr_linenumber" name="214" href="#214">214</a> 		resultsToTaxonomyButton.setMinWidth(Control.USE_PREF_SIZE);
+<a class="jxr_linenumber" name="215" href="#215">215</a> 		resultsToSememeButton.setMinWidth(Control.USE_PREF_SIZE);
+<a class="jxr_linenumber" name="216" href="#216">216</a> 		resultsToDroolsButton.setMinWidth(Control.USE_PREF_SIZE);
+<a class="jxr_linenumber" name="217" href="#217">217</a> 		disableButtons(<strong class="jxr_keyword">true</strong>);	
+<a class="jxr_linenumber" name="218" href="#218">218</a> }
+<a class="jxr_linenumber" name="219" href="#219">219</a> 
 <a class="jxr_linenumber" name="220" href="#220">220</a> 
-<a class="jxr_linenumber" name="221" href="#221">221</a> 
-<a class="jxr_linenumber" name="222" href="#222">222</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> createSememe(Stage stage) {
-<a class="jxr_linenumber" name="223" href="#223">223</a> 		<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="224" href="#224">224</a> 			String refexName = ResultsToRefset.resultsToRefset(stage, searchModel.getSearchResultsTable().getResults());
-<a class="jxr_linenumber" name="225" href="#225">225</a> 			
-<a class="jxr_linenumber" name="226" href="#226">226</a> 			<strong class="jxr_keyword">if</strong> (refexName != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="227" href="#227">227</a> 				AppContext.getCommonDialogs().showInformationDialog(<span class="jxr_string">"Sememe Successfully Created"</span>, <span class="jxr_string">"Created and populated new Sememe ("</span> + refexName + <span class="jxr_string">") with all values in results table"</span>);
-<a class="jxr_linenumber" name="228" href="#228">228</a> 			}
-<a class="jxr_linenumber" name="229" href="#229">229</a> 		} <strong class="jxr_keyword">catch</strong> (Exception e) {
-<a class="jxr_linenumber" name="230" href="#230">230</a> 			AppContext.getCommonDialogs().showErrorDialog(<span class="jxr_string">"Sememe Creation Failure"</span>, <span class="jxr_string">"Sememe Creation Failure"</span>, <span class="jxr_string">"Failed to create and populate Sememe with values in results table"</span>); 
-<a class="jxr_linenumber" name="231" href="#231">231</a> 		}
-<a class="jxr_linenumber" name="232" href="#232">232</a> 	}
-<a class="jxr_linenumber" name="233" href="#233">233</a> 
-<a class="jxr_linenumber" name="234" href="#234">234</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> resultsToList() {
-<a class="jxr_linenumber" name="235" href="#235">235</a> 		ListBatchViewI lv = AppContext.getService(ListBatchViewI.<strong class="jxr_keyword">class</strong>, SharedServiceNames.DOCKED);
-<a class="jxr_linenumber" name="236" href="#236">236</a> 		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI) lv);
-<a class="jxr_linenumber" name="237" href="#237">237</a> 
-<a class="jxr_linenumber" name="238" href="#238">238</a> 		List&lt;Integer&gt; nids = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
-<a class="jxr_linenumber" name="239" href="#239">239</a> 		<strong class="jxr_keyword">for</strong> (CompositeSearchResult result : searchModel.getSearchResultsTable().getResults().getItems()) {
-<a class="jxr_linenumber" name="240" href="#240">240</a> 			<strong class="jxr_keyword">if</strong> (! nids.contains(result.getContainingConcept().getNid())) {
-<a class="jxr_linenumber" name="241" href="#241">241</a> 				nids.add(result.getContainingConcept().getNid());
-<a class="jxr_linenumber" name="242" href="#242">242</a> 			}
-<a class="jxr_linenumber" name="243" href="#243">243</a> 		}
-<a class="jxr_linenumber" name="244" href="#244">244</a> 
-<a class="jxr_linenumber" name="245" href="#245">245</a> 		lv.addConcepts(nids);
-<a class="jxr_linenumber" name="246" href="#246">246</a> 	}
+<a class="jxr_linenumber" name="221" href="#221">221</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> createSememe(Stage stage) {
+<a class="jxr_linenumber" name="222" href="#222">222</a> 		<strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="223" href="#223">223</a> 			String refexName = ResultsToRefset.resultsToRefset(stage, searchModel.getSearchResultsTable().getResults());
+<a class="jxr_linenumber" name="224" href="#224">224</a> 			
+<a class="jxr_linenumber" name="225" href="#225">225</a> 			<strong class="jxr_keyword">if</strong> (refexName != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="226" href="#226">226</a> 				AppContext.getCommonDialogs().showInformationDialog(<span class="jxr_string">"Sememe Successfully Created"</span>, <span class="jxr_string">"Created and populated new Sememe ("</span> + refexName + <span class="jxr_string">") with all values in results table"</span>);
+<a class="jxr_linenumber" name="227" href="#227">227</a> 			}
+<a class="jxr_linenumber" name="228" href="#228">228</a> 		} <strong class="jxr_keyword">catch</strong> (Exception e) {
+<a class="jxr_linenumber" name="229" href="#229">229</a> 			AppContext.getCommonDialogs().showErrorDialog(<span class="jxr_string">"Sememe Creation Failure"</span>, <span class="jxr_string">"Sememe Creation Failure"</span>, <span class="jxr_string">"Failed to create and populate Sememe with values in results table"</span>); 
+<a class="jxr_linenumber" name="230" href="#230">230</a> 		}
+<a class="jxr_linenumber" name="231" href="#231">231</a> 	}
+<a class="jxr_linenumber" name="232" href="#232">232</a> 
+<a class="jxr_linenumber" name="233" href="#233">233</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> resultsToList() {
+<a class="jxr_linenumber" name="234" href="#234">234</a> 		ListBatchViewI lv = AppContext.getService(ListBatchViewI.<strong class="jxr_keyword">class</strong>, SharedServiceNames.DOCKED);
+<a class="jxr_linenumber" name="235" href="#235">235</a> 		AppContext.getMainApplicationWindow().ensureDockedViewIsVisble((DockedViewI) lv);
+<a class="jxr_linenumber" name="236" href="#236">236</a> 
+<a class="jxr_linenumber" name="237" href="#237">237</a> 		List&lt;Integer&gt; nids = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
+<a class="jxr_linenumber" name="238" href="#238">238</a> 		<strong class="jxr_keyword">for</strong> (CompositeSearchResult result : searchModel.getSearchResultsTable().getResults().getItems()) {
+<a class="jxr_linenumber" name="239" href="#239">239</a> 			<strong class="jxr_keyword">if</strong> (! nids.contains(result.getContainingConcept().getNid())) {
+<a class="jxr_linenumber" name="240" href="#240">240</a> 				nids.add(result.getContainingConcept().getNid());
+<a class="jxr_linenumber" name="241" href="#241">241</a> 			}
+<a class="jxr_linenumber" name="242" href="#242">242</a> 		}
+<a class="jxr_linenumber" name="243" href="#243">243</a> 
+<a class="jxr_linenumber" name="244" href="#244">244</a> 		lv.addConcepts(nids);
+<a class="jxr_linenumber" name="245" href="#245">245</a> 	}
+<a class="jxr_linenumber" name="246" href="#246">246</a> 
 <a class="jxr_linenumber" name="247" href="#247">247</a> 
-<a class="jxr_linenumber" name="248" href="#248">248</a> 
-<a class="jxr_linenumber" name="249" href="#249">249</a> 	<strong class="jxr_keyword">public</strong> GridPane getBottomPaneHBox() {
-<a class="jxr_linenumber" name="250" href="#250">250</a> 		<strong class="jxr_keyword">return</strong> bottomPanelGridPane;
-<a class="jxr_linenumber" name="251" href="#251">251</a> 	}
-<a class="jxr_linenumber" name="252" href="#252">252</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> resetDefaults() {
-<a class="jxr_linenumber" name="253" href="#253">253</a> 
-<a class="jxr_linenumber" name="254" href="#254">254</a> 		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getSearchTypeSelector().getCurrentType(), searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
-<a class="jxr_linenumber" name="255" href="#255">255</a> 	}
-<a class="jxr_linenumber" name="256" href="#256">256</a> 
-<a class="jxr_linenumber" name="257" href="#257">257</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> disableButtons(<strong class="jxr_keyword">boolean</strong> val) {
-<a class="jxr_linenumber" name="258" href="#258">258</a> 		resultsToReportButton.setDisable(val);
-<a class="jxr_linenumber" name="259" href="#259">259</a> 		resultsToListButton.setDisable(val);
-<a class="jxr_linenumber" name="260" href="#260">260</a> 		resultsToWorkflowButton.setDisable(val);
-<a class="jxr_linenumber" name="261" href="#261">261</a> 		resultsToTaxonomyButton.setDisable(val);
-<a class="jxr_linenumber" name="262" href="#262">262</a> 		resultsToSememeButton.setDisable(val);
-<a class="jxr_linenumber" name="263" href="#263">263</a> 		resultsToDroolsButton.setDisable(val);
-<a class="jxr_linenumber" name="264" href="#264">264</a> 	}
-<a class="jxr_linenumber" name="265" href="#265">265</a> 
-<a class="jxr_linenumber" name="266" href="#266">266</a> }
-<a class="jxr_linenumber" name="267" href="#267">267</a> 
+<a class="jxr_linenumber" name="248" href="#248">248</a> 	<strong class="jxr_keyword">public</strong> GridPane getBottomPaneHBox() {
+<a class="jxr_linenumber" name="249" href="#249">249</a> 		<strong class="jxr_keyword">return</strong> bottomPanelGridPane;
+<a class="jxr_linenumber" name="250" href="#250">250</a> 	}
+<a class="jxr_linenumber" name="251" href="#251">251</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> resetDefaults() {
+<a class="jxr_linenumber" name="252" href="#252">252</a> 
+<a class="jxr_linenumber" name="253" href="#253">253</a> 		searchModel.getSearchResultsTable().initializeSearchResultsTable(searchModel.getSearchTypeSelector().getCurrentType(), searchModel.getResultsTypeComboBox().getSelectionModel().getSelectedItem());
+<a class="jxr_linenumber" name="254" href="#254">254</a> 	}
+<a class="jxr_linenumber" name="255" href="#255">255</a> 
+<a class="jxr_linenumber" name="256" href="#256">256</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> disableButtons(<strong class="jxr_keyword">boolean</strong> val) {
+<a class="jxr_linenumber" name="257" href="#257">257</a> 		resultsToReportButton.setDisable(val);
+<a class="jxr_linenumber" name="258" href="#258">258</a> 		resultsToListButton.setDisable(val);
+<a class="jxr_linenumber" name="259" href="#259">259</a> 		resultsToWorkflowButton.setDisable(val);
+<a class="jxr_linenumber" name="260" href="#260">260</a> 		resultsToTaxonomyButton.setDisable(val);
+<a class="jxr_linenumber" name="261" href="#261">261</a> 		resultsToSememeButton.setDisable(val);
+<a class="jxr_linenumber" name="262" href="#262">262</a> 		resultsToDroolsButton.setDisable(val);
+<a class="jxr_linenumber" name="263" href="#263">263</a> 	}
+<a class="jxr_linenumber" name="264" href="#264">264</a> 
+<a class="jxr_linenumber" name="265" href="#265">265</a> }
+<a class="jxr_linenumber" name="266" href="#266">266</a> 
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

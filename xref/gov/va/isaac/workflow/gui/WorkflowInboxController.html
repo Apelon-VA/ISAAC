@@ -136,7 +136,7 @@
 <a class="jxr_linenumber" name="126" href="#126">126</a> 		assert taskTable != <strong class="jxr_keyword">null</strong> : <span class="jxr_string">"fx:id=\&quot;taskTable\&quot; was not injected: check your FXML file 'WorkflowInbox.fxml'."</span>;
 <a class="jxr_linenumber" name="127" href="#127">127</a> 		assert rootBorderPane != <strong class="jxr_keyword">null</strong> : <span class="jxr_string">"fx:id=\&quot;rootBorderPane\&quot; was not injected: check your FXML file 'WorkflowInbox.fxml'."</span>;
 <a class="jxr_linenumber" name="128" href="#128">128</a> 
-<a class="jxr_linenumber" name="129" href="#129">129</a> 		<em class="jxr_comment">//TODO maybe use the preferred name instead of their login name?</em>
+<a class="jxr_linenumber" name="129" href="#129">129</a> 		<em class="jxr_comment">//TODO (artf231896) maybe use the preferred name instead of their login name?</em>
 <a class="jxr_linenumber" name="130" href="#130">130</a> 		userName.setText(ExtendedAppContext.getCurrentlyLoggedInUser());
 <a class="jxr_linenumber" name="131" href="#131">131</a> 
 <a class="jxr_linenumber" name="132" href="#132">132</a> 		taskTable.setTableMenuButtonVisible(<strong class="jxr_keyword">true</strong>);
@@ -274,7 +274,7 @@
 <a class="jxr_linenumber" name="264" href="#264">264</a> 			});
 <a class="jxr_linenumber" name="265" href="#265">265</a> 		});
 <a class="jxr_linenumber" name="266" href="#266">266</a> 
-<a class="jxr_linenumber" name="267" href="#267">267</a> 		<em class="jxr_comment">// TODO: not sure we should be loading content in init(). Maybe move to getView()?</em>
+<a class="jxr_linenumber" name="267" href="#267">267</a> 		<em class="jxr_comment">// TODO (artf231897): not sure we should be loading content in init(). Maybe move to getView()?</em>
 <a class="jxr_linenumber" name="268" href="#268">268</a> 		loadContent();
 <a class="jxr_linenumber" name="269" href="#269">269</a> 	}
 <a class="jxr_linenumber" name="270" href="#270">270</a> 
@@ -366,51 +366,48 @@
 <a class="jxr_linenumber" name="356" href="#356">356</a> 
 <a class="jxr_linenumber" name="357" href="#357">357</a> 									String[] itemArray = items.toArray(<strong class="jxr_keyword">new</strong> String[items.size()]);
 <a class="jxr_linenumber" name="358" href="#358">358</a> 
-<a class="jxr_linenumber" name="359" href="#359">359</a> 									<em class="jxr_comment">// TODO: determine why we are getting here multiple (2 or 3) times for each selection</em>
-<a class="jxr_linenumber" name="360" href="#360">360</a> 									<em class="jxr_comment">//System.out.println("Selected strings: " + Arrays.toString(itemArray));</em>
-<a class="jxr_linenumber" name="361" href="#361">361</a> 
-<a class="jxr_linenumber" name="362" href="#362">362</a> 									<strong class="jxr_keyword">return</strong> itemArray;
-<a class="jxr_linenumber" name="363" href="#363">363</a> 								}
-<a class="jxr_linenumber" name="364" href="#364">364</a> 							};
-<a class="jxr_linenumber" name="365" href="#365">365</a> 							CommonMenusTaskIdProvider taskIdProvider = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/util/CommonMenusTaskIdProvider.html">CommonMenusTaskIdProvider</a>() {
-<a class="jxr_linenumber" name="366" href="#366">366</a> 								@Override
-<a class="jxr_linenumber" name="367" href="#367">367</a> 								<strong class="jxr_keyword">public</strong> Set&lt;Long&gt; getTaskIds() {
-<a class="jxr_linenumber" name="368" href="#368">368</a> 									Set&lt;Long&gt; taskIds = <strong class="jxr_keyword">new</strong> HashSet&lt;Long&gt;();
-<a class="jxr_linenumber" name="369" href="#369">369</a> 									<strong class="jxr_keyword">for</strong> (LocalTask r : (ObservableList&lt;LocalTask&gt;)c.getTableView().getSelectionModel().getSelectedItems()) {
-<a class="jxr_linenumber" name="370" href="#370">370</a> 										taskIds.add(r.getId());
-<a class="jxr_linenumber" name="371" href="#371">371</a> 									}
-<a class="jxr_linenumber" name="372" href="#372">372</a> 
-<a class="jxr_linenumber" name="373" href="#373">373</a> 									<strong class="jxr_keyword">return</strong> taskIds;
-<a class="jxr_linenumber" name="374" href="#374">374</a> 								}
-<a class="jxr_linenumber" name="375" href="#375">375</a> 							};
+<a class="jxr_linenumber" name="359" href="#359">359</a> 									<strong class="jxr_keyword">return</strong> itemArray;
+<a class="jxr_linenumber" name="360" href="#360">360</a> 								}
+<a class="jxr_linenumber" name="361" href="#361">361</a> 							};
+<a class="jxr_linenumber" name="362" href="#362">362</a> 							CommonMenusTaskIdProvider taskIdProvider = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/util/CommonMenusTaskIdProvider.html">CommonMenusTaskIdProvider</a>() {
+<a class="jxr_linenumber" name="363" href="#363">363</a> 								@Override
+<a class="jxr_linenumber" name="364" href="#364">364</a> 								<strong class="jxr_keyword">public</strong> Set&lt;Long&gt; getTaskIds() {
+<a class="jxr_linenumber" name="365" href="#365">365</a> 									Set&lt;Long&gt; taskIds = <strong class="jxr_keyword">new</strong> HashSet&lt;Long&gt;();
+<a class="jxr_linenumber" name="366" href="#366">366</a> 									<strong class="jxr_keyword">for</strong> (LocalTask r : (ObservableList&lt;LocalTask&gt;)c.getTableView().getSelectionModel().getSelectedItems()) {
+<a class="jxr_linenumber" name="367" href="#367">367</a> 										taskIds.add(r.getId());
+<a class="jxr_linenumber" name="368" href="#368">368</a> 									}
+<a class="jxr_linenumber" name="369" href="#369">369</a> 
+<a class="jxr_linenumber" name="370" href="#370">370</a> 									<strong class="jxr_keyword">return</strong> taskIds;
+<a class="jxr_linenumber" name="371" href="#371">371</a> 								}
+<a class="jxr_linenumber" name="372" href="#372">372</a> 							};
+<a class="jxr_linenumber" name="373" href="#373">373</a> 
+<a class="jxr_linenumber" name="374" href="#374">374</a> 							ContextMenu cm = <strong class="jxr_keyword">new</strong> ContextMenu();
+<a class="jxr_linenumber" name="375" href="#375">375</a> 							CommonMenus.addCommonMenus(cm, dp, taskIdProvider);
 <a class="jxr_linenumber" name="376" href="#376">376</a> 
-<a class="jxr_linenumber" name="377" href="#377">377</a> 							ContextMenu cm = <strong class="jxr_keyword">new</strong> ContextMenu();
-<a class="jxr_linenumber" name="378" href="#378">378</a> 							CommonMenus.addCommonMenus(cm, dp, taskIdProvider);
-<a class="jxr_linenumber" name="379" href="#379">379</a> 
-<a class="jxr_linenumber" name="380" href="#380">380</a> 							c.setContextMenu(cm);
-<a class="jxr_linenumber" name="381" href="#381">381</a> 						}
-<a class="jxr_linenumber" name="382" href="#382">382</a> 					} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="383" href="#383">383</a> 						TableCell&lt;?, ?&gt; c = (TableCell&lt;?,?&gt;) event.getSource();
-<a class="jxr_linenumber" name="384" href="#384">384</a> 
-<a class="jxr_linenumber" name="385" href="#385">385</a> 						<strong class="jxr_keyword">if</strong> (event.getClickCount() == 1) {
-<a class="jxr_linenumber" name="386" href="#386">386</a> 							<em class="jxr_comment">//LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());</em>
-<a class="jxr_linenumber" name="387" href="#387">387</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (event.getClickCount() &gt; 1) {
-<a class="jxr_linenumber" name="388" href="#388">388</a> 							LOG.debug(event.getButton() + <span class="jxr_string">" double clicked. Cell text: "</span> + c.getText());
-<a class="jxr_linenumber" name="389" href="#389">389</a> 							<strong class="jxr_keyword">int</strong> cellIndex = c.getIndex();
-<a class="jxr_linenumber" name="390" href="#390">390</a> 							LocalTask task = taskTable.getItems().get(cellIndex);
-<a class="jxr_linenumber" name="391" href="#391">391</a> 
-<a class="jxr_linenumber" name="392" href="#392">392</a> 							WorkflowTaskDetailsViewI view = AppContext.getService(WorkflowTaskDetailsViewI.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="393" href="#393">393</a> 							view.setTask(task.getId());
-<a class="jxr_linenumber" name="394" href="#394">394</a> 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
-<a class="jxr_linenumber" name="395" href="#395">395</a> 						}
-<a class="jxr_linenumber" name="396" href="#396">396</a> 					}
-<a class="jxr_linenumber" name="397" href="#397">397</a> 				}
-<a class="jxr_linenumber" name="398" href="#398">398</a> 			});
-<a class="jxr_linenumber" name="399" href="#399">399</a> 
-<a class="jxr_linenumber" name="400" href="#400">400</a> 			<strong class="jxr_keyword">return</strong> newCell;
-<a class="jxr_linenumber" name="401" href="#401">401</a> 		}
-<a class="jxr_linenumber" name="402" href="#402">402</a> 	};
-<a class="jxr_linenumber" name="403" href="#403">403</a> }
+<a class="jxr_linenumber" name="377" href="#377">377</a> 							c.setContextMenu(cm);
+<a class="jxr_linenumber" name="378" href="#378">378</a> 						}
+<a class="jxr_linenumber" name="379" href="#379">379</a> 					} <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="380" href="#380">380</a> 						TableCell&lt;?, ?&gt; c = (TableCell&lt;?,?&gt;) event.getSource();
+<a class="jxr_linenumber" name="381" href="#381">381</a> 
+<a class="jxr_linenumber" name="382" href="#382">382</a> 						<strong class="jxr_keyword">if</strong> (event.getClickCount() == 1) {
+<a class="jxr_linenumber" name="383" href="#383">383</a> 							<em class="jxr_comment">//LOG.debug(event.getButton() + " single clicked. Cell text: " + c.getText());</em>
+<a class="jxr_linenumber" name="384" href="#384">384</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (event.getClickCount() &gt; 1) {
+<a class="jxr_linenumber" name="385" href="#385">385</a> 							LOG.debug(event.getButton() + <span class="jxr_string">" double clicked. Cell text: "</span> + c.getText());
+<a class="jxr_linenumber" name="386" href="#386">386</a> 							<strong class="jxr_keyword">int</strong> cellIndex = c.getIndex();
+<a class="jxr_linenumber" name="387" href="#387">387</a> 							LocalTask task = taskTable.getItems().get(cellIndex);
+<a class="jxr_linenumber" name="388" href="#388">388</a> 
+<a class="jxr_linenumber" name="389" href="#389">389</a> 							WorkflowTaskDetailsViewI view = AppContext.getService(WorkflowTaskDetailsViewI.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="390" href="#390">390</a> 							view.setTask(task.getId());
+<a class="jxr_linenumber" name="391" href="#391">391</a> 							view.showView(AppContext.getMainApplicationWindow().getPrimaryStage());
+<a class="jxr_linenumber" name="392" href="#392">392</a> 						}
+<a class="jxr_linenumber" name="393" href="#393">393</a> 					}
+<a class="jxr_linenumber" name="394" href="#394">394</a> 				}
+<a class="jxr_linenumber" name="395" href="#395">395</a> 			});
+<a class="jxr_linenumber" name="396" href="#396">396</a> 
+<a class="jxr_linenumber" name="397" href="#397">397</a> 			<strong class="jxr_keyword">return</strong> newCell;
+<a class="jxr_linenumber" name="398" href="#398">398</a> 		}
+<a class="jxr_linenumber" name="399" href="#399">399</a> 	};
+<a class="jxr_linenumber" name="400" href="#400">400</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

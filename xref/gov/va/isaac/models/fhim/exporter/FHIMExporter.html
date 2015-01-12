@@ -180,7 +180,7 @@
 <a class="jxr_linenumber" name="170" href="#170">170</a>         <em class="jxr_comment">// Get all annotations on the model annotation.</em>
 <a class="jxr_linenumber" name="171" href="#171">171</a> <em class="jxr_comment">//        Collection&lt;? extends RefexChronicleBI&lt;?&gt;&gt; modelAnnotations = getLatestAnnotations(modelRefex);</em>
 <a class="jxr_linenumber" name="172" href="#172">172</a> 
-<a class="jxr_linenumber" name="173" href="#173">173</a>         <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
+<a class="jxr_linenumber" name="173" href="#173">173</a>         <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231826) - BAC</em>
 <a class="jxr_linenumber" name="174" href="#174">174</a> <em class="jxr_javadoccomment">        // Enumerations.</em>
 <a class="jxr_linenumber" name="175" href="#175">175</a> <em class="jxr_javadoccomment">        List&lt;StringMember&gt; enumAnnotations = filterAnnotations(modelAnnotations,</em>
 <a class="jxr_linenumber" name="176" href="#176">176</a> <em class="jxr_javadoccomment">                FHIMMetadataBinding.FHIM_ENUMERATIONS_REFSET, StringMember.class);</em>
@@ -256,7 +256,7 @@
 <a class="jxr_linenumber" name="246" href="#246">246</a>         String name = associationAnnotation.getString1();
 <a class="jxr_linenumber" name="247" href="#247">247</a>         <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Association</a> a = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Association</a>(name);
 <a class="jxr_linenumber" name="248" href="#248">248</a>         LOG.debug(<span class="jxr_string">"Association: "</span> + name);
-<a class="jxr_linenumber" name="249" href="#249">249</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
+<a class="jxr_linenumber" name="249" href="#249">249</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231827) - BAC</em>
 <a class="jxr_linenumber" name="250" href="#250">250</a> <em class="jxr_javadoccomment">        // Association Ends.</em>
 <a class="jxr_linenumber" name="251" href="#251">251</a> <em class="jxr_javadoccomment">        List&lt;NidBooleanMember&gt; associationEndAnnotations = filterAnnotations(</em>
 <a class="jxr_linenumber" name="252" href="#252">252</a> <em class="jxr_javadoccomment">                getLatestAnnotations(associationAnnotation),</em>
@@ -304,7 +304,7 @@
 <a class="jxr_linenumber" name="294" href="#294">294</a>         <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Class</a> c = getClass(nid);
 <a class="jxr_linenumber" name="295" href="#295">295</a>         LOG.debug(<span class="jxr_string">"Class: "</span> + c.getName());
 <a class="jxr_linenumber" name="296" href="#296">296</a> 
-<a class="jxr_linenumber" name="297" href="#297">297</a>         <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
+<a class="jxr_linenumber" name="297" href="#297">297</a>         <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231828) - BAC</em>
 <a class="jxr_linenumber" name="298" href="#298">298</a> <em class="jxr_javadoccomment">        // Attributes.</em>
 <a class="jxr_linenumber" name="299" href="#299">299</a> <em class="jxr_javadoccomment">        Collection&lt;NidStringMember&gt; attributeAnnotations = filterAnnotations(</em>
 <a class="jxr_linenumber" name="300" href="#300">300</a> <em class="jxr_javadoccomment">                getLatestAnnotations(classAnnotation),</em>
@@ -357,7 +357,7 @@
 <a class="jxr_linenumber" name="347" href="#347">347</a> 
 <a class="jxr_linenumber" name="348" href="#348">348</a>         <em class="jxr_comment">// Get all annotations on the attribute annotation.</em>
 <a class="jxr_linenumber" name="349" href="#349">349</a>         Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexChronicleBI&lt;?&gt;&gt; attributeAnnotations = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="350" href="#350">350</a>         <em class="jxr_comment">// TODO -BACgetLatestAnnotations(attributeAnnotation);</em>
+<a class="jxr_linenumber" name="350" href="#350">350</a>         <em class="jxr_comment">// TODO (artf231848) - BAC getLatestAnnotations(attributeAnnotation);</em>
 <a class="jxr_linenumber" name="351" href="#351">351</a> 
 <a class="jxr_linenumber" name="352" href="#352">352</a>         <em class="jxr_comment">// DefaultValue.</em>
 <a class="jxr_linenumber" name="353" href="#353">353</a>         String defaultValue = getDefaultValue(attributeAnnotations);
@@ -388,7 +388,7 @@
 <a class="jxr_linenumber" name="378" href="#378">378</a> 
 <a class="jxr_linenumber" name="379" href="#379">379</a>     <strong class="jxr_keyword">private</strong> VisibilityKind getVisibility(Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexChronicleBI&lt;?&gt;&gt; attributeAnnotations)
 <a class="jxr_linenumber" name="380" href="#380">380</a>             <strong class="jxr_keyword">throws</strong> ValidationException, IOException {
-<a class="jxr_linenumber" name="381" href="#381">381</a>       <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
+<a class="jxr_linenumber" name="381" href="#381">381</a>       <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231829) - BAC</em>
 <a class="jxr_linenumber" name="382" href="#382">382</a> <em class="jxr_javadoccomment">      StringMember visibilityAnnotation = getSingleAnnotation(attributeAnnotations,</em>
 <a class="jxr_linenumber" name="383" href="#383">383</a> <em class="jxr_javadoccomment">                FHIMMetadataBinding.FHIM_VISIBILITY_REFSET, StringMember.class);</em>
 <a class="jxr_linenumber" name="384" href="#384">384</a> 
@@ -406,7 +406,7 @@
 <a class="jxr_linenumber" name="396" href="#396">396</a>     <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Multiplicity</a> buildMultiplicity(
 <a class="jxr_linenumber" name="397" href="#397">397</a>             Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexChronicleBI&lt;?&gt;&gt; attributeAnnotations)
 <a class="jxr_linenumber" name="398" href="#398">398</a>             <strong class="jxr_keyword">throws</strong> IOException {
-<a class="jxr_linenumber" name="399" href="#399">399</a>       <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
+<a class="jxr_linenumber" name="399" href="#399">399</a>       <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231830) - BAC</em>
 <a class="jxr_linenumber" name="400" href="#400">400</a> <em class="jxr_javadoccomment">        List&lt;NidIntMember&gt; multiplicityAnnotations = filterAnnotations(attributeAnnotations,</em>
 <a class="jxr_linenumber" name="401" href="#401">401</a> <em class="jxr_javadoccomment">                FHIMMetadataBinding.FHIM_MULTIPLICITY_REFSET, NidIntMember.class);</em>
 <a class="jxr_linenumber" name="402" href="#402">402</a> 
@@ -443,7 +443,7 @@
 <a class="jxr_linenumber" name="433" href="#433">433</a>     <strong class="jxr_keyword">private</strong> String getDefaultValue(
 <a class="jxr_linenumber" name="434" href="#434">434</a>             Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexChronicleBI&lt;?&gt;&gt; attributeAnnotations)
 <a class="jxr_linenumber" name="435" href="#435">435</a>             <strong class="jxr_keyword">throws</strong> ValidationException, IOException {
-<a class="jxr_linenumber" name="436" href="#436">436</a>       <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC </em>
+<a class="jxr_linenumber" name="436" href="#436">436</a>       <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231831) - BAC</em>
 <a class="jxr_linenumber" name="437" href="#437">437</a> <em class="jxr_javadoccomment">      List&lt;StringMember&gt; defaultValueAnnotations = filterAnnotations(attributeAnnotations,</em>
 <a class="jxr_linenumber" name="438" href="#438">438</a> <em class="jxr_javadoccomment">                FHIMMetadataBinding.FHIM_DEFAULTVALUES_REFSET, StringMember.class);</em>
 <a class="jxr_linenumber" name="439" href="#439">439</a> 
@@ -515,7 +515,7 @@
 <a class="jxr_linenumber" name="505" href="#505">505</a>         String name = enumAnnotation.getString1();
 <a class="jxr_linenumber" name="506" href="#506">506</a>         <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Enumeration</a> e = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">Enumeration</a>(name);
 <a class="jxr_linenumber" name="507" href="#507">507</a>         LOG.debug(<span class="jxr_string">"Attribute: "</span> + e.getName());
-<a class="jxr_linenumber" name="508" href="#508">508</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
+<a class="jxr_linenumber" name="508" href="#508">508</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231832) - BAC</em>
 <a class="jxr_linenumber" name="509" href="#509">509</a> <em class="jxr_javadoccomment">        // Enumeration values.</em>
 <a class="jxr_linenumber" name="510" href="#510">510</a> <em class="jxr_javadoccomment">        Collection&lt;StringMember&gt; valueAnnotations = filterAnnotations(</em>
 <a class="jxr_linenumber" name="511" href="#511">511</a> <em class="jxr_javadoccomment">                getLatestAnnotations(enumAnnotation),</em>
@@ -539,7 +539,7 @@
 <a class="jxr_linenumber" name="529" href="#529">529</a>         Map&lt;Integer, External&gt; m = Maps.newHashMap();
 <a class="jxr_linenumber" name="530" href="#530">530</a> 
 <a class="jxr_linenumber" name="531" href="#531">531</a>         <a href="../../../../../../gov/va/isaac/models/fhim/FHIMInformationModel.html">External</a> e = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="532" href="#532">532</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO -BAC</em>
+<a class="jxr_linenumber" name="532" href="#532">532</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231847) -BAC</em>
 <a class="jxr_linenumber" name="533" href="#533">533</a> <em class="jxr_javadoccomment">        // Code.</em>
 <a class="jxr_linenumber" name="534" href="#534">534</a> <em class="jxr_javadoccomment">        e = new External(CODE, FHIMMetadataBinding.FHIM_CODE);</em>
 <a class="jxr_linenumber" name="535" href="#535">535</a> <em class="jxr_javadoccomment">        m.put(FHIMMetadataBinding.FHIM_CODE.getNid(), e);</em>

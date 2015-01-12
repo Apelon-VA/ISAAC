@@ -103,7 +103,7 @@
 <a class="jxr_linenumber" name="93" href="#93">93</a>  			}
 <a class="jxr_linenumber" name="94" href="#94">94</a>  		});
 <a class="jxr_linenumber" name="95" href="#95">95</a>  		
-<a class="jxr_linenumber" name="96" href="#96">96</a>  		<em class="jxr_comment">//TODO - things that hit the DB (BDB or the Workflow SQL DB) should NOT Be done in the JavaFX foreground thread.  This causes large delays in displaying your GUI.</em>
+<a class="jxr_linenumber" name="96" href="#96">96</a>  		<em class="jxr_comment">//TODO (artf231846) - things that hit the DB (BDB or the Workflow SQL DB) should NOT Be done in the JavaFX foreground thread.  This causes large delays in displaying your GUI.</em>
 <a class="jxr_linenumber" name="97" href="#97">97</a>  		<em class="jxr_comment">//this sort of stuff need to be a in  background thread, with an appropriate progress indicator</em>
 <a class="jxr_linenumber" name="98" href="#98">98</a>  
 <a class="jxr_linenumber" name="99" href="#99">99</a>  		topPane.getSearchButton().setOnAction((action) -&gt; {

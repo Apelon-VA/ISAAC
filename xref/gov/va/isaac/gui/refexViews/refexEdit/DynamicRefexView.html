@@ -432,7 +432,7 @@
 <a class="jxr_linenumber" name="422" href="#422">422</a> 				<strong class="jxr_keyword">try</strong>
 <a class="jxr_linenumber" name="423" href="#423">423</a> 				{
 <a class="jxr_linenumber" name="424" href="#424">424</a> 					ExtendedAppContext.getDataStore().cancel();
-<a class="jxr_linenumber" name="425" href="#425">425</a> 					<em class="jxr_comment">//TODO Cancel isn't working properly on annotation-style refexes - works on member style.</em>
+<a class="jxr_linenumber" name="425" href="#425">425</a> 					<em class="jxr_comment">//TODO (artf231427) Cancel isn't working properly on annotation-style refexes - works on member style.</em>
 <a class="jxr_linenumber" name="426" href="#426">426</a> 					HashSet&lt;Integer&gt; componentNids = getAllComponentNids(treeRoot_.getChildren());
 <a class="jxr_linenumber" name="427" href="#427">427</a> 					<strong class="jxr_keyword">for</strong> (Integer i : componentNids)
 <a class="jxr_linenumber" name="428" href="#428">428</a> 					{
@@ -819,7 +819,7 @@
 <a class="jxr_linenumber" name="809" href="#809">809</a> 						TreeTableColumn&lt;RefexDynamicGUI, RefexDynamicGUI&gt; nestedCol = <strong class="jxr_keyword">new</strong> TreeTableColumn&lt;&gt;(name);
 <a class="jxr_linenumber" name="810" href="#810">810</a> 						storeTooltip(toolTipStore, nestedCol.getText(), col.values().iterator().next().get(0).getColumnDescription());
 <a class="jxr_linenumber" name="811" href="#811">811</a> 						
-<a class="jxr_linenumber" name="812" href="#812">812</a> 						<em class="jxr_comment">// TODO: FILTER ID</em>
+<a class="jxr_linenumber" name="812" href="#812">812</a> 						<em class="jxr_comment">// FILTER ID</em>
 <a class="jxr_linenumber" name="813" href="#813">813</a> 						<strong class="jxr_keyword">final</strong> <a href="../../../../../../gov/va/isaac/gui/refexViews/refexEdit/ColumnId.html">ColumnId</a> columnKey = ColumnId.getInstance(col.values().iterator().next().get(0).getColumnDescriptionConcept(), i);
 <a class="jxr_linenumber" name="814" href="#814">814</a> 
 <a class="jxr_linenumber" name="815" href="#815">815</a> 						<strong class="jxr_keyword">final</strong> Integer listItem = i;

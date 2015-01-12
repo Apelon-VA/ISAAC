@@ -71,7 +71,7 @@
 <a class="jxr_linenumber" name="61" href="#61">61</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> importLegoList(<a href="../../../../gov/va/legoEdit/model/schemaModel/LegoList.html">LegoList</a> ll) <strong class="jxr_keyword">throws</strong> WriteException
 <a class="jxr_linenumber" name="62" href="#62">62</a>  	{
 <a class="jxr_linenumber" name="63" href="#63">63</a>  		BDBDataStoreImpl.getInstance().importLegoList(ll);
-<a class="jxr_linenumber" name="64" href="#64">64</a>  		<em class="jxr_comment">//TODO [LEGO Edit]</em>
+<a class="jxr_linenumber" name="64" href="#64">64</a>  		<em class="jxr_comment">//TODO (artf231850) [LEGO Edit]</em>
 <a class="jxr_linenumber" name="65" href="#65">65</a>  		<em class="jxr_comment">//LegoGUI.getInstance().getLegoGUIController().getCommonlyUsedConcept().rebuildDBStats();</em>
 <a class="jxr_linenumber" name="66" href="#66">66</a>  		updateLegoLists();
 <a class="jxr_linenumber" name="67" href="#67">67</a>  	}
@@ -96,7 +96,7 @@
 <a class="jxr_linenumber" name="86" href="#86">86</a>  
 <a class="jxr_linenumber" name="87" href="#87">87</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> removeLegoList(<a href="../../../../gov/va/legoEdit/model/LegoListByReference.html">LegoListByReference</a> legoListByReference) <strong class="jxr_keyword">throws</strong> WriteException
 <a class="jxr_linenumber" name="88" href="#88">88</a>  	{
-<a class="jxr_linenumber" name="89" href="#89">89</a>  		<em class="jxr_comment">//TODO [Lego Edit]</em>
+<a class="jxr_linenumber" name="89" href="#89">89</a>  		<em class="jxr_comment">//TODO (artf231850) [Lego Edit]</em>
 <a class="jxr_linenumber" name="90" href="#90">90</a>  <em class="jxr_comment">//		for (LegoReference lr : legoListByReference.getLegoReference())</em>
 <a class="jxr_linenumber" name="91" href="#91">91</a>  <em class="jxr_comment">//		{</em>
 <a class="jxr_linenumber" name="92" href="#92">92</a>  <em class="jxr_comment">//			LegoGUI.getInstance().getLegoGUIController().closeTabIfOpen(lr);</em>
@@ -109,7 +109,7 @@
 <a class="jxr_linenumber" name="99" href="#99">99</a>  
 <a class="jxr_linenumber" name="100" href="#100">100</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> removeLego(<a href="../../../../gov/va/legoEdit/model/LegoListByReference.html">LegoListByReference</a> legoListReference, <a href="../../../../gov/va/legoEdit/model/LegoReference.html">LegoReference</a> legoReference) <strong class="jxr_keyword">throws</strong> WriteException
 <a class="jxr_linenumber" name="101" href="#101">101</a> 	{
-<a class="jxr_linenumber" name="102" href="#102">102</a> 		<em class="jxr_comment">//TODO [Lego Edit]</em>
+<a class="jxr_linenumber" name="102" href="#102">102</a> 		<em class="jxr_comment">//TODO (artf231850) [Lego Edit]</em>
 <a class="jxr_linenumber" name="103" href="#103">103</a> <em class="jxr_comment">//		LegoGUI.getInstance().getLegoGUIController().closeTabIfOpen(legoReference);</em>
 <a class="jxr_linenumber" name="104" href="#104">104</a> 		BDBDataStoreImpl.getInstance().deleteLego(legoListReference.getLegoListUUID(), legoReference.getLegoUUID(), legoReference.getStampUUID());
 <a class="jxr_linenumber" name="105" href="#105">105</a> <em class="jxr_comment">//		LegoGUI.getInstance().getLegoGUIController().removeNewLego(legoReference.getUniqueId());</em>

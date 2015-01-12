@@ -136,7 +136,7 @@
 <a class="jxr_linenumber" name="126" href="#126">126</a> <em class="jxr_comment">//		try {</em>
 <a class="jxr_linenumber" name="127" href="#127">127</a> <em class="jxr_comment">//			this.isAnnotation = refset.isAnnotationStyleRefex();</em>
 <a class="jxr_linenumber" name="128" href="#128">128</a> <em class="jxr_comment">//		} catch (IOException e) {</em>
-<a class="jxr_linenumber" name="129" href="#129">129</a> <em class="jxr_comment">//			// TODO Auto-generated catch block</em>
+<a class="jxr_linenumber" name="129" href="#129">129</a> <em class="jxr_comment">//			// TODO (artf231876) Auto-generated catch block</em>
 <a class="jxr_linenumber" name="130" href="#130">130</a> <em class="jxr_comment">//			e.printStackTrace();</em>
 <a class="jxr_linenumber" name="131" href="#131">131</a> <em class="jxr_comment">//		}</em>
 <a class="jxr_linenumber" name="132" href="#132">132</a> 		
@@ -199,8 +199,8 @@
 <a class="jxr_linenumber" name="189" href="#189">189</a> 					} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="190" href="#190">190</a> 						refCompCon = component;
 <a class="jxr_linenumber" name="191" href="#191">191</a> 					}
-<a class="jxr_linenumber" name="192" href="#192">192</a> <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO - BAC</em>
-<a class="jxr_linenumber" name="193" href="#193">193</a> <em class="jxr_javadoccomment">					//TODO we shouldn't have any references to the CEM model here in the generic refset viewer.</em>
+<a class="jxr_linenumber" name="192" href="#192">192</a> 					<em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> TODO (artf231839) - BAC</em>
+<a class="jxr_linenumber" name="193" href="#193">193</a> <em class="jxr_javadoccomment">					//TODO (artf231839) we shouldn't have any references to the CEM model here in the generic refset viewer.</em>
 <a class="jxr_linenumber" name="194" href="#194">194</a> <em class="jxr_javadoccomment">					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in</em>
 <a class="jxr_linenumber" name="195" href="#195">195</a> <em class="jxr_javadoccomment">					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &amp;&amp;</em>
 <a class="jxr_linenumber" name="196" href="#196">196</a> <em class="jxr_javadoccomment">						member.getAssemblageNid() == refset.getNid()) {</em>
@@ -208,7 +208,7 @@
 <a class="jxr_linenumber" name="198" href="#198">198</a> <em class="jxr_javadoccomment">					} else {</em>
 <a class="jxr_linenumber" name="199" href="#199">199</a> <em class="jxr_javadoccomment">						processMembers(member, previousMember, refCompCon);</em>
 <a class="jxr_linenumber" name="200" href="#200">200</a> <em class="jxr_javadoccomment">					}</em>
-<a class="jxr_linenumber" name="201" href="#201">201</a> <em class="jxr_javadoccomment">				**/</em>	
+<a class="jxr_linenumber" name="201" href="#201">201</a> <em class="jxr_javadoccomment">					 **/</em>	
 <a class="jxr_linenumber" name="202" href="#202">202</a> 					previousMember = member;
 <a class="jxr_linenumber" name="203" href="#203">203</a> 				}
 <a class="jxr_linenumber" name="204" href="#204">204</a> 			}
@@ -235,7 +235,7 @@
 <a class="jxr_linenumber" name="225" href="#225">225</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> processMembers(RefexVersionBI&lt;?&gt; member, RefexVersionBI&lt;?&gt; previousMember, ConceptVersionBI refCompCon) <strong class="jxr_keyword">throws</strong> IOException, ContradictionException {
 <a class="jxr_linenumber" name="226" href="#226">226</a> 		<strong class="jxr_keyword">if</strong> (member.getAssemblageNid() == refsetNid_) {
 <a class="jxr_linenumber" name="227" href="#227">227</a> 			<em class="jxr_comment">// Setup if Necessary</em>
-<a class="jxr_linenumber" name="228" href="#228">228</a> 			<em class="jxr_comment">//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  </em>
+<a class="jxr_linenumber" name="228" href="#228">228</a> 			<em class="jxr_comment">//TODO (artf231876) The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  </em>
 <a class="jxr_linenumber" name="229" href="#229">229</a> 			<em class="jxr_comment">//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected </em>
 <a class="jxr_linenumber" name="230" href="#230">230</a> 			<em class="jxr_comment">//from the data in the table, so it can take into account multiple refex types.</em>
 <a class="jxr_linenumber" name="231" href="#231">231</a> 			<strong class="jxr_keyword">if</strong> (!rth_.isSetupFinished() &amp;&amp; member.getRefexType() != RefexType.MEMBER) {

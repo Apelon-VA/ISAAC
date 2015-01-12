@@ -120,7 +120,7 @@
 <a class="jxr_linenumber" name="110" href="#110">110</a> 		titleBox.getChildren().add(title);
 <a class="jxr_linenumber" name="111" href="#111">111</a> 		titleBox.getStyleClass().add(<span class="jxr_string">"headerBackground"</span>);
 <a class="jxr_linenumber" name="112" href="#112">112</a> 	
-<a class="jxr_linenumber" name="113" href="#113">113</a> 		url_ = AppContext.getAppConfiguration().getChangeSetUrl();
+<a class="jxr_linenumber" name="113" href="#113">113</a> 		url_ = AppContext.getAppConfiguration().getCurrentChangeSetUrl();
 <a class="jxr_linenumber" name="114" href="#114">114</a> 		String urlType = AppContext.getAppConfiguration().getChangeSetUrlTypeName();
 <a class="jxr_linenumber" name="115" href="#115">115</a> 		
 <a class="jxr_linenumber" name="116" href="#116">116</a> 		String syncUsername = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getSyncUsername();
@@ -525,7 +525,7 @@
 <a class="jxr_linenumber" name="515" href="#515">515</a> 					{
 <a class="jxr_linenumber" name="516" href="#516">516</a> 						<strong class="jxr_keyword">try</strong>
 <a class="jxr_linenumber" name="517" href="#517">517</a> 						{
-<a class="jxr_linenumber" name="518" href="#518">518</a> 							syncService_.relinkRemote(syncService_.substituteURL(AppContext.getAppConfiguration().getChangeSetUrl(), 
+<a class="jxr_linenumber" name="518" href="#518">518</a> 							syncService_.relinkRemote(syncService_.substituteURL(AppContext.getAppConfiguration().getCurrentChangeSetUrl(), 
 <a class="jxr_linenumber" name="519" href="#519">519</a> 									credentials.getUsername()), credentials.getUsername(), credentials.getPassword());
 <a class="jxr_linenumber" name="520" href="#520">520</a> 						}
 <a class="jxr_linenumber" name="521" href="#521">521</a> 						<strong class="jxr_keyword">catch</strong> (AuthenticationException e)
@@ -636,7 +636,7 @@
 <a class="jxr_linenumber" name="626" href="#626">626</a> 		}
 <a class="jxr_linenumber" name="627" href="#627">627</a> 		<strong class="jxr_keyword">else</strong>
 <a class="jxr_linenumber" name="628" href="#628">628</a> 		{
-<a class="jxr_linenumber" name="629" href="#629">629</a> 			String url = AppContext.getAppConfiguration().getChangeSetUrl();
+<a class="jxr_linenumber" name="629" href="#629">629</a> 			String url = AppContext.getAppConfiguration().getCurrentChangeSetUrl();
 <a class="jxr_linenumber" name="630" href="#630">630</a> 			String urlType = AppContext.getAppConfiguration().getChangeSetUrlTypeName();
 <a class="jxr_linenumber" name="631" href="#631">631</a> 			
 <a class="jxr_linenumber" name="632" href="#632">632</a> 			<strong class="jxr_keyword">if</strong> (StringUtils.isBlank(url) || StringUtils.isBlank(urlType))

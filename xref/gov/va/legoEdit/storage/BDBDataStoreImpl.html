@@ -993,12 +993,12 @@
 <a class="jxr_linenumber" name="983" href="#983">983</a> 			{
 <a class="jxr_linenumber" name="984" href="#984">984</a> 				<strong class="jxr_keyword">if</strong> (s.getModule() == <strong class="jxr_keyword">null</strong> || s.getModule().length() == 0)
 <a class="jxr_linenumber" name="985" href="#985">985</a> 				{
-<a class="jxr_linenumber" name="986" href="#986">986</a> 					s.setModule(WBUtility.getEC().getModuleSpec().getDescription());
+<a class="jxr_linenumber" name="986" href="#986">986</a> 					s.setModule(WBUtility.getEditCoordinate().getModuleSpec().getDescription());
 <a class="jxr_linenumber" name="987" href="#987">987</a> 				}
 <a class="jxr_linenumber" name="988" href="#988">988</a> 				<strong class="jxr_keyword">if</strong> (s.getPath() == <strong class="jxr_keyword">null</strong> || s.getPath().length() == 0)
 <a class="jxr_linenumber" name="989" href="#989">989</a> 				{
-<a class="jxr_linenumber" name="990" href="#990">990</a> 					<em class="jxr_comment">//TODO [Lego edit] this isn't quite right...</em>
-<a class="jxr_linenumber" name="991" href="#991">991</a> 					s.setPath(WBUtility.getEC().getEditPathListSpecs().get(0).getDescription());
+<a class="jxr_linenumber" name="990" href="#990">990</a> 					<em class="jxr_comment">//TODO (artf231852) [Lego edit] this isn't quite right...</em>
+<a class="jxr_linenumber" name="991" href="#991">991</a> 					s.setPath(WBUtility.getEditCoordinate().getEditPathListSpecs().get(0).getDescription());
 <a class="jxr_linenumber" name="992" href="#992">992</a> 				}
 <a class="jxr_linenumber" name="993" href="#993">993</a> 			}
 <a class="jxr_linenumber" name="994" href="#994">994</a> 			<strong class="jxr_keyword">catch</strong> (IOException e)

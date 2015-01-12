@@ -32,7 +32,7 @@
 <a class="jxr_linenumber" name="22" href="#22">22</a>  <strong class="jxr_keyword">import</strong> javafx.scene.image.ImageView;
 <a class="jxr_linenumber" name="23" href="#23">23</a>  
 <a class="jxr_linenumber" name="24" href="#24">24</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="25" href="#25">25</a>  <em class="jxr_javadoccomment"> * Common images for the taxonomy viewer.</em>
+<a class="jxr_linenumber" name="25" href="#25">25</a>  <em class="jxr_javadoccomment"> * Common images for ISAAC</em>
 <a class="jxr_linenumber" name="26" href="#26">26</a>  <em class="jxr_javadoccomment"> *</em>
 <a class="jxr_linenumber" name="27" href="#27">27</a>  <em class="jxr_javadoccomment"> * @author kec</em>
 <a class="jxr_linenumber" name="28" href="#28">28</a>  <em class="jxr_javadoccomment"> * @author Dan Armbrust</em>
@@ -51,7 +51,7 @@
 <a class="jxr_linenumber" name="41" href="#41">41</a>      TAXONOMY_OPEN(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/plus-small.png"</span>)), 
 <a class="jxr_linenumber" name="42" href="#42">42</a>      TAXONOMY_CLOSE(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/minus-small.png"</span>)),
 <a class="jxr_linenumber" name="43" href="#43">43</a>      TAXONOMY_SEARCH_RESULT(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/application-search-result-hand.png"</span>)),
-<a class="jxr_linenumber" name="44" href="#44">44</a>      TAXONOMY_SEARCH_RESULT_ANCESTOR(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/search-result-ancestor.png"</span>)),
+<a class="jxr_linenumber" name="44" href="#44">44</a>      TAXONOMY_SEARCH_RESULT_ANCESTOR(setupImage(<span class="jxr_string">"/icons/fugue/16x16/icons-shadowless/search-result-ancestor-transparent.png"</span>)),
 <a class="jxr_linenumber" name="45" href="#45">45</a>      
 <a class="jxr_linenumber" name="46" href="#46">46</a>      <em class="jxr_comment">//Other GUI Icons</em>
 <a class="jxr_linenumber" name="47" href="#47">47</a>      LEGO_ADD(setupImage(<span class="jxr_string">"/icons/silk/16x16/brick_add.png"</span>)),
@@ -94,26 +94,33 @@
 <a class="jxr_linenumber" name="84" href="#84">84</a>      LOCK(setupImage(<span class="jxr_string">"/icons/misc/16x16/lock.png"</span>)),
 <a class="jxr_linenumber" name="85" href="#85">85</a>      KEYS(setupImage(<span class="jxr_string">"/icons/misc/48x48/login.png"</span>)),
 <a class="jxr_linenumber" name="86" href="#86">86</a>      SYNC_GREEN(setupImage(<span class="jxr_string">"/icons/silk/16x16/arrow_refresh.png"</span>)),
-<a class="jxr_linenumber" name="87" href="#87">87</a>      SYNC_BLUE(setupImage(<span class="jxr_string">"/icons/silk/16x16/arrow_refresh_blue.png"</span>));
-<a class="jxr_linenumber" name="88" href="#88">88</a>  
-<a class="jxr_linenumber" name="89" href="#89">89</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Image image;
-<a class="jxr_linenumber" name="90" href="#90">90</a>  
-<a class="jxr_linenumber" name="91" href="#91">91</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/gui/util/Images.html">Images</a>(Image image) {
-<a class="jxr_linenumber" name="92" href="#92">92</a>          <strong class="jxr_keyword">this</strong>.image = image;
-<a class="jxr_linenumber" name="93" href="#93">93</a>      }
-<a class="jxr_linenumber" name="94" href="#94">94</a>  
-<a class="jxr_linenumber" name="95" href="#95">95</a>      <strong class="jxr_keyword">public</strong> Image getImage() {
-<a class="jxr_linenumber" name="96" href="#96">96</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>.image;
-<a class="jxr_linenumber" name="97" href="#97">97</a>      }
-<a class="jxr_linenumber" name="98" href="#98">98</a>  
-<a class="jxr_linenumber" name="99" href="#99">99</a>      <strong class="jxr_keyword">public</strong> ImageView createImageView() {
-<a class="jxr_linenumber" name="100" href="#100">100</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ImageView(image);
-<a class="jxr_linenumber" name="101" href="#101">101</a>     }
-<a class="jxr_linenumber" name="102" href="#102">102</a> 
-<a class="jxr_linenumber" name="103" href="#103">103</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Image setupImage(String imageUrl) {
-<a class="jxr_linenumber" name="104" href="#104">104</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> Image(imageUrl);<em class="jxr_comment">//, false);</em>
-<a class="jxr_linenumber" name="105" href="#105">105</a>     }
-<a class="jxr_linenumber" name="106" href="#106">106</a> }
+<a class="jxr_linenumber" name="87" href="#87">87</a>      SYNC_BLUE(setupImage(<span class="jxr_string">"/icons/silk/16x16/arrow_refresh_blue.png"</span>)),
+<a class="jxr_linenumber" name="88" href="#88">88</a>      
+<a class="jxr_linenumber" name="89" href="#89">89</a>      <em class="jxr_comment">//Images from the old WB</em>
+<a class="jxr_linenumber" name="90" href="#90">90</a>      DISPLAY_FSN(setupImage(<span class="jxr_string">"/icons/wb-icons/16x16/plain/truck_red.png"</span>)),
+<a class="jxr_linenumber" name="91" href="#91">91</a>      DISPLAY_PREFERRED(setupImage(<span class="jxr_string">"/icons/wb-icons/16x16/plain/car_compact_green.png"</span>)),
+<a class="jxr_linenumber" name="92" href="#92">92</a>      TAXONOMY_STATED(setupImage(<span class="jxr_string">"/icons/wb-icons/16x16/plain/graph_edge.png"</span>)),
+<a class="jxr_linenumber" name="93" href="#93">93</a>      TAXONOMY_INFERRED(setupImage(<span class="jxr_string">"/icons/wb-icons/16x16/plain/chrystal_ball.png"</span>)),
+<a class="jxr_linenumber" name="94" href="#94">94</a>      TAXONOMY_INFERRED_THEN_STATED(setupImage(<span class="jxr_string">"/icons/wb-icons/16x16/plain/text_sum.png"</span>));
+<a class="jxr_linenumber" name="95" href="#95">95</a>  
+<a class="jxr_linenumber" name="96" href="#96">96</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Image image;
+<a class="jxr_linenumber" name="97" href="#97">97</a>  
+<a class="jxr_linenumber" name="98" href="#98">98</a>      <strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/gui/util/Images.html">Images</a>(Image image) {
+<a class="jxr_linenumber" name="99" href="#99">99</a>          <strong class="jxr_keyword">this</strong>.image = image;
+<a class="jxr_linenumber" name="100" href="#100">100</a>     }
+<a class="jxr_linenumber" name="101" href="#101">101</a> 
+<a class="jxr_linenumber" name="102" href="#102">102</a>     <strong class="jxr_keyword">public</strong> Image getImage() {
+<a class="jxr_linenumber" name="103" href="#103">103</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>.image;
+<a class="jxr_linenumber" name="104" href="#104">104</a>     }
+<a class="jxr_linenumber" name="105" href="#105">105</a> 
+<a class="jxr_linenumber" name="106" href="#106">106</a>     <strong class="jxr_keyword">public</strong> ImageView createImageView() {
+<a class="jxr_linenumber" name="107" href="#107">107</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> ImageView(image);
+<a class="jxr_linenumber" name="108" href="#108">108</a>     }
+<a class="jxr_linenumber" name="109" href="#109">109</a> 
+<a class="jxr_linenumber" name="110" href="#110">110</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Image setupImage(String imageUrl) {
+<a class="jxr_linenumber" name="111" href="#111">111</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> Image(imageUrl);<em class="jxr_comment">//, false);</em>
+<a class="jxr_linenumber" name="112" href="#112">112</a>     }
+<a class="jxr_linenumber" name="113" href="#113">113</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

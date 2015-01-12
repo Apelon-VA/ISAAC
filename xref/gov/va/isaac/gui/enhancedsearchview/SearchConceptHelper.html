@@ -136,8 +136,8 @@
 <a class="jxr_linenumber" name="126" href="#126">126</a> 			String passedSaveConceptFSN,
 <a class="jxr_linenumber" name="127" href="#127">127</a> 			String passedSaveConceptPT) <strong class="jxr_keyword">throws</strong> SearchConceptException
 <a class="jxr_linenumber" name="128" href="#128">128</a> 	{
-<a class="jxr_linenumber" name="129" href="#129">129</a> 		<strong class="jxr_keyword">final</strong> String saveConceptFSN = passedSaveConceptFSN != <strong class="jxr_keyword">null</strong> ? passedSaveConceptFSN : model.getSearchTypeSelector().getTypeSpecificModel().getName();
-<a class="jxr_linenumber" name="130" href="#130">130</a> 		<strong class="jxr_keyword">final</strong> String saveConceptPT = passedSaveConceptPT != <strong class="jxr_keyword">null</strong> ? passedSaveConceptPT : model.getSearchTypeSelector().getTypeSpecificModel().getDescription();
+<a class="jxr_linenumber" name="129" href="#129">129</a> 		<strong class="jxr_keyword">final</strong> String saveConceptFSN = passedSaveConceptFSN != <strong class="jxr_keyword">null</strong> ? passedSaveConceptFSN : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName();
+<a class="jxr_linenumber" name="130" href="#130">130</a> 		<strong class="jxr_keyword">final</strong> String saveConceptPT = passedSaveConceptPT != <strong class="jxr_keyword">null</strong> ? passedSaveConceptPT : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription();
 <a class="jxr_linenumber" name="131" href="#131">131</a> 
 <a class="jxr_linenumber" name="132" href="#132">132</a> 		LOG.debug(<span class="jxr_string">"buildSearchConcept(): saving model for search fsn=\&quot;"</span> + saveConceptFSN + <span class="jxr_string">"\&quot;, pt=\&quot;"</span> + saveConceptPT + <span class="jxr_string">"\&quot;: "</span> + model);
 <a class="jxr_linenumber" name="133" href="#133">133</a> 		<em class="jxr_comment">//</em>
@@ -172,16 +172,16 @@
 <a class="jxr_linenumber" name="162" href="#162">162</a> 				<em class="jxr_comment">// Serialize passed View Coordinate into byte[]</em>
 <a class="jxr_linenumber" name="163" href="#163">163</a> 				ByteArrayOutputStream output = <strong class="jxr_keyword">new</strong> ByteArrayOutputStream();
 <a class="jxr_linenumber" name="164" href="#164">164</a> 				ObjectOutputStream oos = <strong class="jxr_keyword">new</strong> ObjectOutputStream(output);
-<a class="jxr_linenumber" name="165" href="#165">165</a> 				model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate().writeExternal(oos);
+<a class="jxr_linenumber" name="165" href="#165">165</a> 				SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate().writeExternal(oos);
 <a class="jxr_linenumber" name="166" href="#166">166</a> 				oos.flush();
 <a class="jxr_linenumber" name="167" href="#167">167</a> 
 <a class="jxr_linenumber" name="168" href="#168">168</a> 				<em class="jxr_comment">// Construct and populate RefexDynamicData for View Coordinate</em>
 <a class="jxr_linenumber" name="169" href="#169">169</a> 				RefexDynamicData viewCoordinateColumnData = <strong class="jxr_keyword">new</strong> RefexDynamicByteArray(output.toByteArray());
 <a class="jxr_linenumber" name="170" href="#170">170</a> 				searchGlobalAttributesData[0] = viewCoordinateColumnData;
-<a class="jxr_linenumber" name="171" href="#171">171</a> 				RefexDynamicData maxResultsColumnData = <strong class="jxr_keyword">new</strong> RefexDynamicInteger(model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+<a class="jxr_linenumber" name="171" href="#171">171</a> 				RefexDynamicData maxResultsColumnData = <strong class="jxr_keyword">new</strong> RefexDynamicInteger(SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 <a class="jxr_linenumber" name="172" href="#172">172</a> 				searchGlobalAttributesData[1] = maxResultsColumnData;
-<a class="jxr_linenumber" name="173" href="#173">173</a> 				<strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="174" href="#174">174</a> 					RefexDynamicData droolsExprColumnData = <strong class="jxr_keyword">new</strong> RefexDynamicString(model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+<a class="jxr_linenumber" name="173" href="#173">173</a> 				<strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="174" href="#174">174</a> 					RefexDynamicData droolsExprColumnData = <strong class="jxr_keyword">new</strong> RefexDynamicString(SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 <a class="jxr_linenumber" name="175" href="#175">175</a> 					searchGlobalAttributesData[2] = droolsExprColumnData;
 <a class="jxr_linenumber" name="176" href="#176">176</a> 				}
 <a class="jxr_linenumber" name="177" href="#177">177</a> 
@@ -202,12 +202,12 @@
 <a class="jxr_linenumber" name="192" href="#192">192</a> 
 <a class="jxr_linenumber" name="193" href="#193">193</a> 				conceptAttributeBlueprintAmender.addAnnotationBlueprint(globalAttributesCAB);
 <a class="jxr_linenumber" name="194" href="#194">194</a> 
-<a class="jxr_linenumber" name="195" href="#195">195</a> 				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="195" href="#195">195</a> 				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 <a class="jxr_linenumber" name="196" href="#196">196</a> 				builder.construct(globalAttributesCAB);
 <a class="jxr_linenumber" name="197" href="#197">197</a> 			}
 <a class="jxr_linenumber" name="198" href="#198">198</a> 
-<a class="jxr_linenumber" name="199" href="#199">199</a> 			<strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
-<a class="jxr_linenumber" name="200" href="#200">200</a> 				TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+<a class="jxr_linenumber" name="199" href="#199">199</a> 			<strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+<a class="jxr_linenumber" name="200" href="#200">200</a> 				TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 <a class="jxr_linenumber" name="201" href="#201">201</a> 				
 <a class="jxr_linenumber" name="202" href="#202">202</a> 				<em class="jxr_comment">// Add search type filter as index 0</em>
 <a class="jxr_linenumber" name="203" href="#203">203</a> 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
@@ -216,8 +216,8 @@
 <a class="jxr_linenumber" name="206" href="#206">206</a> 				<strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> filterIndex = 0; filterIndex &lt; compModel.getFilters().size(); ++filterIndex) {
 <a class="jxr_linenumber" name="207" href="#207">207</a> 					addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getFilters().get(filterIndex), filterIndex + 1);
 <a class="jxr_linenumber" name="208" href="#208">208</a> 				}
-<a class="jxr_linenumber" name="209" href="#209">209</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
-<a class="jxr_linenumber" name="210" href="#210">210</a> 				SememeSearchTypeModel compModel = (SememeSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+<a class="jxr_linenumber" name="209" href="#209">209</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
+<a class="jxr_linenumber" name="210" href="#210">210</a> 				SememeSearchTypeModel compModel = (SememeSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 <a class="jxr_linenumber" name="211" href="#211">211</a> 
 <a class="jxr_linenumber" name="212" href="#212">212</a> 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
 <a class="jxr_linenumber" name="213" href="#213">213</a> 			}
@@ -368,7 +368,7 @@
 <a class="jxr_linenumber" name="358" href="#358">358</a> 
 <a class="jxr_linenumber" name="359" href="#359">359</a> 		filterRefexCAB.addAnnotationBlueprint(nestedFilterAttributesCAB);
 <a class="jxr_linenumber" name="360" href="#360">360</a> 
-<a class="jxr_linenumber" name="361" href="#361">361</a> 		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="361" href="#361">361</a> 		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 <a class="jxr_linenumber" name="362" href="#362">362</a> 		builder.construct(filterRefexCAB);
 <a class="jxr_linenumber" name="363" href="#363">363</a> 	}
 <a class="jxr_linenumber" name="364" href="#364">364</a> 
@@ -380,8 +380,8 @@
 <a class="jxr_linenumber" name="370" href="#370">370</a> 			String passedSaveConceptFSN,
 <a class="jxr_linenumber" name="371" href="#371">371</a> 			String passedSaveConceptPT) <strong class="jxr_keyword">throws</strong> SearchConceptException
 <a class="jxr_linenumber" name="372" href="#372">372</a> 	{
-<a class="jxr_linenumber" name="373" href="#373">373</a> 		<strong class="jxr_keyword">final</strong> String saveConceptFSN = passedSaveConceptFSN != <strong class="jxr_keyword">null</strong> ? passedSaveConceptFSN : model.getSearchTypeSelector().getTypeSpecificModel().getName();
-<a class="jxr_linenumber" name="374" href="#374">374</a> 		<strong class="jxr_keyword">final</strong> String saveConceptPT = passedSaveConceptPT != <strong class="jxr_keyword">null</strong> ? passedSaveConceptPT : model.getSearchTypeSelector().getTypeSpecificModel().getDescription();
+<a class="jxr_linenumber" name="373" href="#373">373</a> 		<strong class="jxr_keyword">final</strong> String saveConceptFSN = passedSaveConceptFSN != <strong class="jxr_keyword">null</strong> ? passedSaveConceptFSN : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName();
+<a class="jxr_linenumber" name="374" href="#374">374</a> 		<strong class="jxr_keyword">final</strong> String saveConceptPT = passedSaveConceptPT != <strong class="jxr_keyword">null</strong> ? passedSaveConceptPT : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription();
 <a class="jxr_linenumber" name="375" href="#375">375</a> 
 <a class="jxr_linenumber" name="376" href="#376">376</a> 		LOG.debug(<span class="jxr_string">"buildAndSaveSearchConcept(): saving concept for search fsn=\&quot;"</span> + saveConceptFSN + <span class="jxr_string">"\&quot;, pt=\&quot;"</span> + saveConceptPT + <span class="jxr_string">"\&quot;: "</span> + model);
 <a class="jxr_linenumber" name="377" href="#377">377</a> 
@@ -496,245 +496,243 @@
 <a class="jxr_linenumber" name="486" href="#486">486</a> 
 <a class="jxr_linenumber" name="487" href="#487">487</a> 				model = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/model/SearchModel.html">SearchModel</a>();
 <a class="jxr_linenumber" name="488" href="#488">488</a> 				
-<a class="jxr_linenumber" name="489" href="#489">489</a> 				<strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="490" href="#490">490</a> 					<strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getTypeSpecificModel() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="491" href="#491">491</a> 						LOG.debug(<span class="jxr_string">"model.getSearchTypeSelector().getTypeSpecificModel() == null"</span>);
+<a class="jxr_linenumber" name="489" href="#489">489</a> 				<strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="490" href="#490">490</a> 					<strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="491" href="#491">491</a> 						LOG.debug(<span class="jxr_string">"SearchModel.getSearchTypeSelector().getTypeSpecificModel() == null"</span>);
 <a class="jxr_linenumber" name="492" href="#492">492</a> 					} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="493" href="#493">493</a> 						LOG.debug(<span class="jxr_string">"model.getSearchTypeSelector().getTypeSpecificModel(): name=\&quot;{}\&quot;, desc=\&quot;{}\&quot;, class={}"</span>,
-<a class="jxr_linenumber" name="494" href="#494">494</a> 								model.getSearchTypeSelector().getTypeSpecificModel().getName(),
-<a class="jxr_linenumber" name="495" href="#495">495</a> 								model.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
-<a class="jxr_linenumber" name="496" href="#496">496</a> 								model.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
+<a class="jxr_linenumber" name="493" href="#493">493</a> 						LOG.debug(<span class="jxr_string">"SearchModel.getSearchTypeSelector().getTypeSpecificModel(): name=\&quot;{}\&quot;, desc=\&quot;{}\&quot;, class={}"</span>,
+<a class="jxr_linenumber" name="494" href="#494">494</a> 								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName(),
+<a class="jxr_linenumber" name="495" href="#495">495</a> 								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
+<a class="jxr_linenumber" name="496" href="#496">496</a> 								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
 <a class="jxr_linenumber" name="497" href="#497">497</a> 						
-<a class="jxr_linenumber" name="498" href="#498">498</a> 						<strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
-<a class="jxr_linenumber" name="499" href="#499">499</a> 							
-<a class="jxr_linenumber" name="500" href="#500">500</a> 							<em class="jxr_comment">// TODO: reinitialize ALL compModel fields to avoid leaking old values into loaded search</em>
-<a class="jxr_linenumber" name="501" href="#501">501</a> 							TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
-<a class="jxr_linenumber" name="502" href="#502">502</a> 							compModel.getFilters().clear();
-<a class="jxr_linenumber" name="503" href="#503">503</a> 							compModel.getDroolsExprProperty().set(<strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="504" href="#504">504</a> 						}
-<a class="jxr_linenumber" name="505" href="#505">505</a> 					}
-<a class="jxr_linenumber" name="506" href="#506">506</a> 				}
-<a class="jxr_linenumber" name="507" href="#507">507</a> 
-<a class="jxr_linenumber" name="508" href="#508">508</a> 				model.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
-<a class="jxr_linenumber" name="509" href="#509">509</a> 				model.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
-<a class="jxr_linenumber" name="510" href="#510">510</a> 
-<a class="jxr_linenumber" name="511" href="#511">511</a> 				<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="512" href="#512">512</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; all refexes: "</span> +  matchingConcept.getRefexes().size());
-<a class="jxr_linenumber" name="513" href="#513">513</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; all dynamic sememes: "</span> +  matchingConcept.getRefexesDynamic().size());
-<a class="jxr_linenumber" name="514" href="#514">514</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; active dynamic sememes (StandardViewCoordinates.getWbAuxiliary()): "</span> +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
-<a class="jxr_linenumber" name="515" href="#515">515</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; active dynamic sememes (WBUtility.getViewCoordinate()): "</span> +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
-<a class="jxr_linenumber" name="516" href="#516">516</a> 			
-<a class="jxr_linenumber" name="517" href="#517">517</a> 					LOG.debug(<span class="jxr_string">"Displaying newly loaded save concept refexes"</span>);
-<a class="jxr_linenumber" name="518" href="#518">518</a> 					DynamicRefexHelper.displayDynamicRefexes(matchingConcept);
-<a class="jxr_linenumber" name="519" href="#519">519</a> 
-<a class="jxr_linenumber" name="520" href="#520">520</a> 				} <strong class="jxr_keyword">catch</strong> (IOException e) {
-<a class="jxr_linenumber" name="521" href="#521">521</a> 					LOG.warn(<span class="jxr_string">"Failed displaying attached refexes. Caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>);
-<a class="jxr_linenumber" name="522" href="#522">522</a> 					e.printStackTrace();
-<a class="jxr_linenumber" name="523" href="#523">523</a> 				}
-<a class="jxr_linenumber" name="524" href="#524">524</a> 
-<a class="jxr_linenumber" name="525" href="#525">525</a> 				<strong class="jxr_keyword">int</strong> i = 0;
-<a class="jxr_linenumber" name="526" href="#526">526</a> 				Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexDynamicVersionBI&lt;?&gt;&gt; refexes = matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
-<a class="jxr_linenumber" name="527" href="#527">527</a> 				<strong class="jxr_keyword">for</strong> (RefexDynamicVersionBI&lt;?&gt; refex : refexes) {
-<a class="jxr_linenumber" name="528" href="#528">528</a> 					LOG.debug(<span class="jxr_string">"Displaying sememe #"</span> + (++i) + <span class="jxr_string">" of "</span> + refexes.size());
-<a class="jxr_linenumber" name="529" href="#529">529</a> 					DynamicRefexHelper.displayDynamicRefex(refex);
-<a class="jxr_linenumber" name="530" href="#530">530</a> 
-<a class="jxr_linenumber" name="531" href="#531">531</a> 					RefexDynamicUsageDescription dud = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="532" href="#532">532</a> 					<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="533" href="#533">533</a> 						dud = refex.getRefexDynamicUsageDescription();
-<a class="jxr_linenumber" name="534" href="#534">534</a> 					} <strong class="jxr_keyword">catch</strong> (IOException | ContradictionException e) {
-<a class="jxr_linenumber" name="535" href="#535">535</a> 						LOG.error(<span class="jxr_string">"Failed performing getRefexDynamicUsageDescription(): caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>, e);
-<a class="jxr_linenumber" name="536" href="#536">536</a> 
-<a class="jxr_linenumber" name="537" href="#537">537</a> 						<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="538" href="#538">538</a> 					}
-<a class="jxr_linenumber" name="539" href="#539">539</a> 
-<a class="jxr_linenumber" name="540" href="#540">540</a> 					<strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
-<a class="jxr_linenumber" name="541" href="#541">541</a> 						TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
-<a class="jxr_linenumber" name="542" href="#542">542</a> 						
-<a class="jxr_linenumber" name="543" href="#543">543</a> 						<strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Global Attributes"*/</em>)) {</em>
-<a class="jxr_linenumber" name="544" href="#544">544</a> 							<em class="jxr_comment">// handle "Search Global Attributes"</em>
+<a class="jxr_linenumber" name="498" href="#498">498</a> 						<strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
+<a class="jxr_linenumber" name="499" href="#499">499</a> 							TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
+<a class="jxr_linenumber" name="500" href="#500">500</a> 							compModel.getFilters().clear();
+<a class="jxr_linenumber" name="501" href="#501">501</a> 							compModel.getDroolsExprProperty().set(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="502" href="#502">502</a> 						}
+<a class="jxr_linenumber" name="503" href="#503">503</a> 					}
+<a class="jxr_linenumber" name="504" href="#504">504</a> 				}
+<a class="jxr_linenumber" name="505" href="#505">505</a> 
+<a class="jxr_linenumber" name="506" href="#506">506</a> 				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
+<a class="jxr_linenumber" name="507" href="#507">507</a> 				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
+<a class="jxr_linenumber" name="508" href="#508">508</a> 
+<a class="jxr_linenumber" name="509" href="#509">509</a> 				<strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="510" href="#510">510</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; all refexes: "</span> +  matchingConcept.getRefexes().size());
+<a class="jxr_linenumber" name="511" href="#511">511</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; all dynamic sememes: "</span> +  matchingConcept.getRefexesDynamic().size());
+<a class="jxr_linenumber" name="512" href="#512">512</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; active dynamic sememes (StandardViewCoordinates.getWbAuxiliary()): "</span> +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
+<a class="jxr_linenumber" name="513" href="#513">513</a> 					LOG.debug(<span class="jxr_string">"loadSavedSearch(): concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; active dynamic sememes (WBUtility.getViewCoordinate()): "</span> +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+<a class="jxr_linenumber" name="514" href="#514">514</a> 			
+<a class="jxr_linenumber" name="515" href="#515">515</a> 					LOG.debug(<span class="jxr_string">"Displaying newly loaded save concept refexes"</span>);
+<a class="jxr_linenumber" name="516" href="#516">516</a> 					DynamicRefexHelper.displayDynamicRefexes(matchingConcept);
+<a class="jxr_linenumber" name="517" href="#517">517</a> 
+<a class="jxr_linenumber" name="518" href="#518">518</a> 				} <strong class="jxr_keyword">catch</strong> (IOException e) {
+<a class="jxr_linenumber" name="519" href="#519">519</a> 					LOG.warn(<span class="jxr_string">"Failed displaying attached refexes. Caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="520" href="#520">520</a> 					e.printStackTrace();
+<a class="jxr_linenumber" name="521" href="#521">521</a> 				}
+<a class="jxr_linenumber" name="522" href="#522">522</a> 
+<a class="jxr_linenumber" name="523" href="#523">523</a> 				<strong class="jxr_keyword">int</strong> i = 0;
+<a class="jxr_linenumber" name="524" href="#524">524</a> 				Collection&lt;? <strong class="jxr_keyword">extends</strong> RefexDynamicVersionBI&lt;?&gt;&gt; refexes = matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+<a class="jxr_linenumber" name="525" href="#525">525</a> 				<strong class="jxr_keyword">for</strong> (RefexDynamicVersionBI&lt;?&gt; refex : refexes) {
+<a class="jxr_linenumber" name="526" href="#526">526</a> 					LOG.debug(<span class="jxr_string">"Displaying sememe #"</span> + (++i) + <span class="jxr_string">" of "</span> + refexes.size());
+<a class="jxr_linenumber" name="527" href="#527">527</a> 					DynamicRefexHelper.displayDynamicRefex(refex);
+<a class="jxr_linenumber" name="528" href="#528">528</a> 
+<a class="jxr_linenumber" name="529" href="#529">529</a> 					RefexDynamicUsageDescription dud = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="530" href="#530">530</a> 					<strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="531" href="#531">531</a> 						dud = refex.getRefexDynamicUsageDescription();
+<a class="jxr_linenumber" name="532" href="#532">532</a> 					} <strong class="jxr_keyword">catch</strong> (IOException | ContradictionException e) {
+<a class="jxr_linenumber" name="533" href="#533">533</a> 						LOG.error(<span class="jxr_string">"Failed performing getRefexDynamicUsageDescription(): caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>, e);
+<a class="jxr_linenumber" name="534" href="#534">534</a> 
+<a class="jxr_linenumber" name="535" href="#535">535</a> 						<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="536" href="#536">536</a> 					}
+<a class="jxr_linenumber" name="537" href="#537">537</a> 
+<a class="jxr_linenumber" name="538" href="#538">538</a> 					<strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+<a class="jxr_linenumber" name="539" href="#539">539</a> 						TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
+<a class="jxr_linenumber" name="540" href="#540">540</a> 						
+<a class="jxr_linenumber" name="541" href="#541">541</a> 						<strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Global Attributes"*/</em>)) {</em>
+<a class="jxr_linenumber" name="542" href="#542">542</a> 							<em class="jxr_comment">// handle "Search Global Attributes"</em>
+<a class="jxr_linenumber" name="543" href="#543">543</a> 	
+<a class="jxr_linenumber" name="544" href="#544">544</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Global Attributes sememe"</span>);
 <a class="jxr_linenumber" name="545" href="#545">545</a> 	
-<a class="jxr_linenumber" name="546" href="#546">546</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Global Attributes sememe"</span>);
-<a class="jxr_linenumber" name="547" href="#547">547</a> 	
-<a class="jxr_linenumber" name="548" href="#548">548</a> 							<em class="jxr_comment">// Loading view coordinate</em>
-<a class="jxr_linenumber" name="549" href="#549">549</a> 							RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
-<a class="jxr_linenumber" name="550" href="#550">550</a> 	
-<a class="jxr_linenumber" name="551" href="#551">551</a> 							<em class="jxr_comment">// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()</em>
-<a class="jxr_linenumber" name="552" href="#552">552</a> 							ByteArrayInputStream input = <strong class="jxr_keyword">new</strong> ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
-<a class="jxr_linenumber" name="553" href="#553">553</a> 	
-<a class="jxr_linenumber" name="554" href="#554">554</a> 							ObjectInputStream oos = <strong class="jxr_keyword">new</strong> ObjectInputStream(input);
-<a class="jxr_linenumber" name="555" href="#555">555</a> 							ViewCoordinate vc = <strong class="jxr_keyword">new</strong> ViewCoordinate();
-<a class="jxr_linenumber" name="556" href="#556">556</a> 							vc.readExternal(oos);
-<a class="jxr_linenumber" name="557" href="#557">557</a> 							model.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
-<a class="jxr_linenumber" name="558" href="#558">558</a> 							LOG.debug(<span class="jxr_string">"Read View Coordinate from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
-<a class="jxr_linenumber" name="559" href="#559">559</a> 	
-<a class="jxr_linenumber" name="560" href="#560">560</a> 							<em class="jxr_comment">// Loading maxResults</em>
-<a class="jxr_linenumber" name="561" href="#561">561</a> 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
-<a class="jxr_linenumber" name="562" href="#562">562</a> 							model.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
-<a class="jxr_linenumber" name="563" href="#563">563</a> 							LOG.debug(<span class="jxr_string">"Read max results from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
-<a class="jxr_linenumber" name="564" href="#564">564</a> 	
-<a class="jxr_linenumber" name="565" href="#565">565</a> 							<em class="jxr_comment">// Loading drools expression</em>
-<a class="jxr_linenumber" name="566" href="#566">566</a> 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
-<a class="jxr_linenumber" name="567" href="#567">567</a> 							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != <strong class="jxr_keyword">null</strong> ? droolsExpr.getDataString() : <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="568" href="#568">568</a> 							LOG.debug(<span class="jxr_string">"Read drools expression from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
-<a class="jxr_linenumber" name="569" href="#569">569</a> 	
-<a class="jxr_linenumber" name="570" href="#570">570</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Lucene Filter"*/</em>)) {</em>
-<a class="jxr_linenumber" name="571" href="#571">571</a> 							<em class="jxr_comment">// handle "Search Lucene Filter"</em>
+<a class="jxr_linenumber" name="546" href="#546">546</a> 							<em class="jxr_comment">// Loading view coordinate</em>
+<a class="jxr_linenumber" name="547" href="#547">547</a> 							RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
+<a class="jxr_linenumber" name="548" href="#548">548</a> 	
+<a class="jxr_linenumber" name="549" href="#549">549</a> 							<em class="jxr_comment">// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()</em>
+<a class="jxr_linenumber" name="550" href="#550">550</a> 							ByteArrayInputStream input = <strong class="jxr_keyword">new</strong> ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
+<a class="jxr_linenumber" name="551" href="#551">551</a> 	
+<a class="jxr_linenumber" name="552" href="#552">552</a> 							ObjectInputStream oos = <strong class="jxr_keyword">new</strong> ObjectInputStream(input);
+<a class="jxr_linenumber" name="553" href="#553">553</a> 							ViewCoordinate vc = <strong class="jxr_keyword">new</strong> ViewCoordinate();
+<a class="jxr_linenumber" name="554" href="#554">554</a> 							vc.readExternal(oos);
+<a class="jxr_linenumber" name="555" href="#555">555</a> 							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
+<a class="jxr_linenumber" name="556" href="#556">556</a> 							LOG.debug(<span class="jxr_string">"Read View Coordinate from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
+<a class="jxr_linenumber" name="557" href="#557">557</a> 	
+<a class="jxr_linenumber" name="558" href="#558">558</a> 							<em class="jxr_comment">// Loading maxResults</em>
+<a class="jxr_linenumber" name="559" href="#559">559</a> 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
+<a class="jxr_linenumber" name="560" href="#560">560</a> 							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
+<a class="jxr_linenumber" name="561" href="#561">561</a> 							LOG.debug(<span class="jxr_string">"Read max results from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+<a class="jxr_linenumber" name="562" href="#562">562</a> 	
+<a class="jxr_linenumber" name="563" href="#563">563</a> 							<em class="jxr_comment">// Loading drools expression</em>
+<a class="jxr_linenumber" name="564" href="#564">564</a> 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
+<a class="jxr_linenumber" name="565" href="#565">565</a> 							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != <strong class="jxr_keyword">null</strong> ? droolsExpr.getDataString() : <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="566" href="#566">566</a> 							LOG.debug(<span class="jxr_string">"Read drools expression from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+<a class="jxr_linenumber" name="567" href="#567">567</a> 	
+<a class="jxr_linenumber" name="568" href="#568">568</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Lucene Filter"*/</em>)) {</em>
+<a class="jxr_linenumber" name="569" href="#569">569</a> 							<em class="jxr_comment">// handle "Search Lucene Filter"</em>
+<a class="jxr_linenumber" name="570" href="#570">570</a> 	
+<a class="jxr_linenumber" name="571" href="#571">571</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Lucene Filter sememe"</span>);
 <a class="jxr_linenumber" name="572" href="#572">572</a> 	
-<a class="jxr_linenumber" name="573" href="#573">573</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Lucene Filter sememe"</span>);
+<a class="jxr_linenumber" name="573" href="#573">573</a> 							LuceneSearchTypeFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/LuceneSearchTypeFilter.html">LuceneSearchTypeFilter</a>();
 <a class="jxr_linenumber" name="574" href="#574">574</a> 	
-<a class="jxr_linenumber" name="575" href="#575">575</a> 							LuceneSearchTypeFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/LuceneSearchTypeFilter.html">LuceneSearchTypeFilter</a>();
-<a class="jxr_linenumber" name="576" href="#576">576</a> 	
-<a class="jxr_linenumber" name="577" href="#577">577</a> 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
-<a class="jxr_linenumber" name="578" href="#578">578</a> 							newFilter.setSearchParameter(searchParamCol != <strong class="jxr_keyword">null</strong> ? searchParamCol.getDataString() : <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="579" href="#579">579</a> 							LOG.debug(<span class="jxr_string">"Read String search parameter from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + newFilter.getSearchParameter() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="575" href="#575">575</a> 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
+<a class="jxr_linenumber" name="576" href="#576">576</a> 							newFilter.setSearchParameter(searchParamCol != <strong class="jxr_keyword">null</strong> ? searchParamCol.getDataString() : <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="577" href="#577">577</a> 							LOG.debug(<span class="jxr_string">"Read String search parameter from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + newFilter.getSearchParameter() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="578" href="#578">578</a> 	
+<a class="jxr_linenumber" name="579" href="#579">579</a> 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 <a class="jxr_linenumber" name="580" href="#580">580</a> 	
-<a class="jxr_linenumber" name="581" href="#581">581</a> 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
-<a class="jxr_linenumber" name="582" href="#582">582</a> 	
-<a class="jxr_linenumber" name="583" href="#583">583</a> <em class="jxr_comment">//							if (compModel.getSearchType() != null) {</em>
-<a class="jxr_linenumber" name="584" href="#584">584</a> <em class="jxr_comment">//								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());</em>
-<a class="jxr_linenumber" name="585" href="#585">585</a> <em class="jxr_comment">//							} else {</em>
-<a class="jxr_linenumber" name="586" href="#586">586</a> 								compModel.setSearchType(newFilter);
-<a class="jxr_linenumber" name="587" href="#587">587</a> <em class="jxr_comment">//							}</em>
-<a class="jxr_linenumber" name="588" href="#588">588</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search RegExp Filter"*/</em>)) {</em>
-<a class="jxr_linenumber" name="589" href="#589">589</a> 							<em class="jxr_comment">// handle "Search RegExp Filter"</em>
+<a class="jxr_linenumber" name="581" href="#581">581</a> <em class="jxr_comment">//							if (compModel.getSearchType() != null) {</em>
+<a class="jxr_linenumber" name="582" href="#582">582</a> <em class="jxr_comment">//								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());</em>
+<a class="jxr_linenumber" name="583" href="#583">583</a> <em class="jxr_comment">//							} else {</em>
+<a class="jxr_linenumber" name="584" href="#584">584</a> 								compModel.setSearchType(newFilter);
+<a class="jxr_linenumber" name="585" href="#585">585</a> <em class="jxr_comment">//							}</em>
+<a class="jxr_linenumber" name="586" href="#586">586</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search RegExp Filter"*/</em>)) {</em>
+<a class="jxr_linenumber" name="587" href="#587">587</a> 							<em class="jxr_comment">// handle "Search RegExp Filter"</em>
+<a class="jxr_linenumber" name="588" href="#588">588</a> 	
+<a class="jxr_linenumber" name="589" href="#589">589</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search RegExp Filter sememe"</span>);
 <a class="jxr_linenumber" name="590" href="#590">590</a> 	
-<a class="jxr_linenumber" name="591" href="#591">591</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search RegExp Filter sememe"</span>);
+<a class="jxr_linenumber" name="591" href="#591">591</a> 							RegExpSearchTypeFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/RegExpSearchTypeFilter.html">RegExpSearchTypeFilter</a>();
 <a class="jxr_linenumber" name="592" href="#592">592</a> 	
-<a class="jxr_linenumber" name="593" href="#593">593</a> 							RegExpSearchTypeFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/RegExpSearchTypeFilter.html">RegExpSearchTypeFilter</a>();
-<a class="jxr_linenumber" name="594" href="#594">594</a> 	
-<a class="jxr_linenumber" name="595" href="#595">595</a> 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
-<a class="jxr_linenumber" name="596" href="#596">596</a> 							newFilter.setSearchParameter(searchParamCol != <strong class="jxr_keyword">null</strong> ? searchParamCol.getDataString() : <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="597" href="#597">597</a> 							LOG.debug(<span class="jxr_string">"Read String search parameter from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + newFilter.getSearchParameter() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="593" href="#593">593</a> 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
+<a class="jxr_linenumber" name="594" href="#594">594</a> 							newFilter.setSearchParameter(searchParamCol != <strong class="jxr_keyword">null</strong> ? searchParamCol.getDataString() : <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="595" href="#595">595</a> 							LOG.debug(<span class="jxr_string">"Read String search parameter from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + newFilter.getSearchParameter() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="596" href="#596">596</a> 	
+<a class="jxr_linenumber" name="597" href="#597">597</a> 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 <a class="jxr_linenumber" name="598" href="#598">598</a> 	
-<a class="jxr_linenumber" name="599" href="#599">599</a> 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
-<a class="jxr_linenumber" name="600" href="#600">600</a> 	
-<a class="jxr_linenumber" name="601" href="#601">601</a> 							compModel.setSearchType(newFilter);
-<a class="jxr_linenumber" name="602" href="#602">602</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_ISDESCENDANTOF_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search IsKindOf Filter"*/</em>)) {</em>
-<a class="jxr_linenumber" name="603" href="#603">603</a> 							<em class="jxr_comment">// handle "Search RegExp Filter"</em>
+<a class="jxr_linenumber" name="599" href="#599">599</a> 							compModel.setSearchType(newFilter);
+<a class="jxr_linenumber" name="600" href="#600">600</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_ISDESCENDANTOF_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search IsKindOf Filter"*/</em>)) {</em>
+<a class="jxr_linenumber" name="601" href="#601">601</a> 							<em class="jxr_comment">// handle "Search RegExp Filter"</em>
+<a class="jxr_linenumber" name="602" href="#602">602</a> 	
+<a class="jxr_linenumber" name="603" href="#603">603</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search IsKindOf Filter sememe"</span>);
 <a class="jxr_linenumber" name="604" href="#604">604</a> 	
-<a class="jxr_linenumber" name="605" href="#605">605</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search IsKindOf Filter sememe"</span>);
+<a class="jxr_linenumber" name="605" href="#605">605</a> 							IsDescendantOfFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/IsDescendantOfFilter.html">IsDescendantOfFilter</a>();
 <a class="jxr_linenumber" name="606" href="#606">606</a> 	
-<a class="jxr_linenumber" name="607" href="#607">607</a> 							IsDescendantOfFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/IsDescendantOfFilter.html">IsDescendantOfFilter</a>();
-<a class="jxr_linenumber" name="608" href="#608">608</a> 	
-<a class="jxr_linenumber" name="609" href="#609">609</a> 							RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ANCESTOR_COLUMN.getDescription());
-<a class="jxr_linenumber" name="610" href="#610">610</a> 							<strong class="jxr_keyword">if</strong> (ascendantUuidCol != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="611" href="#611">611</a> 								UUID uuid = ascendantUuidCol.getDataUUID();
-<a class="jxr_linenumber" name="612" href="#612">612</a> 								<strong class="jxr_keyword">int</strong> nid = WBUtility.getConceptVersion(uuid).getNid();
-<a class="jxr_linenumber" name="613" href="#613">613</a> 								newFilter.setNid(nid);
-<a class="jxr_linenumber" name="614" href="#614">614</a> 								LOG.debug(<span class="jxr_string">"Read UUID (nid="</span> + nid + <span class="jxr_string">") from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + uuid + <span class="jxr_string">"\&quot;"</span>);
-<a class="jxr_linenumber" name="615" href="#615">615</a> 							}
-<a class="jxr_linenumber" name="616" href="#616">616</a> 	
-<a class="jxr_linenumber" name="617" href="#617">617</a> 							loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
-<a class="jxr_linenumber" name="618" href="#618">618</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_ISA_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search IsA Filter"*/</em>)) {</em>
-<a class="jxr_linenumber" name="619" href="#619">619</a> 							<em class="jxr_comment">// handle "Search IsA Filter"</em>
+<a class="jxr_linenumber" name="607" href="#607">607</a> 							RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ANCESTOR_COLUMN.getDescription());
+<a class="jxr_linenumber" name="608" href="#608">608</a> 							<strong class="jxr_keyword">if</strong> (ascendantUuidCol != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="609" href="#609">609</a> 								UUID uuid = ascendantUuidCol.getDataUUID();
+<a class="jxr_linenumber" name="610" href="#610">610</a> 								<strong class="jxr_keyword">int</strong> nid = WBUtility.getConceptVersion(uuid).getNid();
+<a class="jxr_linenumber" name="611" href="#611">611</a> 								newFilter.setNid(nid);
+<a class="jxr_linenumber" name="612" href="#612">612</a> 								LOG.debug(<span class="jxr_string">"Read UUID (nid="</span> + nid + <span class="jxr_string">") from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + uuid + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="613" href="#613">613</a> 							}
+<a class="jxr_linenumber" name="614" href="#614">614</a> 	
+<a class="jxr_linenumber" name="615" href="#615">615</a> 							loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
+<a class="jxr_linenumber" name="616" href="#616">616</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_ISA_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search IsA Filter"*/</em>)) {</em>
+<a class="jxr_linenumber" name="617" href="#617">617</a> 							<em class="jxr_comment">// handle "Search IsA Filter"</em>
+<a class="jxr_linenumber" name="618" href="#618">618</a> 	
+<a class="jxr_linenumber" name="619" href="#619">619</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search IsA Filter sememe"</span>);
 <a class="jxr_linenumber" name="620" href="#620">620</a> 	
-<a class="jxr_linenumber" name="621" href="#621">621</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search IsA Filter sememe"</span>);
+<a class="jxr_linenumber" name="621" href="#621">621</a> 							IsAFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/IsAFilter.html">IsAFilter</a>();
 <a class="jxr_linenumber" name="622" href="#622">622</a> 	
-<a class="jxr_linenumber" name="623" href="#623">623</a> 							IsAFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/IsAFilter.html">IsAFilter</a>();
-<a class="jxr_linenumber" name="624" href="#624">624</a> 	
-<a class="jxr_linenumber" name="625" href="#625">625</a> 							RefexDynamicUUIDBI matchUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.MATCH_COLUMN.getDescription());
-<a class="jxr_linenumber" name="626" href="#626">626</a> 							<strong class="jxr_keyword">if</strong> (matchUuidCol != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="627" href="#627">627</a> 								UUID uuid = matchUuidCol.getDataUUID();
-<a class="jxr_linenumber" name="628" href="#628">628</a> 								<strong class="jxr_keyword">int</strong> nid = WBUtility.getConceptVersion(uuid).getNid();
-<a class="jxr_linenumber" name="629" href="#629">629</a> 								newFilter.setNid(nid);
-<a class="jxr_linenumber" name="630" href="#630">630</a> 								LOG.debug(<span class="jxr_string">"Read UUID (nid="</span> + nid + <span class="jxr_string">") from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + uuid + <span class="jxr_string">"\&quot;"</span>);
-<a class="jxr_linenumber" name="631" href="#631">631</a> 							}
-<a class="jxr_linenumber" name="632" href="#632">632</a> 	
-<a class="jxr_linenumber" name="633" href="#633">633</a> 							loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
-<a class="jxr_linenumber" name="634" href="#634">634</a> 						} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="635" href="#635">635</a> 							<em class="jxr_comment">// handle or ignore</em>
-<a class="jxr_linenumber" name="636" href="#636">636</a> 							LOG.warn(<span class="jxr_string">"Concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; contains unexpected sememe \&quot;"</span> + dud.getRefexName() + <span class="jxr_string">"\&quot;.  Ignoring..."</span>);
-<a class="jxr_linenumber" name="637" href="#637">637</a> 						}
-<a class="jxr_linenumber" name="638" href="#638">638</a> 	
-<a class="jxr_linenumber" name="639" href="#639">639</a> 						<em class="jxr_comment">// At this point the search should have a SearchTypeFilter</em>
-<a class="jxr_linenumber" name="640" href="#640">640</a> 						<strong class="jxr_keyword">if</strong> (compModel.getSearchType() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="641" href="#641">641</a> 							<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/SearchConceptHelper.html">SearchConceptException</a>(<span class="jxr_string">"Model does not contain a SearchTypeFilter"</span>);
-<a class="jxr_linenumber" name="642" href="#642">642</a> 						}
-<a class="jxr_linenumber" name="643" href="#643">643</a> 						
-<a class="jxr_linenumber" name="644" href="#644">644</a> 						<em class="jxr_comment">// At this point the filterOrderMap should NOT contain any SearchTypeFilter filter</em>
-<a class="jxr_linenumber" name="645" href="#645">645</a> 						<strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> order : filterOrderMap.keySet()) {
-<a class="jxr_linenumber" name="646" href="#646">646</a> 							<strong class="jxr_keyword">for</strong> (NonSearchTypeFilter&lt;?&gt; f : filterOrderMap.get(order)) {
-<a class="jxr_linenumber" name="647" href="#647">647</a> 								compModel.getFilters().add(f);
-<a class="jxr_linenumber" name="648" href="#648">648</a> 							}
-<a class="jxr_linenumber" name="649" href="#649">649</a> 						}
-<a class="jxr_linenumber" name="650" href="#650">650</a> 					} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (model.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
-<a class="jxr_linenumber" name="651" href="#651">651</a> 						SememeSearchTypeModel compModel = (SememeSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
-<a class="jxr_linenumber" name="652" href="#652">652</a> 						
-<a class="jxr_linenumber" name="653" href="#653">653</a> 						<strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Global Attributes"*/</em>)) {</em>
-<a class="jxr_linenumber" name="654" href="#654">654</a> 							<em class="jxr_comment">// handle "Search Global Attributes"</em>
+<a class="jxr_linenumber" name="623" href="#623">623</a> 							RefexDynamicUUIDBI matchUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.MATCH_COLUMN.getDescription());
+<a class="jxr_linenumber" name="624" href="#624">624</a> 							<strong class="jxr_keyword">if</strong> (matchUuidCol != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="625" href="#625">625</a> 								UUID uuid = matchUuidCol.getDataUUID();
+<a class="jxr_linenumber" name="626" href="#626">626</a> 								<strong class="jxr_keyword">int</strong> nid = WBUtility.getConceptVersion(uuid).getNid();
+<a class="jxr_linenumber" name="627" href="#627">627</a> 								newFilter.setNid(nid);
+<a class="jxr_linenumber" name="628" href="#628">628</a> 								LOG.debug(<span class="jxr_string">"Read UUID (nid="</span> + nid + <span class="jxr_string">") from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + uuid + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="629" href="#629">629</a> 							}
+<a class="jxr_linenumber" name="630" href="#630">630</a> 	
+<a class="jxr_linenumber" name="631" href="#631">631</a> 							loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
+<a class="jxr_linenumber" name="632" href="#632">632</a> 						} <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="633" href="#633">633</a> 							<em class="jxr_comment">// handle or ignore</em>
+<a class="jxr_linenumber" name="634" href="#634">634</a> 							LOG.warn(<span class="jxr_string">"Concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; contains unexpected sememe \&quot;"</span> + dud.getRefexName() + <span class="jxr_string">"\&quot;.  Ignoring..."</span>);
+<a class="jxr_linenumber" name="635" href="#635">635</a> 						}
+<a class="jxr_linenumber" name="636" href="#636">636</a> 	
+<a class="jxr_linenumber" name="637" href="#637">637</a> 						<em class="jxr_comment">// At this point the search should have a SearchTypeFilter</em>
+<a class="jxr_linenumber" name="638" href="#638">638</a> 						<strong class="jxr_keyword">if</strong> (compModel.getSearchType() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="639" href="#639">639</a> 							<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/SearchConceptHelper.html">SearchConceptException</a>(<span class="jxr_string">"Model does not contain a SearchTypeFilter"</span>);
+<a class="jxr_linenumber" name="640" href="#640">640</a> 						}
+<a class="jxr_linenumber" name="641" href="#641">641</a> 						
+<a class="jxr_linenumber" name="642" href="#642">642</a> 						<em class="jxr_comment">// At this point the filterOrderMap should NOT contain any SearchTypeFilter filter</em>
+<a class="jxr_linenumber" name="643" href="#643">643</a> 						<strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> order : filterOrderMap.keySet()) {
+<a class="jxr_linenumber" name="644" href="#644">644</a> 							<strong class="jxr_keyword">for</strong> (NonSearchTypeFilter&lt;?&gt; f : filterOrderMap.get(order)) {
+<a class="jxr_linenumber" name="645" href="#645">645</a> 								compModel.getFilters().add(f);
+<a class="jxr_linenumber" name="646" href="#646">646</a> 							}
+<a class="jxr_linenumber" name="647" href="#647">647</a> 						}
+<a class="jxr_linenumber" name="648" href="#648">648</a> 					} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
+<a class="jxr_linenumber" name="649" href="#649">649</a> 						SememeSearchTypeModel compModel = (SememeSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
+<a class="jxr_linenumber" name="650" href="#650">650</a> 						
+<a class="jxr_linenumber" name="651" href="#651">651</a> 						<strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Global Attributes"*/</em>)) {</em>
+<a class="jxr_linenumber" name="652" href="#652">652</a> 							<em class="jxr_comment">// handle "Search Global Attributes"</em>
+<a class="jxr_linenumber" name="653" href="#653">653</a> 	
+<a class="jxr_linenumber" name="654" href="#654">654</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Global Attributes sememe"</span>);
 <a class="jxr_linenumber" name="655" href="#655">655</a> 	
-<a class="jxr_linenumber" name="656" href="#656">656</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Global Attributes sememe"</span>);
-<a class="jxr_linenumber" name="657" href="#657">657</a> 	
-<a class="jxr_linenumber" name="658" href="#658">658</a> 							<em class="jxr_comment">// Loading view coordinate</em>
-<a class="jxr_linenumber" name="659" href="#659">659</a> 							RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
-<a class="jxr_linenumber" name="660" href="#660">660</a> 	
-<a class="jxr_linenumber" name="661" href="#661">661</a> 							<em class="jxr_comment">// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()</em>
-<a class="jxr_linenumber" name="662" href="#662">662</a> 							ByteArrayInputStream input = <strong class="jxr_keyword">new</strong> ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
-<a class="jxr_linenumber" name="663" href="#663">663</a> 	
-<a class="jxr_linenumber" name="664" href="#664">664</a> 							ObjectInputStream oos = <strong class="jxr_keyword">new</strong> ObjectInputStream(input);
-<a class="jxr_linenumber" name="665" href="#665">665</a> 							ViewCoordinate vc = <strong class="jxr_keyword">new</strong> ViewCoordinate();
-<a class="jxr_linenumber" name="666" href="#666">666</a> 							vc.readExternal(oos);
-<a class="jxr_linenumber" name="667" href="#667">667</a> 							model.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
-<a class="jxr_linenumber" name="668" href="#668">668</a> 							LOG.debug(<span class="jxr_string">"Read View Coordinate from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
-<a class="jxr_linenumber" name="669" href="#669">669</a> 	
-<a class="jxr_linenumber" name="670" href="#670">670</a> 							<em class="jxr_comment">// Loading maxResults</em>
-<a class="jxr_linenumber" name="671" href="#671">671</a> 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
-<a class="jxr_linenumber" name="672" href="#672">672</a> 							model.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
-<a class="jxr_linenumber" name="673" href="#673">673</a> 							LOG.debug(<span class="jxr_string">"Read max results from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
-<a class="jxr_linenumber" name="674" href="#674">674</a> 	
-<a class="jxr_linenumber" name="675" href="#675">675</a> 							<em class="jxr_comment">// Loading drools expression</em>
-<a class="jxr_linenumber" name="676" href="#676">676</a> 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
-<a class="jxr_linenumber" name="677" href="#677">677</a> 							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != <strong class="jxr_keyword">null</strong> ? droolsExpr.getDataString() : <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="678" href="#678">678</a> 							LOG.debug(<span class="jxr_string">"Read drools expression from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
-<a class="jxr_linenumber" name="679" href="#679">679</a> 	
-<a class="jxr_linenumber" name="680" href="#680">680</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Sememe Filter"*/</em>)) {	</em>
-<a class="jxr_linenumber" name="681" href="#681">681</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Sememe Filter sememe"</span>);
+<a class="jxr_linenumber" name="656" href="#656">656</a> 							<em class="jxr_comment">// Loading view coordinate</em>
+<a class="jxr_linenumber" name="657" href="#657">657</a> 							RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
+<a class="jxr_linenumber" name="658" href="#658">658</a> 	
+<a class="jxr_linenumber" name="659" href="#659">659</a> 							<em class="jxr_comment">// Serialize passed View Coordinate into byte[]serializedViewCoordinate.getData()</em>
+<a class="jxr_linenumber" name="660" href="#660">660</a> 							ByteArrayInputStream input = <strong class="jxr_keyword">new</strong> ByteArrayInputStream(serializedViewCoordinate.getDataByteArray());
+<a class="jxr_linenumber" name="661" href="#661">661</a> 	
+<a class="jxr_linenumber" name="662" href="#662">662</a> 							ObjectInputStream oos = <strong class="jxr_keyword">new</strong> ObjectInputStream(input);
+<a class="jxr_linenumber" name="663" href="#663">663</a> 							ViewCoordinate vc = <strong class="jxr_keyword">new</strong> ViewCoordinate();
+<a class="jxr_linenumber" name="664" href="#664">664</a> 							vc.readExternal(oos);
+<a class="jxr_linenumber" name="665" href="#665">665</a> 							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
+<a class="jxr_linenumber" name="666" href="#666">666</a> 							LOG.debug(<span class="jxr_string">"Read View Coordinate from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
+<a class="jxr_linenumber" name="667" href="#667">667</a> 	
+<a class="jxr_linenumber" name="668" href="#668">668</a> 							<em class="jxr_comment">// Loading maxResults</em>
+<a class="jxr_linenumber" name="669" href="#669">669</a> 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
+<a class="jxr_linenumber" name="670" href="#670">670</a> 							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
+<a class="jxr_linenumber" name="671" href="#671">671</a> 							LOG.debug(<span class="jxr_string">"Read max results from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+<a class="jxr_linenumber" name="672" href="#672">672</a> 	
+<a class="jxr_linenumber" name="673" href="#673">673</a> 							<em class="jxr_comment">// Loading drools expression</em>
+<a class="jxr_linenumber" name="674" href="#674">674</a> 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
+<a class="jxr_linenumber" name="675" href="#675">675</a> 							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != <strong class="jxr_keyword">null</strong> ? droolsExpr.getDataString() : <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="676" href="#676">676</a> 							LOG.debug(<span class="jxr_string">"Read drools expression from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: "</span> + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+<a class="jxr_linenumber" name="677" href="#677">677</a> 	
+<a class="jxr_linenumber" name="678" href="#678">678</a> 						} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() <em class="jxr_comment">/*<em class="jxr_comment">"Search Sememe Filter"*/</em>)) {	</em>
+<a class="jxr_linenumber" name="679" href="#679">679</a> 							LOG.debug(<span class="jxr_string">"Loading data into model from Search Sememe Filter sememe"</span>);
+<a class="jxr_linenumber" name="680" href="#680">680</a> 	
+<a class="jxr_linenumber" name="681" href="#681">681</a> 							SememeContentSearchTypeFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/SememeContentSearchTypeFilter.html">SememeContentSearchTypeFilter</a>();
 <a class="jxr_linenumber" name="682" href="#682">682</a> 	
-<a class="jxr_linenumber" name="683" href="#683">683</a> 							SememeContentSearchTypeFilter newFilter = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/filters/SememeContentSearchTypeFilter.html">SememeContentSearchTypeFilter</a>();
-<a class="jxr_linenumber" name="684" href="#684">684</a> 	
-<a class="jxr_linenumber" name="685" href="#685">685</a> 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
-<a class="jxr_linenumber" name="686" href="#686">686</a> 							newFilter.setSearchParameter(searchParamCol != <strong class="jxr_keyword">null</strong> ? searchParamCol.getDataString() : <strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="687" href="#687">687</a> 							LOG.debug(<span class="jxr_string">"Read String search parameter from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + newFilter.getSearchParameter() + <span class="jxr_string">"\&quot;"</span>);
-<a class="jxr_linenumber" name="688" href="#688">688</a> 
-<a class="jxr_linenumber" name="689" href="#689">689</a> 							RefexDynamicUUID uuidCol = (RefexDynamicUUID)refex.getData(Search.UUID_COLUMN.getDescription());
-<a class="jxr_linenumber" name="690" href="#690">690</a> 							<strong class="jxr_keyword">if</strong> (uuidCol != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="691" href="#691">691</a> 								ConceptVersionBI conceptVersion = WBUtility.getConceptVersion(uuidCol.getDataUUID());
-<a class="jxr_linenumber" name="692" href="#692">692</a> 								newFilter.setAssemblageConcept(conceptVersion);
-<a class="jxr_linenumber" name="693" href="#693">693</a> 							}
-<a class="jxr_linenumber" name="694" href="#694">694</a> 							LOG.debug(<span class="jxr_string">"Read assemblage concept from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe assemblage: \&quot;"</span> + newFilter.getAssemblageConcept() != <strong class="jxr_keyword">null</strong> ? ComponentDescriptionHelper.getComponentDescription(newFilter.getAssemblageConcept()) : <strong class="jxr_keyword">null</strong> + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="683" href="#683">683</a> 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
+<a class="jxr_linenumber" name="684" href="#684">684</a> 							newFilter.setSearchParameter(searchParamCol != <strong class="jxr_keyword">null</strong> ? searchParamCol.getDataString() : <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="685" href="#685">685</a> 							LOG.debug(<span class="jxr_string">"Read String search parameter from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe: \&quot;"</span> + newFilter.getSearchParameter() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="686" href="#686">686</a> 
+<a class="jxr_linenumber" name="687" href="#687">687</a> 							RefexDynamicUUID uuidCol = (RefexDynamicUUID)refex.getData(Search.UUID_COLUMN.getDescription());
+<a class="jxr_linenumber" name="688" href="#688">688</a> 							<strong class="jxr_keyword">if</strong> (uuidCol != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="689" href="#689">689</a> 								ConceptVersionBI conceptVersion = WBUtility.getConceptVersion(uuidCol.getDataUUID());
+<a class="jxr_linenumber" name="690" href="#690">690</a> 								newFilter.setAssemblageConcept(conceptVersion);
+<a class="jxr_linenumber" name="691" href="#691">691</a> 							}
+<a class="jxr_linenumber" name="692" href="#692">692</a> 							LOG.debug(<span class="jxr_string">"Read assemblage concept from "</span> + dud.getRefexName() + <span class="jxr_string">" sememe assemblage: \&quot;"</span> + newFilter.getAssemblageConcept() != <strong class="jxr_keyword">null</strong> ? ComponentDescriptionHelper.getComponentDescription(newFilter.getAssemblageConcept()) : <strong class="jxr_keyword">null</strong> + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="693" href="#693">693</a> 	
+<a class="jxr_linenumber" name="694" href="#694">694</a> 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 <a class="jxr_linenumber" name="695" href="#695">695</a> 	
-<a class="jxr_linenumber" name="696" href="#696">696</a> 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
-<a class="jxr_linenumber" name="697" href="#697">697</a> 	
-<a class="jxr_linenumber" name="698" href="#698">698</a> <em class="jxr_comment">//							if (compModel.getSearchType() != null) {</em>
-<a class="jxr_linenumber" name="699" href="#699">699</a> <em class="jxr_comment">//								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());</em>
-<a class="jxr_linenumber" name="700" href="#700">700</a> <em class="jxr_comment">//							} else {</em>
-<a class="jxr_linenumber" name="701" href="#701">701</a> 								compModel.setSearchType(newFilter);
-<a class="jxr_linenumber" name="702" href="#702">702</a> <em class="jxr_comment">//							}</em>
-<a class="jxr_linenumber" name="703" href="#703">703</a> 						} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="704" href="#704">704</a> 							<em class="jxr_comment">// handle or ignore</em>
-<a class="jxr_linenumber" name="705" href="#705">705</a> 							LOG.warn(<span class="jxr_string">"Concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; contains unexpected sememe \&quot;"</span> + dud.getRefexName() + <span class="jxr_string">"\&quot;.  Ignoring..."</span>);
-<a class="jxr_linenumber" name="706" href="#706">706</a> 						}
-<a class="jxr_linenumber" name="707" href="#707">707</a> 	
-<a class="jxr_linenumber" name="708" href="#708">708</a> 						<em class="jxr_comment">// At this point the search should have a SearchTypeFilter</em>
-<a class="jxr_linenumber" name="709" href="#709">709</a> <em class="jxr_comment">//						if (compModel.getSearchType() == null) {</em>
-<a class="jxr_linenumber" name="710" href="#710">710</a> <em class="jxr_comment">//							throw new SearchConceptException("Model does not contain a SearchTypeFilter");</em>
-<a class="jxr_linenumber" name="711" href="#711">711</a> <em class="jxr_comment">//						}</em>
-<a class="jxr_linenumber" name="712" href="#712">712</a> 					}
-<a class="jxr_linenumber" name="713" href="#713">713</a> 				}
-<a class="jxr_linenumber" name="714" href="#714">714</a> 				
-<a class="jxr_linenumber" name="715" href="#715">715</a> 				LOG.debug(<span class="jxr_string">"loadSavedSearch() loaded search view model for \&quot;"</span> + matchingConcept + <span class="jxr_string">"\&quot;: "</span> + model);
-<a class="jxr_linenumber" name="716" href="#716">716</a> 
-<a class="jxr_linenumber" name="717" href="#717">717</a> 				<strong class="jxr_keyword">return</strong> model;
-<a class="jxr_linenumber" name="718" href="#718">718</a> 			} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="719" href="#719">719</a> 				LOG.error(<span class="jxr_string">"Failed loading saved search "</span> + displayConcept);
-<a class="jxr_linenumber" name="720" href="#720">720</a> 				<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="721" href="#721">721</a> 			}
-<a class="jxr_linenumber" name="722" href="#722">722</a> 		} <strong class="jxr_keyword">catch</strong> (IOException | InvalidNameException | IndexOutOfBoundsException | ContradictionException | ClassNotFoundException e) {
-<a class="jxr_linenumber" name="723" href="#723">723</a> 			LOG.error(<span class="jxr_string">"Failed loading saved search. Caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>);
-<a class="jxr_linenumber" name="724" href="#724">724</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/SearchConceptHelper.html">SearchConceptException</a>(e.getLocalizedMessage(), e);
-<a class="jxr_linenumber" name="725" href="#725">725</a> 		}
-<a class="jxr_linenumber" name="726" href="#726">726</a> 	}
-<a class="jxr_linenumber" name="727" href="#727">727</a> }
+<a class="jxr_linenumber" name="696" href="#696">696</a> <em class="jxr_comment">//							if (compModel.getSearchType() != null) {</em>
+<a class="jxr_linenumber" name="697" href="#697">697</a> <em class="jxr_comment">//								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());</em>
+<a class="jxr_linenumber" name="698" href="#698">698</a> <em class="jxr_comment">//							} else {</em>
+<a class="jxr_linenumber" name="699" href="#699">699</a> 								compModel.setSearchType(newFilter);
+<a class="jxr_linenumber" name="700" href="#700">700</a> <em class="jxr_comment">//							}</em>
+<a class="jxr_linenumber" name="701" href="#701">701</a> 						} <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="702" href="#702">702</a> 							<em class="jxr_comment">// handle or ignore</em>
+<a class="jxr_linenumber" name="703" href="#703">703</a> 							LOG.warn(<span class="jxr_string">"Concept \&quot;"</span> + displayConcept + <span class="jxr_string">"\&quot; contains unexpected sememe \&quot;"</span> + dud.getRefexName() + <span class="jxr_string">"\&quot;.  Ignoring..."</span>);
+<a class="jxr_linenumber" name="704" href="#704">704</a> 						}
+<a class="jxr_linenumber" name="705" href="#705">705</a> 	
+<a class="jxr_linenumber" name="706" href="#706">706</a> 						<em class="jxr_comment">// At this point the search should have a SearchTypeFilter</em>
+<a class="jxr_linenumber" name="707" href="#707">707</a> <em class="jxr_comment">//						if (compModel.getSearchType() == null) {</em>
+<a class="jxr_linenumber" name="708" href="#708">708</a> <em class="jxr_comment">//							throw new SearchConceptException("Model does not contain a SearchTypeFilter");</em>
+<a class="jxr_linenumber" name="709" href="#709">709</a> <em class="jxr_comment">//						}</em>
+<a class="jxr_linenumber" name="710" href="#710">710</a> 					}
+<a class="jxr_linenumber" name="711" href="#711">711</a> 				}
+<a class="jxr_linenumber" name="712" href="#712">712</a> 				
+<a class="jxr_linenumber" name="713" href="#713">713</a> 				LOG.debug(<span class="jxr_string">"loadSavedSearch() loaded search view model for \&quot;"</span> + matchingConcept + <span class="jxr_string">"\&quot;: "</span> + model);
+<a class="jxr_linenumber" name="714" href="#714">714</a> 
+<a class="jxr_linenumber" name="715" href="#715">715</a> 				<strong class="jxr_keyword">return</strong> model;
+<a class="jxr_linenumber" name="716" href="#716">716</a> 			} <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="717" href="#717">717</a> 				LOG.error(<span class="jxr_string">"Failed loading saved search "</span> + displayConcept);
+<a class="jxr_linenumber" name="718" href="#718">718</a> 				<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="719" href="#719">719</a> 			}
+<a class="jxr_linenumber" name="720" href="#720">720</a> 		} <strong class="jxr_keyword">catch</strong> (IOException | InvalidNameException | IndexOutOfBoundsException | ContradictionException | ClassNotFoundException e) {
+<a class="jxr_linenumber" name="721" href="#721">721</a> 			LOG.error(<span class="jxr_string">"Failed loading saved search. Caught "</span> + e.getClass().getName() + <span class="jxr_string">" \&quot;"</span> + e.getLocalizedMessage() + <span class="jxr_string">"\&quot;"</span>);
+<a class="jxr_linenumber" name="722" href="#722">722</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/va/isaac/gui/enhancedsearchview/SearchConceptHelper.html">SearchConceptException</a>(e.getLocalizedMessage(), e);
+<a class="jxr_linenumber" name="723" href="#723">723</a> 		}
+<a class="jxr_linenumber" name="724" href="#724">724</a> 	}
+<a class="jxr_linenumber" name="725" href="#725">725</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>

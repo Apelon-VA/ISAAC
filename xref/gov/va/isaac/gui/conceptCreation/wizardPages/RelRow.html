@@ -59,16 +59,16 @@
 <a class="jxr_linenumber" name="49" href="#49">49</a>  	TextField group;
 <a class="jxr_linenumber" name="50" href="#50">50</a>  	Node groupNode;
 <a class="jxr_linenumber" name="51" href="#51">51</a>  	
-<a class="jxr_linenumber" name="52" href="#52">52</a>  	<em class="jxr_comment">//TODO rework this binding code - the updates to the utility code merge the SimpleStringProperty aspect into the UpdatedableBooleanBinding - </em>
+<a class="jxr_linenumber" name="52" href="#52">52</a>  	<em class="jxr_comment">//TODO (artf231869) rework this binding code - the updates to the utility code merge the SimpleStringProperty aspect into the UpdatedableBooleanBinding - </em>
 <a class="jxr_linenumber" name="53" href="#53">53</a>  	<em class="jxr_comment">//so the binding now carries the details about valid, and the reason why not valid, if not - which vastly simplifies piecing this together.  Ask Dan...</em>
 <a class="jxr_linenumber" name="54" href="#54">54</a>  	<strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/va/isaac/util/UpdateableBooleanBinding.html">UpdateableBooleanBinding</a> rowValid;
 <a class="jxr_linenumber" name="55" href="#55">55</a>  	SimpleStringProperty groupFieldInvalidReason_ = <strong class="jxr_keyword">new</strong> SimpleStringProperty(<span class="jxr_string">""</span>);
 <a class="jxr_linenumber" name="56" href="#56">56</a>  	SimpleStringProperty typeFieldInvalidReason_ = <strong class="jxr_keyword">new</strong> SimpleStringProperty(<span class="jxr_string">"A Type selection is required"</span>);
 <a class="jxr_linenumber" name="57" href="#57">57</a>  	
-<a class="jxr_linenumber" name="58" href="#58">58</a>  	<em class="jxr_comment">// TODO add validation of this type (unless drools covers it)</em>
+<a class="jxr_linenumber" name="58" href="#58">58</a>  	<em class="jxr_comment">// TODO (artf231869) add validation of this type (unless drools covers it)</em>
 <a class="jxr_linenumber" name="59" href="#59">59</a>  	SimpleStringProperty typeTargetInvalidReason_ = <strong class="jxr_keyword">new</strong> SimpleStringProperty(<span class="jxr_string">"Relationship type may not be same as relationship target"</span>);
 <a class="jxr_linenumber" name="60" href="#60">60</a>  
-<a class="jxr_linenumber" name="61" href="#61">61</a>  	<em class="jxr_comment">// TODO Need to add soon</em>
+<a class="jxr_linenumber" name="61" href="#61">61</a>  	<em class="jxr_comment">// TODO (artf231869) Need to add soon</em>
 <a class="jxr_linenumber" name="62" href="#62">62</a>  	SimpleStringProperty typeIsaInvalidReason_ = <strong class="jxr_keyword">new</strong> SimpleStringProperty(<span class="jxr_string">"Relationship type may not be IS_A as that is defined in first screen"</span>);
 <a class="jxr_linenumber" name="63" href="#63">63</a>  
 <a class="jxr_linenumber" name="64" href="#64">64</a>  	<strong class="jxr_keyword">public</strong> <a href="../../../../../../gov/va/isaac/gui/conceptCreation/wizardPages/RelRow.html">RelRow</a>()
@@ -78,7 +78,7 @@
 <a class="jxr_linenumber" name="68" href="#68">68</a>  		relationship = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/ConceptNode.html">ConceptNode</a>(<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>, dropDownOptions, <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="69" href="#69">69</a>  		target = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/ConceptNode.html">ConceptNode</a>(<strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="70" href="#70">70</a>  		
-<a class="jxr_linenumber" name="71" href="#71">71</a>  		<em class="jxr_comment">//TODO add validation icons / reasons</em>
+<a class="jxr_linenumber" name="71" href="#71">71</a>  		<em class="jxr_comment">//TODO (artf231868) add validation icons / reasons</em>
 <a class="jxr_linenumber" name="72" href="#72">72</a>  		type = <strong class="jxr_keyword">new</strong> ChoiceBox&lt;String&gt;(FXCollections.observableArrayList(<span class="jxr_string">"Role"</span>, <span class="jxr_string">"Qualifier"</span>));
 <a class="jxr_linenumber" name="73" href="#73">73</a>  		type.valueProperty().addListener(<strong class="jxr_keyword">new</strong> ChangeListener&lt;String&gt;()
 <a class="jxr_linenumber" name="74" href="#74">74</a>  		{
@@ -102,7 +102,7 @@
 <a class="jxr_linenumber" name="92" href="#92">92</a>  		typeNode = ErrorMarkerUtils.setupErrorMarker(type, typeFieldInvalidReason_);
 <a class="jxr_linenumber" name="93" href="#93">93</a>  		
 <a class="jxr_linenumber" name="94" href="#94">94</a>  		group = <strong class="jxr_keyword">new</strong> TextField(<span class="jxr_string">"0"</span>);
-<a class="jxr_linenumber" name="95" href="#95">95</a>  		group.setMinWidth(45.0);  <em class="jxr_comment">//TODO figure out why this is needed</em>
+<a class="jxr_linenumber" name="95" href="#95">95</a>  		group.setMinWidth(45.0);  <em class="jxr_comment">//TODO (artf231869) figure out why this is needed</em>
 <a class="jxr_linenumber" name="96" href="#96">96</a>  		group.textProperty().addListener(<strong class="jxr_keyword">new</strong> ChangeListener&lt;String&gt;()
 <a class="jxr_linenumber" name="97" href="#97">97</a>  		{
 <a class="jxr_linenumber" name="98" href="#98">98</a>  			@Override
