@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-public class SctTreeView implements ShutdownBroadcastListenerI {
+class SctTreeView implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
@@ -106,7 +106,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     private SimpleBooleanProperty displayFSN = new SimpleBooleanProperty(true);
     private SimpleIntegerProperty inferredStatedMode = new SimpleIntegerProperty(StatedInferredOptions.STATED.ordinal());
 
-    protected SctTreeView() {
+    SctTreeView() {
         treeView_ = new TreeView<>();
         AppContext.getRuntimeGlobals().registerShutdownListener(this);
         bp_ = new BorderPane();
@@ -381,17 +381,18 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
             }
         });
 
-        TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, displayPolicies);
-        treeView_.setShowRoot(false);
-        treeView_.setRoot(hiddenRootItem);
+//        TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
+//        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, displayPolicies);
+//        treeView_.setShowRoot(false);
+//        treeView_.setRoot(hiddenRootItem);
 
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
 
         rootTreeItem = new SctTreeItem(visibleRootConcept, displayPolicies, Images.ROOT.createImageView());
 
-        hiddenRootItem.getChildren().add(rootTreeItem);
+        treeView_.setRoot(rootTreeItem);
+        //hiddenRootItem.getChildren().add(rootTreeItem);
         rootTreeItem.addChildren();
 
         // put this event handler on the root

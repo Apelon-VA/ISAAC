@@ -64,11 +64,11 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  */
 @SuppressWarnings("deprecation")
-public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
+final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
-    public SctTreeCell() {
+    SctTreeCell() {
         super();
 
         // Handle left-clicks.
@@ -159,7 +159,9 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             setText("");
             setGraphic(null);
         }
-
+        else if (!empty && taxRef == null) {
+        	LOG.debug("TaxonomyReferenceWithConcept is null");
+        }
         else if (!empty && taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
 
@@ -185,8 +187,8 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
             if (treeItem.isExpanded()) {
                 ImageView iv = Images.TAXONOMY_CLOSE.createImageView();
-                iv.setFitHeight(12);
-        		iv.setFitWidth(12);
+//                iv.setFitHeight(12);
+//        		iv.setFitWidth(12);
 
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
@@ -197,8 +199,8 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 setDisclosureNode(disclosureBorderPane);
             } else {
                 ImageView iv = Images.TAXONOMY_OPEN.createImageView();
-                iv.setFitHeight(12);
-        		iv.setFitWidth(12);
+//                iv.setFitHeight(12);
+//        		iv.setFitWidth(12);
         		
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
@@ -218,7 +220,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             BorderPane graphicBorderPane = new BorderPane();
 
             if (treeItem.isLeaf()) {
-                int multiParentInset = treeItem.getMultiParentDepth() * 16;
+                int multiParentInset = treeItem.getMultiParentDepth() * 16 + 4;
                 Rectangle leftRect =
                         RectangleBuilder.create().width(multiParentInset).height(16).build();
 
@@ -262,9 +264,14 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
                 try
                 {
-                	UUID uid = concept.getPrimordialUuid();
-
-                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uid)});
+                	UUID uuid = null;
+                	
+                	if (concept != null ) {
+                		uuid = concept.getPrimordialUuid();
+                		return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
+                	} else {
+                        return Arrays.asList(new Integer[] {});
+                	}
                 }
                 catch (Exception e)
                 {
