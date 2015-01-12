@@ -85,10 +85,10 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public String getConceptId()
             {
-            	final ConceptChronicleDdo conceptChronicle = SctTreeCell.this.getItem().getConcept();
-            	final UUID conceptUuid = conceptChronicle.getPrimordialUuid();
+                final ConceptChronicleDdo conceptChronicle = SctTreeCell.this.getItem().getConcept();
+                final UUID conceptUuid = conceptChronicle.getPrimordialUuid();
 
-            	return conceptUuid.toString();
+                return conceptUuid.toString();
             }
         });
     }
@@ -116,9 +116,9 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                     for (RelationshipVersionDdo extraParentVersion : extraParent.getVersions()) {
                         SctTreeItem extraParentItem =
                                 new SctTreeItem(
-                                		new TaxonomyReferenceWithConcept(extraParentVersion,
-                                				TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
-                                				treeItem.getDisplayPolicies());
+                                        new TaxonomyReferenceWithConcept(extraParentVersion,
+                                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
+                                                treeItem.getDisplayPolicies());
                         ProgressIndicator indicator = new ProgressIndicator();
 //TODO (artf231878) figure out what we will do with this indicator skin
 //                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
@@ -160,7 +160,7 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             setGraphic(null);
         }
         else if (!empty && taxRef == null) {
-        	LOG.debug("TaxonomyReferenceWithConcept is null");
+            LOG.debug("TaxonomyReferenceWithConcept is null");
         }
         else if (!empty && taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
@@ -187,8 +187,6 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
             if (treeItem.isExpanded()) {
                 ImageView iv = Images.TAXONOMY_CLOSE.createImageView();
-//                iv.setFitHeight(12);
-//        		iv.setFitWidth(12);
 
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
@@ -199,9 +197,7 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 setDisclosureNode(disclosureBorderPane);
             } else {
                 ImageView iv = Images.TAXONOMY_OPEN.createImageView();
-//                iv.setFitHeight(12);
-//        		iv.setFitWidth(12);
-        		
+                
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
                 } else {
@@ -264,14 +260,14 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
                 try
                 {
-                	UUID uuid = null;
-                	
-                	if (concept != null ) {
-                		uuid = concept.getPrimordialUuid();
-                		return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
-                	} else {
+                    UUID uuid = null;
+                    
+                    if (concept != null ) {
+                        uuid = concept.getPrimordialUuid();
+                        return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
+                    } else {
                         return Arrays.asList(new Integer[] {});
-                	}
+                    }
                 }
                 catch (Exception e)
                 {

@@ -381,18 +381,12 @@ class SctTreeView implements ShutdownBroadcastListenerI {
             }
         });
 
-//        TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-//        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, displayPolicies);
-//        treeView_.setShowRoot(false);
-//        treeView_.setRoot(hiddenRootItem);
-
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
 
         rootTreeItem = new SctTreeItem(visibleRootConcept, displayPolicies, Images.ROOT.createImageView());
 
         treeView_.setRoot(rootTreeItem);
-        //hiddenRootItem.getChildren().add(rootTreeItem);
         rootTreeItem.addChildren();
 
         // put this event handler on the root
@@ -577,12 +571,6 @@ class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem answer = answers.get(0);
                         treeView_.scrollTo(treeView_.getRow(answer));
                         answer.setExpanded(true);
-                        // uncommenting the following conditional seems to add duplicates to the display.
-                        // Look here first if problem shows up in locateConcept() display
-//                        if (! isLast) {
-//                            // Start fetching the next level.
-//                            answer.addChildren();
-//                        }
                     }
 
                     answers.notify();
