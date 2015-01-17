@@ -1,13 +1,13 @@
 package gov.va.isaac.drools.rules
 
-import gov.va.issac.drools.testmodel.DrDescription
-import gov.va.issac.drools.helper.templates.DescriptionTemplate
-import gov.va.issac.drools.helper.ResultsItemError
+import gov.va.isaac.drools.testmodel.DrDescription
+import gov.va.isaac.drools.helper.templates.DescriptionTemplate
+import gov.va.isaac.drools.helper.ResultsItemError
 
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.dataTypes.RefexDynamicStringBI
 
-global gov.va.issac.drools.helper.ResultsCollector resultsCollector
-global gov.va.issac.drools.helper.TerminologyHelperDrools terminologyHelper
+global gov.va.isaac.drools.helper.ResultsCollector resultsCollector
+global gov.va.isaac.drools.helper.TerminologyHelperDrools terminologyHelper
 
 rule "Text in description should not have double spaces"
 	@UUID(dfe4ea80-cc22-11df-bd3b-0800200c9a66)

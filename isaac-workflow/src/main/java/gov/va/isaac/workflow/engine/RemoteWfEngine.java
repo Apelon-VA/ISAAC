@@ -69,8 +69,8 @@ public class RemoteWfEngine
 		}
 		else
 		{
-			final String deploymentId = AppContext.getAppConfiguration().getWorkflowServerDeploymentId();
-			final URL workflowServerUrlAsURL = AppContext.getAppConfiguration().getWorkflowServerUrlAsURL();
+			final String deploymentId = AppContext.getAppConfiguration().getCurrentWorkflowServerDeploymentId();
+			final URL workflowServerUrlAsURL = AppContext.getAppConfiguration().getCurrentWorkflowServerUrlAsURL();
 			final String workflowUserName = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowUsername();
 			final String workflowPassword = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getWorkflowPassword();
 			try

@@ -291,7 +291,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     cell.setCellStyle(style);
     cell.setCellValue(createHelper
         .createRichTextString("Developed as part of extension namespace "
-            + AppContext.getAppConfiguration().getExtensionNamespace()));
+            + AppContext.getAppConfiguration().getCurrentExtensionNamespace()));
 
     // Note - add a note for any extra synonyms, to avoid worries about how many
     // column headers to have
@@ -444,7 +444,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         cell.setCellStyle(style);
         cell.setCellValue(createHelper
             .createRichTextString("Developed as part of extension namespace "
-                + AppContext.getAppConfiguration().getExtensionNamespace()));
+                + AppContext.getAppConfiguration().getCurrentExtensionNamespace()));
 
         // Note
         cell = row.createCell(cellnum++);

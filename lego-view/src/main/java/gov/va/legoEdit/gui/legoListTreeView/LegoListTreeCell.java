@@ -138,7 +138,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 			{
 				if (!empty && treeItem.getNodeType() == LegoTreeNodeType.blankLegoListEndNode)
 				{
-					//TODO [LegoEdit]
+					//TODO (artf231851) [LegoEdit]
 //					MenuItem mi = new MenuItem("Create Lego List");
 //					mi.setOnAction(new EventHandler<ActionEvent>()
 //					{
@@ -173,7 +173,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 				}
 				else if (treeItem.getNodeType() == LegoTreeNodeType.pncsName)
 				{
-					//TODO [LegoEdit]
+					//TODO (artf231851) [LegoEdit]
 //					MenuItem mi = new MenuItem("Create New Lego for PNCS");
 //					mi.setOnAction(new EventHandler<ActionEvent>()
 //					{
@@ -189,7 +189,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 				}
 				else if (treeItem.getNodeType() == LegoTreeNodeType.pncsValue)
 				{
-					//TODO [LegoEdit]
+					//TODO (artf231851) [LegoEdit]
 //					MenuItem mi = new MenuItem("Create New Lego for PNCS");
 //					mi.setOnAction(new EventHandler<ActionEvent>()
 //					{
@@ -252,7 +252,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 		}
 	}
 
-	//TODO [LEGO Edit]
+	//TODO (artf231851) [LEGO Edit]
 //	private void createNewLego(LegoTreeItem ti, boolean fromPaste)
 //	{
 //		if (ti.getNodeType() == LegoTreeNodeType.pncsValue)
@@ -349,7 +349,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 	private void addMenus(final LegoListByReference llbr, final LegoTreeItem treeItem, ContextMenu cm)
 	{
 		MenuItem mi;
-		//TODO [LEGO Edit]
+		//TODO (artf231851) [LEGO Edit]
 //		mi = new MenuItem("Create New Lego Within Lego List");
 //		mi.setOnAction(new EventHandler<ActionEvent>()
 //		{
@@ -561,7 +561,7 @@ public class LegoListTreeCell<T> extends TreeCell<T>
 			mi.setGraphic(Images.COPY.createImageView());
 			cm.getItems().add(mi);
 
-			//TODO templates
+			//TODO (artf231851) templates
 //			mi = new MenuItem("Create Template...");
 //			mi.setOnAction(new EventHandler<ActionEvent>()
 //			{

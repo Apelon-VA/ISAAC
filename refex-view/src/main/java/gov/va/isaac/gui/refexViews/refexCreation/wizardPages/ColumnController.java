@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.SimpleDisplayConceptComparator;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
@@ -30,11 +31,14 @@ import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -57,6 +61,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
@@ -65,6 +70,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
@@ -132,7 +138,7 @@ public class ColumnController implements PanelControllersI {
 
 		columnDescription.setEditable(false);
 		
-		columnNameSelection_ = new ConceptNode(null, true, columnNameChoices, colNameReader_);
+		columnNameSelection_ = new ConceptNode(null, true, columnNameChoices.sorted(new SimpleDisplayConceptComparator()), colNameReader_);
 		
 		columnNameHolder.getChildren().add(columnNameSelection_.getNode());
 		HBox.setHgrow(columnNameSelection_.getNode(), Priority.ALWAYS);
@@ -404,7 +410,7 @@ public class ColumnController implements PanelControllersI {
 	{
 		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) 
 		{
-			// TODO: replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
+			// TODO (artf231424) replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
 			if (type.validatorSupportsType(dType) && (!((dType == RefexDynamicDataType.UUID || dType == RefexDynamicDataType.NID) && type == RefexDynamicValidatorType.REGEXP)))
 			{
 				if (!validatorType.getItems().contains(type))
@@ -452,7 +458,7 @@ public class ColumnController implements PanelControllersI {
 	private void initializeColumnConcepts() {
 		try {
 			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+			Set<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
 
 			for (ConceptVersionBI col : colCons) {
 				columnNameChoices.add(new SimpleDisplayConcept(col, colNameReader_));
@@ -467,7 +473,7 @@ public class ColumnController implements PanelControllersI {
 		
 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
 		
-		//TODO this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
+		//TODO (artf231425) this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
 		//The Platform.runLater should _NOT_ be necessary, but it seems to prevent the infinite loop for now.
 		if (rdci.getColumnDescriptionConcept() != null)
 		{

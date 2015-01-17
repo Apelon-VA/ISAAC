@@ -50,6 +50,8 @@ public class EnhancedSearchViewTopPane {
 		// Add Search Button
 		initializeSearchButton();
 
+		searchSaver.getSaveButton().disableProperty().bind(SearchModel.isSearchSavableProperty().not());
+
 		staticTopPanePortionGridPane.setConstraints(searchTypeHBox,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(maxResultsHBox,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(searchModel.getResultsTypeComboBox(),  2,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
@@ -76,7 +78,7 @@ public class EnhancedSearchViewTopPane {
 
 	private void initializeSearchButton() {
 		searchButton.requestFocus();
-		searchButton.disableProperty().bind(searchModel.isSearchRunnableProperty().not());
+		searchButton.disableProperty().bind(SearchModel.isSearchRunnableProperty().not());
 	}
 
 	private void initializeSearchTypeComboBox() {

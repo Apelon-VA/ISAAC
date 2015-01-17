@@ -20,6 +20,9 @@ package gov.va.isaac.util;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
+
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -30,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -108,47 +112,88 @@ public class WBUtility {
 	private static Integer synonymRf1Nid = null;
 	
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-	private static TerminologyBuilderBI dataBuilder;
 
-	private static EditCoordinate editCoord = null;
-	private static ViewCoordinate vc = null;
-
-	static Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+	private static final Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
 
 	private static Set<UUID> rootNodeList = null;
 
 	public static TerminologyBuilderBI getBuilder() {
-		if (dataBuilder == null) {
-			dataBuilder = new BdbTermBuilder(getEC(), getViewCoordinate());
-		}
-		
-		return dataBuilder;
+		return new BdbTermBuilder(getEditCoordinate(), getViewCoordinate());
 	}
-	
-	public static EditCoordinate getEC() {
-		if (editCoord == null) {
-			try {
-				int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
-				int module = Snomed.CORE_MODULE.getLenient().getNid();
-				int editPathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
+	public static TerminologyBuilderBI getBuilder(EditCoordinate ec, ViewCoordinate vc) {
+		return new BdbTermBuilder(ec, vc);
+	}
 
-				// Use the default edit path in the configuration
-				LOG.info("DEFAULT EDIT PATH " + AppContext.getAppConfiguration().getDefaultEditPathUuid());
-				if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
-					editPathNid = dataStore.getConcept(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid())).getNid();
-					LOG.info("Using path " + 
-					AppContext.getAppConfiguration().getDefaultEditPathName()
-					+ " as the Edit Coordinate");
-				}
-				// Override edit path nid 
-				editCoord = new EditCoordinate(authorNid, module, editPathNid);
-			} catch (NullPointerException e) {
-				LOG.error("Edit path UUID does not exist", e);
-			} catch (IOException e) {
-				LOG.error("error configuring edit coordinate", e);
+	public static ViewCoordinate getViewCoordinate() {
+		ViewCoordinate vc = null;
+		try {
+			UserProfile userProfile = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+			StatedInferredOptions policy = userProfile.getStatedInferredPolicy();
+			switch(policy) {
+			case STATED:
+				vc = StandardViewCoordinates.getSnomedStatedLatest();
+				break;
+			case INFERRED:
+				vc = StandardViewCoordinates.getSnomedInferredLatest();
+				break;
+			case INFERRED_THEN_STATED:
+				vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+				break;
+			default: // Should never happen unless a new policy has been coded
+				throw new RuntimeException("Unsupported StatedInferredOptions policy " + policy);
 			}
+
+			//LOG.info("Using {} policy for view coordinate", policy);
+
+			final UUID pathUuid = userProfile.getViewCoordinatePath();
+			final ConceptChronicleBI pathChronicle = dataStore.getConcept(pathUuid);
+			final int pathNid = pathChronicle.getNid();
+
+			// Start with standard view coordinate and override the path setting to
+			// use the preferred path
+			Position position = dataStore.newPosition(dataStore.getPath(pathNid), Long.MAX_VALUE);
+
+			vc.setViewPosition(position);
+
+			//LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
+		} catch (NullPointerException e) {
+			LOG.error("View path UUID does not exist", e);
+		} catch (IOException e) {
+			LOG.error("Unexpected error fetching view coordinates!", e);
 		}
-		return editCoord;
+
+		return vc;
+	}
+
+	public static EditCoordinate getEditCoordinate() {
+		try {
+			UserProfile userProfile = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+
+			int authorNid = dataStore.getNidForUuids(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getConceptUUID());
+			int module = Snomed.CORE_MODULE.getLenient().getNid();
+
+			int pathNid = 0;
+			ConceptChronicleBI pathChronicle = null;
+			UUID pathUuid = userProfile.getEditCoordinatePath();
+			if (pathUuid != null && (pathChronicle = dataStore.getConcept(pathUuid)) != null) {
+				pathNid = pathChronicle.getNid();
+			} else {
+				pathNid = TermAux.WB_AUX_PATH.getLenient().getConceptNid();
+				pathChronicle = dataStore.getConcept(pathNid);
+				pathUuid = pathChronicle.getPrimordialUuid();
+			}
+
+			LOG.info("Using EditCoordinate path nid={}, uuid={}, desc={}", pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
+
+			// Override edit path
+			return new EditCoordinate(authorNid, module, pathNid);
+		} catch (NullPointerException e) {
+			LOG.error("Edit path UUID does not exist", e);
+		} catch (IOException e) {
+			LOG.error("error configuring edit coordinate", e);
+		}
+
+		return null;
 	}
 	
 	/**
@@ -265,24 +310,14 @@ public class WBUtility {
 	
 	private static int getFSNNid() {
 		if (fsnNid == null) {
-			try {
-				fsnNid = dataStore.getNidForUuids(FSN_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for FSN UUID: " + FSN_UUID, ex);
-				fsnNid = -1;
-			}
+			fsnNid = dataStore.getNidForUuids(FSN_UUID);
 		}
 		return fsnNid;
 	}
 
 	private static int getFsnRf1Nid() {
 		if (fsnRf1Nid == null) {
-			try {
-				fsnRf1Nid = dataStore.getNidForUuids(FSN_RF1_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for RF1 FSN UUID: " + FSN_RF1_UUID, ex);
-				fsnRf1Nid = -1;
-			}
+			fsnRf1Nid = dataStore.getNidForUuids(FSN_RF1_UUID);
 		}
 		return fsnRf1Nid;
 	}
@@ -290,12 +325,7 @@ public class WBUtility {
 	private static int getSynonymTypeNid() {
 		// Lazily load.
 		if (synonymNid == null) {
-			try {
-				synonymNid = dataStore.getNidForUuids(SYNONYM_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for synonymNid UUID: " + SYNONYM_UUID, ex);
-				synonymNid = -1;
-			}
+			synonymNid = dataStore.getNidForUuids(SYNONYM_UUID);
 		}
 		return synonymNid;
 	}
@@ -303,12 +333,7 @@ public class WBUtility {
 	private static int getSynonymRf1TypeNid() {
 		// Lazily load.
 		if (synonymRf1Nid == null) {
-			try {
-				synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for Rf1 synonymNid UUID: " + SYNONYM_RF1_UUID, ex);
-				synonymRf1Nid = -1;
-			}
+			synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
 		}
 		return synonymRf1Nid;
 	}
@@ -316,12 +341,7 @@ public class WBUtility {
 	private static int getPreferredTypeNid() {
 		// Lazily load.
 		if (preferredNid == null) {
-			try {
-				preferredNid = dataStore.getNidForUuids(PREFERRED_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for Preferred UUID: " + PREFERRED_UUID, ex);
-				preferredNid = -1;
-			}
+			preferredNid = dataStore.getNidForUuids(PREFERRED_UUID);
 		}
 		return preferredNid;
 	}
@@ -329,12 +349,7 @@ public class WBUtility {
 	private static int getPreferredRf1TypeNid() {
 		// Lazily load.
 		if (preferredRf1Nid == null) {
-			try {
-				preferredRf1Nid = dataStore.getNidForUuids(PREFERRED_RF1_UUID);
-			} catch (IOException ex) {
-				LOG.error("Could not find nid for Rf1 Preferred UUID: " + PREFERRED_RF1_UUID, ex);
-				preferredRf1Nid = -1;
-			}
+			preferredRf1Nid = dataStore.getNidForUuids(PREFERRED_RF1_UUID);
 		}
 		return preferredRf1Nid;
 	}
@@ -584,7 +599,7 @@ public class WBUtility {
 			// Nothing like an undocumented getter which, rather than returning null when
 			// the thing you are asking for doesn't exist - it goes off and returns
 			// essentially a new, empty, useless node. Sigh.
-			if (componentVersion.getUUIDs().size() == 0)
+			if (componentVersion == null || componentVersion.getUUIDs().size() == 0)
 			{
 				return null;
 			} else {
@@ -687,48 +702,14 @@ public class WBUtility {
 		}
 	}
 	
-	/**
-	 * Currently configured to return InferredThenStatedLatest + INACTIVE status
-	 */
-	public static ViewCoordinate getViewCoordinate()
-	{
-		if (vc == null) {
-			try {
-				vc = StandardViewCoordinates.getSnomedStatedLatest();
-				// Use the default view path in the configuration
-				LOG.info("	DEFAULT VIEW PATH " + AppContext.getAppConfiguration().getDefaultViewPathUuid());
-				if (AppContext.getAppConfiguration().getDefaultViewPathUuid() != null) {
-				LOG.info("Using path "
-					+ AppContext.getAppConfiguration().getDefaultViewPathName()
-					+ " as the View Coordinate");
-				// Start with standard view coordinate and override the path setting to
-				// use the ISAAC development path
-				Position position = 
-					dataStore.newPosition(dataStore.getPath(dataStore.getConcept(
-						UUID.fromString(AppContext.getAppConfiguration()
-							.getDefaultViewPathUuid())).getNid()), Long.MAX_VALUE);
-				vc.setViewPosition(position);
-				}
-			} catch (NullPointerException e) {
-			LOG.error("View path UUID does not exist", e);
-			} catch (IOException e) {
-			LOG.error("Unexpected error fetching view coordinates!", e);
-			}
-		}
-		
-		return vc;
-	}
-
 	public static RefexVersionBI<?> getRefsetMember(int nid) {
 		try {
 			RefexChronicleBI<?> refexChron = (RefexChronicleBI<?>) dataStore.getComponent(nid);
 
 			if (refexChron != null) {
-				getViewCoordinate().getAllowedStatus().add(Status.INACTIVE);
-				
-				RefexVersionBI<?> refexChronVersion = refexChron.getVersion(getViewCoordinate());
-				
-				getViewCoordinate().getAllowedStatus().remove(Status.INACTIVE);
+				ViewCoordinate tempVc = getViewCoordinate();
+				tempVc.getAllowedStatus().add(Status.INACTIVE);
+				RefexVersionBI<?> refexChronVersion = refexChron.getVersion(tempVc);
 				
 				return refexChronVersion;
 			}
@@ -783,11 +764,63 @@ public class WBUtility {
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
+	public static Set<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
 	{
-		return getAllChildrenOfConcept(getConceptVersion(nid), recursive);
+		return getAllChildrenOfConcept(new HashSet<>(), getConceptVersion(nid), recursive);
+	}
+	public static Set<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
+	{
+		return getAllChildrenOfConcept(new HashSet<>(), concept, recursive);
 	}
 	
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	private static Set<ConceptVersionBI> getAllChildrenOfConcept(Set<Integer> handledConceptNids, ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		// This both prevents infinite recursion and avoids processing or returning of duplicates
+		if (handledConceptNids.contains(concept.getNid())) {
+			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(concept.getNid()));
+			return results;
+		}
+
+		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
+		{
+			if (handledConceptNids.contains(r.getOriginNid())) {
+				// avoids processing or returning of duplicates
+				LOG.debug("Encountered already-handled ORIGIN child concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(r.getOriginNid()));
+
+				continue;
+			}
+
+			ConceptVersionBI originConcept = getConceptVersion(r.getOriginNid());
+			results.add(originConcept);
+			if (recursive)
+			{
+				results.addAll(getAllChildrenOfConcept(handledConceptNids, originConcept, recursive));
+			}
+		}
+		
+		handledConceptNids.add(concept.getNid());
+		
+		return results;
+	}
+
+	public static Set<Integer> getAllChildrenOfConceptAsNids(Integer conceptNid, boolean recursive) throws IOException, ContradictionException
+	{
+		Set<ConceptVersionBI> resultsAsConceptVersions = getAllChildrenOfConcept(conceptNid, recursive);
+		Set<Integer> results = new HashSet<>();
+		
+		for (ConceptVersionBI conceptVersion : resultsAsConceptVersions) {
+			results.add(conceptVersion.getNid());
+		}
+
+		return results;
+	}
+
 	/**
 	 * Recursively get Is a parents of a concept
 	 */
@@ -795,55 +828,41 @@ public class WBUtility {
 	{
 		return getConceptAncestors(getConceptVersion(nid));
 	}
-	
-	/**
-	 * Recursively get Is a children of a concept
-	 */
-	public static ArrayList<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
-	{
-		ArrayList<ConceptVersionBI> results = new ArrayList<>();
-		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
-		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
-		{
-			results.add(getConceptVersion(r.getOriginNid()));
-			if (recursive)
-			{
-				results.addAll(getAllChildrenOfConcept(r.getOriginNid(), recursive));
-			}
-		}
-		return results;
-	}
-
-	public static ArrayList<Integer> getAllChildrenOfConceptAsNids(Integer conceptNid, boolean recursive) throws IOException, ContradictionException
-	{
-		ArrayList<Integer> results = new ArrayList<>();
-		
-		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
-		for (RelationshipVersionBI<?> r : WBUtility.getConceptVersion(conceptNid).getRelationshipsIncomingActiveIsa())
-		{
-			results.add(r.getOriginNid());
-			if (recursive)
-			{
-				results.addAll(getAllChildrenOfConceptAsNids(r.getOriginNid(), recursive));
-			}
-		}
-		return results;
-	}
-
 	/**
 	 * Recursively get Is a parents of a concept
 	 */
 	public static Set<ConceptVersionBI> getConceptAncestors(ConceptVersionBI concept) throws IOException, ContradictionException
 	{
+		Set<Integer> handledNids = new HashSet<>();
+		
+		return getConceptAncestors(handledNids, concept);
+	}
+	private static Set<ConceptVersionBI> getConceptAncestors(Set<Integer> handledNids, ConceptVersionBI concept) throws IOException, ContradictionException
+	{
 		Set<ConceptVersionBI> results = new HashSet<>();
+		
+		// This both prevents infinite recursion and avoids processing or returning of duplicates
+		if (handledNids.contains(concept.getNid())) {
+			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(concept.getNid()));
+			return results;
+		}
 		
 		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsOutgoingActiveIsa())
 		{
-			results.add(getConceptVersion(r.getDestinationNid()));
-			results.addAll(getConceptAncestors(r.getDestinationNid()));
+			if (handledNids.contains(r.getDestinationNid())) {
+				// avoids processing or returning of duplicates
+				LOG.debug("Encountered already-handled DESTINATION ancestor concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(r.getDestinationNid()));
+				continue;
+			}
+
+			ConceptVersionBI destConcept = getConceptVersion(r.getDestinationNid());
+			results.add(destConcept);
+			results.addAll(getConceptAncestors(handledNids, destConcept));
 		}
+
+		handledNids.add(concept.getNid());
+
 		return results;
 	}
 
@@ -1032,14 +1051,14 @@ public class WBUtility {
 
 	public static void addToPromotionPath(UUID compUuid) throws IOException, ContradictionException, InvalidCAB {
 		// Setup Edit Path to be promotion path
-		List<ConceptSpec> origPaths = getEC().getEditPathListSpecs();
-		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID());
+		ConceptVersionBI pp = getConceptVersion(AppContext.getAppConfiguration().getCurrentWorkflowPromotionPathUuidAsUUID());
 		ConceptSpec cs = new ConceptSpec(pp.getNid());
 		
 		List<ConceptSpec> editPaths = new ArrayList<ConceptSpec>();
 		editPaths.add(cs);
+		EditCoordinate editCoord = getEditCoordinate();
 		editCoord.setEditPathListSpecs(editPaths);
-		
+		TerminologyBuilderBI builder = getBuilder(editCoord, getViewCoordinate());
 		
 		// Create new version of all uncommitted components in concept
 		ConceptVersionBI conceptWithComp = WBUtility.getConceptVersion(getComponentVersion(compUuid).getConceptNid());
@@ -1054,30 +1073,25 @@ public class WBUtility {
 				ComponentChronicleBI<?> cbi = null;
 	
 				if (type == ComponentType.CONCEPT) {
-					ConceptCB cab = (ConceptCB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					ConceptCB cab = (ConceptCB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.DESCRIPTION) {
-					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					DescriptionCAB cab = (DescriptionCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.RELATIONSHIP) {
-					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					RelationshipCAB cab = (RelationshipCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.SEMEME) {
-					RefexCAB cab = (RefexCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					RefexCAB cab = (RefexCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				} else if (type == ComponentType.SEMEME_DYNAMIC) {
-					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(vc, IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-					cbi = getBuilder().construct(cab);
+					RefexDynamicCAB cab = (RefexDynamicCAB) comp.makeBlueprint(getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					cbi = builder.construct(cab);
 				}
 			}	
 		}
 		
-		commit(conceptWithComp.getVersion(vc));
-		
-		// Revert to original Edit path
-		editPaths.clear();
-		editPaths.addAll(origPaths);
-		getEC().setEditPathListSpecs(editPaths);
+		commit(conceptWithComp.getVersion(getViewCoordinate()));
 	}
 	
 	

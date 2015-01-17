@@ -805,7 +805,7 @@ public class LegoFilterPaneController implements Initializable, ConceptLookupCal
 					AdvancedLegoFilter.removeNonMatchingRelType(legos, relTypeFilter, destFilter, destTypeFilter, relAppliesToLegoSection);
 				}
 				// Don't filter unsaved legos - always include them.
-				//TODO [Lego edit]
+				//TODO (artf231849) [Lego edit]
 //				UnsavedLegos unsavedLegos = LegoGUI.getInstance().getLegoGUIController().getUnsavedLegos();
 //				legos.addAll(LegoReference.convert(unsavedLegos.getLegos(), true));
 
@@ -851,7 +851,7 @@ public class LegoFilterPaneController implements Initializable, ConceptLookupCal
 
 						legoLists.add(new LegoListTreeItem(LegoTreeNodeType.blankLegoListEndNode));
 						FXCollections.sort(legoLists, new LegoTreeItemComparator(true));
-						//TODO [Lego Edit]
+						//TODO (artf231849) [Lego Edit]
 //						LegoGUI.getInstance().getLegoGUIController().showLegosForAllOpenTabs();
 						if (callback != null)
 						{

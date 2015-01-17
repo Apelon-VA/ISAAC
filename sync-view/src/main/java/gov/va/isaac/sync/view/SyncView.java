@@ -110,7 +110,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 		titleBox.getChildren().add(title);
 		titleBox.getStyleClass().add("headerBackground");
 	
-		url_ = AppContext.getAppConfiguration().getChangeSetUrl();
+		url_ = AppContext.getAppConfiguration().getCurrentChangeSetUrl();
 		String urlType = AppContext.getAppConfiguration().getChangeSetUrlTypeName();
 		
 		String syncUsername = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getSyncUsername();
@@ -515,7 +515,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 					{
 						try
 						{
-							syncService_.relinkRemote(syncService_.substituteURL(AppContext.getAppConfiguration().getChangeSetUrl(), 
+							syncService_.relinkRemote(syncService_.substituteURL(AppContext.getAppConfiguration().getCurrentChangeSetUrl(), 
 									credentials.getUsername()), credentials.getUsername(), credentials.getPassword());
 						}
 						catch (AuthenticationException e)
@@ -626,7 +626,7 @@ public class SyncView implements PopupViewI, IsaacViewWithMenusI
 		}
 		else
 		{
-			String url = AppContext.getAppConfiguration().getChangeSetUrl();
+			String url = AppContext.getAppConfiguration().getCurrentChangeSetUrl();
 			String urlType = AppContext.getAppConfiguration().getChangeSetUrlTypeName();
 			
 			if (StringUtils.isBlank(url) || StringUtils.isBlank(urlType))

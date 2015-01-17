@@ -20,25 +20,41 @@ package gov.va.isaac.config;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
-
+import gov.va.isaac.util.WBUtility;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Properties;
 import java.util.UUID;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
@@ -55,6 +71,10 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 {
 	private static Logger log_ = LoggerFactory.getLogger(IsaacAppConfigWrapper.class);
 	
+	//things we read from other pom based property files
+	private String dbGroupId, dbArtifactId, dbVersion, dbClassifier, dbType;
+	private String scmUrl, isaacVersion, version;
+	
 	private IsaacAppConfigWrapper()
 	{
 		//This is contructed by HK2
@@ -63,8 +83,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		
 		try
 		{
-			@SuppressWarnings("resource")
-            InputStream in = AppContext.class.getResourceAsStream("/app.xml");
+			InputStream in = AppContext.class.getResourceAsStream("/app.xml");
 			if (in != null)
 			{
 				IsaacAppConfig temp = unmarshallStream(in);
@@ -74,11 +93,128 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 			{
 				log_.warn("App configuration file not found, using defaults");
 			}
-
 		}
 		catch (Exception ex)
 		{
 			log_.warn("Unexpected error reading app configuration file, using defaults", ex);
+		}
+		
+		//Read in other information from the package (pom.properties file during normal runtime, pom.xml files if running in a dev env)
+		try
+		{
+			AtomicBoolean readDbMetadata = new AtomicBoolean(false);
+			AtomicBoolean readAppMetadata = new AtomicBoolean(false);
+			
+			//Read the db metadata
+			String dbLocation = System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY);
+			if (dbLocation != null)
+			{
+				//find the pom.properties file in the hierarchy
+				File metadata = new File(new File(dbLocation).getParentFile(), "META-INF");
+				if (metadata.isDirectory())
+				{
+					Files.walkFileTree(metadata.toPath(), new SimpleFileVisitor<Path>()
+					{
+						/**
+						 * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
+						 */
+						@Override
+						public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException
+						{
+							File f = path.toFile();
+							if (f.isFile() && f.getName().toLowerCase().equals("pom.properties"))
+							{
+								Properties p = new Properties();
+								p.load(new FileReader(f));
+
+								dbGroupId = p.getProperty("project.groupId");
+								dbArtifactId = p.getProperty("project.artifactId");
+								dbVersion = p.getProperty("project.version");
+								dbClassifier = p.getProperty("project.classifier");
+								dbType = p.getProperty("project.type");
+								readDbMetadata.set(true);
+								return FileVisitResult.TERMINATE;
+							}
+							return FileVisitResult.CONTINUE;
+						}
+					});
+				}
+			}
+			
+			if (!readDbMetadata.get())
+			{
+				log_.warn("Failed to read the metadata about the database from the database package.");
+			}
+			else
+			{
+				log_.debug("Successfully read db properties from maven config files.  dbGroupId: {} dbArtifactId: {} dbVersion: {} dbClassifier: {} dbType: {}", 
+						dbGroupId, dbArtifactId, dbVersion, dbClassifier, dbType);
+			}
+			
+			//read the app metadata
+			
+			//if running from eclipse - our launch folder should be "app".  Go up one directory, read the pom file.
+			File f = new File("").getAbsoluteFile();
+			if (f.getName().endsWith("app"))
+			{
+				File pom = new File(f.getParent(), "pom.xml");
+				if (pom.isFile())
+				{
+					DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder builder = domFactory.newDocumentBuilder();
+					Document dDoc = builder.parse(pom);
+
+					XPath xPath = XPathFactory.newInstance().newXPath();
+					isaacVersion = ((Node) xPath.evaluate("/project/properties/isaac.version", dDoc, XPathConstants.NODE)).getTextContent();
+					scmUrl= ((Node) xPath.evaluate("/project/scm/url", dDoc, XPathConstants.NODE)).getTextContent();
+					version= ((Node) xPath.evaluate("/project/version", dDoc, XPathConstants.NODE)).getTextContent();
+					
+					readAppMetadata.set(true);
+				}
+			}
+			//otherwise, running from an installation - we should have a META-INF folder
+			File metadata = new File("META-INF");
+			if (metadata.isDirectory())
+			{
+				Files.walkFileTree(metadata.toPath(), new SimpleFileVisitor<Path>()
+				{
+					/**
+					 * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
+					 */
+					@Override
+					public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException
+					{
+						File f = path.toFile();
+						if (f.isFile() && f.getName().toLowerCase().equals("pom.properties"))
+						{
+							Properties p = new Properties();
+							p.load(new FileReader(f));
+
+							scmUrl = p.getProperty("scm.url");
+							isaacVersion = p.getProperty("isaac.version");
+							version = p.getProperty("project.version");
+							readAppMetadata.set(true);
+							return FileVisitResult.TERMINATE;
+						}
+						return FileVisitResult.CONTINUE;
+					}
+					
+				});
+			}
+			
+			if (!readAppMetadata.get())
+			{
+				log_.warn("Failed to read the metadata about the app");
+			}
+			else
+			{
+				log_.debug("Successfully read app properties from maven config files.  version: {} scmUrl: {} isaacVersion: {}", version, scmUrl, isaacVersion);
+				setApplicationTitle(getApplicationTitle() + " - " + version);
+			}
+		}
+		catch (Exception ex)
+		{
+			log_.warn("Unexpected error reading app configuration information", ex);
 		}
 	}
 	
@@ -110,8 +246,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	 */
 	private void copyHack(IsaacAppConfig read)
 	{
-		//TODO we will need a way for the user to change some of these parameters later (and a place to save them) like the two 
-		//workflow ones.	where and how?
 		if (read.getApplicationTitle() != null && read.getApplicationTitle().length() > 0)
 		{
 			setApplicationTitle(read.getApplicationTitle());
@@ -119,23 +253,13 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setArchetypeGroupId(read.getArchetypeGroupId());
 		setArchetypeArtifactId(read.getArchetypeArtifactId());
 		setArchetypeVersion(read.getArchetypeVersion());
-		setIsaacVersion(read.getIsaacVersion());
-		setScmConnection(read.getScmConnection());
-		setScmUrl(read.getScmUrl());
-		setDbGroupId(read.getDbGroupId());
-		setDbArtifactId(read.getDbArtifactId());
-		setDbVersion(read.getDbVersion());
-		setDbClassifier(read.getDbClassifier());
-		setDbType(read.getDbType());
 		setApplicationTitle(read.getApplicationTitle());
 		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
 		setReleaseVersion(read.getReleaseVersion());
-        setExtensionNamespace(read.getExtensionNamespace());
-        setModuleId(read.getModuleId());
+		setExtensionNamespace(read.getExtensionNamespace());
+		setModuleId(read.getModuleId());
 		setChangeSetUrl(read.getChangeSetUrl());
 		setChangeSetUrlType(read.getChangeSetUrlType());
-		setAppSchemaLocation(read.getAppSchemaLocation());
-		setUserSchemaLocation(read.getUserSchemaLocation());
 		setWorkflowServerUrl(read.getWorkflowServerUrl());
 		setWorkflowServerDeploymentId(read.getWorkflowServerDeploymentId());
 		setDefaultEditPathName(read.getDefaultEditPathName());
@@ -147,11 +271,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrlAsURL()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerUrlAsURL()
 	 */
 	@Override
-	public URL getWorkflowServerUrlAsURL() {
-		return IsaacAppConfigI.getUrlForString(getWorkflowServerUrl());
+	public URL getDefaultWorkflowServerUrlAsURL() {
+		return IsaacAppConfigI.getUrlForString(getDefaultWorkflowServerUrl());
 	}
 
 	/* (non-Javadoc)
@@ -163,19 +287,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
-	 */
-	@Override
-	public URL getChangeSetUrlAsURL() {
-		return IsaacAppConfigI.getUrlForString(getChangeSetUrl());
-	}
-
-	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPromotionPathAsUUID()
 	 */
 	@Override
-	public UUID getWorkflowPromotionPathUuidAsUUID() {
-		return IsaacAppConfigI.getUuidForString(getWorkflowPromotionPathUuid());
+	public UUID getDefaultWorkflowPromotionPathUuidAsUUID() {
+		return IsaacAppConfigI.getUuidForString(getDefaultWorkflowPromotionPathUuid());
 	}
 
 	/*
@@ -185,5 +301,258 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	public String getChangeSetUrlTypeName()
 	{
 		return getChangeSetUrlType().name();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultReleaseVersion()
+	 */
+	@Override
+	public String getDefaultReleaseVersion()
+	{
+		return getReleaseVersion();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentReleaseVersion()
+	 */
+	@Override
+	public String getCurrentReleaseVersion()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getReleaseVersion();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultExtensionNamespace()
+	 */
+	@Override
+	public String getDefaultExtensionNamespace()
+	{
+		return getExtensionNamespace();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentExtensionNamespace()
+	 */
+	@Override
+	public String getCurrentExtensionNamespace()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getExtensionNamespace();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultChangeSetUrl()
+	 */
+	@Override
+	public String getDefaultChangeSetUrl()
+	{
+		return getChangeSetUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentChangeSetUrl()
+	 */
+	@Override
+	public String getCurrentChangeSetUrl()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getChangeSetUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentEditPathName()
+	 */
+	@Override
+	public String getCurrentEditPathName()
+	{
+		return WBUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentEditPathUuid()));
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentEditPathUuid()
+	 */
+	@Override
+	public String getCurrentEditPathUuid()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getEditCoordinatePath().toString();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentViewPathName()
+	 */
+	@Override
+	public String getCurrentViewPathName()
+	{
+		return WBUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentViewPathUuid()));
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentViewPathUuid()
+	 */
+	@Override
+	public String getCurrentViewPathUuid()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getViewCoordinatePath().toString();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerUrl()
+	 */
+	@Override
+	public String getDefaultWorkflowServerUrl()
+	{
+		return getWorkflowServerUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerUrl()
+	 */
+	@Override
+	public String getCurrentWorkflowServerUrl()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getWorkflowServerUrl();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerUrlAsURL()
+	 */
+	@Override
+	public URL getCurrentWorkflowServerUrlAsURL()
+	{
+		return IsaacAppConfigI.getUrlForString(getCurrentWorkflowServerUrl());
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerDeploymentId()
+	 */
+	@Override
+	public String getDefaultWorkflowServerDeploymentId()
+	{
+		return getWorkflowServerDeploymentId();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerDeploymentId()
+	 */
+	@Override
+	public String getCurrentWorkflowServerDeploymentId()
+	{
+		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getWorkflowServerDeploymentId();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathName()
+	 */
+	@Override
+	public String getDefaultWorkflowPromotionPathName()
+	{
+		return getWorkflowPromotionPathName();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathName()
+	 */
+	@Override
+	public String getCurrentWorkflowPromotionPathName()
+	{
+		return WBUtility.getDescriptionIfConceptExists(getCurrentWorkflowPromotionPathUuidAsUUID());
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathUuid()
+	 */
+	@Override
+	public String getDefaultWorkflowPromotionPathUuid()
+	{
+		return getWorkflowPromotionPathUuid();
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathUuid()
+	 */
+	@Override
+	public String getCurrentWorkflowPromotionPathUuid()
+	{
+		UUID current = AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getWorkflowPromotionPath();
+		return current != null ? current.toString() : null;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathUuidAsUUID()
+	 */
+	@Override
+	public UUID getCurrentWorkflowPromotionPathUuidAsUUID()
+	{
+		return IsaacAppConfigI.getUuidForString(getCurrentWorkflowPromotionPathUuid());
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getIsaacVersion()
+	 */
+	@Override
+	public String getIsaacVersion()
+	{
+		return isaacVersion;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrl()
+	 */
+	@Override
+	public String getScmUrl()
+	{
+		return scmUrl;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbGroupId()
+	 */
+	@Override
+	public String getDbGroupId()
+	{
+		return dbGroupId;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbArtifactId()
+	 */
+	@Override
+	public String getDbArtifactId()
+	{
+		return dbArtifactId;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbVersion()
+	 */
+	@Override
+	public String getDbVersion()
+	{
+		return dbVersion;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbClassifier()
+	 */
+	@Override
+	public String getDbClassifier()
+	{
+		return dbClassifier;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbType()
+	 */
+	@Override
+	public String getDbType()
+	{
+		return dbType;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getVersion()
+	 */
+	@Override
+	public String getVersion()
+	{
+		return version;
 	}
 }

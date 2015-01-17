@@ -184,6 +184,6 @@ public class SimpleDisplayConcept implements Comparable<SimpleDisplayConcept>
 	@Override
 	public int compareTo(SimpleDisplayConcept o)
 	{
-		return description_.compareToIgnoreCase(o.description_);
+		return new SimpleDisplayConceptComparator().compare(this, o);
 	}
 }

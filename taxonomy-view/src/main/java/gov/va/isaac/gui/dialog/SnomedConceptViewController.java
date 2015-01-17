@@ -39,6 +39,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -55,6 +56,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
@@ -89,29 +91,29 @@ public class SnomedConceptViewController {
     @FXML private SplitPane splitPane;
     @FXML private VBox splitRight;
     @FXML private Label uuidLabel;
-    @FXML private Button showInTreeButton;
-    @FXML private ProgressIndicator treeViewProgress;
     @FXML private VBox annotationsRegion;
     @FXML private ToggleButton stampToggle;
     @FXML private ToggleButton historyToggle;
     @FXML private ToggleButton activeOnlyToggle;
 
+    private Button showInTreeButton;
+    private ProgressIndicator treeViewProgress;
     private final BooleanProperty treeViewSearchRunning = new SimpleBooleanProperty(false);
 
     private SctTreeViewIsaacView sctTree;
     
     private UUID conceptUuid;
     private int conceptNid = 0;
-    
+
     public Region getRootNode()
     {
         return anchorPane;
     }
 
     public void setConcept(ConceptChronicleDdo concept) {
-    	conceptUuid = concept.getPrimordialUuid();
+        conceptUuid = concept.getPrimordialUuid();
 
-    	// Update text of labels.
+        // Update text of labels.
         ConceptAttributesChronicleDdo attributeChronicle = concept.getConceptAttributes();
         final ConceptAttributesVersionDdo conceptAttributes = attributeChronicle.getVersions().get(attributeChronicle.getVersions().size() - 1);
         conceptDefinedLabel.setText(conceptAttributes.isDefined() + "");
@@ -158,19 +160,10 @@ public class SnomedConceptViewController {
         historyToggle.setText("");
         historyToggle.setGraphic(Images.HISTORY.createImageView());
         historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
-        //TODO make the other view tables aware of the show/hide stamp call
+        //TODO (artf231887) make the other view tables aware of the show/hide stamp call
         
         ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
         AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
-
-        // Update action handlers.
-        showInTreeButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                treeViewSearchRunning.set(true);
-                sctTree.locateConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
-            }
-        });
 
         Callback<TableColumn.CellDataFeatures<StringWithRefList, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory =
                 new Callback<TableColumn.CellDataFeatures<StringWithRefList, StringWithRef>, ObservableValue<StringWithRef>>() {
@@ -290,12 +283,31 @@ public class SnomedConceptViewController {
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());
 
-        treeViewProgress.visibleProperty().bind(treeViewSearchRunning);
-
         // Load the inner tree view.
         try {
             sctTree = AppContext.getService(SctTreeViewIsaacView.class); 
             sctTree.init();
+            
+            showInTreeButton = new Button();
+            showInTreeButton.setPadding(new Insets(2.0));
+            showInTreeButton.setGraphic(Images.TAXONOMY_SEARCH_RESULT_ANCESTOR.createImageView());
+            showInTreeButton.setTooltip(new Tooltip("Find Concept"));
+            showInTreeButton.visibleProperty().bind(treeViewSearchRunning.not());
+            showInTreeButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    treeViewSearchRunning.set(true);
+                    sctTree.locateConcept(conceptAttributes.getConcept().getPrimordialUuid(), treeViewSearchRunning);
+                }
+            });
+            
+            treeViewProgress = new ProgressIndicator(-1);
+            treeViewProgress.setMaxSize(16, 16);
+            treeViewProgress.visibleProperty().bind(treeViewSearchRunning);
+
+            StackPane sp = new StackPane(showInTreeButton, treeViewProgress);
+            sctTree.addToToolBar(sp);
+            
             Region r = sctTree.getView();
             splitRight.getChildren().add(r);
             VBox.setVgrow(r, Priority.ALWAYS);
@@ -312,18 +324,18 @@ public class SnomedConceptViewController {
     }
 
     public UUID getConceptUuid() {
-		return conceptUuid;
-	}
+        return conceptUuid;
+    }
 
-	public int getConceptNid() {
-		if (conceptNid == 0) {
-			conceptNid = WBUtility.getConceptVersion(conceptUuid).getNid();
-		}
-		
-		return conceptNid;
-	}
+    public int getConceptNid() {
+        if (conceptNid == 0) {
+            conceptNid = WBUtility.getConceptVersion(conceptUuid).getNid();
+        }
+        
+        return conceptNid;
+    }
 
-	private void setupTable(String[] columns, TableView<StringWithRefList> tableView,
+    private void setupTable(String[] columns, TableView<StringWithRefList> tableView,
             Callback<TableColumn.CellDataFeatures<StringWithRefList, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory,
             Callback<TableColumn<StringWithRefList, StringWithRef>, TableCell<StringWithRefList, StringWithRef>> cellFactory) {
 

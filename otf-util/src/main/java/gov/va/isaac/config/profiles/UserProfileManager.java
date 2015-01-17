@@ -23,8 +23,10 @@ import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.User;
 import gov.va.isaac.config.users.GenerateUsers;
 import gov.va.isaac.config.users.InvalidUserException;
+import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,6 +40,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javax.inject.Singleton;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
@@ -95,7 +98,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		return new String(loggedInUser_.getUserLogonName());
 	}
 	
-	public void saveChanges(UserProfile userProfile) throws InvalidUserException, IOException
+	public synchronized void saveChanges(UserProfile userProfile) throws InvalidUserException, IOException
 	{
 		if (isAutomationModeEnabled())
 		{
@@ -106,8 +109,16 @@ public class UserProfileManager implements ServicesToPreloadI
 		{
 			throw new InvalidUserException("Not allowed to change the user login name!");
 		}
+		
+		rereadProfile();
+
+		UserProfile old = loggedInUser_;
+		
 		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
+		
 		loggedInUser_ = temp;
+
+		fireUserProfilePropertyChanges(old, loggedInUser_);
 	}
 	
 	/**
@@ -481,6 +492,8 @@ public class UserProfileManager implements ServicesToPreloadI
 		}
 		UserProfile up = new UserProfile(TermAux.USER.getDescription(), TermAux.USER.getDescription(), TermAux.USER.getUuids()[0]);
 		up.setLaunchWorkflowForEachCommit(false);
+		up.setEditCoordinatePath(TermAux.WB_AUX_PATH.getUuids()[0]);
+		up.setViewCoordinatePath(Snomed.SNOMED_RELEASE_PATH.getUuids()[0]);
 		loggedInUser_ = up;
 		userNamesWithProfiles_.add(up.getUserLogonName());
 		Log.info("User Profile Manager automation mode enabled!");
@@ -498,5 +511,34 @@ public class UserProfileManager implements ServicesToPreloadI
 	public File getProfilesFolder()
 	{
 		return profilesFolder_;
+	}
+
+	private static Object getPropertyValue(UserProfile userProfile, UserProfileProperty property) {
+		switch(property) {
+		case statedInferredPolicy:
+			return userProfile.getStatedInferredPolicy();
+		case displayFSN:
+			return userProfile.getDisplayFSN();
+		case workflowUsername:
+			return userProfile.getWorkflowUsername();
+		case viewCoordinatePath:
+			return userProfile.getViewCoordinatePath();
+		case editCoordinatePath:
+			return userProfile.getEditCoordinatePath();
+		default:
+			throw new IllegalArgumentException("Unsupported UserProfileProperty " + property);
+		}
+	}
+
+	public void addUserProfilePropertyChangeListener(UserProfileProperty eventType, PropertyChangeListener listener) {
+		UserProfilePropertyChange.addPropertyChangeListener(eventType, listener);
+	}
+	public void removeUserProfilePropertyChangeListener(PropertyChangeListener listener) {
+		UserProfilePropertyChange.removePropertyChangeListener(listener);
+	}
+	private static void fireUserProfilePropertyChanges(UserProfile oldUserProfile, UserProfile newUserProfile) {
+		for (UserProfileProperty property : UserProfileProperty.values()) {
+			UserProfilePropertyChange.firePropertyChange(property, getPropertyValue(oldUserProfile, property), getPropertyValue(newUserProfile, property));
+		}
 	}
 }

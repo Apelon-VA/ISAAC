@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	//TODO rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
+	//TODO (artf231410) rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
 	//We obviously need a training session for some folks on what HK2 is good at.  
 	
 	protected static EnhancedSearchViewBottomPane bottomPane;

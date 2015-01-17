@@ -81,7 +81,7 @@ public class ComponentsController implements PanelControllers {
 	
 	private UpdateableBooleanBinding allValid;
 
-	//TODO this page still needs a vertical scrollbar
+	//TODO (artf231890) this page still needs a vertical scrollbar
 	@Override
 	public void initialize() {
 		LOG.debug("Creating a ComponentsController");
@@ -147,7 +147,7 @@ public class ComponentsController implements PanelControllers {
 	
 	private void addBlankSynonymRow()
 	{
-		synonymVBox.getChildren().add(new Label("<No Terms>                    "));//TODO HACK!
+		synonymVBox.getChildren().add(new Label("<No Terms>                    "));//TODO (artf231890) HACK!
 		synonymVBox.setAlignment(Pos.CENTER_RIGHT);
 		// Setup Add Button
 		Button addSynonymButton = new Button("+");

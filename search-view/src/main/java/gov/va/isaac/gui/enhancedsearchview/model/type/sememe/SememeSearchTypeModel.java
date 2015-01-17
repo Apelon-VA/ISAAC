@@ -192,6 +192,8 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				}
 			}
 		});
+		isSearchTypeRunnableProperty.set(isValidSearch());
+
 		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
@@ -201,6 +203,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				}
 			}
 		});
+		isSearchTypeSavableProperty.set(isSavableSearch());
 	}
 	
 	private void setupSearchText() {

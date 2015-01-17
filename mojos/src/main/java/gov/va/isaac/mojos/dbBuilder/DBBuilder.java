@@ -32,6 +32,7 @@ import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.api.io.FileIO;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.RelSpec;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
@@ -156,7 +157,9 @@ public class DBBuilder extends AbstractMojo
 				for (int i = 0; i < conceptsToAddAsRoots.length; i++)
 				{
 					conceptsToAddAsRoots[i] = terminologyRoots[i].getConceptSpec();
-					conceptsToAddAsRoots[i].setRelSpecs(new RelSpec[] {new RelSpec(conceptsToAddAsRoots[i], Snomed.IS_A, ISAAC.ISAAC_ROOT)});
+					//Need to do stated and inferred, otherwise, we can't browse, on inferred mode, nor on inferred_then_stated mode
+					conceptsToAddAsRoots[i].setRelSpecs(new RelSpec[] {new RelSpec(conceptsToAddAsRoots[i], Snomed.IS_A, ISAAC.ISAAC_ROOT), //stated
+							new RelSpec(conceptsToAddAsRoots[i], Snomed.IS_A, ISAAC.ISAAC_ROOT, SnomedMetadataRf2.INFERRED_RELATIONSHIP_RF2)}); //inferred  
 				}
 			}
 			
