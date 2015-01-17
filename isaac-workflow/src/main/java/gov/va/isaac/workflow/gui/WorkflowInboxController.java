@@ -126,7 +126,7 @@ public class WorkflowInboxController
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
-		//TODO maybe use the preferred name instead of their login name?
+		//TODO (artf231896) maybe use the preferred name instead of their login name?
 		userName.setText(ExtendedAppContext.getCurrentlyLoggedInUser());
 
 		taskTable.setTableMenuButtonVisible(true);
@@ -264,7 +264,7 @@ public class WorkflowInboxController
 			});
 		});
 
-		// TODO: not sure we should be loading content in init(). Maybe move to getView()?
+		// TODO (artf231897): not sure we should be loading content in init(). Maybe move to getView()?
 		loadContent();
 	}
 
@@ -355,9 +355,6 @@ public class WorkflowInboxController
 									}
 
 									String[] itemArray = items.toArray(new String[items.size()]);
-
-									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-									//System.out.println("Selected strings: " + Arrays.toString(itemArray));
 
 									return itemArray;
 								}

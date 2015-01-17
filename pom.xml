@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>Sprint_16.1</version>
+    <version>Sprint_17.0</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -38,8 +38,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.9.1</otf-query.version>
-        <otf-versioning.version>1.1-va-1.9.1</otf-versioning.version>
+        <otf-query.version>1.1-va-1.10</otf-query.version>
+        <otf-versioning.version>1.1-va-1.10</otf-versioning.version>
         <kie.version>6.0.1.Final</kie.version>  <!-- Workflow, drools, etc -->
     </properties>
     

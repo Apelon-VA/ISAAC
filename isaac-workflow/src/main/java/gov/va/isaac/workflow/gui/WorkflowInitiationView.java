@@ -123,6 +123,7 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 	@Override
 	public void setComponent(int nid) {
 		try {
+			//TODO (artf231900) don't do BDB lookups on the FX Thread
 			setComponent(WBUtility.getComponentVersion(nid));
 		} catch (Exception e) {
 			String title = "Unexpected error loading component with UUID " + nid;

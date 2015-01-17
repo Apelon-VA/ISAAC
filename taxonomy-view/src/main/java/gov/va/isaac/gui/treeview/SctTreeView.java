@@ -20,25 +20,42 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.WBUtility;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -63,7 +80,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-public class SctTreeView implements ShutdownBroadcastListenerI {
+class SctTreeView implements ShutdownBroadcastListenerI {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
@@ -72,18 +89,112 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     /** Package access for other classes. */
     static volatile boolean shutdownRequested = false;
 
-    private Object lock_ = new Object();
-    private boolean initRun = false;
-    private boolean initialLoadComplete_ = false;
+    // initializationCountDownLatch_ begins with count of 2, indicating init() not yet run
+    // initializationCountDownLatch_ count is decremented to 1 during init, indicating that init() started
+    // initializationCountDownLatch_ count is decremented to 0 upon completion of init
+    //
+    // Calls to init() while count is less than 2 return immediately
+    // Methods requiring that init() be completed must run init() if count > 1 and block on await()
+    private final CountDownLatch initializationCountDownLatch_ = new CountDownLatch(2);
+
+    private BorderPane bp_;
     private StackPane sp_;
+    private ToolBar tb_ = new ToolBar();
     private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
+    private SimpleBooleanProperty displayFSN = new SimpleBooleanProperty(true);
+    private SimpleIntegerProperty inferredStatedMode = new SimpleIntegerProperty(StatedInferredOptions.STATED.ordinal());
 
-    protected SctTreeView() {
+    SctTreeView() {
         treeView_ = new TreeView<>();
         AppContext.getRuntimeGlobals().registerShutdownListener(this);
+        bp_ = new BorderPane();
+        
+        Button descriptionType = new Button();
+        descriptionType.setPadding(new Insets(2.0));
+        ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
+        Tooltip.install(displayFsn, new Tooltip("Displaying the Fully Specified Name - click to display the Preferred Term"));
+        displayFsn.visibleProperty().bind(displayFSN);
+        ImageView displayPreferred = Images.DISPLAY_PREFERRED.createImageView();
+        displayPreferred.visibleProperty().bind(displayFSN.not());
+        Tooltip.install(displayPreferred, new Tooltip("Displaying the Preferred Term - click to display the Fully Specified Name"));
+        descriptionType.setGraphic(new StackPane(displayFsn, displayPreferred));
+        descriptionType.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                try
+                {
+                    UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+                    up.setDisplayFSN(displayFSN.not().get());
+                    ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+                    displayFSN.set(up.getDisplayFSN());
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Unexpected error storing pref change", e);
+                }
+            }
+        });
+        
+        tb_.getItems().add(descriptionType);
+        
+        Button taxonomyViewMode = new Button();
+        taxonomyViewMode.setPadding(new Insets(2.0));
+        ImageView taxonomyInferred = Images.TAXONOMY_INFERRED.createImageView();
+        taxonomyInferred.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.INFERRED.ordinal()));
+        Tooltip.install(taxonomyInferred, new Tooltip("Displaying the Inferred view- click to display the Inferred then Stated view"));
+        ImageView taxonomyStated = Images.TAXONOMY_STATED.createImageView();
+        taxonomyStated.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.STATED.ordinal()));
+        Tooltip.install(taxonomyStated, new Tooltip("Displaying the Stated view- click to display the Inferred view"));
+        ImageView taxonomyInferredThenStated = Images.TAXONOMY_INFERRED_THEN_STATED.createImageView();
+        taxonomyInferredThenStated.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.INFERRED_THEN_STATED.ordinal()));
+        Tooltip.install(taxonomyInferredThenStated, new Tooltip("Displaying the Inferred then Stated view- click to display the Stated view"));
+        taxonomyViewMode.setGraphic(new StackPane(taxonomyInferred, taxonomyStated, taxonomyInferredThenStated));
+        taxonomyViewMode.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                try
+                {
+                    UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+                    StatedInferredOptions sip = null;
+                    if (inferredStatedMode.get() == StatedInferredOptions.STATED.ordinal())
+                    {
+                        sip = StatedInferredOptions.INFERRED;
+                    }
+                    else if (inferredStatedMode.get() == StatedInferredOptions.INFERRED.ordinal())
+                    {
+                        sip = StatedInferredOptions.INFERRED_THEN_STATED;
+                    }
+                    else if (inferredStatedMode.get() == StatedInferredOptions.INFERRED_THEN_STATED.ordinal())
+                    {
+                        sip = StatedInferredOptions.STATED;
+                    }
+                    else
+                    {
+                        LOG.error("Unexpected error!");
+                        return;
+                    }
+                    up.setStatedInferredPolicy(sip);
+                    ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+                    inferredStatedMode.set(up.getStatedInferredPolicy().ordinal());
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Unexpected error storing pref change", e);
+                }
+            }
+        });
+        tb_.getItems().add(taxonomyViewMode);
+        
+        bp_.setTop(tb_);
+        
         sp_ = new StackPane();
+        bp_.setCenter(sp_);
         ProgressIndicator pi = new ProgressIndicator();
         pi.setMaxHeight(100.0);
         pi.setMaxWidth(100.0);
@@ -92,59 +203,57 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         sp_.getChildren().add(pi);
     }
     
-    public StackPane getView()
+    public BorderPane getView()
     {
-    	if (! initRun) {
-    		LOG.warn("getView() called before init() run");
-    	}
-        return sp_;
+        if (initializationCountDownLatch_.getCount() > 1) {
+            LOG.debug("getView() called before initial init() started");
+        } else if (initializationCountDownLatch_.getCount() > 0) {
+            LOG.debug("getView() called before initial init() completed");
+        }
+        return bp_;
+    }
+    
+    /**
+     * Convenience method for other code to add buttons, etc to the tool bar displayed above
+     * the tree view 
+     * @param node
+     */
+    public void addToToolBar(Node node)
+    {
+        tb_.getItems().add(node);
     }
 
     public void refresh() {
-    	if (! initRun) {
-    		init();
-    	}
+        if (initializationCountDownLatch_.getCount() > 1) {
+            // called before initial init() run, so run init()
+            init();
+        }
 
-    	Task<Object> task = new Task<Object>() {
+        Task<Object> task = new Task<Object>() {
             @Override
             protected Object call() throws Exception {
-                LOG.debug("Ensuring init completed");
-                
-                synchronized (lock_)
-                {
-                    if (!initialLoadComplete_)
-                    {
-                    	try {
-                    		LOG.info("Waiting for init() to complete...");
-                    		lock_.wait();
-                    		LOG.info("Completed waiting for init() to complete");
-                    	} catch (Exception e) {
-                    		LOG.error("Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\" while waiting for init() to complete");
-                    	}
-                    }
-                }
-                
-                LOG.debug("Finished ensuring init completed");
+                // Waiting to ensure that init() completed
+                initializationCountDownLatch_.await();
                 return new Object();
             }
 
             @Override
             protected void succeeded() {
-            	LOG.debug("Succeeded waiting for init() to complete");
+                LOG.debug("Succeeded waiting for init() to complete");
 
-            	if (rootTreeItem.getChildren().size() > 0) {
-                	LOG.debug("Removing existing grandchildren...");
-            		rootTreeItem.removeGrandchildren();
-                	LOG.debug("Removed existing grandchildren.");
-            	}
-            	
-            	LOG.debug("Removing existing children...");
-            	rootTreeItem.getChildren().clear();
-            	LOG.debug("Removed existing children.");
-            	
-            	LOG.debug("Re-adding children...");
-            	rootTreeItem.addChildren();
-            	LOG.debug("Re-added children.");
+                if (rootTreeItem.getChildren().size() > 0) {
+                    LOG.debug("Removing existing grandchildren...");
+                    rootTreeItem.removeGrandchildren();
+                    LOG.debug("Removed existing grandchildren.");
+                }
+                
+                LOG.debug("Removing existing children...");
+                rootTreeItem.getChildren().clear();
+                LOG.debug("Removed existing children.");
+                
+                LOG.debug("Re-adding children...");
+                rootTreeItem.addChildren();
+                LOG.debug("Re-added children.");
             }
 
             @Override
@@ -167,9 +276,21 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         init(ISAAC.ISAAC_ROOT.getUuids()[0]);
     }
 
-    private void init(final UUID rootConcept) {
-    	initRun = true;
-    	
+    private synchronized void init(final UUID rootConcept) {
+        if (initializationCountDownLatch_.getCount() == 0) {
+            LOG.warn("Ignoring call to init({}) after previous init() already completed", rootConcept);
+            return;
+        } else if (initializationCountDownLatch_.getCount() <= 1) {
+            LOG.warn("Ignoring call to init({}) while initial init() still running", rootConcept);
+            return;
+        } else if (initializationCountDownLatch_.getCount() == 2) {
+            initializationCountDownLatch_.countDown();
+            LOG.debug("Performing initial init({})", rootConcept);
+        } else {
+            // this should never happen
+            throw new RuntimeException("SctTreeView initializationCountDownLatch_ has unexpected count " + initializationCountDownLatch_.getCount() + " which is not 0, 1 or 2");
+        }
+
         // Do work in background.
         Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>() {
 
@@ -183,15 +304,46 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
                 LOG.debug("Finished loading root concept");
+                
+                if (rootConceptCC.getDestinationRelationships().size() == 0) {
+                    LOG.warn("ROOT CONCEPT {} HAS NO DESTINATION RELATIONSHIPS.  MAY BE A PROBLEM WITH VIEWCOORDINATE RELATIONSHIP ASSERTION TYPE ({})", WBUtility.getDescription(rootConceptCC), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+                }
                 return rootConceptCC;
             }
 
             @Override
             protected void succeeded() {
-            	LOG.debug("getFxConcept() (called by init()) succeeded");
+                LOG.debug("getFxConcept() (called by init()) succeeded");
 
                 ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
+
+                UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
+                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.statedInferredPolicy, new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        inferredStatedMode.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getStatedInferredPolicy().ordinal());
+                        SctTreeView.this.refresh();
+                    }
+                });
+                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.viewCoordinatePath, new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        SctTreeView.this.refresh();
+                    }
+                });
+                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.displayFSN, new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                        displayFSN.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN());
+                        SctTreeView.this.refresh();
+                    }
+                });
+                displayFSN.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN());
+                inferredStatedMode.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getStatedInferredPolicy().ordinal());
             }
 
             @Override
@@ -210,9 +362,16 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
         Utility.execute(task);
     }
     
+    /**
+     * @param rootConcept
+     * 
+     * This method should be called only by init() and only a single time.
+     * The only reason this is its own method is to make the init() more readable.
+     * 
+     */
     private void finishTreeSetup(ConceptChronicleDdo rootConcept) {
-    	LOG.debug("Running finishTreeSetup()...");
-    	
+        LOG.debug("Running finishTreeSetup()...");
+        
         treeView_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         treeView_.setCellFactory(new Callback<TreeView<TaxonomyReferenceWithConcept>, TreeCell<TaxonomyReferenceWithConcept>>() {
@@ -222,17 +381,12 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
             }
         });
 
-        TaxonomyReferenceWithConcept hiddenRootConcept = new TaxonomyReferenceWithConcept();
-        SctTreeItem hiddenRootItem = new SctTreeItem(hiddenRootConcept, displayPolicies);
-        treeView_.setShowRoot(false);
-        treeView_.setRoot(hiddenRootItem);
-
         TaxonomyReferenceWithConcept visibleRootConcept = new TaxonomyReferenceWithConcept();
         visibleRootConcept.setConcept(rootConcept);
 
         rootTreeItem = new SctTreeItem(visibleRootConcept, displayPolicies, Images.ROOT.createImageView());
 
-        hiddenRootItem.getChildren().add(rootTreeItem);
+        treeView_.setRoot(rootTreeItem);
         rootTreeItem.addChildren();
 
         // put this event handler on the root
@@ -255,42 +409,40 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
                         ProgressIndicator p2 = new ProgressIndicator();
 
-                        //TODO figure out what to do with the progress indicator
+                        //TODO (artf231880) figure out what to do with the progress indicator
 //                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
                         p2.setPrefSize(16, 16);
                         p2.setProgress(-1);
                         sourceTreeItem.setProgressIndicator(p2);
                         if (sourceTreeItem.shouldDisplay()) {
-                        	sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
+                            sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
                         }
                     }
                 });
         sp_.getChildren().add(treeView_);
         sp_.getChildren().remove(0);  //remove the progress indicator
-        synchronized (lock_)
-        {
-            initialLoadComplete_ = true;
-            lock_.notifyAll();
-        }
+
+        // Final decrement of initializationCountDownLatch_ to 0,
+        // indicating that initial init() is complete
+        initializationCountDownLatch_.countDown();
     }
 
     public void showConcept(final UUID conceptUUID, final BooleanProperty workingIndicator) {
-		if (! initRun) {
-    		init();
-    	}
+        if (initializationCountDownLatch_.getCount() > 1) {
+            // Called before initial init() run, so run init().
+            // showConcept Task will internally await() init() completion.
+
+            init();
+        }
 
         // Do work in background.
         Task<SctTreeItem> task = new Task<SctTreeItem>() {
 
             @Override
             protected SctTreeItem call() throws Exception {
-                synchronized (lock_)
-                {
-                    if (!initialLoadComplete_)
-                    {
-                        lock_.wait();
-                    }
-                }
+                // await() init() completion.
+                initializationCountDownLatch_.await();
+
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
                 pathToRoot.add(conceptUUID);
 
@@ -419,10 +571,6 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                         SctTreeItem answer = answers.get(0);
                         treeView_.scrollTo(treeView_.getRow(answer));
                         answer.setExpanded(true);
-                        if (! isLast) {
-                            // Start fetching the next level.
-                            answer.addChildren();
-                        }
                     }
 
                     answers.notify();
@@ -456,7 +604,7 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
 
-        //TODO see if this is still the case... we should be using the Fx APIs directly....
+        //TODO (artf231882) see if this is still the case... we should be using the Fx APIs directly....
         ConceptVersionBI wbConcept = WBUtility.getConceptVersion(conceptUUID);
         if (wbConcept == null) {
             return null;
@@ -474,14 +622,14 @@ public class SctTreeView implements ShutdownBroadcastListenerI {
                 RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
     }
 
-	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
-		this.displayPolicies = policies;
-	}
+    public void setDisplayPolicies(SctTreeItemDisplayPolicies policies) {
+        this.displayPolicies = policies;
+    }
 
-	public static SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
-		return defaultDisplayPolicies;
-	}
-	
+    public static SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
+        return defaultDisplayPolicies;
+    }
+    
     /**
      * Tell the tree to stop whatever threading operations it has running,
      * since the application is exiting.

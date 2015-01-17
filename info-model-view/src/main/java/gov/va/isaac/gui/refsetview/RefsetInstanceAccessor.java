@@ -384,7 +384,7 @@ public class RefsetInstanceAccessor {
 				
 				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
 				compositeMemberNid = member.getNid();
-				/**TODO - BAC
+				/**TODO (artf231836) - BAC
 				//TODO this should be done generically in the info-model-view API, not CEM specific.
 				for (RefexVersionBI<?> parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {

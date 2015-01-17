@@ -154,7 +154,7 @@ public class WorkflowInitiationViewController {
 	public void initialize() {
 		initializeWorkflowProcessesComboBox();
 
-		// TODO: must move to model to handle other WorkflowProcessModel types
+		// TODO (artf231901): must move to model to handle other WorkflowProcessModel types
 		instructionsTextArea.clear();
 
 		promotionPathCoordinateLabel.setText(getDefaultPromotionPathCoordinateTextFieldContent());
@@ -179,7 +179,7 @@ public class WorkflowInitiationViewController {
 	}
 
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
+		UUID promotionPathUUID = AppContext.getAppConfiguration().getCurrentWorkflowPromotionPathUuidAsUUID();
 		if (promotionPathUUID == null)
 		{
 			return "";

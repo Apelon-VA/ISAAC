@@ -126,8 +126,8 @@ public class SearchConceptHelper {
 			String passedSaveConceptFSN,
 			String passedSaveConceptPT) throws SearchConceptException
 	{
-		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : model.getSearchTypeSelector().getTypeSpecificModel().getName();
-		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : model.getSearchTypeSelector().getTypeSpecificModel().getDescription();
+		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName();
+		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription();
 
 		LOG.debug("buildSearchConcept(): saving model for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
 		//
@@ -162,16 +162,16 @@ public class SearchConceptHelper {
 				// Serialize passed View Coordinate into byte[]
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(output);
-				model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate().writeExternal(oos);
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate().writeExternal(oos);
 				oos.flush();
 
 				// Construct and populate RefexDynamicData for View Coordinate
 				RefexDynamicData viewCoordinateColumnData = new RefexDynamicByteArray(output.toByteArray());
 				searchGlobalAttributesData[0] = viewCoordinateColumnData;
-				RefexDynamicData maxResultsColumnData = new RefexDynamicInteger(model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+				RefexDynamicData maxResultsColumnData = new RefexDynamicInteger(SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 				searchGlobalAttributesData[1] = maxResultsColumnData;
-				if (model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr() != null) {
-					RefexDynamicData droolsExprColumnData = new RefexDynamicString(model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr() != null) {
+					RefexDynamicData droolsExprColumnData = new RefexDynamicString(SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 					searchGlobalAttributesData[2] = droolsExprColumnData;
 				}
 
@@ -192,12 +192,12 @@ public class SearchConceptHelper {
 
 				conceptAttributeBlueprintAmender.addAnnotationBlueprint(globalAttributesCAB);
 
-				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 				builder.construct(globalAttributesCAB);
 			}
 
-			if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
-				TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+			if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+				TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 				
 				// Add search type filter as index 0
 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
@@ -206,8 +206,8 @@ public class SearchConceptHelper {
 				for (int filterIndex = 0; filterIndex < compModel.getFilters().size(); ++filterIndex) {
 					addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getFilters().get(filterIndex), filterIndex + 1);
 				}
-			} else if (model.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
-				SememeSearchTypeModel compModel = (SememeSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+			} else if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
+				SememeSearchTypeModel compModel = (SememeSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 
 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
 			}
@@ -358,7 +358,7 @@ public class SearchConceptHelper {
 
 		filterRefexCAB.addAnnotationBlueprint(nestedFilterAttributesCAB);
 
-		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
 		builder.construct(filterRefexCAB);
 	}
 
@@ -370,8 +370,8 @@ public class SearchConceptHelper {
 			String passedSaveConceptFSN,
 			String passedSaveConceptPT) throws SearchConceptException
 	{
-		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : model.getSearchTypeSelector().getTypeSpecificModel().getName();
-		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : model.getSearchTypeSelector().getTypeSpecificModel().getDescription();
+		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName();
+		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription();
 
 		LOG.debug("buildAndSaveSearchConcept(): saving concept for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
 
@@ -486,27 +486,25 @@ public class SearchConceptHelper {
 
 				model = new SearchModel();
 				
-				if (model.getSearchTypeSelector() != null) {
-					if (model.getSearchTypeSelector().getTypeSpecificModel() == null) {
-						LOG.debug("model.getSearchTypeSelector().getTypeSpecificModel() == null");
+				if (SearchModel.getSearchTypeSelector() != null) {
+					if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == null) {
+						LOG.debug("SearchModel.getSearchTypeSelector().getTypeSpecificModel() == null");
 					} else {
-						LOG.debug("model.getSearchTypeSelector().getTypeSpecificModel(): name=\"{}\", desc=\"{}\", class={}",
-								model.getSearchTypeSelector().getTypeSpecificModel().getName(),
-								model.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
-								model.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
+						LOG.debug("SearchModel.getSearchTypeSelector().getTypeSpecificModel(): name=\"{}\", desc=\"{}\", class={}",
+								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName(),
+								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
+								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
 						
-						if (model.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
-							
-							// TODO: reinitialize ALL compModel fields to avoid leaking old values into loaded search
-							TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+						if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
+							TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 							compModel.getFilters().clear();
 							compModel.getDroolsExprProperty().set(null);
 						}
 					}
 				}
 
-				model.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
-				model.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
 
 				try {
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
@@ -537,8 +535,8 @@ public class SearchConceptHelper {
 						return null;
 					}
 
-					if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
-						TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+					if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+						TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 						
 						if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
 							// handle "Search Global Attributes"
@@ -554,18 +552,18 @@ public class SearchConceptHelper {
 							ObjectInputStream oos = new ObjectInputStream(input);
 							ViewCoordinate vc = new ViewCoordinate();
 							vc.readExternal(oos);
-							model.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
-							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " sememe: " + model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
+							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
 	
 							// Loading maxResults
 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
-							LOG.debug("Read max results from " + dud.getRefexName() + " sememe: " + model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
+							LOG.debug("Read max results from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 	
 							// Loading drools expression
 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
-							LOG.debug("Read drools expression from " + dud.getRefexName() + " sememe: " + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
+							LOG.debug("Read drools expression from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 	
 						} else if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() /*"Search Lucene Filter"*/)) {
 							// handle "Search Lucene Filter"
@@ -647,8 +645,8 @@ public class SearchConceptHelper {
 								compModel.getFilters().add(f);
 							}
 						}
-					} else if (model.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
-						SememeSearchTypeModel compModel = (SememeSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+					} else if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
+						SememeSearchTypeModel compModel = (SememeSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 						
 						if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
 							// handle "Search Global Attributes"
@@ -664,18 +662,18 @@ public class SearchConceptHelper {
 							ObjectInputStream oos = new ObjectInputStream(input);
 							ViewCoordinate vc = new ViewCoordinate();
 							vc.readExternal(oos);
-							model.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
-							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " sememe: " + model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
+							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
 	
 							// Loading maxResults
 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
-							LOG.debug("Read max results from " + dud.getRefexName() + " sememe: " + model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
+							LOG.debug("Read max results from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 	
 							// Loading drools expression
 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
-							LOG.debug("Read drools expression from " + dud.getRefexName() + " sememe: " + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
+							LOG.debug("Read drools expression from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 	
 						} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() /*"Search Sememe Filter"*/)) {	
 							LOG.debug("Loading data into model from Search Sememe Filter sememe");

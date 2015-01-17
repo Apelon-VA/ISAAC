@@ -2,6 +2,7 @@ package gov.va.isaac.gui.enhancedsearchview.model.type.refspec;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
@@ -65,6 +66,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel {
 			public void changed(ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		queryNodeTreeView.rootProperty().addListener(new ChangeListener<TreeItem<NodeDraggable>>() {
@@ -74,6 +76,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel {
 					TreeItem<NodeDraggable> oldValue,
 					TreeItem<NodeDraggable> newValue) {
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 			
 		});
@@ -82,6 +85,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel {
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		
@@ -94,8 +98,22 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel {
 				}
 			}
 		});
+		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == RefsetSpecSearchTypeModel.this) {
+					SearchModel.isSearchSavableProperty().set(newValue);
+				}
+			}
+		});
 	}
 
+	@Override
+	public String getSearchSavabilityValidationFailureMessage() {
+		return "Saves of " + SearchType.REFSET_SPEC.toString() + " search criteria not currently supported";
+	}
+	
 	private void initializeQueryNodeTreeView() {
 		QueryBuilderHelper.initializeQueryNodeTreeView(queryNodeTreeView, nodeEditorGridPane, queryNodeTreeViewIsValidProperty);
 		

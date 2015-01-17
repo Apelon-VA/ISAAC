@@ -242,7 +242,7 @@ public class ConceptNode implements ConceptLookupCallback
 				
 				if (newValue == null)
 				{
-					//TODO - resolve if / when this happens - and what should we do about it?
+					//TODO (artf231844) - resolve if / when this happens - and what should we do about it?
 					logger.warn("Unexpected case!");
 					return;
 				}
@@ -503,7 +503,7 @@ public class ConceptNode implements ConceptLookupCallback
 	}
 
 	public void disableEdit() {
-		//TODO disable drag and drop
+		//TODO (artf231877) disable drag and drop
 		cb_.setEditable(false);
 		cb_.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(0), new Insets(0))));
 	}

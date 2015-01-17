@@ -92,7 +92,8 @@ public class TableHeaderRowTooltipInstaller
 		}
 		if (nameToTooltipMap.size() > 0)
 		{
-			logger_.warn("Failed to install at least " + nameToTooltipMap.size() + " tooltips");
+			//This happens for various reasons at the moment... don't log a warn
+			logger_.debug("Failed to install at least " + nameToTooltipMap.size() + " tooltips");
 		}
 		else
 		{

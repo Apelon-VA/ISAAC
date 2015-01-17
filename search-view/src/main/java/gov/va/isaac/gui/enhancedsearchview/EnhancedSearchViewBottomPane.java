@@ -194,7 +194,6 @@ public class EnhancedSearchViewBottomPane {
 	}
 
 	private void initializeButtons(Stage stage) {
-		// TODO: either fix or remove exportSearchResultsToWorkflow
 		resultsToListButton.setOnAction((e) -> resultsToList());
 		resultsToReportButton.setOnAction((e) -> ResultsToReport.resultsToReport());
 		resultsToWorkflowButton.setOnAction((e) -> ResultsToWorkflow.multipleResultsToWorkflow());

@@ -140,7 +140,7 @@ public class DefinitionController implements PanelControllers {
 
 					if (frontParenCount != 1 || backParenCount != 1) 
 					{
-						// TODO: Put this back after demo and only throw if under SCT
+						// TODO (artf231891): Put this back after demo and only throw if under SCT
 						// return "FSNs must have a single set of parenthesis to define the semantic tag";
 						return "";
 					} else if (fsn.getText().trim().indexOf(")") != fsn.getText().trim().length() - 1) {
@@ -218,7 +218,7 @@ public class DefinitionController implements PanelControllers {
 		
 		addNewParentHandler();
 		
-// TODO - Handle with HBox?
+// TODO (artf231842) - Handle with HBox?
 //		VBox.setVgrow(parentConcept.getNode(), Priority.ALWAYS);
 
 	}

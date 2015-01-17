@@ -50,6 +50,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {	
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 
@@ -65,10 +66,12 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 								ObservableValue<? extends Boolean> observable,
 								Boolean oldValue, Boolean newValue) {
 							isSearchTypeRunnableProperty.set(isValidSearch());
+							isSearchTypeSavableProperty.set(isSavableSearch());
 						}
 					});
 				}
 				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 
@@ -79,6 +82,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 						ObservableValue<? extends Boolean> observable,
 						Boolean oldValue, Boolean newValue) {
 					isSearchTypeRunnableProperty.set(isValidSearch());
+					isSearchTypeSavableProperty.set(isSavableSearch());
 				}
 			});
 		}
@@ -109,6 +113,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 										ObservableValue<? extends Boolean> observable,
 										Boolean oldValue, Boolean newValue) {
 									isSearchTypeRunnableProperty.set(isValidSearch());
+									isSearchTypeSavableProperty.set(isSavableSearch());
 								}
 							});
 						}
@@ -123,6 +128,15 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 					Boolean oldValue, Boolean newValue) {
 				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == TextSearchTypeModel.this) {
 					SearchModel.isSearchRunnableProperty().set(newValue);
+				}
+			}
+		});
+		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == TextSearchTypeModel.this) {
+					SearchModel.isSearchSavableProperty().set(newValue);
 				}
 			}
 		});

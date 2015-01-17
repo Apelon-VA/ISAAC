@@ -35,7 +35,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -456,7 +455,7 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
     ConceptSpec langRefexParent =
         new ConceptSpec("Language type reference set",
             UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687"));
-    List<ConceptVersionBI> descs =
+    Set<ConceptVersionBI> descs =
         WBUtility.getAllChildrenOfConcept(
             langRefexParent.getLenient().getNid(), true);
     for (ConceptVersionBI desc : descs) {

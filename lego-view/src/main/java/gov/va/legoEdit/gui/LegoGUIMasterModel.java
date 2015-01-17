@@ -61,7 +61,7 @@ public class LegoGUIMasterModel
 	public void importLegoList(LegoList ll) throws WriteException
 	{
 		BDBDataStoreImpl.getInstance().importLegoList(ll);
-		//TODO [LEGO Edit]
+		//TODO (artf231850) [LEGO Edit]
 		//LegoGUI.getInstance().getLegoGUIController().getCommonlyUsedConcept().rebuildDBStats();
 		updateLegoLists();
 	}
@@ -86,7 +86,7 @@ public class LegoGUIMasterModel
 
 	public void removeLegoList(LegoListByReference legoListByReference) throws WriteException
 	{
-		//TODO [Lego Edit]
+		//TODO (artf231850) [Lego Edit]
 //		for (LegoReference lr : legoListByReference.getLegoReference())
 //		{
 //			LegoGUI.getInstance().getLegoGUIController().closeTabIfOpen(lr);
@@ -99,7 +99,7 @@ public class LegoGUIMasterModel
 
 	public void removeLego(LegoListByReference legoListReference, LegoReference legoReference) throws WriteException
 	{
-		//TODO [Lego Edit]
+		//TODO (artf231850) [Lego Edit]
 //		LegoGUI.getInstance().getLegoGUIController().closeTabIfOpen(legoReference);
 		BDBDataStoreImpl.getInstance().deleteLego(legoListReference.getLegoListUUID(), legoReference.getLegoUUID(), legoReference.getStampUUID());
 //		LegoGUI.getInstance().getLegoGUIController().removeNewLego(legoReference.getUniqueId());

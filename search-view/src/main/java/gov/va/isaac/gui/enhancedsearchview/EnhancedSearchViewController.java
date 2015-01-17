@@ -93,7 +93,7 @@ public class EnhancedSearchViewController {
 			}
 		});
 		
-		//TODO - things that hit the DB (BDB or the Workflow SQL DB) should NOT Be done in the JavaFX foreground thread.  This causes large delays in displaying your GUI.
+		//TODO (artf231846) - things that hit the DB (BDB or the Workflow SQL DB) should NOT Be done in the JavaFX foreground thread.  This causes large delays in displaying your GUI.
 		//this sort of stuff need to be a in  background thread, with an appropriate progress indicator
 
 		topPane.getSearchButton().setOnAction((action) -> {

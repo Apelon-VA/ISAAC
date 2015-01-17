@@ -110,9 +110,7 @@ public class WorkflowAdvancementViewController
 					try
 					{
 						taskService_.completeTask(taskModel.getTask().getId(), taskModel.getCurrentOutputVariables());
-						
-						addToPromotionPath();
-						
+												
 						Platform.runLater(() -> 
 						{
 							//refreshSaveActionButtonBinding();
@@ -158,9 +156,6 @@ public class WorkflowAdvancementViewController
 	}
 
 	public void setTask(long taskId) {
-		//TODO Joel - what is a user supposed to do about any of these failures?  Shouldn't all of these be putting up a dialog informing them that the 
-		//set task failed?  You can't just silently eat them - or can you eat some of these?
-
 		final String errorDialogTitle = "Failed Setting Workflow Task";
 		final String errorDialogMsg = "Failed setting initial workflow task by id #" + taskId;
 		if (taskModel != null) {
@@ -340,10 +335,5 @@ public class WorkflowAdvancementViewController
 	
 	public Region getRootNode() {
 		return borderPane;
-	}
-
-	private void addToPromotionPath() {
-		// TODO implement
-		logger.error("addtoPromotionPath is not implemented!");
 	}
 }

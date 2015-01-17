@@ -6,20 +6,19 @@ import gov.va.isaac.gui.dialog.UserPrompt;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -61,107 +60,194 @@ public class RefexContentFilterPrompt extends UserPrompt {
 		Label columnValLabel = new Label(columnName);
 		columnHBox.getChildren().addAll(columnAttrLabel, columnValLabel);
 		
-		vb.getChildren().addAll(panelName, columnHBox, createListView());
+		vb.getChildren().addAll(panelName, columnHBox, createCheckBoxListView());
 		
 		return vb;
 	}
-	private ListView<String> createListView() {
-		ListView<String> listView = new ListView<>();
-		listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+//	private ListView<String> createListView() {
+//		ListView<String> listView = new ListView<>();
+//		listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+//			@Override
+//			public ListCell<String> call(ListView<String> param) {
+//				ListCell<String> cell = new ListCell<String>() {
+//					@Override
+//					public void updateItem(String item, boolean empty) {
+//						super.updateItem(item, empty);
+//						if (empty) {
+//							setText(null);
+//							setGraphic(null);
+//						} else {
+//							setText(null);
+//							Label label = new Label(item);
+//				        	label.setMaxWidth(280);
+//				        	label.setTooltip(new Tooltip(item));
+//							setGraphic(label);
+//						}
+//					}
+//				};
+//				
+//				return cell;
+//			}
+//		});
+//		listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+//		listView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
+//			@Override
+//			public void onChanged(
+//					javafx.collections.ListChangeListener.Change<? extends String> c) {
+//				while (c.next()) {
+//					if (c.wasPermutated()) {
+//						// irrelevant
+//						//	                     for (int i = c.getFrom(); i < c.getTo(); ++i) {
+//						//	                          //permutate
+//						//	                     }
+//					} else if (c.wasUpdated()) {
+//						// irrelevant
+//					} else {
+//						for (String item : c.getRemoved()) {
+//							selectedValues.getItems().remove(item);
+//						}
+//						for (String item : c.getAddedSubList()) {
+//							selectedValues.getItems().add(item);
+//						}
+//					}
+//				}
+//			}	
+//		});
+//		
+//		for (String s : allValues)  {
+//			listView.getItems().add(s);
+//			if (alreadySelectedValues.contains(s)) {
+//				listView.getSelectionModel().select(s);
+//        	}
+//		}
+//       
+//        return listView;
+//    }
+
+	private static class CheckableText {
+		final String text;
+		final BooleanProperty selectedProperty = new SimpleBooleanProperty(false);
+		
+		public CheckableText(String text) {
+			this.text = text;
+		}
+
+		/**
+		 * @return the text
+		 */
+		public String getText() {
+			return text;
+		}
+
+		/**
+		 * @return the selectedProperty
+		 */
+		public BooleanProperty getSelectedProperty() {
+			return selectedProperty;
+		}
+		
+		public void setSelected(boolean selected) {
+			selectedProperty.set(selected);
+		}
+		
+		public String toString() { return text; }
+	}
+	private ListView<CheckableText> createCheckBoxListView() {
+		ListView<CheckableText> listView = new ListView<>();
+
+		final ObservableList<CheckableText> data = FXCollections.observableArrayList();
+
+		listView.setCellFactory(new Callback<ListView<CheckableText>, ListCell<CheckableText>>() {
 			@Override
-			public ListCell<String> call(ListView<String> param) {
-				ListCell<String> cell = new ListCell<String>() {
+			public ListCell<CheckableText> call(ListView<CheckableText> param) {
+				ListCell<CheckableText> cell = new ListCell<CheckableText>() {
 					@Override
-					public void updateItem(String item, boolean empty) {
+					public void updateItem(CheckableText item, boolean empty) {
 						super.updateItem(item, empty);
 						if (empty) {
 							setText(null);
 							setGraphic(null);
 						} else {
 							setText(null);
-							Label label = new Label(item);
-				        	label.setMaxWidth(280);
-				        	label.setTooltip(new Tooltip(item));
-							setGraphic(label);
+							CheckBox checkBox = new CheckBox();
+							checkBox.selectedProperty().bindBidirectional(item.selectedProperty);
+							Label label = new Label(item.getText().replaceAll("\n", " "));
+							label.setMaxWidth(280);
+							label.setTooltip(new Tooltip(item.getText()));
+
+							HBox graphic = new HBox();
+							graphic.getChildren().addAll(checkBox, label);
+							setGraphic(graphic);
 						}
 					}
 				};
-				
+
 				return cell;
 			}
 		});
-		listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		listView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
-			@Override
-			public void onChanged(
-					javafx.collections.ListChangeListener.Change<? extends String> c) {
-				while (c.next()) {
-					if (c.wasPermutated()) {
-						// irrelevant
-						//	                     for (int i = c.getFrom(); i < c.getTo(); ++i) {
-						//	                          //permutate
-						//	                     }
-					} else if (c.wasUpdated()) {
-						// irrelevant
+		listView.setItems(data);
+
+		for (String value : allValues) {
+			CheckableText item = new CheckableText(value);
+			item.getSelectedProperty().addListener(new ChangeListener<Boolean>() {
+				@Override
+				public void changed(
+						ObservableValue<? extends Boolean> observable,
+						Boolean oldValue, Boolean newValue) {
+					if (! newValue) {
+						selectedValues.getItems().remove(item.getText());
 					} else {
-						for (String item : c.getRemoved()) {
-							selectedValues.getItems().remove(item);
-						}
-						for (String item : c.getAddedSubList()) {
-							selectedValues.getItems().add(item);
-						}
+						selectedValues.getItems().add(item.getText());
 					}
-				}
-			}	
-		});
-		
-		for (String s : allValues)  {
-			listView.getItems().add(s);
-			if (alreadySelectedValues.contains(s)) {
-				listView.getSelectionModel().select(s);
-        	}
+				}	
+			});
+			if (alreadySelectedValues.contains(value)) {
+				item.setSelected(true);
+			}
+			
+			data.add(item);
 		}
-       
+
         return listView;
     }
-	private MenuButton createMenuBox() {
-        final MenuButton choicesMenuBox = new MenuButton("Potential Values");
-        List<CheckMenuItem> checkItems = new ArrayList<CheckMenuItem>();
-        
-        for (String s : allValues) {
-        	Label label = new Label(s);
-        	label.setMaxWidth(280);
-        	label.setTooltip(new Tooltip(s));
-        	CheckMenuItem item = new CheckMenuItem(null, label);
-        	if (alreadySelectedValues.contains(s)) {
-        		item.setSelected(true);
-        	}
-    		checkItems.add(item);
-        }
-        
-        choicesMenuBox.getItems().addAll(checkItems);
-
-          // Keep track of selected items
-        
-        for (final CheckMenuItem item : checkItems) {
-            item.selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> obs,
-                        Boolean wasPreviouslySelected, Boolean isNowSelected) {
-                    if (isNowSelected) {
-                        selectedValues.getItems().add(((Label)item.getGraphic()).getText());
-                    } else {
-                        selectedValues.getItems().remove(((Label)item.getGraphic()).getText());
-                    }
-                }
-            });
-            if (item.isSelected()) {
-            	selectedValues.getItems().add(((Label)item.getGraphic()).getText());
-            }
-        }	
-        
-        return choicesMenuBox;
-    }
+//	private MenuButton createMenuBox() {
+//        final MenuButton choicesMenuBox = new MenuButton("Potential Values");
+//        List<CheckMenuItem> checkItems = new ArrayList<CheckMenuItem>();
+//        
+//        for (String s : allValues) {
+//        	Label label = new Label(s);
+//        	label.setMaxWidth(280);
+//        	label.setTooltip(new Tooltip(s));
+//        	CheckMenuItem item = new CheckMenuItem(null, label);
+//        	if (alreadySelectedValues.contains(s)) {
+//        		item.setSelected(true);
+//        	}
+//    		checkItems.add(item);
+//        }
+//        
+//        choicesMenuBox.getItems().addAll(checkItems);
+//
+//          // Keep track of selected items
+//        
+//        for (final CheckMenuItem item : checkItems) {
+//            item.selectedProperty().addListener(new ChangeListener<Boolean>() {
+//                @Override
+//                public void changed(ObservableValue<? extends Boolean> obs,
+//                        Boolean wasPreviouslySelected, Boolean isNowSelected) {
+//                    if (isNowSelected) {
+//                        selectedValues.getItems().add(((Label)item.getGraphic()).getText());
+//                    } else {
+//                        selectedValues.getItems().remove(((Label)item.getGraphic()).getText());
+//                    }
+//                }
+//            });
+//            if (item.isSelected()) {
+//            	selectedValues.getItems().add(((Label)item.getGraphic()).getText());
+//            }
+//        }	
+//        
+//        return choicesMenuBox;
+//    }
 
 	public ObservableList<String> getSelectedValues() {
 		return selectedValues.getItems();
