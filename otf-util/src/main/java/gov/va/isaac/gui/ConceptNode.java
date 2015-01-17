@@ -504,7 +504,9 @@ public class ConceptNode implements ConceptLookupCallback
 
 	public void disableEdit() {
 		//TODO (artf231877) disable drag and drop
+		AppContext.getService(DragRegistry.class).removeDragCapability(cb_);
 		cb_.setEditable(false);
+		cb_.setItems(FXCollections.observableArrayList());
 		cb_.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(0), new Insets(0))));
 	}
 }
