@@ -34,7 +34,7 @@ import gov.va.isaac.gui.querybuilder.node.RelRestriction;
 import gov.va.isaac.gui.querybuilder.node.RelType;
 import gov.va.isaac.gui.querybuilder.node.SingleConceptAssertionNode;
 import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.scene.control.TreeItem;
 
 import org.ihtsdo.otf.query.implementation.Clause;
@@ -118,10 +118,10 @@ public class ClauseFactory {
 		case CONCEPT_IS_DESCENDANT_OF: 
 		case CONCEPT_IS_KIND_OF: {
 			SingleConceptAssertionNode node = (SingleConceptAssertionNode)treeItem.getValue();
-			ConceptVersionBI concept = WBUtility.getConceptVersion(node.getNid());
+			ConceptVersionBI concept = OTFUtility.getConceptVersion(node.getNid());
 			final String conceptSpecKey = "UUIDKeyFor" + node.getTemporaryUniqueId();
 			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(conceptSpecKey, new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+			query.getLetDeclarations().put(conceptSpecKey, new ConceptSpec(OTFUtility.getDescription(concept), concept.getPrimordialUuid()));
 			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
 			Clause clause = null;
 			
@@ -174,13 +174,13 @@ public class ClauseFactory {
 		case REFSET_CONTAINS_CONCEPT: {
 			RefsetContainsConcept node = (RefsetContainsConcept)treeItem.getValue();
 			
-			final ConceptVersionBI refsetConcept = WBUtility.getConceptVersion(node.getRefsetConceptNid());
+			final ConceptVersionBI refsetConcept = OTFUtility.getConceptVersion(node.getRefsetConceptNid());
 			final String refsetConceptSpecKey = "RefsetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
 
-			final ConceptVersionBI targetConcept = WBUtility.getConceptVersion(node.getConceptNid());
+			final ConceptVersionBI targetConcept = OTFUtility.getConceptVersion(node.getConceptNid());
 			final String targetConceptSpecKey = "TargetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
 
 			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
 			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
@@ -199,13 +199,13 @@ public class ClauseFactory {
 		case REFSET_CONTAINS_KIND_OF_CONCEPT: {
 			RefsetContainsKindOfConcept node = (RefsetContainsKindOfConcept)treeItem.getValue();
 			
-			final ConceptVersionBI refsetConcept = WBUtility.getConceptVersion(node.getRefsetConceptNid());
+			final ConceptVersionBI refsetConcept = OTFUtility.getConceptVersion(node.getRefsetConceptNid());
 			final String refsetConceptSpecKey = "RefsetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
 
-			final ConceptVersionBI targetConcept = WBUtility.getConceptVersion(node.getConceptNid());
+			final ConceptVersionBI targetConcept = OTFUtility.getConceptVersion(node.getConceptNid());
 			final String targetConceptSpecKey = "TargetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
 
 			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
 			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
@@ -223,9 +223,9 @@ public class ClauseFactory {
 		case REFSET_CONTAINS_STRING: {
 			RefsetContainsString node = (RefsetContainsString)treeItem.getValue();
 			
-			final ConceptVersionBI refsetConcept = WBUtility.getConceptVersion(node.getRefsetConceptNid());
+			final ConceptVersionBI refsetConcept = OTFUtility.getConceptVersion(node.getRefsetConceptNid());
 			final String refsetConceptSpecKey = "RefsetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(refsetConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(refsetConcept), refsetConcept.getPrimordialUuid()));
 
 			final String queryText = node.getQueryText();
 			final String queryTextKey = "QueryTextKeyFor" + node.getTemporaryUniqueId();
@@ -248,17 +248,17 @@ public class ClauseFactory {
 		case REL_RESTRICTION: {
 			RelRestriction node = (RelRestriction)treeItem.getValue();
 			
-			final ConceptVersionBI relRestrictionConcept = WBUtility.getConceptVersion(node.getRelRestrictionConceptNid());
+			final ConceptVersionBI relRestrictionConcept = OTFUtility.getConceptVersion(node.getRelRestrictionConceptNid());
 			final String relRestrictionConceptSpecKey = "RelRestrictionConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(relRestrictionConceptSpecKey, new ConceptSpec(WBUtility.getDescription(relRestrictionConcept), relRestrictionConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(relRestrictionConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(relRestrictionConcept), relRestrictionConcept.getPrimordialUuid()));
 			
-			final ConceptVersionBI relTypeConcept = WBUtility.getConceptVersion(node.getRelTypeConceptNid());
+			final ConceptVersionBI relTypeConcept = OTFUtility.getConceptVersion(node.getRelTypeConceptNid());
 			final String relTypeConceptSpecKey = "RelTypeConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(relTypeConceptSpecKey, new ConceptSpec(WBUtility.getDescription(relTypeConcept), relTypeConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(relTypeConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(relTypeConcept), relTypeConcept.getPrimordialUuid()));
 
-			final ConceptVersionBI sourceConcept = WBUtility.getConceptVersion(node.getSourceConceptNid());
+			final ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(node.getSourceConceptNid());
 			final String sourceConceptSpecKey = "SourceConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(sourceConceptSpecKey, new ConceptSpec(WBUtility.getDescription(sourceConcept), sourceConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(sourceConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(sourceConcept), sourceConcept.getPrimordialUuid()));
 
 			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
 			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());
@@ -286,13 +286,13 @@ public class ClauseFactory {
 		case REL_TYPE: {
 			RelType node = (RelType)treeItem.getValue();
 			
-			final ConceptVersionBI relTypeConcept = WBUtility.getConceptVersion(node.getRelTypeConceptNid());
+			final ConceptVersionBI relTypeConcept = OTFUtility.getConceptVersion(node.getRelTypeConceptNid());
 			final String relTypeConceptSpecKey = "RelTypeConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(relTypeConceptSpecKey, new ConceptSpec(WBUtility.getDescription(relTypeConcept), relTypeConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(relTypeConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(relTypeConcept), relTypeConcept.getPrimordialUuid()));
 
-			final ConceptVersionBI targetConcept = WBUtility.getConceptVersion(node.getTargetConceptNid());
+			final ConceptVersionBI targetConcept = OTFUtility.getConceptVersion(node.getTargetConceptNid());
 			final String targetConceptSpecKey = "TargetConceptUUIDKeyFor" + node.getTemporaryUniqueId();
-			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(WBUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
+			query.getLetDeclarations().put(targetConceptSpecKey, new ConceptSpec(OTFUtility.getDescription(targetConcept), targetConcept.getPrimordialUuid()));
 
 			final String vcKey = "VCKeyFor" + node.getTemporaryUniqueId();
 			query.getLetDeclarations().put(vcKey, query.getViewCoordinate());

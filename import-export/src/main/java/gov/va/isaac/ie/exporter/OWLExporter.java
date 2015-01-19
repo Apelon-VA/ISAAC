@@ -5,7 +5,7 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.models.util.CommonBase;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -177,7 +177,7 @@ public class OWLExporter extends CommonBase implements Exporter,
       // TODO: this needs to be generalized
       UUID snomedRootUUID = Taxonomies.SNOMED.getUuids()[0];
       ConceptVersionBI snomedRootConcept =
-          WBUtility.getConceptVersion(snomedRootUUID);
+          OTFUtility.getConceptVersion(snomedRootUUID);
 
       // Add annotation based on root concept
       for (DescriptionVersionBI<?> desc : snomedRootConcept
@@ -253,7 +253,7 @@ public class OWLExporter extends CommonBase implements Exporter,
     throws Exception {
     if (Thread.currentThread().isInterrupted())
       throw new InterruptedException();
-    ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+    ConceptVersionBI concept = fetcher.fetch(OTFUtility.getViewCoordinate());
     LOG.debug("Process concept " + concept.getPrimordialUuid());
     allCount++;
     if (Exporter.isQualifying(concept.getNid(), pathNid)) {
@@ -339,7 +339,7 @@ public class OWLExporter extends CommonBase implements Exporter,
       if (rel.isStated()) {
         parentClasses.add(factory.getOWLClass(
             ":"
-                + getSnomedConceptID(WBUtility.getConceptVersion(rel
+                + getSnomedConceptID(OTFUtility.getConceptVersion(rel
                     .getDestinationNid())), pm));
       }
     }
@@ -362,11 +362,11 @@ public class OWLExporter extends CommonBase implements Exporter,
 
       OWLObjectProperty relationshipTypeProperty =
           createOWLPropertyAxiomsFromConceptVersionBI(setOfAxioms, factory, pm,
-              WBUtility.getConceptVersion(rel.getTypeNid()));
+              OTFUtility.getConceptVersion(rel.getTypeNid()));
       OWLClass destinationClass =
           factory.getOWLClass(
               ":"
-                  + getSnomedConceptID(WBUtility.getConceptVersion(rel
+                  + getSnomedConceptID(OTFUtility.getConceptVersion(rel
                       .getDestinationNid())), pm);
 
       OWLClassExpression owlRel =
@@ -432,7 +432,7 @@ public class OWLExporter extends CommonBase implements Exporter,
 
     if (owlRelationships != null) {
       if (currentConcept.getConceptAttributes()
-          .getVersion(WBUtility.getViewCoordinate()).isDefined()) {
+          .getVersion(OTFUtility.getViewCoordinate()).isDefined()) {
         setOfAxioms.add(factory.getOWLEquivalentClassesAxiom(
             currentConceptClass, owlRelationships));
       } else {
@@ -537,7 +537,7 @@ public class OWLExporter extends CommonBase implements Exporter,
         .getRelationshipsOutgoingActiveIsa()) {
       if (rel.isStated()) {
         String sctid =
-            getSnomedConceptID(WBUtility.getConceptVersion(rel
+            getSnomedConceptID(OTFUtility.getConceptVersion(rel
                 .getDestinationNid()));
         // Skip the root of the attributes tree
         if (!sctid.equals(snomedConceptAttributeModelConcept)) {
@@ -561,7 +561,7 @@ public class OWLExporter extends CommonBase implements Exporter,
    */
   private boolean isUSLanguageRefex(DescriptionVersionBI<?> desc)
     throws Exception {
-    for (RefexVersionBI<?> annotation : desc.getAnnotationsActive(WBUtility
+    for (RefexVersionBI<?> annotation : desc.getAnnotationsActive(OTFUtility
         .getViewCoordinate())) {
       if (annotation.getAssemblageNid() == Snomed.US_LANGUAGE_REFEX.getNid()) {
         return true;

@@ -27,7 +27,7 @@ import gov.va.isaac.interfaces.utility.CommitListenerI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
@@ -182,7 +182,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 		List<Integer> componentsToWf = new ArrayList<Integer>();
 		
 		for (int i = 0; i < allConceptNids.length; i++) {
-			ConceptChronicle c = (ConceptChronicle) WBUtility.getConceptVersion(allConceptNids[i]).getChronicle();
+			ConceptChronicle c = (ConceptChronicle) OTFUtility.getConceptVersion(allConceptNids[i]).getChronicle();
 
 			int componentNid = 0;
 			for (int nid : c.getUncommittedNids().getListArray()) {					
@@ -196,8 +196,8 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 			
 			try {
 				try {
-					UUID componentId = WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
-					int currentConNid = WBUtility.getComponentVersion(componentId).getConceptNid();
+					UUID componentId = OTFUtility.getComponentChronicle(componentNid).getPrimordialUuid();
+					int currentConNid = OTFUtility.getComponentVersion(componentId).getConceptNid();
 					
 					
 					if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && componentNid != 0) {
@@ -206,7 +206,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 				} catch (NullPointerException npe) {
 					try {
 						// Retired Component... send up Concept to WF
-						int currentConNid = WBUtility.getComponentChronicle(componentNid).getConceptNid();
+						int currentConNid = OTFUtility.getComponentChronicle(componentNid).getConceptNid();
 						
 						
 						if (!conceptWithComponentInOwnedTask(currentConNid) && !conceptWithComponentInOpenRequest(currentConNid) && currentConNid != 0) {
@@ -232,7 +232,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 			UUID taskCompUuid = UUID.fromString(t.getComponentId());
 			
 			try {
-				int taskConNid = WBUtility.getComponentChronicle(taskCompUuid).getConceptNid();
+				int taskConNid = OTFUtility.getComponentChronicle(taskCompUuid).getConceptNid();
 		
 				if (taskConNid == currentConNid) {
 					return true;
@@ -254,7 +254,7 @@ public class WorkflowInitiationPropertyChangeListener implements PropertyChangeL
 			UUID taskCompUuid = UUID.fromString(t.getComponentId());
 			
 			try {
-				int taskConNid = WBUtility.getComponentChronicle(taskCompUuid).getConceptNid();
+				int taskConNid = OTFUtility.getComponentChronicle(taskCompUuid).getConceptNid();
 		
 				if (taskConNid == currentConNid) {
 					return true;

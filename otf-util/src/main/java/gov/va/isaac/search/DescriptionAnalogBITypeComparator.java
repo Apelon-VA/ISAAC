@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.search;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.Comparator;
 
@@ -37,8 +37,8 @@ public class DescriptionAnalogBITypeComparator implements Comparator<Description
 
     @Override
     public int compare(DescriptionAnalogBI<?> o1, DescriptionAnalogBI<?> o2) {
-        String o1matchingComponentType = WBUtility.getConPrefTerm(o1.getTypeNid()).trim();
-        String o2matchingComponentType = WBUtility.getConPrefTerm(o2.getTypeNid()).trim();
+        String o1matchingComponentType = OTFUtility.getConPrefTerm(o1.getTypeNid()).trim();
+        String o2matchingComponentType = OTFUtility.getConPrefTerm(o2.getTypeNid()).trim();
 
         final String fullySpecifiedNameStr = "Fully specified name";
         if (o1matchingComponentType.equalsIgnoreCase(fullySpecifiedNameStr)) {

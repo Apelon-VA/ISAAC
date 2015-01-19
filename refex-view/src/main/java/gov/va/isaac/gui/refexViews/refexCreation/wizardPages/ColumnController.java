@@ -30,7 +30,7 @@ import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeFXNodeBuilder;
 import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -457,8 +457,8 @@ public class ColumnController implements PanelControllersI {
 
 	private void initializeColumnConcepts() {
 		try {
-			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-			Set<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+			ConceptVersionBI colCon = OTFUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
+			Set<ConceptVersionBI> colCons = OTFUtility.getAllChildrenOfConcept(colCon, false);
 
 			for (ConceptVersionBI col : colCons) {
 				columnNameChoices.add(new SimpleDisplayConcept(col, colNameReader_));

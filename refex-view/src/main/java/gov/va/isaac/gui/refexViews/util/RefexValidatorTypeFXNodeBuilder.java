@@ -27,7 +27,7 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 
@@ -155,7 +155,7 @@ public class RefexValidatorTypeFXNodeBuilder
 
 			if (currentValue != null)
 			{
-				cn.set(WBUtility.getConceptVersion(((RefexDynamicNidBI) currentValue).getDataNid()));
+				cn.set(OTFUtility.getConceptVersion(((RefexDynamicNidBI) currentValue).getDataNid()));
 			}
 
 			returnValue.nodeForDisplay = cn.getNode();

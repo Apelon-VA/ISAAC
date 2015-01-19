@@ -29,7 +29,7 @@ import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -299,14 +299,14 @@ class SctTreeView implements ShutdownBroadcastListenerI {
                 LOG.debug("Loading concept {} as the root of a tree view", rootConcept);
                 ConceptChronicleDdo rootConceptCC = ExtendedAppContext.getDataStore().getFxConcept(
                         rootConcept,
-                        WBUtility.getViewCoordinate(),
+                        OTFUtility.getViewCoordinate(),
                         VersionPolicy.ACTIVE_VERSIONS,
                         RefexPolicy.REFEX_MEMBERS,
                         RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
                 LOG.debug("Finished loading root concept");
                 
                 if (rootConceptCC.getDestinationRelationships().size() == 0) {
-                    LOG.warn("ROOT CONCEPT {} HAS NO DESTINATION RELATIONSHIPS.  MAY BE A PROBLEM WITH VIEWCOORDINATE RELATIONSHIP ASSERTION TYPE ({})", WBUtility.getDescription(rootConceptCC), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+                    LOG.warn("ROOT CONCEPT {} HAS NO DESTINATION RELATIONSHIPS.  MAY BE A PROBLEM WITH VIEWCOORDINATE RELATIONSHIP ASSERTION TYPE ({})", OTFUtility.getDescription(rootConceptCC), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
                 }
                 return rootConceptCC;
             }
@@ -605,13 +605,13 @@ class SctTreeView implements ShutdownBroadcastListenerI {
             throws IOException, ContradictionException {
 
         //TODO (artf231882) see if this is still the case... we should be using the Fx APIs directly....
-        ConceptVersionBI wbConcept = WBUtility.getConceptVersion(conceptUUID);
+        ConceptVersionBI wbConcept = OTFUtility.getConceptVersion(conceptUUID);
         if (wbConcept == null) {
             return null;
         }
 
         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-        ViewCoordinate viewCoordinate = WBUtility.getViewCoordinate();
+        ViewCoordinate viewCoordinate = OTFUtility.getViewCoordinate();
         TerminologySnapshotDI snapshot = dataStore.getSnapshot(viewCoordinate);
 
         return new ConceptChronicleDdo(

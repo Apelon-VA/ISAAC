@@ -29,7 +29,7 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.SimpleValidBooleanProperty;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -118,7 +118,7 @@ public class ConceptNode implements ConceptLookupCallback
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
 		c_ = initialConcept;
-		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : OTFUtility.getDescription(conceptVersion);} : descriptionReader);
 		dropDownOptions_ = dropDownOptions == null ? AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts() : dropDownOptions;
 		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
 		{
@@ -337,11 +337,11 @@ public class ConceptNode implements ConceptLookupCallback
 		isLookupInProgress_.invalidate();
 		if (cb_.getValue().getNid() != 0)
 		{
-			WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
+			OTFUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
 		}
 		else
 		{
-			WBUtility.lookupIdentifier(cb_.getValue().getDescription(), this, null);
+			OTFUtility.lookupIdentifier(cb_.getValue().getDescription(), this, null);
 		}
 	}
 

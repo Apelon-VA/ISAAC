@@ -1,7 +1,7 @@
 package gov.va.isaac.ie.exporter;
 
 import gov.va.isaac.util.ProgressReporter;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 
@@ -46,11 +46,11 @@ public interface Exporter extends ProgressReporter {
    */
   public static boolean isQualifying(int conceptNid, int pathNid)
     throws ContradictionException, IOException {
-    ConceptVersionBI cv = WBUtility.getConceptVersion(conceptNid);
+    ConceptVersionBI cv = OTFUtility.getConceptVersion(conceptNid);
     if (cv.getPathNid() == pathNid)
       return true;
 
-    ViewCoordinate vc = WBUtility.getViewCoordinate();
+    ViewCoordinate vc = OTFUtility.getViewCoordinate();
 
     // atts
     ConceptAttributeVersionBI<?> att =

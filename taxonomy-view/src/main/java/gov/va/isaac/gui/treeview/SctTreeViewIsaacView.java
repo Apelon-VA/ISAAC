@@ -20,7 +20,7 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.Node;
@@ -72,7 +72,7 @@ public class SctTreeViewIsaacView  implements TaxonomyViewI
 	 */
 	@Override
 	public void locateConcept(int nid, BooleanProperty busyIndicator) {
-		sctTreeView_.showConcept(WBUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);	
+		sctTreeView_.showConcept(OTFUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);	
 	}
 
 	/* (non-Javadoc)

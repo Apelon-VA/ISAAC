@@ -16,7 +16,7 @@ import gov.va.isaac.util.Interval;
 import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -384,7 +384,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				if (c instanceof RefexDynamicVersionBI<?>)
 				{
 					RefexDynamicVersionBI<?> rv = (RefexDynamicVersionBI<?>)c;
-					ConceptVersionBI assembCon = WBUtility.getConceptVersion(rv.getAssemblageNid());	
+					ConceptVersionBI assembCon = OTFUtility.getConceptVersion(rv.getAssemblageNid());	
 					
 					try
 					{

@@ -8,7 +8,7 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.request.ContentRequestHandler;
 import gov.va.isaac.request.ContentRequestTrackingInfo;
 import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -88,7 +88,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     throws Exception {
     LOG.debug("Submit content Request");
 
-    ConceptChronicleBI concept = WBUtility.getConceptVersion(nid);
+    ConceptChronicleBI concept = OTFUtility.getConceptVersion(nid);
 
     // Ideally this would connect to a request submission
     // instance and dynamically create the request. In lieu
@@ -117,7 +117,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     // Now determine
     UscrsContentRequestTrackingInfo info =
         new UscrsContentRequestTrackingInfo();
-    info.setName(WBUtility.getConPrefTerm(concept.getNid()));
+    info.setName(OTFUtility.getConPrefTerm(concept.getNid()));
 
     // Show save file dialog.
     File file = fileChooser.showSaveDialog(null);
@@ -196,11 +196,11 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     // Local term
     cell = row.createCell(cellnum++);
     cell.setCellStyle(style);
-    cell.setCellValue(createHelper.createRichTextString(WBUtility
+    cell.setCellValue(createHelper.createRichTextString(OTFUtility
         .getConPrefTerm(concept.getNid())));
 
     // Fully Specified Name (without the semantic tag)
-    String fsn = WBUtility.getFullySpecifiedName(concept);
+    String fsn = OTFUtility.getFullySpecifiedName(concept);
     String st = fsn;
     if (fsn.indexOf('(') != -1) {
       fsn = fsn.substring(0, fsn.lastIndexOf('(')-1);
@@ -223,20 +223,20 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     // Preferred term
     cell = row.createCell(cellnum++);
     cell.setCellStyle(style);
-    cell.setCellValue(createHelper.createRichTextString(WBUtility
+    cell.setCellValue(createHelper.createRichTextString(OTFUtility
         .getConPrefTerm(concept.getNid())));
 
     // PARENTS
     List<String> parentIds = new ArrayList<>();
     for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing()) {
       RelationshipVersionBI<?> relVersion =
-          rel.getVersion(WBUtility.getViewCoordinate());
+          rel.getVersion(OTFUtility.getViewCoordinate());
       // check for "isa" relationship type
       if (relVersion.getTypeNid() == Snomed.IS_A.getLenient().getNid()
           && relVersion.isActive()) {
         parentIds
             .add(ConceptViewerHelper.getSctId(
-                WBUtility.getConceptVersion(relVersion.getDestinationNid()))
+                OTFUtility.getConceptVersion(relVersion.getDestinationNid()))
                 .trim());
       }
     }
@@ -300,19 +300,19 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     List<String> synonyms = new ArrayList<>();
     for (DescriptionChronicleBI desc : concept.getDescriptions()) {
       DescriptionVersionBI<?> descVersion =
-          desc.getVersion(WBUtility.getViewCoordinate());
+          desc.getVersion(OTFUtility.getViewCoordinate());
       // find active, non FSN descriptions not matching the preferred name
       if (descVersion.isActive()
           && descVersion.getTypeNid() != Snomed.FULLY_SPECIFIED_DESCRIPTION_TYPE
               .getLenient().getNid()
           && !descVersion.getText().equals(
-              WBUtility.getConPrefTerm(concept.getNid()))) {
+              OTFUtility.getConPrefTerm(concept.getNid()))) {
         synonyms.add(descVersion.getText());
       }
     }
     StringBuilder sb = new StringBuilder();
     if (concept.getConceptAttributes()
-        .getVersion(WBUtility.getViewCoordinate()).isDefined()) {
+        .getVersion(OTFUtility.getViewCoordinate()).isDefined()) {
       sb.append("NOTE: this concept is fully defined. ");
     }
     if (synonyms.size() > 0) {
@@ -373,7 +373,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
     for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing()) {
 
       RelationshipVersionBI<?> relVersion =
-          rel.getVersion(WBUtility.getViewCoordinate());
+          rel.getVersion(OTFUtility.getViewCoordinate());
       // find active, non-ISA relationships
       if (relVersion.isActive()
           && relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()) {
@@ -403,7 +403,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         // Relationship Type
         cell = row.createCell(cellnum++);
         cell.setCellStyle(style);
-        cell.setCellValue(createHelper.createRichTextString(WBUtility
+        cell.setCellValue(createHelper.createRichTextString(OTFUtility
             .getConPrefTerm(relVersion.getTypeNid())));
 
         // Destination Termionlogy - TODO: here we're only supporting
@@ -419,7 +419,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
         cell.setCellStyle(style);
         cell.setCellValue(createHelper.createRichTextString(ConceptViewerHelper
             .getSctId(
-                WBUtility.getConceptVersion(relVersion.getDestinationNid()))
+                OTFUtility.getConceptVersion(relVersion.getDestinationNid()))
             .trim()));
 
         // Characteristic Type
@@ -479,7 +479,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
   public void showView(Window parent) {
     // No view, per se is needed, though we could
     // put a warning here if the request won't make sense
-    ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+    ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
     if (concept == null) {
       AppContext.getCommonDialogs().showErrorDialog("USCRS Content Request",
           "Unable to load concept for " + nid, "This should never happen");
@@ -488,7 +488,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler,
 
     try {
       if (concept.getPathNid() != TermAux.SNOMED_CORE.getLenient().getNid()
-          && !WBUtility
+          && !OTFUtility
               .getConceptVersion(concept.getPathNid())
               .getPrimordialUuid()
               .toString()

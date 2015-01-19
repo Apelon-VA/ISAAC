@@ -23,7 +23,7 @@ import gov.va.isaac.gui.ComboBoxSetupTool;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.gui.util.FxUtils;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -247,7 +247,7 @@ public class FindAndReplaceController
 		try
 		{
 			//84a0b03b-220c-3d69-8487-2e019c933687 Language type reference set
-			for (ConceptVersionBI c : WBUtility.getAllChildrenOfConcept(WBUtility.getConceptVersion(UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687")).getNid()
+			for (ConceptVersionBI c : OTFUtility.getAllChildrenOfConcept(OTFUtility.getConceptVersion(UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687")).getNid()
 					, true))
 			{
 				SimpleDisplayConcept sdc = new SimpleDisplayConcept(c);

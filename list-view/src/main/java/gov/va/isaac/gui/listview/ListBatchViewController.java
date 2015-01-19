@@ -36,7 +36,7 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.UpdateableDoubleBinding;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -365,7 +365,7 @@ public class ListBatchViewController
 					{
 						try
 						{
-							WBUtility.commit(row.getItem().getNid());
+							OTFUtility.commit(row.getItem().getNid());
 							updateTableItem(row.getItem(), false);
 						}
 						catch (IOException ex)
@@ -385,7 +385,7 @@ public class ListBatchViewController
 					{
 						//TODO this should be presented to the user... not silently logged
 						try {
-							ExtendedAppContext.getDataStore().forget(ExtendedAppContext.getDataStore().getConceptVersion(WBUtility.getViewCoordinate(), row.getItem().getNid()));
+							ExtendedAppContext.getDataStore().forget(ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), row.getItem().getNid()));
 							updateTableItem(row.getItem(), false);
 						} catch (IOException e) {
 							logger_.error("Unable to cancel comp: " + row.getItem().getNid(), e);
@@ -471,7 +471,7 @@ public class ListBatchViewController
 			{
 				try
 				{
-					WBUtility.commit();
+					OTFUtility.commit();
 					uncommitAllTableItems();
 				}
 				catch (IOException ex)
@@ -487,7 +487,7 @@ public class ListBatchViewController
 			@Override
 			public void handle(ActionEvent event)
 			{
-				WBUtility.cancel();
+				OTFUtility.cancel();
 				uncommitAllTableItems();
 			}
 		});
@@ -590,7 +590,7 @@ public class ListBatchViewController
 							fileWriter.writeNext(new String[] {"Primordial UUID", "Description"});
 							for (SimpleDisplayConcept c : conceptTable.getItems())
 							{
-								fileWriter.writeNext(new String[] {WBUtility.getConceptVersion(c.getNid()).getPrimordialUuid().toString(), c.getDescription()});
+								fileWriter.writeNext(new String[] {OTFUtility.getConceptVersion(c.getNid()).getPrimordialUuid().toString(), c.getDescription()});
 							}
 							fileWriter.close();
 						}
@@ -652,7 +652,7 @@ public class ListBatchViewController
 												try 
 												{
 													UUID uuid = UUID.fromString(line[0]);
-													ConceptVersionBI c = WBUtility.getConceptVersion(uuid);
+													ConceptVersionBI c = OTFUtility.getConceptVersion(uuid);
 													if (c != null)
 													{
 														newConcepts.add(new SimpleDisplayConcept(c));
@@ -741,7 +741,7 @@ public class ListBatchViewController
 						{
 							try
 							{
-								SimpleDisplayConcept newCon = new SimpleDisplayConcept(WBUtility.getDescription(c.getVersion(WBUtility.getViewCoordinate())), c.getNid());
+								SimpleDisplayConcept newCon = new SimpleDisplayConcept(OTFUtility.getDescription(c.getVersion(OTFUtility.getViewCoordinate())), c.getNid());
 								newCon.setUncommitted(true);
 								concepts.add(newCon);
 							}
@@ -998,7 +998,7 @@ public class ListBatchViewController
 	}
 
 	private void updateTableItem(SimpleDisplayConcept oldCon, boolean isUncommitted) {
-		ConceptVersionBI con = WBUtility.getConceptVersion(oldCon.getNid());
+		ConceptVersionBI con = OTFUtility.getConceptVersion(oldCon.getNid());
 		SimpleDisplayConcept newCon = new SimpleDisplayConcept(con);
 
 		int idx = conceptTable.getItems().indexOf(oldCon);
@@ -1009,7 +1009,7 @@ public class ListBatchViewController
 		if (isUncommitted) {
 			try
 			{
-				WBUtility.addUncommitted(con);
+				OTFUtility.addUncommitted(con);
 				newCon.setUncommitted(true);
 				
 				if (isUncommitted && (!oldCon.isUncommitted() || idx < 0)) {
@@ -1051,7 +1051,7 @@ public class ListBatchViewController
 		final ArrayList<SimpleDisplayConcept> newItems = new ArrayList<>();
 
 		for (SimpleDisplayConcept origCon : conceptTable.getItems()) {
-			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(WBUtility.getConceptVersion(origCon.getNid()));
+			SimpleDisplayConcept displayCon = new SimpleDisplayConcept(OTFUtility.getConceptVersion(origCon.getNid()));
 			
 			displayCon.setUncommitted(false);
 			newItems.add(displayCon);
@@ -1083,7 +1083,7 @@ public class ListBatchViewController
 		List<SimpleDisplayConcept> displayConcepts = new ArrayList<>();
 		
 		for (int nid : nids) {
-			ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+			ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
 			displayConcepts.add(new SimpleDisplayConcept(concept));
 		}
 		

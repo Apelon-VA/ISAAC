@@ -26,7 +26,7 @@ import gov.va.isaac.models.cem.CEMInformationModel;
 import gov.va.isaac.models.fhim.FHIMInformationModel;
 import gov.va.isaac.models.hed.HeDInformationModel;
 import gov.va.isaac.models.util.ExporterBase;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.List;
@@ -125,8 +125,8 @@ public class FetchHandler extends ExporterBase {
     List<InformationModel> models = Lists.newArrayList();
     InformationModelService service = getInformationModelService();
     ConceptVersionBI hedConcept =
-        WBUtility.getConceptVersion(InformationModelType.HeD.getUuid());
-    for (ConceptVersionBI hedModel : WBUtility.getAllChildrenOfConcept(
+        OTFUtility.getConceptVersion(InformationModelType.HeD.getUuid());
+    for (ConceptVersionBI hedModel : OTFUtility.getAllChildrenOfConcept(
         hedConcept.getNid(), true)) {
       models.add(new HeDInformationModel(service.getInformationModel(hedModel
           .getPrimordialUuid())));
@@ -146,8 +146,8 @@ public class FetchHandler extends ExporterBase {
     List<InformationModel> models = Lists.newArrayList();
     InformationModelService service = getInformationModelService();
     ConceptVersionBI fhimConcept =
-        WBUtility.getConceptVersion(InformationModelType.FHIM.getUuid());
-    for (ConceptVersionBI fhimModel : WBUtility.getAllChildrenOfConcept(
+        OTFUtility.getConceptVersion(InformationModelType.FHIM.getUuid());
+    for (ConceptVersionBI fhimModel : OTFUtility.getAllChildrenOfConcept(
         fhimConcept.getNid(), true)) {
       models.add(new FHIMInformationModel(service.getInformationModel(fhimModel
           .getPrimordialUuid())));
@@ -166,8 +166,8 @@ public class FetchHandler extends ExporterBase {
     List<InformationModel> models = Lists.newArrayList();
     InformationModelService service = getInformationModelService();
     ConceptVersionBI cemConcept =
-        WBUtility.getConceptVersion(InformationModelType.CEM.getUuid());
-    for (ConceptVersionBI cemModel : WBUtility.getAllChildrenOfConcept(
+        OTFUtility.getConceptVersion(InformationModelType.CEM.getUuid());
+    for (ConceptVersionBI cemModel : OTFUtility.getAllChildrenOfConcept(
         cemConcept.getNid(), true)) {
       models.add(new CEMInformationModel(service.getInformationModel(cemModel
           .getPrimordialUuid())));

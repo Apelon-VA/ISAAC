@@ -28,7 +28,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ class IsDescendantOfSearchResultsFilter implements SearchResultsFilter {
 	
 	@Override
 	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
-		final ConceptVersionBI possibleAscendantConcept = WBUtility.getConceptVersion(filter.getNid());
+		final ConceptVersionBI possibleAscendantConcept = OTFUtility.getConceptVersion(filter.getNid());
 
 		CompositeSearchResult currentResult = null;
 		try {
@@ -68,7 +68,7 @@ class IsDescendantOfSearchResultsFilter implements SearchResultsFilter {
 			
 			return filteredResults;
 		} catch (Exception e) {
-			throw new SearchResultsFilterException(this, "Failed calling (" + WBUtility.getDescription(currentResult.getContainingConcept()) + " (nid=" + currentResult.getContainingConcept().getNid() + ")).isKindOf(" + WBUtility.getDescription(possibleAscendantConcept) + " (nid=" + possibleAscendantConcept.getConceptNid() + "))", e);
+			throw new SearchResultsFilterException(this, "Failed calling (" + OTFUtility.getDescription(currentResult.getContainingConcept()) + " (nid=" + currentResult.getContainingConcept().getNid() + ")).isKindOf(" + OTFUtility.getDescription(possibleAscendantConcept) + " (nid=" + possibleAscendantConcept.getConceptNid() + "))", e);
 		}
 	}
 

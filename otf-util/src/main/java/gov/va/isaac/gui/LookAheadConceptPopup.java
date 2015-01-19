@@ -23,7 +23,7 @@ import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -363,13 +363,13 @@ public class LookAheadConceptPopup extends Popup implements TaskCompleteCallback
 
 		ConceptVersionBI c = result.getContainingConcept();
 
-		Label concept = new Label(WBUtility.getDescription(c));
+		Label concept = new Label(OTFUtility.getDescription(c));
 		concept.getStyleClass().add("lookAheadBoldLabel");
 		box.getChildren().add(concept);
 
 		for (String s : result.getMatchingStrings())
 		{
-			if (s.equals(WBUtility.getDescription(c)))
+			if (s.equals(OTFUtility.getDescription(c)))
 			{
 				continue;
 			}

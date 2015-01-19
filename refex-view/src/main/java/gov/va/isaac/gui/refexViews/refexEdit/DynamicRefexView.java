@@ -28,7 +28,7 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -280,11 +280,11 @@ public class DynamicRefexView implements RefexViewI
 								{
 									continue;
 								}
-								RefexDynamicCAB rcab =  refex.getRefex().makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+								RefexDynamicCAB rcab =  refex.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
 								rcab.setStatus(Status.INACTIVE);
-								WBUtility.getBuilder().construct(rcab);
+								OTFUtility.getBuilder().construct(rcab);
 								
-								ConceptVersionBI assemblage = WBUtility.getConceptVersion(refex.getRefex().getAssemblageNid());
+								ConceptVersionBI assemblage = OTFUtility.getConceptVersion(refex.getRefex().getAssemblageNid());
 								ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(refex.getRefex().getReferencedComponentNid()));
 								if (!assemblage.isAnnotationStyleRefex())
 								{
@@ -1371,7 +1371,7 @@ public class DynamicRefexView implements RefexViewI
 		
 		dr_ = null;
 		
-		ConceptVersionBI assemblageConceptFull = WBUtility.getConceptVersion(assemblageNid);
+		ConceptVersionBI assemblageConceptFull = OTFUtility.getConceptVersion(assemblageNid);
 		if (!assemblageConceptFull.isAnnotationStyleRefex())
 		{
 			refexMembers = (Collection<RefexDynamicChronicleBI<?>>)assemblageConceptFull.getRefsetDynamicMembers();

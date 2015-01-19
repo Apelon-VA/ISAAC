@@ -27,7 +27,7 @@ import gov.va.isaac.util.AlphanumComparator;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.legoEdit.gui.legoListTreeView.LegoListTreeItem;
 import gov.va.legoEdit.gui.legoListTreeView.LegoListTreeView;
 import gov.va.legoEdit.gui.legoListView.LegoListView;
@@ -474,11 +474,11 @@ public class LegoFilterPaneController implements Initializable, ConceptLookupCal
 					info.tf.setUserData(null);  //Clear it back out.
 					if (o != null && o instanceof Integer)
 					{
-						WBUtility.getConceptVersion((Integer)o, LegoFilterPaneController.this, conceptId);
+						OTFUtility.getConceptVersion((Integer)o, LegoFilterPaneController.this, conceptId);
 					}
 					else
 					{
-						WBUtility.lookupIdentifier(newValue, LegoFilterPaneController.this, conceptId);
+						OTFUtility.lookupIdentifier(newValue, LegoFilterPaneController.this, conceptId);
 					}
 				}
 			}

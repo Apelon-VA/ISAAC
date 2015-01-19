@@ -32,7 +32,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -106,17 +106,17 @@ class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
 			public void Let() throws IOException {
 				for (NonSearchTypeFilter<?> filter : filters) {
 					if (filter instanceof IsDescendantOfFilter) {
-						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
+						ConceptVersionBI concept = OTFUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
 
-						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+						let(concept.getPrimordialUuid().toString(), new ConceptSpec(OTFUtility.getDescription(concept), concept.getPrimordialUuid()));
 					} else if (filter instanceof IsAFilter) {
-						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsAFilter)filter).getNid());
+						ConceptVersionBI concept = OTFUtility.getConceptVersion(((IsAFilter)filter).getNid());
 
-						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+						let(concept.getPrimordialUuid().toString(), new ConceptSpec(OTFUtility.getDescription(concept), concept.getPrimordialUuid()));
 					} else if (filter instanceof IsRefsetMemberFilter) {
-						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsRefsetMemberFilter)filter).getNid());
+						ConceptVersionBI concept = OTFUtility.getConceptVersion(((IsRefsetMemberFilter)filter).getNid());
 
-						let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+						let(concept.getPrimordialUuid().toString(), new ConceptSpec(OTFUtility.getDescription(concept), concept.getPrimordialUuid()));
 					} else {
 						// This should never happen, since validateFilters(filters) was already called
 						throw new RuntimeException(new SearchResultsFilterException(QueryBasedSearchResultsIntersectionFilter.this, "Unsupported NonSearchTypeFilter " + filter.getClass().getName() + ". Curently only IsDescendantOfFilter and IsAFilter supported"));
@@ -140,16 +140,16 @@ class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
 				for (NonSearchTypeFilter<?> filter : filters) {
 					Clause currentClause = null;
 					if (filter instanceof IsDescendantOfFilter) {
-						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
+						ConceptVersionBI concept = OTFUtility.getConceptVersion(((IsDescendantOfFilter)filter).getNid());
 
 						currentClause = ConceptIsDescendentOf(concept.getPrimordialUuid().toString());
 					} else if (filter instanceof IsAFilter) {
-						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsAFilter)filter).getNid());
+						ConceptVersionBI concept = OTFUtility.getConceptVersion(((IsAFilter)filter).getNid());
 
 						currentClause = ConceptIs(concept.getPrimordialUuid().toString());
 					}
 					else if (filter instanceof IsRefsetMemberFilter) {
-						ConceptVersionBI concept = WBUtility.getConceptVersion(((IsRefsetMemberFilter)filter).getNid());
+						ConceptVersionBI concept = OTFUtility.getConceptVersion(((IsRefsetMemberFilter)filter).getNid());
 
 						currentClause = RefsetContainsConcept(concept.getPrimordialUuid().toString(), "dummy");
 					} 

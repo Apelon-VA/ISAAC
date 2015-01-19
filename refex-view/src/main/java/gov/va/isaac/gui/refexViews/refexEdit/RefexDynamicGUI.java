@@ -21,7 +21,7 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.AlphanumComparator;
 import gov.va.isaac.util.NumberUtilities;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -388,11 +388,11 @@ public class RefexDynamicGUI
 		
 		try
 		{
-			ConceptVersionBI c = WBUtility.getConceptVersion(nid);
+			ConceptVersionBI c = OTFUtility.getConceptVersion(nid);
 			if (c == null) 
 			{
 				//This may be a different component - like a description, or another refex... need to handle.
-				ComponentVersionBI cv = ExtendedAppContext.getDataStore().getComponentVersion(WBUtility.getViewCoordinate(), nid);
+				ComponentVersionBI cv = ExtendedAppContext.getDataStore().getComponentVersion(OTFUtility.getViewCoordinate(), nid);
 				if (cv == null)
 				{
 					text = "[NID] " + nid;
@@ -406,19 +406,19 @@ public class RefexDynamicGUI
 				else if (cv instanceof RelationshipVersionBI<?>)
 				{
 					RelationshipVersionBI<?> rv = (RelationshipVersionBI<?>) cv;
-					text = "Relationship: " + WBUtility.getDescription(rv.getOriginNid()) + "->" 
-							+ WBUtility.getDescription(rv.getTypeNid()) + "->"
-							+ WBUtility.getDescription(rv.getDestinationNid());
+					text = "Relationship: " + OTFUtility.getDescription(rv.getOriginNid()) + "->" 
+							+ OTFUtility.getDescription(rv.getTypeNid()) + "->"
+							+ OTFUtility.getDescription(rv.getDestinationNid());
 				}
 				else if (cv instanceof RefexDynamicVersionBI<?>)
 				{
 					RefexDynamicVersionBI<?> rdv = (RefexDynamicVersionBI<?>) cv;
-					text = "Nested Sememe Dynamic: using assemblage " + WBUtility.getDescription(rdv.getAssemblageNid());
+					text = "Nested Sememe Dynamic: using assemblage " + OTFUtility.getDescription(rdv.getAssemblageNid());
 				}
 				else if (cv instanceof RefexVersionBI<?>)
 				{
 					RefexVersionBI<?> rv = (RefexVersionBI<?>) cv;
-					text = "Nested Sememe: using assemblage " + WBUtility.getDescription(rv.getAssemblageNid());
+					text = "Nested Sememe: using assemblage " + OTFUtility.getDescription(rv.getAssemblageNid());
 				}
 				else if (cv instanceof MediaVersionBI<?>)
 				{
@@ -434,7 +434,7 @@ public class RefexDynamicGUI
 			}
 			else
 			{
-				text = WBUtility.getDescription(c);
+				text = OTFUtility.getDescription(c);
 			}
 		}
 		catch (Exception e)

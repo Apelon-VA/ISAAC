@@ -41,7 +41,7 @@ import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.sememe.SememeSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.util.ComponentDescriptionHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
@@ -149,8 +149,8 @@ public class SearchConceptHelper {
 		//
 
 		try {
-			ConceptChronicleBI searchConcept = WBUtility.createNewConcept(WBUtility.getConceptVersion(Search.SEARCH_PERSISTABLE.getUuids()[0]), saveConceptFSN, saveConceptPT);
-			ConceptAttributeAB conceptAttributeBlueprintAmender = new ConceptAttributeAB(searchConcept.getConceptNid(), searchConcept.getVersion(WBUtility.getViewCoordinate()).getConceptAttributesActive().isDefined(), RefexDirective.INCLUDE); //bp.getConceptAttributeAB();
+			ConceptChronicleBI searchConcept = OTFUtility.createNewConcept(OTFUtility.getConceptVersion(Search.SEARCH_PERSISTABLE.getUuids()[0]), saveConceptFSN, saveConceptPT);
+			ConceptAttributeAB conceptAttributeBlueprintAmender = new ConceptAttributeAB(searchConcept.getConceptNid(), searchConcept.getVersion(OTFUtility.getViewCoordinate()).getConceptAttributesActive().isDefined(), RefexDirective.INCLUDE); //bp.getConceptAttributeAB();
 
 			{
 				// Start with Search Global Attributes
@@ -186,13 +186,13 @@ public class SearchConceptHelper {
 				//else
 				//{
 				// This only for editing existing concept
-				//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				//cab = inputType_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 				//}
-				globalAttributesCAB.setData(searchGlobalAttributesData, WBUtility.getViewCoordinate());
+				globalAttributesCAB.setData(searchGlobalAttributesData, OTFUtility.getViewCoordinate());
 
 				conceptAttributeBlueprintAmender.addAnnotationBlueprint(globalAttributesCAB);
 
-				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
+				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(OTFUtility.getEditCoordinate(), OTFUtility.getViewCoordinate());
 				builder.construct(globalAttributesCAB);
 			}
 
@@ -294,7 +294,7 @@ public class SearchConceptHelper {
 			IsDescendantOfFilter isDescendantOfFilter = (IsDescendantOfFilter)currentFilter;
 
 			if (isDescendantOfFilter.getNid() != 0) {
-				UUID uuid = WBUtility.getConceptVersion(isDescendantOfFilter.getNid()).getPrimordialUuid();
+				UUID uuid = OTFUtility.getConceptVersion(isDescendantOfFilter.getNid()).getPrimordialUuid();
 				RefexDynamicData ascendantUuidData = new RefexDynamicUUID(uuid);
 				filterRefexData[0] = ascendantUuidData;
 			}
@@ -303,7 +303,7 @@ public class SearchConceptHelper {
 			IsAFilter isAFilter = (IsAFilter)currentFilter;
 
 			if (isAFilter.getNid() != 0) {
-				UUID uuid = WBUtility.getConceptVersion(isAFilter.getNid()).getPrimordialUuid();
+				UUID uuid = OTFUtility.getConceptVersion(isAFilter.getNid()).getPrimordialUuid();
 				RefexDynamicData matchUuidData = new RefexDynamicUUID(uuid);
 				filterRefexData[0] = matchUuidData;
 			}
@@ -320,9 +320,9 @@ public class SearchConceptHelper {
 		//else
 		//{
 		// This only for editing existing concept
-		//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+		//cab = inputType_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 		//}
-		filterRefexCAB.setData(filterRefexData, WBUtility.getViewCoordinate());
+		filterRefexCAB.setData(filterRefexData, OTFUtility.getViewCoordinate());
 
 		conceptAttributeBlueprintAmender.addAnnotationBlueprint(filterRefexCAB);
 
@@ -352,13 +352,13 @@ public class SearchConceptHelper {
 		//else
 		//{
 		// This only for editing existing concept
-		//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+		//cab = inputType_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 		//}
-		nestedFilterAttributesCAB.setData(nestedFilterAttributesRefexData, WBUtility.getViewCoordinate());
+		nestedFilterAttributesCAB.setData(nestedFilterAttributesRefexData, OTFUtility.getViewCoordinate());
 
 		filterRefexCAB.addAnnotationBlueprint(nestedFilterAttributesCAB);
 
-		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
+		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(OTFUtility.getEditCoordinate(), OTFUtility.getViewCoordinate());
 		builder.construct(filterRefexCAB);
 	}
 
@@ -421,7 +421,7 @@ public class SearchConceptHelper {
 		}
 		
 		// Now read SEARCH_FILTER_ATTRIBUTES refex column
-		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(OTFUtility.getViewCoordinate())) {
 			DynamicRefexHelper.displayDynamicRefex(embeddedRefex);
 
 			RefexDynamicUsageDescription embeddedRefexDUD = null;
@@ -477,7 +477,7 @@ public class SearchConceptHelper {
 		SearchModel model = null;
 
 		try {
-			ConceptVersionBI matchingConcept = WBUtility.getConceptVersion(displayConcept.getNid());
+			ConceptVersionBI matchingConcept = OTFUtility.getConceptVersion(displayConcept.getNid());
 
 			if (matchingConcept != null) {
 				LOG.debug("loadSavedSearch(): savedSearchesComboBox has concept: " + matchingConcept);
@@ -503,14 +503,14 @@ public class SearchConceptHelper {
 					}
 				}
 
-				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
-				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setName(OTFUtility.getFullySpecifiedName(matchingConcept));
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDescription(OTFUtility.getConPrefTerm(matchingConcept.getNid()));
 
 				try {
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic sememes: " +  matchingConcept.getRefexesDynamic().size());
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
-					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (OTFUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(OTFUtility.getViewCoordinate()).size());
 			
 					LOG.debug("Displaying newly loaded save concept refexes");
 					DynamicRefexHelper.displayDynamicRefexes(matchingConcept);
@@ -521,7 +521,7 @@ public class SearchConceptHelper {
 				}
 
 				int i = 0;
-				Collection<? extends RefexDynamicVersionBI<?>> refexes = matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+				Collection<? extends RefexDynamicVersionBI<?>> refexes = matchingConcept.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
 				for (RefexDynamicVersionBI<?> refex : refexes) {
 					LOG.debug("Displaying sememe #" + (++i) + " of " + refexes.size());
 					DynamicRefexHelper.displayDynamicRefex(refex);
@@ -607,7 +607,7 @@ public class SearchConceptHelper {
 							RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ANCESTOR_COLUMN.getDescription());
 							if (ascendantUuidCol != null) {
 								UUID uuid = ascendantUuidCol.getDataUUID();
-								int nid = WBUtility.getConceptVersion(uuid).getNid();
+								int nid = OTFUtility.getConceptVersion(uuid).getNid();
 								newFilter.setNid(nid);
 								LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " sememe: \"" + uuid + "\"");
 							}
@@ -623,7 +623,7 @@ public class SearchConceptHelper {
 							RefexDynamicUUIDBI matchUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.MATCH_COLUMN.getDescription());
 							if (matchUuidCol != null) {
 								UUID uuid = matchUuidCol.getDataUUID();
-								int nid = WBUtility.getConceptVersion(uuid).getNid();
+								int nid = OTFUtility.getConceptVersion(uuid).getNid();
 								newFilter.setNid(nid);
 								LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " sememe: \"" + uuid + "\"");
 							}
@@ -686,7 +686,7 @@ public class SearchConceptHelper {
 
 							RefexDynamicUUID uuidCol = (RefexDynamicUUID)refex.getData(Search.UUID_COLUMN.getDescription());
 							if (uuidCol != null) {
-								ConceptVersionBI conceptVersion = WBUtility.getConceptVersion(uuidCol.getDataUUID());
+								ConceptVersionBI conceptVersion = OTFUtility.getConceptVersion(uuidCol.getDataUUID());
 								newFilter.setAssemblageConcept(conceptVersion);
 							}
 							LOG.debug("Read assemblage concept from " + dud.getRefexName() + " sememe assemblage: \"" + newFilter.getAssemblageConcept() != null ? ComponentDescriptionHelper.getComponentDescription(newFilter.getAssemblageConcept()) : null + "\"");

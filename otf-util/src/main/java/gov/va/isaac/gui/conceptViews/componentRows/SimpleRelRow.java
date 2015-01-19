@@ -1,7 +1,7 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -23,8 +23,8 @@ public class SimpleRelRow extends RelRow {
 	@Override
 	public void addRelRow(RelationshipVersionBI<?> rel) {
 		Rectangle rec = createAnnotRectangle(rel);
-		Label relLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
-		Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
+		Label relLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
+		Label relTypeLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
 		
 		if (rel.isUncommitted()) {
 			if (rel.getVersions().size() == 1) {

@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -115,7 +115,7 @@ public class SearchHandler
 						// If search query is an ID, look up concept and add the result.
 						if (Utility.isUUID(localQuery) || Utility.isLong(localQuery))
 						{
-							ConceptVersionBI temp = WBUtility.lookupIdentifier(localQuery);
+							ConceptVersionBI temp = OTFUtility.lookupIdentifier(localQuery);
 							if (temp != null)
 							{
 								CompositeSearchResult gsr = new CompositeSearchResult(temp, 2.0f);
@@ -162,7 +162,7 @@ public class SearchHandler
 									}
 
 									// Get the description object.
-									ComponentVersionBI cc = dataStore.getComponent(searchResult.getNid()).getVersion(WBUtility.getViewCoordinate());
+									ComponentVersionBI cc = dataStore.getComponent(searchResult.getNid()).getVersion(OTFUtility.getViewCoordinate());
 
 									// normalize the scores between 0 and 1
 									float normScore = (searchResult.getScore() / maxScore);
@@ -364,7 +364,7 @@ public class SearchHandler
 								}
 
 								// Get the match object.
-								ComponentVersionBI cc = dataStore.getComponent(searchResult.getNid()).getVersion(WBUtility.getViewCoordinate());
+								ComponentVersionBI cc = dataStore.getComponent(searchResult.getNid()).getVersion(OTFUtility.getViewCoordinate());
 
 								// normalize the scores between 0 and 1
 								float normScore = (searchResult.getScore() / maxScore);

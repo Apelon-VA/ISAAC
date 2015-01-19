@@ -21,7 +21,7 @@ package gov.va.isaac.gui.conceptCreation.wizardPages;
 import gov.va.isaac.gui.conceptCreation.PanelControllers;
 import gov.va.isaac.gui.conceptCreation.ScreensController;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -85,7 +85,7 @@ public class ComponentsController implements PanelControllers {
 	@Override
 	public void initialize() {
 		LOG.debug("Creating a ComponentsController");
-		vc = WBUtility.getViewCoordinate();
+		vc = OTFUtility.getViewCoordinate();
 			
 		// Buttons
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {

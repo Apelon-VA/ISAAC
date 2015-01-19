@@ -28,7 +28,7 @@ import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,7 +117,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 							if(c == null) {
 								setText(null);
 							}else {
-								String desc = WBUtility.getDescription(c);
+								String desc = OTFUtility.getDescription(c);
 								setText(desc);
 							}
 						}
@@ -133,7 +133,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 					if (emptyRow) {
 						setText("");
 					} else {
-						String desc = WBUtility.getDescription(c);
+						String desc = OTFUtility.getDescription(c);
 						setText(desc);
 					}
 				}
@@ -142,7 +142,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 			
 			
 			// ComboBox
-			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
+			pathComboBox.setTooltip(new Tooltip("Default path is \"" + OTFUtility.getDescription(getDefaultPath()) + "\""));
 			pathComboBox.setPadding(new Insets(5,5,5,5));
 
 			hBox = new HBox();
@@ -175,7 +175,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 					} else {
 						TextErrorColorHelper.clearTextErrorColor(pathComboBox);
 					}
-					if (WBUtility.getConceptVersion(currentPathProperty.get()) == null) {
+					if (OTFUtility.getConceptVersion(currentPathProperty.get()) == null) {
 						this.setInvalidReason("Invalid path");
 						TextErrorColorHelper.setTextErrorColor(pathComboBox);
 
@@ -198,7 +198,7 @@ public abstract class CoordinatePreferencesPluginView implements PreferencesPlug
 				if (emptyRow) {
 					setText("");
 				} else {
-					String desc = WBUtility.getDescription(c);
+					String desc = OTFUtility.getDescription(c);
 					setText(desc);
 				}
 			}

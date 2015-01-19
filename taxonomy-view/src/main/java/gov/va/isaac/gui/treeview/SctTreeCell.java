@@ -27,7 +27,7 @@ import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenus.CommonMenuItem;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -178,7 +178,7 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                     setGraphic(graphicBorderPane);
                 }
 
-                setText(WBUtility.getDescription(taxRef.getConcept()));
+                setText(OTFUtility.getDescription(taxRef.getConcept()));
 
                 return;
             }
@@ -210,7 +210,7 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             if (taxRef.getConcept() == null) {
                 setText(taxRef.toString());
             } else {
-                setText(WBUtility.getDescription(taxRef.getConcept()));
+                setText(OTFUtility.getDescription(taxRef.getConcept()));
             }
 
             BorderPane graphicBorderPane = new BorderPane();

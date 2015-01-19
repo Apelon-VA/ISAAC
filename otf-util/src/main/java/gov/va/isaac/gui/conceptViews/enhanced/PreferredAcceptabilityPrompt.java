@@ -3,7 +3,7 @@ package gov.va.isaac.gui.conceptViews.enhanced;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -152,7 +152,7 @@ public class PreferredAcceptabilityPrompt {
 			}
 			
 			// add new Pref member
-			DescriptionVersionBI<?> d = (DescriptionVersionBI<?>)WBUtility.getComponentVersion(newPrefDescNid);
+			DescriptionVersionBI<?> d = (DescriptionVersionBI<?>)OTFUtility.getComponentVersion(newPrefDescNid);
 			addLangRefexMember(langRefex, d, SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0]);
 		}
 
@@ -172,7 +172,7 @@ public class PreferredAcceptabilityPrompt {
 
 		try {
 	        AppContext.getRuntimeGlobals().disableAllCommitListeners();
-			WBUtility.commit();
+			OTFUtility.commit();
 		} catch (Exception e) {
 	        LOG.error("Coudn't commit selected preferred/acceptability changes", e);
 		} finally {
@@ -183,15 +183,15 @@ public class PreferredAcceptabilityPrompt {
 
 	private static void retireRefexMember(RefexNidVersionBI<?> member) {
 		try {
-			RefexCAB bp = member.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
+			RefexCAB bp = member.makeBlueprint(OTFUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
 			if (bp.getMemberUUID() == null) {
 				bp.setMemberUuid(member.getPrimordialUuid());
 			}
 			bp.setStatus(Status.INACTIVE);
-			WBUtility.getBuilder().constructIfNotCurrent(bp);
-			ConceptVersionBI refCon = WBUtility.getConceptVersion(member.getConceptNid());
+			OTFUtility.getBuilder().constructIfNotCurrent(bp);
+			ConceptVersionBI refCon = OTFUtility.getConceptVersion(member.getConceptNid());
 	
-			WBUtility.addUncommitted(refCon);
+			OTFUtility.addUncommitted(refCon);
 		} catch (Exception e) {
 			AppContext.getCommonDialogs().showErrorDialog("Failed to retire member: " + member, e);
 		}
@@ -204,9 +204,9 @@ public class PreferredAcceptabilityPrompt {
 
 		newMember.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, typeUUId);
 		
-		 WBUtility.getBuilder().construct(newMember);
+		 OTFUtility.getBuilder().construct(newMember);
 
-		WBUtility.addUncommitted(description.getConceptNid());
+		OTFUtility.addUncommitted(description.getConceptNid());
 	}
 	private static HBox setupLangugaeSelection() {
 	    HBox languageSelectionHBox = new HBox(10);
@@ -216,7 +216,7 @@ public class PreferredAcceptabilityPrompt {
 
 	    try {
 		    //bca0a686-3516-3daf-8fcf-fe396d13cfad is US Eng Language type reference set
-	    	usLangRefex = WBUtility.getConceptVersion(UUID.fromString("bca0a686-3516-3daf-8fcf-fe396d13cfad"));
+	    	usLangRefex = OTFUtility.getConceptVersion(UUID.fromString("bca0a686-3516-3daf-8fcf-fe396d13cfad"));
 	    	String desc = usLangRefex.getFullySpecifiedDescription().getText();
 			int endIdx = desc.indexOf("language reference set");
 			String displayStr = desc.substring(0, endIdx).trim();
@@ -303,7 +303,7 @@ public class PreferredAcceptabilityPrompt {
 
 	private static boolean isAcceptableTerm(DescriptionVersionBI<?> d) {
 		try {
-	        for (RefexVersionBI<?> refex : d.getRefexMembersActive(WBUtility.getViewCoordinate())) {
+	        for (RefexVersionBI<?> refex : d.getRefexMembersActive(OTFUtility.getViewCoordinate())) {
 	            if (refex.getAssemblageNid() == langDropDown.getSelectionModel().getSelectedItem().getNid()) {
 	                RefexNidVersionBI<?> langRefex = (RefexNidVersionBI<?>) refex;
 	
@@ -322,7 +322,7 @@ public class PreferredAcceptabilityPrompt {
 
 	private static RefexNidVersionBI<?> gertPrefMember(DescriptionVersionBI<?> d) {
 		try {
-	        for (RefexVersionBI<?> refex : d.getRefexMembersActive(WBUtility.getViewCoordinate())) {
+	        for (RefexVersionBI<?> refex : d.getRefexMembersActive(OTFUtility.getViewCoordinate())) {
 	            if (refex.getAssemblageNid() == langDropDown.getSelectionModel().getSelectedItem().getNid()) {
 	                RefexNidVersionBI<?> langRefex = (RefexNidVersionBI<?>) refex;
 	

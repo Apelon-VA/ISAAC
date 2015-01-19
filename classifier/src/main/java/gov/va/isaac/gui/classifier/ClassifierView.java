@@ -24,7 +24,7 @@ import gov.va.isaac.classifier.SnomedSnorocketClassifier;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -130,7 +130,7 @@ public class ClassifierView extends GridPane {
     FxUtils.checkFxUserThread();
 
     // Update UI.
-    rootName.setText(WBUtility.getConPrefTerm(Taxonomies.SNOMED.getLenient().getNid()));
+    rootName.setText(OTFUtility.getConPrefTerm(Taxonomies.SNOMED.getLenient().getNid()));
     
     // Create classifier
     classifier = new SnomedSnorocketClassifier();

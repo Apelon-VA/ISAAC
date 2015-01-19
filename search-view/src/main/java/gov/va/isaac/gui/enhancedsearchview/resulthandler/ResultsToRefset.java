@@ -2,7 +2,7 @@ package gov.va.isaac.gui.enhancedsearchview.resulthandler;
 
 import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -38,18 +38,18 @@ public class ResultsToRefset {
 		    // Create a dynamic refex CAB for each result
 			for (CompositeSearchResult con : tableView.getItems()) {
 				RefexDynamicCAB refexBlueprint = new RefexDynamicCAB(con.getContainingConcept().getNid(), refset.getRefexUsageDescriptorNid());
-				WBUtility.getBuilder().construct(refexBlueprint);
+				OTFUtility.getBuilder().construct(refexBlueprint);
 				
 				if (prompt.getAnnot().isSelected()) {
-					WBUtility.addUncommitted(con.getContainingConcept());
+					OTFUtility.addUncommitted(con.getContainingConcept());
 				} 
 			}
 			
 			if (!prompt.getAnnot().isSelected()) {
-				WBUtility.addUncommitted(refset.getRefexUsageDescriptorNid());
+				OTFUtility.addUncommitted(refset.getRefexUsageDescriptorNid());
 			}
 			
-			WBUtility.commit();
+			OTFUtility.commit();
 			
 			return prompt.getNameTextField().getText();
 		}

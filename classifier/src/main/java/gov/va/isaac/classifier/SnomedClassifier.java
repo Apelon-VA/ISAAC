@@ -88,7 +88,7 @@ public class SnomedClassifier implements ProcessUnfetchedConceptDataBI {
    * 
    * private void addRoleAxioms(UUID parent) throws IOException,
    * ContradictionException { ArrayList<ConceptVersionBI> children =
-   * WBUtility.getAllChildrenOfConcept(WBUtility.getConceptVersion(parent),
+   * OTFUtility.getAllChildrenOfConcept(OTFUtility.getConceptVersion(parent),
    * false); if(children.isEmpty()) return; Role[] rlhs = new
    * Role[children.size()]; int i=0; for(ConceptVersionBI child : children) {
    * addRoleAxioms(child.getPrimordialUuid()); rlhs[i++] =
@@ -99,7 +99,7 @@ public class SnomedClassifier implements ProcessUnfetchedConceptDataBI {
    * @Override public boolean allowCancel() { return false; }
    * @Override public void processUnfetchedConceptData(int cNid,
    *           ConceptFetcherBI fetcher) throws Exception { ConceptVersionBI
-   *           concept = fetcher.fetch(WBUtility.getViewCoordinate()); if
+   *           concept = fetcher.fetch(OTFUtility.getViewCoordinate()); if
    *           (concept.getPathNid() == pathNid) { count++;
    *           convertToOntologyObjects(concept); } }
    * 
@@ -137,7 +137,7 @@ public class SnomedClassifier implements ProcessUnfetchedConceptDataBI {
    *           ValidationException, IOException { List<Concept> parentConcepts =
    *           new ArrayList<Concept>(); for (RelationshipVersionBI<?>
    *           relationship : relationships) { if (relationship.getTypeNid() ==
-   *           Snomed.IS_A.getNid()) { parentConcepts.add(getConcept(WBUtility
+   *           Snomed.IS_A.getNid()) { parentConcepts.add(getConcept(OTFUtility
    *           .getConceptVersion(relationship.getDestinationNid())
    *           .getPrimordialUuid().toString())); } } return parentConcepts; }
    * 
@@ -156,8 +156,8 @@ public class SnomedClassifier implements ProcessUnfetchedConceptDataBI {
    *           map.put(relationship.getGroup(), concepts);
    * 
    *           Concept existentialConcept = Factory.createExistential(
-   *           getRole(WBUtility.getConceptVersion(relationship.getTypeNid())
-   *           .getPrimordialUuid().toString()), getConcept(WBUtility
+   *           getRole(OTFUtility.getConceptVersion(relationship.getTypeNid())
+   *           .getPrimordialUuid().toString()), getConcept(OTFUtility
    *           .getConceptVersion(relationship.getDestinationNid())
    *           .getPrimordialUuid().toString()));
    *           concepts.add(existentialConcept);

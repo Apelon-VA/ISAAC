@@ -31,7 +31,7 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,7 +100,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 		List<UUID> list = new ArrayList<>();
 
 		try {
-			List<ConceptChronicleBI> pathConcepts = WBUtility.getPathConcepts();
+			List<ConceptChronicleBI> pathConcepts = OTFUtility.getPathConcepts();
 			for (ConceptChronicleBI cc : pathConcepts) {
 				list.add(cc.getPrimordialUuid());
 			}

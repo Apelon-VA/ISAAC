@@ -70,7 +70,7 @@ public class ConceptIdProviderHelper {
 
 		ConceptVersionBI concept = null;
 		if (tmpNid != null) {
-			concept = WBUtility.getConceptVersion(tmpNid);
+			concept = OTFUtility.getConceptVersion(tmpNid);
 			if (tmpUuid == null) {
 				tmpUuid = concept != null ? concept.getPrimordialUuid() : null;
 			}
@@ -78,7 +78,7 @@ public class ConceptIdProviderHelper {
 				tmpSctId = concept != null ? ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(concept)).trim() : null;
 			}
 		} else if (tmpUuid != null) {
-			concept = WBUtility.getConceptVersion(tmpUuid);
+			concept = OTFUtility.getConceptVersion(tmpUuid);
 			if (tmpNid == null) {
 				tmpNid = concept != null ? concept.getConceptNid() : null;
 			}

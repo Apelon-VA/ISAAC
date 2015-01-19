@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.gui;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.function.Function;
 import org.apache.commons.lang.StringUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
@@ -65,7 +65,7 @@ public class SimpleDisplayConcept implements Comparable<SimpleDisplayConcept>
 	public SimpleDisplayConcept(ConceptVersionBI c, Function<ConceptVersionBI, String> descriptionReader)
 	{
 		Function<ConceptVersionBI, String> dr = (descriptionReader == null ? (conceptVersion) -> 
-			{return (conceptVersion == null ? "" : WBUtility.getDescription(conceptVersion));} : descriptionReader);
+			{return (conceptVersion == null ? "" : OTFUtility.getDescription(conceptVersion));} : descriptionReader);
 		description_ = dr.apply(c);
 		nid_ = c == null ? 0 : c.getNid();
 		ignoreChange_ = false;
@@ -73,22 +73,22 @@ public class SimpleDisplayConcept implements Comparable<SimpleDisplayConcept>
 	
 	public SimpleDisplayConcept(ConceptChronicleDdo c, Function<ConceptVersionBI, String> descriptionReader)
 	{
-		this((c == null ? null : WBUtility.getConceptVersion(c.getPrimordialUuid())), descriptionReader);
+		this((c == null ? null : OTFUtility.getConceptVersion(c.getPrimordialUuid())), descriptionReader);
 	}
 	
 	public SimpleDisplayConcept(ConceptChronicleDdo c)
 	{
-		this((c == null ? null : WBUtility.getConceptVersion(c.getPrimordialUuid())), null);
+		this((c == null ? null : OTFUtility.getConceptVersion(c.getPrimordialUuid())), null);
 	}
 	
 	public SimpleDisplayConcept(ConceptChronicleBI c, Function<ConceptVersionBI, String> descriptionReader)
 	{
-		this((c == null ? null : WBUtility.getConceptVersion(c.getPrimordialUuid())), descriptionReader);
+		this((c == null ? null : OTFUtility.getConceptVersion(c.getPrimordialUuid())), descriptionReader);
 	}
 	
 	public SimpleDisplayConcept(ConceptSpec c)
 	{
-		this((c == null ? null : WBUtility.getConceptVersion(c.getUuids()[0])), null);
+		this((c == null ? null : OTFUtility.getConceptVersion(c.getUuids()[0])), null);
 	}
 	
 	public SimpleDisplayConcept(String description)

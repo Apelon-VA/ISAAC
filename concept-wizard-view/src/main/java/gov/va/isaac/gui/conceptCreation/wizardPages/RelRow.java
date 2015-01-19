@@ -22,7 +22,7 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -64,7 +64,7 @@ public class RelRow
 	public RelRow()
 	{
 		ObservableList<SimpleDisplayConcept> dropDownOptions = FXCollections.observableArrayList();
-		dropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
+		dropDownOptions.add(new SimpleDisplayConcept(OTFUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
 		relationship = new ConceptNode(null, true, dropDownOptions, null);
 		target = new ConceptNode(null, true);
 		

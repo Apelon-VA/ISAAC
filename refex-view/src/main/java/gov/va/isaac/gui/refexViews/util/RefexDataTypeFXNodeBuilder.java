@@ -26,7 +26,7 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -325,7 +325,7 @@ public class RefexDataTypeFXNodeBuilder
 							RefexDynamicDouble data = new RefexDynamicDouble(Double.parseDouble(tf.getText()));
 							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 							{
-								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), OTFUtility.getViewCoordinate()));
 							}
 							else
 							{
@@ -349,7 +349,7 @@ public class RefexDataTypeFXNodeBuilder
 							RefexDynamicFloat data = new RefexDynamicFloat(Float.parseFloat(tf.getText()));
 							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 							{
-								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), OTFUtility.getViewCoordinate()));
 							}
 							else
 							{
@@ -372,7 +372,7 @@ public class RefexDataTypeFXNodeBuilder
 							RefexDynamicInteger data = new RefexDynamicInteger(Integer.parseInt(tf.getText()));
 							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 							{
-								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), OTFUtility.getViewCoordinate()));
 							}
 							else
 							{
@@ -395,7 +395,7 @@ public class RefexDataTypeFXNodeBuilder
 							RefexDynamicLong data = new RefexDynamicLong(Long.parseLong(tf.getText()));
 							if (validatorType != null && validatorType.get() != null && validatorType.get() != RefexDynamicValidatorType.UNKNOWN)
 							{
-								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), WBUtility.getViewCoordinate()));
+								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(data, validatorData.get(), OTFUtility.getViewCoordinate()));
 							}
 							else
 							{
@@ -418,7 +418,7 @@ public class RefexDataTypeFXNodeBuilder
 							try
 							{
 								valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(new RefexDynamicString(tf.getText()), validatorData.get(), 
-										WBUtility.getViewCoordinate()));
+										OTFUtility.getViewCoordinate()));
 							}
 							catch (PropertyVetoException e)
 							{
@@ -443,7 +443,7 @@ public class RefexDataTypeFXNodeBuilder
 								try
 								{
 									valueInvalidReason.set(validatorType.get().passesValidatorStringReturn(new RefexDynamicUUID(UUID.fromString(tf.getText())), 
-										validatorData.get(), WBUtility.getViewCoordinate()));
+										validatorData.get(), OTFUtility.getViewCoordinate()));
 								}
 								catch (PropertyVetoException e)
 								{
@@ -501,7 +501,7 @@ public class RefexDataTypeFXNodeBuilder
 			if (currentValue != null)
 			{
 				//TODO (artf231429) this doesn't work, if the nid isn't a concept nid.  We need a NidNode, rather than a ConceptNode
-				cn.set(WBUtility.getConceptVersion(((RefexDynamicNidBI)currentValue).getDataNid()));
+				cn.set(OTFUtility.getConceptVersion(((RefexDynamicNidBI)currentValue).getDataNid()));
 			}
 			
 			if (valueIsRequired != null && defaultValue == null)
@@ -530,7 +530,7 @@ public class RefexDataTypeFXNodeBuilder
 						try
 						{
 							String isInvalid = validatorType.get().passesValidatorStringReturn(new RefexDynamicNid(cn.getConceptProperty().get().getNid()), 
-									validatorData.get(), WBUtility.getViewCoordinate());
+									validatorData.get(), OTFUtility.getViewCoordinate());
 							if (isInvalid.length() > 0)
 							{
 								cn.isValid().setInvalid(isInvalid);
@@ -728,11 +728,11 @@ public class RefexDataTypeFXNodeBuilder
 				String temp = null;
 				if (defaultValue.getRefexDataType() == RefexDynamicDataType.NID)
 				{
-					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid) defaultValue).getDataNid());
+					temp = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicNid) defaultValue).getDataNid());
 				}
 				else if (defaultValue.getRefexDataType() == RefexDynamicDataType.UUID)
 				{
-					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID) defaultValue).getDataUUID());
+					temp = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicUUID) defaultValue).getDataUUID());
 				}
 				if (temp == null)
 				{
@@ -754,11 +754,11 @@ public class RefexDataTypeFXNodeBuilder
 					String temp = null;
 					if (validatorData.get().getRefexDataType() == RefexDynamicDataType.NID)
 					{
-						temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid) validatorData.get()).getDataNid());
+						temp = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicNid) validatorData.get()).getDataNid());
 					}
 					else if (validatorData.get().getRefexDataType() == RefexDynamicDataType.UUID)
 					{
-						temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID) validatorData.get()).getDataUUID());
+						temp = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicUUID) validatorData.get()).getDataUUID());
 					}
 					if (temp == null)
 					{

@@ -28,7 +28,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter
 		}
 
 		final NativeIdSetBI finalInputNids = inputNids;
-		final ConceptVersionBI concept = WBUtility.getConceptVersion(filter.getNid());
+		final ConceptVersionBI concept = OTFUtility.getConceptVersion(filter.getNid());
 
 		Query q = new Query() {
 			@Override
@@ -67,7 +67,7 @@ class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter
 
 			@Override
 			public void Let() throws IOException {
-				let(concept.getPrimordialUuid().toString(), new ConceptSpec(WBUtility.getDescription(concept), concept.getPrimordialUuid()));
+				let(concept.getPrimordialUuid().toString(), new ConceptSpec(OTFUtility.getDescription(concept), concept.getPrimordialUuid()));
 			}
 
 			@Override

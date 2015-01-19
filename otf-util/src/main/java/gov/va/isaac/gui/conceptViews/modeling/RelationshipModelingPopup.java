@@ -23,7 +23,7 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.UUID;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -86,12 +86,12 @@ public class RelationshipModelingPopup extends ModelingPopup
 	{
 		rel = (RelationshipVersionBI<?>)origComp;
 
-		ConceptVersionBI typeToSet = WBUtility.getConceptVersion(rel.getTypeNid());
+		ConceptVersionBI typeToSet = OTFUtility.getConceptVersion(rel.getTypeNid());
 		ConceptVersionBI otherConceptToSet;
 		if (!isDestination) {
-			otherConceptToSet = WBUtility.getConceptVersion(rel.getDestinationNid());
+			otherConceptToSet = OTFUtility.getConceptVersion(rel.getDestinationNid());
 		} else {
-			otherConceptToSet = WBUtility.getConceptVersion(rel.getOriginNid());
+			otherConceptToSet = OTFUtility.getConceptVersion(rel.getOriginNid());
 		}
 		
 		if (!rel.isUncommitted() || (rel.isUncommitted() && rel.getVersions().size() > 1)) {
@@ -107,8 +107,8 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 		groupNum.setText(String.valueOf(rel.getGroup()));
 		
-		refinabilityCon.getSelectionModel().select(new SimpleDisplayConcept(WBUtility.getConceptVersion(rel.getRefinabilityNid())));
-		characteristicCon.getSelectionModel().select(new SimpleDisplayConcept(WBUtility.getConceptVersion(rel.getCharacteristicNid())));
+		refinabilityCon.getSelectionModel().select(new SimpleDisplayConcept(OTFUtility.getConceptVersion(rel.getRefinabilityNid())));
+		characteristicCon.getSelectionModel().select(new SimpleDisplayConcept(OTFUtility.getConceptVersion(rel.getCharacteristicNid())));
 		
 		if (isDestination) {
 			otherConcept.setText("Origin");
@@ -119,22 +119,22 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 		try {
 			ComponentChronicleBI<?> chronicle = rel.getChronicle();
-			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
+			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(OTFUtility.getViewCoordinate());
 
 			if (chronicle.isUncommitted()) {
-				displayVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+				displayVersion = (RelationshipVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 
 			}
 
 			// TODO: Needs to reference previous commit, not component as-is before panel opened
 			if (isDestination) {
-				createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getOriginNid()).getPreferredDescription().getText());
+				createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getOriginNid()).getPreferredDescription().getText());
 			} else {
-				createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getDestinationNid()).getPreferredDescription().getText());
+				createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getDestinationNid()).getPreferredDescription().getText());
 			}
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getRefinabilityNid()).getPreferredDescription().getText());
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getCharacteristicNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getRefinabilityNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getCharacteristicNid()).getPreferredDescription().getText());
 			createOriginalLabel(String.valueOf(displayVersion.getGroup()));
 		} catch (Exception e) {
 			Log.error("Cannot access Pref Term for attributes of relationship: "  + rel.getPrimordialUuid(), e);
@@ -151,7 +151,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		groupNum = new TextField();
 		
 		ObservableList<SimpleDisplayConcept> typeConDropDownOptions = FXCollections.observableArrayList();
-		typeConDropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
+		typeConDropDownOptions.add(new SimpleDisplayConcept(OTFUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
 		typeCon = new ConceptNode(null, true, typeConDropDownOptions, null);
 
 		otherConceptNewSelected = new SimpleBooleanProperty(false);
@@ -387,9 +387,9 @@ public class RelationshipModelingPopup extends ModelingPopup
 			
 			if (rel == null) {
 				if (!isDestination) {
-					WBUtility.createNewRelationship((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid));
+					OTFUtility.createNewRelationship((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid));
 				} else {
-					WBUtility.createNewRelationship(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid));
+					OTFUtility.createNewRelationship(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid));
 				}
 			} else {
 				RelationshipCAB dcab;
@@ -399,17 +399,17 @@ public class RelationshipModelingPopup extends ModelingPopup
 				}
 			
 				if (!isDestination) {
-					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				} else {
-					dcab = new RelationshipCAB(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					dcab = new RelationshipCAB(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				}
 	
-				WBUtility.getBuilder().constructIfNotCurrent(dcab);
+				OTFUtility.getBuilder().constructIfNotCurrent(dcab);
 				
 				if (!isDestination) {
-					WBUtility.addUncommitted(rel.getOriginNid());
+					OTFUtility.addUncommitted(rel.getOriginNid());
 				} else {
-					WBUtility.addUncommitted(otherEndConNid);
+					OTFUtility.addUncommitted(otherEndConNid);
 				}
 			}
 		}

@@ -20,7 +20,7 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.workflow.Action;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
@@ -258,7 +258,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
     
     private void populateReleaseCandidatePath(LocalTask task) throws DatastoreException {
         try {
-            WBUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
+            OTFUtility.addToPromotionPath(UUID.fromString(task.getComponentId()));
         } catch (Exception e) {
             log.error("Error promoting concept to promotion path for task: " + task, e);
             throw new DatastoreException("Unexpected error adding a new version of the concept onto the promotion path for task " + task, e);
