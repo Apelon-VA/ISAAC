@@ -147,7 +147,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 	@Override
 	public String getViewTitle()
 	{
-		return "Snomed Browser";
+		return "SOLOR Browser";
 	}
 
 	/**
