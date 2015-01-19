@@ -24,9 +24,7 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.WBUtility;
-
 import java.util.UUID;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -36,14 +34,15 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRfx;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.jfree.util.Log;
@@ -96,11 +95,11 @@ public class RelationshipModelingPopup extends ModelingPopup
 		}
 		
 		if (!rel.isUncommitted() || (rel.isUncommitted() && rel.getVersions().size() > 1)) {
-			typeCon.set(typeToSet);
 			typeCon.disableEdit();
+			typeCon.set(typeToSet);
 			
-			otherEndCon.set(otherConceptToSet);
 			otherEndCon.disableEdit();
+			otherEndCon.set(otherConceptToSet);
 		} else {
 			typeCon.set(typeToSet);
 			otherEndCon.set(otherConceptToSet);
@@ -152,7 +151,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		groupNum = new TextField();
 		
 		ObservableList<SimpleDisplayConcept> typeConDropDownOptions = FXCollections.observableArrayList();
-		typeConDropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(UUID.fromString("c93a30b9-ba77-3adb-a9b8-4589c9f8fb25"))));
+		typeConDropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
 		typeCon = new ConceptNode(null, true, typeConDropDownOptions, null);
 
 		otherConceptNewSelected = new SimpleBooleanProperty(false);
@@ -234,7 +233,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		characteristicCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if (rel.getCharacteristicNid() != newVal.getNid()) {
 						modificationMade.set(true);
 					} else {
@@ -266,7 +265,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		refinabilityCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if (rel.getRefinabilityNid() != newVal.getNid()) {
 						modificationMade.set(true);
 					} else {
@@ -291,7 +290,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		typeCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if (rel.getTypeNid() != newVal.getNid()) {
 						modificationMade.set(true);
 					} else {
@@ -321,7 +320,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		otherEndCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if ((!isDestination && rel.getDestinationNid() != newVal.getNid()) ||
 						(isDestination && rel.getOriginNid() != newVal.getNid())) {
 						modificationMade.set(true);
