@@ -146,6 +146,7 @@ public class EnhancedConceptBuilder {
 			DescriptionVersionBI<?> ptDesc = null;
 			DescriptionVersionBI<?> fsnDesc = null;
 			
+			//TODO re-implement this correctly artf232183
 			for (DescriptionVersionBI<?> desc : con.getDescriptionsActive()) {
 				if (desc.getNid() == con.getFullySpecifiedDescription().getNid()) {
 					fsnDesc = desc;
