@@ -224,6 +224,21 @@
                     <useFile>false</useFile>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.bcel</groupId>
+                        <artifactId>bcel</artifactId>
+                        <version>6.0-S</version>  <!-- This is a SNAPSHOT version that Dan installed on our Archiva server to provide Java 8 support -->
+                        <!-- See https://csfe.aceworkspace.net/sf/tracker/do/viewArtifact/projects.informatics_architecture/tracker.4_defects/artf232420 -->
+                    </dependency>
+                </dependencies>
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
