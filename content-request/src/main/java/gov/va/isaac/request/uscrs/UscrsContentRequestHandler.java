@@ -289,6 +289,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		{
 			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
 			// find active, non-ISA relationships
+			// TODO should this be excluding inferred relationships?
 			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
 			{
 				bt.addRow();
