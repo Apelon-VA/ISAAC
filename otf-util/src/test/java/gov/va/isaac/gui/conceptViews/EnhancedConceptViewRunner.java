@@ -19,18 +19,18 @@
 package gov.va.isaac.gui.conceptViews;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.init.SystemInit;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.UUID;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-
 import org.ihtsdo.otf.query.lucene.LuceneIndexer;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
@@ -59,15 +59,17 @@ public class EnhancedConceptViewRunner extends Application
 		cv.showView(primaryStage);
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
-	{ 
-		AppContext.setup();
-		// TODO OTF fix: this needs to be fixed so I don't have to hack it with reflection.... https://jira.ihtsdotools.org/browse/OTFISSUE-11
-		Field f = Hk2Looker.class.getDeclaredField("looker");
-		f.setAccessible(true);
-		f.set(null, AppContext.getServiceLocator());
-		System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, new File("../../ISAAC-PA/app/berkeley-db").getCanonicalPath());
-		System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, new File("../../ISAAC-PA/app/berkeley-db").getCanonicalPath());
+	public static void main(String[] args) throws Exception
+	{
+		IOException dataStoreLocationInitException = SystemInit.doBasicSystemInit(new File("../../ISAAC-PA-VA-Fork/app/"));
+		if (dataStoreLocationInitException != null)
+		{
+			System.err.println("Configuration of datastore path failed.  DB will not be able to start properly!  " + dataStoreLocationInitException);
+			System.exit(-1);
+		}
+		
+		AppContext.getService(UserProfileManager.class).configureAutomationMode(new File("profiles"));
+		
 		launch(args);
 	}
 
