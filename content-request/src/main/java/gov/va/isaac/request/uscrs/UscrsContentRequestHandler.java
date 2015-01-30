@@ -14,7 +14,6 @@ import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Relationship_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Semantic_Tag;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Source_Terminology;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.SHEET;
-import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.OTFUtility;
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +54,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	private int nid;
 
 	/** The Constant LOG. */
-	private static final Logger LOG = LoggerFactory.getLogger(CommonMenus.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UscrsContentRequestHandler.class);
 	
 	private int currentRequestId;
 
@@ -404,7 +403,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			LOG.error("Unexpected error during submit", e);
 			AppContext.getCommonDialogs().showErrorDialog("USCRS Content Request", "Unexpected error trying to submit request.", e.getMessage());
 			return;
 		}
