@@ -253,10 +253,11 @@ public class USCRSBatchTemplate
 	 */
 
 	private HashMap<SHEET, Integer> sheetNamePositionMap = new HashMap<>();
-	private HashMap<SHEET, List<COLUMN>> columnNamePositionMap = new HashMap<>();
+	private HashMap<SHEET, LinkedHashMap<COLUMN, Integer>> columnNamePositionMap = new HashMap<>();
 	private Workbook wb;
 	private CreationHelper ch;
 	private Sheet editSheet = null;
+	private SHEET editSheetEnum = null;
 	private int editSheetRowNum = Integer.MIN_VALUE;
 	private Row currentEditRow = null;
 
@@ -283,7 +284,7 @@ public class USCRSBatchTemplate
 				continue;
 			}
 
-			ArrayList<COLUMN> colList = new ArrayList<>();
+			LinkedHashMap<COLUMN, Integer> colList = new LinkedHashMap<>();
 			columnNamePositionMap.put(sheetEnum, colList);
 
 			wb.getSheetAt(i)
@@ -303,7 +304,7 @@ public class USCRSBatchTemplate
 							}
 							else
 							{
-								colList.add(colEnum);
+								colList.put(colEnum, headerCell.getColumnIndex());
 							}
 						}
 
@@ -318,11 +319,12 @@ public class USCRSBatchTemplate
 
 	public List<COLUMN> getColumnsOfSheet(SHEET sheet)
 	{
-		return columnNamePositionMap.get(sheet);
+		return new ArrayList<COLUMN>(columnNamePositionMap.get(sheet).keySet());
 	}
 
 	public void selectSheet(SHEET sheet)
 	{
+		editSheetEnum = sheet;
 		editSheet = getSheet(sheet);
 		currentEditRow = null;
 		editSheetRowNum = editSheet.getLastRowNum() + 1;
@@ -337,23 +339,35 @@ public class USCRSBatchTemplate
 		currentEditRow = editSheet.createRow(editSheetRowNum++);
 	}
 
-	public void addStringCell(int colNumber, String value)
+	public void addStringCell(COLUMN column, String value)
 	{
 		if (currentEditRow == null)
 		{
 			throw new RuntimeException("Call addRow() first");
 		}
-		Cell cell = currentEditRow.createCell(colNumber, Cell.CELL_TYPE_STRING);
+		
+		Integer cellPos = columnNamePositionMap.get(editSheetEnum).get(column);
+		if (cellPos == null)
+		{
+			throw new RuntimeException("Couldn't find the correct cell position for column " + column + " in sheet " + editSheetEnum);
+		}
+		
+		Cell cell = currentEditRow.createCell(cellPos, Cell.CELL_TYPE_STRING);
 		cell.setCellValue(ch.createRichTextString(value));
 	}
 
-	public void addNumericCell(int colNumber, double value)
+	public void addNumericCell(COLUMN column, double value)
 	{
 		if (currentEditRow == null)
 		{
 			throw new RuntimeException("Call addRow() first");
 		}
-		Cell cell = currentEditRow.createCell(colNumber, Cell.CELL_TYPE_NUMERIC);
+		Integer cellPos = columnNamePositionMap.get(editSheetEnum).get(column);
+		if (cellPos == null)
+		{
+			throw new RuntimeException("Couldn't find the correct cell position for column " + column + " in sheet " + editSheetEnum);
+		}
+		Cell cell = currentEditRow.createCell(cellPos, Cell.CELL_TYPE_NUMERIC);
 		cell.setCellValue(value);
 	}
 

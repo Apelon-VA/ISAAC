@@ -160,23 +160,22 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 
 		bt.selectSheet(SHEET.New_Concept);
 		bt.addRow();
-		int colNumber = 0;
-		for (COLUMN c : bt.getColumnsOfSheet(SHEET.New_Concept))
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.New_Concept))
 		{
-			switch (c)
+			switch (column)
 			{
 				case Request_Id:
-					bt.addNumericCell(colNumber++, currentRequestId);
+					bt.addNumericCell(column, currentRequestId);
 					break;
 				case Topic:
 					// TODO: Topic - consider making the user enter this
-					bt.addStringCell(colNumber++, "New concept");
+					bt.addStringCell(column, "New concept");
 					break;
 				case Local_Code:
-					bt.addStringCell(colNumber++, concept.getPrimordialUuid().toString());
+					bt.addStringCell(column, concept.getPrimordialUuid().toString());
 					break;
 				case Local_Term:
-					bt.addStringCell(colNumber++, OTFUtility.getConPrefTerm(concept.getNid()));
+					bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 					break;
 				case Fully_Specified_Name:
 					// Fully Specified Name (without the semantic tag)
@@ -185,7 +184,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					{
 						fsnOnly = fsn.substring(0, fsn.lastIndexOf('(') - 1);
 					}
-					bt.addStringCell(colNumber++, fsnOnly);
+					bt.addStringCell(column, fsnOnly);
 					break;
 				case Semantic_Tag:
 					PICKLIST_Semantic_Tag tag = null;
@@ -198,21 +197,21 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					{
 						throw new Exception("Cannot submit a concept to USCRS without an FSN having a valid semantic tag.");
 					}
-					bt.addStringCell(colNumber++, tag.toString());
+					bt.addStringCell(column, tag.toString());
 					break;
 				case Preferred_Term:
-					bt.addStringCell(colNumber++, OTFUtility.getConPrefTerm(concept.getNid()));
+					bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 					break;
 				case Terminology_1_:
 				case Terminology_2_:
 				case Terminology_3_:
 					if (parentIds.size() == 0)
 					{
-						bt.addStringCell(colNumber++, "");
+						bt.addStringCell(column, "");
 					}
 					else
 					{
-						bt.addStringCell(colNumber++, PICKLIST_Source_Terminology.SNOMED_CT_International.toString());  //TODO this isn't a safe bet
+						bt.addStringCell(column, PICKLIST_Source_Terminology.SNOMED_CT_International.toString());  //TODO this isn't a safe bet
 					}
 					break;
 				case Parent_Concept_Id_1_:
@@ -220,27 +219,27 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Parent_Concept__Id_3_:
 					if (parentIds.size() == 0)
 					{
-						bt.addStringCell(colNumber++, "");
+						bt.addStringCell(column, "");
 					}
 					else
 					{
-						bt.addNumericCell(colNumber++, parentIds.remove(0));
+						bt.addNumericCell(column, parentIds.remove(0));
 					}
 					break;
 				case UMLS_CUI:
-					bt.addStringCell(colNumber++, "");
+					bt.addStringCell(column, "");
 					break;
 				case Definition:
 					// TODO: Definition - consider making the user enter this 
-					bt.addStringCell(colNumber++, "See logical definition in relationships");
+					bt.addStringCell(column, "See logical definition in relationships");
 					break;
 				case Proposed_Use:
 					// TODO: Proposed Use - consider making the user enter this 
-					bt.addStringCell(colNumber++, "");
+					bt.addStringCell(column, "");
 					break;
 				case Justification:
 					// TODO: Justification - consider making the user enter this
-					bt.addStringCell(colNumber++, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+					bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
 					break;
 				case Note:
 					StringBuilder sb = new StringBuilder();
@@ -260,13 +259,13 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 						sb.append(synonyms.remove(0));
 						firstHasBeenSeen = true;
 					}
-					bt.addStringCell(colNumber++, sb.toString());
+					bt.addStringCell(column, sb.toString());
 					break;
 				case Synonym:
-					bt.addStringCell(colNumber++, (synonyms.size() > 0 ? synonyms.remove(0) : ""));
+					bt.addStringCell(column, (synonyms.size() > 0 ? synonyms.remove(0) : ""));
 					break;
 				default :
-					throw new RuntimeException("Unexpected column type found in Sheet: " + c + " - " + SHEET.New_Concept);
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
 			}
 		}
 	}
@@ -292,7 +291,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
 			{
 				bt.addRow();
-				int colNumber = 0;
 				for (COLUMN column : bt.getColumnsOfSheet(SHEET.New_Relationship))
 				{
 					LOG.debug("    Add rel " + relVersion.toUserString());
@@ -300,41 +298,41 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					{
 						case Topic:
 							// TODO: Topic - consider making the user enter this
-							bt.addStringCell(colNumber++, "See new concept request");
+							bt.addStringCell(column, "See new concept request");
 							break;
 						case Source_Terminology:
 							// Source Concept Id - aligns with Request Id from the new concept spreadsheet
-							bt.addStringCell(colNumber++, PICKLIST_Source_Terminology.Current_Batch_Requests.toString());
+							bt.addStringCell(column, PICKLIST_Source_Terminology.Current_Batch_Requests.toString());
 							break;
 						case Source_Concept_Id:
-							bt.addNumericCell(colNumber++, currentRequestId);
+							bt.addNumericCell(column, currentRequestId);
 							break;
 						case Relationship_Type:
-							bt.addStringCell(colNumber++, PICKLIST_Relationship_Type.find(OTFUtility.getConPrefTerm(relVersion.getTypeNid())).toString());
+							bt.addStringCell(column, PICKLIST_Relationship_Type.find(OTFUtility.getConPrefTerm(relVersion.getTypeNid())).toString());
 							break;
 						case Destination_Terminology:
 							// Destination Termionlogy - TODO: here we're only supporting things linked to SNOMED, in the future we may need to link
 							// to things that have been previously created, but we need tracking info integration to do that properly.
-							bt.addStringCell(colNumber++, PICKLIST_Source_Terminology.SNOMED_CT_International.toString());
+							bt.addStringCell(column, PICKLIST_Source_Terminology.SNOMED_CT_International.toString());
 							break;
 						case Destination_Concept_Id:
-							bt.addNumericCell(colNumber++, Double.parseDouble(ConceptViewerHelper.getSctId(
+							bt.addNumericCell(column, Double.parseDouble(ConceptViewerHelper.getSctId(
 									OTFUtility.getConceptVersion(relVersion.getDestinationNid())).trim()));
 							break;
 						case Characteristic_Type:
-							bt.addStringCell(colNumber++, PICKLIST_Characteristic_Type.Defining_relationship.toString());
+							bt.addStringCell(column, PICKLIST_Characteristic_Type.Defining_relationship.toString());
 							break;
 						case Refinability:
-							bt.addStringCell(colNumber++, PICKLIST_Refinability.Not_refinable.toString());
+							bt.addStringCell(column, PICKLIST_Refinability.Not_refinable.toString());
 							break;
 						case Relationship_Group:
-							bt.addNumericCell(colNumber++, relVersion.getGroup());
+							bt.addNumericCell(column, relVersion.getGroup());
 							break;
 						case Justification:
-							bt.addStringCell(colNumber++, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+							bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
 							break;
 						case Note:
-							bt.addStringCell(colNumber++, "This is a defining relationship expressed for the corresponding new concept request in the other tab");
+							bt.addStringCell(column, "This is a defining relationship expressed for the corresponding new concept request in the other tab");
 							break;
 						default :
 							throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Relationship);
