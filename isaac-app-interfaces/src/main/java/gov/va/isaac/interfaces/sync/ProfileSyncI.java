@@ -37,6 +37,10 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface ProfileSyncI
 {
+	public static final String DEFAULT_README_CONTENT = "ISAAC Profiles Storage \r" + "=== \r" 
+			+ "This is a repository for storing ISAAC profiles and changesets.\r"
+			+ "It is highly recommended that you do not make changes to this repository manually - ISAAC interfaces with this.";
+	
 	/**
 	 * Set the base folder that should be used in this instance of Profile Sync.  Necessary for HK2 style 
 	 * init where it can't be passed in via the constructor.
@@ -45,6 +49,14 @@ public interface ProfileSyncI
 	 * @throws IllegalArgumentException - if the passed in file is not a folder, or does not exist.
 	 */
 	public abstract void setRootLocation(File localFolder) throws IllegalArgumentException;
+	
+	/**
+	 * @param readmeFileContent - The content to place in the README file that the implementation will create (if it doesn't exist).
+	 * If this method is never called, the implementation will default to the text from {@link ProfileSyncI#DEFAULT_README_CONTENT}.
+	 * If left blank - the README file may still be created by the implementation, as some SCM systems don't allow a commit with an empty
+	 * repository.
+	 */
+	public abstract void setReadmeFileContent(String readmeFileContent);
 	
 	/**
 	 * Return the currently configured root location.  
