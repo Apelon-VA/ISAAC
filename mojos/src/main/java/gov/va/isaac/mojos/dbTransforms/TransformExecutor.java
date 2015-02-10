@@ -42,6 +42,14 @@ public class TransformExecutor extends AbstractMojo
 	 * @required
 	 */
 	private Transform[] transforms;
+	
+	/**
+	 * The folder where any summary output files should be written
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	private File summaryOutputFolder;
 
 	
 	
@@ -72,13 +80,13 @@ public class TransformExecutor extends AbstractMojo
 				getLog().info("Executing transform " + transformer.getDescription());
 				transformer.configure(t.getConfigFile());
 				transformer.transform(store);
-				String summary = "Transformer " + t.getName() + " compleated:  " + transformer.getWorkResultSummary() + " in " + (System.currentTimeMillis() - start) + "ms";
+				String summary = "Transformer " + t.getName() + " completed:  " + transformer.getWorkResultSummary() + " in " + (System.currentTimeMillis() - start) + "ms";
 				getLog().info(summary);
 				summaryInfo.append(summary);
 				summaryInfo.append(System.getProperty("line.separator"));
 			}
 
-			Files.write(new File("target/transformsSummary.txt").toPath(), summaryInfo.toString().getBytes());
+			Files.write(new File(summaryOutputFolder, "transformsSummary.txt").toPath(), summaryInfo.toString().getBytes());
 			
 			getLog().info("Finished executing transforms");
 		}
