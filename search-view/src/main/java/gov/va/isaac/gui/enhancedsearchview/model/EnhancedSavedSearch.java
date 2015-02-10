@@ -13,7 +13,7 @@ import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.SaveSearchPrompt;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -245,7 +245,7 @@ public class EnhancedSavedSearch {
 
 			@Override
 			protected List<SearchDisplayConcept> call() throws Exception {
-				Set<ConceptVersionBI> savedSearches = WBUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
+				Set<ConceptVersionBI> savedSearches = OTFUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
 
 				SearchType currentSearchType = SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
 				for (ConceptVersionBI concept : savedSearches) {
@@ -263,8 +263,8 @@ public class EnhancedSavedSearch {
 						}
 						
 						if (addSearchToList) {
-							String fsn = WBUtility.getFullySpecifiedName(concept);
-							String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
+							String fsn = OTFUtility.getFullySpecifiedName(concept);
+							String preferredTerm = OTFUtility.getConPrefTerm(concept.getNid());
 							searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
 						}
 					}
@@ -322,7 +322,7 @@ public class EnhancedSavedSearch {
 			}
 		}
 
-		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
 		for (RefexDynamicVersionBI<?> refex : refexes) {
 			RefexDynamicUsageDescription dud = null;
 			try {
@@ -358,17 +358,17 @@ public class EnhancedSavedSearch {
 
 				// TODO: Make retirement of bad search concepts work: https://csfe.aceworkspace.net/sf/go/artf231405
 //				ConceptAttributeAB cab = new ConceptAttributeAB(concept.getConceptNid(), /* concept.getConceptAttributesActive().isDefined() */ true, RefexDirective.EXCLUDE);
-//				ConceptAttributeChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+//				ConceptAttributeChronicleBI cabi = OTFUtility.getBuilder().constructIfNotCurrent(cab);
 //				
-//				//ConceptCB cab = concept.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
-//				//ConceptChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+//				//ConceptCB cab = concept.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+//				//ConceptChronicleBI cabi = OTFUtility.getBuilder().constructIfNotCurrent(cab);
 //				
 //				cab.setStatus(Status.INACTIVE);
 //				
-//				WBUtility.addUncommitted(cabi.getEnclosingConcept());
+//				OTFUtility.addUncommitted(cabi.getEnclosingConcept());
 //				
 //				// Commit
-//				WBUtility.commit(concept);
+//				OTFUtility.commit(concept);
 			} catch (Exception e) {
 				String error = "FAILED to automatically retire invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
 				LOG.error(error, e);
@@ -393,7 +393,7 @@ public class EnhancedSavedSearch {
 		return componentSearchTypeCache.get(concept.getNid());
 	}
 	private static ComponentSearchType getComponentSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
-		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
 		for (RefexDynamicVersionBI<?> refex : refexes) {
 			RefexDynamicUsageDescription dud = null;
 			try {

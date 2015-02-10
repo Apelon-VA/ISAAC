@@ -4,7 +4,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -34,7 +34,7 @@ public abstract class SearchTypeModel {
 
 	protected final StringProperty name = new SimpleStringProperty(getClass().getName().replaceAll(".*\\.", ""));
 	protected final StringProperty description = new SimpleStringProperty();
-	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(WBUtility.getViewCoordinate());
+	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(OTFUtility.getViewCoordinate());
 	protected final BooleanProperty isSearchTypeRunnableProperty = new SimpleBooleanProperty(false);
 	protected final BooleanProperty isSearchTypeSavableProperty = new SimpleBooleanProperty(false);
 
@@ -88,7 +88,7 @@ public abstract class SearchTypeModel {
 	}
 	
 	protected SearchTypeModel() {
-		viewCoordinateProperty.set(WBUtility.getViewCoordinate());
+		viewCoordinateProperty.set(OTFUtility.getViewCoordinate());
 		
 		viewCoordinateProperty.addListener(new ChangeListener<ViewCoordinate>() {
 			@Override

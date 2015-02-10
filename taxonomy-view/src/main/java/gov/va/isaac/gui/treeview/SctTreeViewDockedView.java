@@ -26,7 +26,7 @@ import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +147,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 	@Override
 	public String getViewTitle()
 	{
-		return "Snomed Browser";
+		return "SOLOR Browser";
 	}
 
 	/**
@@ -166,7 +166,7 @@ public class SctTreeViewDockedView  implements DockedViewI, TaxonomyViewI
 	 */
 	@Override
 	public void locateConcept(int nid, BooleanProperty busyIndicator) {
-		locateConcept(WBUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);
+		locateConcept(OTFUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);
 	}
 
 	/* (non-Javadoc)

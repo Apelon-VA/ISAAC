@@ -32,7 +32,7 @@ import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.Collection;
 import javafx.collections.ObservableList;
@@ -273,14 +273,14 @@ public class ConceptViewerLabelHelper {
 			{
 				try {
 					if (type == ComponentType.CONCEPT) {
-						ConceptVersionBI con = WBUtility.getConceptVersion(comp.getConceptNid());
+						ConceptVersionBI con = OTFUtility.getConceptVersion(comp.getConceptNid());
 
-						if (!WBUtility.getAllChildrenOfConcept(con, false).isEmpty()) {
+						if (!OTFUtility.getAllChildrenOfConcept(con, false).isEmpty()) {
 							AppContext.getCommonDialogs().showInformationDialog("Retire Concept Failure", "Cannot retire concept until it has no children");
 						} else {
 							RetireConceptPrompt prompt = new RetireConceptPrompt();
 							
-							prompt.showUserPrompt((Stage)pane.getScene().getWindow(), "Retire Concept: " + WBUtility.getConPrefTerm(comp.getNid()));
+							prompt.showUserPrompt((Stage)pane.getScene().getWindow(), "Retire Concept: " + OTFUtility.getConPrefTerm(comp.getNid()));
 							
 							if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 								// Retire Stated Parent Rels
@@ -293,18 +293,18 @@ public class ConceptViewerLabelHelper {
 								
 								// Add new Rel
 								int retirementConceptNid = prompt.getRetirementConceptNid();
-								WBUtility.createNewParent(conceptNid, retirementConceptNid);
+								OTFUtility.createNewParent(conceptNid, retirementConceptNid);
 
 								// Retire Con
 								ConceptAttributeAB cab = new ConceptAttributeAB(con.getConceptNid(), con.getConceptAttributesActive().isDefined(), RefexDirective.EXCLUDE);
 								cab.setStatus(Status.INACTIVE);
 								
-								ConceptAttributeChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+								ConceptAttributeChronicleBI cabi = OTFUtility.getBuilder().constructIfNotCurrent(cab);
 								
-								WBUtility.addUncommitted(cabi.getEnclosingConcept());
+								OTFUtility.addUncommitted(cabi.getEnclosingConcept());
 								
 								// Commit
-								WBUtility.commit(con);
+								OTFUtility.commit(con);
 							}
 						}
 					} else if (type == ComponentType.DESCRIPTION) {
@@ -314,12 +314,12 @@ public class ConceptViewerLabelHelper {
 							ExtendedAppContext.getDataStore().forget(desc);
 						}
 
-						DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+						DescriptionCAB dcab = desc.makeBlueprint(OTFUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dcab.setStatus(Status.INACTIVE);
 						
-						DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
+						DescriptionChronicleBI dcbi = OTFUtility.getBuilder().constructIfNotCurrent(dcab);
 						
-						WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+						OTFUtility.addUncommitted(dcbi.getEnclosingConcept());
 	
 					} else if (type == ComponentType.RELATIONSHIP) {
 						RelationshipVersionBI<?> rel = (RelationshipVersionBI<?>)comp;
@@ -338,13 +338,13 @@ public class ConceptViewerLabelHelper {
 			}
 
 			private void retireRelationship(RelationshipVersionBI<?> rel) throws ValidationException, IOException, InvalidCAB, ContradictionException {
-				RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				RelationshipCAB rcab = new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(), rel.getDestinationNid(), rel.getGroup(), RelationshipType.getRelationshipType(rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel, OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 
 				rcab.setStatus(Status.INACTIVE);
 				
-				RelationshipChronicleBI rcbi = WBUtility.getBuilder().constructIfNotCurrent(rcab);
+				RelationshipChronicleBI rcbi = OTFUtility.getBuilder().constructIfNotCurrent(rcab);
 				
-				WBUtility.addUncommitted(rcbi.getEnclosingConcept());
+				OTFUtility.addUncommitted(rcbi.getEnclosingConcept());
 			}
 		});
 

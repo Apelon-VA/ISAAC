@@ -1,7 +1,7 @@
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.Set;
@@ -31,7 +31,7 @@ public class NoSearchTermConcurrentSearcher implements ProcessUnfetchedConceptDa
 		{
 			this.parentNid = parentNid;
 			totalToProcess_ = initialNids.getSetValues().length;
-			snapshot = ExtendedAppContext.getDataStore().getSnapshot(WBUtility.getViewCoordinate());
+			snapshot = ExtendedAppContext.getDataStore().getSnapshot(OTFUtility.getViewCoordinate());
 		}
 		
 		/**

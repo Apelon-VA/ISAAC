@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -345,7 +345,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     		if (item.getValue().getRelationshipVersion() != null) {
     			if (item.getMultiParentDepth() > 0) {
     				ComponentReference destRef = item.getValue().getRelationshipVersion().getDestinationReference();
-    				String temp = WBUtility.getDescription(destRef.getUuid());
+    				String temp = OTFUtility.getDescription(destRef.getUuid());
     				if (temp == null) {
     					return destRef.getText();
     				} else {
@@ -353,7 +353,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     				}
     			} else {
     				ComponentReference originRef = item.getValue().getRelationshipVersion().getOriginReference();
-    				String temp = WBUtility.getDescription(originRef.getUuid());
+    				String temp = OTFUtility.getDescription(originRef.getUuid());
     				if (temp == null) {
     					return originRef.getText();
     				} else {
@@ -363,7 +363,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     		}
 
     		if (item.getValue().conceptProperty().get() != null) {
-    			return WBUtility.getDescription(item.getValue().conceptProperty().get());
+    			return OTFUtility.getDescription(item.getValue().conceptProperty().get());
     		}
 
     		return "root";

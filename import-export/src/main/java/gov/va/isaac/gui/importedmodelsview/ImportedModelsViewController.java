@@ -31,7 +31,7 @@ import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -197,7 +197,7 @@ public class ImportedModelsViewController {
                         .getSelectedItems();
                 Set<Integer> nids = new HashSet<>();
                 for (InformationModel model : selected) {
-                  nids.add(WBUtility.getComponentChronicle(model.getUuid())
+                  nids.add(OTFUtility.getComponentChronicle(model.getUuid())
                       .getConceptNid());
                 }
                 LOG.info("nids = " + nids);

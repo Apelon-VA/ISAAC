@@ -22,7 +22,7 @@ import gov.va.isaac.gui.refsetview.RefsetView;
 import gov.va.isaac.gui.util.DragResizer;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -113,7 +113,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		title.getStyleClass().add("boldLabel");
 		HBox.setMargin(title, new Insets(4, 0, 0, 0));
 		
-		Label l = new Label(WBUtility.getDescription(conceptUUID));
+		Label l = new Label(OTFUtility.getDescription(conceptUUID));
 		HBox.setMargin(l, new Insets(4, 0, 0, 10));
 		h.getChildren().add(l);
 		

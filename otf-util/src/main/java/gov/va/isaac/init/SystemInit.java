@@ -43,10 +43,11 @@ public class SystemInit
 	/**
 	 * Performs the basic init of ISAAC related applications.  Configures SLF4J Logging, configures the HK2 looker from OTF properly, 
 	 * configures the DB location paths of OTF properly.
+	 * @param dbLocation - optional - if not provided - uses System properties, if set, or the defaults.
 	 * @return - null, if no issue configuring the data store paths - otherwise - the exception that happened while configuring the datastore paths.
 	 * @throws Exception - if some other unexpected event happens
 	 */
-	public static IOException doBasicSystemInit() throws Exception
+	public static IOException doBasicSystemInit(File dbLocation) throws Exception
 	{
 		//Configure Java logging into logback
 		SLF4JBridgeHandler.removeHandlersForRootLogger();
@@ -61,7 +62,11 @@ public class SystemInit
 
 		try
 		{
-			if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
+			if (dbLocation != null && dbLocation.isDirectory())
+			{
+				configDataStorePaths(dbLocation);
+			}
+			else if (System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) == null)
 			{
 				configDataStorePaths(new File(BdbTerminologyStore.DEFAULT_BDB_LOCATION));
 			}
@@ -115,7 +120,7 @@ public class SystemInit
 			else
 			{
 				LOG.warn("The application specified '" + localBDBLocation.getCanonicalPath() + "' but the system property " + BdbTerminologyStore.BDB_LOCATION_PROPERTY
-						+ "is set to " + System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY + " this will override the application path"));
+						+ " is set to " + System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY) + " this will override the application path");
 			}
 			if (System.getProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY) == null)
 			{

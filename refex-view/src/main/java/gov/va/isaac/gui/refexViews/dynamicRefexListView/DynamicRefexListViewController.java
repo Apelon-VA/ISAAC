@@ -29,7 +29,7 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -213,7 +213,7 @@ public class DynamicRefexListViewController
 			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
 			if (sdc != null)
 			{
-				new ConfigureDynamicRefexIndexingView(WBUtility.getConceptVersion(sdc.getNid())).showView(null);
+				new ConfigureDynamicRefexIndexingView(OTFUtility.getConceptVersion(sdc.getNid())).showView(null);
 			}
 		});
 		mi.setGraphic(Images.CONFIGURE.createImageView());
@@ -434,7 +434,7 @@ public class DynamicRefexListViewController
 		}
 		else if (refexStyleFilter.getSelectionModel().getSelectedIndex() != 0)
 		{
-			ConceptVersionBI c = WBUtility.getConceptVersion(sdc.getNid());
+			ConceptVersionBI c = OTFUtility.getConceptVersion(sdc.getNid());
 			if ((c.isAnnotationStyleRefex() && refexStyleFilter.getSelectionModel().getSelectedIndex() == 2)
 					|| (!c.isAnnotationStyleRefex() && refexStyleFilter.getSelectionModel().getSelectedIndex() == 1))
 			{

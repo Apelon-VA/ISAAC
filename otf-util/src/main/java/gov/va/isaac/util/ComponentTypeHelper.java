@@ -37,10 +37,10 @@ public class ComponentTypeHelper {
 	private ComponentTypeHelper() {}
 	
 	public static ComponentType getComponentType(int nid) {
-		return ComponentType.getComponentVersionType(WBUtility.getComponentVersion(nid));
+		return ComponentType.getComponentVersionType(OTFUtility.getComponentVersion(nid));
 	}
 	
 	public static ComponentType getComponentType(UUID uuid) {
-		return ComponentType.getComponentVersionType(WBUtility.getComponentVersion(uuid));
+		return ComponentType.getComponentVersionType(OTFUtility.getComponentVersion(uuid));
 	}
 }

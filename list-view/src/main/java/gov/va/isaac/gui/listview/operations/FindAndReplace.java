@@ -20,7 +20,7 @@ package gov.va.isaac.gui.listview.operations;
 
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.listview.operations.FindAndReplaceController.DescriptionType;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.net.URL;
@@ -155,7 +155,7 @@ public class FindAndReplace extends Operation
 					
 
 					// For each concept, filter the descriptions to be changed based on user selected DescType
-					ConceptVersionBI con = WBUtility.getConceptVersion(c.getNid());
+					ConceptVersionBI con = OTFUtility.getConceptVersion(c.getNid());
 					Set<DescriptionVersionBI<?>> descsToChange= getDescsToChange(con);
 					
 					for (DescriptionVersionBI<?> desc : descsToChange) {
@@ -165,7 +165,7 @@ public class FindAndReplace extends Operation
 
 							// Now check if language is selected, that it exists in language refset
 							if (frc_.getLanguageRefset().getNid() == 0 ||
-								!desc.getAnnotationsActive(WBUtility.getViewCoordinate(), frc_.getLanguageRefset().getNid()).isEmpty()) {
+								!desc.getAnnotationsActive(OTFUtility.getViewCoordinate(), frc_.getLanguageRefset().getNid()).isEmpty()) {
 						
 								// Replace Text
 								if (frc_.isRegExp()) {
@@ -248,10 +248,10 @@ public class FindAndReplace extends Operation
 			}
 
 			private void updateDescription(DescriptionVersionBI<?> desc, String newTxt) throws IOException, InvalidCAB, ContradictionException {
-				DescriptionCAB dcab = desc.makeBlueprint(WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				DescriptionCAB dcab = desc.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
 				dcab.setText(newTxt);
-				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
-				WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+				DescriptionChronicleBI dcbi = OTFUtility.getBuilder().constructIfNotCurrent(dcab);
+				OTFUtility.addUncommitted(dcbi.getEnclosingConcept());
 			}
 
 			private Set<DescriptionVersionBI<?>> getDescsToChange(ConceptVersionBI con) {

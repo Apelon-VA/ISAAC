@@ -4,7 +4,7 @@ package gov.va.isaac.models.cem;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.InformationModels;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * Represents a CEM constraint.
  */
 public class CEMConstraint {
-  private static final Logger LOGGER = LoggerFactory.getLogger(WBUtility.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OTFUtility.class);
 
   /**  The path. */
   private String path;
@@ -142,7 +142,7 @@ public class CEMConstraint {
 	
 	private boolean valueSetExists() {
 			// Get UUID
-			UUID uuid = WBUtility.getUuidForFsn(value, value);
+			UUID uuid = OTFUtility.getUuidForFsn(value, value);
 //			UUID uuid = UuidT5Generator.get(UUID PATH_ID_FROM_FS_DESC, value);
 	
 			return ExtendedAppContext.getDataStore().hasUuid(uuid);

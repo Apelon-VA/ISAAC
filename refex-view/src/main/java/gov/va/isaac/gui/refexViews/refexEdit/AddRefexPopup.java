@@ -34,7 +34,7 @@ import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -413,12 +413,12 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		title_.setText("Edit existing sememe instance");
 		
 		gp_.add(unselectableComponentLabel_, 1, 1);
-		unselectableComponentLabel_.setText(WBUtility.getDescription(editRefex_.getRefex().getAssemblageNid()));
+		unselectableComponentLabel_.setText(OTFUtility.getDescription(editRefex_.getRefex().getAssemblageNid()));
 		
 		//don't actually put this in the view
-		selectableConcept_.set(WBUtility.getConceptVersion(editRefex_.getRefex().getReferencedComponentNid()));
+		selectableConcept_.set(OTFUtility.getConceptVersion(editRefex_.getRefex().getReferencedComponentNid()));
 		
-		Label refComp = new CopyableLabel(WBUtility.getDescription(editRefex_.getRefex().getReferencedComponentNid()));
+		Label refComp = new CopyableLabel(OTFUtility.getDescription(editRefex_.getRefex().getReferencedComponentNid()));
 		refComp.setWrapText(true);
 		AppContext.getService(DragRegistry.class).setupDragOnly(refComp, () -> {return editRefex_.getRefex().getReferencedComponentNid() + "";});
 		gp_.add(refComp, 1, 0);
@@ -447,7 +447,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		if (createRefexFocus_.getComponentNid() != null)
 		{
 			gp_.add(unselectableComponentLabel_, 1, 0);
-			unselectableComponentLabel_.setText(WBUtility.getDescription(createRefexFocus_.getComponentNid()));
+			unselectableComponentLabel_.setText(OTFUtility.getDescription(createRefexFocus_.getComponentNid()));
 			gp_.add(selectableConcept_.getNode(), 1, 1);
 			refexDropDownOptions.clear();
 			refexDropDownOptions.addAll(buildAssemblageConceptList());
@@ -458,7 +458,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				assemblageInfo_ = RefexDynamicUsageDescriptionBuilder.readRefexDynamicUsageDescriptionConcept(createRefexFocus_.getAssemblyNid());
 				gp_.add(unselectableComponentLabel_, 1, 1);
-				unselectableComponentLabel_.setText(WBUtility.getDescription(createRefexFocus_.getAssemblyNid()));
+				unselectableComponentLabel_.setText(OTFUtility.getDescription(createRefexFocus_.getAssemblyNid()));
 				if (assemblageInfo_.getReferencedComponentTypeRestriction() != null 
 						&& ComponentType.CONCEPT != assemblageInfo_.getReferencedComponentTypeRestriction() 
 						&& ComponentType.CONCEPT_ATTRIBUTES != assemblageInfo_.getReferencedComponentTypeRestriction())
@@ -551,7 +551,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 							polymorphicType.getItems().add(type);
 						}
 					}
-					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType()));
+					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING :
+						(currentValues[row] == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType())));
 				}
 				
 				RefexDataTypeNodeDetails nd = RefexDataTypeFXNodeBuilder.buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), 
@@ -568,6 +569,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				currentDataFields_.add(nd);
 				
 				gp.add(nd.getNodeForDisplay(), col++, row);
+				
+				Label colType = new Label(ci.getColumnDataType().getDisplayName());
+				colType.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(colType));
+				gp.add((polymorphicType == null ? colType : polymorphicType), col++, row);
+				
 				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null || ci.getValidator() != null)
 				{
 					extraInfoColumnIsRequired = true;
@@ -605,9 +611,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 					gp.add(stackPane, col++, row);
 				}
-				Label colType = new Label(ci.getColumnDataType().getDisplayName());
-				colType.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(colType));
-				gp.add((polymorphicType == null ? colType : polymorphicType), col++, row++);
+				row++;
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
@@ -618,16 +622,16 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			cc.setHgrow(Priority.ALWAYS);
 			gp.getColumnConstraints().add(cc);
 
+			cc = new ColumnConstraints();
+			cc.setHgrow(Priority.NEVER);
+			gp.getColumnConstraints().add(cc);
+			
 			if (extraInfoColumnIsRequired)
 			{
 				cc = new ColumnConstraints();
 				cc.setHgrow(Priority.NEVER);
 				gp.getColumnConstraints().add(cc);
 			}
-			
-			cc = new ColumnConstraints();
-			cc.setHgrow(Priority.NEVER);
-			gp.getColumnConstraints().add(cc);
 
 			if (row == 0)
 			{
@@ -693,16 +697,16 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			{
 				componentNid = editRefex_.getRefex().getReferencedComponentNid();
 				assemblageNid = editRefex_.getRefex().getAssemblageNid();
-				cab = editRefex_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				cab = editRefex_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 				//If they are editing, we assume that they want it back active, if it is retired.
 				cab.setStatus(Status.ACTIVE);
 			}
 			
-			cab.setData(data, WBUtility.getViewCoordinate());
-			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEditCoordinate(), WBUtility.getViewCoordinate());
+			cab.setData(data, OTFUtility.getViewCoordinate());
+			TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(OTFUtility.getEditCoordinate(), OTFUtility.getViewCoordinate());
 			RefexDynamicChronicleBI<?> rdc = builder.construct(cab);
 			
-			boolean isAnnotationStyle = WBUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex();
+			boolean isAnnotationStyle = OTFUtility.getConceptVersion(assemblageNid).isAnnotationStyleRefex();
 			IndexedGenerationCallable indexGen = null;
 			
 			//In order to make sure we can wait for the index to have this entry, we need a latch...
@@ -714,7 +718,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			ExtendedAppContext.getDataStore().addUncommitted(ExtendedAppContext.getDataStore().getConceptForNid(componentNid));
 			if (!isAnnotationStyle)
 			{
-				ExtendedAppContext.getDataStore().addUncommitted(WBUtility.getConceptVersion(assemblageNid));
+				ExtendedAppContext.getDataStore().addUncommitted(OTFUtility.getConceptVersion(assemblageNid));
 			}
 			if (callingView_ != null)
 			{
@@ -761,8 +765,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 		ObservableList<SimpleDisplayConcept> assemblageConcepts = new ObservableListWrapper<>(new ArrayList<SimpleDisplayConcept>());
 		try
 		{
-			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
-			Set<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+			ConceptVersionBI colCon = OTFUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid());
+			Set<ConceptVersionBI> colCons = OTFUtility.getAllChildrenOfConcept(colCon, false);
 
 			for (ConceptVersionBI col : colCons) {
 				assemblageConcepts.add(new SimpleDisplayConcept(col));

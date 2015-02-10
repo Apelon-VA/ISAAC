@@ -27,7 +27,7 @@ import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginComboBox
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginLabelProperty;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginProperty;
 import gov.va.isaac.gui.preferences.plugins.properties.PreferencesPluginTextFieldProperty;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -141,7 +141,7 @@ public class WorkflowPreferencesPluginView extends AbstractPreferencesPluginView
 				new PreferencesPluginProperty.StringConverter<UUID>() {
 					@Override
 					public String convertToString(UUID value) {
-						return value != null ? WBUtility.getDescription(value) : null;
+						return value != null ? OTFUtility.getDescription(value) : null;
 					}
 				}) {
 			@Override
@@ -164,7 +164,7 @@ public class WorkflowPreferencesPluginView extends AbstractPreferencesPluginView
 		List<UUID> list = new ArrayList<>();
 
 		try {
-			List<ConceptChronicleBI> pathConcepts = WBUtility.getPathConcepts();
+			List<ConceptChronicleBI> pathConcepts = OTFUtility.getPathConcepts();
 			for (ConceptChronicleBI cc : pathConcepts) {
 				list.add(cc.getPrimordialUuid());
 			}

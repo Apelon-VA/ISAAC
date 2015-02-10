@@ -146,6 +146,7 @@ public class EnhancedConceptBuilder {
 			DescriptionVersionBI<?> ptDesc = null;
 			DescriptionVersionBI<?> fsnDesc = null;
 			
+			//TODO re-implement this correctly artf232183
 			for (DescriptionVersionBI<?> desc : con.getDescriptionsActive()) {
 				if (desc.getNid() == con.getFullySpecifiedDescription().getNid()) {
 					fsnDesc = desc;
@@ -169,8 +170,15 @@ public class EnhancedConceptBuilder {
 				tr.addTermRow(fsnDesc, false);
 			}
 			
-			// Add PT Row to GridPane
-			tr.addTermRow(ptDesc, true);
+			if (ptDesc == null)
+			{
+				LOG.warn("No Preferred Term Description was found on the concept {}", con.getPrimordialUuid());
+			}
+			else
+			{
+				// Add PT Row to GridPane
+				tr.addTermRow(ptDesc, true);
+			}
 
 			// Add other terms to GridPane
 			for (Integer descType: sortedDescs.keySet()) {
@@ -184,7 +192,7 @@ public class EnhancedConceptBuilder {
 			// Add GridPane to VBox
 			termVBox.getChildren().add(tr.getGridPane());
 		} catch (Exception e) {
-			LOG.error("Cannot access descriptions for concept: " + con.getPrimordialUuid());
+			LOG.error("Cannot access descriptions for concept: " + con.getPrimordialUuid(), e);
 		}		
 	}
 

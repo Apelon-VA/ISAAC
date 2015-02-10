@@ -21,7 +21,7 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
 import gov.va.isaac.util.AbstractProgressReporter;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -456,7 +456,7 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
         new ConceptSpec("Language type reference set",
             UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687"));
     Set<ConceptVersionBI> descs =
-        WBUtility.getAllChildrenOfConcept(
+        OTFUtility.getAllChildrenOfConcept(
             langRefexParent.getLenient().getNid(), true);
     for (ConceptVersionBI desc : descs) {
       possibleLangRefexNids.add(desc.getNid());
@@ -1352,7 +1352,7 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
     throws Exception {
     if (conceptsToProcess.isMember(cNid)) {
       count++;
-      ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+      ConceptVersionBI concept = fetcher.fetch(OTFUtility.getViewCoordinate());
       LOG.debug("Process concept " + concept.getPrimordialUuid());
       process(concept);
     }

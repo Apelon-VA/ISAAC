@@ -23,7 +23,7 @@ import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.RefexData;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import javafx.fxml.FXML;
@@ -115,7 +115,7 @@ public class SummaryController implements PanelControllersI {
 	private void setupRefexContent(RefexData refexData) {
 		actualRefexName.setText(refexData.getRefexName());
 		actualRefexDescription.setText(refexData.getRefexDescription());
-		actualParentConcept.setText(WBUtility.getDescription(refexData.getParentConcept()));
+		actualParentConcept.setText(OTFUtility.getDescription(refexData.getParentConcept()));
 		actualComponentTypeRestriction.setText(refexData.getComponentRestrictionType() == ComponentType.UNKNOWN ? "No Restriction" 
 				: refexData.getComponentRestrictionType().toString());
 		if (refexData.isAnnotatedStyle()) {

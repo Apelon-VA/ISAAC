@@ -28,7 +28,7 @@ import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenus.CommonMenuItem;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.Arrays;
 import java.util.Collection;
 import javafx.concurrent.Task;
@@ -101,11 +101,11 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 				try
 				{
 					text = item.getDisplayStrings(type_, null).getKey();
-					ConceptVersionBI c = WBUtility.getConceptVersion(nid);
+					ConceptVersionBI c = OTFUtility.getConceptVersion(nid);
 					if (c == null) 
 					{
 						//This may be a different component - like a description, or another refex... need to handle.
-						ComponentVersionBI cv = ExtendedAppContext.getDataStore().getComponentVersion(WBUtility.getViewCoordinate(), nid);
+						ComponentVersionBI cv = ExtendedAppContext.getDataStore().getComponentVersion(OTFUtility.getViewCoordinate(), nid);
 						
 						if (cv instanceof DescriptionVersionBI<?>)
 						{

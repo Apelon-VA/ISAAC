@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import gov.va.isaac.gui.conceptViews.componentRows.Row;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
@@ -23,7 +23,7 @@ public abstract class TermRow extends Row {
 		if (prefTermTypeStr == null) {
 			try {
 				prefTermTypeNid = SnomedMetadataRf2.PREFERRED_RF2.getNid();
-				prefTermTypeStr = WBUtility.getConPrefTerm(prefTermTypeNid);
+				prefTermTypeStr = OTFUtility.getConPrefTerm(prefTermTypeNid);
 			} catch (IOException e) {
 				LOG.error("Unable to defined Preferred RF2 Term", e);
 			}

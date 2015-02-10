@@ -493,7 +493,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		UserProfile up = new UserProfile(TermAux.USER.getDescription(), TermAux.USER.getDescription(), TermAux.USER.getUuids()[0]);
 		up.setLaunchWorkflowForEachCommit(false);
 		up.setEditCoordinatePath(TermAux.WB_AUX_PATH.getUuids()[0]);
-		up.setViewCoordinatePath(Snomed.SNOMED_RELEASE_PATH.getUuids()[0]);
+		up.setViewCoordinatePath(Snomed.SNOMED_RELEASE_PATH.getUuids()[0]);  //TODO this needs to be able to read a reasonable path out of the DB, and construct it.
 		loggedInUser_ = up;
 		userNamesWithProfiles_.add(up.getUserLogonName());
 		Log.info("User Profile Manager automation mode enabled!");

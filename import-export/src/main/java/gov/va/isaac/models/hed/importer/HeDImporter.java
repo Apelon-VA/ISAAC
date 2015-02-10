@@ -28,7 +28,7 @@ import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
 import gov.va.isaac.models.hed.HeDXmlUtils;
 import gov.va.isaac.models.util.ImporterBase;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -335,7 +335,7 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 					String value = auth + "'s " + id + " " + " v" + vers + " HeD Referenced Enumeration";
 			
 					// Only create if doesn't already exist
-					if (!ExtendedAppContext.getDataStore().hasUuid(WBUtility.getUuidForFsn(value, value))) {
+					if (!ExtendedAppContext.getDataStore().hasUuid(OTFUtility.getUuidForFsn(value, value))) {
 						// Create Refex's Description
 						StringBuilder enumerationDesc = new StringBuilder();
 						enumerationDesc.append("Enumeration Sememe for " + auth + "'s " + id);

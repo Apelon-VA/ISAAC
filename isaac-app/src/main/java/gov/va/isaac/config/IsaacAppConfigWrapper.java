@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -363,7 +363,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentEditPathName()
 	{
-		return WBUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentEditPathUuid()));
+		return OTFUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentEditPathUuid()));
 	}
 
 	/**
@@ -381,7 +381,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentViewPathName()
 	{
-		return WBUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentViewPathUuid()));
+		return OTFUtility.getDescriptionIfConceptExists(IsaacAppConfigI.getUuidForString(getCurrentViewPathUuid()));
 	}
 
 	/**
@@ -453,7 +453,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getCurrentWorkflowPromotionPathName()
 	{
-		return WBUtility.getDescriptionIfConceptExists(getCurrentWorkflowPromotionPathUuidAsUUID());
+		return OTFUtility.getDescriptionIfConceptExists(getCurrentWorkflowPromotionPathUuidAsUUID());
 	}
 
 	/**

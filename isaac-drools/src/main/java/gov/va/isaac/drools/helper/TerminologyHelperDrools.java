@@ -22,7 +22,7 @@ import gov.va.isaac.drools.testmodel.DrComponent;
 import gov.va.isaac.drools.testmodel.DrConcept;
 import gov.va.isaac.drools.testmodel.DrDescription;
 import gov.va.isaac.drools.testmodel.DrRelationship;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -531,13 +531,13 @@ public class TerminologyHelperDrools
 
 	public boolean isMemberOf(String conceptUUID, String refsetUUID) throws Exception
 	{
-		ConceptVersionBI concept = WBUtility.getConceptVersion(UUID.fromString(conceptUUID));
+		ConceptVersionBI concept = OTFUtility.getConceptVersion(UUID.fromString(conceptUUID));
 		if (concept == null)
 		{
 			return false;
 		}
 
-		ConceptVersionBI refset = WBUtility.getConceptVersion(UUID.fromString(refsetUUID));
+		ConceptVersionBI refset = OTFUtility.getConceptVersion(UUID.fromString(refsetUUID));
 		if (refset == null)
 		{
 			return false;
@@ -545,7 +545,7 @@ public class TerminologyHelperDrools
 		
 		if (refset.isAnnotationStyleRefex())
 		{
-			for (RefexVersionBI<?> r : concept.getAnnotationsActive(WBUtility.getViewCoordinate()))
+			for (RefexVersionBI<?> r : concept.getAnnotationsActive(OTFUtility.getViewCoordinate()))
 			{
 				if (r.getAssemblageNid() == refset.getNid())
 				{
@@ -568,13 +568,13 @@ public class TerminologyHelperDrools
 
 	public boolean isParentOf(String parentUUID, String subtypeUUID) throws Exception
 	{
-		ConceptVersionBI parentConcept = WBUtility.getConceptVersion(UUID.fromString(parentUUID));
+		ConceptVersionBI parentConcept = OTFUtility.getConceptVersion(UUID.fromString(parentUUID));
 		if (parentConcept == null)
 		{
 			return false;
 		}
 
-		ConceptVersionBI subtypeConcept = WBUtility.getConceptVersion(UUID.fromString(subtypeUUID));
+		ConceptVersionBI subtypeConcept = OTFUtility.getConceptVersion(UUID.fromString(subtypeUUID));
 		if (subtypeConcept == null)
 		{
 			return false;

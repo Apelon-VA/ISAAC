@@ -24,7 +24,7 @@ import gov.va.isaac.gui.conceptCreation.ScreensController;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.DockedViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.List;
 import javafx.event.ActionEvent;
@@ -205,8 +205,8 @@ public class SummaryController implements PanelControllers {
 			for (int i = 0; i < processController.getWizard().getRelationshipsCreated(); i++) {
 				processController.getWizard().createNewRelationship(newCon, i);
 			}
-			WBUtility.addUncommitted(newCon.getNid());
-			boolean committed = WBUtility.commit(newCon.getNid());
+			OTFUtility.addUncommitted(newCon.getNid());
+			boolean committed = OTFUtility.commit(newCon.getNid());
 			if (!committed)
 			{
 				AppContext.getCommonDialogs().showErrorDialog("Commit Failed", "The concept could not be committed", "The commit was vetoed by a validator");

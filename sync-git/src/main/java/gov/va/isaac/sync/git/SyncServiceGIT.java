@@ -103,6 +103,7 @@ public class SyncServiceGIT implements ProfileSyncI
 	private static volatile CountDownLatch jschConfigured = new CountDownLatch(1);
 	
 	private File localFolder = null;
+	private String readMeFileContent_ = DEFAULT_README_CONTENT;
 	
 	public SyncServiceGIT(File localFolder)
 	{	
@@ -184,7 +185,15 @@ public class SyncServiceGIT implements ProfileSyncI
 		this.localFolder = localFolder;
 	}
 	
-	
+	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#setReadmeFileContent(java.lang.String)
+	 */
+	@Override
+	public void setReadmeFileContent(String readmeFileContent)
+	{
+		readMeFileContent_ = readmeFileContent;
+		
+	}
 
 	/**
 	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#getRootLocation()
@@ -888,8 +897,7 @@ public class SyncServiceGIT implements ProfileSyncI
 		if (!readme.isFile())
 		{
 			log.debug("Creating {}", readme.getAbsolutePath());
-			Files.write(readme.toPath(), new String("ISAAC Profiles Storage \r" + "=== \r" + "This is a repository for storing ISAAC profiles and changesets.\r"
-					+ "It is highly recommended that you do not make changes to this repository manually - ISAAC interfaces with this.").getBytes(),
+			Files.write(readme.toPath(), new String(readMeFileContent_).getBytes(),
 					StandardOpenOption.CREATE_NEW);
 			result.add(readme.getName());
 		}

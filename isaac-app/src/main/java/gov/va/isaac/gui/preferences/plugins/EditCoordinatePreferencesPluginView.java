@@ -32,7 +32,7 @@ import gov.va.isaac.config.profiles.UserProfileDefaults;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.util.ValidBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -113,7 +113,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 							if(c == null) {
 								setText(null);
 							}else {
-								String desc = WBUtility.getDescription(c);
+								String desc = OTFUtility.getDescription(c);
 								setText(desc);
 							}
 						}
@@ -129,7 +129,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 					if (emptyRow) {
 						setText("");
 					} else {
-						String desc = WBUtility.getDescription(c);
+						String desc = OTFUtility.getDescription(c);
 						setText(desc);
 					}
 				}
@@ -140,7 +140,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 			// ComboBox
 			final UUID storedPath = getStoredPath();
 			pathComboBox.getSelectionModel().select(storedPath);
-			pathComboBox.setTooltip(new Tooltip("Default path is \"" + WBUtility.getDescription(getDefaultPath()) + "\""));
+			pathComboBox.setTooltip(new Tooltip("Default path is \"" + OTFUtility.getDescription(getDefaultPath()) + "\""));
 			pathComboBox.setPadding(new Insets(5,5,5,5));
 
 			hBox = new HBox();
@@ -185,7 +185,7 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 		List<UUID> list = new ArrayList<>();
 
 		try {
-			List<ConceptChronicleBI> pathConcepts = WBUtility.getPathConcepts();
+			List<ConceptChronicleBI> pathConcepts = OTFUtility.getPathConcepts();
 			for (ConceptChronicleBI cc : pathConcepts) {
 				list.add(cc.getPrimordialUuid());
 			}

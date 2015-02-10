@@ -19,7 +19,7 @@ import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.TaskCompleteCallback;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -295,7 +295,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 						Set<CompositeSearchResult> filterCompositeSearchResultList = new HashSet<CompositeSearchResult>();
 
 						for (Integer c : filterList) {
-							filterCompositeSearchResultList.add(new CompositeSearchResult(WBUtility.getConceptVersion(c), 0));
+							filterCompositeSearchResultList.add(new CompositeSearchResult(OTFUtility.getConceptVersion(c), 0));
 						}
 						
 						return filterCompositeSearchResultList;

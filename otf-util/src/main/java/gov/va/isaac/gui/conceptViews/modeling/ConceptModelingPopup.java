@@ -21,7 +21,7 @@ package gov.va.isaac.gui.conceptViews.modeling;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.control.ChoiceBox;
@@ -135,9 +135,9 @@ public class ConceptModelingPopup extends ModelingPopup
 			ConceptAttributeAB cab = new ConceptAttributeAB(attr.getConceptNid(), isDefined, RefexDirective.EXCLUDE);
 			// Need to add a fix for storing isDefined 
 			
-			ConceptAttributeChronicleBI cabi = WBUtility.getBuilder().constructIfNotCurrent(cab);
+			ConceptAttributeChronicleBI cabi = OTFUtility.getBuilder().constructIfNotCurrent(cab);
 			
-			WBUtility.addUncommitted(cabi.getEnclosingConcept());
+			OTFUtility.addUncommitted(cabi.getEnclosingConcept());
 		}
 		catch (Exception e)
 		{

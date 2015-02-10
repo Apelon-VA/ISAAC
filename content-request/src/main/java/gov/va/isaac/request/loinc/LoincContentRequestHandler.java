@@ -7,7 +7,7 @@ import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.request.ContentRequestHandler;
 import gov.va.isaac.request.ContentRequestTrackingInfo;
 import gov.va.isaac.util.CommonMenus;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,7 +66,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     throws Exception {
     LOG.debug("Submit content Request");
 
-    ConceptChronicleBI concept = WBUtility.getConceptVersion(nid);
+    ConceptChronicleBI concept = OTFUtility.getConceptVersion(nid);
 
     // Ideally this would connect to a request submission
     // instance and dynamically create the request. In lieu
@@ -92,7 +92,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     // Now determine
     LoincContentRequestTrackingInfo info =
         new LoincContentRequestTrackingInfo();
-    info.setName(WBUtility.getConPrefTerm(concept.getNid()));
+    info.setName(OTFUtility.getConPrefTerm(concept.getNid()));
 
     // Show save file dialog.
     File file = fileChooser.showSaveDialog(null);
@@ -132,7 +132,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     sb.append(concept.getPrimordialUuid()).append("\t");
 
     // Local observation name - concept preferred name
-    sb.append(WBUtility.getConPrefTerm(concept.getNid())).append("\t");
+    sb.append(OTFUtility.getConPrefTerm(concept.getNid())).append("\t");
 
     // Observation description - if there is a definition
     sb.append(getDescriptionText(concept, "Definition (core metadata concept)")).append("\t");
@@ -191,12 +191,12 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     throws IOException, ContradictionException {
     for (DescriptionChronicleBI desc : concept.getDescriptions()) {
       DescriptionVersionBI<?> descVersion =
-          desc.getVersion(WBUtility.getViewCoordinate());
+          desc.getVersion(OTFUtility.getViewCoordinate());
       // WARNING:
       // LOINC is created using FSN and not PT for this, the
       // metadata concepts do not have PTs.
       String prefName =
-          WBUtility.getConceptVersion(descVersion.getTypeNid())
+          OTFUtility.getConceptVersion(descVersion.getTypeNid())
               .getFullySpecifiedDescription().getText();
       if (descVersion.isActive() && prefName.equals(type)) {
         return descVersion.getText();
@@ -218,12 +218,12 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     throws Exception {
     for (RefexChronicleBI<?> refex : concept.getAnnotations()) {
       RefexVersionBI<?> refexVersion =
-          refex.getVersion(WBUtility.getViewCoordinate());
+          refex.getVersion(OTFUtility.getViewCoordinate());
       // WARNING:
       // LOINC is created using FSN and not PT for this, the
       // metadata concepts do not have PTs.
       String prefName =
-          WBUtility.getConceptVersion(refexVersion.getAssemblageNid())
+          OTFUtility.getConceptVersion(refexVersion.getAssemblageNid())
               .getFullySpecifiedDescription().getText();
       if (refexVersion.isActive() && refexVersion instanceof StringMember
           && prefName.equals(type)) {
@@ -245,10 +245,10 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     throws Exception {
     for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing()) {
       RelationshipVersionBI<?> relVersion =
-          rel.getVersion(WBUtility.getViewCoordinate());
-      String prefName = WBUtility.getConPrefTerm(relVersion.getTypeNid());
+          rel.getVersion(OTFUtility.getViewCoordinate());
+      String prefName = OTFUtility.getConPrefTerm(relVersion.getTypeNid());
       if (relVersion.isActive() && prefName.equals(type)) {
-        return WBUtility.getConPrefTerm(relVersion.getDestinationNid());
+        return OTFUtility.getConPrefTerm(relVersion.getDestinationNid());
       }
     }
     return "";
@@ -272,7 +272,7 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
   public void showView(Window parent) {
     // No view, per se is needed, though we could
     // put a warning here if the request won't make sense
-    ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+    ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
     if (concept == null) {
       AppContext.getCommonDialogs().showErrorDialog("LOINC Content Request",
           "Unable to load concept for " + nid, "This should never happen");
@@ -280,9 +280,9 @@ public class LoincContentRequestHandler implements ContentRequestHandler,
     }
 
     // Check LOINC Path and current edit path
-    if (!WBUtility.getConceptVersion(concept.getPathNid()).getPrimordialUuid()
+    if (!OTFUtility.getConceptVersion(concept.getPathNid()).getPrimordialUuid()
         .toString().equals("b2b1cc96-9ca6-5513-aad9-aa21e61ddc29")
-        && !WBUtility.getConceptVersion(concept.getPathNid())
+        && !OTFUtility.getConceptVersion(concept.getPathNid())
             .getPrimordialUuid().toString()
             .equals(AppContext.getAppConfiguration().getDefaultEditPathUuid())) {
       DialogResponse response =

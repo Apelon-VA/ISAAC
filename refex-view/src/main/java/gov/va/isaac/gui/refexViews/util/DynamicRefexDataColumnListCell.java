@@ -20,7 +20,7 @@ package gov.va.isaac.gui.refexViews.util;
 
 import gov.va.isaac.drools.refexUtils.RefexDroolsValidator;
 import gov.va.isaac.drools.refexUtils.RefexDroolsValidatorImplInfo;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -112,7 +112,7 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 				}
 				else if (item.getColumnDataType() == RefexDynamicDataType.NID)
 				{
-					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getDefaultColumnValue()).getDataNid());
+					temp = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getDefaultColumnValue()).getDataNid());
 					if (temp == null)
 					{
 						temp = "NID: " + item.getDefaultColumnValue().getDataObject().toString();
@@ -120,7 +120,7 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 				}
 				else if (item.getColumnDataType() == RefexDynamicDataType.UUID)
 				{
-					temp = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getDefaultColumnValue()).getDataUUID());
+					temp = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getDefaultColumnValue()).getDataUUID());
 					if (temp == null)
 					{
 						temp = "UUID: " + item.getDefaultColumnValue().getDataObject().toString();
@@ -157,7 +157,7 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 				}
 				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.NID)
 				{
-					validatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
+					validatorData = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicNid)item.getValidatorData()).getDataNid());
 					if (validatorData == null)
 					{
 						validatorData = "NID: " + item.getValidatorData().getDataObject().toString();
@@ -165,7 +165,7 @@ public class DynamicRefexDataColumnListCell extends ListCell<RefexDynamicColumnI
 				}
 				else if (item.getValidatorData().getRefexDataType() == RefexDynamicDataType.UUID)
 				{
-					validatorData = WBUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
+					validatorData = OTFUtility.getDescriptionIfConceptExists(((RefexDynamicUUID)item.getValidatorData()).getDataUUID());
 					if (validatorData == null)
 					{
 						validatorData = "UUID: " + item.getValidatorData().getDataObject().toString();

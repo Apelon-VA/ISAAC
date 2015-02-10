@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,7 +92,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
         concept = dataStore.getFxConcept(reference,
-                WBUtility.getViewCoordinate(),
+                OTFUtility.getViewCoordinate(),
                 versionPolicy, refexPolicy, relationshipPolicy);
 
         if ((concept.getConceptAttributes() == null)
@@ -102,13 +102,13 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
         }
 
         if (concept.getOriginRelationships().size() > 1) {
-        	//LOG.debug("Concept {} has {} origin relationships in {} mode", WBUtility.getDescription(concept), concept.getOriginRelationships().size(), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+        	//LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
             treeItem.setMultiParent(true);
         } else if (concept.getOriginRelationships().size() == 1) {
-        	//LOG.debug("Concept {} has {} origin relationships in {} mode", WBUtility.getDescription(concept), concept.getOriginRelationships().size(), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+        	//LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
         } else if (concept.getOriginRelationships().size() == 0) {
         	// TODO (artf231888): remove this debug statement when this tracker is closed
-        	LOG.debug("Concept {} has {} origin relationships in {} mode", WBUtility.getDescription(concept), concept.getOriginRelationships().size(), WBUtility.getViewCoordinate().getRelationshipAssertionType());
+        	LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
         }
 
         if (addChildren) {

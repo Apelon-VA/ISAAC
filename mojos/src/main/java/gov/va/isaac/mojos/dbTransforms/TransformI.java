@@ -19,6 +19,8 @@
 package gov.va.isaac.mojos.dbTransforms;
 
 import java.io.File;
+
+import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -30,6 +32,11 @@ import org.jvnet.hk2.annotations.Contract;
 public interface TransformI
 {
 	/**
+	 * @return the name of this transform implementation
+	 */
+	public String getName();
+	
+	/**
 	 * Pass in the configuration file that will be used to setup this transform
 	 * @param configFile
 	 */
@@ -37,11 +44,17 @@ public interface TransformI
 	
 	/**
 	 * Execute the transform
+	 * @throws Exception 
 	 */
-	public void transform();
+	public void transform(TerminologyStoreDI ts) throws Exception;
 
 	/**
 	 * @return a user-friendly description of what this transform does
 	 */
 	public String getDescription();
+	
+	/**
+	 * @return a user-friendly description of the amount and type of work that was performed
+	 */
+	public String getWorkResultSummary();
 }

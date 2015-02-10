@@ -86,16 +86,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * {@link WBUtility}
+ * {@link OTFUtility}
  * 
- * Utility for accessing Workbench APIs.
+ * Utility for accessing OTF APIs.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * @author ocarlsen
  * @author jefron
  */
-public class WBUtility {
-	private static final Logger LOG = LoggerFactory.getLogger(WBUtility.class);
+public class OTFUtility {
+	private static final Logger LOG = LoggerFactory.getLogger(OTFUtility.class);
 
 	private static final UUID FSN_UUID = SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getUuids()[0];
 	private static final UUID PREFERRED_UUID = SnomedMetadataRf2.PREFERRED_RF2.getUuids()[0];
@@ -155,7 +155,7 @@ public class WBUtility {
 
 			vc.setViewPosition(position);
 
-			//LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
+			//LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, OTFUtility.getDescription(pathChronicle));
 		} catch (NullPointerException e) {
 			LOG.error("View path UUID does not exist", e);
 		} catch (IOException e) {
@@ -183,7 +183,7 @@ public class WBUtility {
 				pathUuid = pathChronicle.getPrimordialUuid();
 			}
 
-			LOG.info("Using EditCoordinate path nid={}, uuid={}, desc={}", pathNid, pathUuid, WBUtility.getDescription(pathChronicle));
+			LOG.info("Using EditCoordinate path nid={}, uuid={}, desc={}", pathNid, pathUuid, OTFUtility.getDescription(pathChronicle));
 
 			// Override edit path
 			return new EditCoordinate(authorNid, module, pathNid);
@@ -782,7 +782,7 @@ public class WBUtility {
 		
 		// This both prevents infinite recursion and avoids processing or returning of duplicates
 		if (handledConceptNids.contains(concept.getNid())) {
-			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(concept.getNid()));
+			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", OTFUtility.getDescription(concept.getNid()));
 			return results;
 		}
 
@@ -791,7 +791,7 @@ public class WBUtility {
 		{
 			if (handledConceptNids.contains(r.getOriginNid())) {
 				// avoids processing or returning of duplicates
-				LOG.debug("Encountered already-handled ORIGIN child concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(r.getOriginNid()));
+				LOG.debug("Encountered already-handled ORIGIN child concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", OTFUtility.getDescription(r.getOriginNid()));
 
 				continue;
 			}
@@ -843,7 +843,7 @@ public class WBUtility {
 		
 		// This both prevents infinite recursion and avoids processing or returning of duplicates
 		if (handledNids.contains(concept.getNid())) {
-			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(concept.getNid()));
+			LOG.debug("Encountered already-handled concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", OTFUtility.getDescription(concept.getNid()));
 			return results;
 		}
 		
@@ -852,7 +852,7 @@ public class WBUtility {
 		{
 			if (handledNids.contains(r.getDestinationNid())) {
 				// avoids processing or returning of duplicates
-				LOG.debug("Encountered already-handled DESTINATION ancestor concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", WBUtility.getDescription(r.getDestinationNid()));
+				LOG.debug("Encountered already-handled DESTINATION ancestor concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", OTFUtility.getDescription(r.getDestinationNid()));
 				continue;
 			}
 
@@ -885,7 +885,7 @@ public class WBUtility {
 	 */
 	public static ConceptVersionBI getRootConcept(ConceptVersionBI concept) throws IOException, ContradictionException
 	{
-		ConceptVersionBI parent = WBUtility.getConceptVersion(concept.getRelationshipsOutgoingActiveIsa().iterator().next().getDestinationNid());
+		ConceptVersionBI parent = OTFUtility.getConceptVersion(concept.getRelationshipsOutgoingActiveIsa().iterator().next().getDestinationNid());
 
 		//TODO wouldn't it be far safer to just look and see if the parent is ISAAC.ISAAC_ROOT ?
 		//And document the method that way?
@@ -949,7 +949,7 @@ public class WBUtility {
 
 	public static String getConPrefTerm(int nid) {
 		try {
-			return WBUtility.getConceptVersion(nid).getPreferredDescription().getText();
+			return OTFUtility.getConceptVersion(nid).getPreferredDescription().getText();
 		} catch (IOException | ContradictionException e) {
 			LOG.error("Unable to identify description.  Points to larger problem", e);
 			return "ERROR";
@@ -1061,7 +1061,7 @@ public class WBUtility {
 		TerminologyBuilderBI builder = getBuilder(editCoord, getViewCoordinate());
 		
 		// Create new version of all uncommitted components in concept
-		ConceptVersionBI conceptWithComp = WBUtility.getConceptVersion(getComponentVersion(compUuid).getConceptNid());
+		ConceptVersionBI conceptWithComp = OTFUtility.getConceptVersion(getComponentVersion(compUuid).getConceptNid());
 		Set<ComponentVersionBI> componentsInConcept = getConceptComponents(conceptWithComp);
 
 		int devPathNid = ExtendedAppContext.getDataStore().getNidForUuids(UUID.fromString(AppContext.getAppConfiguration().getDefaultEditPathUuid()));
@@ -1118,6 +1118,36 @@ public class WBUtility {
 		}
 
 		return retSet;
+	}
+	
+	public static DescriptionVersionBI<?> getLatestDescVersion(@SuppressWarnings("rawtypes") Collection<? extends DescriptionVersionBI> collection)
+	{
+		DescriptionVersionBI<?> newest = null;;
+		long newestTime = Long.MIN_VALUE;
+		for (DescriptionVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
+	}
+	
+	public static RefexVersionBI<?> getLatestRefexVersion(@SuppressWarnings("rawtypes") Collection<? extends RefexVersionBI> collection)
+	{
+		RefexVersionBI<?> newest = null;;
+		long newestTime = Long.MIN_VALUE;
+		for (RefexVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
 	}
 
 	/**

@@ -28,7 +28,7 @@ import gov.va.isaac.gui.refexViews.refexCreation.RefexData;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.interfaces.utility.DialogResponse;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -286,7 +286,7 @@ public class DefinitionController implements PanelControllersI {
 	public boolean checkParentHierarchy() {
 		try 
 		{
-			if (!parentConcept.getConcept().isKindOf(WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()))) 
+			if (!parentConcept.getConcept().isKindOf(OTFUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_IDENTITY.getNid()))) 
 			{
 				YesNoDialog yn = new YesNoDialog(refsetCreationPane.getScene().getWindow());
 				DialogResponse r = yn.showYesNoDialog("Continue?", "The parent concept you selected is not a descendent of the concept 'Dynamic Sememes'.\n"

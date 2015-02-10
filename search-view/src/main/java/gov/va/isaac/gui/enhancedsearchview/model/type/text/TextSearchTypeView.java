@@ -17,7 +17,7 @@ import gov.va.isaac.gui.enhancedsearchview.model.EnhancedSavedSearch;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSpecificView;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -342,7 +342,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 			
 			
 			if (filter.isValid()) {
-				cn.set(WBUtility.getConceptVersion(((IsDescendantOfFilter) filter).getNid()));
+				cn.set(OTFUtility.getConceptVersion(((IsDescendantOfFilter) filter).getNid()));
 			}
 
 			row.getChildren().addAll(searchParamLabel, cn.getNode(), excludeMatchesCheckBox);
@@ -388,7 +388,7 @@ public class TextSearchTypeView implements SearchTypeSpecificView {
 			
 			
 			if (filter.isValid()) {
-				cn.set(WBUtility.getConceptVersion(((IsAFilter) filter).getNid()));
+				cn.set(OTFUtility.getConceptVersion(((IsAFilter) filter).getNid()));
 			}
 
 			row.getChildren().addAll(searchParamLabel, cn.getNode(), excludeMatchesCheckBox);

@@ -22,7 +22,7 @@ package gov.va.isaac.gui.refsetview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -102,7 +102,7 @@ public class RefsetViewController {
 				public void handle(ActionEvent e) {
 					try
 					{
-						WBUtility.commit();
+						OTFUtility.commit();
 						reloadData();
 					}
 					catch (IOException ex)
@@ -130,7 +130,7 @@ public class RefsetViewController {
 //			e.printStackTrace();
 //		}
 		
-		String refsetFsn = WBUtility.getDescription(refsetUUID);
+		String refsetFsn = OTFUtility.getDescription(refsetUUID);
 		refsetLabel.setText("Refset: " + refsetFsn);
 		refsetLabel.setFont(new Font("Arial", 14));
 		
@@ -146,14 +146,14 @@ public class RefsetViewController {
 //			if (!isAnnotation) {
 //				members = refset.getRefsetMembersActive();
 //			} else {
-				component = WBUtility.getConceptVersion(componentUUID_);
+				component = OTFUtility.getConceptVersion(componentUUID_);
 				if (component == null)
 				{
 					System.err.println("Couldn't find component " + componentUUID_);
 				}
 				else
 				{
-					members = (activeOnly_ ? component.getAnnotationsActive(WBUtility.getViewCoordinate()) : component.getAnnotations());
+					members = (activeOnly_ ? component.getAnnotationsActive(OTFUtility.getViewCoordinate()) : component.getAnnotations());
 				}
 //			}
 		} catch (Exception e) {
@@ -161,7 +161,7 @@ public class RefsetViewController {
 		}
 		
 		data.clear();
-		ConceptVersionBI refset = WBUtility.getConceptVersion(refsetUUID_);
+		ConceptVersionBI refset = OTFUtility.getConceptVersion(refsetUUID_);
 		refsetNid_ = refset.getNid();
 		
 		try {
@@ -169,7 +169,7 @@ public class RefsetViewController {
 				List<RefexVersionBI<?>> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					RefexVersionBI<?> version = memChron.getVersion(WBUtility.getViewCoordinate());
+					RefexVersionBI<?> version = memChron.getVersion(OTFUtility.getViewCoordinate());
 					
 					if (version.isActive()) {
 						memberVersion.add(version);
@@ -185,7 +185,7 @@ public class RefsetViewController {
 				{
 					ConceptVersionBI refCompCon;
 					if (!isAnnotation) {
-						refCompCon = WBUtility.getConceptVersion(member.getReferencedComponentNid());
+						refCompCon = OTFUtility.getConceptVersion(member.getReferencedComponentNid());
 					} else {
 						refCompCon = component;
 					}
@@ -239,12 +239,12 @@ public class RefsetViewController {
 		}
 
 		// Search for member's annotations
-		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(WBUtility.getViewCoordinate()) : member.getAnnotations());
+		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(OTFUtility.getViewCoordinate()) : member.getAnnotations());
 		for (RefexChronicleBI<?> annot : refAnnots) {
 			List<RefexVersionBI<?>> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(WBUtility.getViewCoordinate());
+				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(OTFUtility.getViewCoordinate());
 				if (version.isActive()) {
 					annotVersions.add(version);
 				}

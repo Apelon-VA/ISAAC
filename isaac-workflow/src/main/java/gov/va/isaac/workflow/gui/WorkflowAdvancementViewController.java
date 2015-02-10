@@ -24,7 +24,7 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
@@ -233,11 +233,11 @@ public class WorkflowAdvancementViewController
 		}
 
 		ConceptVersionBI containingConcept = null;
-		ComponentChronicleBI<? extends ComponentVersionBI> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
+		ComponentChronicleBI<? extends ComponentVersionBI> componentChronicle = OTFUtility.getComponentChronicle(componentUuid);
 		if (componentChronicle == null) {
 			logger.warn("Component ID for task " + initialTask.getId() + " retrieved a null componentChronicle");
 
-			containingConcept = WBUtility.getConceptVersion(componentUuid);
+			containingConcept = OTFUtility.getConceptVersion(componentUuid);
 			if (containingConcept == null) {
 				String details = "Component ID for task #" + initialTask.getId() + " retrieved a null concept";
 
@@ -249,7 +249,7 @@ public class WorkflowAdvancementViewController
 			}
 		} else {
 			try {
-				containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
+				containingConcept = componentChronicle.getEnclosingConcept().getVersion(OTFUtility.getViewCoordinate());
 			} catch (Exception e) {
 				String details = "Failed getting version from ComponentChronicleBI task " + initialTask.getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
 

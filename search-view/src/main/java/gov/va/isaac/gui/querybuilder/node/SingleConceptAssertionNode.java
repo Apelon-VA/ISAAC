@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -61,7 +61,7 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(true);
 				} else {
 					isValidProperty.set(false);
@@ -86,7 +86,7 @@ public abstract class SingleConceptAssertionNode extends AssertionNode {
 	public String getDescription() {
 		String conceptDescription = null;
 		if (getNid() != null && getNid() != 0) {
-			conceptDescription = WBUtility.getDescriptionIfConceptExists(getNid());
+			conceptDescription = OTFUtility.getDescriptionIfConceptExists(getNid());
 		}
 		if (conceptDescription != null) {
 			return (invertProperty.get() ? "NOT " : "") + getNodeTypeName() + " " + conceptDescription;

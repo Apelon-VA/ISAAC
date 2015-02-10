@@ -25,7 +25,7 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowAdvancement
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowHistoryViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowTaskDetailsViewI;
 import gov.va.isaac.util.ComponentDescriptionHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalWorkflowRuntimeEngineBI;
@@ -195,7 +195,7 @@ public class WorkflowTaskDetailsViewController {
 
 	private void loadContents() {
 		UUID componentId = UUID.fromString(task.getComponentId());
-		conceptId = WBUtility.getComponentChronicle(componentId).getConceptNid();
+		conceptId = OTFUtility.getComponentChronicle(componentId).getConceptNid();
 		generatedComponentSummary.setText(ComponentDescriptionHelper.getComponentDescription(componentId));
 
 		taskIdLabel.setText(Long.toString(task.getId()));

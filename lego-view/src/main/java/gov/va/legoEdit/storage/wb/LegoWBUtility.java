@@ -20,7 +20,7 @@ package gov.va.legoEdit.storage.wb;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.legoEdit.model.schemaModel.Assertion;
 import gov.va.legoEdit.model.schemaModel.AssertionComponent;
 import gov.va.legoEdit.model.schemaModel.Concept;
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * WBUtility
+ * OTFUtility
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  * Copyright 2013
@@ -59,7 +59,7 @@ public class LegoWBUtility
 		if (concept != null && concept.getUUIDs() != null && concept.getUUIDs().size() > 0)
 		{
 			c = new Concept();
-			c.setDesc(WBUtility.getDescription(concept));
+			c.setDesc(OTFUtility.getDescription(concept));
 			c.setUuid(concept.getUUIDs().get(0).toString());
 			try
 			{
@@ -136,10 +136,10 @@ public class LegoWBUtility
 		}
 		if (e.getConcept() != null)
 		{
-			Concept result = convertConcept(WBUtility.lookupIdentifier(e.getConcept().getUuid()));
+			Concept result = convertConcept(OTFUtility.lookupIdentifier(e.getConcept().getUuid()));
 			if (result == null)
 			{
-				result = convertConcept(WBUtility.lookupIdentifier(e.getConcept().getSctid() + ""));
+				result = convertConcept(OTFUtility.lookupIdentifier(e.getConcept().getSctid() + ""));
 			}
 			if (result != null)
 			{
@@ -190,10 +190,10 @@ public class LegoWBUtility
 		{
 			return failures;
 		}
-		Concept result = convertConcept(WBUtility.lookupIdentifier(t.getConcept().getUuid()));
+		Concept result = convertConcept(OTFUtility.lookupIdentifier(t.getConcept().getUuid()));
 		if (result == null)
 		{
-			result = convertConcept(WBUtility.lookupIdentifier(t.getConcept().getSctid() + ""));
+			result = convertConcept(OTFUtility.lookupIdentifier(t.getConcept().getSctid() + ""));
 		}
 		if (result != null)
 		{
@@ -213,10 +213,10 @@ public class LegoWBUtility
 		{
 			return failures;
 		}
-		Concept result = convertConcept(WBUtility.lookupIdentifier(m.getUnits().getConcept().getUuid()));
+		Concept result = convertConcept(OTFUtility.lookupIdentifier(m.getUnits().getConcept().getUuid()));
 		if (result == null)
 		{
-			result = convertConcept(WBUtility.lookupIdentifier(m.getUnits().getConcept().getSctid() + ""));
+			result = convertConcept(OTFUtility.lookupIdentifier(m.getUnits().getConcept().getSctid() + ""));
 		}
 		if (result != null)
 		{

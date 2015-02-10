@@ -21,7 +21,7 @@ package gov.va.isaac.gui;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,7 +78,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 			title.setMaxWidth(Double.MAX_VALUE);
 			titleBox.getChildren().add(title);
 			
-			title = new Label(WBUtility.getDescription(assemblageConcept));
+			title = new Label(OTFUtility.getDescription(assemblageConcept));
 			title.setAlignment(Pos.CENTER);
 			title.setMaxWidth(Double.MAX_VALUE);
 			titleBox.getChildren().add(title);

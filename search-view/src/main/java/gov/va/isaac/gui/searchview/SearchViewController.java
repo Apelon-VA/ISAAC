@@ -39,7 +39,7 @@ import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -347,7 +347,7 @@ public class SearchViewController implements TaskCompleteCallback
 							box.setFillWidth(true);
 							
 							final ConceptVersionBI wbConcept = item.getContainingConcept();
-							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "Not on path!");
+							String preferredText = (wbConcept != null ? OTFUtility.getDescription(wbConcept) : "Not on path!");
 						
 							if (item.getMatchingComponents().size() > 0 && item.getMatchingComponents().iterator().next() instanceof RefexDynamicVersionBI<?>)
 							{
@@ -369,7 +369,7 @@ public class SearchViewController implements TaskCompleteCallback
 										assemblageCon.getStyleClass().add("boldLabel");
 										HBox.setMargin(assemblageCon, new Insets(0.0, 0.0, 0.0, 10.0));
 										assemblageConBox.getChildren().add(assemblageCon);
-										assemblageConBox.getChildren().add(new Label("  " + WBUtility.getDescription(rv.getAssemblageNid())));
+										assemblageConBox.getChildren().add(new Label("  " + OTFUtility.getDescription(rv.getAssemblageNid())));
 										box.getChildren().add(assemblageConBox);
 
 										Label attachedData = new Label("Attached Data");
@@ -462,7 +462,7 @@ public class SearchViewController implements TaskCompleteCallback
 											//not on path, most likely
 											continue;
 										}
-										items.add(WBUtility.getDescription(currentWbConcept));
+										items.add(OTFUtility.getDescription(currentWbConcept));
 									}
 
 									String[] itemArray = items.toArray(new String[items.size()]);

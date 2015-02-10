@@ -250,7 +250,7 @@ public class App extends Application implements ApplicationWindowI{
     }
 
     public static void main(String[] args) throws Exception {
-        dataStoreLocationInitException_ = SystemInit.doBasicSystemInit();
+        dataStoreLocationInitException_ = SystemInit.doBasicSystemInit(null);
         if (dataStoreLocationInitException_ != null)
         {
             System.err.println("Configuration of datastore path failed.  DB will not be able to start properly!  " + dataStoreLocationInitException_);

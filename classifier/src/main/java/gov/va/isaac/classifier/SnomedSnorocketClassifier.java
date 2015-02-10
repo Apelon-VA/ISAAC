@@ -12,7 +12,7 @@ import gov.va.isaac.classifier.model.StringIDConcept;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -150,7 +150,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     // things
     // are getting in the way
     validPaths.add(TermAux.SNOMED_CORE.getLenient().getNid());
-    validPaths.add(WBUtility.getConceptVersion(
+    validPaths.add(OTFUtility.getConceptVersion(
         UUID.fromString(AppContext.getAppConfiguration()
             .getDefaultEditPathUuid())).getNid());
   }
@@ -242,7 +242,7 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // Set role roots NID.
     rocket_123.setRoleRoot(Snomed.IS_A.getNid(), true);
-    int roleRoot = WBUtility.getConceptVersion(CONCEPT_ATTRIBUTE).getNid();
+    int roleRoot = OTFUtility.getConceptVersion(CONCEPT_ATTRIBUTE).getNid();
     rocket_123.setRoleRoot(roleRoot, false);
 
     // Non-grouping roles (from owl perl script)
@@ -780,7 +780,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     int countConceptsSeen) throws Exception {
 
     // add concept to commit list
-    dataStore.addUncommittedNoChecks(WBUtility
+    dataStore.addUncommittedNoChecks(OTFUtility
         .getConceptVersion(relationship.sourceId));
 
     // add rel
@@ -790,7 +790,7 @@ public class SnomedSnorocketClassifier implements Classifier {
           new RelationshipCAB(relationship.sourceId, relationship.typeId,
               relationship.destinationId, relationship.group,
               RelationshipType.INFERRED_ROLE, IdDirective.GENERATE_HASH);
-      WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+      OTFUtility.getBuilder().constructIfNotCurrent(relCAB);
       // Add to previousInferredRels
       previousInferredRels.add(relationship);
     }
@@ -804,10 +804,10 @@ public class SnomedSnorocketClassifier implements Classifier {
       RelationshipCAB rcab =
           new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(),
               rel.getDestinationNid(), 1, RelationshipType.QUALIFIER, rel,
-              WBUtility.getViewCoordinate(), IdDirective.PRESERVE,
+              OTFUtility.getViewCoordinate(), IdDirective.PRESERVE,
               RefexDirective.EXCLUDE);
       rcab.setStatus(Status.INACTIVE);
-      WBUtility.getBuilder().constructIfNotCurrent(rcab);
+      OTFUtility.getBuilder().constructIfNotCurrent(rcab);
       // Remove from previously inferred rels
       previousInferredRels.remove(relationship);
     }
@@ -873,7 +873,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     // Process this concept
-    ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+    ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
 
     // return if inactive
     if (!concept.isActive()) {
@@ -919,7 +919,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     // Process this concept
-    ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+    ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
 
     // return if inactive
     if (!concept.isActive()) {
@@ -1083,7 +1083,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     // Get descendants of the parent UUID passed in
     // do not include concept for this UUID
     IntSet childNids = new IntSet();
-    getRoleDescendants(WBUtility.getConceptVersion(parent).getNid(), WBUtility
+    getRoleDescendants(OTFUtility.getConceptVersion(parent).getNid(), OTFUtility
         .getConceptVersion(parent).getNid(), childNids);
 
     // save where concepts have been found
@@ -1102,7 +1102,7 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // Add "isa"
     LOG.info("    find role - "
-        + WBUtility.getConPrefTerm(Snomed.IS_A.getNid()));
+        + OTFUtility.getConPrefTerm(Snomed.IS_A.getNid()));
 
     roles[0] = Snomed.IS_A.getNid();
 
@@ -1111,7 +1111,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     int i = 1;
     for (int childNid : children.getSetValues()) {
       LOG.info("    find role - " + childNid + ", "
-          + WBUtility.getConPrefTerm(childNid));
+          + OTFUtility.getConPrefTerm(childNid));
       roles[i++] = childNid;
     }
     return roles;
@@ -1273,7 +1273,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     boolean classifiableConceptFound = false;
     for (int nid : conceptSet.getSetValues()) {
 
-      ConceptVersionBI concept = WBUtility.getConceptVersion(nid);
+      ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
       // return if the path of the concept is not valid
       if (!validPaths.contains(concept.getPathNid())) {
         continue;

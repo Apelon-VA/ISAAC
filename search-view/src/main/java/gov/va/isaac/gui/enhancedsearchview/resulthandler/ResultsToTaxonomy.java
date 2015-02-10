@@ -7,7 +7,7 @@ import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -85,7 +85,7 @@ public class ResultsToTaxonomy {
 					searchResults.add(c.getContainingConcept().getNid());
 
 					Set<ConceptVersionBI> ancestorNids = null;
-					ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+					ancestorNids = OTFUtility.getConceptAncestors(c.getContainingConcept().getNid());
 
 					for (ConceptVersionBI concept : ancestorNids) {
 						searchResultAncestors.add(concept.getNid());

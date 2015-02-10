@@ -28,7 +28,7 @@ import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.UUID;
 import javafx.beans.property.BooleanProperty;
@@ -118,13 +118,13 @@ public class SnomedConceptViewController {
         final ConceptAttributesVersionDdo conceptAttributes = attributeChronicle.getVersions().get(attributeChronicle.getVersions().size() - 1);
         conceptDefinedLabel.setText(conceptAttributes.isDefined() + "");
         conceptStatusLabel.setText(conceptAttributes.getStatus().name());
-        fsnLabel.setText(WBUtility.getDescription(concept));
+        fsnLabel.setText(OTFUtility.getDescription(concept));
         CopyableLabel.addCopyMenu(fsnLabel);
         
         MenuItem copyFull = new MenuItem("Copy Full Concept");
         copyFull.setGraphic(Images.COPY.createImageView());
 
-        copyFull.setOnAction(e -> CustomClipboard.set(WBUtility.getConceptVersion(concept.getPrimordialUuid()).toLongString()));
+        copyFull.setOnAction(e -> CustomClipboard.set(OTFUtility.getConceptVersion(concept.getPrimordialUuid()).toLongString()));
 
         fsnLabel.getContextMenu().getItems().add(copyFull);
         
@@ -162,7 +162,7 @@ public class SnomedConceptViewController {
         historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
         //TODO (artf231887) make the other view tables aware of the show/hide stamp call
         
-        ConceptVersionBI conceptVersionBI = WBUtility.getConceptVersion(concept.getPrimordialUuid());
+        ConceptVersionBI conceptVersionBI = OTFUtility.getConceptVersion(concept.getPrimordialUuid());
         AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
 
         Callback<TableColumn.CellDataFeatures<StringWithRefList, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory =
@@ -329,7 +329,7 @@ public class SnomedConceptViewController {
 
     public int getConceptNid() {
         if (conceptNid == 0) {
-            conceptNid = WBUtility.getConceptVersion(conceptUuid).getNid();
+            conceptNid = OTFUtility.getConceptVersion(conceptUuid).getNid();
         }
         
         return conceptNid;
