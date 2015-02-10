@@ -371,6 +371,7 @@
         <module>sync-view</module>
         <module>sync-git</module>
         <module>sync-svn</module>
+        <module>isaac-db-processing-rules</module>
     </modules>
 
     <reporting>
