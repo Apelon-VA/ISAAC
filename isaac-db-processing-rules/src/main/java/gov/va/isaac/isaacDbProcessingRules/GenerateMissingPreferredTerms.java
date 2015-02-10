@@ -125,7 +125,7 @@ public class GenerateMissingPreferredTerms implements TransformI
 					{
 						log.warn("No description version found on concept - {} - description - ", cc.toLongString(), desc.toUserString());
 						missingFSNs.incrementAndGet();
-						break;
+						continue;
 					}
 					
 					if (currentDescription.getTypeNid() == SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getNid() 
@@ -223,7 +223,7 @@ public class GenerateMissingPreferredTerms implements TransformI
 	@Override
 	public String getWorkResultSummary()
 	{
-		return "Examined " + examinedConcepts.get() + " concepts and generated " + generatedDescriptions.get() + " new descriptions."
-				+ (missingFSNs.get() > 0 ? "  ERROR:  " + missingFSNs.get() + " concepts were missing FSNs!" : "");
+		return "Examined " + examinedConcepts.get() + " concepts and generated " + generatedDescriptions.get() + " new descriptions"
+				+ (missingFSNs.get() > 0 ? ".  ERROR: [" + missingFSNs.get() + " concepts were missing FSNs]" : "");
 	}
 }
