@@ -47,12 +47,15 @@ import org.jvnet.hk2.annotations.Service;
 /**
  * {@link RxNormHierarchyAdditions}
  * 
- * A Transformer that checks all concepts in the DB, looking to see if each
- * concept has a description type of preferred. If a concept does not have a
- * description type of preferred - it creates a new description from the FSN
- * (stripping out the semantic tag, if present.
+ * A Transformer that executes various rules to create more taxonomy in RxNorm
  * 
- * Logs an error if no FSN is found on a concept.
+ * So far:
+ * 
+ * Let’s further integrate RxNorm and SNOMED CT. For every RxNorm IN concept with the string “penicillin” in its name, make it a child (is-a) 
+ * of SNOMED CT fdca98cf-8720-3dbe-bb72-3377d658a85c Penicillin -class of antibiotic- (product).
+ * 
+ *   a.  What should happen here is that the relationship between the RxNorm penicillin ingredient concepts and the dummy “RxNorm Ingredients” 
+ *       is made redundant by the classifier… it would still be there in stated view, but not in inferred view.
  * 
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
