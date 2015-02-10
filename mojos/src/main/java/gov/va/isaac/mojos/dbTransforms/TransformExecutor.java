@@ -19,6 +19,8 @@
 package gov.va.isaac.mojos.dbTransforms;
 
 import gov.va.isaac.AppContext;
+import java.io.File;
+import java.nio.file.Files;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
@@ -51,6 +53,7 @@ public class TransformExecutor extends AbstractMojo
 	@Override
 	public void execute() throws MojoExecutionException
 	{
+		StringBuilder summaryInfo = new StringBuilder();
 		try
 		{
 			getLog().info("Executing DB Transforms");
@@ -59,6 +62,8 @@ public class TransformExecutor extends AbstractMojo
 
 			for (Transform t : transforms)
 			{
+				long start = System.currentTimeMillis();
+				//TODO rework API to allow any transforms that iterate all concepts to do so in parallel, with one iteration, instead of one per transform
 				TransformI transformer = AppContext.getServiceLocator().getService(TransformI.class, t.getName());
 				if (transformer == null)
 				{
@@ -67,9 +72,14 @@ public class TransformExecutor extends AbstractMojo
 				getLog().info("Executing transform " + transformer.getDescription());
 				transformer.configure(t.getConfigFile());
 				transformer.transform(store);
-				getLog().info("Transformer " + t.getName() + " compleated:  " + transformer.getWorkResultSummary());
+				String summary = "Transformer " + t.getName() + " compleated:  " + transformer.getWorkResultSummary() + " in " + (System.currentTimeMillis() - start) + "ms";
+				getLog().info(summary);
+				summaryInfo.append(summary);
+				summaryInfo.append(System.getProperty("line.separator"));
 			}
 
+			Files.write(new File("target/transformsSummary.txt").toPath(), summaryInfo.toString().getBytes());
+			
 			getLog().info("Finished executing transforms");
 		}
 		catch (Exception e)
