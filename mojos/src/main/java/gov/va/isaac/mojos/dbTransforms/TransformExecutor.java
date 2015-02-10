@@ -60,9 +60,14 @@ public class TransformExecutor extends AbstractMojo
 			for (Transform t : transforms)
 			{
 				TransformI transformer = AppContext.getServiceLocator().getService(TransformI.class, t.getName());
+				if (transformer == null)
+				{
+					throw new MojoExecutionException("Could not locate a TransformI implementation with the name '" + t.getName() + "'.");
+				}
 				getLog().info("Executing transform " + transformer.getDescription());
 				transformer.configure(t.getConfigFile());
-				transformer.transform();
+				transformer.transform(store);
+				getLog().info("Transformer " + t.getName() + " compleated:  " + transformer.getWorkResultSummary());
 			}
 
 			getLog().info("Finished executing transforms");
