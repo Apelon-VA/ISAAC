@@ -29,7 +29,7 @@ import java.io.File;
  * <pre>
  * <Transform>
  *     <name>The name of the transform code - will be looked up using HK2 using this name</name>
- *     <configFile>The file path to the Configuration File for this transform</configFile>
+ *     <configFile>The file path to the Configuration File for this transform (optional)</configFile>
  * </Transform>
  * </pre>
  *

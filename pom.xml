@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>Sprint_18-SNAPSHOT</version>
+    <version>Sprint_19-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -38,8 +38,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.11-SNAPSHOT</otf-query.version>
-        <otf-versioning.version>1.1-va-1.11-SNAPSHOT</otf-versioning.version>
+        <otf-query.version>1.1-va-1.12-SNAPSHOT</otf-query.version>
+        <otf-versioning.version>1.1-va-1.12-SNAPSHOT</otf-versioning.version>
         <kie.version>6.0.1.Final</kie.version>  <!-- Workflow, drools, etc -->
     </properties>
     
@@ -291,6 +291,8 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <scmCommentPrefix>[jgitflow-plugin]</scmCommentPrefix>
                     <enableSshAgent>true</enableSshAgent>
+                    <allowSnapshots>true</allowSnapshots>
+                    <enableFeatureVersions>true</enableFeatureVersions>
                     <flowInitContext>
                         <masterBranchName>master</masterBranchName>
                         <developBranchName>develop</developBranchName>
@@ -369,6 +371,7 @@
         <module>sync-view</module>
         <module>sync-git</module>
         <module>sync-svn</module>
+        <module>isaac-db-processing-rules</module>
     </modules>
 
     <reporting>

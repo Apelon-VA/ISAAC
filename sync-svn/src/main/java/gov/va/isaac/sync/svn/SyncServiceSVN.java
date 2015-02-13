@@ -81,6 +81,8 @@ public class SyncServiceSVN implements ProfileSyncI
 
 	private final String eol = System.getProperty("line.separator");
 
+	private String readMeFileContent_ = DEFAULT_README_CONTENT;
+	
 	private File localFolder_ = null;
 	private SVNClientManager scm_;
 
@@ -113,6 +115,16 @@ public class SyncServiceSVN implements ProfileSyncI
 			throw new IllegalArgumentException("The localFolder must be a folder, and must exist");
 		}
 		this.localFolder_ = localFolder;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.sync.ProfileSyncI#setReadmeFileContent(java.lang.String)
+	 */
+	@Override
+	public void setReadmeFileContent(String readmeFileContent)
+	{
+		readMeFileContent_ = readmeFileContent;
+		
 	}
 
 	/**
@@ -717,8 +729,7 @@ public class SyncServiceSVN implements ProfileSyncI
 		if (!readme.isFile())
 		{
 			log.debug("Creating {}", readme.getAbsolutePath());
-			Files.write(readme.toPath(), new String("ISAAC Profiles Storage \r" + "=== \r" + "This is a repository for storing ISAAC profiles and changesets.\r"
-					+ "It is highly recommended that you do not make changes to this repository manually - ISAAC interfaces with this.").getBytes(),
+			Files.write(readme.toPath(), new String(readMeFileContent_).getBytes(),
 					StandardOpenOption.CREATE_NEW);
 			result.add(readme.getName());
 		}

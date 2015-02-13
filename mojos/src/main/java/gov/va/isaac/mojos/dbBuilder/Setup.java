@@ -41,8 +41,8 @@ public class Setup extends AbstractMojo
 {
 
 	/**
-	 * Location of the folder to look for the BDB database.  May be a direct link to a "berkeley-db" folder, 
-	 * or it may be a link to a "foo.bdb" folder which contains a "berkeley-db" folder, or it may be a link 
+	 * Location of the folder to look for the BDB database. May be a direct link to a "berkeley-db" folder,
+	 * or it may be a link to a "foo.bdb" folder which contains a "berkeley-db" folder, or it may be a link
 	 * to the parent of a "foo.bdb" folder.
 	 * 
 	 * @parameter
@@ -66,9 +66,9 @@ public class Setup extends AbstractMojo
 	@Override
 	public void execute() throws MojoExecutionException
 	{
+		getLog().info("Setup terminology store");
 		try
 		{
-			getLog().info("Setup terminology store");
 			File bdbFolderFile = new File(bdbFolderLocation);
 
 			bdbFolderFile = DBLocator.findDBFolder(bdbFolderFile);

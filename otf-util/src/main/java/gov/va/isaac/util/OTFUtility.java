@@ -1119,6 +1119,36 @@ public class OTFUtility {
 
 		return retSet;
 	}
+	
+	public static DescriptionVersionBI<?> getLatestDescVersion(@SuppressWarnings("rawtypes") Collection<? extends DescriptionVersionBI> collection)
+	{
+		DescriptionVersionBI<?> newest = null;;
+		long newestTime = Long.MIN_VALUE;
+		for (DescriptionVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
+	}
+	
+	public static RefexVersionBI<?> getLatestRefexVersion(@SuppressWarnings("rawtypes") Collection<? extends RefexVersionBI> collection)
+	{
+		RefexVersionBI<?> newest = null;;
+		long newestTime = Long.MIN_VALUE;
+		for (RefexVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
+	}
 
 	/**
 	 * Returns the uuid for fsn and pt based on the ConceptCB assignment algorithm.

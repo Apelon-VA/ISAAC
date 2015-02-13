@@ -551,7 +551,8 @@ public class AddRefexPopup extends Stage implements PopupViewI
 							polymorphicType.getItems().add(type);
 						}
 					}
-					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType()));
+					polymorphicType.getSelectionModel().select((currentValues == null ? RefexDynamicDataType.STRING :
+						(currentValues[row] == null ? RefexDynamicDataType.STRING : currentValues[row].getRefexDataType())));
 				}
 				
 				RefexDataTypeNodeDetails nd = RefexDataTypeFXNodeBuilder.buildNodeForType(ci.getColumnDataType(), ci.getDefaultColumnValue(), 
@@ -568,6 +569,11 @@ public class AddRefexPopup extends Stage implements PopupViewI
 				currentDataFields_.add(nd);
 				
 				gp.add(nd.getNodeForDisplay(), col++, row);
+				
+				Label colType = new Label(ci.getColumnDataType().getDisplayName());
+				colType.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(colType));
+				gp.add((polymorphicType == null ? colType : polymorphicType), col++, row);
+				
 				if (ci.isColumnRequired() || ci.getDefaultColumnValue() != null || ci.getValidator() != null)
 				{
 					extraInfoColumnIsRequired = true;
@@ -605,9 +611,7 @@ public class AddRefexPopup extends Stage implements PopupViewI
 
 					gp.add(stackPane, col++, row);
 				}
-				Label colType = new Label(ci.getColumnDataType().getDisplayName());
-				colType.setMinWidth(FxUtils.calculateNecessaryWidthOfLabel(colType));
-				gp.add((polymorphicType == null ? colType : polymorphicType), col++, row++);
+				row++;
 			}
 
 			ColumnConstraints cc = new ColumnConstraints();
@@ -618,16 +622,16 @@ public class AddRefexPopup extends Stage implements PopupViewI
 			cc.setHgrow(Priority.ALWAYS);
 			gp.getColumnConstraints().add(cc);
 
+			cc = new ColumnConstraints();
+			cc.setHgrow(Priority.NEVER);
+			gp.getColumnConstraints().add(cc);
+			
 			if (extraInfoColumnIsRequired)
 			{
 				cc = new ColumnConstraints();
 				cc.setHgrow(Priority.NEVER);
 				gp.getColumnConstraints().add(cc);
 			}
-			
-			cc = new ColumnConstraints();
-			cc.setHgrow(Priority.NEVER);
-			gp.getColumnConstraints().add(cc);
 
 			if (row == 0)
 			{
