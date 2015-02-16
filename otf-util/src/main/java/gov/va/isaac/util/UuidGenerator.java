@@ -24,10 +24,12 @@
  */
 package gov.va.isaac.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
-
 import org.ihtsdo.otf.tcc.api.uuid.UuidT5Generator;
 
 /**
@@ -51,18 +53,38 @@ public class UuidGenerator {
 		return get(UuidT5Generator.PATH_ID_FROM_FS_DESC, seed);
 	}
 
-	public static void main(String[] args) throws NoSuchAlgorithmException, UnsupportedEncodingException
+	public static void main(String[] args) throws NoSuchAlgorithmException, IOException
 	{
 		UUID domainSeed = UuidT5Generator.PATH_ID_FROM_FS_DESC;
 		String seed = null;
-		if (args.length == 1) {
+		if (args.length == 0)
+		{
+			System.out.println("Enter text:");
+			if (System.console() != null)
+			{
+				seed = System.console().readLine();
+			}
+			else
+			{
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				seed = br.readLine();
+			}
+		}
+		else if (args.length == 1) {
 			seed = args[0];
-		} else if (args.length > 1) {
+		} else if (args.length == 1) {
 			domainSeed = UUID.fromString(args[0]);
 			seed = args[1];
 		}
+		else
+		{
+			throw new RuntimeException("Unsupported number of arguments");
+		}
+		
 		UUID uuid = get(domainSeed, seed);
-		System.err.println("UUID for \"" + domainSeed + "\" --> \"" + seed + "\" is \"" + uuid + "\"");
-		System.out.println(uuid);
+		
+		System.out.println("Using the text '" + seed + "'");
+		System.out.println("and the domain '" + domainSeed+ "'" + (domainSeed == UuidT5Generator.PATH_ID_FROM_FS_DESC ? " (path ID from FSN description)" : ""));
+		System.out.println("the UUID is '" + uuid + "'");
 	}
 }
