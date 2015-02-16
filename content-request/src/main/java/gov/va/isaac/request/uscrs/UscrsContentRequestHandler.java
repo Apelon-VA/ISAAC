@@ -9,14 +9,12 @@ import gov.va.isaac.request.ContentRequestHandler;
 import gov.va.isaac.request.ContentRequestTrackingInfo;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.COLUMN;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Case_Significance;
-import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Characteristic_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Refinability;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Relationship_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Semantic_Tag;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Source_Terminology;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.SHEET;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,13 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
-
 import javax.inject.Named;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -70,7 +65,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	private int currentRequestId;
 	private LinkedHashMap<UUID, Integer> currentRequestUuidMap = new LinkedHashMap<UUID, Integer>();
 	
-	private String fsn;
 	private ConceptChronicleBI concept;
 
 	@Override
@@ -80,12 +74,18 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		ConceptChronicleBI concept = this.concept;
 		USCRSBatchTemplate bt = new USCRSBatchTemplate(USCRSBatchTemplate.class.getResourceAsStream("/USCRS_Batch_Template-2015-01-27.xls"));
 
-		// TOOD: Create HashMap here - Map current Request to the concept.getPrimorialUUID 
+		//Map current Request to the concept.getPrimorialUUID 
 		// as the key and the value is the currentRequestID that was just assigned to the new Concept
 		currentRequestId = globalRequestCounter.getAndIncrement();
 		UUID primorialUuid = concept.getPrimordialUuid();
 		this.currentRequestUuidMap.put(primorialUuid, currentRequestId);
-//		Integer.parseInt((ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(1))));
+		
+		//TODO start changing the API on these handle methods to be more what we need, eventually.
+		//changeX need to take in the thing that is being changed - say - a rel or description, rather than a concept
+		//changeParent need to take in the new parent concept
+		//retire rel / retire desc should take in the thing being retired.
+		
+		//'hack' code for now, to arbitrarily pick something to be passed in, can remain here.
 		
 		handleNewConcept(concept, bt);
 		handleNewRels(concept, bt);
@@ -101,11 +101,10 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		handleRetireDescription(concept, bt);
 
 		// TODO: Fix extension filter
+		// TODO [Vas] what is broken?  Or is the to do above just invalid?
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Save USCRS Concept Request File");
-		fileChooser.getExtensionFilters().addAll(
-				new ExtensionFilter("Excel Files", ".xls", ".xlsx")
-				);
+		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Excel Files", ".xls", ".xlsx"));
 		fileChooser.setInitialFileName("USCRS_Export.xls");
 
 		UscrsContentRequestTrackingInfo info = new UscrsContentRequestTrackingInfo();
@@ -174,6 +173,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				synonyms.add(descVersion.getText());
 			}
 			//Definition
+			//TODO what do we do with the other descriptions if there are more than 1?  Why aren't we checking for isActive?
 			if(descVersion.getTypeNid() == Snomed.DEFINITION_DESCRIPTION_TYPE.getLenient().getNid()){
 				definition = descVersion.getText();
 			}
@@ -195,11 +195,11 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Local_Code:
 					bt.addStringCell(column, concept.getPrimordialUuid().toString());
 					break;
-				case Local_Term:
+				case Local_Term:  //TODO find out what this is supposed to be - not sure why we would do the same thing as preferred term - Jaqui question
 					bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 					break;
 				case Fully_Specified_Name:
-					bt.addStringCell(column, this.getFsn(concept));
+					bt.addStringCell(column, this.getFsnWithoutSemTag(concept));
 					break;
 				case Semantic_Tag:
 					bt.addStringCell(column, this.getSemanticTag(concept));
@@ -219,7 +219,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					else
 					{
 						bt.addStringCell(column, "");
-						
 					}
 					break;
 				case Parent_Concept_Id_1_:
@@ -235,9 +234,11 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					}
 					break;
 				case UMLS_CUI:
+					//TODO Just leave blank - don't write stuff here
 					bt.addStringCell(column, "Not Available in API");
 					break;
 				case Definition:
+					//TODO definition was init'ed as null - need to make sure this is at least, an empty string, not 'null'
 					bt.addStringCell(column, definition);
 					break;
 				case Proposed_Use:
@@ -254,6 +255,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 						sb.append("NOTE: this concept is fully defined. ");
 					}
 					boolean firstHasBeenSeen = false;
+					//TODO should also add extra definitions here, if there is more than one definition
 					while (synonyms.size() > 2)
 					{
 						sb.append("NOTE: this concept also has the following synonyms: ");
@@ -302,6 +304,8 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addStringCell(column, this.getTerminology(descVersion.getPathNid()));
 					break;
 				case Concept_Id:
+					//TODO need to handle the case where this concept does not have a SCTID - which would be the case if this is a new concept - 
+					//in which case - you should be able to find a request ID in the currentRequestUuidMap 
 					bt.addNumericCell(column, this.getSct(concept.getNid()));
 					break;
 				case Term:
@@ -313,7 +317,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Justification:
 					bt.addStringCell(column, ""); //User Input
 					break;
-				case Note:
+				case Note:  //TODO until further clarified with NLM, we should probably put the UUID of the description here.
 					bt.addStringCell(column, ""); //User Input
 					break;
 				default :
@@ -331,7 +335,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings({ })
-    private void handleChangeParent(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleChangeParent(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
 	{	
 		bt.selectSheet(SHEET.Change_Parent);
 		bt.addRow();
@@ -356,6 +360,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					case New_Parent_Terminology:
 						bt.addStringCell(column, ""); //User Input
 						break;
+						//TODO this column doesn't exist here
 					case Case_Significance:
 						bt.addStringCell(column, this.getCaseSig(descVersion.isInitialCaseSignificant()));
 						break;
@@ -363,7 +368,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 						bt.addStringCell(column, ""); //User Input
 						break;
 					case Note:
-						bt.addStringCell(column, "Notes");
+						bt.addStringCell(column, "Notes");//TODO leave blank if no notes
 						break;
 					default :
 						throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
@@ -373,7 +378,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	}
 	
 	private String getSemanticTag(ConceptChronicleBI concept) throws Exception {
-		fsn = OTFUtility.getFullySpecifiedName(concept);
+		String fsn = OTFUtility.getFullySpecifiedName(concept);
 		if (fsn.indexOf('(') != -1)
 		{
 			String st = fsn.substring(fsn.lastIndexOf('(') + 1, fsn.lastIndexOf(')'));
@@ -383,8 +388,8 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		}
 	}
 	
-	private String getFsn(ConceptChronicleBI concept) {
-		fsn = OTFUtility.getFullySpecifiedName(concept);
+	private String getFsnWithoutSemTag(ConceptChronicleBI concept) {
+		String fsn = OTFUtility.getFullySpecifiedName(concept);
 		
 		String fsnOnly = fsn;
 		if (fsn.indexOf('(') != -1)
@@ -467,9 +472,11 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 							// The hashmap created when a new concept is created is from the incremented current request ID to the UUID
 							//You pass in the UUID to the hashmap created earlier to get the request ID
 							
+							//TODO - no, this should be the source terminology of the source concept - not of the relationship
 							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
 							break;
 						case Source_Concept_Id:
+							//TODO this needs to be the SCTID of the source concept, if it has one - otherwise - look up the correct request ID from the UUID / request ID hashmap
 //							bt.addNumericCell(column, Double.parseDouble(ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(relVersion.getNid())).trim()));
 							bt.addNumericCell(column, currentRequestId);
 							break;
@@ -480,6 +487,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 							bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
 							break;
 						case Destination_Concept_Id:
+							//TODO - if no SCTID, this needs to be looked up in the UUID to request ID map
 							bt.addNumericCell(column, this.getSct(destNid));
 							break;
 						case Characteristic_Type:
@@ -531,7 +539,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		
 		try {
 			returnNid = Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(nid)));
-		} catch(Exception e) {
+		} catch(Exception e) {  //TODO use the map to check new requests
 			//TODO: Add error logging everywhere
 			Log.error("We could not get the SCT from the Given NID");
 		}
@@ -563,16 +571,18 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 						case Topic:
 							bt.addStringCell(column, "");
 							break;
+							//TODO all of the same issues as previous methods with ids for source and target concepts
 						case Source_Concept_Id:
 							bt.addNumericCell(column, this.getSct(relVersion.getConceptNid()));
 							break;
-						case Relationship_Id:
+						case Relationship_Id:  //TODO - no - never nid.  The rel should have an SCTID - nids _never_ leave the environment - they are meaningless
 							bt.addNumericCell(column, rel.getNid());
 							break;
 						case Relationship_Type: 
 							bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
 							break;
 						case Source_Terminology:
+							//TODO no, concept source con terminlogy, not rel terminlogy
 							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
 							break;
 						case Destination_Concept_Id:
@@ -628,13 +638,13 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					case Terminology:
 						bt.addStringCell(column, this.getTerminology(descVersion.getPathNid()));
 						break;
-					case Concept_Id:
+					case Concept_Id:  //TODO - no, never nid - sctid or request id
 						bt.addNumericCell(column, this.getSct(concept.getNid()));
 						break;
-					case Description_Id: 
+					case Description_Id:   //TODO no, not UUID - either SCTID, or, we talk to NLM about what this is.
 						bt.addStringCell(column, descVersion.getUUIDs().get(0).toString());
 						break;
-					case Term:
+					case Term:  //TODO - no, this should be the description that is being modified - the handleChangeDesc method API should take in a description, not a concept
 						bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 						break;
 					case Case_Significance:
@@ -677,10 +687,10 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Concept_Id:
 					bt.addNumericCell(column, this.getSct(concept.getNid()));
 					break;
-				case Change_Concept_Status_To:
+				case Change_Concept_Status_To:  //TODO need to talk to Jaqui / NLM - this needs to be 'inactive' or some such - there used to be many different types of 'inactive', now there may only be one?
 					bt.addStringCell(column, "");
 					break;
-				case Duplicate_Concept_Id:
+				case Duplicate_Concept_Id:  //TODO - possibly userinput - if they are deactivating because it is a dupe, we need the SCTID of the dupe here
 					bt.addStringCell(column, "");
 					break;
 				case Justification:
@@ -721,13 +731,13 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					case Terminology:
 						bt.addStringCell(column, this.getTerminology(conceptVersion.getPathNid()));
 						break;
-					case Concept_Id:
+					case Concept_Id:  //TODO not nid
 						bt.addNumericCell(column, this.getSct(concept.getNid()));
 						break;
-					case Description_Id:
+					case Description_Id:  //TODO not UUID
 						bt.addStringCell(column, descVersion.getUUIDs().get(0).toString());
 						break;
-					case Change_Description_Status_To:
+					case Change_Description_Status_To:  //TODO talk to Jaqui / NLM - same status question as above
 						break;
 					case Justification:
 						bt.addStringCell(column, ""); //User Input
@@ -768,12 +778,13 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 							bt.addStringCell(column, ""); //User Input
 							break;
 						case Source_Terminology:
+							//TODO source concept path, not rel
 							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
 							break;
-						case Source_Concept_Id:
+						case Source_Concept_Id:  //TODO same SCTID issue
 							bt.addNumericCell(column, this.getSct(concept.getNid()));
 							break;
-						case Relationship_Id:
+						case Relationship_Id:  //TODO no nid - either SCTID , or need to talk to NLM / Jaqui
 							bt.addNumericCell(column, relVersion.getNid()); //No UUID or Sct available for this
 //							bt.addStringCell(column, relVersion.getUUIDs().get(0).toString());
 							break;
@@ -813,6 +824,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
 		{
 			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
+			//TODO - no - this is parent - so we ARE doing IS_A - we wouldn't do this loop anyway - the new child concept needs to be a parameter to this method
 			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid())) //NOT IS-A Rels
 			{
 				ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
@@ -825,7 +837,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 						case Topic:
 							bt.addStringCell(column, "");
 							break;
-						case Source_Terminology:
+						case Source_Terminology:  //TODO not rel path
 							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
 							break;
 						case Child_Concept_Id:
@@ -835,7 +847,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 						case Destination_Terminology:
 							bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
 							break;
-						case Parent_Concept_Id:
+						case Parent_Concept_Id:  //TODO - no, needs to be input into this method
 							bt.addStringCell(column, ""); //User Input
 //							bt.addStringCell(column, OTFUtility.getConceptVersion(relVersion.getDestinationNid()).getUUIDs().get(0).toString());
 							break;
@@ -861,7 +873,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings("unused")
-    private void handleOther(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleOther(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Other);
 		bt.addRow();
