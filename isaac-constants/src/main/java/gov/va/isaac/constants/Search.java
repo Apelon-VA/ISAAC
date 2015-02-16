@@ -54,7 +54,7 @@ public class Search {
 	//an organizational concept for all of the new concepts being added to the Refset Auxiliary Concept tree
 	public static ConceptSpec SEARCH_TYPES = new ConceptSpec("search refex types", 
 			UUID.fromString("d2db2e2a-2d4d-5705-b164-65ee5c1ece58"), 
-			RefexDynamic.REFEX_DYNAMIC_TYPES);
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY);
 	
 	public static ConceptSpec SEARCH_PERSISTABLE = new ConceptSpec("Persistable Searches", 
 			UUID.fromString("80d39126-7814-5812-b01f-d6cda1d86496"), 
