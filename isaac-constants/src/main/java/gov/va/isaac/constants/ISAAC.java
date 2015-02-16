@@ -19,10 +19,15 @@
 package gov.va.isaac.constants;
 
 import java.util.UUID;
+import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
+import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpecWithDescriptions;
+import org.ihtsdo.otf.tcc.api.spec.DynamicRefexConceptSpec;
 import org.ihtsdo.otf.tcc.api.spec.RelSpec;
 
 /**
@@ -56,4 +61,27 @@ public class ISAAC
 		TERMINOLOGY_AUXILLIARY_REF.setRelSpecs(new RelSpec[] {new RelSpec(TERMINOLOGY_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT),  //stated
 				new RelSpec(TERMINOLOGY_AUXILLIARY_REF, Snomed.IS_A, ISAAC_ROOT, SnomedMetadataRf2.INFERRED_RELATIONSHIP_RF2)});  //inferred
 	}
+	
+	//Set up a generic comments sememe (next 3 items)
+	public static ConceptSpecWithDescriptions EDITOR_COMMENT = new ConceptSpecWithDescriptions("editor comment", 
+			UUID.fromString("2b38b1a9-ce6e-5be2-8885-65cd76f40929"),
+			new String[] {"editor comment"},
+			new String[] {"Stores the comment created by the editor"},
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static ConceptSpecWithDescriptions EDITOR_COMMENT_CONTEXT = new ConceptSpecWithDescriptions("editor comment context", 
+			UUID.fromString("2e4187ca-ba45-5a87-8484-1f86801a331a"),
+			new String[] {"editor comment context"},
+			new String[] {"Stores an optional value that may be used to group comments, such as 'mapping comment' or 'assertion comment' which"
+				+ " then would allow programmatic filtering of comments to be context specific."},
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static DynamicRefexConceptSpec COMMENT_ATTRIBUTE = new DynamicRefexConceptSpec("Comment", 
+			UUID.fromString("147832d4-b9b8-5062-8891-19f9c4e4760a"),
+			true, 
+			"A Sememe used to store comments on arbitrary items (concepts, relationships, sememes, etc)", 
+			new RefexDynamicColumnInfo[] {
+				new RefexDynamicColumnInfo(0, EDITOR_COMMENT.getUuids()[0], RefexDynamicDataType.STRING, null, true, null, null),
+				new RefexDynamicColumnInfo(1, EDITOR_COMMENT_CONTEXT.getUuids()[0], RefexDynamicDataType.STRING, null, false, null, null)},
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY);
 }
