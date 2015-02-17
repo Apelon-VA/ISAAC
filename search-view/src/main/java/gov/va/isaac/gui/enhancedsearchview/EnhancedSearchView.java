@@ -54,6 +54,37 @@ public class EnhancedSearchView implements DockedViewI
 		//created by HK2
 	}
 	
+	//TODO Dans big list of Enhanced Search View cleanup things.....
+	//1) (artf231406) EnhancedSearchView is too wide and not shrinkable
+	//2) (artf231407) Search and Search-criteria-save buttons disableProperty are properly bound, but buttons should have Tooltips describing why buttons are disabled
+	//3) (artf231408) Styling into css files
+	//4) (artf231410) Refactor to replace use of statics with proper use of HK2 in order to allow multiple instances - stop passing around references to components here and there and using static variables all over.  What if I want an enhanced search in a pop
+	// up window to put on my second monitor?  The current use of static makes that impossible
+	//5) (artf231412) fix the look - buttons aren't aligned, buttons jump around in size randomly, standard icons we are using elsewhere for things like add/remove haven't been used
+	//6.1) (artf231412) Add filter button is in a bizarre place
+	//6.2) (artf231412) Search button is in a bizarre place.
+	//6.3) (artf231412) Typing enter doesn't perform a search.
+	//7) (artf231412) Fix the default widths on the columns on the result table
+	//8) Why would save search even be an option before you perform the search?  move it to the bottom (along with many other fixes for the bottom)
+	//9) (artf231412) turn the bottom into a toolbar.  Handle results should be one 16x16 icon.  Clicking, presents a menu of options.  Same with restore searches.
+	//10) (artf231412) Tooltips... where are they?  Features and functions should be self documenting if not obvious.
+	//11) Reset Display Table?  How about "Clear Results"
+	//12) (artf231413) Fix the SCTID column.  We need "Native ID", and proper handling for SCTID, Loinc and RxNorm
+	//13) (artf231412) FSN / Term / Text.  I still can't figure out what on earth Text is supposed to be.  Is is supposed to be the matching description?
+	//14) (artf231412) Refset Specification Search is a terrible name.  We aren't searching the content of a refset.  This should be called OTF Query Search, 
+	//with a prominent option to store the search 
+	//15) did we have the feature to turn an OTF Query result into a refset?  I can't find it.
+	
+	//TODO bug (artf231414) - Find in taxonomy is broken from the right-click context menu:
+	//Exception in thread "JavaFX Application Thread" java.lang.IllegalArgumentException: Children: duplicate children added: parent = StackPane@5a7dd09f
+	//at javafx.scene.Parent$2.onProposedChange(Parent.java:450)
+	//at com.sun.javafx.collections.VetoableListDecorator.add(VetoableListDecorator.java:206)
+	// gov.va.isaac.gui.treeview.SctTreeView.finishTreeSetup(SctTreeView.java:268)
+	//TODO (artf231416) bug context menu Content Request menus aren't working in component/description display view mode - if you right click on FSN - and click content request, it send the wrong nid
+	//sending the nid of the description, rather than the concept.
+	//TODO (artf231416?) bug content request options need to better handle getting a nid that isn't a concept... currently, they just present a silly error to the users.
+	//
+	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
 	 */

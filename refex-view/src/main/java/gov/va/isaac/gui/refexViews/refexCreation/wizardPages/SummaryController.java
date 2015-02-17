@@ -23,7 +23,7 @@ import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.RefexData;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import javafx.fxml.FXML;
@@ -37,6 +37,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ public class SummaryController implements PanelControllersI {
 	@FXML private Label actualRefexDescription;
 	@FXML private Label actualParentConcept;
 	@FXML private Label actualRefexType;
+	@FXML private Label actualComponentTypeRestriction;
 	@FXML private BorderPane summaryPane;
 	@FXML private ListView<RefexDynamicColumnInfo> detailsListView;
 	@FXML private Button cancelButton;
@@ -82,12 +84,12 @@ public class SummaryController implements PanelControllersI {
 	
 		commitButton.setOnAction(e -> 
 		{
-		    try
+			try
 			{
 				AppContext.getRuntimeGlobals().disableAllCommitListeners();
 				storeValues();
 			} catch (Exception e1) {
-				logger.error("Coudn't Disable WF Init & Commit New Dynamic Refex Concept", e1);
+				logger.error("Coudn't Disable WF Init & Commit New Dynamic Sememe Concept", e1);
 			}
 			finally
 			{
@@ -113,8 +115,9 @@ public class SummaryController implements PanelControllersI {
 	private void setupRefexContent(RefexData refexData) {
 		actualRefexName.setText(refexData.getRefexName());
 		actualRefexDescription.setText(refexData.getRefexDescription());
-		actualParentConcept.setText(WBUtility.getDescription(refexData.getParentConcept()));
-		
+		actualParentConcept.setText(OTFUtility.getDescription(refexData.getParentConcept()));
+		actualComponentTypeRestriction.setText(refexData.getComponentRestrictionType() == ComponentType.UNKNOWN ? "No Restriction" 
+				: refexData.getComponentRestrictionType().toString());
 		if (refexData.isAnnotatedStyle()) {
 			actualRefexType.setText("Annotated");
 		} else {
@@ -132,7 +135,8 @@ public class SummaryController implements PanelControllersI {
 			RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(refexData.getRefexName(),
 					refexData.getRefexName(), refexData.getRefexDescription(), refexData.getColumnInfo().toArray(new RefexDynamicColumnInfo[0]), 
 					refexData.getParentConcept().getPrimordialUuid(), 
-					refexData.isAnnotatedStyle());
+					refexData.isAnnotatedStyle(),
+					refexData.getComponentRestrictionType());
 		} catch (IOException | ContradictionException | InvalidCAB | PropertyVetoException e) {
 			logger.error("Unable to create and/or commit refset concept and metadata", e);
 			AppContext.getCommonDialogs().showErrorDialog("Error Creating Sememe", "Unexpected error creating the Sememe", e.getMessage(), summaryPane.getScene().getWindow());

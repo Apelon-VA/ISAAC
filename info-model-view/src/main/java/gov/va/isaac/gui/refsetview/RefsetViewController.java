@@ -22,7 +22,7 @@ package gov.va.isaac.gui.refsetview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.CEMCompositRefestInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -102,7 +102,7 @@ public class RefsetViewController {
 				public void handle(ActionEvent e) {
 					try
 					{
-						WBUtility.commit();
+						OTFUtility.commit();
 						reloadData();
 					}
 					catch (IOException ex)
@@ -126,11 +126,11 @@ public class RefsetViewController {
 //		try {
 //			this.isAnnotation = refset.isAnnotationStyleRefex();
 //		} catch (IOException e) {
-//			// TODO Auto-generated catch block
+//			// TODO (artf231876) Auto-generated catch block
 //			e.printStackTrace();
 //		}
 		
-		String refsetFsn = WBUtility.getDescription(refsetUUID);
+		String refsetFsn = OTFUtility.getDescription(refsetUUID);
 		refsetLabel.setText("Refset: " + refsetFsn);
 		refsetLabel.setFont(new Font("Arial", 14));
 		
@@ -146,14 +146,14 @@ public class RefsetViewController {
 //			if (!isAnnotation) {
 //				members = refset.getRefsetMembersActive();
 //			} else {
-				component = WBUtility.getConceptVersion(componentUUID_);
+				component = OTFUtility.getConceptVersion(componentUUID_);
 				if (component == null)
 				{
 					System.err.println("Couldn't find component " + componentUUID_);
 				}
 				else
 				{
-					members = (activeOnly_ ? component.getAnnotationsActive(WBUtility.getViewCoordinate()) : component.getAnnotations());
+					members = (activeOnly_ ? component.getAnnotationsActive(OTFUtility.getViewCoordinate()) : component.getAnnotations());
 				}
 //			}
 		} catch (Exception e) {
@@ -161,7 +161,7 @@ public class RefsetViewController {
 		}
 		
 		data.clear();
-		ConceptVersionBI refset = WBUtility.getConceptVersion(refsetUUID_);
+		ConceptVersionBI refset = OTFUtility.getConceptVersion(refsetUUID_);
 		refsetNid_ = refset.getNid();
 		
 		try {
@@ -169,7 +169,7 @@ public class RefsetViewController {
 				List<RefexVersionBI<?>> memberVersion = new ArrayList<>();
 				if (activeOnly_)
 				{
-					RefexVersionBI<?> version = memChron.getVersion(WBUtility.getViewCoordinate());
+					RefexVersionBI<?> version = memChron.getVersion(OTFUtility.getViewCoordinate());
 					
 					if (version.isActive()) {
 						memberVersion.add(version);
@@ -185,12 +185,12 @@ public class RefsetViewController {
 				{
 					ConceptVersionBI refCompCon;
 					if (!isAnnotation) {
-						refCompCon = WBUtility.getConceptVersion(member.getReferencedComponentNid());
+						refCompCon = OTFUtility.getConceptVersion(member.getReferencedComponentNid());
 					} else {
 						refCompCon = component;
 					}
-/** TODO - BAC
-					//TODO we shouldn't have any references to the CEM model here in the generic refset viewer.
+					/** TODO (artf231839) - BAC
+					//TODO (artf231839) we shouldn't have any references to the CEM model here in the generic refset viewer.
 					//If we want to enable special filtering, or something like that - then we should have an API that allows refset types to be passed in
 					if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid() &&
 						member.getAssemblageNid() == refset.getNid()) {
@@ -198,7 +198,7 @@ public class RefsetViewController {
 					} else {
 						processMembers(member, previousMember, refCompCon);
 					}
-				**/	
+					 **/	
 					previousMember = member;
 				}
 			}
@@ -225,7 +225,7 @@ public class RefsetViewController {
 	private void processMembers(RefexVersionBI<?> member, RefexVersionBI<?> previousMember, ConceptVersionBI refCompCon) throws IOException, ContradictionException {
 		if (member.getAssemblageNid() == refsetNid_) {
 			// Setup if Necessary
-			//TODO The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
+			//TODO (artf231876) The current code only works if every member has the same RefexType (and there is _no_ guarantee about that in the APIs.  
 			//The entire column display of the tables needs to be reworked, as the columns that are displayed needs to be dynamically detected 
 			//from the data in the table, so it can take into account multiple refex types.
 			if (!rth_.isSetupFinished() && member.getRefexType() != RefexType.MEMBER) {
@@ -239,12 +239,12 @@ public class RefsetViewController {
 		}
 
 		// Search for member's annotations
-		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(WBUtility.getViewCoordinate()) : member.getAnnotations());
+		Collection<? extends RefexChronicleBI<?>> refAnnots = (activeOnly_ ? member.getAnnotationsActive(OTFUtility.getViewCoordinate()) : member.getAnnotations());
 		for (RefexChronicleBI<?> annot : refAnnots) {
 			List<RefexVersionBI<?>> annotVersions = new ArrayList<>();
 			if (activeOnly_)
 			{
-				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(WBUtility.getViewCoordinate());
+				RefexVersionBI<?> version = (RefexVersionBI<?>) annot.getVersion(OTFUtility.getViewCoordinate());
 				if (version.isActive()) {
 					annotVersions.add(version);
 				}

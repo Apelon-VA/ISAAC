@@ -1,6 +1,6 @@
 package gov.va.legoEdit.storage;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.legoEdit.gui.legoFilterPane.LegoFilterPaneController;
 import gov.va.legoEdit.model.LegoReference;
 import gov.va.legoEdit.model.schemaModel.Assertion;
@@ -365,10 +365,10 @@ public class AdvancedLegoFilter
 			hierarchyCache.put(conceptKey, map);
 		}
 		
-		ConceptVersionBI cv = WBUtility.lookupIdentifier(concept.getUuid());
+		ConceptVersionBI cv = OTFUtility.lookupIdentifier(concept.getUuid());
 		if (cv == null)
 		{
-			cv = WBUtility.lookupIdentifier(concept.getSctid() + "");
+			cv = OTFUtility.lookupIdentifier(concept.getSctid() + "");
 		}
 		if (cv == null)
 		{
@@ -383,7 +383,7 @@ public class AdvancedLegoFilter
 				{
 					for (Integer i : list)
 					{
-						Concept c = LegoWBUtility.convertConcept(WBUtility.getConceptVersion(i));
+						Concept c = LegoWBUtility.convertConcept(OTFUtility.getConceptVersion(i));
 						if (conceptMatches(filter, c))
 						{
 							map.put(filterKey, true);

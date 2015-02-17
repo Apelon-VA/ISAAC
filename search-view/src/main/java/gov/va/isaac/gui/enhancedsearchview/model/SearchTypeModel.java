@@ -4,7 +4,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -24,39 +24,80 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SearchTypeModel {
 	protected final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
-	//protected static TableView<CompositeSearchResult> resultsTable;
-
+	
+	//TODO (artf231410) rewrite this mess of static / nonstatic confusing muddle with a proper HK2 pattern.
+	//We obviously need a training session for some folks on what HK2 is good at.  
+	
 	protected static EnhancedSearchViewBottomPane bottomPane;
 	protected static SplitPane splitPane;
 	protected static BorderPane taxonomyPane;
 
-	protected final StringProperty name = new SimpleStringProperty();
+	protected final StringProperty name = new SimpleStringProperty(getClass().getName().replaceAll(".*\\.", ""));
 	protected final StringProperty description = new SimpleStringProperty();
-	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(WBUtility.getViewCoordinate());
+	protected final ObjectProperty<ViewCoordinate> viewCoordinateProperty = new SimpleObjectProperty<>(OTFUtility.getViewCoordinate());
 	protected final BooleanProperty isSearchTypeRunnableProperty = new SimpleBooleanProperty(false);
-	
+	protected final BooleanProperty isSearchTypeSavableProperty = new SimpleBooleanProperty(false);
+
 	private final IntegerProperty maxResults = new SimpleIntegerProperty(100);
 	private final StringProperty droolsExpr = new SimpleStringProperty();
 
 	abstract public void typeSpecificCopy(SearchTypeModel other);
 	abstract public String getModelDisplayString();
-	abstract protected boolean isValidSearch(String errorDialogTitle);
 	abstract public void executeSearch(ResultsType resultsType, String modelMaxResults);
-	abstract protected boolean isCriteriaPanelValid();
+
+	public boolean isSavableSearch() {
+		return isSavableSearch(null);
+	}
+	public boolean isSavableSearch(String errorDialogTitle) {
+		String validationError = getSearchSavabilityValidationFailureMessage();
+		if (validationError == null) {
+			return true;
+		} else {
+			String details = "Invalid search type model for save (name=" + getName() + "). " + validationError;
+			LOG.info(details);
+
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		}
+	}
+	public String getSearchSavabilityValidationFailureMessage() {
+		return getValidationFailureMessage();
+	}
+
+	abstract public String getValidationFailureMessage();
+	final protected boolean isValidSearch() {
+		return isValidSearch(null);
+	}
+	final protected boolean isValidSearch(String errorDialogTitle) {
+		String validationError = getValidationFailureMessage();
+		if (validationError == null) {
+			return true;
+		} else {
+			String details = "Invalid search type model (name=" + getName() + "). " + validationError;
+			LOG.info(details);
+
+			if (errorDialogTitle != null) {
+				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
+			}
+
+			return false;
+		}
+	}
 	
 	protected SearchTypeModel() {
-		viewCoordinateProperty.set(WBUtility.getViewCoordinate());
+		viewCoordinateProperty.set(OTFUtility.getViewCoordinate());
 		
 		viewCoordinateProperty.addListener(new ChangeListener<ViewCoordinate>() {
 			@Override
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isValidSearch());
 			}
 		});
-
 	}
 
 	public void copy(SearchTypeModel other) {
@@ -69,7 +110,7 @@ public abstract class SearchTypeModel {
 		
 		typeSpecificCopy(other);
 	}
-	
+
 	public BooleanProperty getSearchRunning() { return SearchModel.getSearchRunning(); }
 	
 	public String getName() {
@@ -127,7 +168,7 @@ public abstract class SearchTypeModel {
 	public boolean validateSearchTypeModel(String errorDialogTitle) {
 		if (getViewCoordinate() == null) {
 			String details = "View coordinate is null: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
+			LOG.info("Invalid search model (name=" + getName() + "). " + details);
 
 			if (errorDialogTitle != null) {
 				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());

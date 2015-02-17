@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -68,11 +68,11 @@ public class RelRestriction extends AssertionNode {
 	}
 	
 	private boolean isNodeValid() {
-		if (relRestrictionConceptNidIntegerProperty == null || WBUtility.getConceptVersion(relRestrictionConceptNidIntegerProperty.get()) == null) {
+		if (relRestrictionConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(relRestrictionConceptNidIntegerProperty.get()) == null) {
 			return false;
-		} else if (relTypeConceptNidIntegerProperty == null || WBUtility.getConceptVersion(relTypeConceptNidIntegerProperty.get()) == null) {
+		} else if (relTypeConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(relTypeConceptNidIntegerProperty.get()) == null) {
 			return false;
-		} else if (sourceConceptNidIntegerProperty == null || WBUtility.getConceptVersion(sourceConceptNidIntegerProperty.get()) == null) {
+		} else if (sourceConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(sourceConceptNidIntegerProperty.get()) == null) {
 			return false;
 		} else {
 			return true;
@@ -104,7 +104,7 @@ public class RelRestriction extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -115,7 +115,7 @@ public class RelRestriction extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -126,7 +126,7 @@ public class RelRestriction extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -196,17 +196,17 @@ public class RelRestriction extends AssertionNode {
 	public String getDescription() {
 		String relRestrictionConceptDescription = null;
 		if (getRelRestrictionConceptNid() != null && getRelRestrictionConceptNid() != 0) {
-			relRestrictionConceptDescription = WBUtility.getDescriptionIfConceptExists(getRelRestrictionConceptNid());
+			relRestrictionConceptDescription = OTFUtility.getDescriptionIfConceptExists(getRelRestrictionConceptNid());
 		}
 		
 		String relTypeConceptDescription = null;
 		if (getRelTypeConceptNid() != null && getRelTypeConceptNid() != 0) {
-			relTypeConceptDescription = WBUtility.getDescriptionIfConceptExists(getRelTypeConceptNid());
+			relTypeConceptDescription = OTFUtility.getDescriptionIfConceptExists(getRelTypeConceptNid());
 		}
 
 		String sourceConceptDescription = null;
 		if (getSourceConceptNid() != null && getSourceConceptNid() != 0) {
-			sourceConceptDescription = WBUtility.getDescriptionIfConceptExists(getSourceConceptNid());
+			sourceConceptDescription = OTFUtility.getDescriptionIfConceptExists(getSourceConceptNid());
 		}
 		
 		String useDestinationSubsumptionDescription = null;

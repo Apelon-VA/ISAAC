@@ -23,11 +23,10 @@ import java.util.UUID;
 import org.jvnet.hk2.annotations.Service;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 
-// TODO: Auto-generated Javadoc
 /**
  * {@link MockIsaacAppConfig}
  * 
- * A mock service to simplify testing of things outside of a full ISAAC env.
+ * A mock service to simplify testing of things outside of a full ISAAC env.  Most things are not implemented.
  * 
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
@@ -93,10 +92,10 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	 * Returns the change set url.
 	 *
 	 * @return the change set url
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrl()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentChangeSetUrl()
 	 */
 	@Override
-	public String getChangeSetUrl()
+	public String getCurrentChangeSetUrl()
 	{
 		return userRepoPath_;
 	}
@@ -105,10 +104,10 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	 * Returns the workflow server url as url.
 	 *
 	 * @return the workflow server url as url
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrlAsURL()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerUrlAsURL()
 	 */
 	@Override
-	public URL getWorkflowServerUrlAsURL()
+	public URL getCurrentWorkflowServerUrlAsURL()
 	{
 		return workflowServerURL_;
 	}
@@ -117,10 +116,10 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	 * Returns the workflow server deployment id.
 	 *
 	 * @return the workflow server deployment id
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerDeploymentId()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerDeploymentId()
 	 */
 	@Override
-	public String getWorkflowServerDeploymentId()
+	public String getCurrentWorkflowServerDeploymentId()
 	{
 		return workflowServerDeploymentID_;
 	}
@@ -129,242 +128,312 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	 * Returns the promotion path as uuid.
 	 *
 	 * @return the promotion path as uuid
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowPromotionPathUuidAsUUID()
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowPromotionPathUuidAsUUID()
 	 */
 	@Override
-	public UUID getWorkflowPromotionPathUuidAsUUID()
+	public UUID getCurrentWorkflowPromotionPathUuidAsUUID()
 	{
 		return workflowPromotionPath_;
 	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getArchetypeGroupId()
-   */
-  @Override
-  public String getArchetypeGroupId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getArchetypeGroupId()
+	 */
+	@Override
+	public String getArchetypeGroupId() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getArchetypeArtifactId()
-   */
-  @Override
-  public String getArchetypeArtifactId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getArchetypeArtifactId()
+	 */
+	@Override
+	public String getArchetypeArtifactId() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getArchetypeVersion()
-   */
-  @Override
-  public String getArchetypeVersion() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getArchetypeVersion()
+	 */
+	@Override
+	public String getArchetypeVersion() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getIsaacVersion()
-   */
-  @Override
-  public String getIsaacVersion() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getIsaacVersion()
+	 */
+	@Override
+	public String getIsaacVersion() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmConnection()
-   */
-  @Override
-  public String getScmConnection() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrl()
+	 */
+	@Override
+	public String getScmUrl() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrl()
-   */
-  @Override
-  public String getScmUrl() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrlAsURL()
+	 */
+	@Override
+	public URL getScmUrlAsURL() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getScmUrlAsURL()
-   */
-  @Override
-  public URL getScmUrlAsURL() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbGroupId()
+	 */
+	@Override
+	public String getDbGroupId() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbGroupId()
-   */
-  @Override
-  public String getDbGroupId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbArtifactId()
+	 */
+	@Override
+	public String getDbArtifactId() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbArtifactId()
-   */
-  @Override
-  public String getDbArtifactId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbVersion()
+	 */
+	@Override
+	public String getDbVersion() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbVersion()
-   */
-  @Override
-  public String getDbVersion() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbClassifier()
+	 */
+	@Override
+	public String getDbClassifier() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDbClassifier()
-   */
-  @Override
-  public String getDbClassifier() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPreviousReleaseVersion()
+	 */
+	@Override
+	public String getPreviousReleaseVersion() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPreviousReleaseVersion()
-   */
-  @Override
-  public String getPreviousReleaseVersion() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentReleaseVersion()
+	 */
+	@Override
+	public String getCurrentReleaseVersion() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getReleaseVersion()
-   */
-  @Override
-  public String getReleaseVersion() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentExtensionNamespace()
+	 */
+	@Override
+	public String getCurrentExtensionNamespace() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getExtensionNamespace()
-   */
-  @Override
-  public String getExtensionNamespace() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getModuleId()
+	 */
+	@Override
+	public String getModuleId() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getModuleId()
-   */
-  @Override
-  public String getModuleId() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultEditPathName()
+	 */
+	@Override
+	public String getDefaultEditPathName() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getChangeSetUrlAsURL()
-   */
-  @Override
-  public URL getChangeSetUrlAsURL() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultEditPathUuid()
+	 */
+	@Override
+	public String getDefaultEditPathUuid() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultEditPathName()
-   */
-  @Override
-  public String getDefaultEditPathName() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultViewPathName()
+	 */
+	@Override
+	public String getDefaultViewPathName() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultEditPathUuid()
-   */
-  @Override
-  public String getDefaultEditPathUuid() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultViewPathUuid()
+	 */
+	@Override
+	public String getDefaultViewPathUuid() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultViewPathName()
-   */
-  @Override
-  public String getDefaultViewPathName() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentWorkflowServerUrl()
+	 */
+	@Override
+	public String getCurrentWorkflowServerUrl() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultViewPathUuid()
-   */
-  @Override
-  public String getDefaultViewPathUuid() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	public String getCurrentWorkflowPromotionPathName() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getUserSchemaLocation()
-   */
-  @Override
-  public String getUserSchemaLocation() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	public String getCurrentWorkflowPromotionPathUuid() {
+		return null;
+	}
 
-  /* (non-Javadoc)
-   * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getWorkflowServerUrl()
-   */
-  @Override
-  public String getWorkflowServerUrl() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getWorkflowPromotionPathName() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getWorkflowPromotionPathUuid() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getAppSchemaLocation() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getDbType() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	public String getDbType() {
+		return null;
+	}
 
 
-  @Override
-  public String getChangeSetUrlTypeName()
-  {
-    // TODO Auto-generated method stub
-    return null;
-  }
+	@Override
+	public String getChangeSetUrlTypeName()
+	{
+		return null;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultReleaseVersion()
+	 */
+	@Override
+	public String getDefaultReleaseVersion()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultExtensionNamespace()
+	 */
+	@Override
+	public String getDefaultExtensionNamespace()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultChangeSetUrl()
+	 */
+	@Override
+	public String getDefaultChangeSetUrl()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentEditPathName()
+	 */
+	@Override
+	public String getCurrentEditPathName()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentEditPathUuid()
+	 */
+	@Override
+	public String getCurrentEditPathUuid()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentViewPathName()
+	 */
+	@Override
+	public String getCurrentViewPathName()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentViewPathUuid()
+	 */
+	@Override
+	public String getCurrentViewPathUuid()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerUrl()
+	 */
+	@Override
+	public String getDefaultWorkflowServerUrl()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerUrlAsURL()
+	 */
+	@Override
+	public URL getDefaultWorkflowServerUrlAsURL()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowServerDeploymentId()
+	 */
+	@Override
+	public String getDefaultWorkflowServerDeploymentId()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathName()
+	 */
+	@Override
+	public String getDefaultWorkflowPromotionPathName()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathUuid()
+	 */
+	@Override
+	public String getDefaultWorkflowPromotionPathUuid()
+	{
+		return null;
+	}
+	
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultWorkflowPromotionPathUuidAsUUID()
+	 */
+	@Override
+	public UUID getDefaultWorkflowPromotionPathUuidAsUUID()
+	{
+		return null;
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getVersion()
+	 */
+	@Override
+	public String getVersion()
+	{
+		return null;
+	}
 
 }

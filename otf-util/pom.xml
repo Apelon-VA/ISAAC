@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>1.0-Sprint_15-SNAPSHOT</version>
+		<version>Sprint_18</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>otf-util</artifactId>
@@ -25,6 +25,12 @@
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>gui-util</artifactId>
 			<version>${project.parent.version}</version>
+		</dependency>
+		<!-- Redirects Java logging into logback - need to put on the compile classpath for some of the init utils to use -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>

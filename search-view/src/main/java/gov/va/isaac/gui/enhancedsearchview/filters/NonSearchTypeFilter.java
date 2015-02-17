@@ -25,7 +25,7 @@
 package gov.va.isaac.gui.enhancedsearchview.filters;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -50,8 +50,8 @@ public abstract class NonSearchTypeFilter<T extends NonSearchTypeFilter<T>> impl
 		Set<Integer> mergedSet = new HashSet<Integer>();
 
 		try {
-			ConceptVersionBI con = WBUtility.getConceptVersion(getSingleNid().get());
-			ConceptVersionBI rootCon = WBUtility.getRootConcept(con);
+			ConceptVersionBI con = OTFUtility.getConceptVersion(getSingleNid().get());
+			ConceptVersionBI rootCon = OTFUtility.getRootConcept(con);
 
 			NativeIdSetBI allConcepts = ExtendedAppContext.getDataStore().getAllConceptNids();
 			NoSearchTermConcurrentSearcher searcher = new NoSearchTermConcurrentSearcher(allConcepts, rootCon.getConceptNid());

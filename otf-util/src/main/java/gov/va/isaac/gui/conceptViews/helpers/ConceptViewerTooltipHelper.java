@@ -18,23 +18,20 @@
  */
 package gov.va.isaac.gui.conceptViews.helpers;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.Collection;
-
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_long.RefexLongVersionBI;
@@ -65,7 +62,7 @@ public class ConceptViewerTooltipHelper {
 					StringBuffer tpText = new StringBuffer();
 	
 					try {
-						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(WBUtility.getViewCoordinate());
+						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(OTFUtility.getViewCoordinate());
 						
 						for (RefexVersionBI<?> annot : annots) {
 							if (annot.getAssemblageNid() != ConceptViewerHelper.getSnomedAssemblageNid()) {
@@ -136,7 +133,7 @@ public class ConceptViewerTooltipHelper {
 	}
 
 	private String createRefsetTooltip(RefexVersionBI<?> annot) throws IOException, ContradictionException {
-		String refset = WBUtility.getConPrefTerm(annot.getAssemblageNid());
+		String refset = OTFUtility.getConPrefTerm(annot.getAssemblageNid());
 		StringBuffer strBuf = new StringBuffer();
 
 		strBuf.append(refset + " is a ");
@@ -156,7 +153,7 @@ public class ConceptViewerTooltipHelper {
 
 			if (annot.getRefexType() == RefexType.CID) {
 				int nidExt = ((RefexNidVersionBI<?>)annot).getNid1();
-				String compExt = WBUtility.getConceptVersion(nidExt).getPreferredDescription().getText();
+				String compExt = OTFUtility.getConceptVersion(nidExt).getPreferredDescription().getText();
 				strBuf.append("Component #1: " + compExt);
 			} else if (annot.getRefexType() == RefexType.STR) {
 				String strExt = ((RefexStringVersionBI<?>)annot).getString1();
@@ -174,7 +171,7 @@ public class ConceptViewerTooltipHelper {
 	private String createDescTooltipText(DescriptionVersionBI<?> desc) {
 		String lang = desc.getLang();
 		String text = desc.getText();
-		String type = WBUtility.getConPrefTerm(desc.getTypeNid());
+		String type = OTFUtility.getConPrefTerm(desc.getTypeNid());
 		String caseSig = desc.isInitialCaseSignificant() ? "Is Case Significant" : "Not Case Significant";
 
 		return "Term: " + text + "\nType: " + type + "  Case Significant: " + caseSig + "  Language: " + lang + getStampTooltip(desc);
@@ -197,8 +194,8 @@ public class ConceptViewerTooltipHelper {
 			LOG.error("Unknown error in identifying relationship type");
 		}
 		String group = Integer.toString(rel.getGroup());
-		String type = WBUtility.getConPrefTerm(rel.getTypeNid());
-		String target = WBUtility.getConPrefTerm(rel.getDestinationNid());
+		String type = OTFUtility.getConPrefTerm(rel.getTypeNid());
+		String target = OTFUtility.getConPrefTerm(rel.getDestinationNid());
 		String statInf = rel.isInferred() ? "False" : "True";
 
 		return "Destination: " + target + "  Type: " + type + "\nStated: " + statInf + "  Relationship Type: " + refinCharType + "  Role Group: " + group + getStampTooltip(rel);
@@ -256,11 +253,11 @@ public class ConceptViewerTooltipHelper {
 	}
 
 	private String getStampTooltip(ComponentVersionBI comp) {
-		String status = WBUtility.getStatusString(comp);
-		String time =  WBUtility.getTimeString(comp);
-		String author = WBUtility.getAuthorString(comp); 
-		String module = WBUtility.getModuleString(comp);
-		String path = WBUtility.getPathString(comp);
+		String status = OTFUtility.getStatusString(comp);
+		String time =  OTFUtility.getTimeString(comp);
+		String author = OTFUtility.getAuthorString(comp); 
+		String module = OTFUtility.getModuleString(comp);
+		String path = OTFUtility.getPathString(comp);
 
 		return "\nStatus: " + status + "  Time: " + time + "  Author: " + author + "  Module: " + module + "  Path: " + path;
 	}

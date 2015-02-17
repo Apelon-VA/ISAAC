@@ -21,9 +21,12 @@ package gov.va.isaac.gui.searchview;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
+import gov.va.isaac.gui.IndexStatusListener;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
@@ -36,7 +39,7 @@ import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,7 +49,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Consumer;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -65,6 +71,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
@@ -93,6 +100,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
+import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +119,6 @@ import com.sun.javafx.collections.ObservableListWrapper;
 
 public class SearchViewController implements TaskCompleteCallback
 {
-
 	private static final Logger LOG = LoggerFactory.getLogger(SearchViewController.class);
 
 	@FXML private ResourceBundle resources;
@@ -137,6 +144,8 @@ public class SearchViewController implements TaskCompleteCallback
 	private Integer currentlyEnteredAssemblageNid = null;
 	private FlowPane searchInColumnsHolder = new FlowPane();
 	private enum SearchInOptions {Descriptions, Sememes};
+	private ArrayList<Consumer<IndexerBI>> changeNotificationConsumers_ = new ArrayList<>();
+	private SimpleBooleanProperty displayIndexConfigMenu_ = new SimpleBooleanProperty(false);
 
 	public static SearchViewController init() throws IOException
 	{
@@ -197,78 +206,98 @@ public class SearchViewController implements TaskCompleteCallback
 		});
 		
 		searchInRefex = new ConceptNode(null, false, dynamicRefexList_, null);
-		searchInRefex.getConceptProperty().addListener((ChangeListener<ConceptVersionBI>) (observable, oldValue, newValue) -> 
+		searchInRefex.getConceptProperty().addListener(new InvalidationListener()
 		{
-			if (newValue != null)
+			@Override
+			public void invalidated(Observable observable)
 			{
-				searchInColumnsHolder.getChildren().clear();
-				try
+				ConceptVersionBI newValue = searchInRefex.getConceptProperty().get();
+				if (newValue != null)
 				{
-					RefexDynamicUsageDescription rdud = RefexDynamicUsageDescription.read(newValue.getNid());
-					currentlyEnteredAssemblageNid = rdud.getRefexUsageDescriptorNid();
-					Integer[] indexedColumns = LuceneDynamicRefexIndexerConfiguration.readIndexInfo(currentlyEnteredAssemblageNid);
-					if (indexedColumns == null || indexedColumns.length == 0)
+					searchInColumnsHolder.getChildren().clear();
+					try
 					{
-						searchInRefex.isValid().setInvalid("Sememe searches can only be performed on indexed columns in the sememe.  The selected "
-								+ "sememe does not contain any indexed data columns.  Please configure the indexes to search this sememe.");
-						optionsContentVBox.getChildren().remove(searchInColumnsHolder);
-					}
-					else
-					{
-						Label l = new Label("Search in Columns");
-						searchInColumnsHolder.getChildren().add(l);
-						l.minWidthProperty().bind(((Label)searchInRefexHBox.getChildren().get(0)).widthProperty());
-						RefexDynamicColumnInfo[] rdci = rdud.getColumnInfo();
-						if (rdci.length > 0)
+						RefexDynamicUsageDescription rdud = RefexDynamicUsageDescription.read(newValue.getNid());
+						displayIndexConfigMenu_.set(true);
+						currentlyEnteredAssemblageNid = rdud.getRefexUsageDescriptorNid();
+						Integer[] indexedColumns = LuceneDynamicRefexIndexerConfiguration.readIndexInfo(currentlyEnteredAssemblageNid);
+						if (indexedColumns == null || indexedColumns.length == 0)
 						{
-							Arrays.sort(rdci);  //We will depend on them being in the correct order later.
-							HashSet<Integer> indexedColumnsSet = new HashSet<>(Arrays.asList(indexedColumns));
-							int indexNumber = 0;
-							for (RefexDynamicColumnInfo ci : rdci)
-							{
-								StackPane cbStack = new StackPane();
-								CheckBox cb = new CheckBox(ci.getColumnName());
-								if (ci.getColumnDataType() == RefexDynamicDataType.BYTEARRAY || !indexedColumnsSet.contains(indexNumber))
-								{
-									cb.setDisable(true);  //No index on this column... not searchable
-									Tooltip.install(cbStack, new Tooltip("Column Datatype: " + ci.getColumnDataType().getDisplayName() + " is not indexed"));
-								}
-								else
-								{
-									cb.setSelected(true);
-									cb.setTooltip(new Tooltip("Column Datatype: " + ci.getColumnDataType().getDisplayName()));
-								}
-								cbStack.getChildren().add(cb);
-								searchInColumnsHolder.getChildren().add(cbStack);
-								indexNumber++;
-							}
-							optionsContentVBox.getChildren().add(searchInColumnsHolder);
+							searchInRefex.isValid().setInvalid("Sememe searches can only be performed on indexed columns in the sememe.  The selected "
+									+ "sememe does not contain any indexed data columns.  Please configure the indexes to search this sememe.");
+							optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 						}
 						else
 						{
-							searchInRefex.isValid().setInvalid("Sememe searches can only be performed on the data in the sememe.  The selected "
-									+ "sememe does not contain any data columns.");
-							optionsContentVBox.getChildren().remove(searchInColumnsHolder);
+							Label l = new Label("Search in Columns");
+							searchInColumnsHolder.getChildren().add(l);
+							l.minWidthProperty().bind(((Label)searchInRefexHBox.getChildren().get(0)).widthProperty());
+							RefexDynamicColumnInfo[] rdci = rdud.getColumnInfo();
+							if (rdci.length > 0)
+							{
+								Arrays.sort(rdci);  //We will depend on them being in the correct order later.
+								HashSet<Integer> indexedColumnsSet = new HashSet<>(Arrays.asList(indexedColumns));
+								int indexNumber = 0;
+								for (RefexDynamicColumnInfo ci : rdci)
+								{
+									StackPane cbStack = new StackPane();
+									CheckBox cb = new CheckBox(ci.getColumnName());
+									if (ci.getColumnDataType() == RefexDynamicDataType.BYTEARRAY || !indexedColumnsSet.contains(indexNumber))
+									{
+										cb.setDisable(true);  //No index on this column... not searchable
+										Tooltip.install(cbStack, new Tooltip("Column Datatype: " + ci.getColumnDataType().getDisplayName() + " is not indexed"));
+									}
+									else
+									{
+										cb.setSelected(true);
+										cb.setTooltip(new Tooltip("Column Datatype: " + ci.getColumnDataType().getDisplayName()));
+									}
+									cbStack.getChildren().add(cb);
+									searchInColumnsHolder.getChildren().add(cbStack);
+									indexNumber++;
+								}
+								optionsContentVBox.getChildren().add(searchInColumnsHolder);
+							}
+							else
+							{
+								searchInRefex.isValid().setInvalid("Sememe searches can only be performed on the data in the sememe.  The selected "
+										+ "sememe does not contain any data columns.");
+								optionsContentVBox.getChildren().remove(searchInColumnsHolder);
+							}
 						}
 					}
+					catch (Exception e1)
+					{
+						searchInRefex.isValid().setInvalid("Sememe searches can only be limited to valid Dynamic Sememe Assemblage concept types."
+								+ "  The current value is not a Dynamic Sememe Assemblage concept.");
+						displayIndexConfigMenu_.set(false);
+						currentlyEnteredAssemblageNid = null;
+						optionsContentVBox.getChildren().remove(searchInColumnsHolder);
+						searchInColumnsHolder.getChildren().clear();
+					}
 				}
-				catch (Exception e1)
+				else
 				{
-					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Sememe Assemblage concept types."
-							+ "  The current value is not a Dynamic Sememe Assemblage concept.");
 					currentlyEnteredAssemblageNid = null;
 					optionsContentVBox.getChildren().remove(searchInColumnsHolder);
 					searchInColumnsHolder.getChildren().clear();
 				}
+				
 			}
-			else
-			{
-				currentlyEnteredAssemblageNid = null;
-				optionsContentVBox.getChildren().remove(searchInColumnsHolder);
-				searchInColumnsHolder.getChildren().clear();
-			}
-			
 		});
+		
+		MenuItem configureIndex =  new MenuItem("Configure Sememe Indexing");
+		configureIndex.setOnAction((action) ->
+		{
+			ConceptVersionBI c = searchInRefex.getConceptProperty().get();
+			if (c != null)
+			{
+				new ConfigureDynamicRefexIndexingView(c).showView(null);
+			}
+		});
+		configureIndex.setGraphic(Images.CONFIGURE.createImageView());
+		configureIndex.visibleProperty().bind(displayIndexConfigMenu_);
+		searchInRefex.addMenu(configureIndex);
 		
 		searchLimit.setConverter(new StringConverter<Integer>()
 		{
@@ -318,7 +347,7 @@ public class SearchViewController implements TaskCompleteCallback
 							box.setFillWidth(true);
 							
 							final ConceptVersionBI wbConcept = item.getContainingConcept();
-							String preferredText = (wbConcept != null ? WBUtility.getDescription(wbConcept) : "Not on path!");
+							String preferredText = (wbConcept != null ? OTFUtility.getDescription(wbConcept) : "Not on path!");
 						
 							if (item.getMatchingComponents().size() > 0 && item.getMatchingComponents().iterator().next() instanceof RefexDynamicVersionBI<?>)
 							{
@@ -340,7 +369,7 @@ public class SearchViewController implements TaskCompleteCallback
 										assemblageCon.getStyleClass().add("boldLabel");
 										HBox.setMargin(assemblageCon, new Insets(0.0, 0.0, 0.0, 10.0));
 										assemblageConBox.getChildren().add(assemblageCon);
-										assemblageConBox.getChildren().add(new Label("  " + WBUtility.getDescription(rv.getAssemblageNid())));
+										assemblageConBox.getChildren().add(new Label("  " + OTFUtility.getDescription(rv.getAssemblageNid())));
 										box.getChildren().add(assemblageConBox);
 
 										Label attachedData = new Label("Attached Data");
@@ -433,7 +462,7 @@ public class SearchViewController implements TaskCompleteCallback
 											//not on path, most likely
 											continue;
 										}
-										items.add(WBUtility.getDescription(currentWbConcept));
+										items.add(OTFUtility.getDescription(currentWbConcept));
 									}
 
 									String[] itemArray = items.toArray(new String[items.size()]);
@@ -565,6 +594,23 @@ public class SearchViewController implements TaskCompleteCallback
 		{
 			
 		});
+		
+		IndexStatusListener isl = AppContext.getService(IndexStatusListener.class);
+		changeNotificationConsumers_.add(isl.onIndexConfigChanged(new Consumer<IndexerBI>()
+		{
+			@Override
+			public void accept(IndexerBI t)
+			{
+				Platform.runLater(() -> 
+				{
+					if (t.getIndexerName().equals(LuceneDynamicRefexIndexer.INDEX_NAME))
+					{
+						//swap the concept in and out, to fire our change listener, so we recheck if the referenced concept is configured in a valid way.
+						searchInRefex.revalidate();
+					}
+				});
+			}
+		}));
 	}
 
 	public BorderPane getRoot()
@@ -699,7 +745,7 @@ public class SearchViewController implements TaskCompleteCallback
 					catch (NumberFormatException e1) 
 					{
 						//run it as a string search
-						LOG.debug("Doing a refex search as a string search");
+						LOG.debug("Doing a sememe search as a string search");
 						ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 						{
 							try
@@ -724,7 +770,7 @@ public class SearchViewController implements TaskCompleteCallback
 		}
 	}
 	
-	//TODO a listener to trigger this after a user makes a new one...
+	//TODO (artf231420) a listener to trigger this after a user makes a new one...
 	private void populateDynamicRefexList()
 	{
 		Task<Void> t = new Task<Void>()

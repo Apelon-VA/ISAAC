@@ -20,7 +20,7 @@ package gov.va.isaac.gui.conceptCreation;
 
 import gov.va.isaac.gui.conceptCreation.wizardPages.TermRow;
 import gov.va.isaac.gui.conceptCreation.wizardPages.RelRow;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -122,11 +122,11 @@ public class WizardController {
 	}
 
 	public String getRelType(int i) {
-		return WBUtility.getConPrefTerm(rels.get(i).getRelationshipNid());
+		return OTFUtility.getConPrefTerm(rels.get(i).getRelationshipNid());
 	}
 	
 	public String getTarget(int i) {
-		return WBUtility.getConPrefTerm(rels.get(i).getTargetNid());
+		return OTFUtility.getConPrefTerm(rels.get(i).getTargetNid());
 	}
 	
 	//TODO make sure PT and FSN are case insensitive
@@ -165,8 +165,8 @@ public class WizardController {
 										
 		newConCB.setDefined(!isPrimitive);
 		
-		ConceptChronicleBI newCon = WBUtility.getBuilder().construct(newConCB);
-//		WBUtility.addUncommitted(newCon);
+		ConceptChronicleBI newCon = OTFUtility.getBuilder().construct(newConCB);
+//		OTFUtility.addUncommitted(newCon);
 
 		return newCon;
 	}
@@ -179,8 +179,8 @@ public class WizardController {
 													syns.get(i).isInitialCaseSig(), 
 													IdDirective.GENERATE_HASH);
 		
-		WBUtility.getBuilder().construct(newDesc);
-//		WBUtility.addUncommitted(con);
+		OTFUtility.getBuilder().construct(newDesc);
+//		OTFUtility.addUncommitted(con);
 	}
 	
 	public void createNewRelationship(ConceptChronicleBI con, int i) throws IOException, InvalidCAB, ContradictionException {
@@ -190,7 +190,7 @@ public class WizardController {
 													 rels.get(i).getGroup(),
 													 rels.get(i).getType(), 
 													 IdDirective.GENERATE_HASH);
-		WBUtility.getBuilder().construct(newRel);
-//		WBUtility.addUncommitted(con);
+		OTFUtility.getBuilder().construct(newRel);
+//		OTFUtility.addUncommitted(con);
 	}
 }

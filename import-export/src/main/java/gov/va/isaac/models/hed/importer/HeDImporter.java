@@ -28,7 +28,7 @@ import gov.va.isaac.models.api.InformationModelService;
 import gov.va.isaac.models.hed.HeDInformationModel;
 import gov.va.isaac.models.hed.HeDXmlUtils;
 import gov.va.isaac.models.util.ImporterBase;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -335,10 +335,10 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 					String value = auth + "'s " + id + " " + " v" + vers + " HeD Referenced Enumeration";
 			
 					// Only create if doesn't already exist
-					if (!ExtendedAppContext.getDataStore().hasUuid(WBUtility.getUuidForFsn(value, value))) {
+					if (!ExtendedAppContext.getDataStore().hasUuid(OTFUtility.getUuidForFsn(value, value))) {
 						// Create Refex's Description
 						StringBuilder enumerationDesc = new StringBuilder();
-						enumerationDesc.append("Enumeration Refex for " + auth + "'s " + id);
+						enumerationDesc.append("Enumeration Sememe for " + auth + "'s " + id);
 						if (vs.getDescription() != null) {
 							enumerationDesc.append("\r\n" + vs.getDescription());
 						}
@@ -352,13 +352,16 @@ public class HeDImporter extends ImporterBase implements ImportHandler {
 							RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, enumerationDesc.toString(), 
 																											 new RefexDynamicColumnInfo[] {},
 																											 InformationModels.HED_ENUMERATIONS.getUuids()[0], 
-																											 false);
+																											 false, null);
 						} catch (IOException | ContradictionException | InvalidCAB
 								| PropertyVetoException e) {
 							LOG.error("Unable to create HED Enumeration for " + value);
 						}
+						finally
+						{
+							AppContext.getRuntimeGlobals().enableAllCommitListeners();
+						}
 					}
-
 				}
 			}
 			

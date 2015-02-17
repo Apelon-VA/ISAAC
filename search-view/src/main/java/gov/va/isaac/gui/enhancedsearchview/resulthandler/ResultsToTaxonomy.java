@@ -7,7 +7,7 @@ import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,10 +35,8 @@ public class ResultsToTaxonomy {
 
 	private static Task<SctTreeItemSearchResultsDisplayPolicies> configureDisplayPoliciesTask = null;
 
-	private static BorderPane taxonomyPanelBorderPane = new BorderPane();
+	private final static BorderPane taxonomyPanelBorderPane = new BorderPane();
 	private static SplitPane searchResultsAndTaxonomySplitPane;
-
-	private static SearchModel searchModel = new SearchModel();
 
 	private static ComboBox<TaxonomyViewMode> taxonomyPanelViewModeComboBox;
 	private static Button taxonomyPanelCloseButton;
@@ -78,7 +76,8 @@ public class ResultsToTaxonomy {
 				HashSet<Integer> searchResultAncestors = new HashSet<>();
 				HashSet<Integer> searchResults = new HashSet<>();
 
-				for (CompositeSearchResult c : searchModel.getSearchResultsTable().getResults().getItems()) {
+				// TODO this throws ConcurrentModificationException if called before prior export completed
+				for (CompositeSearchResult c : SearchModel.getSearchResultsTable().getResults().getItems()) {
 					if (cancelled) {
 						return taxonomyDisplayPolicies;
 					}
@@ -86,7 +85,7 @@ public class ResultsToTaxonomy {
 					searchResults.add(c.getContainingConcept().getNid());
 
 					Set<ConceptVersionBI> ancestorNids = null;
-					ancestorNids = WBUtility.getConceptAncestors(c.getContainingConcept().getNid());
+					ancestorNids = OTFUtility.getConceptAncestors(c.getContainingConcept().getNid());
 
 					for (ConceptVersionBI concept : ancestorNids) {
 						searchResultAncestors.add(concept.getNid());
@@ -120,7 +119,7 @@ public class ResultsToTaxonomy {
 				
 				if (e != null) {
 					String title = "Failed sending search results to SearchResultsTaxonomy Panel";
-					String msg = "Failed sending " + searchModel.getSearchResultsTable().getResults().getItems().size() + " search results to SearchResultsTaxonomy Panel";
+					String msg = "Failed sending " + SearchModel.getSearchResultsTable().getResults().getItems().size() + " search results to SearchResultsTaxonomy Panel";
 					String details = "Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\".";
 					AppContext.getCommonDialogs().showErrorDialog(title, msg, details, AppContext.getMainApplicationWindow().getPrimaryStage());
 
@@ -134,11 +133,14 @@ public class ResultsToTaxonomy {
 		Utility.execute(configureDisplayPoliciesTask);
 
 	}
+	
+	public static BorderPane getTaxonomyPanelBorderPane() {
+		return taxonomyPanelBorderPane;
+	}
 
 	public static void initializeTaxonomyPanel() {
 		initializeTaxonomyViewModeComboBox();
 		
-		taxonomyPanelBorderPane = new BorderPane();
 		taxonomyPanelBorderPane.setTop(taxonomyPanelViewModeComboBox);
 		taxonomyPanelCloseButton = new Button("Close");
 		taxonomyPanelCloseButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -217,9 +219,5 @@ public class ResultsToTaxonomy {
 	
 	public static void setSearchAndTaxonomySplitPane(SplitPane pane) {
 		searchResultsAndTaxonomySplitPane = pane;
-	}
-	
-	public static void setTaxonomyPanelBorderPane(BorderPane pane) {
-		taxonomyPanelBorderPane = pane;
 	}
 }

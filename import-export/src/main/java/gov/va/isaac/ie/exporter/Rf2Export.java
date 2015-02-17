@@ -21,7 +21,7 @@ import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
 import gov.va.isaac.util.AbstractProgressReporter;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,7 +35,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -456,8 +455,8 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
     ConceptSpec langRefexParent =
         new ConceptSpec("Language type reference set",
             UUID.fromString("84a0b03b-220c-3d69-8487-2e019c933687"));
-    List<ConceptVersionBI> descs =
-        WBUtility.getAllChildrenOfConcept(
+    Set<ConceptVersionBI> descs =
+        OTFUtility.getAllChildrenOfConcept(
             langRefexParent.getLenient().getNid(), true);
     for (ConceptVersionBI desc : descs) {
       possibleLangRefexNids.add(desc.getNid());
@@ -1353,7 +1352,7 @@ public class Rf2Export extends AbstractProgressReporter implements Exporter,
     throws Exception {
     if (conceptsToProcess.isMember(cNid)) {
       count++;
-      ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+      ConceptVersionBI concept = fetcher.fetch(OTFUtility.getViewCoordinate());
       LOG.debug("Process concept " + concept.getPrimordialUuid());
       process(concept);
     }

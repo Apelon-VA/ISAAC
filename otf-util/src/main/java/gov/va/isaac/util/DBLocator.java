@@ -33,6 +33,20 @@ public class DBLocator
 {
 	private static final Logger LOG = LoggerFactory.getLogger(DBLocator.class);
 	
+	
+	/**
+	 * Attempts to find the database folder, using the following selection criteria:
+	 * 1) If the passed in folder is named 'berkeley-db' - it is used directly.
+	 * 2) If the passed in folder ends with '*.bdb' then the subfolder "berkeley-db' is used, under the passed in folder.
+	 * 3) Otherwise, we scan the children of the passed in folder, looking for a folder that ends with .bdb, and if we find one, 
+	 * uses a subfolder of that folder named 'berkeley-db'.
+	 * 
+	 * 4) If still not found - it will scan the sibling folders of the passed in folder, looking for a folder that ends with .bdb
+	 * Upon finding one, does 3.
+	 * 5) Finally, if nothing matches, it just returns the input folder. 
+	 * @param inputFolder
+	 * @return
+	 */
 	public static File findDBFolder(File inputFolder)
 	{
 		inputFolder = inputFolder.getAbsoluteFile();
@@ -58,7 +72,7 @@ public class DBLocator
 				//If it is a folder with a '.bdb' at the end of the name, then berkeley-db will be in a sub-folder.
 				if (f.getName().endsWith(".bdb") && f.isDirectory())
 				{
-					LOG.info("BDB Location set to " + inputFolder.getAbsolutePath());
+					LOG.info("BDB Location set to " + f.getAbsolutePath());
 					return new File(f, "berkeley-db");
 				}
 			}

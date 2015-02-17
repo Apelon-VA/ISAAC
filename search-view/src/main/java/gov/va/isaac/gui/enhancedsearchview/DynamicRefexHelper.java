@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.enhancedsearchview;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -56,13 +56,13 @@ public class DynamicRefexHelper {
 	private DynamicRefexHelper() {}
 	
 	public static void displayDynamicRefexes(ConceptChronicleBI conceptContainingRefexes) {
-		WBUtility.getConceptVersion(conceptContainingRefexes.getConceptNid());
+		OTFUtility.getConceptVersion(conceptContainingRefexes.getConceptNid());
 	}
 	public static void displayDynamicRefexes(ConceptVersionBI conceptContainingRefexes) {
 		String desc = null;
 		try {
-			desc = WBUtility.getDescription(conceptContainingRefexes);
-			for (RefexDynamicVersionBI<?> refex : conceptContainingRefexes.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+			desc = OTFUtility.getDescription(conceptContainingRefexes);
+			for (RefexDynamicVersionBI<?> refex : conceptContainingRefexes.getRefexesDynamicActive(OTFUtility.getViewCoordinate())) {
 				DynamicRefexHelper.displayDynamicRefex(refex);
 			}
 		} catch (IOException e) {
@@ -91,8 +91,8 @@ public class DynamicRefexHelper {
 		}
 		RefexDynamicColumnInfo[] colInfo = dud.getColumnInfo();
 		RefexDynamicDataBI[] data = refex.getData();
-		LOG.debug(indent + "dynamic refex nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
-		LOG.debug(indent + "dynamic refex name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
+		LOG.debug(indent + "dynamic sememe nid=" + refex.getNid() + ", uuid=" + refex.getPrimordialUuid());
+		LOG.debug(indent + "dynamic sememe name=\"" + dud.getRefexName() + "\": " + refex.toUserString() + " with " + colInfo.length + " columns:");
 		for (int colIndex = 0; colIndex < colInfo.length; ++colIndex) {
 			RefexDynamicColumnInfo currentCol = colInfo[colIndex];
 			String name = currentCol.getColumnName();
@@ -100,18 +100,18 @@ public class DynamicRefexHelper {
 			UUID colUuid = currentCol.getColumnDescriptionConcept();
 			RefexDynamicDataBI colData = data[colIndex];
 
-			LOG.debug(indent + "\t" + "dynamic refex: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + (colData != null ? colData.getDataObject() : null));
+			LOG.debug(indent + "\t" + "dynamic sememe: " + refex.toUserString() + " col #" + colIndex + " (uuid=" + colUuid + ", type=" + type.getDisplayName() + "): " + name + "=" + (colData != null ? colData.getDataObject() : null));
 		}
 		
 		Collection<? extends RefexDynamicVersionBI<?>> embeddedRefexes = null;
 		try {
-			embeddedRefexes = refex.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+			embeddedRefexes = refex.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
 
 			for (RefexDynamicVersionBI<?> embeddedRefex : embeddedRefexes) {
 				displayDynamicRefex(embeddedRefex, depth + 1);
 			}
 		} catch (IOException e) {
-			LOG.error("Failed executing getRefexesDynamicActive(WBUtility.getViewCoordinate()).  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
+			LOG.error("Failed executing getRefexesDynamicActive(OTFUtility.getViewCoordinate()).  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}

@@ -19,7 +19,7 @@
 package gov.va.isaac.gui.refsetview;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -83,7 +83,7 @@ public class RefsetInstanceAccessor {
 					try
 					{
 						if (previousMember == null || previousMember.getAuthorNid() != member.getAuthorNid()) {
-							this.author = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
+							this.author = OTFUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getAuthorNid()).getPrimordialUuid());
 						} else {
 							this.author = "";
 						}
@@ -96,7 +96,7 @@ public class RefsetInstanceAccessor {
 					try
 					{
 						if (previousMember == null || previousMember.getModuleNid() != member.getModuleNid()) {
-							this.module = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getModuleNid()).getPrimordialUuid());
+							this.module = OTFUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getModuleNid()).getPrimordialUuid());
 						} else {
 							this.module = "";
 						}
@@ -109,7 +109,7 @@ public class RefsetInstanceAccessor {
 					try
 					{
 						if (previousMember == null || previousMember.getPathNid() != member.getPathNid()) {
-							this.path = WBUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getPathNid()).getPrimordialUuid());
+							this.path = OTFUtility.getDescription(AppContext.getService(TerminologyStoreDI.class).getConcept(member.getPathNid()).getPrimordialUuid());
 						} else {
 							this.path = "";
 						}
@@ -284,7 +284,7 @@ public class RefsetInstanceAccessor {
 				}
 			}
 
-			ConceptVersionBI component = WBUtility.getConceptVersion(ext.getNid1());
+			ConceptVersionBI component = OTFUtility.getConceptVersion(ext.getNid1());
 
 			if (updateComponent) {
 
@@ -382,14 +382,14 @@ public class RefsetInstanceAccessor {
 			try {
 //				setupMemberNids();
 				
-				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(WBUtility.getViewCoordinate());
+				Collection<? extends RefexVersionBI<?>> parentAnnots = member.getAnnotationsActive(OTFUtility.getViewCoordinate());
 				compositeMemberNid = member.getNid();
-				/**TODO - BAC
+				/**TODO (artf231836) - BAC
 				//TODO this should be done generically in the info-model-view API, not CEM specific.
 				for (RefexVersionBI<?> parentAnnot : parentAnnots) {
 					if (parentAnnot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_REFSET.getNid()) {
 						
-						Collection<? extends RefexVersionBI<?>> refAnnots = parentAnnot.getAnnotationsActive(WBUtility.getViewCoordinate());
+						Collection<? extends RefexVersionBI<?>> refAnnots = parentAnnot.getAnnotationsActive(OTFUtility.getViewCoordinate());
 						for (RefexVersionBI<?> annot : refAnnots) {
 							if (annot.getAssemblageNid() == CEMMetadataBinding.CEM_CONSTRAINTS_PATH_REFSET.getNid()) {
 								constraintPathExt = new SimpleStringProperty(((RefexStringVersionBI<?>)annot).getString1());

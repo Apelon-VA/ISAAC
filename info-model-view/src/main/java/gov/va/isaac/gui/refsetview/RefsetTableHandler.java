@@ -25,7 +25,7 @@ import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.NidStrExtRefsetInstanc
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.RefsetInstance;
 import gov.va.isaac.gui.refsetview.RefsetInstanceAccessor.StrExtRefsetInstance;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 
@@ -78,13 +78,13 @@ public class RefsetTableHandler {
 		refsetNid = rNid;
 		
 		try {
-		  /** TODO - BAC
+		  /** TODO (artf231837) - BAC
 			if (member.getAssemblageNid() == CEMMetadataBinding.CEM_COMPOSITION_REFSET.getNid()) {
 				refsetType = RefexType.UNKNOWN;
 			}
 			*/
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			// TODO (artf231837) Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -194,24 +194,24 @@ public class RefsetTableHandler {
 						StrExtRefsetInstance instance = (StrExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						instance.setStrExt(t.getNewValue());
 						
-						if (WBUtility.getRefsetMember(instance.getMemberNid()) == null) {
+						if (OTFUtility.getRefsetMember(instance.getMemberNid()) == null) {
 							RefexCAB newMember = new RefexCAB(RefexType.STR, instance.getRefCompConNid(), refsetNid, IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
-							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
+							RefexChronicleBI<?> newMemChron = OTFUtility.getBuilder().construct(newMember);
 							instance.setMemberNid(newMemChron.getNid());
 							
 							
 							ConceptVersionBI refCompCon;
 							if (!isAnnotation) {
-								refCompCon = WBUtility.getConceptVersion(instance.getRefCompConNid());
+								refCompCon = OTFUtility.getConceptVersion(instance.getRefCompConNid());
 							} else {
-								refCompCon = WBUtility.getConceptVersion(refsetNid);
+								refCompCon = OTFUtility.getConceptVersion(refsetNid);
 							}
 							refCompCon.addAnnotation(newMemChron);
 							
-							WBUtility.addUncommitted(instance.getRefCompConNid());
+							OTFUtility.addUncommitted(instance.getRefCompConNid());
 							rvc_.reloadData();
 							return;
 						} else {
@@ -236,19 +236,19 @@ public class RefsetTableHandler {
 						CEMCompositRefestInstance instance = (CEMCompositRefestInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
 						instance.setValueExt(t.getNewValue());
 
-						if (WBUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
-							ComponentChronicleBI<?> compositeMember = WBUtility.getRefsetMember(instance.getCompositeMemberNid());
-/** TODO - BAC							
+						if (OTFUtility.getRefsetMember(instance.getValueMemberNid()) == null) {
+							ComponentChronicleBI<?> compositeMember = OTFUtility.getRefsetMember(instance.getCompositeMemberNid());
+							/** TODO (artf231838) - BAC
 							RefexCAB newMember = new RefexCAB(RefexType.STR, compositeMember.getNid(), CEMMetadataBinding.CEM_VALUE_REFSET.getNid(), IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 							newMember.put(ComponentProperty.STRING_EXTENSION_1, t.getNewValue());
 							
-							RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
+							RefexChronicleBI<?> newMemChron = OTFUtility.getBuilder().construct(newMember);
 							instance.setValueMemberNid(newMemChron.getNid());
 							
 							compositeMember.addAnnotation(newMemChron);
 							
-							WBUtility.addUncommitted(instance.getRefCompConNid());
+							OTFUtility.addUncommitted(instance.getRefCompConNid());
 							rvc_.reloadData();
 **/
 							return;
@@ -289,7 +289,7 @@ public class RefsetTableHandler {
 						return;
 					}
 	
-					ConceptVersionBI comp = WBUtility.lookupIdentifier(t.getNewValue());
+					ConceptVersionBI comp = OTFUtility.lookupIdentifier(t.getNewValue());
 					if (comp == null) {
 						AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 					} else {
@@ -301,24 +301,24 @@ public class RefsetTableHandler {
 						{
 							if (columnNumber == 1) {
 								NidExtRefsetInstance instance = (NidExtRefsetInstance) t.getTableView().getItems().get(t.getTablePosition().getRow());
-								if (WBUtility.getRefsetMember(instance.getMemberNid()) == null) {
+								if (OTFUtility.getRefsetMember(instance.getMemberNid()) == null) {
 									RefexCAB newMember = new RefexCAB(RefexType.CID, instance.getRefCompConNid(), refsetNid, IdDirective.GENERATE_RANDOM, RefexDirective.EXCLUDE);
 
 									newMember.put(ComponentProperty.COMPONENT_EXTENSION_1_ID, comp.getPrimordialUuid());
 									
-									RefexChronicleBI<?> newMemChron = WBUtility.getBuilder().construct(newMember);
+									RefexChronicleBI<?> newMemChron = OTFUtility.getBuilder().construct(newMember);
 									instance.setMemberNid(newMemChron.getNid());
 									
 									
 									ConceptVersionBI refCompCon;
 									if (!isAnnotation) {
-										refCompCon = WBUtility.getConceptVersion(instance.getRefCompConNid());
+										refCompCon = OTFUtility.getConceptVersion(instance.getRefCompConNid());
 									} else {
-										refCompCon = WBUtility.getConceptVersion(refsetNid);
+										refCompCon = OTFUtility.getConceptVersion(refsetNid);
 									}
 									refCompCon.addAnnotation(newMemChron);
 									
-									WBUtility.addUncommitted(instance.getRefCompConNid());
+									OTFUtility.addUncommitted(instance.getRefCompConNid());
 									rvc_.reloadData();
 									return;
 								} else {
@@ -370,7 +370,7 @@ public class RefsetTableHandler {
 					if (instance.getMemberNid() != 0) {
 						AppContext.getCommonDialogs().showErrorDialog("Illegal Operation", "Cannot modify the reference component of an existing refset member", "");
 					} else {
-						ConceptVersionBI comp = WBUtility.lookupIdentifier(t.getNewValue());
+						ConceptVersionBI comp = OTFUtility.lookupIdentifier(t.getNewValue());
 						if (comp == null) {
 							AppContext.getCommonDialogs().showErrorDialog("UUID Not Found", "Could not find the UUID in the database", t.getNewValue());
 						} else {
@@ -443,10 +443,10 @@ public class RefsetTableHandler {
 			}
 
 			private boolean isLatestVersion(RefsetInstance instance) throws ContradictionException {
- 				RefexChronicleBI<?> refChron = WBUtility.getAllVersionsRefsetMember(instance.getMemberNid());
-				RefexVersionBI<?> refVersion = WBUtility.getRefsetMember(instance.getMemberNid());
+ 				RefexChronicleBI<?> refChron = OTFUtility.getAllVersionsRefsetMember(instance.getMemberNid());
+				RefexVersionBI<?> refVersion = OTFUtility.getRefsetMember(instance.getMemberNid());
 				
-				if (refChron.getVersion(WBUtility.getViewCoordinate()).getStamp() == refVersion.getStamp()) {
+				if (refChron.getVersion(OTFUtility.getViewCoordinate()).getStamp() == refVersion.getStamp()) {
 					return true;
 				}
 				
@@ -484,20 +484,20 @@ public class RefsetTableHandler {
 	}
 
 	private RefexCAB createBlueprint(int nid) throws ContradictionException, InvalidCAB, IOException {
-		RefexVersionBI<?> refex = (RefexVersionBI<?>)WBUtility.getRefsetMember(nid);
+		RefexVersionBI<?> refex = (RefexVersionBI<?>)OTFUtility.getRefsetMember(nid);
 		
-		return refex.makeBlueprint(WBUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
+		return refex.makeBlueprint(OTFUtility.getViewCoordinate(),  IdDirective.PRESERVE, RefexDirective.INCLUDE);
 	
 	}
 
 	private void addUncommitted(RefexCAB member, boolean isAnnotation) throws IOException, InvalidCAB, ContradictionException {
-		RefexVersionBI<?> refex = (RefexVersionBI<?>)WBUtility.getRefsetMember(member.getComponentNid());
+		RefexVersionBI<?> refex = (RefexVersionBI<?>)OTFUtility.getRefsetMember(member.getComponentNid());
 		
 		//TODO retest this... the old impl was quite wrong, not sure how it ever worked, when it called addUncommitted on the wrong things.
-		WBUtility.getBuilder().constructIfNotCurrent(member);
-		WBUtility.addUncommitted(WBUtility.getConceptVersion(refex.getAssemblageNid()));
+		OTFUtility.getBuilder().constructIfNotCurrent(member);
+		OTFUtility.addUncommitted(OTFUtility.getConceptVersion(refex.getAssemblageNid()));
 		if (isAnnotation) {
-			WBUtility.addUncommitted(WBUtility.getConceptVersion(refex.getReferencedComponentNid()));
+			OTFUtility.addUncommitted(OTFUtility.getConceptVersion(refex.getReferencedComponentNid()));
 		}
 	}
 }

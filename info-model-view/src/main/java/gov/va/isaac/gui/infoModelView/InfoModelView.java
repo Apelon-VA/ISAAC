@@ -22,7 +22,7 @@ import gov.va.isaac.gui.refsetview.RefsetView;
 import gov.va.isaac.gui.util.DragResizer;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.InfoModelViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -113,7 +113,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		title.getStyleClass().add("boldLabel");
 		HBox.setMargin(title, new Insets(4, 0, 0, 0));
 		
-		Label l = new Label(WBUtility.getDescription(conceptUUID));
+		Label l = new Label(OTFUtility.getDescription(conceptUUID));
 		HBox.setMargin(l, new Insets(4, 0, 0, 10));
 		h.getChildren().add(l);
 		
@@ -166,7 +166,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		BorderPane.setMargin(bp.getTop(), new Insets(5, 5, 5, 5));
 		
 		list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-/** TODO - BAC
+/** TODO (artf231833) - BAC
 		//TODO this shouldn't require a hard import on the import-export project... need to refactor, use interfaces
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
@@ -200,7 +200,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 		sp.setContent(refsetArea);
 		VBox.setVgrow(sp, Priority.ALWAYS);
 		root.getChildren().add(sp);
-/** TODO - BAC
+/** TODO (artf231833) - BAC
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs == CEMMetadataBinding.CEM_DATA_REFSET || cs == CEMMetadataBinding.CEM_TYPE_REFSET)
@@ -219,7 +219,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 				//manually compute what needs to change.  Sigh.
 				//TODO file a bug on JavaFX.  The old code here should have worked...
 				HashSet<String> all = new HashSet<>();
-				/** TODO - BAC
+				/** TODO (artf231833) - BAC
 				for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 				{
 					all.add(cs.getDescription());
@@ -245,7 +245,7 @@ public class InfoModelView implements PopupViewI, InfoModelViewI
 	}
 	
 	private void addRefsetView(String name)
-	{/** TODO - BAC
+	{/** TODO (artf231834) - BAC
 		for (ConceptSpec cs : CEMMetadataBinding.getAllRefsets())
 		{
 			if (cs.getDescription().equals(name))

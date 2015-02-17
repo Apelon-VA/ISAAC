@@ -20,14 +20,11 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
-
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.util.UUID;
-
 import javafx.beans.property.BooleanProperty;
+import javafx.scene.Node;
 import javafx.scene.layout.Region;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -75,7 +72,7 @@ public class SctTreeViewIsaacView  implements TaxonomyViewI
 	 */
 	@Override
 	public void locateConcept(int nid, BooleanProperty busyIndicator) {
-		sctTreeView_.showConcept(WBUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);	
+		sctTreeView_.showConcept(OTFUtility.getConceptVersion(nid).getPrimordialUuid(), busyIndicator);	
 	}
 
 	/* (non-Javadoc)
@@ -100,5 +97,15 @@ public class SctTreeViewIsaacView  implements TaxonomyViewI
 	@Override
 	public SctTreeItemDisplayPolicies getDefaultDisplayPolicies() {
 		return SctTreeView.getDefaultDisplayPolicies();
+	}
+	
+	/**
+	 * Convenience method for other code to add buttons, etc to the tool bar displayed above
+	 * the tree view 
+	 * @param node
+	 */
+	public void addToToolBar(Node node)
+	{
+		sctTreeView_.addToToolBar(node);
 	}
 }

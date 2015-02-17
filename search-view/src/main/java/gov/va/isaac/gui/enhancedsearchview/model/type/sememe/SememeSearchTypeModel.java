@@ -16,7 +16,7 @@ import gov.va.isaac.util.Interval;
 import gov.va.isaac.util.NumberUtilities;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,7 +150,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				}
 				catch (Exception e1)
 				{
-					searchInRefex.isValid().setInvalid("Refex searches can only be limited to valid Dynamic Sememe Assemblage concept types."
+					searchInRefex.isValid().setInvalid("Sememe searches can only be limited to valid Dynamic Sememe Assemblage concept types."
 							+ "  The current value is not a Dynamic Sememe Assemblage concept.");
 					currentlyEnteredAssemblageNid = null;
 					optionsContentVBox.getChildren().remove(searchInColumnsHolder);
@@ -170,14 +170,16 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {	
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		searchText.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable,
 					String oldValue, String newValue) {
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		
@@ -185,12 +187,23 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				SearchModel model = new SearchModel();
-				if (model.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
-					model.isSearchRunnableProperty().set(newValue);
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
+					SearchModel.isSearchRunnableProperty().set(newValue);
 				}
 			}
 		});
+		isSearchTypeRunnableProperty.set(isValidSearch());
+
+		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == SememeSearchTypeModel.this) {
+					SearchModel.isSearchSavableProperty().set(newValue);
+				}
+			}
+		});
+		isSearchTypeSavableProperty.set(isSavableSearch());
 	}
 	
 	private void setupSearchText() {
@@ -298,7 +311,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				catch (NumberFormatException e1) 
 				{
 					//run it as a string search
-					LOG.debug("Doing a refex search as a string search");
+					LOG.debug("Doing a sememe search as a string search");
 					ssh = SearchHandler.dynamicRefexSearch((indexer) ->
 					{
 						try
@@ -371,7 +384,7 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				if (c instanceof RefexDynamicVersionBI<?>)
 				{
 					RefexDynamicVersionBI<?> rv = (RefexDynamicVersionBI<?>)c;
-					ConceptVersionBI assembCon = WBUtility.getConceptVersion(rv.getAssemblageNid());	
+					ConceptVersionBI assembCon = OTFUtility.getConceptVersion(rv.getAssemblageNid());	
 					
 					try
 					{
@@ -470,23 +483,13 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 	}
 
 	@Override
-	public  boolean isCriteriaPanelValid() {
+	public String getValidationFailureMessage() {
 		if (viewCoordinateProperty.get() == null) {
-			return false;
-		}
-		
-		return true;
-	}
-
-	@Override
-	protected boolean isValidSearch(String errorDialogTitle) {
-		if ((searchText.getText().length() > 0) || searchText.getText().length() > 1)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
+			return "View Coordinate is unset";
+		} else if (searchText.getText().length() == 0) {
+			return "Text parameter is unset or too short";
+		} else {
+			return null;
 		}
 	}
 

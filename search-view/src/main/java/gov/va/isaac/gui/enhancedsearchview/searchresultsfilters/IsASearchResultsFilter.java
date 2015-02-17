@@ -28,7 +28,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ class IsASearchResultsFilter implements SearchResultsFilter {
 	
 	@Override
 	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
-		final ConceptVersionBI possibleMatchingConcept = WBUtility.getConceptVersion(filter.getNid());
+		final ConceptVersionBI possibleMatchingConcept = OTFUtility.getConceptVersion(filter.getNid());
 
 		CompositeSearchResult currentResult = null;
 		try {
@@ -68,8 +68,8 @@ class IsASearchResultsFilter implements SearchResultsFilter {
 			
 			return filteredResults;
 		} catch (Exception e) {
-			throw new SearchResultsFilterException(this, "Failed calling (" + WBUtility.getDescription(currentResult.getContainingConcept()) 
-					+ " (nid=" + currentResult.getContainingConcept() + ")).isKindOf(" + WBUtility.getDescription(possibleMatchingConcept) 
+			throw new SearchResultsFilterException(this, "Failed calling (" + OTFUtility.getDescription(currentResult.getContainingConcept()) 
+					+ " (nid=" + currentResult.getContainingConcept() + ")).isKindOf(" + OTFUtility.getDescription(possibleMatchingConcept) 
 					+ " (nid=" + possibleMatchingConcept.getConceptNid() + "))", e);
 		}
 	}

@@ -25,12 +25,12 @@
 package gov.va.isaac.util;
 
 import java.util.UUID;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -45,18 +45,18 @@ public class ComponentDescriptionHelper {
 	private ComponentDescriptionHelper() {}
 	
 	public static String getComponentDescription(int nid) {
-		return getComponentDescription(WBUtility.getComponentVersion(nid));
+		return getComponentDescription(OTFUtility.getComponentVersion(nid));
 	}
 	public static String getComponentDescription(UUID uuid) {
-		return getComponentDescription(WBUtility.getComponentVersion(uuid));
+		return getComponentDescription(OTFUtility.getComponentVersion(uuid));
 	}
 	public static String getComponentDescription(ComponentVersionBI component) {
-		ComponentType type = ComponentTypeHelper.getComponentType(component);
+		ComponentType type = ComponentType.getComponentVersionType(component);
 
 		String description = null;
 
 		switch(type) {
-		case Concept: {
+		case CONCEPT: case CONCEPT_ATTRIBUTES: {
 			ConceptChronicleBI concept = null;
 			if (component instanceof ConceptAttributeVersionBI) {
 				concept = ((ConceptAttributeVersionBI<?>) component).getEnclosingConcept();
@@ -64,21 +64,21 @@ public class ComponentDescriptionHelper {
 				concept = (ConceptChronicleBI)component;
 			}
 
-			String fsn = WBUtility.getFullySpecifiedName(concept);
+			String fsn = OTFUtility.getFullySpecifiedName(concept);
 			UUID uuid = concept.getPrimordialUuid();
 
 			// Concept with FSN: <FSN> with UUID: <Concept UUID>
-			description = ComponentType.Concept.name() + " \"" + fsn + "\" \nwith UUID: " + uuid;
+			description = ComponentType.CONCEPT.toString() + " \"" + fsn + "\" \nwith UUID: " + uuid;
 			break;
 
 		}
 
-		case Description: {
+		case DESCRIPTION: {
 			DescriptionVersionBI<?> descriptionVersion = (DescriptionVersionBI<?>)component;
-			String typeName = WBUtility.getConPrefTerm(descriptionVersion.getTypeNid());
+			String typeName = OTFUtility.getConPrefTerm(descriptionVersion.getTypeNid());
 			String term = descriptionVersion.getText();
-			ConceptVersionBI containingConcept = WBUtility.getConceptVersion(descriptionVersion.getConceptNid());
-			String containingConceptFSN = WBUtility.getFullySpecifiedName(containingConcept);
+			ConceptVersionBI containingConcept = OTFUtility.getConceptVersion(descriptionVersion.getConceptNid());
+			String containingConceptFSN = OTFUtility.getFullySpecifiedName(containingConcept);
 			UUID containingConceptUuid = containingConcept.getPrimordialUuid();
 
 			// The <TYPE> term type with text: <TERM> in Concept with FSN: <FSN> with UUID: <Description UUID>
@@ -86,45 +86,45 @@ public class ComponentDescriptionHelper {
 			break;
 		}
 
-		case Refex:
+		case SEMEME:
 			//The refex member with Referenced Component UUID: <REF_COMP_UUID> in Refex: <REFEX_UUID> having with UUID: <Refex MEMEBER UUID>
 			RefexVersionBI<?> refexVersion = (RefexVersionBI<?>)component;
-			UUID referencedComponent = WBUtility.getComponentVersion(refexVersion.getReferencedComponentNid()).getPrimordialUuid();
+			UUID referencedComponent = OTFUtility.getComponentVersion(refexVersion.getReferencedComponentNid()).getPrimordialUuid();
 			int assemblageNid = refexVersion.getAssemblageNid();
-			ComponentVersionBI assemblageComponentVersion = WBUtility.getComponentVersion(assemblageNid);
+			ComponentVersionBI assemblageComponentVersion = OTFUtility.getComponentVersion(assemblageNid);
 			UUID assemblageUuid = assemblageComponentVersion.getPrimordialUuid();
-			description = ComponentType.Refex.name() + " member " + refexVersion.getPrimordialUuid() + " \nwith referenced component " + referencedComponent + " \nin refex " + assemblageUuid;
+			description = ComponentType.SEMEME.toString() + " member " + refexVersion.getPrimordialUuid() + " \nwith referenced component " + referencedComponent + " \nin sememe " + assemblageUuid;
 			break;
 
-		case RefexDynamic:
+		case SEMEME_DYNAMIC:
 			//The refex Dynamic member with Referenced Component UUID: <REF_COMP_UUID> in Refex: <REFEX_UUID> having with UUID: <Refex MEMEBER UUID>
 			RefexDynamicVersionBI<?> refexDynamicVersion = (RefexDynamicVersionBI<?>)component;
-			UUID dynamicReferencedComponent = WBUtility.getComponentVersion(refexDynamicVersion.getReferencedComponentNid()).getPrimordialUuid();
+			UUID dynamicReferencedComponent = OTFUtility.getComponentVersion(refexDynamicVersion.getReferencedComponentNid()).getPrimordialUuid();
 			int assemblageDynamicNid = refexDynamicVersion.getAssemblageNid();
-			ConceptVersionBI assemblageDynamicComponentVersion = WBUtility.getConceptVersion(assemblageDynamicNid);
+			ConceptVersionBI assemblageDynamicComponentVersion = OTFUtility.getConceptVersion(assemblageDynamicNid);
 			UUID assemblageDynamicUuid = assemblageDynamicComponentVersion.getPrimordialUuid();
 			try {
 				if (assemblageDynamicComponentVersion.isAnnotationStyleRefex()) {
-					description = ComponentType.RefexDynamic.name() + " annotated member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+					description = ComponentType.SEMEME_DYNAMIC.toString() + " annotated member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin sememe " + assemblageDynamicUuid;
 				} else {
-					description = ComponentType.RefexDynamic.name() + " regular member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+					description = ComponentType.SEMEME_DYNAMIC.toString() + " regular member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin sememe " + assemblageDynamicUuid;
 				}
 			} catch (Exception e) {
-				description = "Error accessing Refex Annotation type\n" + ComponentType.RefexDynamic.name() + " member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin refex " + assemblageDynamicUuid;
+				description = "Error accessing Dynamic Sememe Annotation type\n" + ComponentType.SEMEME_DYNAMIC.toString() + " member " + refexDynamicVersion.getPrimordialUuid() + " \nwith referenced component " + dynamicReferencedComponent + " \nin sememe " + assemblageDynamicUuid;
 			}
 			break;
 
-		case Relationship: {
+		case RELATIONSHIP: {
 			RelationshipVersionBI<?> relationshipVersion = (RelationshipVersionBI<?>)component;
 			UUID relationshipUuid = relationshipVersion.getPrimordialUuid();
-			String typeName = WBUtility.getConPrefTerm(relationshipVersion.getTypeNid());
-			ConceptVersionBI sourceConcept = WBUtility.getConceptVersion(relationshipVersion.getOriginNid());
-			String sourceConceptFSN = WBUtility.getFullySpecifiedName(sourceConcept);
-			ConceptVersionBI destinationConcept = WBUtility.getConceptVersion(relationshipVersion.getDestinationNid());
-			String destinationConceptFSN = WBUtility.getFullySpecifiedName(destinationConcept);
+			String typeName = OTFUtility.getConPrefTerm(relationshipVersion.getTypeNid());
+			ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(relationshipVersion.getOriginNid());
+			String sourceConceptFSN = OTFUtility.getFullySpecifiedName(sourceConcept);
+			ConceptVersionBI destinationConcept = OTFUtility.getConceptVersion(relationshipVersion.getDestinationNid());
+			String destinationConceptFSN = OTFUtility.getFullySpecifiedName(destinationConcept);
 
 			// The <TYPE> relationship type with source FSN: <SOURCE_FSN> and destination FSN: <DESTINATION_FSN> with UUID: <Relationship UUID>
-			description = ComponentType.Relationship.name() + " type \"" + typeName + "\" \nwith source FSN: \"" + sourceConceptFSN + "\" \nand destination FSN: \"" + destinationConceptFSN + "\" \nwith UUID: " + relationshipUuid;
+			description = ComponentType.RELATIONSHIP.toString() + " type \"" + typeName + "\" \nwith source FSN: \"" + sourceConceptFSN + "\" \nand destination FSN: \"" + destinationConceptFSN + "\" \nwith UUID: " + relationshipUuid;
 			break;
 		}
 

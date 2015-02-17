@@ -23,10 +23,8 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.util.UUID;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -36,14 +34,15 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRfx;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.jfree.util.Log;
@@ -87,20 +86,20 @@ public class RelationshipModelingPopup extends ModelingPopup
 	{
 		rel = (RelationshipVersionBI<?>)origComp;
 
-		ConceptVersionBI typeToSet = WBUtility.getConceptVersion(rel.getTypeNid());
+		ConceptVersionBI typeToSet = OTFUtility.getConceptVersion(rel.getTypeNid());
 		ConceptVersionBI otherConceptToSet;
 		if (!isDestination) {
-			otherConceptToSet = WBUtility.getConceptVersion(rel.getDestinationNid());
+			otherConceptToSet = OTFUtility.getConceptVersion(rel.getDestinationNid());
 		} else {
-			otherConceptToSet = WBUtility.getConceptVersion(rel.getOriginNid());
+			otherConceptToSet = OTFUtility.getConceptVersion(rel.getOriginNid());
 		}
 		
 		if (!rel.isUncommitted() || (rel.isUncommitted() && rel.getVersions().size() > 1)) {
-			typeCon.set(typeToSet);
 			typeCon.disableEdit();
+			typeCon.set(typeToSet);
 			
-			otherEndCon.set(otherConceptToSet);
 			otherEndCon.disableEdit();
+			otherEndCon.set(otherConceptToSet);
 		} else {
 			typeCon.set(typeToSet);
 			otherEndCon.set(otherConceptToSet);
@@ -108,8 +107,8 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 		groupNum.setText(String.valueOf(rel.getGroup()));
 		
-		refinabilityCon.getSelectionModel().select(new SimpleDisplayConcept(WBUtility.getConceptVersion(rel.getRefinabilityNid())));
-		characteristicCon.getSelectionModel().select(new SimpleDisplayConcept(WBUtility.getConceptVersion(rel.getCharacteristicNid())));
+		refinabilityCon.getSelectionModel().select(new SimpleDisplayConcept(OTFUtility.getConceptVersion(rel.getRefinabilityNid())));
+		characteristicCon.getSelectionModel().select(new SimpleDisplayConcept(OTFUtility.getConceptVersion(rel.getCharacteristicNid())));
 		
 		if (isDestination) {
 			otherConcept.setText("Origin");
@@ -120,22 +119,22 @@ public class RelationshipModelingPopup extends ModelingPopup
 
 		try {
 			ComponentChronicleBI<?> chronicle = rel.getChronicle();
-			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
+			RelationshipVersionBI<?> displayVersion = (RelationshipVersionBI<?>) chronicle.getVersion(OTFUtility.getViewCoordinate());
 
 			if (chronicle.isUncommitted()) {
-				displayVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+				displayVersion = (RelationshipVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 
 			}
 
 			// TODO: Needs to reference previous commit, not component as-is before panel opened
 			if (isDestination) {
-				createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getOriginNid()).getPreferredDescription().getText());
+				createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getOriginNid()).getPreferredDescription().getText());
 			} else {
-				createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getDestinationNid()).getPreferredDescription().getText());
+				createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getDestinationNid()).getPreferredDescription().getText());
 			}
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getRefinabilityNid()).getPreferredDescription().getText());
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getCharacteristicNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getRefinabilityNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getCharacteristicNid()).getPreferredDescription().getText());
 			createOriginalLabel(String.valueOf(displayVersion.getGroup()));
 		} catch (Exception e) {
 			Log.error("Cannot access Pref Term for attributes of relationship: "  + rel.getPrimordialUuid(), e);
@@ -152,7 +151,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		groupNum = new TextField();
 		
 		ObservableList<SimpleDisplayConcept> typeConDropDownOptions = FXCollections.observableArrayList();
-		typeConDropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(UUID.fromString("c93a30b9-ba77-3adb-a9b8-4589c9f8fb25"))));
+		typeConDropDownOptions.add(new SimpleDisplayConcept(OTFUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
 		typeCon = new ConceptNode(null, true, typeConDropDownOptions, null);
 
 		otherConceptNewSelected = new SimpleBooleanProperty(false);
@@ -234,7 +233,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		characteristicCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if (rel.getCharacteristicNid() != newVal.getNid()) {
 						modificationMade.set(true);
 					} else {
@@ -266,7 +265,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		refinabilityCon.valueProperty().addListener(new ChangeListener<SimpleDisplayConcept>() {
 			@Override
 			public void changed(ObservableValue<? extends SimpleDisplayConcept> ov, SimpleDisplayConcept oldVal, SimpleDisplayConcept newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if (rel.getRefinabilityNid() != newVal.getNid()) {
 						modificationMade.set(true);
 					} else {
@@ -291,7 +290,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		typeCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if (rel.getTypeNid() != newVal.getNid()) {
 						modificationMade.set(true);
 					} else {
@@ -321,7 +320,7 @@ public class RelationshipModelingPopup extends ModelingPopup
 		otherEndCon.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> ov, ConceptVersionBI oldVal, ConceptVersionBI newVal) {
-				if (rel != null) {
+				if (rel != null && newVal != null) {
 					if ((!isDestination && rel.getDestinationNid() != newVal.getNid()) ||
 						(isDestination && rel.getOriginNid() != newVal.getNid())) {
 						modificationMade.set(true);
@@ -388,9 +387,9 @@ public class RelationshipModelingPopup extends ModelingPopup
 			
 			if (rel == null) {
 				if (!isDestination) {
-					WBUtility.createNewRelationship((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid));
+					OTFUtility.createNewRelationship((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid));
 				} else {
-					WBUtility.createNewRelationship(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid));
+					OTFUtility.createNewRelationship(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid));
 				}
 			} else {
 				RelationshipCAB dcab;
@@ -400,17 +399,17 @@ public class RelationshipModelingPopup extends ModelingPopup
 				}
 			
 				if (!isDestination) {
-					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					dcab = new RelationshipCAB((rel != null) ? rel.getOriginNid() : conceptNid, typeConNid, otherEndConNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				} else {
-					dcab = new RelationshipCAB(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+					dcab = new RelationshipCAB(otherEndConNid, typeConNid, (rel != null) ? rel.getDestinationNid() : conceptNid, group, RelationshipType.getRelationshipType(refNid, charNid), rel, OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				}
 	
-				WBUtility.getBuilder().constructIfNotCurrent(dcab);
+				OTFUtility.getBuilder().constructIfNotCurrent(dcab);
 				
 				if (!isDestination) {
-					WBUtility.addUncommitted(rel.getOriginNid());
+					OTFUtility.addUncommitted(rel.getOriginNid());
 				} else {
-					WBUtility.addUncommitted(otherEndConNid);
+					OTFUtility.addUncommitted(otherEndConNid);
 				}
 			}
 		}

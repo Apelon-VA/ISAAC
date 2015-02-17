@@ -1,8 +1,7 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -11,9 +10,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-
-import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 
 public class SimpleTermRow extends TermRow  {
 	public SimpleTermRow(ConceptViewerLabelHelper labelHelper) {
@@ -29,7 +27,7 @@ public class SimpleTermRow extends TermRow  {
 		if (isPrefTerm) {
 			descTypeLabel = labelHelper.createLabel(desc, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
 		} else {
-			descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+			descTypeLabel = labelHelper.createLabel(desc, OTFUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
 		}
 		
 		if (desc.isUncommitted()) {

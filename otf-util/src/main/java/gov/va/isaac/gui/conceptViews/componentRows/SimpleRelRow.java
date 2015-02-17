@@ -1,8 +1,7 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -12,7 +11,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class SimpleRelRow extends RelRow {
@@ -23,35 +22,33 @@ public class SimpleRelRow extends RelRow {
 
 	@Override
 	public void addRelRow(RelationshipVersionBI<?> rel) {
-		if (!rel.isInferred()) {
-			Rectangle rec = createAnnotRectangle(rel);
-			Label relLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
-			Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
-			
-			if (rel.isUncommitted()) {
-				if (rel.getVersions().size() == 1) {
-					Font f = relLabel.getFont();
-					relLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+		Rectangle rec = createAnnotRectangle(rel);
+		Label relLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
+		Label relTypeLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
+		
+		if (rel.isUncommitted()) {
+			if (rel.getVersions().size() == 1) {
+				Font f = relLabel.getFont();
+				relLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 
-					f = relTypeLabel.getFont();
-					relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
-				} else {
-					relLabel.setUnderline(true);
-					relTypeLabel.setUnderline(true);
-				}
+				f = relTypeLabel.getFont();
+				relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
+			} else {
+				relLabel.setUnderline(true);
+				relTypeLabel.setUnderline(true);
 			}
-			
-			//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
-			//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
-			GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-			GridPane.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-			GridPane.setConstraints(relTypeLabel,  2,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
-			
-			GridPane.setMargin(relLabel, new Insets(0, 20, 0, 0));
-			GridPane.setMargin(relTypeLabel, new Insets(0, 0, 0, 20));
-
-			gp.addRow(counter++, rec, relLabel, relTypeLabel);
 		}
+		
+		//setConstraints(Node child, int columnIndex, int rowIndex, int columnspan, int rowspan, HPos halignment, 
+		//				 VPos valignment, Priority hgrow, Priority vgrow, Insets margin)
+		GridPane.setConstraints(rec,  0,  0,  1,  1,  HPos.CENTER,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		GridPane.setConstraints(relLabel,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		GridPane.setConstraints(relTypeLabel,  2,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.SOMETIMES, Priority.ALWAYS);
+		
+		GridPane.setMargin(relLabel, new Insets(0, 20, 0, 0));
+		GridPane.setMargin(relTypeLabel, new Insets(0, 0, 0, 20));
+
+		gp.addRow(counter++, rec, relLabel, relTypeLabel);
 	}
 
 	@Override

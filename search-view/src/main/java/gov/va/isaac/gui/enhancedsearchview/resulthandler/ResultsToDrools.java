@@ -6,7 +6,7 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.util.CustomClipboard;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.util.UUID;
 
@@ -68,7 +68,7 @@ public class ResultsToDrools {
 		// Setup Eval
 		strBld.append("\t\teval(terminologyHelper.isParentOf( ");
 		
-		UUID id = WBUtility.getConceptVersion(((IsDescendantOfFilter)model.getFilters().get(0)).getNidProperty().get()).getPrimordialUuid();
+		UUID id = OTFUtility.getConceptVersion(((IsDescendantOfFilter)model.getFilters().get(0)).getNidProperty().get()).getPrimordialUuid();
 		
 		strBld.append("\"" + id.toString() + "\"");
 		strBld.append(", $c.dataUUID.toString))\r");

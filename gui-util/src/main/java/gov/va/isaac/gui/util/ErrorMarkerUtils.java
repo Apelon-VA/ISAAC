@@ -19,11 +19,7 @@
 package gov.va.isaac.gui.util;
 
 import gov.va.isaac.util.ValidBooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableStringValue;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -94,10 +90,16 @@ public class ErrorMarkerUtils
 	/**
 	 * Setup an 'EXCLAMATION' error marker on the component. Automatically displays anytime that the reasonWhyControlInvalid value
 	 * is false. Hides when the isControlCurrentlyValid is true.
+	 * @param stackPane - optional - created if necessary
 	 */
-	public static Node setupErrorMarker(Node initialNode, StackPane stackPane, ValidBooleanBinding isNodeCurrentlyValid)
+	public static StackPane setupErrorMarker(Node initialNode, StackPane stackPane, ValidBooleanBinding isNodeCurrentlyValid)
 	{
 		ImageView exclamation = Images.EXCLAMATION.createImageView();
+		
+		if (stackPane == null)
+		{
+			stackPane = new StackPane();
+		}
 
 		exclamation.visibleProperty().bind(isNodeCurrentlyValid.not());
 		Tooltip tooltip = new Tooltip();

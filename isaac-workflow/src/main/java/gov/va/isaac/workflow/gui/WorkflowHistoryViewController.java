@@ -19,7 +19,7 @@
 package gov.va.isaac.workflow.gui;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.persistence.WorkflowHistoryHelper;
@@ -129,6 +129,6 @@ public class WorkflowHistoryViewController
 	ConceptVersionBI getConcept() {
 		UUID componentUuid = UUID.fromString(localTask.getComponentId());
 		
-		return WBUtility.getConceptVersion(componentUuid);
+		return OTFUtility.getConceptVersion(componentUuid);
 	}
 }

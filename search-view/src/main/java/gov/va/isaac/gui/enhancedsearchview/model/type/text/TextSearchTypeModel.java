@@ -1,10 +1,10 @@
 package gov.va.isaac.gui.enhancedsearchview.model.type.text;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.Tasks;
 import gov.va.isaac.gui.enhancedsearchview.filters.Filter;
-import gov.va.isaac.gui.enhancedsearchview.filters.LuceneSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.SearchTypeFilter;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
@@ -19,15 +19,14 @@ import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.TaskCompleteCallback;
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import java.util.function.Supplier;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -36,7 +35,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-
 import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 
@@ -51,7 +49,8 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			public void changed(
 					ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {	
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 
@@ -66,11 +65,13 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 						public void changed(
 								ObservableValue<? extends Boolean> observable,
 								Boolean oldValue, Boolean newValue) {
-							isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+							isSearchTypeRunnableProperty.set(isValidSearch());
+							isSearchTypeSavableProperty.set(isSavableSearch());
 						}
 					});
 				}
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 
@@ -80,7 +81,8 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				public void changed(
 						ObservableValue<? extends Boolean> observable,
 						Boolean oldValue, Boolean newValue) {
-					isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+					isSearchTypeRunnableProperty.set(isValidSearch());
+					isSearchTypeSavableProperty.set(isSavableSearch());
 				}
 			});
 		}
@@ -90,7 +92,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			public void onChanged(
 					javafx.collections.ListChangeListener.Change<? extends NonSearchTypeFilter<?>> c) {
 
-				isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+				isSearchTypeRunnableProperty.set(isValidSearch());
 
 				while (c.next()) {
 					if (c.wasPermutated()) {
@@ -110,7 +112,8 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 								public void changed(
 										ObservableValue<? extends Boolean> observable,
 										Boolean oldValue, Boolean newValue) {
-									isSearchTypeRunnableProperty.set(isCriteriaPanelValid() && isValidSearch(null));
+									isSearchTypeRunnableProperty.set(isValidSearch());
+									isSearchTypeSavableProperty.set(isSavableSearch());
 								}
 							});
 						}
@@ -123,13 +126,26 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				SearchModel model = new SearchModel();
-				if (model.getSearchTypeSelector().getTypeSpecificModel() == TextSearchTypeModel.this) {
-					model.isSearchRunnableProperty().set(newValue);
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == TextSearchTypeModel.this) {
+					SearchModel.isSearchRunnableProperty().set(newValue);
+				}
+			}
+		});
+		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == TextSearchTypeModel.this) {
+					SearchModel.isSearchSavableProperty().set(newValue);
 				}
 			}
 		});
 	}
+	
+	public static ComponentSearchType getCurrentComponentSearchType() {
+		return TextSearchTypeView.getCurrentComponentSearchType();
+	}
+
 	public SearchTypeFilter<?> getSearchType() {
 		return searchTypeFilterProperty.get();
 	}
@@ -177,53 +193,19 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				+ ", filter=" + Arrays.toString(filters.toArray());
 	}
 
-
 	@Override
-	public  boolean isCriteriaPanelValid() {
-		return isValidSearch(null);
-	}
-
-	@Override
-	protected boolean isValidSearch(String errorDialogTitle) {
+	public String getValidationFailureMessage() {
 		if (getSearchType() == null) {
-			String details = "No SearchTypeFilter specified: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return "No SearchTypeFilter specified";
 		} else if (viewCoordinateProperty.get() == null) {
-			String details = "Invalid (null) ViewCoordinate set in search type model (name=" + getName() + ")";
-			LOG.warn(details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return "Invalid (null) ViewCoordinate";
 		} else if (getInvalidFilters().size() > 0) {
-			String details = "Found " + getInvalidFilters().size() + " invalid filter: " + Arrays.toString(getFilters().toArray());
-			LOG.warn("Invalid filter in search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return "Found " + getInvalidFilters().size() + " invalid filter(s): " + Arrays.toString(getFilters().toArray());
 		} else if (! getSearchType().isValid() && getValidFilters().size() == 0) {
-			String details = "No valid filters set search model (name=" + getName() + "): " + getSearchType();
-			LOG.warn(details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
+			return getSearchType() + " filter is unset/invalid and no other valid filters are set";
 		}
 
-		return true;
+		return null;
 	}
 
 	@Override
@@ -239,17 +221,15 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			AppContext.getCommonDialogs().showErrorDialog(title, "Failure to search filters-only", msg, AppContext.getMainApplicationWindow().getPrimaryStage());
 
 			return;
-		} else  if (! (filter instanceof LuceneSearchTypeFilter)) {
+		} else  if (! (filter instanceof SearchTypeFilter)) {
 			String title = "Search failed";
 
 			String msg = "SearchTypeFilter " + filter.getClass().getName() + " not supported";
 			getSearchRunning().set(false);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
+			AppContext.getCommonDialogs().showErrorDialog(title, msg, "Only SearchTypeFilter LuceneSearchTypeFilter and RegExpSearchFilter currently supported", AppContext.getMainApplicationWindow().getPrimaryStage());
 
 			return;
 		}
-
-		LuceneSearchTypeFilter displayableLuceneFilter = (LuceneSearchTypeFilter)filter;
 
 		SearchResultsFilter searchResultsFilter = null;
 		if (getFilters() != null) {
@@ -283,7 +263,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 		switch (resultsType) {
 		case CONCEPT:
 		{
-			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
+			SearchBuilder builder = SearchBuilder.conceptDescriptionSearchBuilder(filter.getSearchParameter() != null ? filter.getSearchParameter() : "");
 			builder.setCallback(this);
 			builder.setTaskId(Tasks.SEARCH.ordinal());
 			if (searchResultsFilter != null) {
@@ -301,25 +281,34 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 				ssh = SearchHandler.descriptionSearch(builder);
 			} else {
 				builder.setQuery("");
-				Set<Integer> filterList = new HashSet<Integer>();
-				for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> f : filters) {
-					filterList = f.gatherNoSearchTermCaseList(filterList);
-				}
+				
+				Supplier<Set<CompositeSearchResult>> filterSupplier = new Supplier<Set<CompositeSearchResult>>()
+				{
+					@Override
+					public Set<CompositeSearchResult> get()
+					{
+						Set<Integer> filterList = new HashSet<Integer>();
+						for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> f : filters) {
+							filterList = f.gatherNoSearchTermCaseList(filterList);
+						}
 
-				Set<CompositeSearchResult> filterCompositeSearchResultList = new HashSet<CompositeSearchResult>();
+						Set<CompositeSearchResult> filterCompositeSearchResultList = new HashSet<CompositeSearchResult>();
 
-				for (Integer c : filterList) {
-					filterCompositeSearchResultList.add(new CompositeSearchResult(WBUtility.getConceptVersion(c), 0));
-				}
+						for (Integer c : filterList) {
+							filterCompositeSearchResultList.add(new CompositeSearchResult(OTFUtility.getConceptVersion(c), 0));
+						}
+						
+						return filterCompositeSearchResultList;
+					}
+				};
 
-
-				ssh = SearchHandler.descriptionSearch(builder, filterCompositeSearchResultList);
+				ssh = SearchHandler.descriptionSearch(builder, filterSupplier);
 			}
 			break;
 		}
 		case DESCRIPTION:
 		{
-			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(displayableLuceneFilter.getSearchParameter() != null ? displayableLuceneFilter.getSearchParameter() : "");
+			SearchBuilder builder = SearchBuilder.descriptionSearchBuilder(filter.getSearchParameter() != null ? filter.getSearchParameter() : "");
 			builder.setCallback(this);
 			builder.setTaskId(Tasks.SEARCH.ordinal());
 			if (searchResultsFilter != null) {
@@ -344,6 +333,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			break;
 		}
 	}
+	@Override
 	public void taskComplete(long taskStartTime, Integer taskId) {
 		if (taskId == Tasks.SEARCH.ordinal()) {
 			// Run on JavaFX thread.

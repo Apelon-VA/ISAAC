@@ -21,7 +21,7 @@ package gov.va.isaac.gui.conceptCreation.wizardPages;
 import gov.va.isaac.gui.conceptCreation.PanelControllers;
 import gov.va.isaac.gui.conceptCreation.ScreensController;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -81,11 +81,11 @@ public class ComponentsController implements PanelControllers {
 	
 	private UpdateableBooleanBinding allValid;
 
-	//TODO this page still needs a vertical scrollbar
+	//TODO (artf231890) this page still needs a vertical scrollbar
 	@Override
 	public void initialize() {
 		LOG.debug("Creating a ComponentsController");
-		vc = WBUtility.getViewCoordinate();
+		vc = OTFUtility.getViewCoordinate();
 			
 		// Buttons
 		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -147,7 +147,7 @@ public class ComponentsController implements PanelControllers {
 	
 	private void addBlankSynonymRow()
 	{
-		synonymVBox.getChildren().add(new Label("<No Terms>                    "));//TODO HACK!
+		synonymVBox.getChildren().add(new Label("<No Terms>                    "));//TODO (artf231890) HACK!
 		synonymVBox.setAlignment(Pos.CENTER_RIGHT);
 		// Setup Add Button
 		Button addSynonymButton = new Button("+");

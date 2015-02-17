@@ -56,6 +56,7 @@ public class SearchModel {
 	private static BusyPopover searchRunningPopover;
 	private final static BooleanProperty searchRunning = new SimpleBooleanProperty(false);
 	private final static BooleanProperty isSearchRunnable = new SimpleBooleanProperty(false);
+	private final static BooleanProperty isSearchSavable = new SimpleBooleanProperty(false);
 
 	static {
 		maxResultsCustomTextField.setMaxWidth(50);
@@ -78,14 +79,21 @@ public class SearchModel {
 				+ model.getModelDisplayString();
 	}
 	
+	public static boolean isSearchSavable() {
+		return searchTypeSelector.getTypeSpecificModel().isSavableSearch();
+	}
+	public static BooleanProperty isSearchSavableProperty() {
+		return isSearchSavable;
+	}
+	
 	public static boolean isSearchRunnable() {
-		return searchTypeSelector.getTypeSpecificModel().isCriteriaPanelValid() && searchTypeSelector.getTypeSpecificModel().isValidSearch(null);
+		return searchTypeSelector.getTypeSpecificModel().isValidSearch();
 	}
 	public static BooleanProperty isSearchRunnableProperty() {
 		return isSearchRunnable;
 	}
 
-	public SearchTypeSelector getSearchTypeSelector() {
+	public static SearchTypeSelector getSearchTypeSelector() {
 		return searchTypeSelector;
 	}
 	

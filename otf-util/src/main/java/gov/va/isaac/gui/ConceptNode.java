@@ -29,7 +29,7 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.ConceptLookupCallback;
 import gov.va.isaac.util.SimpleValidBooleanProperty;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -100,10 +100,11 @@ public class ConceptNode implements ConceptLookupCallback
 		}
 	};
 	
-	private ListChangeListener<SimpleDisplayConcept> listChangeListener_;
+	private WeakListChangeListener<SimpleDisplayConcept> listChangeListener_;
 	private volatile boolean disableChangeListener_ = false;
 	private Function<ConceptVersionBI, String> descriptionReader_;
 	private ObservableList<SimpleDisplayConcept> dropDownOptions_;
+	private ContextMenu cm_;
 	
 	public ConceptNode(ConceptVersionBI initialConcept, boolean flagAsInvalidWhenBlank)
 	{
@@ -117,7 +118,7 @@ public class ConceptNode implements ConceptLookupCallback
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
 		c_ = initialConcept;
-		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : WBUtility.getDescription(conceptVersion);} : descriptionReader);
+		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : OTFUtility.getDescription(conceptVersion);} : descriptionReader);
 		dropDownOptions_ = dropDownOptions == null ? AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts() : dropDownOptions;
 		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
 		{
@@ -152,12 +153,12 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setPromptText("Type, drop or select a concept");
 		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
 		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
-		listChangeListener_ = new ListChangeListener<SimpleDisplayConcept>()
+		listChangeListener_ = new WeakListChangeListener<SimpleDisplayConcept>(new ListChangeListener<SimpleDisplayConcept>()
 		{
 			@Override
 			public void onChanged(Change<? extends SimpleDisplayConcept> c)
 			{
-				//TODO I still have an infinit loop here.  Find and fix.
+				//TODO I still have an infinite loop here.  Find and fix.
 				logger.debug("updating concept dropdown");
 				disableChangeListener_ = true;
 				SimpleDisplayConcept temp = cb_.getValue();
@@ -166,14 +167,14 @@ public class ConceptNode implements ConceptLookupCallback
 				cb_.getSelectionModel().select(temp);
 				disableChangeListener_ = false;
 			}
-		};
+		});
 		
-		dropDownOptions_.addListener(new WeakListChangeListener<SimpleDisplayConcept>(listChangeListener_));
+		dropDownOptions_.addListener(listChangeListener_);
 		
 		cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
 		cb_.setVisibleRowCount(11);
 		
-		ContextMenu cm = new ContextMenu();
+		cm_ = new ContextMenu();
 		
 		MenuItem copyText = new MenuItem("Copy Description");
 		copyText.setGraphic(Images.COPY.createImageView());
@@ -185,8 +186,8 @@ public class ConceptNode implements ConceptLookupCallback
 				CustomClipboard.set(cb_.getEditor().getText());
 			}
 		});
-		cm.getItems().add(copyText);
-
+		cm_.getItems().add(copyText);
+		
 		CommonMenusNIdProvider nidProvider = new CommonMenusNIdProvider() {
 			@Override
 			public Set<Integer> getNIds() {
@@ -199,9 +200,9 @@ public class ConceptNode implements ConceptLookupCallback
 		};
 		CommonMenuBuilderI menuBuilder = CommonMenus.CommonMenuBuilder.newInstance();
 		menuBuilder.setInvisibleWhenFalse(isValid);
-		CommonMenus.addCommonMenus(cm, menuBuilder, nidProvider);
+		CommonMenus.addCommonMenus(cm_, menuBuilder, nidProvider);
 		
-		cb_.getEditor().setContextMenu(cm);
+		cb_.getEditor().setContextMenu(cm_);
 
 		updateGUI();
 		
@@ -227,8 +228,6 @@ public class ConceptNode implements ConceptLookupCallback
 				if (newValue == null)
 				{
 					logger.debug("Combo Value Changed - null entry");
-					c_ = null;
-					return;
 				}
 				else
 				{
@@ -240,19 +239,29 @@ public class ConceptNode implements ConceptLookupCallback
 					logger.debug("change listener disabled");
 					return;
 				}
-				if (newValue.shouldIgnoreChange())
+				
+				if (newValue == null)
 				{
-					logger.debug("One time change ignore");
+					//This can happen if someone calls clearSelection() - it passes in a null.
+					cb_.setValue(new SimpleDisplayConcept("", 0));
 					return;
 				}
-				//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
-				if (oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
+				else
 				{
-					logger.debug("Not a real change, ignore");
-					newValue.setNid(oldValue.getNid());
-					return;
+					if (newValue.shouldIgnoreChange())
+					{
+						logger.debug("One time change ignore");
+						return;
+					}
+					//Whenever the focus leaves the combo box editor, a new combo box is generated.  But, the new box will have 0 for an id.  detect and ignore
+					if (oldValue != null && oldValue.getDescription().equals(newValue.getDescription()) && newValue.getNid() == 0)
+					{
+						logger.debug("Not a real change, ignore");
+						newValue.setNid(oldValue.getNid());
+						return;
+					}
+					lookup();
 				}
-				lookup();
 			}
 		});
 
@@ -296,6 +305,11 @@ public class ConceptNode implements ConceptLookupCallback
 		hbox_.getChildren().add(sp);
 		HBox.setHgrow(sp, Priority.SOMETIMES);
 	}
+	
+	public void addMenu(MenuItem mi)
+	{
+		cm_.getItems().add(mi);
+	}
 
 	private void updateGUI()
 	{
@@ -323,11 +337,11 @@ public class ConceptNode implements ConceptLookupCallback
 		isLookupInProgress_.invalidate();
 		if (cb_.getValue().getNid() != 0)
 		{
-			WBUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
+			OTFUtility.getConceptVersion(cb_.getValue().getNid(), this, null);
 		}
 		else
 		{
-			WBUtility.lookupIdentifier(cb_.getValue().getDescription(), this, null);
+			OTFUtility.lookupIdentifier(cb_.getValue().getDescription(), this, null);
 		}
 	}
 
@@ -469,19 +483,35 @@ public class ConceptNode implements ConceptLookupCallback
 	public void clear()
 	{
 		logger.debug("Clear called");
-		Platform.runLater(new Runnable()
+		Runnable r = new Runnable()
 		{
 			@Override
 			public void run()
 			{
 				cb_.setValue(new SimpleDisplayConcept("", 0));
 			}
-		});
+		};
+		
+		if (Platform.isFxApplicationThread())
+		{
+			r.run();
+		}
+		else
+		{
+			Platform.runLater(r);
+		}
 	}
 
+	/**
+	 * If, for some reason, you want a concept node selection box that is completely disabled - call this method after constructing
+	 * the concept node.  Though one wonders, why you wouldn't just use a label in this case....
+	 */
 	public void disableEdit() {
-		//TODO disable drag and drop
+		AppContext.getService(DragRegistry.class).removeDragCapability(cb_);
 		cb_.setEditable(false);
+		dropDownOptions_.removeListener(listChangeListener_);
+		listChangeListener_ = null;
+		cb_.setItems(FXCollections.observableArrayList());
 		cb_.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(0), new Insets(0))));
 	}
 }

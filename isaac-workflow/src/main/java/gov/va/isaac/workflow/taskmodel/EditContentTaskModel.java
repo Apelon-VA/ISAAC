@@ -78,6 +78,8 @@ public class EditContentTaskModel extends TaskModel {
 		}
 	}
 
+	private TextArea commentTextArea = null;
+	
 	/**
 	 * @param inputTask
 	 */
@@ -115,14 +117,33 @@ public class EditContentTaskModel extends TaskModel {
 		
 		switch (outputVariable) {
 		case out_comment: {
-			TextArea commentTextArea = new TextArea();
+			commentTextArea = new TextArea();
 			
 			StringProperty commentProperty = getOutputVariableValueProperty(OutputVariable.out_comment.name());
 
 			commentProperty.bind(commentTextArea.textProperty());
-			commentTextArea.setText("");
 			
 			return commentTextArea;
+		}
+		
+		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.workflow.taskmodel.TaskModel#initializeOutputVariableInputNode(java.lang.String)
+	 */
+	@Override
+	protected void initializeOutputVariableInputNode(String variableName) {
+		OutputVariable outputVariable = OutputVariable.valueOf(variableName);
+		
+		switch (outputVariable) {
+		case out_comment: {
+			// Initialize state of input control, triggering handlers/listeners
+			commentTextArea.setText("unset"); // hack to trigger change listener
+			commentTextArea.setText("");
+			
+			break;
 		}
 		
 		default: throw new IllegalArgumentException("Unsupported " + OutputVariable.class.getName() + " value: " + outputVariable);

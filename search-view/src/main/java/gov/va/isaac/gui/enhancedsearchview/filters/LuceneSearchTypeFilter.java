@@ -38,7 +38,7 @@ public class LuceneSearchTypeFilter extends SearchTypeFilter<LuceneSearchTypeFil
 					ObservableValue<? extends String> observable,
 					String oldValue,
 					String newValue) {
-				if (newValue != null && newValue.trim().length() > 1) {
+				if (isValid()) {
 					isValid.set(true);
 				} else {
 					isValid.set(false);
@@ -82,5 +82,13 @@ public class LuceneSearchTypeFilter extends SearchTypeFilter<LuceneSearchTypeFil
 	@Override
 	public SearchType getSearchType() {
 		return SearchType.TEXT;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValid()
+	 */
+	@Override
+	public boolean isValid() {
+		return searchParameter.get() != null && searchParameter.get().trim().length() > 1;
 	}
 }

@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.StringProperty;
@@ -59,7 +59,7 @@ public class RefsetContainsString extends AssertionNode {
 	}
 	
 	private boolean isNodeValid() {
-		if (refsetConceptNidIntegerProperty == null || WBUtility.getConceptVersion(refsetConceptNidIntegerProperty.get()) == null) {
+		if (refsetConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(refsetConceptNidIntegerProperty.get()) == null) {
 			return false;
 		} else if (queryTextStringProperty == null || queryTextStringProperty.get() == null || queryTextStringProperty.get().length() < 1) {
 			return false;
@@ -81,7 +81,7 @@ public class RefsetContainsString extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -135,7 +135,7 @@ public class RefsetContainsString extends AssertionNode {
 	public String getDescription() {
 		String refsetConceptDescription = null;
 		if (getRefsetConceptNid() != null && getRefsetConceptNid() != 0) {
-			refsetConceptDescription = WBUtility.getDescriptionIfConceptExists(getRefsetConceptNid());
+			refsetConceptDescription = OTFUtility.getDescriptionIfConceptExists(getRefsetConceptNid());
 		}
 
 		String queryText = getQueryText() != null ? "\"" + getQueryText() + "\"" : null;

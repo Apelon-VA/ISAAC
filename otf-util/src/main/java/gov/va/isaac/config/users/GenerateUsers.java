@@ -290,7 +290,7 @@ public class GenerateUsers
 			user.setPassword(user.getUniqueLogonName());
 		}
 
-		return ExtendedAppContext.getDataStore().hasUuid(uuid);
+		return ExtendedAppContext.getDataStore().hasConcept(uuid);
 	}
 
 	public static UUID calculateUserUUID(String uniqueLogonName)

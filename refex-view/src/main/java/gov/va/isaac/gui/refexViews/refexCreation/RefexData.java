@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.refexCreation;
 import java.util.ArrayList;
 import java.util.List;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
@@ -39,14 +40,17 @@ public class RefexData
 	private String refexDescription_;
 	private boolean isAnnotatedStyle_;
 	private ConceptVersionBI parentConcept_;
+	private ComponentType componentTypeRestriction_;
 	private ArrayList<RefexDynamicColumnInfo> columnInfo_ = new ArrayList<>();
 
-	public RefexData(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotatedStyle)
+	public RefexData(String name, String description, ConceptVersionBI parentConcept, int extendedFieldsCount, boolean isAnnotatedStyle, 
+			ComponentType componentTypeRestriction)
 	{
 		this.refexName_ = name;
 		this.refexDescription_ = description;
 		this.parentConcept_ = parentConcept;
 		this.isAnnotatedStyle_ = isAnnotatedStyle;
+		this.componentTypeRestriction_ = componentTypeRestriction;
 		for (int i = 0; i < extendedFieldsCount; i++)
 		{
 			RefexDynamicColumnInfo rdci = new RefexDynamicColumnInfo();
@@ -126,6 +130,16 @@ public class RefexData
 	public int getExtendedFieldsCount()
 	{
 		return columnInfo_.size();
+	}
+	
+	public void setComponentRestrictionType(ComponentType ct)
+	{
+		this.componentTypeRestriction_ = ct;
+	}
+	
+	public ComponentType getComponentRestrictionType()
+	{
+		return componentTypeRestriction_;
 	}
 
 	public List<RefexDynamicColumnInfo> getColumnInfo()

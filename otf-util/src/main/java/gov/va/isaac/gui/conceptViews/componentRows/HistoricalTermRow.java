@@ -1,12 +1,9 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.Collection;
-
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -16,10 +13,10 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,15 +44,15 @@ public class HistoricalTermRow extends TermRow {
 			if (isPrefTerm) {
 				descTypeLabel = labelHelper.createLabel(dv, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
 			} else {
-				descTypeLabel = labelHelper.createLabel(dv, WBUtility.getConPrefTerm(dv.getTypeNid()), ComponentType.DESCRIPTION, dv.getTypeNid());
+				descTypeLabel = labelHelper.createLabel(dv, OTFUtility.getConPrefTerm(dv.getTypeNid()), ComponentType.DESCRIPTION, dv.getTypeNid());
 			}
 			Label descCaseLabel = labelHelper.createLabel(dv, getBooleanValue(dv.isInitialCaseSignificant()), ComponentType.DESCRIPTION, 0);
 			Label descLangLabel = labelHelper.createLabel(dv, dv.getLang(), ComponentType.DESCRIPTION, 0);
 
-			Label descStatusLabel = labelHelper.createLabel(dv, WBUtility.getStatusString(dv), ComponentType.DESCRIPTION, 0);
-			Label descTimeLabel = labelHelper.createLabel(dv, WBUtility.getTimeString(dv), ComponentType.DESCRIPTION, 0);
-			Label descAuthorLabel = labelHelper.createLabel(dv, WBUtility.getAuthorString(dv), ComponentType.DESCRIPTION, 0);
-			Label descPathLabel = labelHelper.createLabel(dv, WBUtility.getPathString(dv), ComponentType.DESCRIPTION, 0);
+			Label descStatusLabel = labelHelper.createLabel(dv, OTFUtility.getStatusString(dv), ComponentType.DESCRIPTION, 0);
+			Label descTimeLabel = labelHelper.createLabel(dv, OTFUtility.getTimeString(dv), ComponentType.DESCRIPTION, 0);
+			Label descAuthorLabel = labelHelper.createLabel(dv, OTFUtility.getAuthorString(dv), ComponentType.DESCRIPTION, 0);
+			Label descPathLabel = labelHelper.createLabel(dv, OTFUtility.getPathString(dv), ComponentType.DESCRIPTION, 0);
 			
 			if (desc.isUncommitted()) {
 				if (desc.getVersions().size() == 1) {
@@ -72,14 +69,14 @@ public class HistoricalTermRow extends TermRow {
 					descLangLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 				} else {
 					ComponentChronicleBI<?> chronicle = desc.getChronicle();
-					DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+					DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 		
 					if (!descLabel.getText().equals(origVersion.getText())) {
 						descLabel.setUnderline(true);
 					}
 					try {
-						if (WBUtility.getConceptVersion(desc.getConceptNid()).getPreferredDescription().getNid() != desc.getNid()) {
-					if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+						if (OTFUtility.getConceptVersion(desc.getConceptNid()).getPreferredDescription().getNid() != desc.getNid()) {
+					if (!descTypeLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getTypeNid()))) {
 						descTypeLabel.setUnderline(true);
 							}
 						}

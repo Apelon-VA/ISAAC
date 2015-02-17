@@ -19,7 +19,7 @@
 package gov.va.legoEdit.model;
 
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.legoEdit.model.schemaModel.Concept;
 import gov.va.legoEdit.storage.wb.LegoWBUtility;
 import java.io.File;
@@ -113,11 +113,11 @@ public class PendingConcepts implements Observable
 			return false;
 		}
 
-		if (null != WBUtility.lookupIdentifier(potentialPendingConcept.getSctid().toString()))
+		if (null != OTFUtility.lookupIdentifier(potentialPendingConcept.getSctid().toString()))
 		{
 			return false;
 		}
-		if (potentialPendingConcept.getUuid() != null && null != WBUtility.lookupIdentifier(potentialPendingConcept.getUuid().toString()))
+		if (potentialPendingConcept.getUuid() != null && null != OTFUtility.lookupIdentifier(potentialPendingConcept.getUuid().toString()))
 		{
 			return false;
 		}
@@ -141,7 +141,7 @@ public class PendingConcepts implements Observable
 			if (parent != null)
 			{
 				//allow ref to pending, but not self....
-				Concept parentConcept =  LegoWBUtility.convertConcept(WBUtility.lookupIdentifier(parent + ""));
+				Concept parentConcept =  LegoWBUtility.convertConcept(OTFUtility.lookupIdentifier(parent + ""));
 				if (parentConcept != null && parentConcept.getSctid().longValue() != id)
 				{
 					parentConcepts.put(id, parentConcept);
@@ -356,7 +356,7 @@ public class PendingConcepts implements Observable
 							{
 								long parentSCTID = Long.parseLong(parts[2]);
 								//Use this lookup, since it doesn't loop back to pending.
-								ConceptVersionBI wbParentConcept =  WBUtility.lookupIdentifier(parentSCTID + "");
+								ConceptVersionBI wbParentConcept =  OTFUtility.lookupIdentifier(parentSCTID + "");
 								if (wbParentConcept == null)
 								{
 									//See if it is a different pending concept (must be higher in the file, for this to work)

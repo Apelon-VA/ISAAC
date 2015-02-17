@@ -26,7 +26,7 @@ import gov.va.isaac.models.InformationModelAux;
 import gov.va.isaac.models.InformationModelMetadata;
 import gov.va.isaac.models.InformationModelProperty;
 import gov.va.isaac.models.util.DefaultInformationModel;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -189,7 +189,7 @@ public class BdbInformationModelService implements InformationModelService {
         int conceptNid =
             dataStore.getComponent(result.getNid()).getConceptNid();
         ConceptVersionBI conceptVersion =
-            WBUtility.getConceptVersion(conceptNid);
+            OTFUtility.getConceptVersion(conceptNid);
         LOG.debug("    Check " + conceptVersion.getPrimordialUuid() + ", "
             + conceptVersion.getPreferredDescription().getText());
 
@@ -233,16 +233,16 @@ public class BdbInformationModelService implements InformationModelService {
     InformationModel model) throws ValidationException, IOException,
     ContradictionException {
     ConceptVersionBI modelConcept =
-        WBUtility.getConceptVersion(model.getUuid());
+        OTFUtility.getConceptVersion(model.getUuid());
     Set<InformationModel> models = new HashSet<>();
     for (RelationshipChronicleBI rel : modelConcept.getRelationshipsIncoming()) {
       RelationshipVersionBI<?> relVersion =
-          rel.getVersion(WBUtility.getViewCoordinate());
+          rel.getVersion(OTFUtility.getViewCoordinate());
       // Look for matching typeId and "active" flag
       if (relVersion.getTypeNid() == Snomed.IS_A.getLenient().getNid()
           && relVersion.isActive()) {
         // Add the model
-        models.add(getInformationModel(WBUtility.getConceptVersion(
+        models.add(getInformationModel(OTFUtility.getConceptVersion(
             relVersion.getDestinationNid()).getPrimordialUuid()));
       }
     }
@@ -294,10 +294,10 @@ public class BdbInformationModelService implements InformationModelService {
         + modelConcept.getPrimordialUuid());
 
     // Key is the FN
-    String key = WBUtility.getFullySpecifiedName(modelConcept);
+    String key = OTFUtility.getFullySpecifiedName(modelConcept);
     LOG.debug("  key = " + key);
     // Name is the PT
-    String name = WBUtility.getConPrefTerm(modelConcept.getNid());
+    String name = OTFUtility.getConPrefTerm(modelConcept.getNid());
     LOG.debug("  name = " + name);
     // UUID of the concept
     UUID uuid = modelConcept.getPrimordialUuid();
@@ -311,22 +311,22 @@ public class BdbInformationModelService implements InformationModelService {
     // Need to look at stamp nid for concept attributes instead of concept
     int stampNid =
         modelConcept.getConceptAttributes()
-            .getVersion(WBUtility.getViewCoordinate()).getStamp();
+            .getVersion(OTFUtility.getViewCoordinate()).getStamp();
     InformationModelMetadata metadata =
         InformationModelMetadata.newInstance(stampNid, dataStore,
-            WBUtility.getViewCoordinate());
+            OTFUtility.getViewCoordinate());
     model.setMetadata(metadata);
 
     // Check super-model
     // Build associated concept UUIDs from relationships
     for (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
       RelationshipVersionBI<?> relVersion =
-          rel.getVersion(WBUtility.getViewCoordinate());
+          rel.getVersion(OTFUtility.getViewCoordinate());
       // Look for matching typeId and "active" flag
       if (relVersion.getTypeNid() == Snomed.IS_A.getLenient().getNid()
           && relVersion.isActive()) {
         UUID superModelUuid =
-            WBUtility.getConceptVersion(relVersion.getDestinationNid())
+            OTFUtility.getConceptVersion(relVersion.getDestinationNid())
                 .getPrimordialUuid();
         // Avoid assigning uuid if parent is the info model type concept
         if (!superModelUuid.equals(model.getType().getUuid())) {
@@ -352,8 +352,8 @@ public class BdbInformationModelService implements InformationModelService {
     for (RefexDynamicChronicleBI<?> refex : modelConcept
         .getRefexDynamicAnnotations()) {
       RefexDynamicVersionBI<?> refexVersion =
-          refex.getVersion(WBUtility.getViewCoordinate());
-      LOG.debug("  refex = " + refex.toUserString());
+          refex.getVersion(OTFUtility.getViewCoordinate());
+      LOG.debug("  sememe = " + refex.toUserString());
       // Look for matching refex id and "active" flag
       if (refexVersion != null
           && refex.getAssemblageNid() == propertyRefset
@@ -391,12 +391,12 @@ public class BdbInformationModelService implements InformationModelService {
     // Build associated concept UUIDs from relationships
     for (RelationshipChronicleBI rel : modelConcept.getRelationshipsOutgoing()) {
       RelationshipVersionBI<?> relVersion =
-          rel.getVersion(WBUtility.getViewCoordinate());
+          rel.getVersion(OTFUtility.getViewCoordinate());
       // Look for matching typeId and "active" flag
       if (relVersion.getTypeNid() == InformationModelAux.HAS_TERMINOLOGY_CONCEPT
           .getLenient().getNid() && relVersion.isActive()) {
         // Add the destination UUID
-        model.addAssociatedConceptUuid(WBUtility.getConceptVersion(
+        model.addAssociatedConceptUuid(OTFUtility.getConceptVersion(
             relVersion.getDestinationNid()).getPrimordialUuid());
       }
     }
@@ -423,7 +423,7 @@ public class BdbInformationModelService implements InformationModelService {
     LOG.info("Compute information model type: "
         + modelConcept.getPrimordialUuid());
     ConceptVersionBI concept =
-        WBUtility.getConceptVersion(modelConcept.getNid());
+        OTFUtility.getConceptVersion(modelConcept.getNid());
     if (concept == null) {
       throw new IOException("Model concept version unexpectedly null "
           + modelConcept.getPrimordialUuid());
@@ -437,7 +437,7 @@ public class BdbInformationModelService implements InformationModelService {
     // Walk up tree until we encounter a "type" concept
     while (true) {
       // Look for match (the pref name will match an information model type)
-      String prefName = WBUtility.getConPrefTerm(concept.getNid());
+      String prefName = OTFUtility.getConPrefTerm(concept.getNid());
       if (prefName == null) {
         throw new IOException("Concept preferred name unexepectedly null "
             + concept.getPrimordialUuid());
@@ -457,7 +457,7 @@ public class BdbInformationModelService implements InformationModelService {
         break;
       }
       concept =
-          WBUtility.getConceptVersion(rels.iterator().next()
+          OTFUtility.getConceptVersion(rels.iterator().next()
               .getDestinationNid());
       LOG.debug("  " + concept.getPrimordialUuid());
     }
@@ -509,9 +509,9 @@ public class BdbInformationModelService implements InformationModelService {
       // Look it up by UUID0
       modelConcept = dataStore.getConcept(modelUuid);
       ConceptVersionBI modelConceptVersion =
-          modelConcept.getVersion(WBUtility.getViewCoordinate());
+          modelConcept.getVersion(OTFUtility.getViewCoordinate());
       modelConceptCB =
-          modelConceptVersion.makeBlueprint(WBUtility.getViewCoordinate(),
+          modelConceptVersion.makeBlueprint(OTFUtility.getViewCoordinate(),
               IdDirective.PRESERVE, RefexDirective.EXCLUDE);
       // synchronize descriptions (in case name or key changed)
       syncDescriptions(modelConceptCB, model);
@@ -529,7 +529,7 @@ public class BdbInformationModelService implements InformationModelService {
       modelConceptCB =
           createNewConceptBlueprint(parent, model.getKey(), model.getName());
       // Apply concept changes
-      modelConcept = WBUtility.getBuilder().construct(modelConceptCB);
+      modelConcept = OTFUtility.getBuilder().construct(modelConceptCB);
       model.setUuid(modelConcept.getPrimordialUuid());
       LOG.debug("    UUID = " + modelConcept.getPrimordialUuid());
     }
@@ -538,9 +538,9 @@ public class BdbInformationModelService implements InformationModelService {
     syncRefexes(modelConcept, model);
 
     LOG.debug("  add uncommitted");
-    WBUtility.addUncommitted(modelConcept);
+    OTFUtility.addUncommitted(modelConcept);
     LOG.debug("  commit");
-    WBUtility.commit();
+    OTFUtility.commit();
 
     return modelConcept;
   }
@@ -587,7 +587,7 @@ public class BdbInformationModelService implements InformationModelService {
         continue;
       }
       descCAB.setRetired();
-      WBUtility.getBuilder().constructIfNotCurrent(descCAB);
+      OTFUtility.getBuilder().constructIfNotCurrent(descCAB);
     }
   }
 
@@ -621,7 +621,7 @@ public class BdbInformationModelService implements InformationModelService {
       if (relCAB.getTypeNid() == Snomed.IS_A.getLenient().getNid()) {
 
         UUID uuid =
-            WBUtility.getConceptVersion(relCAB.getTargetNid())
+            OTFUtility.getConceptVersion(relCAB.getTargetNid())
                 .getPrimordialUuid();
         LOG.debug("    target UUID = " + uuid);
 
@@ -629,7 +629,7 @@ public class BdbInformationModelService implements InformationModelService {
         // it
         if (!parent.getPrimordialUuid().equals(uuid)) {
           relCAB.setRetired();
-          WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+          OTFUtility.getBuilder().constructIfNotCurrent(relCAB);
         } else {
           found = true;
         }
@@ -642,7 +642,7 @@ public class BdbInformationModelService implements InformationModelService {
           new RelationshipCAB(modelConceptCB.getComponentUuid(),
               Snomed.IS_A.getUuids()[0], parent.getPrimordialUuid(), 0,
               RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
-      WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+      OTFUtility.getBuilder().constructIfNotCurrent(relCAB);
     }
   }
 
@@ -667,15 +667,15 @@ public class BdbInformationModelService implements InformationModelService {
       if (relCAB.getTypeNid() == InformationModelAux.HAS_TERMINOLOGY_CONCEPT
           .getLenient().getNid()) {
         UUID uuid =
-            WBUtility.getConceptVersion(relCAB.getTargetNid())
+            OTFUtility.getConceptVersion(relCAB.getTargetNid())
                 .getPrimordialUuid();
 
         // If the UUID is not in range, retire the rel
         if (!associatedConceptUuids.contains(uuid)) {
           LOG.debug("    Found relationship to retire - "
-              + WBUtility.getConPrefTerm(relCAB.getTargetNid()));
+              + OTFUtility.getConPrefTerm(relCAB.getTargetNid()));
           relCAB.setRetired();
-          WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+          OTFUtility.getBuilder().constructIfNotCurrent(relCAB);
         }
 
         // Otherwise, remove from list, no need to create it
@@ -696,7 +696,7 @@ public class BdbInformationModelService implements InformationModelService {
           new RelationshipCAB(modelConceptCB.getComponentUuid(), typeUid,
               destinationUuid, 0, RelationshipType.STATED_ROLE,
               IdDirective.GENERATE_HASH);
-      WBUtility.getBuilder().constructIfNotCurrent(relCAB);
+      OTFUtility.getBuilder().constructIfNotCurrent(relCAB);
       modelConceptCB.setRelationshipCAB(relCAB);
     }
   }
@@ -749,11 +749,11 @@ public class BdbInformationModelService implements InformationModelService {
       data[5] = new RefexDynamicString(property.getCardinalityMin());
       data[6] = new RefexDynamicString(property.getCardinalityMax());
       data[7] = new RefexDynamicString(property.getVisibility());
-      refexBlueprint.setData(data, WBUtility.getViewCoordinate());
+      refexBlueprint.setData(data, OTFUtility.getViewCoordinate());
 
       // Construct and wire the dynamic refex
       RefexDynamicChronicleBI<?> refex =
-          WBUtility.getBuilder().construct(refexBlueprint);
+          OTFUtility.getBuilder().construct(refexBlueprint);
       modelConcept.addDynamicAnnotation(refex);
       refexUuids.add(refex.getPrimordialUuid());
       LOG.debug("    UUID = " + refex.getPrimordialUuid());
@@ -764,16 +764,16 @@ public class BdbInformationModelService implements InformationModelService {
     for (RefexDynamicChronicleBI<?> refex : modelConcept
         .getRefexDynamicAnnotations()) {
       RefexDynamicVersionBI<?> refexVersion =
-          refex.getVersion(WBUtility.getViewCoordinate());
+          refex.getVersion(OTFUtility.getViewCoordinate());
       if (refexVersion != null
           && !refexUuids.contains(refex.getPrimordialUuid())) {
         RefexDynamicCAB refexBlueprint =
-            refexVersion.makeBlueprint(WBUtility.getViewCoordinate(),
+            refexVersion.makeBlueprint(OTFUtility.getViewCoordinate(),
                 IdDirective.PRESERVE, RefexDirective.EXCLUDE);
         refexBlueprint.setRetired();
         RefexDynamicChronicleBI<?> refex2 =
-            WBUtility.getBuilder().construct(refexBlueprint);
-        LOG.debug("  Retire refex UUID = " + refex2.getPrimordialUuid());
+            OTFUtility.getBuilder().construct(refexBlueprint);
+        LOG.debug("  Retire sememe UUID = " + refex2.getPrimordialUuid());
       }
     }
   }
@@ -871,7 +871,7 @@ public class BdbInformationModelService implements InformationModelService {
             RefexDynamicColumnInfo.createNewRefexDynamicColumnInfoConcept(
                 columnNames[i], columnDescriptions[i]);
         LOG.debug("    PT = "
-            + WBUtility.getConPrefTerm(columnConcept.getNid()));
+            + OTFUtility.getConPrefTerm(columnConcept.getNid()));
         LOG.debug("    UUID = " + columnConcept.getPrimordialUuid());
         RefexDynamicColumnInfo column =
             new RefexDynamicColumnInfo(i, columnConcept.getPrimordialUuid(),
@@ -892,9 +892,9 @@ public class BdbInformationModelService implements InformationModelService {
                   "Information model property refset",
                   "Used to capture information about information model properties",
                   columnArray, RefexDynamic.REFEX_DYNAMIC_IDENTITY.getLenient()
-                      .getPrimordialUuid(), true);
+                      .getPrimordialUuid(), true, null);
       ConceptVersionBI refexConcept =
-          WBUtility.getConceptVersion(refex.getRefexUsageDescriptorNid());
+          OTFUtility.getConceptVersion(refex.getRefexUsageDescriptorNid());
       LOG.debug("    PT = " + refexConcept.getPreferredDescription().getText());
       LOG.debug("    UUID = " + refexConcept.getPrimordialUuid());
 
@@ -904,14 +904,14 @@ public class BdbInformationModelService implements InformationModelService {
       // now a dependency on term aux.
       LOG.debug("  Create rel type concept");
       UUID parentUuid = UUID.fromString("4c3152a8-c927-330f-868d-b065a3362558");
-      ConceptChronicleBI parent = WBUtility.getConceptVersion(parentUuid);
+      ConceptChronicleBI parent = OTFUtility.getConceptVersion(parentUuid);
       ConceptCB relTypeConceptCB =
           createNewConceptBlueprint(parent, "Has terminology concept",
               "Has terminology concept");
       ConceptChronicleBI relTypeConcept =
-          WBUtility.getBuilder().constructIfNotCurrent(relTypeConceptCB);
+          OTFUtility.getBuilder().constructIfNotCurrent(relTypeConceptCB);
 
-      LOG.debug("    PT = " + WBUtility.getConPrefTerm(relTypeConcept.getNid()));
+      LOG.debug("    PT = " + OTFUtility.getConPrefTerm(relTypeConcept.getNid()));
       LOG.debug("    UUID = " + relTypeConcept.getPrimordialUuid());
       dataStore.addUncommitted(relTypeConcept);
       dataStore.commit(relTypeConcept);

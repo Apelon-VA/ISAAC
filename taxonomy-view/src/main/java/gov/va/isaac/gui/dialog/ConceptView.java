@@ -26,7 +26,7 @@ import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
@@ -86,7 +86,7 @@ public class ConceptView implements PopupConceptViewI {
 	@Override
 	public void setConcept(UUID conceptUUID)
 	{
-		// TODO this needs to be rewritten so that the dialog displays immediately
+		// TODO (artf231883) this needs to be rewritten so that the dialog displays immediately
 		//but with a progress indicator while we wait for the concept to be found..
 		Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>()
 		{
@@ -95,7 +95,7 @@ public class ConceptView implements PopupConceptViewI {
 			protected ConceptChronicleDdo call() throws Exception
 			{
 				LOG.info("Loading concept with UUID " + conceptUUID);
-				ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, WBUtility.getViewCoordinate(),
+				ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, OTFUtility.getViewCoordinate(),
 						VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_AND_DESTINATION_TAXONOMY_RELATIONSHIPS);
 				 LOG.info("Finished loading concept with UUID " + conceptUUID);
 
@@ -133,8 +133,8 @@ public class ConceptView implements PopupConceptViewI {
 		Utility.execute(task);
 	}
 
-	//TODO concept-view-tree is not stopping background threaded operations when this window is closed....
-	//TODO is also seems to fall into infinite loops at times...
+	//TODO (artf231884) concept-view-tree is not stopping background threaded operations when this window is closed....
+	//TODO (artf231885) concept-view-tree also seems to fall into infinite loops at times...
 	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptViewI#setConcept(int)
@@ -142,7 +142,7 @@ public class ConceptView implements PopupConceptViewI {
 	@Override
 	public void setConcept(int conceptNid)
 	{
-		//TODO fix threading issues on this too...
+		//TODO (artf231886) fix threading issues on this too...
 		try
 		{
 			ConceptChronicleBI concept = ExtendedAppContext.getDataStore().getConcept(conceptNid);

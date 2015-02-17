@@ -20,7 +20,7 @@ package gov.va.isaac.ie;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.models.util.ExporterBase;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.File;
 import java.lang.reflect.Field;

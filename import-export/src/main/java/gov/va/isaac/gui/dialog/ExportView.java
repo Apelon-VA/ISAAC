@@ -25,7 +25,7 @@ import gov.va.isaac.ie.ExportFileHandler;
 import gov.va.isaac.model.ExportType;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.File;
 
@@ -148,7 +148,7 @@ public class ExportView extends GridPane {
 
     // Update UI.
     exportTypeLabel.setText(exportType.getDisplayName());
-    pathNameLabel.setText(WBUtility.getConPrefTerm(pathNid));
+    pathNameLabel.setText(OTFUtility.getConPrefTerm(pathNid));
     folderNameLabel.setText(folderName);
 
     File folder = new File(folderName);

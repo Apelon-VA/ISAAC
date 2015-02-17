@@ -56,26 +56,13 @@ public class SememeContentSearchTypeFilter extends SearchTypeFilter<SememeConten
 					ObservableValue<? extends String> observable,
 					String oldValue,
 					String newValue) {
-				if (newValue != null && newValue.trim().length() > 1) {
+				if (isValid()) {
 					isValid.set(true);
 				} else {
 					isValid.set(false);
 				}
 			}
 		});
-//		refexAssemblageNidProperty.addListener(new ChangeListener<Number>() {
-//			@Override
-//			public void changed(
-//					ObservableValue<? extends Number> observable,
-//					Number oldValue,
-//					Number newValue) {
-//				if (newValue != null && newValue.intValue() != 0 && WBUtility.getComponentVersion(newValue.intValue()) != null) {
-//					isValid.set(isValid());
-//				} else {
-//					isValid.set(false);
-//				}
-//			}
-//		});
 	}
 
 	@Override
@@ -121,5 +108,13 @@ public class SememeContentSearchTypeFilter extends SearchTypeFilter<SememeConten
 	@Override
 	public SearchType getSearchType() {
 		return SearchType.SEMEME;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValid()
+	 */
+	@Override
+	public boolean isValid() {
+		return searchParameter.get() != null && searchParameter.get().trim().length() > 0;
 	}
 }

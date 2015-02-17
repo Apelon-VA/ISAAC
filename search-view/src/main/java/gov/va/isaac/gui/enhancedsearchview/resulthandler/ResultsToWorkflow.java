@@ -3,6 +3,7 @@ package gov.va.isaac.gui.enhancedsearchview.resulthandler;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
@@ -22,7 +23,7 @@ public class ResultsToWorkflow {
 	private static ComponentWorkflowServiceI conceptWorkflowService;
 	private static SearchModel searchModel = new SearchModel();
 
-	// TODO: This doesn't make sense here.  Should be exported to listView, then Workflow
+	// TODO (artf23141) This doesn't make sense here.  Should be exported to listView, then Workflow
 	public static void multipleResultsToWorkflow() {
 		initializeWorkflowServices();
 
@@ -54,11 +55,15 @@ public class ResultsToWorkflow {
 		}
 
 		if (conceptsOrComponents.size() > 0) {
-			for (ComponentVersionBI conceptOrComponent : conceptsOrComponents.values()) {
-				singleResultToWorkflow(conceptOrComponent);
+			DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Bulk Workflow Export Confirmation", "Are you sure that you want to generate " + conceptsOrComponents.size() + " new Workflow instance(s)?");
+
+			if (response == DialogResponse.YES) {
+				for (ComponentVersionBI conceptOrComponent : conceptsOrComponents.values()) {
+					singleResultToWorkflow(conceptOrComponent);
+				}
+
+				conceptWorkflowService.synchronizeWithRemote();
 			}
-			
-			conceptWorkflowService.synchronizeWithRemote();
 		}
 	}
 

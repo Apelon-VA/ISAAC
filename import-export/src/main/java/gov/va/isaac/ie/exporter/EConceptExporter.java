@@ -4,7 +4,7 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.models.util.CommonBase;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -121,7 +121,7 @@ public class EConceptExporter extends CommonBase implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
-    ConceptVersionBI concept = fetcher.fetch(WBUtility.getViewCoordinate());
+    ConceptVersionBI concept = fetcher.fetch(OTFUtility.getViewCoordinate());
     allCount++;
     if (LOG.isDebugEnabled())
     {

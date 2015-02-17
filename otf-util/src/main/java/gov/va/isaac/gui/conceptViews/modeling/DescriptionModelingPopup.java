@@ -21,7 +21,7 @@ package gov.va.isaac.gui.conceptViews.modeling;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -101,13 +101,13 @@ public class DescriptionModelingPopup extends ModelingPopup
 		
 		try {
 			ComponentChronicleBI<?> chronicle = desc.getChronicle();
-			DescriptionVersionBI<?> displayVersion = (DescriptionVersionBI<?>) chronicle.getVersion(WBUtility.getViewCoordinate());
+			DescriptionVersionBI<?> displayVersion = (DescriptionVersionBI<?>) chronicle.getVersion(OTFUtility.getViewCoordinate());
 
 			if (chronicle.isUncommitted()) {
-				displayVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+				displayVersion = (DescriptionVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 			}
 
-			createOriginalLabel(WBUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
+			createOriginalLabel(OTFUtility.getConceptVersion(displayVersion.getTypeNid()).getPreferredDescription().getText());
 			createOriginalLabel(displayVersion.getText());
 			createOriginalLabel(displayVersion.getLang());
 			createOriginalLabel((displayVersion.isInitialCaseSignificant()) ? "True" : "False");
@@ -308,15 +308,15 @@ public class DescriptionModelingPopup extends ModelingPopup
 			boolean isInitCap = (isCapCb.getSelectionModel().getSelectedItem().equalsIgnoreCase("True")); 
 
 			if (desc == null) {
-				WBUtility.createNewDescription((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap);
+				OTFUtility.createNewDescription((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap);
 			} else {
 				if (desc.isUncommitted()) {
 					ExtendedAppContext.getDataStore().forget(desc);
 				}
-				DescriptionCAB dcab = new DescriptionCAB((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap, desc, WBUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				DescriptionCAB dcab = new DescriptionCAB((desc != null) ? desc.getConceptNid() : conceptNid, type, LanguageCode.getLangCode(langCode), term, isInitCap, desc, OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 	
-				DescriptionChronicleBI dcbi = WBUtility.getBuilder().constructIfNotCurrent(dcab);
-				WBUtility.addUncommitted(dcbi.getEnclosingConcept());
+				DescriptionChronicleBI dcbi = OTFUtility.getBuilder().constructIfNotCurrent(dcab);
+				OTFUtility.addUncommitted(dcbi.getEnclosingConcept());
 			}
 		}
 		catch (Exception e)

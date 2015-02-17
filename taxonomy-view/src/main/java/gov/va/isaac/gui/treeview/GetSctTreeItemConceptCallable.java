@@ -19,11 +19,14 @@
 package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+
 import javafx.application.Platform;
+
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
@@ -33,6 +36,9 @@ import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipVersion
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
+import org.jfree.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A concrete {@link Callable} for fetching concepts.
@@ -41,6 +47,7 @@ import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
  * @author kec
  */
 public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
+    private static final Logger LOG = LoggerFactory.getLogger(GetSctTreeItemConceptCallable.class);
 
     private final SctTreeItem treeItem;
     private final boolean addChildren;
@@ -85,7 +92,7 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
         BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
         concept = dataStore.getFxConcept(reference,
-                WBUtility.getViewCoordinate(),
+                OTFUtility.getViewCoordinate(),
                 versionPolicy, refexPolicy, relationshipPolicy);
 
         if ((concept.getConceptAttributes() == null)
@@ -95,7 +102,13 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
         }
 
         if (concept.getOriginRelationships().size() > 1) {
+        	//LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
             treeItem.setMultiParent(true);
+        } else if (concept.getOriginRelationships().size() == 1) {
+        	//LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
+        } else if (concept.getOriginRelationships().size() == 0) {
+        	// TODO (artf231888): remove this debug statement when this tracker is closed
+        	LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
         }
 
         if (addChildren) {

@@ -19,7 +19,7 @@
 package gov.va.isaac.models.util;
 
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -60,7 +60,7 @@ public class CommonBase {
    * @return the edit coordinate
    */
   protected final EditCoordinate getEC() {
-    return WBUtility.getEC();
+    return OTFUtility.getEditCoordinate();
   }
 
   /**
@@ -69,6 +69,6 @@ public class CommonBase {
    * @return the view coordinate
    */
   protected final ViewCoordinate getVC() {
-    return WBUtility.getViewCoordinate();
+    return OTFUtility.getViewCoordinate();
   }
 }

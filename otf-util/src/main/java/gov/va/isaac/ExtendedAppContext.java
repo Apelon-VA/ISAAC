@@ -34,7 +34,7 @@ import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
  */
 public class ExtendedAppContext extends AppContext
 {
-	//A nasty little hack, to that I can do some trickery during junit testing / mock testing
+	//A nasty little hack, so that I can do some trickery during junit testing / mock testing
 	//to substitute a different UserProfileManager - without having to go through the effort to create all of the interfaces that would require
 	//I tweak this with reflection....
 	private static Class<UserProfileManager> userProfileManagerClass = UserProfileManager.class;

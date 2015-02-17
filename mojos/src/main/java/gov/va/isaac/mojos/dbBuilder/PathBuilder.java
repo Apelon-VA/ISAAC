@@ -19,7 +19,7 @@
 package gov.va.isaac.mojos.dbBuilder;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -150,7 +150,7 @@ public class PathBuilder extends AbstractMojo {
     if (parentPathUuid != null) {
       bpConcept = dataStore.getConcept(UUID.fromString(parentPathUuid));
     } else if (parentPathFsn != null) {
-      bpConcept = dataStore.getConcept(WBUtility.getUuidForFsn(parentPathFsn,parentPathFsn));
+      bpConcept = dataStore.getConcept(OTFUtility.getUuidForFsn(parentPathFsn,parentPathFsn));
     } else {
       throw new IOException("Missing parent path parameter");
     }
@@ -200,9 +200,9 @@ public class PathBuilder extends AbstractMojo {
     } else if (originPathFsns != null) {
       for (String originFsn : originPathFsns) {
         ConceptChronicleBI originConcept =
-            dataStore.getConcept(WBUtility.getUuidForFsn(originFsn, originFsn));
+            dataStore.getConcept(OTFUtility.getUuidForFsn(originFsn, originFsn));
         getLog().info(
-            "  Add new path concept to PATH_ORIGINS_REFSET - " + originFsn + " " + WBUtility.getUuidForFsn(originFsn,originFsn));
+            "  Add new path concept to PATH_ORIGINS_REFSET - " + originFsn + " " + OTFUtility.getUuidForFsn(originFsn,originFsn));
         addNidLongMember(pathOriginRefset, pathConcept, originConcept);
       }
     } else {
@@ -219,7 +219,7 @@ public class PathBuilder extends AbstractMojo {
         paths.getVersion(StandardViewCoordinates.getSnomedStatedLatest());
     getLog().info("paths: " + paths.getNid() + " " + paths.toUserString());
     for (RefexChronicleBI<?> refex : pathsVersion.getRefsetMembers()) {
-      getLog().info("  refex : " + refex.toUserString());
+      getLog().info("  sememe : " + refex.toUserString());
     }
 
     getLog().info("WRITE path origin refset info");
@@ -230,7 +230,7 @@ public class PathBuilder extends AbstractMojo {
     getLog().info(
         "paths: " + pathOrigins.getNid() + " " + pathOrigins.toUserString());
     for (RefexChronicleBI<?> refex : pathOriginsVersion.getRefsetMembers()) {
-      getLog().info("  refex : " + refex.toUserString());
+      getLog().info("  sememe : " + refex.toUserString());
     }
     
   }

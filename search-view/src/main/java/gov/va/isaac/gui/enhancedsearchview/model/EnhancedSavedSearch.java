@@ -3,14 +3,17 @@ package gov.va.isaac.gui.enhancedsearchview.model;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.Search;
+import gov.va.isaac.gui.dialog.UserPrompt.UserPromptResponse;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper;
 import gov.va.isaac.gui.enhancedsearchview.SearchConceptHelper.SearchConceptException;
 import gov.va.isaac.gui.enhancedsearchview.SearchDisplayConcept;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ComponentSearchType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
+import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.SaveSearchPrompt;
 import gov.va.isaac.util.ComponentDescriptionHelper;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -18,8 +21,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -89,7 +94,11 @@ public class EnhancedSavedSearch {
 		saveSearchButton.setMinWidth(Control.USE_PREF_SIZE);
 
 		saveSearchButton.setOnAction((e) -> {
-			saveSearch(); 
+			if (! SearchModel.getSearchTypeSelector().getTypeSpecificModel().isSavableSearch()) {
+				AppContext.getCommonDialogs().showErrorDialog("Save of Search Failed", "Search is not savable", SearchModel.getSearchTypeSelector().getTypeSpecificModel().getSearchSavabilityValidationFailureMessage());
+			} else {
+				saveSearch();
+			}
 		});
 		
 		restoreSearchButton = new Button("Restore Search");
@@ -112,7 +121,7 @@ public class EnhancedSavedSearch {
 
 		
 		if (! searchTypeComboBoxChangeListenerSet) {
-			searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchType>() {
+			SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().selectedItemProperty().addListener(new ChangeListener<SearchType>() {
 				@Override
 				public void changed(
 						ObservableValue<? extends SearchType> observable,
@@ -135,9 +144,9 @@ public class EnhancedSavedSearch {
 		try {
 			model = SearchConceptHelper.loadSavedSearch(searchToRestore);
 			
-			SearchType currentType = model.getSearchTypeSelector().getCurrentType();
-			model.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(null);
-			model.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(currentType);
+			SearchType currentType = SearchModel.getSearchTypeSelector().getCurrentType();
+			SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(null);
+			SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().select(currentType);
 		} catch (SearchConceptException e) {
 			LOG.error("Failed loading saved search. Caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
 			e.printStackTrace();
@@ -169,20 +178,21 @@ public class EnhancedSavedSearch {
 	}
 
 	private String getSaveSearchRequest() throws SearchConceptException {
-		SaveSearchPrompt.showContentGatheringDialog(AppContext.getMainApplicationWindow().getPrimaryStage(), "Define Refset");
+		SaveSearchPrompt prompt = new SaveSearchPrompt();
+		prompt.showUserPrompt(AppContext.getMainApplicationWindow().getPrimaryStage(), "Define Refset");
 
 
-		if (SaveSearchPrompt.getButtonSelected() == SaveSearchPrompt.Response.SAVE) {
+		if (prompt.getButtonSelected() == UserPromptResponse.APPROVE) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss");
 			LocalDateTime dateTime = LocalDateTime.now();
 			String formattedDateTime = dateTime.format(formatter);
 			String user = ExtendedAppContext.getCurrentlyLoggedInUserProfile().getUserLogonName();
-			final String nameToSave = SaveSearchPrompt.getNameTextField().getText() + " by " + user + " on " + formattedDateTime;
+			final String nameToSave = prompt.getNameTextField().getText() + " by " + user + " on " + formattedDateTime;
 
-			SearchConceptHelper.buildAndSaveSearchConcept(searchModel, nameToSave, SaveSearchPrompt.getDescTextField().getText());
+			SearchConceptHelper.buildAndSaveSearchConcept(searchModel, nameToSave, prompt.getDescTextField().getText());
 			refreshSavedSearchComboBox();
 
-			return SaveSearchPrompt.getNameTextField().getText();
+			return prompt.getNameTextField().getText();
 		}
 		
 		return null;
@@ -229,20 +239,34 @@ public class EnhancedSavedSearch {
 		refreshSavedSearchComboBox();
 	}
 
-	private void refreshSavedSearchComboBox() {
+	public static void refreshSavedSearchComboBox() {
 		Task<List<SearchDisplayConcept>> loadSavedSearches = new Task<List<SearchDisplayConcept>>() {
 			private ObservableList<SearchDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
 
 			@Override
 			protected List<SearchDisplayConcept> call() throws Exception {
-				List<ConceptVersionBI> savedSearches = WBUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
+				Set<ConceptVersionBI> savedSearches = OTFUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
 
-				SearchType currentSearchType = searchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
+				SearchType currentSearchType = SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
 				for (ConceptVersionBI concept : savedSearches) {
 					if (getCachedSearchTypeFromSearchConcept(concept) == currentSearchType) {
-						String fsn = WBUtility.getFullySpecifiedName(concept);
-						String preferredTerm = WBUtility.getConPrefTerm(concept.getNid());
-						searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+						boolean addSearchToList = true;
+						if (currentSearchType == SearchType.TEXT) {
+							ComponentSearchType currentlyViewedComponentSearchType = TextSearchTypeModel.getCurrentComponentSearchType();
+							ComponentSearchType loadedComponentSearchType = getCachedComponentSearchTypeFromSearchConcept(concept);
+							
+							if (currentlyViewedComponentSearchType != null && loadedComponentSearchType != null) {
+								if (currentlyViewedComponentSearchType != loadedComponentSearchType) {
+									addSearchToList = false;
+								}
+							}
+						}
+						
+						if (addSearchToList) {
+							String fsn = OTFUtility.getFullySpecifiedName(concept);
+							String preferredTerm = OTFUtility.getConPrefTerm(concept.getNid());
+							searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+						}
 					}
 				}
 
@@ -262,12 +286,12 @@ public class EnhancedSavedSearch {
 	}
 
 	void refreshSearchViewModelBindings() {
-		Bindings.bindBidirectional(searchSaveNameTextField.textProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getNameProperty());
-		Bindings.bindBidirectional(searchSaveDescriptionTextField.textProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getDescriptionProperty());
+		Bindings.bindBidirectional(searchSaveNameTextField.textProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getNameProperty());
+		Bindings.bindBidirectional(searchSaveDescriptionTextField.textProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescriptionProperty());
 
-		Bindings.bindBidirectional(searchModel.getMaxResultsCustomTextField().valueProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResultsProperty());
+		Bindings.bindBidirectional(searchModel.getMaxResultsCustomTextField().valueProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResultsProperty());
 
-		Bindings.bindBidirectional(droolsExprTextField.textProperty(), searchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExprProperty());
+		Bindings.bindBidirectional(droolsExprTextField.textProperty(), SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExprProperty());
 	}
 
 	public Button getSaveButton() {
@@ -280,14 +304,25 @@ public class EnhancedSavedSearch {
 	
 	private static Map<Integer, SearchType> conceptSearchTypeCache = new HashMap<>();
 	private static SearchType getCachedSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
-		if (conceptSearchTypeCache.get(concept.getNid()) == null) {
-			conceptSearchTypeCache.put(concept.getConceptNid(), getSearchTypeFromSearchConcept(concept));
+		synchronized (conceptSearchTypeCache) {
+			if (conceptSearchTypeCache.get(concept.getNid()) == null) {
+				conceptSearchTypeCache.put(concept.getConceptNid(), getSearchTypeFromSearchConcept(concept));
+			}
 		}
-		
+
 		return conceptSearchTypeCache.get(concept.getNid());
 	}
+	private static Set<Integer> badSearchConceptsToIgnore = new HashSet<>();
 	private static SearchType getSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
-		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+		synchronized (badSearchConceptsToIgnore) {
+			if (badSearchConceptsToIgnore.contains(concept.getConceptNid())) {
+				LOG.debug("Ignoring invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"");
+			
+				return null;
+			}
+		}
+
+		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
 		for (RefexDynamicVersionBI<?> refex : refexes) {
 			RefexDynamicUsageDescription dud = null;
 			try {
@@ -304,6 +339,75 @@ public class EnhancedSavedSearch {
 				return SearchType.TEXT;
 			} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription())) {
 				return SearchType.SEMEME;
+			} else {
+				LOG.debug("getSearchTypeFromSearchConcept() ignoring refex \"" + dud.getRefexName() + "\" on search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\""); 
+			}
+		}
+		
+		//String warn = "Automatically RETIRING invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
+		String warn = "Invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\"";
+
+		LOG.warn(warn);
+		
+		synchronized (badSearchConceptsToIgnore) {
+			// Retire Concept for bad search refex
+//			RuntimeGlobalsI globals = AppContext.getService(RuntimeGlobalsI.class);
+			try {
+				// disable WorkflowInitiationPropertyChangeListener
+//				globals.disableAllCommitListeners();
+
+				// TODO: Make retirement of bad search concepts work: https://csfe.aceworkspace.net/sf/go/artf231405
+//				ConceptAttributeAB cab = new ConceptAttributeAB(concept.getConceptNid(), /* concept.getConceptAttributesActive().isDefined() */ true, RefexDirective.EXCLUDE);
+//				ConceptAttributeChronicleBI cabi = OTFUtility.getBuilder().constructIfNotCurrent(cab);
+//				
+//				//ConceptCB cab = concept.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.INCLUDE);
+//				//ConceptChronicleBI cabi = OTFUtility.getBuilder().constructIfNotCurrent(cab);
+//				
+//				cab.setStatus(Status.INACTIVE);
+//				
+//				OTFUtility.addUncommitted(cabi.getEnclosingConcept());
+//				
+//				// Commit
+//				OTFUtility.commit(concept);
+			} catch (Exception e) {
+				String error = "FAILED to automatically retire invalid/unsupported search filter concept nid=" + concept.getConceptNid() + ", status=" + concept.getStatus() + ", uuid=" + concept.getPrimordialUuid() + ", desc=\"" + ComponentDescriptionHelper.getComponentDescription(concept) + "\".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
+				LOG.error(error, e);
+				e.printStackTrace();
+			} finally {
+//				globals.enableAllCommitListeners();
+
+				badSearchConceptsToIgnore.add(concept.getConceptNid());
+			}
+		}
+		return null;
+	}
+	
+	private static Map<Integer, ComponentSearchType> componentSearchTypeCache = new HashMap<>();
+	private static ComponentSearchType getCachedComponentSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		synchronized (componentSearchTypeCache) {
+			if (componentSearchTypeCache.get(concept.getNid()) == null) {
+				componentSearchTypeCache.put(concept.getConceptNid(), getComponentSearchTypeFromSearchConcept(concept));
+			}
+		}
+		
+		return componentSearchTypeCache.get(concept.getNid());
+	}
+	private static ComponentSearchType getComponentSearchTypeFromSearchConcept(ConceptVersionBI concept) throws IOException {
+		Collection<? extends RefexDynamicVersionBI<?>> refexes = concept.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
+		for (RefexDynamicVersionBI<?> refex : refexes) {
+			RefexDynamicUsageDescription dud = null;
+			try {
+				dud = refex.getRefexDynamicUsageDescription();
+			} catch (IOException | ContradictionException e) {
+				LOG.error("Failed performing getRefexDynamicUsageDescription(): caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+
+				return null;
+			}
+
+			if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription())) {
+				return ComponentSearchType.LUCENE;
+			} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription())) {
+				return ComponentSearchType.REGEXP;
 			}
 		}
 		

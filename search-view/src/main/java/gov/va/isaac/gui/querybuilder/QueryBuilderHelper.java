@@ -41,7 +41,7 @@ import gov.va.isaac.gui.querybuilder.node.SingleStringAssertionNode;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.ComponentDescriptionHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -182,7 +182,7 @@ public class QueryBuilderHelper {
 				nodeEditorGridPane.addRow(rowIndex++, new Label());
 				ConceptVersionBI currentConcept = null;
 				if (singleConceptAssertionNode.getNid() != null) {
-					currentConcept = WBUtility.getConceptVersion(singleConceptAssertionNode.getNid());
+					currentConcept = OTFUtility.getConceptVersion(singleConceptAssertionNode.getNid());
 				}
 				ConceptNode conceptNode = new ConceptNode(currentConcept, true);
 				conceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -233,7 +233,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentRelRestrictionConcept = null;
 					if (relRestrictionNode.getRelRestrictionConceptNid() != null) {
-						currentRelRestrictionConcept = WBUtility.getConceptVersion(relRestrictionNode.getRelRestrictionConceptNid());
+						currentRelRestrictionConcept = OTFUtility.getConceptVersion(relRestrictionNode.getRelRestrictionConceptNid());
 					}
 					ConceptNode relRestrictionConceptNode = new ConceptNode(currentRelRestrictionConcept, true);
 					relRestrictionConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -254,7 +254,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentRelTypeConcept = null;
 					if (relRestrictionNode.getRelTypeConceptNid() != null) {
-						currentRelTypeConcept = WBUtility.getConceptVersion(relRestrictionNode.getRelTypeConceptNid());
+						currentRelTypeConcept = OTFUtility.getConceptVersion(relRestrictionNode.getRelTypeConceptNid());
 					}
 					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
 					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -275,7 +275,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentSourceConcept = null;
 					if (relRestrictionNode.getSourceConceptNid() != null) {
-						currentSourceConcept = WBUtility.getConceptVersion(relRestrictionNode.getSourceConceptNid());
+						currentSourceConcept = OTFUtility.getConceptVersion(relRestrictionNode.getSourceConceptNid());
 					}
 					ConceptNode sourceConceptNode = new ConceptNode(currentSourceConcept, true);
 					sourceConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -291,11 +291,11 @@ public class QueryBuilderHelper {
 							}
 						}
 					});
-					nodeEditorGridPane.addRow(rowIndex++, new Label("Source Concept"), sourceConceptNode.getNode());
+					nodeEditorGridPane.addRow(rowIndex++, new Label("Target Concept"), sourceConceptNode.getNode());
 				}
 				{
 					CheckBox destinationSubsumptionCheckBox = new CheckBox();
-					destinationSubsumptionCheckBox.setText("Use Destination Subsumption");
+					destinationSubsumptionCheckBox.setText("Use Target Subsumption");
 					destinationSubsumptionCheckBox.setSelected(relRestrictionNode.getUseDestinationSubsumption());
 
 					destinationSubsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
@@ -342,7 +342,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentRelTypeConcept = null;
 					if (relTypeNode.getRelTypeConceptNid() != null) {
-						currentRelTypeConcept = WBUtility.getConceptVersion(relTypeNode.getRelTypeConceptNid());
+						currentRelTypeConcept = OTFUtility.getConceptVersion(relTypeNode.getRelTypeConceptNid());
 					}
 					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
 					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -363,7 +363,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentTargetConcept = null;
 					if (relTypeNode.getTargetConceptNid() != null) {
-						currentTargetConcept = WBUtility.getConceptVersion(relTypeNode.getTargetConceptNid());
+						currentTargetConcept = OTFUtility.getConceptVersion(relTypeNode.getTargetConceptNid());
 					}
 					ConceptNode targetConceptNode = new ConceptNode(currentTargetConcept, true);
 					targetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -383,7 +383,7 @@ public class QueryBuilderHelper {
 				}
 				{
 					CheckBox subsumptionCheckBox = new CheckBox();
-					subsumptionCheckBox.setText("Use Subsumption");
+					subsumptionCheckBox.setText("Use RelType Subsumption");
 					subsumptionCheckBox.setSelected(relTypeNode.getUseSubsumption());
 
 					subsumptionCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
@@ -413,7 +413,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentRelTypeConcept = null;
 					if (refsetContainsConceptNode.getRefsetConceptNid() != null) {
-						currentRelTypeConcept = WBUtility.getConceptVersion(refsetContainsConceptNode.getRefsetConceptNid());
+						currentRelTypeConcept = OTFUtility.getConceptVersion(refsetContainsConceptNode.getRefsetConceptNid());
 					}
 					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
 					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -434,7 +434,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentTargetConcept = null;
 					if (refsetContainsConceptNode.getConceptNid() != null) {
-						currentTargetConcept = WBUtility.getConceptVersion(refsetContainsConceptNode.getConceptNid());
+						currentTargetConcept = OTFUtility.getConceptVersion(refsetContainsConceptNode.getConceptNid());
 					}
 					ConceptNode targetConceptNode = new ConceptNode(currentTargetConcept, true);
 					targetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -467,7 +467,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentRelTypeConcept = null;
 					if (refsetContainsKindOfConceptNode.getRefsetConceptNid() != null) {
-						currentRelTypeConcept = WBUtility.getConceptVersion(refsetContainsKindOfConceptNode.getRefsetConceptNid());
+						currentRelTypeConcept = OTFUtility.getConceptVersion(refsetContainsKindOfConceptNode.getRefsetConceptNid());
 					}
 					ConceptNode relTypeConceptNode = new ConceptNode(currentRelTypeConcept, true);
 					relTypeConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -488,7 +488,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI currentTargetConcept = null;
 					if (refsetContainsKindOfConceptNode.getConceptNid() != null) {
-						currentTargetConcept = WBUtility.getConceptVersion(refsetContainsKindOfConceptNode.getConceptNid());
+						currentTargetConcept = OTFUtility.getConceptVersion(refsetContainsKindOfConceptNode.getConceptNid());
 					}
 					ConceptNode targetConceptNode = new ConceptNode(currentTargetConcept, true);
 					targetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -521,7 +521,7 @@ public class QueryBuilderHelper {
 				{
 					ConceptVersionBI refsetConcept = null;
 					if (refsetContainsKindOfConceptNode.getRefsetConceptNid() != null) {
-						refsetConcept = WBUtility.getConceptVersion(refsetContainsKindOfConceptNode.getRefsetConceptNid());
+						refsetConcept = OTFUtility.getConceptVersion(refsetContainsKindOfConceptNode.getRefsetConceptNid());
 					}
 					ConceptNode refsetConceptNode = new ConceptNode(refsetConcept, true);
 					refsetConceptNode.getConceptProperty().addListener(new ChangeListener<ConceptVersionBI>() {
@@ -600,16 +600,16 @@ public class QueryBuilderHelper {
 	
 	public static String getDescription(int nid) {
 		String componentDescription = null;
-		ComponentVersionBI component = WBUtility.getComponentVersion(nid);
+		ComponentVersionBI component = OTFUtility.getComponentVersion(nid);
 		if (component != null) {
 			componentDescription = ComponentDescriptionHelper.getComponentDescription(component);
 		}
 		if (componentDescription == null) {
-			componentDescription = WBUtility.getDescriptionIfConceptExists(nid);
+			componentDescription = OTFUtility.getDescriptionIfConceptExists(nid);
 		}
 		if (componentDescription == null) {
 			try {
-				componentDescription = WBUtility.getConPrefTerm(nid);
+				componentDescription = OTFUtility.getConPrefTerm(nid);
 			} catch (Exception e) {
 				//
 			}
@@ -676,7 +676,7 @@ public class QueryBuilderHelper {
 			NativeIdSetItrBI itr = results.getSetBitIterator();
             while (itr.next()) {
             	int nid = itr.nid();
-            	ConceptVersionBI con = WBUtility.getConceptVersion(nid);
+            	ConceptVersionBI con = OTFUtility.getConceptVersion(nid);
 				CompositeSearchResult nidResult = new CompositeSearchResult(con, 0);
 				collection.add(nidResult);
 			}

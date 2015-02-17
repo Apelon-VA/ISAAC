@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -62,9 +62,9 @@ public class RelType extends AssertionNode {
 	}
 	
 	private boolean isNodeValid() {
-		if (relTypeConceptNidIntegerProperty == null || WBUtility.getConceptVersion(relTypeConceptNidIntegerProperty.get()) == null) {
+		if (relTypeConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(relTypeConceptNidIntegerProperty.get()) == null) {
 			return false;
-		} else if (targetConceptNidIntegerProperty == null || WBUtility.getConceptVersion(targetConceptNidIntegerProperty.get()) == null) {
+		} else if (targetConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(targetConceptNidIntegerProperty.get()) == null) {
 			return false;
 		} else {
 			return true;
@@ -88,7 +88,7 @@ public class RelType extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -99,7 +99,7 @@ public class RelType extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -151,12 +151,12 @@ public class RelType extends AssertionNode {
 	public String getDescription() {
 		String relTypeConceptDescription = null;
 		if (getRelTypeConceptNid() != null && getRelTypeConceptNid() != 0) {
-			relTypeConceptDescription = WBUtility.getDescriptionIfConceptExists(getRelTypeConceptNid());
+			relTypeConceptDescription = OTFUtility.getDescriptionIfConceptExists(getRelTypeConceptNid());
 		}
 
 		String targetConceptDescription = null;
 		if (getTargetConceptNid() != null && getTargetConceptNid() != 0) {
-			targetConceptDescription = WBUtility.getDescriptionIfConceptExists(getTargetConceptNid());
+			targetConceptDescription = OTFUtility.getDescriptionIfConceptExists(getTargetConceptNid());
 		}
 		
 		String useSubsumptionDescription = null;

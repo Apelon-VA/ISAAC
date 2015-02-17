@@ -14,7 +14,7 @@ import gov.va.isaac.search.DescriptionAnalogBITypeComparator;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.math.RoundingMode;
@@ -186,7 +186,7 @@ public class SearchResultsTable  {
 		// matchingDescTypeCol is string value type of matching description term displayed
 		// Only meaningful for AggregationType DESCRIPTION
 		// When AggregationTyppe is CONCEPT should always be type of first match
-		matchingDescTypeCol.setCellValueFactory((param) -> new SimpleStringProperty(WBUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid())));
+		matchingDescTypeCol.setCellValueFactory((param) -> new SimpleStringProperty(OTFUtility.getConPrefTerm(param.getValue().getMatchingDescriptionComponents().iterator().next().getTypeNid())));
 		matchingDescTypeCol.setCellFactory(new MyTableCellCallback<String>());
 		// matchingDescTypeCol defaults to invisible for anything but DESCRIPTION
 		if (resultsType != ResultsType.DESCRIPTION) {
@@ -268,7 +268,7 @@ public class SearchResultsTable  {
 							List<DescriptionAnalogBI<?>> matchingDescComponents = new ArrayList<DescriptionAnalogBI<?>>(result.getMatchingDescriptionComponents());
 							Collections.sort(matchingDescComponents, new DescriptionAnalogBITypeComparator());
 							for (DescriptionAnalogBI<?> descComp : matchingDescComponents) {
-								String type = WBUtility.getConPrefTerm(descComp.getTypeNid());
+								String type = OTFUtility.getConPrefTerm(descComp.getTypeNid());
 								buffer.append(type + ": " + descComp.getText() + "\n");
 							}
 							Tooltip tooltip = new Tooltip("Matching descriptions for \"" + fsn + "\":\n" + buffer.toString());

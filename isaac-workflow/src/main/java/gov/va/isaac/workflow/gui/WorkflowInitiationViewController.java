@@ -24,7 +24,7 @@ import gov.va.isaac.interfaces.workflow.ComponentWorkflowServiceI;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
 import gov.va.isaac.interfaces.workflow.WorkflowProcess;
 import gov.va.isaac.util.ComponentDescriptionHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -154,7 +154,7 @@ public class WorkflowInitiationViewController {
 	public void initialize() {
 		initializeWorkflowProcessesComboBox();
 
-		// TODO: must move to model to handle other WorkflowProcessModel types
+		// TODO (artf231901): must move to model to handle other WorkflowProcessModel types
 		instructionsTextArea.clear();
 
 		promotionPathCoordinateLabel.setText(getDefaultPromotionPathCoordinateTextFieldContent());
@@ -179,13 +179,13 @@ public class WorkflowInitiationViewController {
 	}
 
 	private String getDefaultPromotionPathCoordinateTextFieldContent() {
-		UUID promotionPathUUID = AppContext.getAppConfiguration().getWorkflowPromotionPathUuidAsUUID();
+		UUID promotionPathUUID = AppContext.getAppConfiguration().getCurrentWorkflowPromotionPathUuidAsUUID();
 		if (promotionPathUUID == null)
 		{
 			return "";
 		}
 		try {
-			return WBUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
+			return OTFUtility.getConceptVersion(promotionPathUUID).getPreferredDescription().getText();
 		} catch (IOException | ContradictionException e) {
 			return "";
 		}
@@ -237,17 +237,17 @@ public class WorkflowInitiationViewController {
 					+ passedComponentOrConcept.toUserString());
 		} else {
 			LOG.debug("Set componentOrConcept nid=" + passedComponentOrConcept.getNid() + ", uuid=" + passedComponentOrConcept.getPrimordialUuid() + ", desc=" 
-					+ WBUtility.getDescription(passedComponentOrConcept.getNid()));
+					+ OTFUtility.getDescription(passedComponentOrConcept.getNid()));
 		}
 
 		loadContents();
 	}
 
 	public void setComponent(int componentOrConceptNid) {
-		ComponentVersionBI componentVersion = WBUtility.getComponentVersion(componentOrConceptNid);
+		ComponentVersionBI componentVersion = OTFUtility.getComponentVersion(componentOrConceptNid);
 		if (componentVersion == null) {
 			// May be a concept
-			componentVersion = WBUtility.getConceptVersion(componentOrConceptNid);
+			componentVersion = OTFUtility.getConceptVersion(componentOrConceptNid);
 		}
 
 		if (componentVersion == null) {

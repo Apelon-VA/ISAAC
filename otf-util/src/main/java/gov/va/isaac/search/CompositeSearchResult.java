@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.search;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,7 +51,7 @@ public class CompositeSearchResult {
 		{
 			throw new RuntimeException("Please call the constructor that takes a nid, if matchingComponent is null...");
 		}
-		this.containingConcept = WBUtility.getConceptVersion(matchingComponent.getConceptNid());
+		this.containingConcept = OTFUtility.getConceptVersion(matchingComponent.getConceptNid());
 	}
 	public CompositeSearchResult(int matchingComponentNid, float score) {
 		this.bestScore = score;

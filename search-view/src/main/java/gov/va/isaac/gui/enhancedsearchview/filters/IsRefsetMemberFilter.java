@@ -49,7 +49,7 @@ public class IsRefsetMemberFilter extends NonSearchTypeFilter<IsRefsetMemberFilt
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue.intValue() != 0) {
+				if (isValid()) {
 					isValid.set(true);
 				} else {
 					isValid.set(false);
@@ -115,5 +115,13 @@ public class IsRefsetMemberFilter extends NonSearchTypeFilter<IsRefsetMemberFilt
 	@Override
 	IntegerProperty getSingleNid() {
 		return nid;
+	}
+
+	/* (non-Javadoc)
+	 * @see gov.va.isaac.gui.enhancedsearchview.filters.Filter#isValid()
+	 */
+	@Override
+	public boolean isValid() {
+		return nid.getValue() != null && nid.get() != 0;
 	}
 }

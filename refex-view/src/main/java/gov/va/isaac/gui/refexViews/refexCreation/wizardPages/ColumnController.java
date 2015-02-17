@@ -21,6 +21,7 @@ package gov.va.isaac.gui.refexViews.refexCreation.wizardPages;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.SimpleDisplayConceptComparator;
 import gov.va.isaac.gui.refexViews.refexCreation.PanelControllersI;
 import gov.va.isaac.gui.refexViews.refexCreation.ScreensController;
 import gov.va.isaac.gui.refexViews.util.RefexDataTypeFXNodeBuilder;
@@ -29,12 +30,15 @@ import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeFXNodeBuilder;
 import gov.va.isaac.gui.refexViews.util.RefexValidatorTypeNodeDetails;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -57,6 +61,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
@@ -65,6 +70,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sun.javafx.collections.ObservableListWrapper;
 
 /**
@@ -132,7 +138,7 @@ public class ColumnController implements PanelControllersI {
 
 		columnDescription.setEditable(false);
 		
-		columnNameSelection_ = new ConceptNode(null, true, columnNameChoices, colNameReader_);
+		columnNameSelection_ = new ConceptNode(null, true, columnNameChoices.sorted(new SimpleDisplayConceptComparator()), colNameReader_);
 		
 		columnNameHolder.getChildren().add(columnNameSelection_.getNode());
 		HBox.setHgrow(columnNameSelection_.getNode(), Priority.ALWAYS);
@@ -147,7 +153,7 @@ public class ColumnController implements PanelControllersI {
 			{
 				if (typeOption.getValue() == RefexDynamicDataType.UNKNOWN)
 				{
-					return "You must select the column type";
+					return "You must select the attribute type";
 				}
 				return "";
 			}
@@ -306,10 +312,14 @@ public class ColumnController implements PanelControllersI {
 					l.setAlignment(Pos.CENTER_LEFT);
 					l.setMinHeight(25.0);
 					defaultValueHolder.getChildren().add(l);
+				
+					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+					validatorType.setDisable(true);
 				}
 				else if (newValue == RefexDynamicDataType.UNKNOWN)
 				{
-					//noop
+					validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+					validatorType.setDisable(true);
 				}
 				else
 				{
@@ -321,6 +331,7 @@ public class ColumnController implements PanelControllersI {
 					else
 					{
 						validatorType.setDisable(false);
+						updateValidationValues(newValue);
 					}
 					
 					currentDefaultNodeDetails_ = RefexDataTypeFXNodeBuilder.buildNodeForType(newValue, null, 
@@ -332,6 +343,7 @@ public class ColumnController implements PanelControllersI {
 			}
 		});
 		
+		validatorType.setDisable(true);
 		validatorType.setConverter(new StringConverter<RefexDynamicValidatorType>()
 		{
 			
@@ -370,6 +382,11 @@ public class ColumnController implements PanelControllersI {
 			
 			if (validatorType.getValue() !=  RefexDynamicValidatorType.UNKNOWN)
 			{
+				if (processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidator() != validatorType.getValue())
+				{
+					//If the validator type has changed, clear the stored value.
+					processController_.getWizardData().getColumnInfo().get(columnNumber_).setValidatorData(null);
+				}
 				validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
 						processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(),
 						typeOption.valueProperty(), allValid_));
@@ -388,16 +405,34 @@ public class ColumnController implements PanelControllersI {
 		ErrorMarkerUtils.setupErrorMarker(typeOption, sp, typeValueInvalidReason_);
 	}
 	
+	
+	private void updateValidationValues(RefexDynamicDataType dType) 
+	{
+		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values()) 
+		{
+			// TODO (artf231424) replace RegExp for UUID with Type3/5 validators that are hardwired to validate via RegExp
+			if (type.validatorSupportsType(dType) && (!((dType == RefexDynamicDataType.UUID || dType == RefexDynamicDataType.NID) && type == RefexDynamicValidatorType.REGEXP)))
+			{
+				if (!validatorType.getItems().contains(type))
+				{
+					validatorType.getItems().add(type);
+				}
+			}
+			else if (type != RefexDynamicValidatorType.UNKNOWN)  //always keep UNKNOWN
+			{
+				validatorType.getItems().remove(type);
+			}
+		}
+		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
+	}
+
 	private void initializeTypeConcepts() {
 		for (RefexDynamicDataType type : RefexDynamicDataType.values()) {
 			typeOption.getItems().add(type);
 		}
 		typeOption.getSelectionModel().select(RefexDynamicDataType.UNKNOWN);
 		
-		for (RefexDynamicValidatorType type : RefexDynamicValidatorType.values())
-		{
-			validatorType.getItems().add(type);
-		}
+		validatorType.getItems().add(RefexDynamicValidatorType.UNKNOWN);
 		validatorType.getSelectionModel().select(RefexDynamicValidatorType.UNKNOWN);
 	}
 
@@ -415,22 +450,22 @@ public class ColumnController implements PanelControllersI {
 				columnNameSelection_.set(sdc);
 			}
 		} catch (IOException e) {
-			logger.error("Unexpected error creating new column concept", e);
-			AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating column concept.  Please see logs.", e);
+			logger.error("Unexpected error creating new attribute concept", e);
+			AppContext.getCommonDialogs().showErrorDialog("Unexpected error creating attribute concept.  Please see logs.", e);
 		}
 	}
 
 	private void initializeColumnConcepts() {
 		try {
-			ConceptVersionBI colCon = WBUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
-			ArrayList<ConceptVersionBI> colCons = WBUtility.getAllChildrenOfConcept(colCon, false);
+			ConceptVersionBI colCon = OTFUtility.getConceptVersion(RefexDynamic.REFEX_DYNAMIC_COLUMNS.getNid());
+			Set<ConceptVersionBI> colCons = OTFUtility.getAllChildrenOfConcept(colCon, false);
 
 			for (ConceptVersionBI col : colCons) {
 				columnNameChoices.add(new SimpleDisplayConcept(col, colNameReader_));
 			}
 			columnNameSelection_.set(columnNameChoices.get(0));
 		} catch (Exception e1) {
-			logger.error("Unable to access column concepts", e1);
+			logger.error("Unable to access attribute concepts", e1);
 		}
 	}
 
@@ -438,7 +473,7 @@ public class ColumnController implements PanelControllersI {
 		
 		RefexDynamicColumnInfo rdci = processController_.getWizardData().getColumnInfo().get(columnNumber_);
 		
-		//TODO this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
+		//TODO (artf231425) this is currently triggering an infinite loop in Dans ConceptNode code... Dan needs to finish debugging this... 
 		//The Platform.runLater should _NOT_ be necessary, but it seems to prevent the infinite loop for now.
 		if (rdci.getColumnDescriptionConcept() != null)
 		{
@@ -487,7 +522,7 @@ public class ColumnController implements PanelControllersI {
 		if (validatorType.getSelectionModel().getSelectedItem() != RefexDynamicValidatorType.UNKNOWN)
 		{
 			validatorTypeNode.update(RefexValidatorTypeFXNodeBuilder.buildNodeForType(validatorType.getSelectionModel().getSelectedItem(), 
-					processController_.getWizardData().getColumnInfo().get(columnNumber_).getValidatorData(), 
+					rdci.getValidatorData(), 
 					typeOption.valueProperty(), allValid_));
 			validatorDataHolder.getChildren().add(validatorTypeNode.getNodeForDisplay());
 			HBox.setHgrow(validatorTypeNode.getNodeForDisplay(), Priority.ALWAYS);
@@ -518,7 +553,7 @@ public class ColumnController implements PanelControllersI {
 
 	public void setColumnNumber(int colNum) {
 		columnNumber_ = colNum;
-		columnTitle.setText("Column #" + (columnNumber_ + 1) + " Definition");
+		columnTitle.setText("Attribute #" + (columnNumber_ + 1) + " Definition");
 		//don't do this slow task during JavaFX init.
 		if (columnNameChoices.size() == 0)
 		{

@@ -41,7 +41,7 @@ import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.sememe.SememeSearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.model.type.text.TextSearchTypeModel;
 import gov.va.isaac.util.ComponentDescriptionHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
@@ -126,8 +126,8 @@ public class SearchConceptHelper {
 			String passedSaveConceptFSN,
 			String passedSaveConceptPT) throws SearchConceptException
 	{
-		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : model.getSearchTypeSelector().getTypeSpecificModel().getName();
-		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : model.getSearchTypeSelector().getTypeSpecificModel().getDescription();
+		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName();
+		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription();
 
 		LOG.debug("buildSearchConcept(): saving model for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
 		//
@@ -149,8 +149,8 @@ public class SearchConceptHelper {
 		//
 
 		try {
-			ConceptChronicleBI searchConcept = WBUtility.createNewConcept(WBUtility.getConceptVersion(Search.SEARCH_PERSISTABLE.getUuids()[0]), saveConceptFSN, saveConceptPT);
-			ConceptAttributeAB conceptAttributeBlueprintAmender = new ConceptAttributeAB(searchConcept.getConceptNid(), searchConcept.getVersion(WBUtility.getViewCoordinate()).getConceptAttributesActive().isDefined(), RefexDirective.INCLUDE); //bp.getConceptAttributeAB();
+			ConceptChronicleBI searchConcept = OTFUtility.createNewConcept(OTFUtility.getConceptVersion(Search.SEARCH_PERSISTABLE.getUuids()[0]), saveConceptFSN, saveConceptPT);
+			ConceptAttributeAB conceptAttributeBlueprintAmender = new ConceptAttributeAB(searchConcept.getConceptNid(), searchConcept.getVersion(OTFUtility.getViewCoordinate()).getConceptAttributesActive().isDefined(), RefexDirective.INCLUDE); //bp.getConceptAttributeAB();
 
 			{
 				// Start with Search Global Attributes
@@ -162,16 +162,16 @@ public class SearchConceptHelper {
 				// Serialize passed View Coordinate into byte[]
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(output);
-				model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate().writeExternal(oos);
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate().writeExternal(oos);
 				oos.flush();
 
 				// Construct and populate RefexDynamicData for View Coordinate
 				RefexDynamicData viewCoordinateColumnData = new RefexDynamicByteArray(output.toByteArray());
 				searchGlobalAttributesData[0] = viewCoordinateColumnData;
-				RefexDynamicData maxResultsColumnData = new RefexDynamicInteger(model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+				RefexDynamicData maxResultsColumnData = new RefexDynamicInteger(SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 				searchGlobalAttributesData[1] = maxResultsColumnData;
-				if (model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr() != null) {
-					RefexDynamicData droolsExprColumnData = new RefexDynamicString(model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr() != null) {
+					RefexDynamicData droolsExprColumnData = new RefexDynamicString(SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 					searchGlobalAttributesData[2] = droolsExprColumnData;
 				}
 
@@ -186,18 +186,18 @@ public class SearchConceptHelper {
 				//else
 				//{
 				// This only for editing existing concept
-				//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+				//cab = inputType_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 				//}
-				globalAttributesCAB.setData(searchGlobalAttributesData, WBUtility.getViewCoordinate());
+				globalAttributesCAB.setData(searchGlobalAttributesData, OTFUtility.getViewCoordinate());
 
 				conceptAttributeBlueprintAmender.addAnnotationBlueprint(globalAttributesCAB);
 
-				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+				TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(OTFUtility.getEditCoordinate(), OTFUtility.getViewCoordinate());
 				builder.construct(globalAttributesCAB);
 			}
 
-			if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
-				TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+			if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+				TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 				
 				// Add search type filter as index 0
 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
@@ -206,8 +206,8 @@ public class SearchConceptHelper {
 				for (int filterIndex = 0; filterIndex < compModel.getFilters().size(); ++filterIndex) {
 					addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getFilters().get(filterIndex), filterIndex + 1);
 				}
-			} else if (model.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
-				SememeSearchTypeModel compModel = (SememeSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+			} else if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
+				SememeSearchTypeModel compModel = (SememeSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 
 				addFilterToRefex(searchConcept, conceptAttributeBlueprintAmender, compModel.getSearchType(), 0);
 			}
@@ -226,11 +226,11 @@ public class SearchConceptHelper {
 
 		if (currentFilter instanceof SearchTypeFilter) {
 			if (filterIndex > 0) {
-				throw new SearchConceptException("A SearchTypeFilter Filter must be first in refex list. " + currentFilter.getClass().getName() + " is a SearchTypeFilter filter, but its specified index is " + filterIndex);
+				throw new SearchConceptException("A SearchTypeFilter Filter must be first in sememe list. " + currentFilter.getClass().getName() + " is a SearchTypeFilter filter, but its specified index is " + filterIndex);
 			}
 		} else /* if (! (currentFilter instanceof SearchTypeFilter)) */ {
 			if (filterIndex == 0) {
-				throw new SearchConceptException("A non-SearchTypeFilter Filter must not be first in refex list. " + currentFilter.getClass().getName() + " is a non-SearchTypeFilter filter, but its specified index is " + filterIndex);
+				throw new SearchConceptException("A non-SearchTypeFilter Filter must not be first in sememe list. " + currentFilter.getClass().getName() + " is a non-SearchTypeFilter filter, but its specified index is " + filterIndex);
 			}
 		}
 
@@ -271,7 +271,9 @@ public class SearchConceptHelper {
 				RefexDynamicData searchParameterData = new RefexDynamicString(filter.getSearchParameter());
 				filterRefexData[0] = searchParameterData;
 			} else {
-				LOG.warn("Attempting to save SememeContentSearchTypeFilter with null search string parameter");
+				final String error = "Attempting to save SememeContentSearchTypeFilter with null search string parameter";
+				LOG.warn(error);
+				throw new SearchConceptException(error);
 			}
 			if (filter.getAssemblageConcept() != null) {
 				ConceptVersionBI concept = filter.getAssemblageConcept();
@@ -292,7 +294,7 @@ public class SearchConceptHelper {
 			IsDescendantOfFilter isDescendantOfFilter = (IsDescendantOfFilter)currentFilter;
 
 			if (isDescendantOfFilter.getNid() != 0) {
-				UUID uuid = WBUtility.getConceptVersion(isDescendantOfFilter.getNid()).getPrimordialUuid();
+				UUID uuid = OTFUtility.getConceptVersion(isDescendantOfFilter.getNid()).getPrimordialUuid();
 				RefexDynamicData ascendantUuidData = new RefexDynamicUUID(uuid);
 				filterRefexData[0] = ascendantUuidData;
 			}
@@ -301,7 +303,7 @@ public class SearchConceptHelper {
 			IsAFilter isAFilter = (IsAFilter)currentFilter;
 
 			if (isAFilter.getNid() != 0) {
-				UUID uuid = WBUtility.getConceptVersion(isAFilter.getNid()).getPrimordialUuid();
+				UUID uuid = OTFUtility.getConceptVersion(isAFilter.getNid()).getPrimordialUuid();
 				RefexDynamicData matchUuidData = new RefexDynamicUUID(uuid);
 				filterRefexData[0] = matchUuidData;
 			}
@@ -318,9 +320,9 @@ public class SearchConceptHelper {
 		//else
 		//{
 		// This only for editing existing concept
-		//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+		//cab = inputType_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 		//}
-		filterRefexCAB.setData(filterRefexData, WBUtility.getViewCoordinate());
+		filterRefexCAB.setData(filterRefexData, OTFUtility.getViewCoordinate());
 
 		conceptAttributeBlueprintAmender.addAnnotationBlueprint(filterRefexCAB);
 
@@ -350,13 +352,13 @@ public class SearchConceptHelper {
 		//else
 		//{
 		// This only for editing existing concept
-		//cab = inputType_.getRefex().makeBlueprint(WBUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
+		//cab = inputType_.getRefex().makeBlueprint(OTFUtility.getViewCoordinate(),IdDirective.PRESERVE, RefexDirective.INCLUDE);
 		//}
-		nestedFilterAttributesCAB.setData(nestedFilterAttributesRefexData, WBUtility.getViewCoordinate());
+		nestedFilterAttributesCAB.setData(nestedFilterAttributesRefexData, OTFUtility.getViewCoordinate());
 
 		filterRefexCAB.addAnnotationBlueprint(nestedFilterAttributesCAB);
 
-		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(WBUtility.getEC(), WBUtility.getViewCoordinate());
+		TerminologyBuilderBI builder = ExtendedAppContext.getDataStore().getTerminologyBuilder(OTFUtility.getEditCoordinate(), OTFUtility.getViewCoordinate());
 		builder.construct(filterRefexCAB);
 	}
 
@@ -368,8 +370,8 @@ public class SearchConceptHelper {
 			String passedSaveConceptFSN,
 			String passedSaveConceptPT) throws SearchConceptException
 	{
-		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : model.getSearchTypeSelector().getTypeSpecificModel().getName();
-		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : model.getSearchTypeSelector().getTypeSpecificModel().getDescription();
+		final String saveConceptFSN = passedSaveConceptFSN != null ? passedSaveConceptFSN : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName();
+		final String saveConceptPT = passedSaveConceptPT != null ? passedSaveConceptPT : SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription();
 
 		LOG.debug("buildAndSaveSearchConcept(): saving concept for search fsn=\"" + saveConceptFSN + "\", pt=\"" + saveConceptPT + "\": " + model);
 
@@ -399,7 +401,7 @@ public class SearchConceptHelper {
 	}
 
 	private static <T extends NonSearchTypeFilter<T>> void loadEmbeddedSearchFilterAttributes(RefexDynamicVersionBI<?> refex, Filter<?> newFilter, Map<Integer, Collection<T>> filterOrderMap) throws InvalidNameException, IndexOutOfBoundsException, IOException, ContradictionException, SearchConceptException {
-		LOG.debug("Loading data into model from embedded Search Filter Attributes refex");
+		LOG.debug("Loading data into model from embedded Search Filter Attributes sememe");
 
 		SearchTypeFilter<?> searchTypeFilter = null;
 		T nonSearchTypeFilter = null;
@@ -419,14 +421,14 @@ public class SearchConceptHelper {
 		}
 		
 		// Now read SEARCH_FILTER_ATTRIBUTES refex column
-		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(WBUtility.getViewCoordinate())) {
+		for (RefexDynamicVersionBI<?> embeddedRefex : refex.getRefexesDynamicActive(OTFUtility.getViewCoordinate())) {
 			DynamicRefexHelper.displayDynamicRefex(embeddedRefex);
 
 			RefexDynamicUsageDescription embeddedRefexDUD = null;
 			try {
 				embeddedRefexDUD = embeddedRefex.getRefexDynamicUsageDescription();
 			} catch (IOException | ContradictionException e) {
-				LOG.error("Failed performing getRefexDynamicUsageDescription() on embedded refex: caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
+				LOG.error("Failed performing getRefexDynamicUsageDescription() on embedded sememe: caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"", e);
 
 				return;
 			}
@@ -449,13 +451,13 @@ public class SearchConceptHelper {
 					}
 				}
 
-				LOG.debug("Read Integer filter order from " + embeddedRefexDUD.getRefexName() + " refex: \"" + (filterOrderCol != null ? filterOrderCol.getDataInteger() : filterOrderCol) + "\"");
+				LOG.debug("Read Integer filter order from " + embeddedRefexDUD.getRefexName() + " sememe: \"" + (filterOrderCol != null ? filterOrderCol.getDataInteger() : filterOrderCol) + "\"");
 
 				RefexDynamicBooleanBI filterInvertCol = (RefexDynamicBooleanBI)embeddedRefex.getData(Search.FILTER_INVERT_COLUMN.getDescription());
 				if (filterInvertCol != null) {
 					if (newFilter instanceof Invertable) {
 						((Invertable) newFilter).setInvert(filterInvertCol.getDataBoolean());
-						LOG.debug("Read Boolean filter invert from " + embeddedRefexDUD.getRefexName() + " refex: \"" + filterInvertCol.getDataBoolean() + "\"");
+						LOG.debug("Read Boolean filter invert from " + embeddedRefexDUD.getRefexName() + " sememe: \"" + filterInvertCol.getDataBoolean() + "\"");
 
 					} else if (filterInvertCol.getDataBoolean()) {
 						LOG.error("Cannot make invertable non-invertable Filter of type " + newFilter.getClass().getName());
@@ -464,7 +466,7 @@ public class SearchConceptHelper {
 					}
 				}
 			} else {
-				LOG.warn("Encountered unexpected embedded refex \"" + embeddedRefexDUD.getRefexName() + "\". Ignoring...");
+				LOG.warn("Encountered unexpected embedded sememe \"" + embeddedRefexDUD.getRefexName() + "\". Ignoring...");
 			}
 		}
 	}
@@ -475,7 +477,7 @@ public class SearchConceptHelper {
 		SearchModel model = null;
 
 		try {
-			ConceptVersionBI matchingConcept = WBUtility.getConceptVersion(displayConcept.getNid());
+			ConceptVersionBI matchingConcept = OTFUtility.getConceptVersion(displayConcept.getNid());
 
 			if (matchingConcept != null) {
 				LOG.debug("loadSavedSearch(): savedSearchesComboBox has concept: " + matchingConcept);
@@ -484,33 +486,31 @@ public class SearchConceptHelper {
 
 				model = new SearchModel();
 				
-				if (model.getSearchTypeSelector() != null) {
-					if (model.getSearchTypeSelector().getTypeSpecificModel() == null) {
-						LOG.debug("model.getSearchTypeSelector().getTypeSpecificModel() == null");
+				if (SearchModel.getSearchTypeSelector() != null) {
+					if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == null) {
+						LOG.debug("SearchModel.getSearchTypeSelector().getTypeSpecificModel() == null");
 					} else {
-						LOG.debug("model.getSearchTypeSelector().getTypeSpecificModel(): name=\"{}\", desc=\"{}\", class={}",
-								model.getSearchTypeSelector().getTypeSpecificModel().getName(),
-								model.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
-								model.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
+						LOG.debug("SearchModel.getSearchTypeSelector().getTypeSpecificModel(): name=\"{}\", desc=\"{}\", class={}",
+								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getName(),
+								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDescription(),
+								SearchModel.getSearchTypeSelector().getTypeSpecificModel().getClass().getName());
 						
-						if (model.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
-							
-							// TODO: reinitialize ALL compModel fields to avoid leaking old values into loaded search
-							TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+						if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() instanceof TextSearchTypeModel) {
+							TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 							compModel.getFilters().clear();
 							compModel.getDroolsExprProperty().set(null);
 						}
 					}
 				}
 
-				model.getSearchTypeSelector().getTypeSpecificModel().setName(WBUtility.getFullySpecifiedName(matchingConcept));
-				model.getSearchTypeSelector().getTypeSpecificModel().setDescription(WBUtility.getConPrefTerm(matchingConcept.getNid()));
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setName(OTFUtility.getFullySpecifiedName(matchingConcept));
+				SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDescription(OTFUtility.getConPrefTerm(matchingConcept.getNid()));
 
 				try {
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all refexes: " +  matchingConcept.getRefexes().size());
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" all dynamic sememes: " +  matchingConcept.getRefexesDynamic().size());
 					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (StandardViewCoordinates.getWbAuxiliary()): " +  matchingConcept.getRefexesDynamicActive(StandardViewCoordinates.getWbAuxiliary()).size());
-					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (WBUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate()).size());
+					LOG.debug("loadSavedSearch(): concept \"" + displayConcept + "\" active dynamic sememes (OTFUtility.getViewCoordinate()): " +  matchingConcept.getRefexesDynamicActive(OTFUtility.getViewCoordinate()).size());
 			
 					LOG.debug("Displaying newly loaded save concept refexes");
 					DynamicRefexHelper.displayDynamicRefexes(matchingConcept);
@@ -521,7 +521,7 @@ public class SearchConceptHelper {
 				}
 
 				int i = 0;
-				Collection<? extends RefexDynamicVersionBI<?>> refexes = matchingConcept.getRefexesDynamicActive(WBUtility.getViewCoordinate());
+				Collection<? extends RefexDynamicVersionBI<?>> refexes = matchingConcept.getRefexesDynamicActive(OTFUtility.getViewCoordinate());
 				for (RefexDynamicVersionBI<?> refex : refexes) {
 					LOG.debug("Displaying sememe #" + (++i) + " of " + refexes.size());
 					DynamicRefexHelper.displayDynamicRefex(refex);
@@ -535,13 +535,13 @@ public class SearchConceptHelper {
 						return null;
 					}
 
-					if (model.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
-						TextSearchTypeModel compModel = (TextSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+					if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.TEXT) {
+						TextSearchTypeModel compModel = (TextSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 						
 						if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
 							// handle "Search Global Attributes"
 	
-							LOG.debug("Loading data into model from Search Global Attributes refex");
+							LOG.debug("Loading data into model from Search Global Attributes sememe");
 	
 							// Loading view coordinate
 							RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
@@ -552,29 +552,29 @@ public class SearchConceptHelper {
 							ObjectInputStream oos = new ObjectInputStream(input);
 							ViewCoordinate vc = new ViewCoordinate();
 							vc.readExternal(oos);
-							model.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
-							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
+							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
 	
 							// Loading maxResults
 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
-							LOG.debug("Read max results from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
+							LOG.debug("Read max results from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 	
 							// Loading drools expression
 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
-							LOG.debug("Read drools expression from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
+							LOG.debug("Read drools expression from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 	
 						} else if (dud.getRefexName().equals(Search.SEARCH_LUCENE_FILTER.getDescription() /*"Search Lucene Filter"*/)) {
 							// handle "Search Lucene Filter"
 	
-							LOG.debug("Loading data into model from Search Lucene Filter refex");
+							LOG.debug("Loading data into model from Search Lucene Filter sememe");
 	
 							LuceneSearchTypeFilter newFilter = new LuceneSearchTypeFilter();
 	
 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 							newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
-							LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+							LOG.debug("Read String search parameter from " + dud.getRefexName() + " sememe: \"" + newFilter.getSearchParameter() + "\"");
 	
 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 	
@@ -586,56 +586,52 @@ public class SearchConceptHelper {
 						} else if (dud.getRefexName().equals(Search.SEARCH_REGEXP_FILTER.getDescription() /*"Search RegExp Filter"*/)) {
 							// handle "Search RegExp Filter"
 	
-							LOG.debug("Loading data into model from Search RegExp Filter refex");
+							LOG.debug("Loading data into model from Search RegExp Filter sememe");
 	
 							RegExpSearchTypeFilter newFilter = new RegExpSearchTypeFilter();
 	
 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 							newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
-							LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+							LOG.debug("Read String search parameter from " + dud.getRefexName() + " sememe: \"" + newFilter.getSearchParameter() + "\"");
 	
 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 	
-							if (compModel.getSearchType() != null) {
-								throw new SearchConceptException("Model already contains SearchTypeFilter of type " + compModel.getSearchType().getClass().getName() + ". Cannot add second SearchTypeFilter of type " + newFilter.getClass().getName());
-							} else {
-								compModel.setSearchType(newFilter);
-							}
+							compModel.setSearchType(newFilter);
 						} else if (dud.getRefexName().equals(Search.SEARCH_ISDESCENDANTOF_FILTER.getDescription() /*"Search IsKindOf Filter"*/)) {
 							// handle "Search RegExp Filter"
 	
-							LOG.debug("Loading data into model from Search IsKindOf Filter refex");
+							LOG.debug("Loading data into model from Search IsKindOf Filter sememe");
 	
 							IsDescendantOfFilter newFilter = new IsDescendantOfFilter();
 	
 							RefexDynamicUUIDBI ascendantUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.ANCESTOR_COLUMN.getDescription());
 							if (ascendantUuidCol != null) {
 								UUID uuid = ascendantUuidCol.getDataUUID();
-								int nid = WBUtility.getConceptVersion(uuid).getNid();
+								int nid = OTFUtility.getConceptVersion(uuid).getNid();
 								newFilter.setNid(nid);
-								LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " refex: \"" + uuid + "\"");
+								LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " sememe: \"" + uuid + "\"");
 							}
 	
 							loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
 						} else if (dud.getRefexName().equals(Search.SEARCH_ISA_FILTER.getDescription() /*"Search IsA Filter"*/)) {
 							// handle "Search IsA Filter"
 	
-							LOG.debug("Loading data into model from Search IsA Filter refex");
+							LOG.debug("Loading data into model from Search IsA Filter sememe");
 	
 							IsAFilter newFilter = new IsAFilter();
 	
 							RefexDynamicUUIDBI matchUuidCol = (RefexDynamicUUIDBI)refex.getData(Search.MATCH_COLUMN.getDescription());
 							if (matchUuidCol != null) {
 								UUID uuid = matchUuidCol.getDataUUID();
-								int nid = WBUtility.getConceptVersion(uuid).getNid();
+								int nid = OTFUtility.getConceptVersion(uuid).getNid();
 								newFilter.setNid(nid);
-								LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " refex: \"" + uuid + "\"");
+								LOG.debug("Read UUID (nid=" + nid + ") from " + dud.getRefexName() + " sememe: \"" + uuid + "\"");
 							}
 	
 							loadEmbeddedSearchFilterAttributes(refex, newFilter, filterOrderMap);
 						} else {
 							// handle or ignore
-							LOG.warn("Concept \"" + displayConcept + "\" contains unexpected refex \"" + dud.getRefexName() + "\".  Ignoring...");
+							LOG.warn("Concept \"" + displayConcept + "\" contains unexpected sememe \"" + dud.getRefexName() + "\".  Ignoring...");
 						}
 	
 						// At this point the search should have a SearchTypeFilter
@@ -649,13 +645,13 @@ public class SearchConceptHelper {
 								compModel.getFilters().add(f);
 							}
 						}
-					} else if (model.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
-						SememeSearchTypeModel compModel = (SememeSearchTypeModel)model.getSearchTypeSelector().getTypeSpecificModel();
+					} else if (SearchModel.getSearchTypeSelector().getCurrentType() == SearchType.SEMEME) {
+						SememeSearchTypeModel compModel = (SememeSearchTypeModel)SearchModel.getSearchTypeSelector().getTypeSpecificModel();
 						
 						if (dud.getRefexName().equals(Search.SEARCH_GLOBAL_ATTRIBUTES.getDescription() /*"Search Global Attributes"*/)) {
 							// handle "Search Global Attributes"
 	
-							LOG.debug("Loading data into model from Search Global Attributes refex");
+							LOG.debug("Loading data into model from Search Global Attributes sememe");
 	
 							// Loading view coordinate
 							RefexDynamicByteArrayBI serializedViewCoordinate = (RefexDynamicByteArrayBI)refex.getData(Search.VIEW_COORDINATE_COLUMN.getDescription());
@@ -666,36 +662,34 @@ public class SearchConceptHelper {
 							ObjectInputStream oos = new ObjectInputStream(input);
 							ViewCoordinate vc = new ViewCoordinate();
 							vc.readExternal(oos);
-							model.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
-							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setViewCoordinate(vc);
+							LOG.debug("Read View Coordinate from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getViewCoordinate());
 	
 							// Loading maxResults
 							RefexDynamicIntegerBI maxResults = (RefexDynamicIntegerBI)refex.getData(Search.MAX_RESULTS_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
-							LOG.debug("Read max results from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setMaxResults(maxResults.getDataInteger());
+							LOG.debug("Read max results from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getMaxResults());
 	
 							// Loading drools expression
 							RefexDynamicStringBI droolsExpr = (RefexDynamicStringBI)refex.getData(Search.DROOLS_EXPR_COLUMN.getDescription());
-							model.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
-							LOG.debug("Read drools expression from " + dud.getRefexName() + " refex: " + model.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
+							SearchModel.getSearchTypeSelector().getTypeSpecificModel().setDroolsExpr(droolsExpr != null ? droolsExpr.getDataString() : null);
+							LOG.debug("Read drools expression from " + dud.getRefexName() + " sememe: " + SearchModel.getSearchTypeSelector().getTypeSpecificModel().getDroolsExpr());
 	
-						} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() /*"Search Sememe Filter"*/)) {
-							// handle "Search Lucene Filter"
-	
-							LOG.debug("Loading data into model from Search Sememe Filter refex");
+						} else if (dud.getRefexName().equals(Search.SEARCH_SEMEME_CONTENT_FILTER.getDescription() /*"Search Sememe Filter"*/)) {	
+							LOG.debug("Loading data into model from Search Sememe Filter sememe");
 	
 							SememeContentSearchTypeFilter newFilter = new SememeContentSearchTypeFilter();
 	
 							RefexDynamicStringBI searchParamCol = (RefexDynamicStringBI)refex.getData(Search.PARAMETER_COLUMN.getDescription());
 							newFilter.setSearchParameter(searchParamCol != null ? searchParamCol.getDataString() : null);
-							LOG.debug("Read String search parameter from " + dud.getRefexName() + " refex: \"" + newFilter.getSearchParameter() + "\"");
+							LOG.debug("Read String search parameter from " + dud.getRefexName() + " sememe: \"" + newFilter.getSearchParameter() + "\"");
 
 							RefexDynamicUUID uuidCol = (RefexDynamicUUID)refex.getData(Search.UUID_COLUMN.getDescription());
 							if (uuidCol != null) {
-								ConceptVersionBI conceptVersion = WBUtility.getConceptVersion(uuidCol.getDataUUID());
+								ConceptVersionBI conceptVersion = OTFUtility.getConceptVersion(uuidCol.getDataUUID());
 								newFilter.setAssemblageConcept(conceptVersion);
 							}
-							LOG.debug("Read assemblage concept from " + dud.getRefexName() + " refex assemblage: \"" + newFilter.getAssemblageConcept() != null ? ComponentDescriptionHelper.getComponentDescription(newFilter.getAssemblageConcept()) : null + "\"");
+							LOG.debug("Read assemblage concept from " + dud.getRefexName() + " sememe assemblage: \"" + newFilter.getAssemblageConcept() != null ? ComponentDescriptionHelper.getComponentDescription(newFilter.getAssemblageConcept()) : null + "\"");
 	
 							loadEmbeddedSearchTypeFilterAttributes(refex, newFilter);
 	
@@ -706,7 +700,7 @@ public class SearchConceptHelper {
 //							}
 						} else {
 							// handle or ignore
-							LOG.warn("Concept \"" + displayConcept + "\" contains unexpected refex \"" + dud.getRefexName() + "\".  Ignoring...");
+							LOG.warn("Concept \"" + displayConcept + "\" contains unexpected sememe \"" + dud.getRefexName() + "\".  Ignoring...");
 						}
 	
 						// At this point the search should have a SearchTypeFilter

@@ -21,15 +21,15 @@ package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
+import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
-import gov.va.isaac.gui.refexViews.refexEdit.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -84,6 +84,7 @@ public class DynamicRefexListViewController
 	@FXML private ListView<SimpleDisplayConcept> refexList;
 	@FXML private ChoiceBox<String> refexStyleFilter;
 	@FXML private Label refexStyleLabel;
+	@FXML private Label referencedComponentTypeLabel;
 	@FXML private AnchorPane rootPane;
 	@FXML private Button clearFilterButton;
 	@FXML private TextField descriptionMatchesFilter;
@@ -102,7 +103,7 @@ public class DynamicRefexListViewController
 		IDLE, FILTER_UPDATE_PROGRESS, FULL_READ_IN_PROGRESS, DO_FILTER_READ, DO_FULL_READ
 	};
 
-	//TODO this needs some sort of hook to refresh the list when a new one is defined
+	//TODO (artf231423) this needs some sort of hook to refresh the list when a new one is defined
 	
 	private ConceptNode conceptNode;
 	private volatile boolean disableRead = true;
@@ -212,7 +213,7 @@ public class DynamicRefexListViewController
 			SimpleDisplayConcept sdc = refexList.getSelectionModel().getSelectedItem();
 			if (sdc != null)
 			{
-				new ConfigureDynamicRefexIndexingView(WBUtility.getConceptVersion(sdc.getNid())).showView(null);
+				new ConfigureDynamicRefexIndexingView(OTFUtility.getConceptVersion(sdc.getNid())).showView(null);
 			}
 		});
 		mi.setGraphic(Images.CONFIGURE.createImageView());
@@ -319,6 +320,11 @@ public class DynamicRefexListViewController
 					for (SearchResult sr : refexes)
 					{
 						RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
+						if (rc == null)
+						{
+							log.info("Out of date index?  Search result for refexes contained a NID that can't be resolved: {}" + sr.getNid());
+							continue;
+						}
 						//These are nested refex references - it returns a description component - concept we want is the parent of that.
 						allRefexDefinitions.add(new SimpleDisplayConcept(
 								ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(),
@@ -428,7 +434,7 @@ public class DynamicRefexListViewController
 		}
 		else if (refexStyleFilter.getSelectionModel().getSelectedIndex() != 0)
 		{
-			ConceptVersionBI c = WBUtility.getConceptVersion(sdc.getNid());
+			ConceptVersionBI c = OTFUtility.getConceptVersion(sdc.getNid());
 			if ((c.isAnnotationStyleRefex() && refexStyleFilter.getSelectionModel().getSelectedIndex() == 2)
 					|| (!c.isAnnotationStyleRefex() && refexStyleFilter.getSelectionModel().getSelectedIndex() == 1))
 			{
@@ -451,6 +457,7 @@ public class DynamicRefexListViewController
 		selectedRefexNameLabel.setText("");
 		selectedRefexDescriptionLabel.setText("");
 		refexStyleLabel.setText("");
+		referencedComponentTypeLabel.setText("");
 		extensionFields.getItems().clear();
 		
 		if (sdn == null)
@@ -478,7 +485,9 @@ public class DynamicRefexListViewController
 				{
 					selectedRefexNameLabel.setText(rdud.getRefexName());
 					selectedRefexDescriptionLabel.setText(rdud.getRefexUsageDescription());
-					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Member Refset");
+					refexStyleLabel.setText(rdud.isAnnotationStyle() ? "Annotation" : "Embedded");
+					referencedComponentTypeLabel.setText(rdud.getReferencedComponentTypeRestriction() == null ? "No restriction" : 
+						"Must be " + rdud.getReferencedComponentTypeRestriction().toString());
 				});
 				
 				//now fill in the data column details...

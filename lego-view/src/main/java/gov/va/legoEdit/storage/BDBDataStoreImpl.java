@@ -21,7 +21,7 @@ package gov.va.legoEdit.storage;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.legoEdit.model.ModelUtil;
 import gov.va.legoEdit.model.bdbModel.LegoBDB;
 import gov.va.legoEdit.model.bdbModel.LegoListBDB;
@@ -983,12 +983,12 @@ public class BDBDataStoreImpl implements DataStoreInterface, ShutdownBroadcastLi
 			{
 				if (s.getModule() == null || s.getModule().length() == 0)
 				{
-					s.setModule(WBUtility.getEC().getModuleSpec().getDescription());
+					s.setModule(OTFUtility.getEditCoordinate().getModuleSpec().getDescription());
 				}
 				if (s.getPath() == null || s.getPath().length() == 0)
 				{
-					//TODO [Lego edit] this isn't quite right...
-					s.setPath(WBUtility.getEC().getEditPathListSpecs().get(0).getDescription());
+					//TODO (artf231852) [Lego edit] this isn't quite right...
+					s.setPath(OTFUtility.getEditCoordinate().getEditPathListSpecs().get(0).getDescription());
 				}
 			}
 			catch (IOException e)

@@ -26,7 +26,7 @@ import gov.va.isaac.ie.exporter.Rf2Export;
 import gov.va.isaac.ie.exporter.Rf2File.ReleaseType;
 import gov.va.isaac.model.ExportType;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -182,7 +182,7 @@ public class ExportFileHandler {
       Rf2Export rf2Export =
           new Rf2Export(releaseFolder, releaseType, LanguageCode.EN_US,
               COUNTRY_CODE.US, namespace, Calendar.getInstance().getTime(),
-              pathNid, WBUtility.getViewCoordinate(), taxonomyParentNids);
+              pathNid, OTFUtility.getViewCoordinate(), taxonomyParentNids);
       exporter = rf2Export;
       rf2Export.addProgressListener(listener);
       rf2Export.export(pathNid);

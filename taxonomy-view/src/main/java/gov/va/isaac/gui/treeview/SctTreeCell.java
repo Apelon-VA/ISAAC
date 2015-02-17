@@ -27,7 +27,7 @@ import gov.va.isaac.util.CommonMenuBuilderI;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenus.CommonMenuItem;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,11 +64,11 @@ import org.slf4j.LoggerFactory;
  * @author ocarlsen
  */
 @SuppressWarnings("deprecation")
-public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
+final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeCell.class);
 
-    public SctTreeCell() {
+    SctTreeCell() {
         super();
 
         // Handle left-clicks.
@@ -82,11 +82,13 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         //Allow drags
         AppContext.getService(DragRegistry.class).setupDragOnly(this, new SingleConceptIdProvider()
         {
-            
             @Override
             public String getConceptId()
             {
-                return SctTreeCell.this.getItem().getConcept().getPrimordialUuid().toString();
+                final ConceptChronicleDdo conceptChronicle = SctTreeCell.this.getItem().getConcept();
+                final UUID conceptUuid = conceptChronicle.getPrimordialUuid();
+
+                return conceptUuid.toString();
             }
         });
     }
@@ -114,11 +116,11 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                     for (RelationshipVersionDdo extraParentVersion : extraParent.getVersions()) {
                         SctTreeItem extraParentItem =
                                 new SctTreeItem(
-                                		new TaxonomyReferenceWithConcept(extraParentVersion,
-                                				TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
-                                				treeItem.getDisplayPolicies());
+                                        new TaxonomyReferenceWithConcept(extraParentVersion,
+                                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
+                                                treeItem.getDisplayPolicies());
                         ProgressIndicator indicator = new ProgressIndicator();
-//TODO figure out what we will do with this indicator skin
+//TODO (artf231878) figure out what we will do with this indicator skin
 //                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
                         indicator.setPrefSize(16, 16);
                         indicator.setProgress(-1);
@@ -157,7 +159,9 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             setText("");
             setGraphic(null);
         }
-
+        else if (!empty && taxRef == null) {
+            LOG.debug("TaxonomyReferenceWithConcept is null");
+        }
         else if (!empty && taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
 
@@ -174,7 +178,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                     setGraphic(graphicBorderPane);
                 }
 
-                setText(WBUtility.getDescription(taxRef.getConcept()));
+                setText(OTFUtility.getDescription(taxRef.getConcept()));
 
                 return;
             }
@@ -193,7 +197,7 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 setDisclosureNode(disclosureBorderPane);
             } else {
                 ImageView iv = Images.TAXONOMY_OPEN.createImageView();
-
+                
                 if (treeItem.getProgressIndicator() != null) {
                     disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
                 } else {
@@ -206,13 +210,13 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             if (taxRef.getConcept() == null) {
                 setText(taxRef.toString());
             } else {
-                setText(WBUtility.getDescription(taxRef.getConcept()));
+                setText(OTFUtility.getDescription(taxRef.getConcept()));
             }
 
             BorderPane graphicBorderPane = new BorderPane();
 
             if (treeItem.isLeaf()) {
-                int multiParentInset = treeItem.getMultiParentDepth() * 16;
+                int multiParentInset = treeItem.getMultiParentDepth() * 16 + 4;
                 Rectangle leftRect =
                         RectangleBuilder.create().width(multiParentInset).height(16).build();
 
@@ -256,9 +260,14 @@ public final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
                 try
                 {
-                	UUID uid = concept.getPrimordialUuid();
-
-                    return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uid)});
+                    UUID uuid = null;
+                    
+                    if (concept != null ) {
+                        uuid = concept.getPrimordialUuid();
+                        return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
+                    } else {
+                        return Arrays.asList(new Integer[] {});
+                    }
                 }
                 catch (Exception e)
                 {

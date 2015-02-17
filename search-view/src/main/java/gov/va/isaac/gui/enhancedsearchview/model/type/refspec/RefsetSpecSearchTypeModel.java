@@ -2,6 +2,7 @@ package gov.va.isaac.gui.enhancedsearchview.model.type.refspec;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
+import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
@@ -46,7 +47,7 @@ import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
+public class RefsetSpecSearchTypeModel  extends SearchTypeModel {
 	private ComboBox<Object> rootNodeTypeComboBox = new ComboBox<Object>();
 	private TreeView<NodeDraggable> queryNodeTreeView = new TreeView<NodeDraggable>();
 	private List<QueryNodeTypeI> unsupportedQueryNodeTypes = new Vector<>();
@@ -64,7 +65,8 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 			@Override
 			public void changed(ObservableValue<? extends ViewCoordinate> observable,
 					ViewCoordinate oldValue, ViewCoordinate newValue) {
-				isSearchTypeRunnableProperty.set(isValidSearch(null) && isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		queryNodeTreeView.rootProperty().addListener(new ChangeListener<TreeItem<NodeDraggable>>() {
@@ -73,7 +75,8 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 					ObservableValue<? extends TreeItem<NodeDraggable>> observable,
 					TreeItem<NodeDraggable> oldValue,
 					TreeItem<NodeDraggable> newValue) {
-				isSearchTypeRunnableProperty.set(isValidSearch(null) && isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 			
 		});
@@ -81,7 +84,8 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				isSearchTypeRunnableProperty.set(isValidSearch(null) && isCriteriaPanelValid());
+				isSearchTypeRunnableProperty.set(isValidSearch());
+				isSearchTypeSavableProperty.set(isSavableSearch());
 			}
 		});
 		
@@ -89,14 +93,27 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
-				SearchModel model = new SearchModel();
-				if (model.getSearchTypeSelector().getTypeSpecificModel() == RefsetSpecSearchTypeModel.this) {
-					model.isSearchRunnableProperty().set(newValue);
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == RefsetSpecSearchTypeModel.this) {
+					SearchModel.isSearchRunnableProperty().set(newValue);
+				}
+			}
+		});
+		isSearchTypeSavableProperty.addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable,
+					Boolean oldValue, Boolean newValue) {
+				if (SearchModel.getSearchTypeSelector().getTypeSpecificModel() == RefsetSpecSearchTypeModel.this) {
+					SearchModel.isSearchSavableProperty().set(newValue);
 				}
 			}
 		});
 	}
 
+	@Override
+	public String getSearchSavabilityValidationFailureMessage() {
+		return "Saves of " + SearchType.REFSET_SPEC.toString() + " search criteria not currently supported";
+	}
+	
 	private void initializeQueryNodeTreeView() {
 		QueryBuilderHelper.initializeQueryNodeTreeView(queryNodeTreeView, nodeEditorGridPane, queryNodeTreeViewIsValidProperty);
 		
@@ -231,11 +248,20 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 
 	}
 
+	@SuppressWarnings("unchecked")
+	private TreeCell<NodeDraggable> castToNodeDraggableTreeCell(TreeCell<?> treeCell) {
+		return (TreeCell<NodeDraggable>)treeCell;
+	}
+	@SuppressWarnings("unchecked")
+	private TreeView<NodeDraggable> castToNodeDraggableTreeView(TreeView<?> treeView) {
+		return (TreeView<NodeDraggable>)treeView;
+	}
+	
 	protected void addContextMenus(ContextMenu menu, Node ownerNode) {
 		TreeItem<NodeDraggable> currentTreeItem = null;
 		NodeDraggable currentNode = null;
 		if (ownerNode instanceof TreeCell
-				&& (currentTreeItem = ((TreeCell<NodeDraggable>)ownerNode).getTreeItem()) != null
+				&& (currentTreeItem = castToNodeDraggableTreeCell((TreeCell<?>)ownerNode).getTreeItem()) != null
 				&& (currentNode = currentTreeItem.getValue()) != null
 				&& currentNode instanceof ParentNodeDraggable) {
 			logger.debug("Configuring context menu for {}: {}", ownerNode.getClass().getName());
@@ -286,7 +312,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 					@Override
 					public void handle(ActionEvent event)
 					{
-						((TreeView<NodeDraggable>)ownerNode).setRoot(new TreeItem<>(type.constructNode()));
+						(castToNodeDraggableTreeView((TreeView<?>)ownerNode)).setRoot(new TreeItem<>(type.constructNode()));
 					}
 				});
 			} else if (ownerNode instanceof TreeCell) {
@@ -294,7 +320,7 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 					@Override
 					public void handle(ActionEvent event)
 					{
-						TreeCell<NodeDraggable> cell = (TreeCell<NodeDraggable>)ownerNode;
+						TreeCell<NodeDraggable> cell = castToNodeDraggableTreeCell((TreeCell<?>)ownerNode);
 						TreeItem<NodeDraggable> currentTreeItem = cell.getTreeItem();
 						currentTreeItem.getChildren().add(new TreeItem<>(type.constructNode()));
 						currentTreeItem.setExpanded(true);
@@ -470,36 +496,15 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel{
 	}
 
 	@Override
-	public  boolean isCriteriaPanelValid() {
+	public String getValidationFailureMessage() {
 		if (viewCoordinateProperty.get() == null) {
-			return false;
+			return "View Coordinate is unset";
+		} else if (queryNodeTreeView.getRoot() == null) {
+			return "No Root Node specified";
+		} else if (! QueryBuilderHelper.isQueryNodeTreeViewValid(queryNodeTreeView)) {
+			return "Invalid Query specified.  May be missing required children?  See Red Nodes";
+		} else {
+			return null;
 		}
-		
-		return true;
-	}
-
-	@Override
-	protected boolean isValidSearch(String errorDialogTitle) {
-		if (queryNodeTreeView.getRoot() == null) {
-			String details = "No Root Node specified: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
-		} else if (!queryNodeTreeViewIsValidProperty.get()) {
-			String details = "Invalide Query specified.  May be missing required children?  See Red Nodes: " + this;
-			LOG.warn("Invalid search model (name=" + getName() + "). " + details);
-
-			if (errorDialogTitle != null) {
-				AppContext.getCommonDialogs().showErrorDialog(errorDialogTitle, errorDialogTitle, details, AppContext.getMainApplicationWindow().getPrimaryStage());
-			}
-
-			return false;
-		}
-		
-		return true;
 	}
 }

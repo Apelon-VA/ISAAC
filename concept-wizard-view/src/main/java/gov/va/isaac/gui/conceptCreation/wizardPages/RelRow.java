@@ -22,7 +22,7 @@ import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -49,26 +49,26 @@ public class RelRow
 	TextField group;
 	Node groupNode;
 	
-	//TODO rework this binding code - the updates to the utility code merge the SimpleStringProperty aspect into the UpdatedableBooleanBinding - 
+	//TODO (artf231869) rework this binding code - the updates to the utility code merge the SimpleStringProperty aspect into the UpdatedableBooleanBinding - 
 	//so the binding now carries the details about valid, and the reason why not valid, if not - which vastly simplifies piecing this together.  Ask Dan...
 	private UpdateableBooleanBinding rowValid;
 	SimpleStringProperty groupFieldInvalidReason_ = new SimpleStringProperty("");
 	SimpleStringProperty typeFieldInvalidReason_ = new SimpleStringProperty("A Type selection is required");
 	
-	// TODO add validation of this type (unless drools covers it)
+	// TODO (artf231869) add validation of this type (unless drools covers it)
 	SimpleStringProperty typeTargetInvalidReason_ = new SimpleStringProperty("Relationship type may not be same as relationship target");
 
-	// TODO Need to add soon
+	// TODO (artf231869) Need to add soon
 	SimpleStringProperty typeIsaInvalidReason_ = new SimpleStringProperty("Relationship type may not be IS_A as that is defined in first screen");
 
 	public RelRow()
 	{
 		ObservableList<SimpleDisplayConcept> dropDownOptions = FXCollections.observableArrayList();
-		dropDownOptions.add(new SimpleDisplayConcept(WBUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
+		dropDownOptions.add(new SimpleDisplayConcept(OTFUtility.getConceptVersion(Snomed.IS_A.getUuids()[0])));
 		relationship = new ConceptNode(null, true, dropDownOptions, null);
 		target = new ConceptNode(null, true);
 		
-		//TODO add validation icons / reasons
+		//TODO (artf231868) add validation icons / reasons
 		type = new ChoiceBox<String>(FXCollections.observableArrayList("Role", "Qualifier"));
 		type.valueProperty().addListener(new ChangeListener<String>()
 		{
@@ -92,7 +92,7 @@ public class RelRow
 		typeNode = ErrorMarkerUtils.setupErrorMarker(type, typeFieldInvalidReason_);
 		
 		group = new TextField("0");
-		group.setMinWidth(45.0);  //TODO figure out why this is needed
+		group.setMinWidth(45.0);  //TODO (artf231869) figure out why this is needed
 		group.textProperty().addListener(new ChangeListener<String>()
 		{
 			@Override

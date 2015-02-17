@@ -1,11 +1,8 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
-
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -15,10 +12,10 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +36,7 @@ public class DetailTermRow extends TermRow {
 		if (isPrefTerm) {
 			descTypeLabel = labelHelper.createLabel(desc, prefTermTypeStr, ComponentType.DESCRIPTION, prefTermTypeNid);
 		} else {
-			descTypeLabel = labelHelper.createLabel(desc, WBUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
+			descTypeLabel = labelHelper.createLabel(desc, OTFUtility.getConPrefTerm(desc.getTypeNid()), ComponentType.DESCRIPTION, desc.getTypeNid());
 		}
 		
 		Label descCaseLabel = labelHelper.createLabel(desc, getBooleanValue(desc.isInitialCaseSignificant()), ComponentType.DESCRIPTION, 0);
@@ -60,14 +57,14 @@ public class DetailTermRow extends TermRow {
 				descLangLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 			} else {
 				ComponentChronicleBI<?> chronicle = desc.getChronicle();
-				DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+				DescriptionVersionBI<?> origVersion = (DescriptionVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 	
 				if (!descLabel.getText().equals(origVersion.getText())) {
 					descLabel.setUnderline(true);
 				}
 				try {
-					if (WBUtility.getConceptVersion(desc.getConceptNid()).getPreferredDescription().getNid() != desc.getNid()) {
-				if (!descTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+					if (OTFUtility.getConceptVersion(desc.getConceptNid()).getPreferredDescription().getNid() != desc.getNid()) {
+				if (!descTypeLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getTypeNid()))) {
 					descTypeLabel.setUnderline(true);
 						}
 					}

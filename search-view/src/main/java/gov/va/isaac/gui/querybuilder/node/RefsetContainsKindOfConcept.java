@@ -24,7 +24,7 @@
  */
 package gov.va.isaac.gui.querybuilder.node;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -57,9 +57,9 @@ public class RefsetContainsKindOfConcept extends AssertionNode {
 	}
 	
 	private boolean isNodeValid() {
-		if (refsetConceptNidIntegerProperty == null || WBUtility.getConceptVersion(refsetConceptNidIntegerProperty.get()) == null) {
+		if (refsetConceptNidIntegerProperty == null || OTFUtility.getConceptVersion(refsetConceptNidIntegerProperty.get()) == null) {
 			return false;
-		} else if (conceptNidIntegerProperty == null || WBUtility.getConceptVersion(conceptNidIntegerProperty.get()) == null) {
+		} else if (conceptNidIntegerProperty == null || OTFUtility.getConceptVersion(conceptNidIntegerProperty.get()) == null) {
 			return false;
 		} else {
 			return true;
@@ -79,7 +79,7 @@ public class RefsetContainsKindOfConcept extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -90,7 +90,7 @@ public class RefsetContainsKindOfConcept extends AssertionNode {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (newValue != null && newValue.intValue() != 0 && WBUtility.getConceptVersion(newValue.intValue()) != null) {
+				if (newValue != null && newValue.intValue() != 0 && OTFUtility.getConceptVersion(newValue.intValue()) != null) {
 					isValidProperty.set(isNodeValid());
 				} else {
 					isValidProperty.set(false);
@@ -133,12 +133,12 @@ public class RefsetContainsKindOfConcept extends AssertionNode {
 	public String getDescription() {
 		String refsetConceptDescription = null;
 		if (getRefsetConceptNid() != null && getRefsetConceptNid() != 0) {
-			refsetConceptDescription = WBUtility.getDescriptionIfConceptExists(getRefsetConceptNid());
+			refsetConceptDescription = OTFUtility.getDescriptionIfConceptExists(getRefsetConceptNid());
 		}
 
 		String conceptDescription = null;
 		if (getConceptNid() != null && getConceptNid() != 0) {
-			conceptDescription = WBUtility.getDescriptionIfConceptExists(getConceptNid());
+			conceptDescription = OTFUtility.getDescriptionIfConceptExists(getConceptNid());
 		}
 		
 		return (invertProperty.get() ? "NOT " : "") + getNodeTypeName() + " refset=" + refsetConceptDescription + ", concept=" + conceptDescription;

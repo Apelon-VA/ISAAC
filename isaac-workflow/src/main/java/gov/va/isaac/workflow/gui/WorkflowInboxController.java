@@ -26,7 +26,7 @@ import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusTaskIdProvider;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.workflow.LocalTask;
 import gov.va.isaac.workflow.LocalTasksServiceBI;
 import gov.va.isaac.workflow.LocalTasksServiceBI.ActionEvent;
@@ -126,7 +126,7 @@ public class WorkflowInboxController
 		assert taskTable != null : "fx:id=\"taskTable\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 		assert rootBorderPane != null : "fx:id=\"rootBorderPane\" was not injected: check your FXML file 'WorkflowInbox.fxml'.";
 
-		//TODO maybe use the preferred name instead of their login name?
+		//TODO (artf231896) maybe use the preferred name instead of their login name?
 		userName.setText(ExtendedAppContext.getCurrentlyLoggedInUser());
 
 		taskTable.setTableMenuButtonVisible(true);
@@ -197,11 +197,11 @@ public class WorkflowInboxController
 			}
 
 			ConceptVersionBI containingConcept = null;
-			ComponentChronicleBI<?> componentChronicle = WBUtility.getComponentChronicle(componentUuid);
+			ComponentChronicleBI<?> componentChronicle = OTFUtility.getComponentChronicle(componentUuid);
 			if (componentChronicle == null) {
 				LOG.warn("Component ID for task " + value.getValue().getId() + " retrieved a null componentChronicle");
 
-				containingConcept = WBUtility.getConceptVersion(componentUuid);
+				containingConcept = OTFUtility.getConceptVersion(componentUuid);
 				if (containingConcept == null) {
 					LOG.error("Component ID for task " + value.getValue().getId() + " retrieved a null concept");
 
@@ -209,7 +209,7 @@ public class WorkflowInboxController
 				}
 			} else {
 				try {
-					containingConcept = componentChronicle.getEnclosingConcept().getVersion(WBUtility.getViewCoordinate());
+					containingConcept = componentChronicle.getEnclosingConcept().getVersion(OTFUtility.getViewCoordinate());
 				} catch (Exception e) {
 					LOG.error("Failed getting version from ComponentChronicleBI task " + value.getValue().getId() + ".  Caught " + e.getClass().getName() + " " + e.getLocalizedMessage());
 					e.printStackTrace();
@@ -264,7 +264,7 @@ public class WorkflowInboxController
 			});
 		});
 
-		// TODO: not sure we should be loading content in init(). Maybe move to getView()?
+		// TODO (artf231897): not sure we should be loading content in init(). Maybe move to getView()?
 		loadContent();
 	}
 
@@ -355,9 +355,6 @@ public class WorkflowInboxController
 									}
 
 									String[] itemArray = items.toArray(new String[items.size()]);
-
-									// TODO: determine why we are getting here multiple (2 or 3) times for each selection
-									//System.out.println("Selected strings: " + Arrays.toString(itemArray));
 
 									return itemArray;
 								}

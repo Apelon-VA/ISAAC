@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.WorkflowInitiationViewI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
@@ -111,7 +111,7 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 	@Override
 	public void setComponent(UUID uuid) {
 		try {
-			setComponent(WBUtility.getComponentVersion(uuid));
+			setComponent(OTFUtility.getComponentVersion(uuid));
 		} catch (Exception e) {
 			String title = "Unexpected error loading component with UUID " + uuid;
 			String msg = "Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();
@@ -123,7 +123,8 @@ public class WorkflowInitiationView extends Stage implements WorkflowInitiationV
 	@Override
 	public void setComponent(int nid) {
 		try {
-			setComponent(WBUtility.getComponentVersion(nid));
+			//TODO (artf231900) don't do BDB lookups on the FX Thread
+			setComponent(OTFUtility.getComponentVersion(nid));
 		} catch (Exception e) {
 			String title = "Unexpected error loading component with UUID " + nid;
 			String msg = "Caught " + e.getClass().getName() + " " + e.getLocalizedMessage();

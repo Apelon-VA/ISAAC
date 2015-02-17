@@ -4,7 +4,7 @@ package gov.va.isaac.models.cem;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.InformationModels;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * Represents a CEM constraint.
  */
 public class CEMConstraint {
-  private static final Logger LOGGER = LoggerFactory.getLogger(WBUtility.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OTFUtility.class);
 
   /**  The path. */
   private String path;
@@ -125,12 +125,16 @@ public class CEMConstraint {
 				try {
 					// Create Enumeration
 					AppContext.getRuntimeGlobals().disableAllCommitListeners();
-					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, "Value Set Refex for " + value, 
+					RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(value, value, "Value Set Sememe for " + value, 
 																									 new RefexDynamicColumnInfo[] {},
-																									 InformationModels.CEM_ENUMERATIONS.getUuids()[0], false);
+																									 InformationModels.CEM_ENUMERATIONS.getUuids()[0], false, null);
 				} catch (IOException | ContradictionException | InvalidCAB
 						| PropertyVetoException e) {
 					LOGGER.error("Unable to create CEM enumeration for " + value);
+				}
+				finally
+				{
+					AppContext.getRuntimeGlobals().enableAllCommitListeners();
 				}
 			}
 		}
@@ -138,7 +142,7 @@ public class CEMConstraint {
 	
 	private boolean valueSetExists() {
 			// Get UUID
-			UUID uuid = WBUtility.getUuidForFsn(value, value);
+			UUID uuid = OTFUtility.getUuidForFsn(value, value);
 //			UUID uuid = UuidT5Generator.get(UUID PATH_ID_FROM_FS_DESC, value);
 	
 			return ExtendedAppContext.getDataStore().hasUuid(uuid);

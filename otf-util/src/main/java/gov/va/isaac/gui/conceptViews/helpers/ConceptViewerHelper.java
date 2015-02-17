@@ -1,6 +1,6 @@
 package gov.va.isaac.gui.conceptViews.helpers;
 
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -22,23 +22,6 @@ public class ConceptViewerHelper {
 	private static Integer snomedAssemblageNid;
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerHelper.class);
 
-	public enum ComponentType {
-		CONCEPT, DESCRIPTION, RELATIONSHIP;
-		
-		@Override
-		public String toString() {
-			if (this.equals(CONCEPT)) {
-				return "Concept";				
-			} else if (this.equals(DESCRIPTION)) {
-				return "Description";
-			} else if (this.equals(RELATIONSHIP)) {
-				return "Relationship";
-			}
-			
-			return "";
-		}
-	}
-	
 	private ConceptViewerHelper()
 	{
 		//helper, don't construct....
@@ -47,7 +30,7 @@ public class ConceptViewerHelper {
 	public static int getSnomedAssemblageNid() {
 		if (snomedAssemblageNid == null)
 		{
-			snomedAssemblageNid = WBUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
+			snomedAssemblageNid = OTFUtility.getConceptVersion(TermAux.SNOMED_IDENTIFIER.getUuids()[0]).getNid();
 		}
 		return snomedAssemblageNid;
 	}
@@ -112,7 +95,7 @@ public class ConceptViewerHelper {
 		try {
 			ConceptAttributeVersionBI<?> attr = con.getConceptAttributesActive();
 			if (attr == null) {
-				attr = con.getConceptAttributes().getVersion(WBUtility.getViewCoordinate());
+				attr = con.getConceptAttributes().getVersion(OTFUtility.getViewCoordinate());
 				if (attr == null) {
 					// handle Unhandled functionality
 					attr = (ConceptAttributeVersionBI<?>) con.getConceptAttributes().getVersions().toArray()[con.getConceptAttributes().getVersions().size() - 1];
@@ -130,7 +113,7 @@ public class ConceptViewerHelper {
 		Set<RefexVersionBI<?>> retSet = new HashSet<>();
 		
 		try {
-			for (RefexVersionBI<?> annot : comp.getAnnotationsActive(WBUtility.getViewCoordinate())) {
+			for (RefexVersionBI<?> annot : comp.getAnnotationsActive(OTFUtility.getViewCoordinate())) {
 				if (annot.getAssemblageNid() != getSnomedAssemblageNid()) {
 					retSet.add(annot);
 				}

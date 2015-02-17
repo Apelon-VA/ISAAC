@@ -1,8 +1,7 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -12,9 +11,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
-import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class DetailRelRow extends RelRow {
@@ -28,14 +26,14 @@ public class DetailRelRow extends RelRow {
 		Rectangle rec = createAnnotRectangle(rel);
 		Label relLabel;
 		if (isDetailed) {
-			relLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getConceptNid()), ComponentType.RELATIONSHIP, rel.getConceptNid());
+			relLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getConceptNid()), ComponentType.RELATIONSHIP, rel.getConceptNid());
 		} else {
-			relLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
+			relLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getDestinationNid()), ComponentType.RELATIONSHIP, rel.getDestinationNid());
 		}
-		Label relTypeLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
+		Label relTypeLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getTypeNid()), ComponentType.RELATIONSHIP, rel.getTypeNid());
 		Label relGroupLabel = labelHelper.createLabel(rel, String.valueOf(rel.getGroup()), ComponentType.RELATIONSHIP, 0);
-		Label relCharLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getCharacteristicNid()), ComponentType.RELATIONSHIP, rel.getCharacteristicNid());
-		Label relRefLabel = labelHelper.createLabel(rel, WBUtility.getConPrefTerm(rel.getRefinabilityNid()), ComponentType.RELATIONSHIP, rel.getRefinabilityNid());
+		Label relCharLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getCharacteristicNid()), ComponentType.RELATIONSHIP, rel.getCharacteristicNid());
+		Label relRefLabel = labelHelper.createLabel(rel, OTFUtility.getConPrefTerm(rel.getRefinabilityNid()), ComponentType.RELATIONSHIP, rel.getRefinabilityNid());
 		
 		if (rel.isUncommitted()) {
 			if (rel.getVersions().size() == 1) {
@@ -55,22 +53,22 @@ public class DetailRelRow extends RelRow {
 				relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 			} else {
 				ComponentChronicleBI<?> chronicle = rel.getChronicle();
-				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+				RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 ;
 	
-				if (!relLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
+				if (!relLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
 					relLabel.setUnderline(true);
 				}
 				
-				if (!relTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+				if (!relTypeLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getTypeNid()))) {
 					relTypeLabel.setUnderline(true);
 				}
 	
-				if (!relCharLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getCharacteristicNid()))) {
+				if (!relCharLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getCharacteristicNid()))) {
 					relCharLabel.setUnderline(true);
 				}
 				
-				if (!relRefLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getRefinabilityNid()))) {
+				if (!relRefLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getRefinabilityNid()))) {
 					relRefLabel.setUnderline(true);
 				}
 				

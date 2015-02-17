@@ -22,7 +22,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.model.ExportType;
 import gov.va.isaac.util.ExportTypeStringConverter;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.io.File;
 import java.io.IOException;
@@ -125,14 +125,14 @@ public class ExportFileSettingsDialogController {
     ObservableList<ConceptChronicleBI> paths =
         FXCollections.observableArrayList(new ArrayList<ConceptChronicleBI>());
     try {
-      List<ConceptChronicleBI> pathConcepts = WBUtility.getPathConcepts();
+      List<ConceptChronicleBI> pathConcepts = OTFUtility.getPathConcepts();
       Iterators.removeIf(pathConcepts.iterator(),
           new Predicate<ConceptChronicleBI>() {
 
             @Override
             public boolean apply(ConceptChronicleBI arg0) {
               try {
-                return arg0.getVersion(WBUtility.getViewCoordinate())
+                return arg0.getVersion(OTFUtility.getViewCoordinate())
                     .getPreferredDescription().getText()
                     .startsWith(TermAux.SNOMED_CORE.getDescription() + " ");
               } catch (IOException e) {

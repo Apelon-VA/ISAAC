@@ -1,11 +1,8 @@
 package gov.va.isaac.gui.conceptViews.componentRows;
 
-import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper.ComponentType;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
-import gov.va.isaac.util.WBUtility;
-
+import gov.va.isaac.util.OTFUtility;
 import java.util.Collection;
-
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -15,8 +12,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
 public class HistoricalRelRow extends RelRow {
@@ -37,19 +34,19 @@ public class HistoricalRelRow extends RelRow {
 			Rectangle rec = createAnnotRectangle(rv);
 			Label relLabel;
 			if (isDetailed) {
-				relLabel = labelHelper.createLabel(rv, WBUtility.getConPrefTerm(rv.getConceptNid()), ComponentType.RELATIONSHIP, rv.getConceptNid());
+				relLabel = labelHelper.createLabel(rv, OTFUtility.getConPrefTerm(rv.getConceptNid()), ComponentType.RELATIONSHIP, rv.getConceptNid());
 			} else {
-				relLabel = labelHelper.createLabel(rv, WBUtility.getConPrefTerm(rv.getDestinationNid()), ComponentType.RELATIONSHIP, rv.getDestinationNid());
+				relLabel = labelHelper.createLabel(rv, OTFUtility.getConPrefTerm(rv.getDestinationNid()), ComponentType.RELATIONSHIP, rv.getDestinationNid());
 			}
-			Label relTypeLabel = labelHelper.createLabel(rv, WBUtility.getConPrefTerm(rv.getTypeNid()), ComponentType.RELATIONSHIP, rv.getTypeNid());
+			Label relTypeLabel = labelHelper.createLabel(rv, OTFUtility.getConPrefTerm(rv.getTypeNid()), ComponentType.RELATIONSHIP, rv.getTypeNid());
 			Label relGroupLabel = labelHelper.createLabel(rv, String.valueOf(rv.getGroup()), ComponentType.RELATIONSHIP, 0);
-			Label relCharLabel = labelHelper.createLabel(rv, WBUtility.getConPrefTerm(rv.getCharacteristicNid()), ComponentType.RELATIONSHIP, rv.getCharacteristicNid());
-			Label relRefLabel = labelHelper.createLabel(rv, WBUtility.getConPrefTerm(rv.getRefinabilityNid()), ComponentType.RELATIONSHIP, rv.getRefinabilityNid());
+			Label relCharLabel = labelHelper.createLabel(rv, OTFUtility.getConPrefTerm(rv.getCharacteristicNid()), ComponentType.RELATIONSHIP, rv.getCharacteristicNid());
+			Label relRefLabel = labelHelper.createLabel(rv, OTFUtility.getConPrefTerm(rv.getRefinabilityNid()), ComponentType.RELATIONSHIP, rv.getRefinabilityNid());
 			
-			Label relStatusLabel = labelHelper.createLabel(rv, WBUtility.getStatusString(rv), ComponentType.RELATIONSHIP, 0);
-			Label relTimeLabel = labelHelper.createLabel(rv, WBUtility.getTimeString(rv), ComponentType.RELATIONSHIP, rv.getTypeNid());
-			Label relAuthorLabel = labelHelper.createLabel(rv, WBUtility.getAuthorString(rv), ComponentType.RELATIONSHIP, 0);
-			Label relPathLabel = labelHelper.createLabel(rv, WBUtility.getPathString(rv), ComponentType.RELATIONSHIP, 0);
+			Label relStatusLabel = labelHelper.createLabel(rv, OTFUtility.getStatusString(rv), ComponentType.RELATIONSHIP, 0);
+			Label relTimeLabel = labelHelper.createLabel(rv, OTFUtility.getTimeString(rv), ComponentType.RELATIONSHIP, rv.getTypeNid());
+			Label relAuthorLabel = labelHelper.createLabel(rv, OTFUtility.getAuthorString(rv), ComponentType.RELATIONSHIP, 0);
+			Label relPathLabel = labelHelper.createLabel(rv, OTFUtility.getPathString(rv), ComponentType.RELATIONSHIP, 0);
 
 			if (rel.isUncommitted()) {
 				if (rel.getVersions().size() == 1) {
@@ -69,21 +66,21 @@ public class HistoricalRelRow extends RelRow {
 					relTypeLabel.setFont(Font.font(f.getFamily(), FontPosture.ITALIC, f.getSize()));
 				} else {
 					ComponentChronicleBI<?> chronicle = rel.getChronicle();
-					RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) WBUtility.getLastCommittedVersion(chronicle);
+					RelationshipVersionBI<?> origVersion = (RelationshipVersionBI<?>) OTFUtility.getLastCommittedVersion(chronicle);
 	
-					if (!relLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
+					if (!relLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getDestinationNid()))) {
 						relLabel.setUnderline(true);
 					}
 					
-					if (!relTypeLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getTypeNid()))) {
+					if (!relTypeLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getTypeNid()))) {
 						relTypeLabel.setUnderline(true);
 					}
 		
-					if (!relCharLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getCharacteristicNid()))) {
+					if (!relCharLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getCharacteristicNid()))) {
 						relCharLabel.setUnderline(true);
 					}
 					
-					if (!relRefLabel.getText().equals(WBUtility.getConPrefTerm(origVersion.getRefinabilityNid()))) {
+					if (!relRefLabel.getText().equals(OTFUtility.getConPrefTerm(origVersion.getRefinabilityNid()))) {
 						relRefLabel.setUnderline(true);
 					}
 					

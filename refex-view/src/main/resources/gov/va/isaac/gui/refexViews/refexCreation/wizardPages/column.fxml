@@ -8,7 +8,7 @@
 
 <BorderPane fx:id="columnDefinitionPane" minWidth="400.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.refexViews.refexCreation.wizardPages.ColumnController">
 	<top>
-		<Label fx:id="columnTitle" text="Column Definition #" BorderPane.alignment="CENTER">
+		<Label fx:id="columnTitle" text="Attribute Definition #" BorderPane.alignment="CENTER">
 			<font>
 				<Font name="System Bold" size="24.0" />
 			</font>
@@ -34,8 +34,8 @@
 				<RowConstraints minHeight="25.0" vgrow="NEVER" />
 			</rowConstraints>
 			<children>
-				<Label text="Column Name" />
-				<Label text="Column Description" GridPane.rowIndex="1" />
+				<Label text="Attribute Name" />
+				<Label text="Attribute Description" GridPane.rowIndex="1" />
 				<Label text="Type" GridPane.rowIndex="2" />
 				<Label text="Default Value" GridPane.rowIndex="3" />
 				<Button fx:id="newColNameButton" alignment="CENTER_RIGHT" minWidth="-Infinity" mnemonicParsing="false" text="Create Column" GridPane.columnIndex="2" GridPane.halignment="RIGHT" />

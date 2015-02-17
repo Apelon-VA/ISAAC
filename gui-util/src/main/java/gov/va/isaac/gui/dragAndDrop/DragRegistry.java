@@ -69,6 +69,18 @@ public class DragRegistry
 		codeDropTargets.add(node);
 	}
 	
+	public void removeDragCapability(Node n)
+	{
+		n.setOnDragDetected(null);
+		n.setOnDragDone(null);
+		n.setOnDragOver(null);
+		n.setOnDragEntered(null);
+		n.setOnDragExited(null);
+		n.setOnDragDropped(null);
+		codeDropTargets.remove(n);
+		n.setEffect(existingEffect.remove(n));
+	}
+	
 	public void setupDragOnly(final Node n, SingleConceptIdProvider singleConceptIdProvider)
 	{
 		logger.debug("Configure drag support for node {}", n);

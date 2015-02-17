@@ -7,7 +7,7 @@ import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
 import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.UUID;
 import javafx.collections.ObservableList;
@@ -82,7 +82,7 @@ public class EnhancedConceptViewController {
 			initialized = true;
 			initializeWindow(conceptHistoryStack, mode);
 		}
-		concept = WBUtility.getConceptVersion(currentCon);
+		concept = OTFUtility.getConceptVersion(currentCon);
 		labelHelper.setConcept(concept.getNid());
 		clearContents();
 		updateCommitButton();
@@ -95,7 +95,7 @@ public class EnhancedConceptViewController {
 			intializePane(mode);
 		}
 		
-		concept = WBUtility.getConceptVersion(currentCon);
+		concept = OTFUtility.getConceptVersion(currentCon);
 		labelHelper.setConcept(concept.getNid());
 		clearContents();
 		creator.setConceptValues(concept, mode);
@@ -128,7 +128,7 @@ public class EnhancedConceptViewController {
 			public void handle(ActionEvent arg0) {
 				try
 				{
-					WBUtility.commit(concept);
+					OTFUtility.commit(concept);
 					clearContents();
 					commitButton.setDisable(true);
 					cancelButton.setDisable(true);
@@ -227,7 +227,7 @@ public class EnhancedConceptViewController {
 	}
 
 	private void updateCommitButton() {
-		boolean isUncommitted = WBUtility.isUncommittened(concept);
+		boolean isUncommitted = OTFUtility.isUncommittened(concept);
 		commitButton.setDisable(!isUncommitted);
 		cancelButton.setDisable(!isUncommitted);
 	}

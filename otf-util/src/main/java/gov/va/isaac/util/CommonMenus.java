@@ -761,13 +761,13 @@ public class CommonMenus
 		ArrayList<String> sctIds = new ArrayList<>();
 
 		for (Integer i : nids.getNIds()) {
-			ComponentChronicleBI<?> component = WBUtility.getComponentChronicle(i);
+			ComponentChronicleBI<?> component = OTFUtility.getComponentChronicle(i);
 			
 			if (component != null && component.getPrimordialUuid() != null) {
 				uuids.add(component.getPrimordialUuid());
 				if (component instanceof ConceptChronicleBI)
 				{
-					ConceptVersionBI concept = WBUtility.getConceptVersion(i);
+					ConceptVersionBI concept = OTFUtility.getConceptVersion(i);
 					if (concept != null)
 					{
 						sctIds.add(ConceptViewerHelper.getSctId(ConceptViewerHelper.getConceptAttributes(concept)).trim());
@@ -841,14 +841,14 @@ public class CommonMenus
 		//TODO Dan doesn't like this, because it is being done at menu execution time, in the FX Thread, rather
 		//that in the background... but not sure how to restructure this class just now to properly handle other 
 		//types of nids...
-		ComponentChronicleBI<?> cc = WBUtility.getComponentChronicle(nid);
+		ComponentChronicleBI<?> cc = OTFUtility.getComponentChronicle(nid);
 		
 		if (cc != null) {
 			if (cc instanceof RefexDynamicChronicleBI) {
 				RefexDynamicChronicleBI<?> refexChron = (RefexDynamicChronicleBI<?>)cc;
 				
 				try {
-					if (WBUtility.getConceptVersion(refexChron.getAssemblageNid()).isAnnotationStyleRefex()) {
+					if (OTFUtility.getConceptVersion(refexChron.getAssemblageNid()).isAnnotationStyleRefex()) {
 						return refexChron.getAssemblageNid();
 					} else {
 						return refexChron.getReferencedComponentNid();
