@@ -26,9 +26,11 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.utility.CommitListenerI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
+import gov.va.isaac.util.WBUtility;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.UUID;
 
 import javafx.application.Platform;
 
@@ -38,6 +40,7 @@ import javax.inject.Singleton;
 import org.ihtsdo.otf.tcc.api.nid.IntSet;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
+import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,21 +139,78 @@ public class ClassifierCommitListener implements PropertyChangeListener,
         final int[] allConceptNids =
             ((NativeIdSetBI) evt.getNewValue()).getSetValues();
 
-        //
-        Platform.runLater(() -> {
-          try {
-            //Classifier classifier = new SnomedSnorocketClassifier();
-            //classifier.incrementalClassify((IntSet)evt.getNewValue());
-          } catch (Exception e) {
-            e.printStackTrace();
-            AppContext.getCommonDialogs().showErrorDialog(e.getMessage(), e);
-          }
+        if (allConceptNids != null && allConceptNids.length > 0) {
 
-        });
+          // perform action
+          Platform
+              .runLater(() -> {
+                try {
+                  Classifier classifier = new SnomedSnorocketClassifier();
+
+                  // Identify if any components have been retired
+                  // if so, clear the classifier state and send user a warning
+                  LOG.debug(" Check for retirements");
+                  if (includesRetirements(allConceptNids)) {
+                    LOG.debug("   retirements = true");
+                    classifier.clearStaticState();
+                    LOG.warn(
+                        "Commit included retirements, you must perform full classification again.");
+                    return;
+                  }
+
+                  LOG.debug(" Incremental classify");
+                  classifier.incrementalClassify((IntSet)evt.getNewValue());
+                } catch (Exception e) {
+                  e.printStackTrace();
+                  AppContext.getCommonDialogs().showErrorDialog(e.getMessage(),
+                      e);
+                }
+
+              });
+        }
       }
     } catch (Exception e) {
       LOG.error("Unexpected error processing commit notification", e);
     }
+  }
+
+  /**
+   * Includes retirements.
+   *
+   * @param allConceptNids the all concept nids
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  private boolean includesRetirements(int[] allConceptNids) throws Exception {
+    // Iterate through
+    for (int i = 0; i < allConceptNids.length; i++) {
+      // get concepts
+      ConceptChronicle c =
+          (ConceptChronicle) WBUtility.getConceptVersion(allConceptNids[i])
+              .getChronicle();
+      // get components
+      int componentNid = 0;
+      for (int nid : c.getUncommittedNids().getListArray()) {
+        if (componentNid == 0) {
+          componentNid = nid;
+        } else {
+          componentNid = allConceptNids[i];
+          break;
+        }
+      }
+
+      try {
+        UUID componentId =
+            WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
+        WBUtility.getComponentVersion(componentId).getConceptNid();
+      } catch (NullPointerException npe) {
+
+        // retired component?
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

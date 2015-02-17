@@ -51,6 +51,13 @@
 			<artifactId>isaac-app</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+
+		<!-- Need this to run classifier -->
+		<dependency>
+			<groupId>gov.va.isaac.modules</groupId>
+			<artifactId>isaac-classifier</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 		
 		<!-- Needed to support Profile Sync (using GIT) -->
 		<dependency>

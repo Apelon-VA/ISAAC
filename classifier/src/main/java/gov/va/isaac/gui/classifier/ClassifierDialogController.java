@@ -23,7 +23,10 @@ import gov.va.isaac.gui.util.FxUtils;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 import org.slf4j.Logger;
@@ -42,15 +45,20 @@ public class ClassifierDialogController {
       .getLogger(ClassifierDialogController.class);
 
   /** The stage. */
-  Stage stage;
+  Stage classifierStage;
+
+  /**  The dialog. */
+  ClassifierDialog dialog;
 
   /**
    * Sets the variables.
    *
-   * @param stagel the variables
+   * @param dialog the dialog
+   * @param parent the parent
    */
-  public void setVariables(Stage stagel) {
-    this.stage = stagel;
+  public void setVariables(ClassifierDialog dialog, Window parent) {
+    this.dialog = dialog;
+    this.classifierStage = buildClassifierStage(parent);
   }
 
   /**
@@ -62,30 +70,48 @@ public class ClassifierDialogController {
   }
 
   /**
+   * Builds the classifier stage.
+   *
+   * @param owner the owner
+   * @return the stage
+   */
+  private Stage buildClassifierStage(Window owner) {
+
+    // Use dialog for now, so Alo/Dan can use it.
+    Stage stage = new Stage();
+    stage.initModality(Modality.NONE);
+    stage.initOwner(owner);
+    stage.initStyle(StageStyle.DECORATED);
+    stage.setTitle("Classifier View");
+
+    return stage;
+  }
+  /**
    * Handler for ok button.
    */
   public void handleOk() {
-    showView();
+    dialog.close();
+    showClassifierView();
   }
 
   /**
-   * Show view.
-   */
-  private void showView() {
+   * Show classifier view.
+   */ 
+  private void showClassifierView() {
 
     // Make sure in application thread.
     FxUtils.checkFxUserThread();
 
     try {
       ClassifierView classifierView = new ClassifierView();
-      stage.setScene(new Scene(classifierView));
-      if (stage.isShowing()) {
-        stage.toFront();
+      classifierStage.setScene(new Scene(classifierView));
+      if (classifierStage.isShowing()) {
+        classifierStage.toFront();
       } else {
-        stage.show();
+        classifierStage.show();
       }
 
-      ((Stage) stage.getScene().getWindow())
+      ((Stage) classifierStage.getScene().getWindow())
           .setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -107,7 +133,7 @@ public class ClassifierDialogController {
    * Handler for cancel button.
    */
   public void handleCancel() {
-    stage.close();
+    dialog.close();
   }
 
 }
