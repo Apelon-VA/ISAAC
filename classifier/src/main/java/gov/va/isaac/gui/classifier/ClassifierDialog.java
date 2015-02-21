@@ -42,16 +42,20 @@ public class ClassifierDialog extends Stage {
   /** The controller. */
   private final ClassifierDialogController controller;
 
+  /**  The incremental classify flag. */
+  private boolean incrementalClassify = false;
+  
   /**
    * Instantiates an empty {@link ClassifierDialog}.
-   * @param parent the parent
    *
+   * @param parent the parent
+   * @param incrementalClassify the incremental classify
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  public ClassifierDialog(Window parent) throws IOException {
+  public ClassifierDialog(Window parent, boolean incrementalClassify) throws IOException {
     super();
-
-    setTitle("Classifier");
+    this.incrementalClassify = incrementalClassify;
+    setTitle((incrementalClassify ? "Incremental " : "") +"Classifier");
     setResizable(true);
 
     Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
@@ -68,5 +72,14 @@ public class ClassifierDialog extends Stage {
 
     controller = loader.getController();
     controller.setVariables(this, parent);
+  }
+  
+  /**
+   * Returns the incremental classify flag.
+   *
+   * @return the incremental classify flag
+   */
+  public boolean getIncrementalClassify() {
+    return incrementalClassify;
   }
 }

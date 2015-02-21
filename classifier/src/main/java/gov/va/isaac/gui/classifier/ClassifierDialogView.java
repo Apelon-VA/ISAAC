@@ -101,7 +101,7 @@ public class ClassifierDialogView implements PopupViewI, IsaacViewWithMenusI {
   @Override
   public void showView(Window parent) {
     try {
-      ClassifierDialog dialog = new ClassifierDialog(parent);
+      ClassifierDialog dialog = new ClassifierDialog(parent, false);
       dialog.show();
     } catch (IOException ex) {
       String title = ex.getClass().getName();

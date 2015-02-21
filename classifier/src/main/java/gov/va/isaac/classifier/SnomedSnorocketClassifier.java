@@ -10,9 +10,9 @@ import gov.va.isaac.classifier.model.RelationshipGroup;
 import gov.va.isaac.classifier.model.RelationshipGroupList;
 import gov.va.isaac.classifier.model.StringIDConcept;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-import gov.va.isaac.util.OTFUtility;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -74,13 +74,13 @@ public class SnomedSnorocketClassifier implements Classifier {
   /** The cancel flag. */
   private boolean requestCancel = false;
 
-  /** the count so far */
+  /** the count so far. */
   private int progress = 0;
 
-  /** the total */
+  /** the total. */
   private int progressMax = 0;
 
-  /** Listeners */
+  /** Listeners. */
   private List<ProgressListener> listeners = new ArrayList<>();
 
   /** The data store. */
@@ -102,27 +102,25 @@ public class SnomedSnorocketClassifier implements Classifier {
   private int progressCount = 0;
 
   /** The edited snomed concepts. */
-  private List<StringIDConcept> editedSnomedConcepts = new ArrayList<>();
+  private List<StringIDConcept> editedSnomedConcepts;
 
   /** The edit snomed rels. */
-  private List<Relationship> editedSnomedRels = new ArrayList<>();
+  private List<Relationship> editedSnomedRels;
 
   /** The c rocket sno rels. */
   private Map<Integer, List<Relationship>> snorocketRels;
 
-  /** The prior inferred rels */
-  private static Map<Integer, List<Relationship>> previousInferredRels =
-      new HashMap<>();
+  /** The prior inferred rels. */
+  private static Map<Integer, List<Relationship>> previousInferredRels;
 
+  /** The previous inferred rels ct. */
   private static int previousInferredRelsCt = 0;
 
   /** The concepts. Map of id->seen */
-  private static Map<Integer, Boolean> cycleCheckConcepts =
-      new HashMap<>(20000);
+  private static Map<Integer, Boolean> cycleCheckConcepts;
 
   /** The isa relationships map. Map of sourceId->destinationIds */
-  private static Map<Integer, List<Integer>> cycleCheckRelationships =
-      new HashMap<>(20000);
+  private static Map<Integer, List<Integer>> cycleCheckRelationships;
 
   /** The cycle check report. */
   private String cycleCheckReport = "cycleCheck.txt";
@@ -130,14 +128,14 @@ public class SnomedSnorocketClassifier implements Classifier {
   /** The equivalent concepts report. */
   private String equivalentConceptsReport = "equivalentConcepts.txt";
 
-  /** The sct descendants. */
-  private IntSet sctDescendants = new IntSet();
+  /** The incremental classification set. */
+  private static IntSet incrementalClassificationSet;
 
   /** The valid paths. */
   private IntSet validPaths = new IntSet();
 
-  /** An id map for resolving relationship ids later */
-  private Set<Integer> nidSeen = new HashSet<>();
+  /** An id map for resolving relationship ids later. */
+  private Set<Integer> nidSeen;
 
   /** The rocket_123. */
   private static Snorocket_123 rocket_123 = null;
@@ -161,7 +159,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     validPaths.add(TermAux.SNOMED_CORE.getLenient().getNid());
     // when running in mojo mode, this may not be available
     if (AppContext.getAppConfiguration().getDefaultEditPathUuid() != null) {
-      validPaths.add(WBUtility.getConceptVersion(
+      validPaths.add(OTFUtility.getConceptVersion(
           UUID.fromString(AppContext.getAppConfiguration()
               .getDefaultEditPathUuid())).getNid());
     }
@@ -170,10 +168,22 @@ public class SnomedSnorocketClassifier implements Classifier {
   /**
    * Classify.
    *
+   * @param rootNid the root nid
    * @throws Exception the exception
    */
   @Override
   public void classify(int rootNid) throws Exception {
+    // Reset data structures
+    editedSnomedConcepts = new ArrayList<>();
+    editedSnomedRels = new ArrayList<>();
+    previousInferredRels = new HashMap<>();
+    previousInferredRelsCt = 0;
+    cycleCheckConcepts = new HashMap<>(20000);
+    cycleCheckRelationships = new HashMap<>(20000);
+    incrementalClassificationSet = new IntSet();
+    nidSeen = new HashSet<>();
+    rocket_123 = null;
+
     // Set up progress monitoring
     progress = 0;
     // set this to the approximate snomed concept count,
@@ -186,6 +196,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     fireProgressEvent(0, "Preparing data");
+    IntSet sctDescendants = new IntSet();
     getAllDescendants(rootNid, rootNid, sctDescendants);
     if (!continueWork()) {
       return;
@@ -209,6 +220,7 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // load roles - this is an array of role concept ids
     int[] roleRefArray = getRoles(CONCEPT_ATTRIBUTE);
+    nidSeen = null;
     int roleCount = roleRefArray.length;
     // cannot handle > 100 roles
     if (roleCount > 100) {
@@ -408,7 +420,7 @@ public class SnomedSnorocketClassifier implements Classifier {
     } finally {
       AppContext.getRuntimeGlobals().enableAllCommitListeners();
     }
-    // Get classifier path relationships
+    // Clear memory
     startTime = System.currentTimeMillis();
     editedSnomedRels = null;
     editedSnomedConcepts = null;
@@ -425,8 +437,9 @@ public class SnomedSnorocketClassifier implements Classifier {
    * @param snorelA the snorel a
    * @param snorelB the snorel b
    * @return the string
-   * @throws Exception
+   * @throws Exception the exception
    */
+  @SuppressWarnings("null")
   private String compareAndWriteBack(List<Relationship> snorelA,
     List<Relationship> snorelB) throws Exception {
 
@@ -772,7 +785,7 @@ public class SnomedSnorocketClassifier implements Classifier {
   }
 
   /**
-   * Compare relationships
+   * Compare relationships.
    *
    * @param in the in relationship
    * @param out the out relationship
@@ -801,13 +814,17 @@ public class SnomedSnorocketClassifier implements Classifier {
    * Write relationship.
    *
    * @param relationship the relationship
+   * @param retired the retired
+   * @param countConceptsSeen the count concepts seen
+   * @param label the label
+   * @throws Exception the exception
    */
   private void writeRel(Relationship relationship, boolean retired,
     int countConceptsSeen, String label) throws Exception {
 
     // add concept to commit list
-    dataStore
-        .addUncommitted(WBUtility.getConceptVersion(relationship.sourceId));
+    dataStore.addUncommitted(OTFUtility
+        .getConceptVersion(relationship.sourceId));
 
     // add rel
     if (!retired) {
@@ -821,7 +838,7 @@ public class SnomedSnorocketClassifier implements Classifier {
               relationship.destinationId, relationship.group,
               RelationshipType.INFERRED_ROLE, IdDirective.GENERATE_RANDOM);
 
-      WBUtility.getBuilder().construct(relCAB);
+      OTFUtility.getBuilder().construct(relCAB);
 
       // Add to previousInferredRels for incremental classification
       addPreviousInferredRel(relationship.sourceId, relationship);
@@ -829,13 +846,15 @@ public class SnomedSnorocketClassifier implements Classifier {
 
     // retire rel
     else {
-      LOG.debug("RETIRE REL : " + relationship + " " + relationship.getRelId() + " " + label);
+      LOG.debug("RETIRE REL : " + relationship + " " + relationship.getRelId()
+          + " " + label);
       final RelationshipVersionBI<?> rel =
           (RelationshipVersionBI<?>) dataStore.getComponent(Integer
               .parseInt(relationship.getRelId()));
       final RelationshipCAB rcab =
           new RelationshipCAB(rel.getConceptNid(), rel.getTypeNid(),
-              rel.getDestinationNid(), 1, RelationshipType.QUALIFIER, rel,
+              rel.getDestinationNid(), 1, RelationshipType.getRelationshipType(
+                  rel.getRefinabilityNid(), rel.getCharacteristicNid()), rel,
               OTFUtility.getViewCoordinate(), IdDirective.PRESERVE,
               RefexDirective.EXCLUDE);
       rcab.setStatus(Status.INACTIVE);
@@ -845,10 +864,10 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     // Commit periodically (for full case)
-    //if (countConceptsSeen % 5000 == 0) {
-    //  LOG.info("    commit = " + countConceptsSeen);
-    //  dataStore.commit();
-    //}
+    // if (countConceptsSeen % 5000 == 0) {
+    // LOG.info("    commit = " + countConceptsSeen);
+    // dataStore.commit();
+    // }
   }
 
   /**
@@ -886,13 +905,14 @@ public class SnomedSnorocketClassifier implements Classifier {
 
   /**
    * Returns the all descendants.
+   *
    * @param topNid the top level nid
    * @param nid the root nid
    * @param descendants the descendants
-   * @throws Exception 
+   * @throws Exception the exception
    */
   @SuppressWarnings("cast")
-  public void getAllDescendants(int topNid, int nid, IntSet descendants)
+  public void getAllDescendants(int topNid, int nid, final IntSet descendants)
     throws Exception {
     // return if cancelled
     if (!continueWork()) {
@@ -919,7 +939,11 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     progressCount++;
-    descendants.add(nid);
+
+    // Support for multiple threads
+    synchronized (this) {
+      descendants.add(nid);
+    }
     convertToOntologyObjects(topNid, concept);
 
     // Handle progress monitor - consider this part 0%-50% of the process
@@ -928,9 +952,44 @@ public class SnomedSnorocketClassifier implements Classifier {
       progress = currentProgress;
       fireProgressEvent((int) (progress * .5), "Preparing data");
     }
+    Set<Thread> threads = new HashSet<>();
+    final boolean[] b = new boolean[1];
+    final Exception[] exceptions = new Exception[1];
+    b[0] = false;
     for (RelationshipVersionBI<?> r : concept
         .getRelationshipsIncomingActiveIsa()) {
-      getAllDescendants(topNid, r.getOriginNid(), descendants);
+      if (r.isStated() && r.isActive()) {
+        // Spin off separate threads for top level things
+        if (descendants.size() == 1) {
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              LOG.info("Create THREAD for " + r.getOriginNid());
+              try {
+                getAllDescendants(topNid, r.getOriginNid(), descendants);
+              } catch (Exception e) {
+                e.printStackTrace();
+                b[0] = true;
+                exceptions[0] = e;
+              }
+            }
+          });
+          threads.add(t);
+        } else {
+          getAllDescendants(topNid, r.getOriginNid(), descendants);
+        }
+      }
+    }
+    // If top-level call, wait for threads
+    if (threads.size() > 0) {
+      for (Thread t : threads) {
+        LOG.info("Start THREAD " + t);
+        t.start();
+      }
+      for (Thread t : threads) {
+        LOG.info("Join THREAD " + t);
+        t.join();
+      }
     }
   }
 
@@ -940,6 +999,7 @@ public class SnomedSnorocketClassifier implements Classifier {
    * @param nid the nid
    * @param rel the rel
    */
+  @SuppressWarnings("static-method")
   private void addPreviousInferredRel(int nid, Relationship rel) {
     List<Relationship> rels = null;
     previousInferredRelsCt++;
@@ -958,6 +1018,7 @@ public class SnomedSnorocketClassifier implements Classifier {
    * @param nid the nid
    * @param rel the rel
    */
+  @SuppressWarnings("static-method")
   private void removePreviousInferredRel(int nid, Relationship rel) {
     previousInferredRelsCt--;
     if (previousInferredRels.containsKey(nid)) {
@@ -999,13 +1060,16 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
     for (RelationshipVersionBI<?> r : concept
         .getRelationshipsIncomingActiveIsa()) {
-      getRoleDescendants(topNid, r.getOriginNid(), descendants);
+      if (r.isStated() && r.isActive()) {
+        getRoleDescendants(topNid, r.getOriginNid(), descendants);
+      }
     }
   }
 
   /**
    * Save cycle check report.
    *
+   * @param conceptInLoop the concept in loop
    * @throws IOException Signals that an I/O exception has occurred.
    */
   private void saveCycleCheckReport(Set<Integer> conceptInLoop)
@@ -1038,6 +1102,7 @@ public class SnomedSnorocketClassifier implements Classifier {
    * @param equivalentClasses the equivalent classes
    * @param fName the f name
    */
+  @SuppressWarnings("null")
   public void saveEquivalentConceptsReport(EquivalentClasses equivalentClasses,
     String fName) {
     if (!saveEquivalentConceptsReport) {
@@ -1080,17 +1145,18 @@ public class SnomedSnorocketClassifier implements Classifier {
   /**
    * Convert to ontology objects.
    *
+   * @param topNid the top nid
    * @param concept the concept
-   * @throws Exception 
+   * @throws Exception the exception
    */
-  private void convertToOntologyObjects(int topNid, ConceptVersionBI concept)
-    throws Exception {
+  private synchronized void convertToOntologyObjects(int topNid,
+    ConceptVersionBI concept) throws Exception {
 
     // Add concept
     StringIDConcept stringIdConcept =
         new StringIDConcept(concept.getNid(), String.valueOf(concept.getNid()),
-           concept.getConceptAttributes().
-           getVersion(WBUtility.getViewCoordinate()).isDefined());
+            concept.getConceptAttributes()
+                .getVersion(OTFUtility.getViewCoordinate()).isDefined());
 
     // save so we can map nids to their classifier ids.
     nidSeen.add(concept.getNid());
@@ -1111,7 +1177,8 @@ public class SnomedSnorocketClassifier implements Classifier {
     }
 
     // Iterate through relationships
-    for (RelationshipVersionBI<?> relationship : concept.getRelationshipsOutgoingActive()) {
+    for (RelationshipVersionBI<?> relationship : concept
+        .getRelationshipsOutgoingActive()) {
 
       // skip inactive
       if (!relationship.isActive()) {
@@ -1152,7 +1219,7 @@ public class SnomedSnorocketClassifier implements Classifier {
    *
    * @param parent the parent concept UUID
    * @return the roles
-   * @throws Exception
+   * @throws Exception the exception
    */
   private int[] getRoles(UUID parent) throws Exception {
     LOG.info("  Get Roles - " + parent);
@@ -1160,8 +1227,8 @@ public class SnomedSnorocketClassifier implements Classifier {
     // Get descendants of the parent UUID passed in
     // do not include concept for this UUID
     IntSet childNids = new IntSet();
-    getRoleDescendants(OTFUtility.getConceptVersion(parent).getNid(), OTFUtility
-        .getConceptVersion(parent).getNid(), childNids);
+    getRoleDescendants(OTFUtility.getConceptVersion(parent).getNid(),
+        OTFUtility.getConceptVersion(parent).getNid(), childNids);
 
     // save where concepts have been found
     IntSet children = new IntSet();
@@ -1200,6 +1267,7 @@ public class SnomedSnorocketClassifier implements Classifier {
    * @param startTime the start time
    * @return the string
    */
+  @SuppressWarnings("static-method")
   private String toStringLapseSec(long startTime) {
     StringBuilder s = new StringBuilder();
     long stopTime = System.currentTimeMillis();
@@ -1255,7 +1323,7 @@ public class SnomedSnorocketClassifier implements Classifier {
   }
 
   /**
-   * For processing equivalencies
+   * For processing equivalencies.
    */
   private class ProcessEquivalents implements I_EquivalentCallback {
 
@@ -1334,27 +1402,33 @@ public class SnomedSnorocketClassifier implements Classifier {
   }
 
   /**
-   * Cancel operation
+   * Cancel operation.
    */
   @Override
   public void cancel() {
     requestCancel = true;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * gov.va.isaac.classifier.Classifier#incrementalClassify(org.ihtsdo.otf.tcc
+   * .api.nid.IntSet)
+   */
   @Override
-  public void incrementalClassify(IntSet conceptSet) throws Exception {
+  public void incrementalClassify() throws Exception {
 
     // Full classification is needed
     if (rocket_123 == null) {
-      LOG.warn(
-          "Full classification must be done before incremental classification can be used.");
+      LOG.warn("Full classification must be done before incremental classification can be used.");
       return;
     }
 
     // add concepts - add to cycle check data structures too
     // add relationships - add to cycle check data structures too
     boolean classifiableConceptFound = false;
-    for (int nid : conceptSet.getSetValues()) {
+    for (int nid : incrementalClassificationSet.getSetValues()) {
 
       ConceptVersionBI concept = OTFUtility.getConceptVersion(nid);
       // return if the path of the concept is not valid
@@ -1391,7 +1465,7 @@ public class SnomedSnorocketClassifier implements Classifier {
             parentIds.add(relationship.getDestinationNid());
 
           }
-        } else {
+        } else if (relationship.isInferred()) {
           // Add inferred rels to previous inferred rels
           Relationship rel =
               new Relationship(relationship.getConceptNid(),
@@ -1439,7 +1513,7 @@ public class SnomedSnorocketClassifier implements Classifier {
       AppContext.getRuntimeGlobals().disableAllCommitListeners();
       List<Relationship> prevInferredRelsList = new ArrayList<>();
       List<Relationship> snorocketRelsList = new ArrayList<>();
-      for (int nid : conceptSet.getSetValues()) {
+      for (int nid : incrementalClassificationSet.getSetValues()) {
         prevInferredRelsList.addAll(previousInferredRels.get(nid));
         snorocketRelsList.addAll(snorocketRels.get(nid));
       }
@@ -1453,15 +1527,47 @@ public class SnomedSnorocketClassifier implements Classifier {
 
   }
 
-  /**
-   * Clear static state.
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * gov.va.isaac.classifier.Classifier#addToIncrementalClassificationSet(org
+   * .ihtsdo.otf.tcc.api.nid.IntSet)
+   */
+  @Override
+  public void addToIncrementalClassificationSet(IntSet conceptSet) {
+    // Skip if full classification hasn't been run
+    if (rocket_123 != null) {
+      for (int nid : conceptSet.getSetValues()) {
+        incrementalClassificationSet.add(nid);
+      }
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.classifier.Classifier#isIncrementalClassifyReady()
+   */
+  @Override
+  public boolean isIncrementalClassifyReady() {
+    // If classifier data structures are populated, we're ready
+    return rocket_123 != null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.va.isaac.classifier.Classifier#clearStaticState()
    */
   @Override
   public void clearStaticState() {
     // Essentially reset the classifier for a new full classification
     previousInferredRels = new HashMap<>();
+    previousInferredRelsCt = 0;
     cycleCheckConcepts = new HashMap<>(20000);
     cycleCheckRelationships = new HashMap<>(20000);
+    incrementalClassificationSet = new IntSet();
     rocket_123 = null;
   }
 

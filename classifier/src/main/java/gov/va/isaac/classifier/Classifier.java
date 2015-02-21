@@ -26,7 +26,23 @@ public interface Classifier extends ProgressReporter {
    * @param conceptSet the set of concepts that is new or has been added to
    * @throws Exception the exception
    */
-  public void incrementalClassify(IntSet conceptSet) throws Exception;
+  public void incrementalClassify() throws Exception;
+
+  /**
+   * Indicates whether or not incremental classify ready is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isIncrementalClassifyReady() throws Exception;
+  
+  /**
+   * Adds the to incremental classification set.
+   *
+   * @param conceptSet the concept set
+   * @throws Exception the exception
+   */
+  public void addToIncrementalClassificationSet(IntSet conceptSet) throws Exception;
 
   /**
    * Clear static state.  Reset after a full classification.

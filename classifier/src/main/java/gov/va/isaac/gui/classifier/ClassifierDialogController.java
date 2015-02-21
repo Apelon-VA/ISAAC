@@ -47,8 +47,11 @@ public class ClassifierDialogController {
   /** The stage. */
   Stage classifierStage;
 
-  /**  The dialog. */
+  /** The dialog. */
   ClassifierDialog dialog;
+
+  /** The incremental classify flag. */
+  boolean incrementalClassify;
 
   /**
    * Sets the variables.
@@ -58,6 +61,7 @@ public class ClassifierDialogController {
    */
   public void setVariables(ClassifierDialog dialog, Window parent) {
     this.dialog = dialog;
+    this.incrementalClassify = dialog.getIncrementalClassify();
     this.classifierStage = buildClassifierStage(parent);
   }
 
@@ -82,10 +86,12 @@ public class ClassifierDialogController {
     stage.initModality(Modality.NONE);
     stage.initOwner(owner);
     stage.initStyle(StageStyle.DECORATED);
-    stage.setTitle("Classifier View");
+    stage.setTitle((incrementalClassify ? "Incremental " : "")
+        + "Classifier View");
 
     return stage;
   }
+
   /**
    * Handler for ok button.
    */
@@ -96,14 +102,14 @@ public class ClassifierDialogController {
 
   /**
    * Show classifier view.
-   */ 
+   */
   private void showClassifierView() {
 
     // Make sure in application thread.
     FxUtils.checkFxUserThread();
 
     try {
-      ClassifierView classifierView = new ClassifierView();
+      ClassifierView classifierView = new ClassifierView(incrementalClassify);
       classifierStage.setScene(new Scene(classifierView));
       if (classifierStage.isShowing()) {
         classifierStage.toFront();

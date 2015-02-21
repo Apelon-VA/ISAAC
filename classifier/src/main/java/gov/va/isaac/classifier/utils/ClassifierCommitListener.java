@@ -26,21 +26,23 @@ import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.utility.CommitListenerI;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
-import gov.va.isaac.util.WBUtility;
+import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.UUID;
 
 import javafx.application.Platform;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.nid.IntSet;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyDI.CONCEPT_EVENT;
+import org.ihtsdo.otf.tcc.model.cc.attributes.ConceptAttributes;
 import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
+import org.ihtsdo.otf.tcc.model.cc.relationship.Relationship;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +63,9 @@ public class ClassifierCommitListener implements PropertyChangeListener,
 
   /** The enabled flag. */
   private boolean enabled = false;
+
+  /** The includes retirements. */
+  private boolean includesRetirements;
 
   /**
    * Instantiates an empty {@link ClassifierCommitListener}.
@@ -117,6 +122,8 @@ public class ClassifierCommitListener implements PropertyChangeListener,
         && loggedIn.isLaunchWorkflowForEachCommit()) {
       LOG.info("Enabling the classifier commit listener");
       ExtendedAppContext.getDataStore().addPropertyChangeListener(
+          CONCEPT_EVENT.PRE_COMMIT, this);
+      ExtendedAppContext.getDataStore().addPropertyChangeListener(
           CONCEPT_EVENT.POST_COMMIT, this);
       enabled = true;
     }
@@ -134,6 +141,35 @@ public class ClassifierCommitListener implements PropertyChangeListener,
       return;
     }
     try {
+      if (CONCEPT_EVENT.PRE_COMMIT.name().equals(evt.getPropertyName())) {
+        LOG.debug("pre-commit triggered in classifier commit listener");
+        // Gather uncommitted nids.
+        includesRetirements = false;
+        for (int nid : ((NativeIdSetBI) evt.getNewValue()).getSetValues()) {
+          ConceptChronicle concept =
+              (ConceptChronicle) OTFUtility.getConceptVersion(nid)
+                  .getChronicle();
+          // Iterate and look for retired concept/relationships
+          for (int componentNid : concept.getUncommittedNids().getListArray()) {
+            LOG.debug("NID: " + nid);
+            ComponentVersionBI component =
+                OTFUtility.getComponentVersion(componentNid);
+            LOG.debug("  " + component.getClass().getName());
+            if (!component.isActive()) {
+              // This is really awful, but there's no other way I can
+              // see to ask about the type of a component.
+              if (component instanceof ConceptAttributes.Version ||
+                  component instanceof Relationship.Version) {
+                LOG.debug("  INCLUDES RETIREMENTS");
+                includesRetirements = true;
+                break;
+              }
+            }
+            // if a retired concept or relationship set includesRetirements to true
+          }
+        }
+      }
+
       if (CONCEPT_EVENT.POST_COMMIT.name().equals(evt.getPropertyName())) {
         LOG.debug("post-commit triggered in classifier commit listener");
         final int[] allConceptNids =
@@ -150,16 +186,16 @@ public class ClassifierCommitListener implements PropertyChangeListener,
                   // Identify if any components have been retired
                   // if so, clear the classifier state and send user a warning
                   LOG.debug(" Check for retirements");
-                  if (includesRetirements(allConceptNids)) {
+                  if (includesRetirements) {
                     LOG.debug("   retirements = true");
                     classifier.clearStaticState();
-                    LOG.warn(
-                        "Commit included retirements, you must perform full classification again.");
+                    LOG.warn("Commit included retirements, you must perform full classification again.");
                     return;
                   }
 
-                  LOG.debug(" Incremental classify");
-                  classifier.incrementalClassify((IntSet)evt.getNewValue());
+                  LOG.debug(" Add to incremental classification set");
+                  classifier.addToIncrementalClassificationSet( 
+                      new IntSet(((NativeIdSetBI) evt.getNewValue()).getSetValues()));
                 } catch (Exception e) {
                   e.printStackTrace();
                   AppContext.getCommonDialogs().showErrorDialog(e.getMessage(),
@@ -172,45 +208,6 @@ public class ClassifierCommitListener implements PropertyChangeListener,
     } catch (Exception e) {
       LOG.error("Unexpected error processing commit notification", e);
     }
-  }
-
-  /**
-   * Includes retirements.
-   *
-   * @param allConceptNids the all concept nids
-   * @return true, if successful
-   * @throws Exception the exception
-   */
-  private boolean includesRetirements(int[] allConceptNids) throws Exception {
-    // Iterate through
-    for (int i = 0; i < allConceptNids.length; i++) {
-      // get concepts
-      ConceptChronicle c =
-          (ConceptChronicle) WBUtility.getConceptVersion(allConceptNids[i])
-              .getChronicle();
-      // get components
-      int componentNid = 0;
-      for (int nid : c.getUncommittedNids().getListArray()) {
-        if (componentNid == 0) {
-          componentNid = nid;
-        } else {
-          componentNid = allConceptNids[i];
-          break;
-        }
-      }
-
-      try {
-        UUID componentId =
-            WBUtility.getComponentChronicle(componentNid).getPrimordialUuid();
-        WBUtility.getComponentVersion(componentId).getConceptNid();
-      } catch (NullPointerException npe) {
-
-        // retired component?
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /**
