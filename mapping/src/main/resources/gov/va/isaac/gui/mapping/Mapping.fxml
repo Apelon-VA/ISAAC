@@ -7,7 +7,11 @@
 <?import javafx.scene.layout.BorderPane?>
 
 
-<BorderPane fx:id="borderPane" prefHeight="450.0" prefWidth="300.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<BorderPane fx:id="borderPane" prefHeight="450.0" prefWidth="300.0" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.mapping.MappingController">
+	<stylesheets>
+		<URL value="@Mapping.css" />
+	</stylesheets>
    <center>
       <Label text="Hello, Newman" BorderPane.alignment="CENTER" />
    </center>

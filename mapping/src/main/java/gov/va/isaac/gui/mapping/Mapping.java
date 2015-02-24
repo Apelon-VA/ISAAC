@@ -1,4 +1,4 @@
-package gov.va.isaac.mapping.view;
+package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.ApplicationMenus;

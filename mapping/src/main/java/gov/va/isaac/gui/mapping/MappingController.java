@@ -1,4 +1,4 @@
-package gov.va.isaac.mapping.view;
+package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
