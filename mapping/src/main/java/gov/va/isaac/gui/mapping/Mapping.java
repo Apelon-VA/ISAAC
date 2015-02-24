@@ -67,7 +67,7 @@ public class Mapping implements DockedViewI
 			@Override
 			public int getSortOrder()
 			{
-				return 5;
+				return 20;
 			}
 			
 			@Override
