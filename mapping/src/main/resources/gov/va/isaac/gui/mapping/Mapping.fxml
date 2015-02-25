@@ -7,18 +7,46 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-
-<AnchorPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="mainPane" prefHeight="600.0" prefWidth="600.0" styleClass="defaultBackgroundColor" stylesheets="@Mapping.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.MappingController">
    <children>
-      <AnchorPane fx:id="titlePane" prefHeight="40.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <Label text="Mappings" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
-               <font>
-                  <Font name="System Bold" size="14.0" />
-               </font>
-            </Label>
-            <ToggleButton fx:id="activeOnlyToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="T" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
-         </children>
-      </AnchorPane>
+      <SplitPane dividerPositions="0.478494623655914" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+            <AnchorPane fx:id="mappingsPane" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Label layoutX="10.0" layoutY="11.0" text="Mappings" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="11.0" />
+                  <TableView fx:id="mappingTableView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="C1" />
+                      <TableColumn prefWidth="75.0" text="C2" />
+                    </columns>
+                  </TableView>
+                  <ToggleButton fx:id="plusMappingToggle" layoutX="28.0" layoutY="160.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="T" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" />
+                  <ToggleButton fx:id="minusMappingToggle" layoutX="65.0" layoutY="160.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="T" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="46.0" />
+                  <Button fx:id="editMappingButton" layoutX="104.0" layoutY="161.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="E" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
+                  <Label fx:id="mappingSummaryLabel" layoutX="395.0" layoutY="249.0" text="[Mapping Summary]" textAlignment="RIGHT" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="118.0" AnchorPane.rightAnchor="10.0" />
+                  <ToggleButton fx:id="activeOnlyToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="T" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="6.0" />
+               </children>
+            </AnchorPane>
+          <AnchorPane fx:id="listPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+               <children>
+                  <Label fx:id="listTitleLabel" text="Members of [selected Mapping]" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
+                     <padding>
+                        <Insets top="6.0" />
+                     </padding>
+                  </Label>
+                  <TableView fx:id="listTableView" layoutX="41.0" layoutY="23.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="C1" />
+                      <TableColumn prefWidth="75.0" text="C2" />
+                    </columns>
+                  </TableView>
+                  <Button fx:id="commentButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="C" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
+                  <ToggleButton fx:id="minusListToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="-" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="46.0" />
+                  <ToggleButton fx:id="plusListToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="+" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" />
+                  <Label fx:id="listSummaryLabel" text="[Mapping Summary]" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="118.0" AnchorPane.rightAnchor="10.0" />
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
    </children>
 </AnchorPane>

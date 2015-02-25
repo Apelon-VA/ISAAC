@@ -58,6 +58,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
@@ -106,25 +107,22 @@ public class MappingController implements TaskCompleteCallback
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 
-	/*
-	@FXML private ResourceBundle resources;
-	@FXML private URL location;
-	@FXML private TextField searchText;
-	@FXML private Button searchButton;
-	@FXML private ProgressIndicator searchProgress;
-	@FXML private ChoiceBox<SearchInOptions> searchIn;
-	@FXML private ChoiceBox<Integer> searchLimit;
-	@FXML private ListView<CompositeSearchResult> searchResults;
-	@FXML private TitledPane optionsPane;
-	@FXML private HBox searchInRefexHBox;
-	@FXML private VBox optionsContentVBox;
-	@FXML private ToolBar toolBar;
-	@FXML private Label statusLabel;
-	*/
-	
-    @FXML private ToggleButton 	activeOnlyToggle;
     @FXML private AnchorPane	mainPane;
-	
+    @FXML private AnchorPane	mappingPane;
+    @FXML private AnchorPane	listPane;
+    @FXML private ToggleButton 	activeOnlyToggle;
+    @FXML private ToggleButton 	plusMappingToggle;
+    @FXML private ToggleButton 	minusMappingToggle;
+    @FXML private Button 		editMappingButton;
+	@FXML private Label			mappingSummaryLabel;
+	@FXML private TableView		mappingTableView;
+	@FXML private Label			listTitleLabel;
+	@FXML private TableView		listTableView;
+    @FXML private ToggleButton 	plusListToggle;
+    @FXML private ToggleButton 	minusListToggle;
+    @FXML private Button 		commentButton;
+    @FXML private Label			listSummaryLabel;
+    
 	public static MappingController init() throws IOException
 	{
 		// Load from FXML.
@@ -137,19 +135,23 @@ public class MappingController implements TaskCompleteCallback
 	@FXML
 	public void initialize()
 	{
-		/*
-		assert searchText != null : "fx:id=\"searchText\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert searchButton != null : "fx:id=\"searchButton\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert searchProgress != null : "fx:id=\"searchProgress\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert searchIn != null : "fx:id=\"searchIn\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert searchResults != null : "fx:id=\"searchResults\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert optionsPane != null : "fx:id=\"optionsPane\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert searchInRefexHBox != null : "fx:id=\"searchInRefexHBox\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert optionsContentVBox != null : "fx:id=\"optionsContentVBox\" was not injected: check your FXML file 'SearchView.fxml'.";
-		*/
+		assert mainPane 			!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingPane 			!= null : "fx:id=\"mappingPane\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listPane 			!= null : "fx:id=\"listPane\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert activeOnlyToggle 	!= null : "fx:id=\"activeOnlyToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert plusMappingToggle 	!= null : "fx:id=\"plusMappingToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert minusMappingToggle	!= null : "fx:id=\"minusMappingToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert editMappingButton 	!= null : "fx:id=\"editMappingButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 
-		assert activeOnlyToggle	!= null : "fx:id=\"activeOnlyToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert mainPane 		!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingSummaryLabel 	!= null : "fx:id=\"mappingSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingTableView 	!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listTitleLabel 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listTableView 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert plusListToggle 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert minusListToggle 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert commentButton 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listSummaryLabel 	!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+
 		
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
@@ -158,7 +160,6 @@ public class MappingController implements TaskCompleteCallback
         activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
         activeOnlyToggle.setSelected(true);
         
-
 	}
 
 	public AnchorPane getRoot()
