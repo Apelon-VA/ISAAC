@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane fx:id="borderPane" prefHeight="450.0" prefWidth="300.0" styleClass="defaultBackgroundColor" stylesheets="@Mapping.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.MappingController">
-   <center>
-      <Label text="Hello, Newman" BorderPane.alignment="CENTER" />
-   </center>
-   <bottom>
-      <Button fx:id="okButton" mnemonicParsing="false" text="Go Away" BorderPane.alignment="CENTER">
-         <BorderPane.margin>
-            <Insets bottom="10.0" />
-         </BorderPane.margin>
-      </Button>
-   </bottom>
-</BorderPane>
+
+<AnchorPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <AnchorPane fx:id="titlePane" prefHeight="40.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label text="Mappings" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <ToggleButton fx:id="activeOnlyToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="T" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

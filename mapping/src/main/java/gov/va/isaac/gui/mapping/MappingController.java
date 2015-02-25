@@ -60,10 +60,12 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -120,9 +122,8 @@ public class MappingController implements TaskCompleteCallback
 	@FXML private Label statusLabel;
 	*/
 	
-	@FXML private BorderPane borderPane;
-	@FXML private Button okButton;
-	
+    @FXML private ToggleButton 	activeOnlyToggle;
+    @FXML private AnchorPane	mainPane;
 	
 	public static MappingController init() throws IOException
 	{
@@ -147,25 +148,22 @@ public class MappingController implements TaskCompleteCallback
 		assert optionsContentVBox != null : "fx:id=\"optionsContentVBox\" was not injected: check your FXML file 'SearchView.fxml'.";
 		*/
 
-		assert borderPane != null : "fx:id=\"borderPane\" was not injected: check your FXML file 'SearchView.fxml'.";
-		assert okButton != null : "fx:id=\"okButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert activeOnlyToggle	!= null : "fx:id=\"activeOnlyToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mainPane 		!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'Mapping.fxml'.";
 		
-		borderPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
+		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
-		// Do something when ok clicked
-		okButton.setOnAction(new EventHandler<ActionEvent>()
-		{
-			@Override
-			public void handle(ActionEvent e)
-			{
-			}
-		});
+        activeOnlyToggle.setText("");
+        activeOnlyToggle.setGraphic(Images.FILTER_16.createImageView());
+        activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
+        activeOnlyToggle.setSelected(true);
+        
 
 	}
 
-	public BorderPane getRoot()
+	public AnchorPane getRoot()
 	{
-		return borderPane;
+		return mainPane;
 	}
 
 	@Override
