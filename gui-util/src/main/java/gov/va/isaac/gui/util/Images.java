@@ -86,6 +86,12 @@ public enum Images {
     SYNC_GREEN(setupImage("/icons/silk/16x16/arrow_refresh.png")),
     SYNC_BLUE(setupImage("/icons/silk/16x16/arrow_refresh_blue.png")),
     
+    BALLOON			(setupImage("/icons/silk/16x16/balloon.png")),
+    BALLOON_PLUS	(setupImage("/icons/silk/16x16/balloon-plus.png")),
+    BALLOON_MINUS	(setupImage("/icons/silk/16x16/balloon-minus.png")),
+    BALLOON_EDIT	(setupImage("/icons/silk/16x16/balloon-pencil.png")),
+    BALLOON_ELLIPSIS(setupImage("/icons/silk/16x16/balloon-ellipsis.png")),
+    
     //Images from the old WB
     DISPLAY_FSN(setupImage("/icons/wb-icons/16x16/plain/truck_red.png")),
     DISPLAY_PREFERRED(setupImage("/icons/wb-icons/16x16/plain/car_compact_green.png")),
