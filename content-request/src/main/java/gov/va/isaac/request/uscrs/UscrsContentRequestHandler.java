@@ -101,12 +101,13 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
 		{
 			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
-			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
-			{
-				thisRel = relVersion;
-				break;
+			if(relVersion != null) {
+				if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
+				{
+					thisRel = relVersion;
+					break;
+				}
 			}
-			
 		}
 
 		//TODO: vk - modify each concept to take the appropriate object
@@ -453,8 +454,8 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		// For now we are just going to return the preffered description retreived from
 		// the characteristic type Nid until we can discuss with NLM or Jackie how to 
 		// handle this problem. Inferred and stated relationships are not in the ENUM
-		return PICKLIST_Characteristic_Type.find(characteristic).toString(); // We will use this once we find a solution
-//		return characteristic; //But this works temporarily
+//		return PICKLIST_Characteristic_Type.find(characteristic).toString(); // We will use this once we find a solution
+		return characteristic; //But this works temporarily
 	}
 	
 	private String getRefinability(int nid) {
