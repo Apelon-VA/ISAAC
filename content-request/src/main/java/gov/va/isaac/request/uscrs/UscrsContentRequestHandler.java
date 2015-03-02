@@ -110,7 +110,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 			}
 		}
 
-		//TODO: vk - modify each concept to take the appropriate object
 		handleNewConcept(concept, bt);
 		handleNewRels(thisRel, bt);
 		handleNewSyn(descVersion, bt);
@@ -216,7 +215,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Local_Code:
 					bt.addStringCell(column, concept.getPrimordialUuid().toString());
 					break;
-				case Local_Term:  //TODO: vk - find out what this is supposed to be - not sure why we would do the same thing as preferred term - Jaqui question
+				case Local_Term: 
 					bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 					break;
 				case Fully_Specified_Name:
@@ -557,17 +556,26 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	
 	private int getSct(int nid) {
 		
-		//TODO: vk - the getConcept below will not work for Relationship ID. Replace with getComponent for Relationship IDs and Descriptio ID's
-		// Check if its the Nid for a Component (rel or desc) and use getComponent and getSct on that
-		// If not a component, and an Sct does not  exist, get the currentRequest form the hashmap
-		// Make more if-else handling, check if its a concept (if getConceptVersion returns null), if yes then check if has Sct if not return currentRequest
+		int descIdAttempt = 0, relIdAttempt = 0;
+		try {
+			descIdAttempt = Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate())));
+		} catch(Exception e) {
+			//Eat it
+		}
+		
+		try {
+			relIdAttempt = Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentVersion(nid)));
+		} catch(Exception e) {
+			//Eat it
+		}
 		
 		try 
 		{
-			if(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate()) != null) { //Description
+			if(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate()) != null && descIdAttempt != 0) { //Description
 				System.out.println("Fetching SCT of a Description");
 				return Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate())));
-			} else if(OTFUtility.getComponentVersion(nid) != null) { //Relationship
+				
+			} else if(OTFUtility.getComponentVersion(nid) != null && relIdAttempt != 0) { //Relationship
 				System.out.println("Fetching SCT of a Relationship");
 				return Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentVersion(nid)));
 			} else { 
@@ -583,6 +591,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		} catch(Exception e) 
 		{ 
 			Log.error("We could not get the SCT from the Given NID");
+			e.printStackTrace();
 			return 0;
 		}
 		
@@ -672,7 +681,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Concept_Id:
 					bt.addNumericCell(column, this.getSct(descVersion.getConceptNid()));
 					break;
-				case Description_Id:   //TODO no, not UUID - either SCTID, or, we talk to NLM about what this is.
+				case Description_Id:
 					bt.addNumericCell(column, this.getSct(descVersion.getNid()));
 					break;
 				case Term: 
@@ -718,7 +727,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Concept_Id:
 					bt.addNumericCell(column, this.getSct(concept.getNid()));
 					break;
-				case Change_Concept_Status_To:  //TODO: vk - need to talk to Jaqui / NLM - this needs to be 'inactive' or some such - there used to be many different types of 'inactive', now there may only be one?
+				case Change_Concept_Status_To: 
 					bt.addStringCell(column, "");
 					break;
 				case Duplicate_Concept_Id:  //TODO: vk - - possibly userinput - if they are deactivating because it is a dupe, we need the SCTID of the dupe here
@@ -732,7 +741,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					break;
 				default :
 					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Retire_Concept);
-					
 			}
 		}
 	}
@@ -855,7 +863,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addStringCell(column, this.getTerminology(OTFUtility.getConceptVersion(concept.getConceptNid()).getPathNid()));
 					break;
 				case Child_Concept_Id:
-					bt.addNumericCell(column, this.getSct(concept.getNid())); //TODO: vk - This needs to get the currentRequest if getSct is null
+					bt.addNumericCell(column, this.getSct(concept.getNid()));
 					break;
 				case Destination_Terminology:
 					bt.addStringCell(column, this.getTerminology(OTFUtility.getConceptVersion(targetConcept.getConceptNid()).getPathNid()));
@@ -911,7 +919,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	@Override
 	public ContentRequestTrackingInfo getContentRequestStatus(ContentRequestTrackingInfo info)
 	{
-		// TODO: vk - placeholder
+		// placeholder
 		throw new UnsupportedOperationException("PLACEHOLDER for future functionality");
 	}
 
