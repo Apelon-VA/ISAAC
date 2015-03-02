@@ -9,12 +9,14 @@ import gov.va.isaac.request.ContentRequestHandler;
 import gov.va.isaac.request.ContentRequestTrackingInfo;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.COLUMN;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Case_Significance;
+import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Characteristic_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Refinability;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Relationship_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Semantic_Tag;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Source_Terminology;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.SHEET;
 import gov.va.isaac.util.OTFUtility;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,10 +25,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
+
 import javax.inject.Named;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -66,45 +71,61 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	private LinkedHashMap<UUID, Integer> currentRequestUuidMap = new LinkedHashMap<UUID, Integer>();
 	
 	private ConceptChronicleBI concept;
+	private DescriptionVersionBI<?> descVersion;
 
 	@Override
 	public UscrsContentRequestTrackingInfo submitContentRequest(int nid) throws Exception
 	{
-		this.concept = OTFUtility.getConceptVersion(nid); //TODO Maybe get rid of this.concept
-		ConceptChronicleBI concept = this.concept;
+		concept = OTFUtility.getConceptVersion(nid); //TODO: Dan Question - where do we get the second concept for add parent
+		ConceptChronicleBI targetConcept = OTFUtility.getConceptVersion(UUID.fromString("3581edff-63f7-3957-bc47-941031184e55"));
+		
 		USCRSBatchTemplate bt = new USCRSBatchTemplate(USCRSBatchTemplate.class.getResourceAsStream("/USCRS_Batch_Template-2015-01-27.xls"));
 
-		//Map current Request to the concept.getPrimorialUUID 
-		// as the key and the value is the currentRequestID that was just assigned to the new Concept
+		//Key PrimordialUUID, Value CurrentRequest
 		currentRequestId = globalRequestCounter.getAndIncrement();
 		UUID primorialUuid = concept.getPrimordialUuid();
 		this.currentRequestUuidMap.put(primorialUuid, currentRequestId);
 		
-		//TODO start changing the API on these handle methods to be more what we need, eventually.
-		//changeX need to take in the thing that is being changed - say - a rel or description, rather than a concept
-		//changeParent need to take in the new parent concept
-		//retire rel / retire desc should take in the thing being retired.
 		
-		//'hack' code for now, to arbitrarily pick something to be passed in, can remain here.
-		
+		//Set the Descriptions and Relationships
+		DescriptionChronicleBI thisDesc = null;
+		descVersion = null;
+		for (DescriptionChronicleBI desc : concept.getDescriptions())
+		{
+			thisDesc = desc;
+			descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
+			break;
+
+		}
+		RelationshipVersionBI<?> thisRel = null;
+		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
+		{
+			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
+			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
+			{
+				thisRel = relVersion;
+				break;
+			}
+			
+		}
+
+		//TODO: vk - modify each concept to take the appropriate object
 		handleNewConcept(concept, bt);
-		handleNewRels(concept, bt);
-		handleNewSyn(concept, bt);
-		handleAddParent(concept, bt);
+		handleNewRels(thisRel, bt);
+		handleNewSyn(descVersion, bt);
+		handleAddParent(concept, targetConcept, bt);
 		
-		handleChangeParent(concept, bt);
-		handleChangeRels(concept, bt);
-		handleChangeDesc(concept, bt);
+		handleChangeParent(concept,thisRel, bt); 
+		handleChangeRels(concept, thisRel, bt); //TODO: vk - Pass in a relationship that is not an IS-A rel. Should take same parameters as change parent
+		handleChangeDesc(descVersion, bt);
 		
 		handleRetireConcept(concept, bt);
-		handleRetireRelationship(concept, bt);
-		handleRetireDescription(concept, bt);
+		handleRetireRelationship(thisRel, bt);
+		handleRetireDescription(descVersion, bt); 
 
-		// TODO: Fix extension filter
-		// TODO [Vas] what is broken?  Or is the to do above just invalid?
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Save USCRS Concept Request File");
-		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Excel Files", ".xls", ".xlsx"));
+		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Excel Files .xls .xlsx", "*.xls", "*.xlsx"));
 		fileChooser.setInitialFileName("USCRS_Export.xls");
 
 		UscrsContentRequestTrackingInfo info = new UscrsContentRequestTrackingInfo();
@@ -139,6 +160,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		// PARENTS
 		LinkedList<Integer> parentsSct = new LinkedList<Integer>();
 		LinkedList<Integer> parentsPathNid = new LinkedList<Integer>();
+		LinkedList<String> definitions = new LinkedList<String>();
 		
 		int count = 0;
 		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
@@ -162,7 +184,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 
 		//Synonyms
 		List<String> synonyms = new ArrayList<>();
-		String definition = null;
 		for (DescriptionChronicleBI desc : concept.getDescriptions())
 		{
 			DescriptionVersionBI<?> descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
@@ -173,12 +194,11 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				synonyms.add(descVersion.getText());
 			}
 			//Definition
-			//TODO what do we do with the other descriptions if there are more than 1?  Why aren't we checking for isActive?
-			if(descVersion.getTypeNid() == Snomed.DEFINITION_DESCRIPTION_TYPE.getLenient().getNid()){
-				definition = descVersion.getText();
+			if(descVersion.getTypeNid() == Snomed.DEFINITION_DESCRIPTION_TYPE.getLenient().getNid()
+					&& descVersion.isActive()){
+				definitions.add(descVersion.getText());
 			}
 		}
-		LOG.debug("      Synonym Count: {}", synonyms.size());
 
 		bt.selectSheet(SHEET.New_Concept);
 		bt.addRow();
@@ -195,7 +215,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Local_Code:
 					bt.addStringCell(column, concept.getPrimordialUuid().toString());
 					break;
-				case Local_Term:  //TODO find out what this is supposed to be - not sure why we would do the same thing as preferred term - Jaqui question
+				case Local_Term:  //TODO: vk - find out what this is supposed to be - not sure why we would do the same thing as preferred term - Jaqui question
 					bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 					break;
 				case Fully_Specified_Name:
@@ -207,8 +227,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Preferred_Term:
 					bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
 					break;
-					//Change to LinkedHM or regular HashMap Key: Nid SctID: Value
-					// Use a get for terminology and a remove for parent_concept
 				case Terminology_1_:
 				case Terminology_2_:
 				case Terminology_3_:
@@ -234,12 +252,16 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					}
 					break;
 				case UMLS_CUI:
-					//TODO Just leave blank - don't write stuff here
-					bt.addStringCell(column, "Not Available in API");
+					bt.addStringCell(column, ""); //Not in API
 					break;
 				case Definition:
-					//TODO definition was init'ed as null - need to make sure this is at least, an empty string, not 'null'
-					bt.addStringCell(column, definition);
+					if(definitions.size() > 0) 
+					{
+						bt.addStringCell(column, definitions.remove(0));
+					} else {
+						bt.addStringCell(column, "");
+					}
+					
 					break;
 				case Proposed_Use:
 					bt.addStringCell(column, ""); //User Input
@@ -250,21 +272,45 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					break;
 				case Note:
 					StringBuilder sb = new StringBuilder();
+					
+					sb.append("Java version:" + System.getProperty("sun.arch.data.model"));
+					sb.append("SCT ID:" + this.getSct(-2143244556));
+					
+					
 					if (concept.getConceptAttributes().getVersion(OTFUtility.getViewCoordinate()).isDefined())
 					{
 						sb.append("NOTE: this concept is fully defined. ");
 					}
-					boolean firstHasBeenSeen = false;
-					//TODO should also add extra definitions here, if there is more than one definition
-					while (synonyms.size() > 2)
+					
+					boolean firstDef = false;
+					
+					//Extra Definitions
+					if(definitions.size() > 0) {
+						sb.append("Note: This concept has multiple definitions: ");
+					}
+					boolean firstSyn = false;
+					while(definitions.size() > 0) 
+					{
+						if(firstDef) 
+						{
+							sb.append(", ");
+						}
+					}
+					
+					
+					//Extra Synonyms
+					if(synonyms.size() > 2) 
 					{
 						sb.append("NOTE: this concept also has the following synonyms: ");
-						if (firstHasBeenSeen)
+					}
+					while (synonyms.size() > 2)
+					{
+						if (firstSyn)
 						{
 							sb.append(", ");
 						}
 						sb.append(synonyms.remove(0));
-						firstHasBeenSeen = true;
+						firstSyn = true;
 					}
 					bt.addStringCell(column, sb.toString());
 					break;
@@ -285,44 +331,39 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	@SuppressWarnings({ })
-    private void handleNewSyn(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+    private void handleNewSyn(DescriptionVersionBI<?> descVersion, USCRSBatchTemplate bt) throws Exception
 	{	
 		bt.selectSheet(SHEET.New_Synonym);
 		bt.addRow();
-		for (DescriptionChronicleBI desc : concept.getDescriptions())
-		{
-			DescriptionVersionBI<?> descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
-			
-			for (COLUMN column : bt.getColumnsOfSheet(SHEET.New_Synonym)) {
-				switch(column)
-				{
-				case Topic:
-					bt.addStringCell(column, ""); //User Input
-					break;
-				case Terminology:
-					bt.addStringCell(column, this.getTerminology(descVersion.getPathNid()));
-					break;
-				case Concept_Id:
-					//TODO need to handle the case where this concept does not have a SCTID - which would be the case if this is a new concept - 
-					//in which case - you should be able to find a request ID in the currentRequestUuidMap 
-					bt.addNumericCell(column, this.getSct(concept.getNid()));
-					break;
-				case Term:
-					bt.addStringCell(column, descVersion.getText());
-					break;
-				case Case_Significance:
-					bt.addStringCell(column, this.getCaseSig(descVersion.isInitialCaseSignificant()));
-					break;
-				case Justification:
-					bt.addStringCell(column, ""); //User Input
-					break;
-				case Note:  //TODO until further clarified with NLM, we should probably put the UUID of the description here.
-					bt.addStringCell(column, ""); //User Input
-					break;
-				default :
-					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-				}
+
+		concept = OTFUtility.getConceptVersion(descVersion.getConceptNid());
+		
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.New_Synonym)) {
+			switch(column)
+			{
+			case Topic:
+				bt.addStringCell(column, ""); //User Input
+				break;
+			case Terminology:
+				bt.addStringCell(column, this.getTerminology(descVersion.getPathNid()));
+				break;
+			case Concept_Id:
+				bt.addNumericCell(column, this.getSct(concept.getNid()));
+				break;
+			case Term:
+				bt.addStringCell(column, descVersion.getText());
+				break;
+			case Case_Significance:
+				bt.addStringCell(column, this.getCaseSig(descVersion.isInitialCaseSignificant()));
+				break;
+			case Justification:
+				bt.addStringCell(column, ""); //User Input
+				break;
+			case Note: 
+				bt.addStringCell(column, "Description UUID: " + descVersion.getUUIDs().get(0).toString()); 
+				break;
+			default :
+				throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Synonym);
 			}
 		}
 	}
@@ -335,44 +376,40 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings({ })
-	private void handleChangeParent(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleChangeParent(ConceptChronicleBI concept, RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
 	{	
 		bt.selectSheet(SHEET.Change_Parent);
 		bt.addRow();
-		for (DescriptionChronicleBI desc : concept.getDescriptions())
-		{
-			DescriptionVersionBI<?> descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
-			for (COLUMN column : bt.getColumnsOfSheet(SHEET.Change_Parent)) {
-				switch(column)
-				{
-					case Topic:
-						bt.addStringCell(column, ""); //User Input
-						break;
-					case Source_Terminology:
-						bt.addStringCell(column,this.getTerminology(descVersion.getPathNid()));
-						break;
-					case Concept_Id:
-						bt.addNumericCell(column, this.getSct(concept.getNid()));
-						break;
-					case New_Parent_Concept_Id:
-						bt.addStringCell(column, ""); //User Input
-						break;
-					case New_Parent_Terminology:
-						bt.addStringCell(column, ""); //User Input
-						break;
-						//TODO this column doesn't exist here
-					case Case_Significance:
-						bt.addStringCell(column, this.getCaseSig(descVersion.isInitialCaseSignificant()));
-						break;
-					case Justification:
-						bt.addStringCell(column, ""); //User Input
-						break;
-					case Note:
-						bt.addStringCell(column, "Notes");//TODO leave blank if no notes
-						break;
-					default :
-						throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-				}
+		
+		ConceptVersionBI targetConcept = OTFUtility.getConceptVersion(relVersion.getConceptNid());
+		ConceptVersionBI thisConcept = OTFUtility.getConceptVersion(concept.getConceptNid());
+		
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.Change_Parent)) {
+			switch(column)
+			{
+				case Topic:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Source_Terminology:
+					bt.addStringCell(column,this.getTerminology(thisConcept.getPathNid()));
+					break;
+				case Concept_Id:
+					bt.addNumericCell(column, this.getSct(concept.getNid()));
+					break;
+				case New_Parent_Concept_Id:
+					bt.addNumericCell(column, this.getSct(targetConcept.getNid()));
+					break;
+				case New_Parent_Terminology:
+					bt.addStringCell(column, this.getTerminology(targetConcept.getPathNid()));
+					break;
+				case Justification:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Note:
+					bt.addStringCell(column, "");
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Change_Parent);
 			}
 		}
 	}
@@ -405,12 +442,12 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	
 	private String getCharType(int nid) {
 		String characteristic = OTFUtility.getConPrefTerm(nid); 
-		//TODO: Discuss the API / Spreadsheet mixup with the characteristic type
+		//TODO: vk - Discuss the API / Spreadsheet mixup with the characteristic type
 		// For now we are just going to return the preffered description retreived from
 		// the characteristic type Nid until we can discuss with NLM or Jackie how to 
 		// handle this problem. Inferred and stated relationships are not in the ENUM
-//		return PICKLIST_Characteristic_Type.find(characteristic).toString(); // We will use this once we find a solution
-		return characteristic; //But this works temporarily
+		return PICKLIST_Characteristic_Type.find(characteristic).toString(); // We will use this once we find a solution
+//		return characteristic; //But this works temporarily
 	}
 	
 	private String getRefinability(int nid) {
@@ -445,72 +482,56 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleNewRels(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	public void handleNewRels(RelationshipVersionBI<?> relVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.New_Relationship);
-		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
+		int destNid = relVersion.getDestinationNid();
+		ConceptVersionBI destConcept = OTFUtility.getConceptVersion(destNid);
+		ConceptVersionBI concept = OTFUtility.getConceptVersion(relVersion.getConceptNid());
+		
+		bt.addRow();
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.New_Relationship))
 		{
-			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
-			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
+			switch (column)
 			{
-				int destNid = relVersion.getDestinationNid();
-				ConceptVersionBI destConcept = OTFUtility.getConceptVersion(destNid);
-				
-				bt.addRow();
-				for (COLUMN column : bt.getColumnsOfSheet(SHEET.New_Relationship))
-				{
-					switch (column)
-					{
-						case Topic:
-							bt.addStringCell(column, ""); //User Input
-							break;
-						case Source_Terminology:
-							//TODO: Get source terminology
-							// What goes in source depends on whether this a new concept or not
-							//If the SctID exists - use it - in the future this will probably need to change to a lookup 
-							// Create a hashmap that maps UUID's to the integer request ID. If there is no Sct ID then I access the HashMap created earlier
-							// The hashmap created when a new concept is created is from the incremented current request ID to the UUID
-							//You pass in the UUID to the hashmap created earlier to get the request ID
-							
-							//TODO - no, this should be the source terminology of the source concept - not of the relationship
-							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
-							break;
-						case Source_Concept_Id:
-							//TODO this needs to be the SCTID of the source concept, if it has one - otherwise - look up the correct request ID from the UUID / request ID hashmap
-//							bt.addNumericCell(column, Double.parseDouble(ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(relVersion.getNid())).trim()));
-							bt.addNumericCell(column, currentRequestId);
-							break;
-						case Relationship_Type:
-							bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
-							break;
-						case Destination_Terminology:
-							bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
-							break;
-						case Destination_Concept_Id:
-							//TODO - if no SCTID, this needs to be looked up in the UUID to request ID map
-							bt.addNumericCell(column, this.getSct(destNid));
-							break;
-						case Characteristic_Type:
-							bt.addStringCell(column, this.getCharType(relVersion.getCharacteristicNid()));
-							break;
-						case Refinability:
-							bt.addStringCell(column, this.getRefinability(relVersion.getRefinabilityNid()));
-							break;
-						case Relationship_Group:
-							bt.addNumericCell(column, relVersion.getGroup());
-							break;
-						case Justification:
-							bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
-							break;
-						case Note:
-							bt.addStringCell(column, "This is a defining relationship expressed for the corresponding new concept request in the other tab");
-							break;
-						default :
-							throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Relationship);
-					}
-				}
+				case Topic:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Source_Terminology:
+					bt.addStringCell(column, this.getTerminology(concept.getPathNid()));
+					break;
+				case Source_Concept_Id:
+					bt.addNumericCell(column, this.getSct(concept.getNid()));
+					break;
+				case Relationship_Type:
+					bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
+					break;
+				case Destination_Terminology:
+					bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
+					break;
+				case Destination_Concept_Id:
+					bt.addNumericCell(column, this.getSct(destNid));
+					break;
+				case Characteristic_Type:
+					bt.addStringCell(column, this.getCharType(relVersion.getCharacteristicNid()));
+					break;
+				case Refinability:
+					bt.addStringCell(column, this.getRefinability(relVersion.getRefinabilityNid()));
+					break;
+				case Relationship_Group:
+					bt.addNumericCell(column, relVersion.getGroup());
+					break;
+				case Justification:
+					bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+					break;
+				case Note:
+					bt.addStringCell(column, "This is a defining relationship expressed for the corresponding new concept request in the other tab");
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Relationship);
 			}
 		}
+
 	}
 	
 	private String getTerminology(int pathNid) throws Exception {
@@ -535,16 +556,35 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	
 	private int getSct(int nid) {
 		
-		int returnNid = 0;
+		//TODO: vk - the getConcept below will not work for Relationship ID. Replace with getComponent for Relationship IDs and Descriptio ID's
+		// Check if its the Nid for a Component (rel or desc) and use getComponent and getSct on that
+		// If not a component, and an Sct does not  exist, get the currentRequest form the hashmap
+		// Make more if-else handling, check if its a concept (if getConceptVersion returns null), if yes then check if has Sct if not return currentRequest
 		
-		try {
-			returnNid = Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(nid)));
-		} catch(Exception e) {  //TODO use the map to check new requests
-			//TODO: Add error logging everywhere
+		try 
+		{
+			if(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate()) != null) { //Description
+				System.out.println("Fetching SCT of a Description");
+				return Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate())));
+			} else if(OTFUtility.getComponentVersion(nid) != null) { //Relationship
+				System.out.println("Fetching SCT of a Relationship");
+				return Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentVersion(nid)));
+			} else { 
+				System.out.println("Fetching SCT of a Concept (Probably)");
+				if(Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(nid))) != 0) { //Concept
+					return Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getConceptVersion(nid)));
+				} else {
+					return currentRequestUuidMap.get(OTFUtility.getConceptVersion(nid).getPrimordialUuid());
+				}
+			}
+			
+			
+		} catch(Exception e) 
+		{ 
 			Log.error("We could not get the SCT from the Given NID");
+			return 0;
 		}
 		
-		return returnNid;
 	}
 	
 	/**
@@ -554,63 +594,56 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleChangeRels(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleChangeRels(ConceptChronicleBI concept, RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Change_Relationship);
-		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
+		ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
+		ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(concept.getConceptNid());
+		bt.addRow();
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.Change_Relationship))
 		{
-			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
-			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid()))
+			switch (column)
 			{
-				ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
-				bt.addRow();
-				for (COLUMN column : bt.getColumnsOfSheet(SHEET.Change_Relationship))
-				{
-					switch (column)
-					{
-						case Topic:
-							bt.addStringCell(column, "");
-							break;
-							//TODO all of the same issues as previous methods with ids for source and target concepts
-						case Source_Concept_Id:
-							bt.addNumericCell(column, this.getSct(relVersion.getConceptNid()));
-							break;
-						case Relationship_Id:  //TODO - no - never nid.  The rel should have an SCTID - nids _never_ leave the environment - they are meaningless
-							bt.addNumericCell(column, rel.getNid());
-							break;
-						case Relationship_Type: 
-							bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
-							break;
-						case Source_Terminology:
-							//TODO no, concept source con terminlogy, not rel terminlogy
-							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
-							break;
-						case Destination_Concept_Id:
-							bt.addNumericCell(column, this.getSct(relVersion.getDestinationNid()));
-							break;
-						case Destination_Terminology:
-							bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
-							break;
-						case Characteristic_Type:
-							bt.addStringCell(column, this.getCharType(relVersion.getCharacteristicNid()));
-							break;
-						case Refinability:
-							bt.addStringCell(column, this.getRefinability(relVersion.getRefinabilityNid()));
-							break;
-						case Relationship_Group:
-							bt.addNumericCell(column, relVersion.getGroup());
-							break;
-						case Justification:
-							bt.addStringCell(column, ""); ///User Input
-							break;
-						case Note:
-							bt.addStringCell(column, ""); //User Input
-							break;
-						default :
-							throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-					}
-				}
+				case Topic:
+					bt.addStringCell(column, "");
+					break;
+				case Source_Concept_Id:
+					bt.addNumericCell(column, this.getSct(sourceConcept.getNid()));
+					break;
+				case Relationship_Id:  
+					bt.addNumericCell(column, this.getSct(relVersion.getNid()));
+					break;
+				case Relationship_Type: 
+					bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
+					break;
+				case Source_Terminology:
+					bt.addStringCell(column, this.getTerminology(sourceConcept.getPathNid()));
+					break;
+				case Destination_Concept_Id:
+					bt.addNumericCell(column, this.getSct(relVersion.getDestinationNid()));
+					break;
+				case Destination_Terminology:
+					bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
+					break;
+				case Characteristic_Type:
+					bt.addStringCell(column, this.getCharType(relVersion.getCharacteristicNid()));
+					break;
+				case Refinability:
+					bt.addStringCell(column, this.getRefinability(relVersion.getRefinabilityNid()));
+					break;
+				case Relationship_Group:
+					bt.addNumericCell(column, relVersion.getGroup());
+					break;
+				case Justification:
+					bt.addStringCell(column, ""); ///User Input
+					break;
+				case Note:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Change_Relationship);
 			}
+
 		}
 	}
 	
@@ -621,46 +654,43 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleChangeDesc(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleChangeDesc(DescriptionVersionBI<?> descVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Change_Description);
 		bt.addRow();
-		for (DescriptionChronicleBI desc : concept.getDescriptions())
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.Change_Description))
 		{
-			DescriptionVersionBI<?> descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
-			for (COLUMN column : bt.getColumnsOfSheet(SHEET.Change_Description))
+			switch (column)
 			{
-				switch (column)
-				{
-					case Topic:
-						bt.addStringCell(column, "");
-						break;
-					case Terminology:
-						bt.addStringCell(column, this.getTerminology(descVersion.getPathNid()));
-						break;
-					case Concept_Id:  //TODO - no, never nid - sctid or request id
-						bt.addNumericCell(column, this.getSct(concept.getNid()));
-						break;
-					case Description_Id:   //TODO no, not UUID - either SCTID, or, we talk to NLM about what this is.
-						bt.addStringCell(column, descVersion.getUUIDs().get(0).toString());
-						break;
-					case Term:  //TODO - no, this should be the description that is being modified - the handleChangeDesc method API should take in a description, not a concept
-						bt.addStringCell(column, OTFUtility.getConPrefTerm(concept.getNid()));
-						break;
-					case Case_Significance:
-						bt.addStringCell(column, this.getCaseSig(descVersion.isInitialCaseSignificant()));
-						break;
-					case Justification:
-						bt.addStringCell(column, "");
-						break;
-					case Note:
-						bt.addStringCell(column, "");
-						break;
-					default :
-						throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-				}
+				case Topic:
+					bt.addStringCell(column, "");
+					break;
+				case Terminology:
+					bt.addStringCell(column, this.getTerminology(descVersion.getPathNid()));
+					break;
+				case Concept_Id:
+					bt.addNumericCell(column, this.getSct(descVersion.getConceptNid()));
+					break;
+				case Description_Id:   //TODO no, not UUID - either SCTID, or, we talk to NLM about what this is.
+					bt.addNumericCell(column, this.getSct(descVersion.getNid()));
+					break;
+				case Term: 
+					bt.addStringCell(column, OTFUtility.getConPrefTerm(descVersion.getConceptNid()));
+					break;
+				case Case_Significance:
+					bt.addStringCell(column, this.getCaseSig(descVersion.isInitialCaseSignificant()));
+					break;
+				case Justification:
+					bt.addStringCell(column, "");
+					break;
+				case Note:
+					bt.addStringCell(column, "");
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Change_Description);
 			}
 		}
+
 	}
 	
 	/**
@@ -687,10 +717,10 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Concept_Id:
 					bt.addNumericCell(column, this.getSct(concept.getNid()));
 					break;
-				case Change_Concept_Status_To:  //TODO need to talk to Jaqui / NLM - this needs to be 'inactive' or some such - there used to be many different types of 'inactive', now there may only be one?
+				case Change_Concept_Status_To:  //TODO: vk - need to talk to Jaqui / NLM - this needs to be 'inactive' or some such - there used to be many different types of 'inactive', now there may only be one?
 					bt.addStringCell(column, "");
 					break;
-				case Duplicate_Concept_Id:  //TODO - possibly userinput - if they are deactivating because it is a dupe, we need the SCTID of the dupe here
+				case Duplicate_Concept_Id:  //TODO: vk - - possibly userinput - if they are deactivating because it is a dupe, we need the SCTID of the dupe here
 					bt.addStringCell(column, "");
 					break;
 				case Justification:
@@ -700,7 +730,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addStringCell(column, "");
 					break;
 				default :
-					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Retire_Concept);
 					
 			}
 		}
@@ -713,44 +743,40 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleRetireDescription(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleRetireDescription(DescriptionVersionBI<?> descVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Retire_Description);
-		for (DescriptionChronicleBI desc : concept.getDescriptions())
+		bt.addRow();
+		ConceptVersionBI conceptVersion = OTFUtility.getConceptVersion(descVersion.getConceptNid());
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.Retire_Description))
 		{
-			bt.addRow();
-			DescriptionVersionBI<?> descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
-			ConceptVersionBI conceptVersion = OTFUtility.getConceptVersion(concept.getNid());
-			for (COLUMN column : bt.getColumnsOfSheet(SHEET.Retire_Description))
+			switch (column)
 			{
-				switch (column)
-				{
-					case Topic:
-						bt.addStringCell(column, ""); //User Input
-						break;
-					case Terminology:
-						bt.addStringCell(column, this.getTerminology(conceptVersion.getPathNid()));
-						break;
-					case Concept_Id:  //TODO not nid
-						bt.addNumericCell(column, this.getSct(concept.getNid()));
-						break;
-					case Description_Id:  //TODO not UUID
-						bt.addStringCell(column, descVersion.getUUIDs().get(0).toString());
-						break;
-					case Change_Description_Status_To:  //TODO talk to Jaqui / NLM - same status question as above
-						break;
-					case Justification:
-						bt.addStringCell(column, ""); //User Input
-						break;
-					case Note:
-						bt.addStringCell(column, ""); //User Input
-						break;
-					default :
-						throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-				}
+				case Topic:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Terminology:
+					bt.addStringCell(column, this.getTerminology(conceptVersion.getPathNid()));
+					break;
+				case Concept_Id:
+					bt.addNumericCell(column, this.getSct(conceptVersion.getNid()));
+					break;
+				case Description_Id:  //TODO not UUID
+					bt.addNumericCell(column, this.getSct(descVersion.getNid()));
+					break;
+				case Change_Description_Status_To:  //TODO talk to Jaqui / NLM - same status question as above
+					break;
+				case Justification:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Note:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Retire_Description);
 			}
-		
 		}
+
 	}
 
 	/**
@@ -760,55 +786,50 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleRetireRelationship(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	@SuppressWarnings({"rawtypes" })
+    private void handleRetireRelationship(RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Retire_Relationship);
-		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
+		bt.addRow();
+		ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
+		ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(relVersion.getConceptNid());
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.Retire_Relationship))
 		{
-			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
-			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid())) //NOT IS-A Rels
+			switch (column)
 			{
-				ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
-				bt.addRow();
-				for (COLUMN column : bt.getColumnsOfSheet(SHEET.Retire_Relationship))
-				{
-					switch (column)
-					{
-						case Topic:
-							bt.addStringCell(column, ""); //User Input
-							break;
-						case Source_Terminology:
-							//TODO source concept path, not rel
-							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
-							break;
-						case Source_Concept_Id:  //TODO same SCTID issue
-							bt.addNumericCell(column, this.getSct(concept.getNid()));
-							break;
-						case Relationship_Id:  //TODO no nid - either SCTID , or need to talk to NLM / Jaqui
-							bt.addNumericCell(column, relVersion.getNid()); //No UUID or Sct available for this
-//							bt.addStringCell(column, relVersion.getUUIDs().get(0).toString());
-							break;
-						case Destination_Terminology:
-							bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
-							break;
-						case Destination_Concept_Id:
-							bt.addNumericCell(column, this.getSct(destConcept.getNid()));
-							break;
-						case Relationship_Type:
-							bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
-							break;
-						case Justification:
-							bt.addStringCell(column, ""); //User Input
-							break;
-						case Note:
-							bt.addStringCell(column, ""); //User Input
-							break;
-						default :
-							throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-					}
-				}
+				case Topic:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Source_Terminology:
+					bt.addStringCell(column, this.getTerminology(sourceConcept.getPathNid()));
+					break;
+				case Source_Concept_Id:
+					bt.addNumericCell(column, this.getSct(sourceConcept.getNid()));
+					break;
+				case Relationship_Id:  
+					//TODO no nid - either SCTID , or need to talk to NLM / Jaqui
+					bt.addNumericCell(column, this.getSct(relVersion.getNid()));
+					break;
+				case Destination_Terminology:
+					bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
+					break;
+				case Destination_Concept_Id:
+					bt.addNumericCell(column, this.getSct(destConcept.getNid()));
+					break;
+				case Relationship_Type:
+					bt.addStringCell(column, this.getRelType(relVersion.getTypeNid()));
+					break;
+				case Justification:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				case Note:
+					bt.addStringCell(column, ""); //User Input
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Retire_Relationship);
 			}
 		}
+
 	}
 	
 	/**
@@ -818,49 +839,37 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleAddParent(ConceptChronicleBI concept, USCRSBatchTemplate bt) throws Exception
+	private void handleAddParent(ConceptChronicleBI concept, ConceptChronicleBI targetConcept, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Add_Parent);
-		for (RelationshipChronicleBI rel : concept.getRelationshipsOutgoing())
+		bt.addRow();
+		for (COLUMN column : bt.getColumnsOfSheet(SHEET.Add_Parent))
 		{
-			RelationshipVersionBI<?> relVersion = rel.getVersion(OTFUtility.getViewCoordinate());
-			//TODO - no - this is parent - so we ARE doing IS_A - we wouldn't do this loop anyway - the new child concept needs to be a parameter to this method
-			if (relVersion.isActive() && (relVersion.getTypeNid() != Snomed.IS_A.getLenient().getNid())) //NOT IS-A Rels
+			switch (column)
 			{
-				ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
-				
-				bt.addRow();
-				for (COLUMN column : bt.getColumnsOfSheet(SHEET.Add_Parent))
-				{
-					switch (column)
-					{
-						case Topic:
-							bt.addStringCell(column, "");
-							break;
-						case Source_Terminology:  //TODO not rel path
-							bt.addStringCell(column, this.getTerminology(relVersion.getPathNid()));
-							break;
-						case Child_Concept_Id:
-							bt.addNumericCell(column, this.getSct(concept.getNid()));
-//							bt.addStringCell(column, relVersion.getUUIDs().get(0).toString());
-							break;
-						case Destination_Terminology:
-							bt.addStringCell(column, this.getTerminology(destConcept.getPathNid()));
-							break;
-						case Parent_Concept_Id:  //TODO - no, needs to be input into this method
-							bt.addStringCell(column, ""); //User Input
-//							bt.addStringCell(column, OTFUtility.getConceptVersion(relVersion.getDestinationNid()).getUUIDs().get(0).toString());
-							break;
-						case Justification:
-							bt.addStringCell(column, "");
-							break;
-						case Note:
-							bt.addStringCell(column, "");
-							break;
-						default :
-							throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
-					}
-				}
+				case Topic:
+					bt.addStringCell(column, "");
+					break;
+				case Source_Terminology: 
+					bt.addStringCell(column, this.getTerminology(OTFUtility.getConceptVersion(concept.getConceptNid()).getPathNid()));
+					break;
+				case Child_Concept_Id:
+					bt.addNumericCell(column, this.getSct(concept.getNid())); //TODO: vk - This needs to get the currentRequest if getSct is null
+					break;
+				case Destination_Terminology:
+					bt.addStringCell(column, this.getTerminology(OTFUtility.getConceptVersion(targetConcept.getConceptNid()).getPathNid()));
+					break;
+				case Parent_Concept_Id:  
+					bt.addNumericCell(column, this.getSct(targetConcept.getConceptNid()));
+					break;
+				case Justification:
+					bt.addStringCell(column, "");
+					break;
+				case Note:
+					bt.addStringCell(column, "");
+					break;
+				default :
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Add_Parent);
 			}
 		}
 	}
@@ -893,7 +902,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addStringCell(column, ""); //User Input
 					break;
 				default :
-					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.New_Concept);
+					throw new RuntimeException("Unexpected column type found in Sheet: " + column + " - " + SHEET.Other);
 			}
 		}
 	}
@@ -901,7 +910,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	@Override
 	public ContentRequestTrackingInfo getContentRequestStatus(ContentRequestTrackingInfo info)
 	{
-		// TODO: placeholder
+		// TODO: vk - placeholder
 		throw new UnsupportedOperationException("PLACEHOLDER for future functionality");
 	}
 
