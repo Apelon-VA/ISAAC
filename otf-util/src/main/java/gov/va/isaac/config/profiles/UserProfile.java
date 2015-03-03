@@ -22,9 +22,14 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.util.PasswordHasher;
+
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.UUID;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -32,6 +37,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +99,9 @@ public class UserProfile
 	@XmlElement 
 	private UUID viewCoordinatePath = null;
 	
+	@XmlElement
+	private Long viewCoordinateTime = null;
+	
 	@XmlElement 
 	private UUID editCoordinatePath = null;
 
@@ -112,8 +121,37 @@ public class UserProfile
 	public String extensionNamespace = null;
 	
 	/*
-	 *  !!!! UPDATE THE CLONE METHOD IF YOU ADD NEW PARAMETERS !!!!!
+	 *  *** Update clone() method when adding parameters
+	 *  
 	 */
+	@Override
+	protected UserProfile clone()
+	{
+		UserProfile clone = new UserProfile();
+		clone.userLogonName = this.userLogonName;
+		clone.clearTextPassword = this.clearTextPassword;
+		clone.hashedPassword = this.hashedPassword;
+		clone.statedInferredPolicy = this.statedInferredPolicy;
+		clone.displayFSN = this.displayFSN;
+		clone.syncPasswordEncrypted = this.syncPasswordEncrypted;
+		clone.syncUsername = this.syncUsername;
+		clone.workflowPasswordEncrypted = this.workflowPasswordEncrypted;
+		clone.workflowUsername = this.workflowUsername;
+		clone.conceptUUID = this.conceptUUID;
+		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
+		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
+		clone.workflowServerDeploymentId = this.workflowServerDeploymentId;
+		clone.viewCoordinatePath = this.viewCoordinatePath;
+		clone.viewCoordinateTime = this.viewCoordinateTime;
+		clone.editCoordinatePath = this.editCoordinatePath;
+		clone.workflowPromotionPath = this.workflowPromotionPath;
+		clone.workflowServerUrl = this.workflowServerUrl;
+		clone.changeSetUrl = this.changeSetUrl;
+		clone.releaseVersion = this.releaseVersion;
+		clone.extensionNamespace = this.extensionNamespace;
+
+		return clone;
+	}
 
 	/**
 	 * do not use - only for jaxb
@@ -391,7 +429,18 @@ public class UserProfile
 	{
 		this.workflowServerDeploymentId = workflowServerDeploymentId;
 	}
-
+	
+	public Long getViewCoordinateTime() {
+		if(viewCoordinateTime == null) {
+			return UserProfileDefaults.getDefaultViewCoordinateTime();
+		}
+		return viewCoordinateTime;
+	}
+	
+	public void setViewCoordinateTime(Long time) {
+		this.viewCoordinateTime = time;
+	}
+	
 	/**
 	 * @return viewCoordinatePath
 	 */
@@ -560,31 +609,4 @@ public class UserProfile
 		}
 	}
 
-	@Override
-	protected UserProfile clone()
-	{
-		UserProfile clone = new UserProfile();
-		clone.userLogonName = this.userLogonName;
-		clone.clearTextPassword = this.clearTextPassword;
-		clone.hashedPassword = this.hashedPassword;
-		clone.statedInferredPolicy = this.statedInferredPolicy;
-		clone.displayFSN = this.displayFSN;
-		clone.syncPasswordEncrypted = this.syncPasswordEncrypted;
-		clone.syncUsername = this.syncUsername;
-		clone.workflowPasswordEncrypted = this.workflowPasswordEncrypted;
-		clone.workflowUsername = this.workflowUsername;
-		clone.conceptUUID = this.conceptUUID;
-		clone.launchWorkflowForEachCommit = this.launchWorkflowForEachCommit;
-		clone.runDroolsBeforeEachCommit = this.runDroolsBeforeEachCommit;
-		clone.workflowServerDeploymentId = this.workflowServerDeploymentId;
-		clone.viewCoordinatePath = this.viewCoordinatePath;
-		clone.editCoordinatePath = this.editCoordinatePath;
-		clone.workflowPromotionPath = this.workflowPromotionPath;
-		clone.workflowServerUrl = this.workflowServerUrl;
-		clone.changeSetUrl = this.changeSetUrl;
-		clone.releaseVersion = this.releaseVersion;
-		clone.extensionNamespace = this.extensionNamespace;
-
-		return clone;
-	}
 }
