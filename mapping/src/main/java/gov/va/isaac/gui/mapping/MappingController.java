@@ -8,6 +8,7 @@ import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
@@ -113,15 +114,15 @@ public class MappingController implements TaskCompleteCallback
     @FXML private AnchorPane	mappingPane;
     @FXML private AnchorPane	listPane;
     @FXML private ToggleButton 	activeOnlyToggle;
-    @FXML private ToggleButton 	plusMappingToggle;
-    @FXML private ToggleButton 	minusMappingToggle;
+    @FXML private Button 		plusMappingButton;
+    @FXML private Button 		minusMappingButton;
     @FXML private Button 		editMappingButton;
 	@FXML private Label			mappingSummaryLabel;
 	@FXML private TableView		mappingTableView;
 	@FXML private Label			listTitleLabel;
 	@FXML private TableView		listTableView;
-    @FXML private ToggleButton 	plusListToggle;
-    @FXML private ToggleButton 	minusListToggle;
+    @FXML private Button 		plusListButton;
+    @FXML private Button 		minusListButton;
     @FXML private Button 		commentButton;
     @FXML private Label			listSummaryLabel;
     
@@ -141,34 +142,31 @@ public class MappingController implements TaskCompleteCallback
 		assert mappingPane 			!= null : "fx:id=\"mappingPane\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert listPane 			!= null : "fx:id=\"listPane\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert activeOnlyToggle 	!= null : "fx:id=\"activeOnlyToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert plusMappingToggle 	!= null : "fx:id=\"plusMappingToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert minusMappingToggle	!= null : "fx:id=\"minusMappingToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert plusMappingButton 	!= null : "fx:id=\"plusMappingButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert minusMappingButton	!= null : "fx:id=\"minusMappingButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert editMappingButton 	!= null : "fx:id=\"editMappingButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 
 		assert mappingSummaryLabel 	!= null : "fx:id=\"mappingSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert mappingTableView 	!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert listTitleLabel 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert listTableView 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert plusListToggle 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert minusListToggle 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert commentButton 		!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert listSummaryLabel 	!= null : "fx:id=\"xx\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingTableView 	!= null : "fx:id=\"mappingTableView\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listTitleLabel 		!= null : "fx:id=\"listTitleLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listTableView 		!= null : "fx:id=\"listTableView\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert plusListButton 		!= null : "fx:id=\"plusListButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert minusListButton 		!= null : "fx:id=\"minusListButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert commentButton 		!= null : "fx:id=\"commentButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert listSummaryLabel 	!= null : "fx:id=\"listSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
 
 		
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
-		assignImageToButton(activeOnlyToggle, 	Images.FILTER_16.createImageView(), "Show Active Only / Show All");
-		
-		assignImageToButton(plusMappingToggle, 	Images.PLUS.createImageView(), "Show Active Only / Show All");
-		assignImageToButton(minusMappingToggle, Images.MINUS.createImageView(), "Show Active Only / Show All");
-		assignImageToButton(editMappingButton, 	Images.EDIT.createImageView(), "Show Active Only / Show All");
-		assignImageToButton(plusListToggle, 	Images.PLUS.createImageView(), "Show Active Only / Show All");
-		assignImageToButton(minusListToggle, 	Images.MINUS.createImageView(), "Show Active Only / Show All");
-		assignImageToButton(commentButton, 		Images.BALLOON.createImageView(), "Show Active Only / Show All");
+		FxUtils.assignImageToButton(activeOnlyToggle, 	Images.FILTER_16.createImageView(), "Show Active Only / Show All");
+		FxUtils.assignImageToButton(plusMappingButton, 	Images.PLUS.createImageView(), 		"Create Mapping Set");
+		FxUtils.assignImageToButton(minusMappingButton, Images.MINUS.createImageView(), 	"Retire Mapping Set");
+		FxUtils.assignImageToButton(editMappingButton, 	Images.EDIT.createImageView(), 		"Edit Mapping Set");
+		FxUtils.assignImageToButton(plusListButton, 	Images.PLUS.createImageView(), 		"Create Mapping");
+		FxUtils.assignImageToButton(minusListButton, 	Images.MINUS.createImageView(), 	"Retire Mapping");
+		FxUtils.assignImageToButton(commentButton, 		Images.BALLOON.createImageView(), 	"View Comments");
 		
 		activeOnlyToggle.setSelected(true);
-        
-
 	}
 
 	public AnchorPane getRoot()
@@ -196,13 +194,6 @@ public class MappingController implements TaskCompleteCallback
 			{
 			}
 		});
-	}
-
-	private void assignImageToButton(ButtonBase button, ImageView imageView, String tooltip) {
-        button.setText("");
-        button.setGraphic(imageView);
-        button.setTooltip(new Tooltip(tooltip));
-
 	}
 
 }
