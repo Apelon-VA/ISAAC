@@ -48,7 +48,9 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
@@ -155,11 +157,18 @@ public class MappingController implements TaskCompleteCallback
 		
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
-        activeOnlyToggle.setText("");
-        activeOnlyToggle.setGraphic(Images.FILTER_16.createImageView());
-        activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
-        activeOnlyToggle.setSelected(true);
+		assignImageToButton(activeOnlyToggle, 	Images.FILTER_16.createImageView(), "Show Active Only / Show All");
+		
+		assignImageToButton(plusMappingToggle, 	Images.PLUS.createImageView(), "Show Active Only / Show All");
+		assignImageToButton(minusMappingToggle, Images.MINUS.createImageView(), "Show Active Only / Show All");
+		assignImageToButton(editMappingButton, 	Images.EDIT.createImageView(), "Show Active Only / Show All");
+		assignImageToButton(plusListToggle, 	Images.PLUS.createImageView(), "Show Active Only / Show All");
+		assignImageToButton(minusListToggle, 	Images.MINUS.createImageView(), "Show Active Only / Show All");
+		assignImageToButton(commentButton, 		Images.BALLOON.createImageView(), "Show Active Only / Show All");
+		
+		activeOnlyToggle.setSelected(true);
         
+
 	}
 
 	public AnchorPane getRoot()
@@ -188,6 +197,12 @@ public class MappingController implements TaskCompleteCallback
 			}
 		});
 	}
-	
+
+	private void assignImageToButton(ButtonBase button, ImageView imageView, String tooltip) {
+        button.setText("");
+        button.setGraphic(imageView);
+        button.setTooltip(new Tooltip(tooltip));
+
+	}
 
 }
