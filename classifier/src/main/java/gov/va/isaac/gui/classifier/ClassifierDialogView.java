@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 @Service
 @Singleton
 @SuppressWarnings("restriction")
-public class RunClassifierMenuItem implements PopupViewI, IsaacViewWithMenusI {
+public class ClassifierDialogView implements PopupViewI, IsaacViewWithMenusI {
 
   /** The log. */
   private final Logger LOG = LoggerFactory.getLogger(this.getClass());
@@ -101,7 +101,7 @@ public class RunClassifierMenuItem implements PopupViewI, IsaacViewWithMenusI {
   @Override
   public void showView(Window parent) {
     try {
-      ClassifierDialog dialog = new ClassifierDialog();
+      ClassifierDialog dialog = new ClassifierDialog(parent, false);
       dialog.show();
     } catch (IOException ex) {
       String title = ex.getClass().getName();

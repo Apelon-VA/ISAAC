@@ -300,7 +300,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	@Override
 	public String getChangeSetUrlTypeName()
 	{
-		return getChangeSetUrlType().name();
+		return getChangeSetUrlType() == null ? null : getChangeSetUrlType().name();
 	}
 
 	/**

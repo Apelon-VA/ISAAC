@@ -18,7 +18,7 @@
  */
 package gov.va.isaac.isaacDbProcessingRules;
 
-import gov.va.isaac.mojos.dbTransforms.TransformI;
+import gov.va.isaac.mojos.dbTransforms.TransformArbitraryI;
 import gov.va.isaac.util.OTFUtility;
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Named(value = "RxNorm Hierarchy Additions")
-public class RxNormHierarchyAdditions implements TransformI
+public class RxNormHierarchyAdditions implements TransformArbitraryI
 {
 	private AtomicInteger addedRels = new AtomicInteger();
 	private AtomicInteger examinedConcepts = new AtomicInteger();
@@ -81,10 +81,10 @@ public class RxNormHierarchyAdditions implements TransformI
 	}
 	
 	/**
-	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#configure(java.io.File)
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#configure(java.io.File, org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI)
 	 */
 	@Override
-	public void configure(File configFile)
+	public void configure(File configFile, TerminologyStoreDI ts)
 	{
 		// noop
 	}
@@ -166,8 +166,8 @@ public class RxNormHierarchyAdditions implements TransformI
 					RelationshipCAB rCab = new RelationshipCAB(cc.getPrimordialUuid(), Snomed.IS_A.getUuids()[0], penicillinProduct,
 							0, RelationshipType.STATED_ROLE, IdDirective.GENERATE_HASH);
 					
-					ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.TERM_AUX_MODULE.getLenient().getNid(), 
-							TermAux.WB_AUX_PATH.getLenient().getConceptNid()), StandardViewCoordinates.getWbAuxiliary()).construct(rCab);
+					ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.UNSPECIFIED_MODULE.getLenient().getNid(), 
+							rxNormPathNid), StandardViewCoordinates.getWbAuxiliary()).construct(rCab);
 					ts.addUncommitted(cc);
 					
 					int last = addedRels.getAndIncrement();
