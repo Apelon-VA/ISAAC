@@ -18,37 +18,20 @@
  */
 package gov.va.isaac.mojos.dbTransforms;
 
-import java.io.File;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link TransformI}
+ * {@link TransformArbitraryI}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public abstract interface TransformI
+public interface TransformArbitraryI extends TransformI
 {
 	/**
-	 * @return the name of this transform implementation
+	 * Execute the transform
+	 * @throws Exception 
 	 */
-	public String getName();
-	
-	/**
-	 * Pass in the configuration file that will be used to setup this transform
-	 * @param configFile
-	 * @param the db environment that will be used
-	 */
-	public void configure(File configFile, TerminologyStoreDI ts) throws Exception;
-	
-	/**
-	 * @return a user-friendly description of what this transform does
-	 */
-	public String getDescription();
-	
-	/**
-	 * @return a user-friendly description of the amount and type of work that was performed
-	 */
-	public String getWorkResultSummary();
+	public void transform(TerminologyStoreDI ts) throws Exception;
 }

@@ -18,17 +18,14 @@
  */
 package gov.va.isaac.isaacDbProcessingRules;
 
-import gov.va.isaac.mojos.dbTransforms.TransformI;
+import gov.va.isaac.mojos.dbTransforms.TransformConceptIterateI;
 import gov.va.isaac.util.OTFUtility;
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Named;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
-import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
@@ -38,7 +35,6 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf1;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
@@ -62,7 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @Named(value = "Generate Missing Preferred Terms")
-public class GenerateMissingPreferredTerms implements TransformI
+public class GenerateMissingPreferredTerms implements TransformConceptIterateI
 {
 	private AtomicInteger generatedDescriptions = new AtomicInteger();
 	private AtomicInteger examinedConcepts = new AtomicInteger();
@@ -80,132 +76,99 @@ public class GenerateMissingPreferredTerms implements TransformI
 	}
 	
 	/**
-	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#configure(java.io.File)
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#configure(java.io.File, org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI)
 	 */
 	@Override
-	public void configure(File configFile)
+	public void configure(File configFile, TerminologyStoreDI ts)
 	{
 		// noop
 	}
 
 	/**
-	 * @throws Exception
-	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#transform(org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI)
+	 * 
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformConceptIterateI#transform(org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI, 
+	 *  org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI)
 	 */
 	@Override
-	public void transform(TerminologyStoreDI ts) throws Exception
+	public boolean transform(TerminologyStoreDI ts, ConceptChronicleBI cc) throws Exception
 	{
-		ts.iterateConceptDataInParallel(new ProcessUnfetchedConceptDataBI()
+		
+		boolean foundPreferred = false;;
+		String fsnText = null;
+		LanguageCode fsnLC = null;
+		int pathNid = -1;
+		int moduleNid = -1;
+		
+		for (DescriptionChronicleBI desc : cc.getDescriptions())
 		{
-			@Override
-			public boolean continueWork()
+			if (foundPreferred && fsnText != null)
 			{
+				break;
+			}
+			
+			DescriptionVersionBI<?> currentDescription = OTFUtility.getLatestDescVersion(desc.getVersions());
+			
+			if (currentDescription == null)
+			{
+				log.warn("No description version found on concept - {} - description - ", cc.toLongString(), desc.toUserString());
+				missingFSNs.incrementAndGet();
+				continue;
+			}
+			
+			if (currentDescription.getTypeNid() == SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getNid() 
+					|| currentDescription.getTypeNid() == SnomedMetadataRf1.FULLY_SPECIFIED_DESCRIPTION_TYPE.getNid())
+			{
+				fsnText = currentDescription.getText();
+				fsnLC = LanguageCode.getLangCode(currentDescription.getLang());
+				pathNid = currentDescription.getPathNid();
+				moduleNid = currentDescription.getModuleNid();
+			}
+			else if (currentDescription.getTypeNid() == SnomedMetadataRf2.SYNONYM_RF2.getNid() ||
+					currentDescription.getTypeNid() == SnomedMetadataRf1.SYNOMYM_DESCRIPTION_TYPE_RF1.getNid())
+			{
+				for (RefexChronicleBI<?> refex : currentDescription.getRefexes())
+				{
+					RefexVersionBI<?> currentRefex = OTFUtility.getLatestRefexVersion(refex.getVersions());
+					if (currentRefex instanceof RefexNidVersionBI)
+					{
+						if (((RefexNidVersionBI<?>)currentRefex).getNid1() == SnomedMetadataRf2.PREFERRED_RF2.getNid() ||
+								((RefexNidVersionBI<?>)currentRefex).getNid1() == SnomedMetadataRf1.PREFERRED_TERM_DESCRIPTION_TYPE_RF1.getNid())
+						{
+							foundPreferred = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		if (!foundPreferred)
+		{
+			if (fsnText == null)
+			{
+				log.warn("No description FSN version found on concept - {}", cc.toLongString());
+				missingFSNs.getAndIncrement();
+			}
+			else
+			{
+				String fsnWithoutSemTag = fsnText;
+				
+				if (fsnWithoutSemTag.endsWith(")") && fsnWithoutSemTag.contains("("))
+				{
+					fsnWithoutSemTag = fsnWithoutSemTag.substring(0, fsnWithoutSemTag.lastIndexOf("("));
+				}
+				DescriptionCAB dCab = new DescriptionCAB(cc.getPrimordialUuid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getUuids()[0], fsnLC, fsnWithoutSemTag,
+						true, IdDirective.GENERATE_HASH);
+				dCab.makePreferredNameDialectRefexes(fsnLC);
+				
+				ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), moduleNid, pathNid), 
+						StandardViewCoordinates.getWbAuxiliary()).construct(dCab);
+				ts.addUncommitted(cc);
+				generatedDescriptions.getAndIncrement();
 				return true;
 			}
-
-			@Override
-			public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher) throws Exception
-			{
-				ConceptChronicleBI cc = fetcher.fetch();
-
-				boolean foundPreferred = false;;
-				String fsnText = null;
-				LanguageCode fsnLC = null;
-				
-				for (DescriptionChronicleBI desc : cc.getDescriptions())
-				{
-					if (foundPreferred && fsnText != null)
-					{
-						break;
-					}
-					
-					DescriptionVersionBI<?> currentDescription = OTFUtility.getLatestDescVersion(desc.getVersions());
-					
-					if (currentDescription == null)
-					{
-						log.warn("No description version found on concept - {} - description - ", cc.toLongString(), desc.toUserString());
-						missingFSNs.incrementAndGet();
-						continue;
-					}
-					
-					if (currentDescription.getTypeNid() == SnomedMetadataRf2.FULLY_SPECIFIED_NAME_RF2.getNid() 
-							|| currentDescription.getTypeNid() == SnomedMetadataRf1.FULLY_SPECIFIED_DESCRIPTION_TYPE.getNid())
-					{
-						fsnText = currentDescription.getText();
-						fsnLC = LanguageCode.getLangCode(currentDescription.getLang());
-					}
-					else if (currentDescription.getTypeNid() == SnomedMetadataRf2.SYNONYM_RF2.getNid() ||
-							currentDescription.getTypeNid() == SnomedMetadataRf1.SYNOMYM_DESCRIPTION_TYPE_RF1.getNid())
-					{
-						for (RefexChronicleBI<?> refex : currentDescription.getRefexes())
-						{
-							RefexVersionBI<?> currentRefex = OTFUtility.getLatestRefexVersion(refex.getVersions());
-							if (currentRefex instanceof RefexNidVersionBI)
-							{
-								if (((RefexNidVersionBI<?>)currentRefex).getNid1() == SnomedMetadataRf2.PREFERRED_RF2.getNid() ||
-										((RefexNidVersionBI<?>)currentRefex).getNid1() == SnomedMetadataRf1.PREFERRED_TERM_DESCRIPTION_TYPE_RF1.getNid())
-								{
-									foundPreferred = true;
-									break;
-								}
-							}
-						}
-					}
-				}
-				
-				if (!foundPreferred)
-				{
-					if (fsnText == null)
-					{
-						log.warn("No description FSN version found on concept - {}", cc.toLongString());
-						missingFSNs.getAndIncrement();
-					}
-					else
-					{
-						String fsnWithoutSemTag = fsnText;
-						
-						if (fsnWithoutSemTag.endsWith(")") && fsnWithoutSemTag.contains("("))
-						{
-							fsnWithoutSemTag = fsnWithoutSemTag.substring(0, fsnWithoutSemTag.lastIndexOf("("));
-						}
-						DescriptionCAB dCab = new DescriptionCAB(cc.getPrimordialUuid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getUuids()[0], fsnLC, fsnWithoutSemTag,
-								true, IdDirective.GENERATE_HASH);
-						dCab.makePreferredNameDialectRefexes(fsnLC);
-						
-						ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.TERM_AUX_MODULE.getLenient().getNid(), 
-								TermAux.WB_AUX_PATH.getLenient().getConceptNid()), StandardViewCoordinates.getWbAuxiliary()).construct(dCab);
-						ts.addUncommitted(cc);
-						
-						int last = generatedDescriptions.getAndIncrement();
-						if (last % 2000 == 0)
-						{
-							ts.commit();
-						}
-					}
-				}
-				
-				examinedConcepts.getAndIncrement();
-			}
-
-			@Override
-			public String getTitle()
-			{
-				return "PreferredTerm Generator";
-			}
-
-			@Override
-			public NativeIdSetBI getNidSet() throws IOException
-			{
-				return null;
-			}
-
-			@Override
-			public boolean allowCancel()
-			{
-				return false;
-			}
-		});
-		ts.commit();
+		}
+		return false;
 	}
 
 	/**

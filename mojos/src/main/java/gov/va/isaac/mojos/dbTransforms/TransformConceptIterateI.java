@@ -18,37 +18,30 @@
  */
 package gov.va.isaac.mojos.dbTransforms;
 
-import java.io.File;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link TransformI}
+ * {@link TransformConceptIterateI}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @Contract
-public abstract interface TransformI
+public interface TransformConceptIterateI extends TransformI
 {
+
 	/**
-	 * @return the name of this transform implementation
+	 * Transforms that just need to iterate over each concept in the DB may implement this interface - 
+	 * this transform method will be called once for each concept in the DB.  Transformations should be limited
+	 * to operations that involve this concept.
+	 * @param ts - the term store
+	 * @param cc - the current concept
+	 * @return false if this impl made no change - true if this impl made a change that will need committing.
+	 * Individual implementations should not call commit - the process feeding in the concepts will commit 
+	 * periodically.
+	 * @throws Exception
 	 */
-	public String getName();
+	public boolean transform(TerminologyStoreDI ts, ConceptChronicleBI cc) throws Exception;
 	
-	/**
-	 * Pass in the configuration file that will be used to setup this transform
-	 * @param configFile
-	 * @param the db environment that will be used
-	 */
-	public void configure(File configFile, TerminologyStoreDI ts) throws Exception;
-	
-	/**
-	 * @return a user-friendly description of what this transform does
-	 */
-	public String getDescription();
-	
-	/**
-	 * @return a user-friendly description of the amount and type of work that was performed
-	 */
-	public String getWorkResultSummary();
 }
