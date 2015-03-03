@@ -123,7 +123,7 @@ public class OTFUtility {
 	public static TerminologyBuilderBI getBuilder(EditCoordinate ec, ViewCoordinate vc) {
 		return new BdbTermBuilder(ec, vc);
 	}
-
+	
 	public static ViewCoordinate getViewCoordinate() {
 		ViewCoordinate vc = null;
 		try {
@@ -146,12 +146,13 @@ public class OTFUtility {
 			//LOG.info("Using {} policy for view coordinate", policy);
 
 			final UUID pathUuid = userProfile.getViewCoordinatePath();
+			final Long time = userProfile.getViewCoordinateTime();
 			final ConceptChronicleBI pathChronicle = dataStore.getConcept(pathUuid);
 			final int pathNid = pathChronicle.getNid();
 
 			// Start with standard view coordinate and override the path setting to
 			// use the preferred path
-			Position position = dataStore.newPosition(dataStore.getPath(pathNid), Long.MAX_VALUE);
+			Position position = dataStore.newPosition(dataStore.getPath(pathNid), time);
 
 			vc.setViewPosition(position);
 
