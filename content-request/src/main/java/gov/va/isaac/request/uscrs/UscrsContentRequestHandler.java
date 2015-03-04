@@ -425,13 +425,20 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		}
 	}
 	
-	private String getFsnWithoutSemTag(ConceptChronicleBI concept) {
-		String fsn = OTFUtility.getFullySpecifiedName(concept);
+	private String getFsnWithoutSemTag(ConceptChronicleBI concept) throws Exception {
+		String fsn = null;
+		fsn = OTFUtility.getFullySpecifiedName(concept);
 		
-		String fsnOnly = fsn;
-		if (fsn.indexOf('(') != -1)
-		{
-			fsnOnly = fsn.substring(0, fsn.lastIndexOf('(') - 1);
+		String fsnOnly;
+		if(fsn == null) {
+			throw new Exception("FSN Could not be retreived");
+		} else {
+		
+			fsnOnly = fsn;
+			if (fsn.indexOf('(') != -1)
+			{
+				fsnOnly = fsn.substring(0, fsn.lastIndexOf('(') - 1);
+			}
 		}
 		return fsnOnly;
 	}
