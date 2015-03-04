@@ -244,17 +244,4 @@ public class EditCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	{
 		return 20;
 	}
-
-	@Override
-    protected Long getStoredTime() {
-	    // TODO Auto-generated method stub
-	    return null;
-    }
-
-	@Override
-    protected Long getDefaultTime() {
-	    // TODO Auto-generated method stub
-	    return null;
-    }
-
 }

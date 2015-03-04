@@ -24,13 +24,10 @@
  */
 package gov.va.isaac.config.profiles;
 
+import java.util.UUID;
+
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
-
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.TreeSet;
-import java.util.UUID;
 
 /**
  * UserProfileDefaults
@@ -61,10 +58,6 @@ public final class UserProfileDefaults {
 		return AppContext.getAppConfiguration().getDefaultWorkflowServerDeploymentId();
 	}
 
-	public static Long getDefaultViewCoordinateTime() {
-		return Long.MAX_VALUE;
-	}
-	
 	public static UUID getDefaultViewCoordinatePath() {
 		return UUID.fromString(AppContext.getAppConfiguration().getDefaultViewPathUuid());
 	}
