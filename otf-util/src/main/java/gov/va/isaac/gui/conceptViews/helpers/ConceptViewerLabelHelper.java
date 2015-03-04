@@ -195,8 +195,6 @@ public class ConceptViewerLabelHelper {
 		});
 
 		// Tooltip Handling
-		//TODO wait for Jesse clarification.. this line of code doesn't make sense.
-		//tooltipHelper.setDefaultTooltip(label, comp, type);
 		label.addEventHandler(MouseEvent.MOUSE_ENTERED, tooltipHelper.getCompTooltipEnterHandler(comp, type));
 		label.addEventHandler(MouseEvent.MOUSE_EXITED, tooltipHelper.getCompTooltipExitHandler(comp, type));
 	}
