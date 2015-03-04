@@ -85,6 +85,7 @@ public enum Images {
     KEYS(setupImage("/icons/misc/48x48/login.png")),
     SYNC_GREEN(setupImage("/icons/silk/16x16/arrow_refresh.png")),
     SYNC_BLUE(setupImage("/icons/silk/16x16/arrow_refresh_blue.png")),
+    MAPPING(setupImage("/icons/fugue/16x16/icons-shadowless/arrow-join.png")),
     
     BALLOON			(setupImage("/icons/fugue/16x16/icons-shadowless/balloon.png")),
     BALLOON_PLUS	(setupImage("/icons/fugue/16x16/icons-shadowless/balloon-plus.png")),

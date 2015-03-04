@@ -97,7 +97,7 @@ public class Mapping implements DockedViewI
 			@Override
 			public Image getImage()
 			{
-				return Images.SEARCH.getImage();
+				return Images.MAPPING.getImage();
 			}
 		};
 		return menuItem;
