@@ -20,7 +20,6 @@ package gov.va.isaac.gui.conceptViews.helpers;
 
 import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
-import java.util.Collection;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Label;
@@ -49,7 +48,6 @@ import org.slf4j.LoggerFactory;
 public class ConceptViewerTooltipHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(ConceptViewerTooltipHelper.class);
 	private static boolean controlKeyPressed = false;
-	private static boolean shiftKeyPressed = false;
 	private EnhancedConceptViewerTooltipCache tooltipCache = new EnhancedConceptViewerTooltipCache();
 
 	EventHandler<Event> getCompTooltipEnterHandler(ComponentVersionBI comp, ComponentType type) {
@@ -57,35 +55,7 @@ public class ConceptViewerTooltipHelper {
 			@Override
 			public void handle(Event event) {
 				Label l = (Label)event.getSource();
-				if (shiftKeyPressed) {
-					boolean errorFound = true;
-					StringBuffer tpText = new StringBuffer();
-	
-					try {
-						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(OTFUtility.getViewCoordinate());
-						
-						for (RefexVersionBI<?> annot : annots) {
-							if (annot.getAssemblageNid() != ConceptViewerHelper.getSnomedAssemblageNid()) {
-								try {
-									tpText.append(getRefsetTooltip(annot));
-										tpText.append("\n\n");
-								} catch (Exception e) {
-									LOG.error("Unable to access annotations", e);
-									tpText = new StringBuffer("Unable to access annotations");
-									errorFound = true;
-								}
-							}
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-	
-					if (!errorFound && tpText.toString().trim().isEmpty()) {
-						l.getTooltip().setText("There are no refsets for this component");
-					} else {
-						l.getTooltip().setText(tpText.toString().trim());
-					}
-				} else if (controlKeyPressed){
+				if (controlKeyPressed){
 					setDefaultTooltip(l, comp, type);
 				} else {
 					l.setTooltip(null);
@@ -94,7 +64,7 @@ public class ConceptViewerTooltipHelper {
 		};
 	}
 
-	EventHandler getCompTooltipExitHandler(ComponentVersionBI comp, ComponentType type) {
+	EventHandler<Event> getCompTooltipExitHandler(ComponentVersionBI comp, ComponentType type) {
 		return new EventHandler<Event>() {
 			@Override
 			public void handle(Event event) {
@@ -117,22 +87,7 @@ public class ConceptViewerTooltipHelper {
 		}
 	}
 
-
-	private String getRefsetTooltip(RefexVersionBI<?> annot) throws IOException, ContradictionException {
-		int annotNid = annot.getNid();
-		long lastCommitTime = annot.getTime();
-		
-		if (tooltipCache.hasLatestTooltip(annotNid, lastCommitTime)) {
-			return tooltipCache.getRefsetTooltip(annotNid);
-		} else {
-			final String refsetTooltipString = createRefsetTooltip(annot);
-			tooltipCache.updateRefsetCache(annotNid, lastCommitTime, refsetTooltipString);
-
-			return refsetTooltipString;
-		}
-	}
-
-	private String createRefsetTooltip(RefexVersionBI<?> annot) throws IOException, ContradictionException {
+	protected String createRefsetTooltip(RefexVersionBI<?> annot) throws IOException, ContradictionException {
 		String refset = OTFUtility.getConPrefTerm(annot.getAssemblageNid());
 		StringBuffer strBuf = new StringBuffer();
 
@@ -227,11 +182,6 @@ public class ConceptViewerTooltipHelper {
 				{
 					controlKeyPressed = false;
 				} 
-
-				if (event.getCode() == KeyCode.SHIFT)
-				{
-					shiftKeyPressed = false;
-				}
 			}
 		};
 	}
@@ -244,10 +194,6 @@ public class ConceptViewerTooltipHelper {
 				{
 					controlKeyPressed = true;
 				} 
-
-				if (event.getCode() == KeyCode.SHIFT){
-					shiftKeyPressed = true;
-				}
 			}
 		};
 	}

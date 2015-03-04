@@ -38,15 +38,22 @@ import java.util.Collection;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import org.controlsfx.control.PopOver;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -63,6 +70,7 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
+import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -111,9 +119,84 @@ public class ConceptViewerLabelHelper {
 		}
 		
 		createContextMenu(label, txt, comp, refConNid, type);
+		
+		label.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>()
+		{
+			@Override
+			public void handle(MouseEvent event)
+			{
+				if (event.getButton() == MouseButton.PRIMARY)
+				{
+					//TODO background thread this work
+					//TODO figure out if there is a way we can usefully cache this - commit counter on the DB, perhaps?
+					//TODO for some reason, the text area below looks slightly "fuzzy" - I believe there is some silly
+					//stylesheet somewhere down the line that is setting a slightly off opacity or something like that - need 
+					//to figure out how to override it.  
+					//May be related to the bizarre behavior I get when I tell the popup to display relative to the label, instead
+					//of the window (background colors / transparency all got nuts in some instances)
+					Label l = (Label) event.getSource();
+					StringBuffer tpText = new StringBuffer();
+					int lineCount = 0;
+	
+					try
+					{
+						Collection<? extends RefexVersionBI<?>> annots = comp.getAnnotationsActive(OTFUtility.getViewCoordinate());
+	
+						for (RefexVersionBI<?> annot : annots)
+						{
+							if (annot.getAssemblageNid() != ConceptViewerHelper.getSnomedAssemblageNid())
+							{
+								tpText.append(tooltipHelper.createRefsetTooltip(annot));
+								tpText.append("\n\n");
+								lineCount++;
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						LOG.error("Unable to access annotations", e);
+						tpText = new StringBuffer("Unable to access annotations");
+					}
+	
+					if (tpText.toString().trim().isEmpty())
+					{
+						tpText.append("There are no refsets for this component");
+					}
+					
+					BorderPane bp = new BorderPane();
+					
+					Label title = new Label("Attached Sememes");
+					title.setMaxWidth(Double.MAX_VALUE);
+					title.setAlignment(Pos.CENTER);
+					title.setPadding(new Insets(10));
+					title.getStyleClass().add("boldLabel");
+					title.getStyleClass().add("headerBackground");
+					
+					bp.setTop(title);
+					
+					TextArea ta = new TextArea(tpText.toString());
+					ta.setEditable(false);
+					
+					bp.setMaxHeight(800);
+					bp.setPrefWidth(800);
+					bp.setPrefHeight(200 + (30 * lineCount));
+					
+					bp.setCenter(ta);
+	
+					PopOver po = new PopOver();
+					po.setContentNode(bp);
+					po.setAutoHide(true);
+					po.detachedTitleProperty().set("Attached Sememes");
+					
+					Point2D point = l.localToScreen(l.getWidth(), -25);
+					po.show(l.getScene().getWindow(), point.getX(), point.getY());
+				}
+			}
+		});
 
 		// Tooltip Handling
-		tooltipHelper.setDefaultTooltip(label, comp, type);
+		//TODO wait for Jesse clarification.. this line of code doesn't make sense.
+		//tooltipHelper.setDefaultTooltip(label, comp, type);
 		label.addEventHandler(MouseEvent.MOUSE_ENTERED, tooltipHelper.getCompTooltipEnterHandler(comp, type));
 		label.addEventHandler(MouseEvent.MOUSE_EXITED, tooltipHelper.getCompTooltipExitHandler(comp, type));
 	}
