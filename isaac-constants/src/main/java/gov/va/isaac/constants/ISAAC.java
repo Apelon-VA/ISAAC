@@ -19,6 +19,7 @@
 package gov.va.isaac.constants;
 
 import java.util.UUID;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
@@ -83,5 +84,33 @@ public class ISAAC
 			new RefexDynamicColumnInfo[] {
 				new RefexDynamicColumnInfo(0, EDITOR_COMMENT.getUuids()[0], RefexDynamicDataType.STRING, null, true, null, null),
 				new RefexDynamicColumnInfo(1, EDITOR_COMMENT_CONTEXT.getUuids()[0], RefexDynamicDataType.STRING, null, false, null, null)},
-			RefexDynamic.REFEX_DYNAMIC_IDENTITY);
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+			new Integer[] {0,1});  //Index the comments, and the columns
+	
+	public static ConceptSpecWithDescriptions REFEX_COLUMN_TARGET_CONCEPT = new ConceptSpecWithDescriptions("target concept", 
+			UUID.fromString("7ef9919c-9d0c-53e9-af1a-4b276723af92"),
+			new String[] {"target concept"},
+			new String[] {"Stores the (optional) target concept of an association, or a refex map"},
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static DynamicRefexConceptSpec ASSOCIATION_REFEX = new DynamicRefexConceptSpec("Sememe represents association", 
+			UUID.fromString("d4d5909f-ca6e-52af-87bf-2c8199b28f25"),
+			true, 
+			"A Sememe used to annotate other sememes which define an association, which is defined as a sememe which contains "
+			+ "a data column named 'target concept', among other criteria.", 
+			new RefexDynamicColumnInfo[] {},
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+			new Integer[] {});  //Index the associations
+	
+	public static DynamicRefexConceptSpec ASSOCIATION_INVERSE_NAME = new DynamicRefexConceptSpec("inverse name", 
+			UUID.fromString("c342d18a-ec1c-5583-bfe3-59e6324ae189"),
+			new String[] {"inverse name"},
+			new String[0],
+			true, 
+			"This is the extended description type that may be attached to a description within a concept that defines an Association Refex to signify that "
+					+ "the referenced description is the inverse of the association name.",
+			new RefexDynamicColumnInfo[0],
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+			ComponentType.DESCRIPTION,
+			null);
 }

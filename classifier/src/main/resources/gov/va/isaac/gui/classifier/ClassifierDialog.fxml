@@ -22,7 +22,7 @@
         GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
     <!-- buttons -->
-    <HBox alignment="TOP_CENTER" prefHeight="-1.0" prefWidth="400.0"
+    <HBox alignment="TOP_CENTER" prefWidth="400.0"
     	GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2">
           <children>
             <Button defaultButton="true" mnemonicParsing="false" onAction="#handleOk" text="Ok" underline="false">

@@ -22,7 +22,6 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
-
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -33,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -46,6 +44,7 @@ import org.ihtsdo.otf.tcc.api.blueprint.RelationshipCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.TerminologyBuilderBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentChronicleBI;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -354,7 +353,11 @@ public class OTFUtility {
 		return preferredRf1Nid;
 	}
 
-	private static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
+	/**
+	 * Pass in the annotations on a description component to determine if one of the 
+	 * annotations is the isPreferred annotation
+	 */
+	public static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
 		for (RefexChronicleBI<?> rc : collection) {
 			if (rc.getRefexType() == RefexType.CID) {
 				int nid1 = ((NidMember) rc).getNid1();  // RefexType.CID means NidMember.
@@ -1120,9 +1123,24 @@ public class OTFUtility {
 		return retSet;
 	}
 	
+	public static ConceptAttributeVersionBI<?> getLatestAttributes(@SuppressWarnings("rawtypes") Collection<? extends ConceptAttributeVersionBI> collection)
+	{
+		ConceptAttributeVersionBI<?> newest = null;
+		long newestTime = Long.MIN_VALUE;
+		for (ConceptAttributeVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
+	}
+	
 	public static DescriptionVersionBI<?> getLatestDescVersion(@SuppressWarnings("rawtypes") Collection<? extends DescriptionVersionBI> collection)
 	{
-		DescriptionVersionBI<?> newest = null;;
+		DescriptionVersionBI<?> newest = null;
 		long newestTime = Long.MIN_VALUE;
 		for (DescriptionVersionBI<?> x : collection)
 		{

@@ -23,7 +23,10 @@ import gov.va.isaac.gui.util.FxUtils;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 import org.slf4j.Logger;
@@ -42,15 +45,24 @@ public class ClassifierDialogController {
       .getLogger(ClassifierDialogController.class);
 
   /** The stage. */
-  Stage stage;
+  Stage classifierStage;
+
+  /** The dialog. */
+  ClassifierDialog dialog;
+
+  /** The incremental classify flag. */
+  boolean incrementalClassify;
 
   /**
    * Sets the variables.
    *
-   * @param stagel the variables
+   * @param dialog the dialog
+   * @param parent the parent
    */
-  public void setVariables(Stage stagel) {
-    this.stage = stagel;
+  public void setVariables(ClassifierDialog dialog, Window parent) {
+    this.dialog = dialog;
+    this.incrementalClassify = dialog.getIncrementalClassify();
+    this.classifierStage = buildClassifierStage(parent);
   }
 
   /**
@@ -62,30 +74,50 @@ public class ClassifierDialogController {
   }
 
   /**
-   * Handler for ok button.
+   * Builds the classifier stage.
+   *
+   * @param owner the owner
+   * @return the stage
    */
-  public void handleOk() {
-    showView();
+  private Stage buildClassifierStage(Window owner) {
+
+    // Use dialog for now, so Alo/Dan can use it.
+    Stage stage = new Stage();
+    stage.initModality(Modality.NONE);
+    stage.initOwner(owner);
+    stage.initStyle(StageStyle.DECORATED);
+    stage.setTitle((incrementalClassify ? "Incremental " : "")
+        + "Classifier View");
+
+    return stage;
   }
 
   /**
-   * Show view.
+   * Handler for ok button.
    */
-  private void showView() {
+  public void handleOk() {
+    dialog.close();
+    showClassifierView();
+  }
+
+  /**
+   * Show classifier view.
+   */
+  private void showClassifierView() {
 
     // Make sure in application thread.
     FxUtils.checkFxUserThread();
 
     try {
-      ClassifierView classifierView = new ClassifierView();
-      stage.setScene(new Scene(classifierView));
-      if (stage.isShowing()) {
-        stage.toFront();
+      ClassifierView classifierView = new ClassifierView(incrementalClassify);
+      classifierStage.setScene(new Scene(classifierView));
+      if (classifierStage.isShowing()) {
+        classifierStage.toFront();
       } else {
-        stage.show();
+        classifierStage.show();
       }
 
-      ((Stage) stage.getScene().getWindow())
+      ((Stage) classifierStage.getScene().getWindow())
           .setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -107,7 +139,7 @@ public class ClassifierDialogController {
    * Handler for cancel button.
    */
   public void handleCancel() {
-    stage.close();
+    dialog.close();
   }
 
 }

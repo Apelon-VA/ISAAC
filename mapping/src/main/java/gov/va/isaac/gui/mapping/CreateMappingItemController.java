@@ -40,6 +40,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -87,6 +88,7 @@ public class CreateMappingItemController {
 	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingItemController.class);
 
     @FXML private BorderPane 		mainPane;
+    @FXML private Label				titleLabel;
 
     @FXML private TextField 		criteriaText;
     @FXML private Button 			searchButton;
@@ -115,6 +117,15 @@ public class CreateMappingItemController {
     @FXML private Button 			cancelButton;
 
 
+	public Region getRootNode() {
+		//return region;
+		return mainPane;
+	}
+	
+	public StringProperty getTitle() {
+		return titleLabel.textProperty();
+	}
+	
 	@FXML
 	public void initialize() {
 

@@ -36,25 +36,33 @@ import javafx.stage.Window;
  */
 public class ExportFileSettingsDialog extends Stage {
 
-    private final ExportFileSettingsDialogController controller;
+  /** The controller. */
+  private final ExportFileSettingsDialogController controller;
 
-    public ExportFileSettingsDialog(Window parent) throws IOException {
-        super();
-        setTitle("Export Settings");
-        setResizable(true);
+  /**
+   * Instantiates a {@link ExportFileSettingsDialog} from the specified
+   * parameters.
+   *
+   * @param parent the parent
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  public ExportFileSettingsDialog(Window parent) throws IOException {
+    super();
+    setTitle("Export Settings");
+    setResizable(true);
 
-        initOwner(parent);
-        initModality(Modality.WINDOW_MODAL);
-        initStyle(StageStyle.DECORATED);
+    initOwner(parent);
+    initModality(Modality.WINDOW_MODAL);
+    initStyle(StageStyle.DECORATED);
 
-        // Load from FXML.
-        URL resource = this.getClass().getResource("ExportFileSettingsDialog.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        Parent root = (Parent) loader.load();
-        Scene scene = new Scene(root);
-        setScene(scene);
+    // Load from FXML.
+    URL resource = this.getClass().getResource("ExportFileSettingsDialog.fxml");
+    FXMLLoader loader = new FXMLLoader(resource);
+    Parent root = (Parent) loader.load();
+    Scene scene = new Scene(root);
+    setScene(scene);
 
-        this.controller = loader.getController();
-        controller.setVariables(this, parent);
-    }
+    controller = loader.getController();
+    controller.setVariables(this, parent);
+  }
 }

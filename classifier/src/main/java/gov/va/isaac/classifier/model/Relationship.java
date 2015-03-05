@@ -148,6 +148,10 @@ public class Relationship implements Comparable<Object> {
     sb.append(typeId);
     sb.append(": ");
     sb.append(destinationId);
+    sb.append(": ");
+    sb.append(group);
+    sb.append(": ");
+    sb.append(relationshipId);
     return sb.toString();
   }
 

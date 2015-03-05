@@ -21,6 +21,7 @@ package gov.va.isaac.mojos.dbBuilder;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.constants.InformationModels;
+import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.constants.Search;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -146,7 +147,7 @@ public class DBBuilder extends AbstractMojo
 			{
 				getLog().info("Will load default metadata");
 				classesWithDefaultSpecConcepts = new String[] {RefexDynamic.class.getName(), Search.class.getName(), ISAAC.class.getName(), 
-						InformationModels.class.getName()};
+						InformationModels.class.getName(), MappingConstants.class.getName()};
 			}
 			
 			ConceptSpec[] conceptsToAddAsRoots = new ConceptSpec[] {};
