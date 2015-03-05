@@ -35,10 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 
 public class CreateMappingSetController implements TaskCompleteCallback {
-	private static final Logger logger = LoggerFactory.getLogger(MappingController.class);
-	
-	private Region region = new Region();
-	private Label title = new Label();
+	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 	
 	@FXML private BorderPane	mainPane;
 	@FXML private TextField		nameInput;
@@ -47,9 +44,11 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 	@FXML private Button		createButton;
 	@FXML private Button		cancelButton;
 	
+	private Region region = new Region();
+	private Label title = new Label();
 	
 	public Region getRootNode() {
-		return region;
+		return mainPane;
 	}
 	
 	public StringProperty getTitle() {
@@ -115,7 +114,6 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 		createButton.setOnAction((event) -> {
 			// TODO: vk CREATE LOGIC TO PASS ON TO NEXT STEP
 		});
-		
 		
 		HBox.setHgrow(region, Priority.ALWAYS); //TODO: vk maybe get rid of this bc its done in fxml file
 		cancelButton.setPadding(new Insets(5, 20, 5, 20));
