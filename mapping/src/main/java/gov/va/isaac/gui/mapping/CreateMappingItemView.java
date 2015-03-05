@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class CreateMappingItemView implements PopupViewI{
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	private CreateMappingSetController controller;
+	private CreateMappingItemController controller;
 
 	public CreateMappingItemView() throws IOException {
 		super();

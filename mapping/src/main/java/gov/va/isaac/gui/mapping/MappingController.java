@@ -92,18 +92,18 @@ public class MappingController implements TaskCompleteCallback {
 		plusMappingButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				CreateMappingItemView itemView = AppContext.getService(CreateMappingItemView.class);
-				//itemView.setMapping();
-				itemView.showView(null);
+				CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
+				cv.setMapping("New Name", "New Desc", "New Purpose");
+				cv.showView(null);
 			}
 		});
 		
 		plusListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
-				cv.setMapping("New Name", "New Desc", "New Purpose");
-				cv.showView(null);
+				CreateMappingItemView itemView = AppContext.getService(CreateMappingItemView.class);
+				//itemView.setMapping();
+				itemView.showView(null);
 			}
 		});
 		
