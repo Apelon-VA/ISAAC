@@ -35,15 +35,15 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 
 /**
- * {@link Mapping}
+ * {@link MappingItem}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class Mapping
+public class MappingItem
 {
 	private RefexDynamicVersionBI<?> refex_;
 
-	protected Mapping(RefexDynamicChronicleBI<?> refex)
+	protected MappingItem(RefexDynamicChronicleBI<?> refex)
 	{
 		try
 		{
@@ -55,7 +55,7 @@ public class Mapping
 		}
 	}
 	
-	protected Mapping(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
+	protected MappingItem(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
 	{
 		try
 		{

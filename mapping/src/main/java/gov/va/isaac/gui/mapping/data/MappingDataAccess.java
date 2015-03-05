@@ -81,11 +81,11 @@ public class MappingDataAccess
 		return new MappingSet(mappingName, inverseName, purpose, description, editorStatus);
 	}
 	
-	public static List<Mapping> getMappings(UUID mappingSetID) throws IOException
+	public static List<MappingItem> getMappings(UUID mappingSetID) throws IOException
 	{
 		try
 		{
-			ArrayList<Mapping> result = new ArrayList<>();
+			ArrayList<MappingItem> result = new ArrayList<>();
 			
 			LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
 			if (indexer == null)
@@ -96,7 +96,7 @@ public class MappingDataAccess
 			for (SearchResult sr : refexes)
 			{
 				RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
-				result.add(new Mapping(rc));
+				result.add(new MappingItem(rc));
 			}
 			
 			return result;
@@ -108,8 +108,8 @@ public class MappingDataAccess
 		}
 	}
 	
-	public static Mapping createMapping(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
+	public static MappingItem createMapping(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
 	{
-		return new Mapping(sourceConcept, mappingSetID, targetConcept, qualifier, editorStatus);
+		return new MappingItem(sourceConcept, mappingSetID, targetConcept, qualifier, editorStatus);
 	}
 }
