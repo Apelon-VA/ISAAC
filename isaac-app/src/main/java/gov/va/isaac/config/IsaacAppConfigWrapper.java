@@ -23,6 +23,7 @@ import gov.va.isaac.config.generated.IsaacAppConfig;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.interfaces.config.IsaacAppConfigI;
 import gov.va.isaac.util.OTFUtility;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -33,9 +34,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.inject.Singleton;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -43,18 +50,22 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -74,6 +85,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	//things we read from other pom based property files
 	private String dbGroupId, dbArtifactId, dbVersion, dbClassifier, dbType;
 	private String scmUrl, isaacVersion, version;
+	private final Set<Map<String, String>> appLicenses = new HashSet<>();
+	private final Set<Map<String, String>> dbLicenses = new HashSet<>();
 	
 	private IsaacAppConfigWrapper()
 	{
@@ -102,7 +115,8 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		//Read in other information from the package (pom.properties file during normal runtime, pom.xml files if running in a dev env)
 		try
 		{
-			AtomicBoolean readDbMetadata = new AtomicBoolean(false);
+			AtomicBoolean readDbMetadataFromProperties = new AtomicBoolean(false);
+			AtomicBoolean readDbMetadataFromPom = new AtomicBoolean(false);
 			AtomicBoolean readAppMetadata = new AtomicBoolean(false);
 			
 			//Read the db metadata
@@ -132,16 +146,53 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 								dbVersion = p.getProperty("project.version");
 								dbClassifier = p.getProperty("project.classifier");
 								dbType = p.getProperty("project.type");
-								readDbMetadata.set(true);
-								return FileVisitResult.TERMINATE;
+								readDbMetadataFromProperties.set(true);
+								return readDbMetadataFromPom.get() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+							} else if (f.isFile() && f.getName().toLowerCase().equals("pom.xml")) {
+								DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+								DocumentBuilder builder;
+								Document dDoc = null;
+								XPath xPath = XPathFactory.newInstance().newXPath();
+
+								try {
+									builder = domFactory.newDocumentBuilder();
+
+									dDoc = builder.parse(f);
+									
+
+									NodeList appLicensesNodes = ((NodeList) xPath.evaluate("/project/licenses/license/name", dDoc, XPathConstants.NODESET));
+
+									log_.debug("Found {} license names in DB pom.xml", appLicensesNodes.getLength());
+									for (int i = 0; i < appLicensesNodes.getLength(); i++) {
+										Node currentLicenseNameNode = appLicensesNodes.item(i);
+										String name = currentLicenseNameNode.getTextContent();
+										
+										Map<String, String> license = new HashMap<>();
+										license.put("name", name);
+										license.put("url", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/url", dDoc, XPathConstants.NODE)).getTextContent());
+										license.put("comments", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/comments", dDoc, XPathConstants.NODE)).getTextContent());
+										
+										dbLicenses.add(Collections.unmodifiableMap(license));
+										
+										log_.debug("Extracted license \"{}\" from DB pom.xml: {}", name, license.toString());
+									}
+								} catch (XPathExpressionException | SAXException | ParserConfigurationException e) {
+									e.printStackTrace();
+									throw new IOException(e);
+								}
+
+
+								readDbMetadataFromPom.set(true);
+								return readDbMetadataFromProperties.get() ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 							}
+
 							return FileVisitResult.CONTINUE;
 						}
 					});
 				}
 			}
 			
-			if (!readDbMetadata.get())
+			if (!readDbMetadataFromProperties.get())
 			{
 				log_.warn("Failed to read the metadata about the database from the database package.");
 			}
@@ -169,6 +220,23 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 					scmUrl= ((Node) xPath.evaluate("/project/scm/url", dDoc, XPathConstants.NODE)).getTextContent();
 					version= ((Node) xPath.evaluate("/project/version", dDoc, XPathConstants.NODE)).getTextContent();
 					
+					NodeList appLicensesNodes = ((NodeList) xPath.evaluate("/project/licenses/license/name", dDoc, XPathConstants.NODESET));
+
+					log_.debug("Found {} license names", appLicensesNodes.getLength());
+					for (int i = 0; i < appLicensesNodes.getLength(); i++) {
+						Node currentLicenseNameNode = appLicensesNodes.item(i);
+						String name = currentLicenseNameNode.getTextContent();
+						
+						Map<String, String> license = new HashMap<>();
+						license.put("name", name);
+						license.put("url", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/url", dDoc, XPathConstants.NODE)).getTextContent());
+						license.put("comments", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/comments", dDoc, XPathConstants.NODE)).getTextContent());
+						
+						appLicenses.add(Collections.unmodifiableMap(license));
+						
+						log_.debug("Extracted license \"{}\" from app pom.xml: {}", name, license.toString());
+					}
+
 					readAppMetadata.set(true);
 				}
 			}
@@ -554,5 +622,13 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	public String getVersion()
 	{
 		return version;
+	}
+
+	public Set<Map<String, String>> getAppLicenses() {
+		return Collections.unmodifiableSet(appLicenses);
+	}
+	
+	public Set<Map<String, String>> getDbLicenses() {
+		return Collections.unmodifiableSet(dbLicenses);
 	}
 }

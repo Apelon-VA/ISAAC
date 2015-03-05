@@ -8,7 +8,7 @@
 
 <BorderPane fx:id="borderPane_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.about.AboutViewController">
 	<top>
-		<Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="40.0" styleClass="headerBackground" text="About ISAAC" BorderPane.alignment="CENTER">
+		<Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="40.0" styleClass="headerBackground" text="ISAAC" BorderPane.alignment="CENTER">
 			<font>
 				<Font name="System Bold" size="18.0" />
 			</font>
@@ -31,18 +31,6 @@
 		</HBox>
 	</bottom>
 	<center>
-		<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
-         <content>
-            <GridPane fx:id="gridPane_">
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
-         </content>
-		</ScrollPane>
+		<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
 	</center>
 </BorderPane>
