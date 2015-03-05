@@ -354,7 +354,11 @@ public class OTFUtility {
 		return preferredRf1Nid;
 	}
 
-	private static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
+	/**
+	 * Pass in the annotations on a description component to determine if one of the 
+	 * annotations is the isPreferred annotation
+	 */
+	public static boolean isPreferred(Collection<? extends RefexChronicleBI<?>> collection) {
 		for (RefexChronicleBI<?> rc : collection) {
 			if (rc.getRefexType() == RefexType.CID) {
 				int nid1 = ((NidMember) rc).getNid1();  // RefexType.CID means NidMember.
