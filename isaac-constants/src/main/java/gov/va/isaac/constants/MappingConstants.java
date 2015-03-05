@@ -26,6 +26,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
+import org.ihtsdo.otf.tcc.api.spec.ConceptSpecWithDescriptions;
 import org.ihtsdo.otf.tcc.api.spec.DynamicRefexConceptSpec;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 
@@ -70,22 +71,32 @@ public class MappingConstants
 		UUID.fromString("45b49b0d-e2d2-5a27-a08d-8f79856b6307"), 
 		MAPPING_QUALIFIERS);
 	
+	public static ConceptSpecWithDescriptions COLUMN_STATUS = new ConceptSpecWithDescriptions("status", 
+		UUID.fromString("2da30f4a-e930-50ad-9e86-c81598dfd8c3"),
+		new String[] {"status"},
+		new String[] {"Stores the editor selected status of the mapping set or mapping instance"},
+		RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static ConceptSpecWithDescriptions COLUMN_PURPOSE = new ConceptSpecWithDescriptions("purpose", 
+		UUID.fromString("e5de9548-35b9-5e3b-9968-fd9c0a665b51"),
+		new String[] {"purpose"},
+		new String[] {"Stores the editor stated purpose of the mapping set"},
+		RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
 	public static DynamicRefexConceptSpec MAPPING_SEMEME_TYPE;
 	static
 	{
 		try
 		{
 			//This sememe defines how the mapping sememe's are constructed
-			//Column 0 is 'Status (attribute) - c1a45484-707b-3447-9145-0f20b53dd10c'
-			//Column 1 is 'Purpose (attribute)' - 94cb845e-83b8-330d-bc9d-a758dceb6d81
 			MAPPING_SEMEME_TYPE = new DynamicRefexConceptSpec("Mapping Sememe Type", 
 				UUID.fromString("aa4c75a1-fc69-51c9-88dc-a1a1c7f84e01"),
 				true, 
 				"A Sememe used to specify how user-created mapping Sememes are structured", 
 				new RefexDynamicColumnInfo[] {
-					new RefexDynamicColumnInfo(0, UUID.fromString("c1a45484-707b-3447-9145-0f20b53dd10c"), RefexDynamicDataType.NID, null, false, 
+					new RefexDynamicColumnInfo(0, COLUMN_STATUS.getPrimodialUuid(), RefexDynamicDataType.NID, null, false, 
 						RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MAPPING_STATUS.getPrimodialUuid())),
-					new RefexDynamicColumnInfo(1, UUID.fromString("94cb845e-83b8-330d-bc9d-a758dceb6d81"), RefexDynamicDataType.STRING, null, false, null, null)},
+					new RefexDynamicColumnInfo(1, COLUMN_PURPOSE.getPrimodialUuid(), RefexDynamicDataType.STRING, null, false, null, null)},
 				RefexDynamic.REFEX_DYNAMIC_IDENTITY,
 				new Integer[] {});  //want to index this sememe, but don't need to index the data columns
 		}
