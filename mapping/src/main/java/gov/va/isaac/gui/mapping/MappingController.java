@@ -30,8 +30,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:dtriglianos@apelon.com">David Triglianos</a>
  */
 
-public class MappingController implements TaskCompleteCallback
-{
+public class MappingController implements TaskCompleteCallback {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 
     @FXML private AnchorPane	mainPane;
@@ -50,8 +49,7 @@ public class MappingController implements TaskCompleteCallback
     @FXML private Button 		commentButton;
     @FXML private Label			listSummaryLabel;
     
-	public static MappingController init() throws IOException
-	{
+	public static MappingController init() throws IOException {
 		// Load from FXML.
 		URL resource = MappingController.class.getResource("Mapping.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
@@ -60,8 +58,7 @@ public class MappingController implements TaskCompleteCallback
 	}
 
 	@FXML
-	public void initialize()
-	{
+	public void initialize() {
 		assert mainPane 			!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert mappingPane 			!= null : "fx:id=\"mappingPane\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert listPane 			!= null : "fx:id=\"listPane\" was not injected: check your FXML file 'Mapping.fxml'.";
@@ -92,8 +89,16 @@ public class MappingController implements TaskCompleteCallback
 		
 		activeOnlyToggle.setSelected(true);
 		
-		plusMappingButton.setOnAction(new EventHandler<ActionEvent>()
-		{
+		plusMappingButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				CreateMappingItemView itemView = AppContext.getService(CreateMappingItemView.class);
+				//itemView.setMapping();
+				itemView.showView(null);
+			}
+		});
+		
+		plusListButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
@@ -104,14 +109,12 @@ public class MappingController implements TaskCompleteCallback
 		
 	}
 
-	public AnchorPane getRoot()
-	{
+	public AnchorPane getRoot()	{
 		return mainPane;
 	}
 
 	@Override
-	public void taskComplete(long taskStartTime, Integer taskId)
-	{
+	public void taskComplete(long taskStartTime, Integer taskId) {
 
 		// Run on JavaFX thread.
 		Platform.runLater(() -> 
