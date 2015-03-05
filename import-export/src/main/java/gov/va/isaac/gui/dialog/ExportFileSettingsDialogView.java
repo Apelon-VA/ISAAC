@@ -44,83 +44,75 @@ import org.slf4j.LoggerFactory;
  */
 @Service
 @Singleton
-public class ExportFileSettingsDialogView implements PopupViewI, IsaacViewWithMenusI
-{
-	private static final Logger LOG = LoggerFactory.getLogger(ExportFileSettingsDialogView.class);
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
-	 */
-	@Override
-	public List<MenuItemI> getMenuBarMenus()
-	{
-		ArrayList<MenuItemI> menus = new ArrayList<>();
-		menus.add(new MenuItemI()
-		{
-			@Override
-			public void handleMenuSelection(Window parent)
-			{
-				showView(parent);
-			}
+public class ExportFileSettingsDialogView implements PopupViewI,
+    IsaacViewWithMenusI {
+  private static final Logger LOG = LoggerFactory
+      .getLogger(ExportFileSettingsDialogView.class);
 
-			@Override
-			public int getSortOrder()
-			{
-				return 1;
-			}
+  /**
+   * @see gov.va.isaac.interfaces.gui.views.IsaacViewI#getMenuBarMenus()
+   */
+  @Override
+  public List<MenuItemI> getMenuBarMenus() {
+    ArrayList<MenuItemI> menus = new ArrayList<>();
+    menus.add(new MenuItemI() {
+      @Override
+      public void handleMenuSelection(Window parent) {
+        showView(parent);
+      }
 
-			@Override
-			public String getParentMenuId()
-			{
-				return ApplicationMenus.IMPORT_EXPORT.getMenuId();
-			}
+      @Override
+      public int getSortOrder() {
+        return 1;
+      }
 
-			@Override
-			public String getMenuName()
-			{
-				return "Export To File...";
-			}
+      @Override
+      public String getParentMenuId() {
+        return ApplicationMenus.IMPORT_EXPORT.getMenuId();
+      }
 
-			@Override
-			public String getMenuId()
-			{
-				return "createExporterMenuItem";
-			}
+      @Override
+      public String getMenuName() {
+        return "Export To File...";
+      }
 
-			@Override
-			public boolean enableMnemonicParsing()
-			{
-				return false;
-			}
-			
-			/**
-			 * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
-			 */
-			@Override
-			public Image getImage()
-			{
-				return Images.LEGO_EXPORT.getImage();
-			}
-		});
-		return menus;
-	}
+      @Override
+      public String getMenuId() {
+        return "createExporterMenuItem";
+      }
 
-	/**
-	 * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
-	 */
-	@Override
-	public void showView(Window parent)
-	{
-		try
-		{
-			ExportFileSettingsDialog exportFileSettingsDialog = new ExportFileSettingsDialog(parent);
-			exportFileSettingsDialog.show();
-		}
-		catch (Exception ex)
-		{
-			String title = ex.getClass().getName();
-			String msg = String.format("Unexpected error showing ExportFileSettingsDialog");
-			LOG.error(msg, ex);
-			AppContext.getCommonDialogs().showErrorDialog(title, msg, ex.getMessage());
-		}
-	}
+      @Override
+      public boolean enableMnemonicParsing() {
+        return false;
+      }
+
+      /**
+       * @see gov.va.isaac.interfaces.gui.MenuItemI#getImage()
+       */
+      @Override
+      public Image getImage() {
+        return Images.LEGO_EXPORT.getImage();
+      }
+    });
+    return menus;
+  }
+
+  /**
+   * @see gov.va.isaac.interfaces.gui.views.PopupViewI#showView(javafx.stage.Window)
+   */
+  @Override
+  public void showView(Window parent) {
+    try {
+      ExportFileSettingsDialog exportFileSettingsDialog =
+          new ExportFileSettingsDialog(parent);
+      exportFileSettingsDialog.show();
+    } catch (Exception ex) {
+      String title = ex.getClass().getName();
+      String msg =
+          String.format("Unexpected error showing ExportFileSettingsDialog");
+      LOG.error(msg, ex);
+      AppContext.getCommonDialogs()
+          .showErrorDialog(title, msg, ex.getMessage());
+    }
+  }
 }

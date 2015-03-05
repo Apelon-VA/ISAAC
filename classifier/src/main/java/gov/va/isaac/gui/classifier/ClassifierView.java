@@ -46,6 +46,7 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Taxonomies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO: Auto-generated Javadoc
 /**
  * A GUI for handling full classification runs.
  *
@@ -75,7 +76,7 @@ public class ClassifierView extends GridPane {
   /** The exporter task. */
   Task<Boolean> task;
 
-  /** the task thread */
+  /** the task thread. */
   Thread taskThread = null;
 
   /** The request cancel. */
@@ -84,11 +85,17 @@ public class ClassifierView extends GridPane {
   /** The classifier. */
   Classifier classifier = null;
 
+  /** The incremental classify. */
+  boolean incrementalClassify = false;
+
   /**
    * Instantiates an empty {@link ClassifierView}.
+   *
+   * @param incrementalClassify the incremental classify
    */
-  public ClassifierView() {
+  public ClassifierView(boolean incrementalClassify) {
     super();
+    this.incrementalClassify = incrementalClassify;
 
     // GUI placeholders.
     this.setHgap(10);
@@ -130,11 +137,12 @@ public class ClassifierView extends GridPane {
     FxUtils.checkFxUserThread();
 
     // Update UI.
-    rootName.setText(OTFUtility.getConPrefTerm(Taxonomies.SNOMED.getLenient().getNid()));
-    
+    rootName.setText(OTFUtility.getConPrefTerm(Taxonomies.SNOMED.getLenient()
+        .getNid()));
+
     // Create classifier
     classifier = new SnomedSnorocketClassifier();
-    
+
     // Do work in background.
     task = new ClassifyTask();
 
@@ -227,8 +235,20 @@ public class ClassifierView extends GridPane {
       });
 
       // Perform classification
-      classifier.classify(Taxonomies.SNOMED.getLenient().getNid());
+      if (incrementalClassify) {
+        if (classifier.isIncrementalClassifyReady()) {
+          classifier.incrementalClassify();
+        } else {
+          String title = "Incremental Classifier Not Ready";
+          String message = "The incremental classifier is not ready, you must perform full classification first.";
+          AppContext.getCommonDialogs().showErrorDialog(title, message, null);
+          return true;
+        }
+      } else {
+        classifier.classify(Taxonomies.SNOMED.getLenient().getNid());
+      }
 
+      //
       Platform.runLater(() -> {
         statusLabel.setText("Finished");
         progressBar.setProgress(1);
@@ -283,15 +303,28 @@ public class ClassifierView extends GridPane {
    */
   class GridPaneBuilder {
 
+    /** The grid pane. */
     private final GridPane gridPane;
 
+    /** The row index. */
     private int rowIndex = 0;
 
+    /**
+     * Instantiates a {@link GridPaneBuilder} from the specified parameters.
+     *
+     * @param gridPane the grid pane
+     */
     public GridPaneBuilder(GridPane gridPane) {
       super();
       this.gridPane = gridPane;
     }
 
+    /**
+     * Adds the row.
+     *
+     * @param labelText the label text
+     * @param fxNode the fx node
+     */
     public void addRow(String labelText, Node fxNode) {
 
       // Column 0.
@@ -306,6 +339,8 @@ public class ClassifierView extends GridPane {
     }
 
     /**
+     * Adds the row.
+     *
      * @param fxNode A component to span two columns.
      */
     public void addRow(Node fxNode) {

@@ -309,6 +309,11 @@ public class WorkflowInboxController
 				if (task.getActionStatus() == TaskActionStatus.Pending) {
 					tasksToRemove.add(task);
 				}
+				if (task.getComponentName() == null)
+				{
+					LOG.error("Task {} is missing its component name!", task.getId());
+					tasksToRemove.add(task);
+				}
 			}
 
 			tasksForTable.removeAll(tasksToRemove);
