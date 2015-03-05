@@ -19,6 +19,7 @@
 package gov.va.isaac.constants;
 
 import java.util.UUID;
+import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
@@ -100,4 +101,16 @@ public class ISAAC
 			new RefexDynamicColumnInfo[] {},
 			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
 			new Integer[] {});  //Index the associations
+	
+	public static DynamicRefexConceptSpec ASSOCIATION_INVERSE_NAME = new DynamicRefexConceptSpec("inverse name", 
+			UUID.fromString("c342d18a-ec1c-5583-bfe3-59e6324ae189"),
+			new String[] {"inverse name"},
+			new String[0],
+			true, 
+			"This is the extended description type that may be attached to a description within a concept that defines an Association Refex to signify that "
+					+ "the referenced description is the inverse of the association name.",
+			new RefexDynamicColumnInfo[0],
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+			ComponentType.DESCRIPTION,
+			null);
 }
