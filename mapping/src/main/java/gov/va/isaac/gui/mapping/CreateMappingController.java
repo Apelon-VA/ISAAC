@@ -50,32 +50,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.image.ImageView;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
@@ -107,5 +84,61 @@ import com.sun.javafx.collections.ObservableListWrapper;
  */
 
 public class CreateMappingController {
+	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingController.class);
 
+    @FXML private BorderPane 		mainPane;
+
+    @FXML private TextField 		criteriaText;
+    @FXML private Button 			searchButton;
+
+    @FXML private TableView<?> 		candidatesTableView;
+    @FXML private TableColumn<?, ?> candidatesConceptColumn;
+    @FXML private TableColumn<?, ?> candidatesCodeSystemColumn;
+    @FXML private TableColumn<?, ?> candidatesStatusColumn;
+    @FXML private Label 			targetConceptLabel;
+
+    @FXML private ComboBox<?> 		codeSystemRestrictionCombo;
+    @FXML private ComboBox<?> 		refsetRestrictionCombo;
+    
+    @FXML private RadioButton 		noRestrictionRadio;
+    @FXML private RadioButton 		descriptionRestrictionRadio;
+    @FXML private RadioButton 		synonymRestrictionRadio;
+    @FXML private RadioButton 		fsnRestrictionRadio;
+    
+    @FXML private ComboBox<?> 		childRestrictionCombo;
+    @FXML private ComboBox<?> 		descriptionRestrictionCombo;
+    @FXML private ComboBox<?> 		sourceConceptCombo;
+    @FXML private ToggleGroup 		desc;    
+
+    @FXML private Button 			clearRestrictionButton;
+    @FXML private Button 			saveButton;
+    @FXML private Button 			cancelButton;
+
+
+	@FXML
+	public void initialize() {
+
+	    assert mainPane                    != null: "fx:id=\"mainPane\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert criteriaText                != null: "fx:id=\"criteriaText\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert searchButton                != null: "fx:id=\"searchButton\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert candidatesTableView         != null: "fx:id=\"candidatesTableView\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert candidatesConceptColumn     != null: "fx:id=\"candidatesConceptColumn\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert candidatesCodeSystemColumn  != null: "fx:id=\"candidatesCodeSystemColumn\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert candidatesStatusColumn      != null: "fx:id=\"candidatesStatusColumn\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert targetConceptLabel          != null: "fx:id=\"targetConceptLabel\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert codeSystemRestrictionCombo  != null: "fx:id=\"codeSystemRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert refsetRestrictionCombo      != null: "fx:id=\"refsetRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert noRestrictionRadio          != null: "fx:id=\"noRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert descriptionRestrictionRadio != null: "fx:id=\"descriptionRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert synonymRestrictionRadio     != null: "fx:id=\"synonymRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert fsnRestrictionRadio         != null: "fx:id=\"fsnRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert childRestrictionCombo       != null: "fx:id=\"childRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert descriptionRestrictionCombo != null: "fx:id=\"descriptionRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert sourceConceptCombo          != null: "fx:id=\"sourceConceptCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert clearRestrictionButton      != null: "fx:id=\"clearRestrictionButton\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert saveButton                  != null: "fx:id=\"saveButton\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert cancelButton                != null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";
+
+	}
+    
 }
