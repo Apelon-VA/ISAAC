@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200.0" minWidth="200.0" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<top><Label text="Create Mapping" BorderPane.alignment="CENTER">
+<font>
+<Font name="System Bold" size="31.0" />
+</font>
+<BorderPane.margin>
+<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+</BorderPane.margin></Label>
+</top>
+<right>
+<VBox maxHeight="1.7976931348623157E308" style="-fx-border-width: 3; -fx-border-color: darkgray;">
+<children><Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Candidate Restrictions">
+<VBox.margin>
+<Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+</VBox.margin>
+<font>
+<Font size="21.0" />
+</font></Label><Accordion BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+  <panes><TitledPane animated="false" layoutX="54.0" layoutY="125.0" text="Description Type">
+  <content>
+<VBox spacing="5.0">
+<children><RadioButton mnemonicParsing="false" selected="true" text="No Restriction">
+<toggleGroup>
+<ToggleGroup fx:id="desc" />
+</toggleGroup></RadioButton><RadioButton mnemonicParsing="false" text="FSN" toggleGroup="$desc" /><RadioButton mnemonicParsing="false" text="Synonym" toggleGroup="$desc" /><RadioButton mnemonicParsing="false" text="Description" toggleGroup="$desc" />
+</children>
+<padding>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</padding>
+</VBox>
+  </content>
+</TitledPane><TitledPane animated="false" text="Advanced Description Type">
+  <content>
+<VBox>
+<children><ComboBox maxWidth="1.7976931348623157E308" promptText="No Resctriction" />
+</children>
+</VBox>
+  </content>
+</TitledPane>
+    <TitledPane animated="false" text="Target Code System">
+      <content>
+<VBox>
+<children>
+<ComboBox layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" promptText="No Resctriction" />
+</children>
+</VBox>
+      </content>
+    </TitledPane>
+    <TitledPane animated="false" text="Target is member of refset">
+      <content>
+<VBox>
+<children>
+<ComboBox layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" promptText="No Resctriction" />
+</children>
+</VBox>
+      </content>
+    </TitledPane>
+    <TitledPane animated="false" text="Target is child of">
+      <content>
+<VBox>
+<children>
+<ComboBox editable="true" layoutX="134.0" layoutY="18.0" maxWidth="1.7976931348623157E308" minWidth="50.0" promptText="select, type or drop concept" />
+</children>
+</VBox>
+      </content>
+    </TitledPane>
+  </panes>
+</Accordion>
+<HBox alignment="CENTER">
+<children><Button alignment="CENTER" mnemonicParsing="false" text="Clear All">
+<HBox.margin>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</HBox.margin>
+<padding>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</padding></Button>
+</children>
+</HBox>
+</children>
+</VBox>
+</right>
+<bottom><GridPane BorderPane.alignment="CENTER">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+<BorderPane.margin>
+<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+</BorderPane.margin>
+<children><Button mnemonicParsing="false" text="Save" GridPane.halignment="RIGHT">
+<GridPane.margin>
+<Insets right="20.0" />
+</GridPane.margin></Button>
+<Button layoutX="395.0" layoutY="13.0" mnemonicParsing="false" text="Cancel" GridPane.columnIndex="1">
+<GridPane.margin>
+<Insets left="20.0" />
+</GridPane.margin>
+</Button>
+</children>
+</GridPane>
+</bottom>
+<center><GridPane hgap="5.0" maxWidth="1.7976931348623157E308" minWidth="150.0" style="-fx-border-color: darkgray; -fx-border-width: 3 0 3 3;" vgap="5.0" BorderPane.alignment="CENTER">
+  <columnConstraints>
+    <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="20.0" />
+<ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="20.0" prefWidth="100.0" />
+<ColumnConstraints hgrow="NEVER" minWidth="20.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints vgrow="NEVER" />
+<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+    <RowConstraints vgrow="NEVER" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+<RowConstraints fillHeight="false" vgrow="NEVER" />
+  </rowConstraints>
+<children><Label text="Source Concept">
+<GridPane.margin>
+<Insets />
+</GridPane.margin></Label><ComboBox editable="true" maxWidth="1.7976931348623157E308" minWidth="50.0" promptText="select, type or drop concept" GridPane.columnIndex="1" GridPane.columnSpan="2" /><Button mnemonicParsing="false" text="Search" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="1" /><Label alignment="CENTER" contentDisplay="CENTER" text="Mapping Candidates" textAlignment="CENTER" GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.rowIndex="2">
+<font>
+<Font size="21.0" />
+</font></Label><Label text="Target Concept" GridPane.rowIndex="4">
+<GridPane.margin>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</GridPane.margin></Label><Label text="&lt;Selected Target Concept&gt; (drag and drop target)" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" /><TableView prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+  <columns>
+    <TableColumn prefWidth="75.0" text="Concept" />
+    <TableColumn prefWidth="131.0" text="Code System" /><TableColumn prefWidth="75.0" text="Status" />
+  </columns>
+</TableView><Label text="Candidate Criteria" GridPane.rowIndex="1" /><TextField promptText="&lt;Automatic&gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+</children>
+<padding>
+<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+</padding>
+</GridPane>
+</center></BorderPane>
