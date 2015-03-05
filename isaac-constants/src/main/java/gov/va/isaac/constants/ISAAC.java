@@ -93,8 +93,8 @@ public class ISAAC
 			new String[] {"Stores the (optional) target concept of an association, or a refex map"},
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 	
-	public static DynamicRefexConceptSpec ASSOCIATION_REFEX = new DynamicRefexConceptSpec("Sememe instances define associations", 
-			UUID.fromString("7ca9d108-084b-5554-9280-2870404179de"),
+	public static DynamicRefexConceptSpec ASSOCIATION_REFEX = new DynamicRefexConceptSpec("Sememe represents association", 
+			UUID.fromString("d4d5909f-ca6e-52af-87bf-2c8199b28f25"),
 			true, 
 			"A Sememe used to annotate other sememes which define an association, which is defined as a sememe which contains "
 			+ "a data column named 'target concept', among other criteria.", 
