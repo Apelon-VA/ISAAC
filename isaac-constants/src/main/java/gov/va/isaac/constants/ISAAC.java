@@ -83,5 +83,21 @@ public class ISAAC
 			new RefexDynamicColumnInfo[] {
 				new RefexDynamicColumnInfo(0, EDITOR_COMMENT.getUuids()[0], RefexDynamicDataType.STRING, null, true, null, null),
 				new RefexDynamicColumnInfo(1, EDITOR_COMMENT_CONTEXT.getUuids()[0], RefexDynamicDataType.STRING, null, false, null, null)},
-			RefexDynamic.REFEX_DYNAMIC_IDENTITY);
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+			new Integer[] {0,1});  //Index the comments, and the columns
+	
+	public static ConceptSpecWithDescriptions REFEX_COLUMN_TARGET_CONCEPT = new ConceptSpecWithDescriptions("target concept", 
+			UUID.fromString("7ef9919c-9d0c-53e9-af1a-4b276723af92"),
+			new String[] {"target concept"},
+			new String[] {"Stores the (optional) target concept of an association, or a refex map"},
+			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
+	
+	public static DynamicRefexConceptSpec ASSOCIATION_REFEX = new DynamicRefexConceptSpec("Sememe instances define associations", 
+			UUID.fromString("7ca9d108-084b-5554-9280-2870404179de"),
+			true, 
+			"A Sememe used to annotate other sememes which define an association, which is defined as a sememe which contains "
+			+ "a data column named 'target concept', among other criteria.", 
+			new RefexDynamicColumnInfo[] {},
+			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+			new Integer[] {});  //Index the associations
 }
