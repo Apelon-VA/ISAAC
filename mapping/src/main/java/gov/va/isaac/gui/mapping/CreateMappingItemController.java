@@ -83,8 +83,8 @@ import com.sun.javafx.collections.ObservableListWrapper;
  * @author <a href="mailto:dtriglianos@apelon.com">David Triglianos</a>
  */
 
-public class CreateMappingController {
-	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingController.class);
+public class CreateMappingItemController {
+	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingItemController.class);
 
     @FXML private BorderPane 		mainPane;
 
