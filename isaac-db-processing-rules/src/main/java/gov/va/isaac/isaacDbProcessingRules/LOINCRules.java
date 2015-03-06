@@ -86,11 +86,11 @@ public class LOINCRules implements TransformConceptIterateI
 	//SNOMED integer id	121278003	Drug measurement
 	private final UUID sctDrugMeasurement = UUID.fromString("4ddf00b1-dc17-38b1-a445-2eecbc53913e");
 	
-	//SNOMED integer id	388469008	Ampicillin RAST
-	private final UUID sctAmpicillin = UUID.fromString("7f798b0f-ceab-3c3f-b55a-17538aaa82ef");
+	//SNOMED integer id	117039004	alkaline denaturation method for fetal hemoglobin determination (procedure)
+	private final UUID sctHemoglobin = UUID.fromString("83e39d6f-b190-397d-ae0e-b12485e96941");
 	
-	//Ampicillin IgE RAST Ql - 15533-3
-	private final UUID loincAmpicillin = UUID.fromString("e284b1f7-61bf-5ca0-b2a2-f0fd838e064b");
+	//Hemoglobin F [Presence] in Blood by Alkali denaturation - 4632-6
+	private final UUID loincHemoglobin= UUID.fromString("127bae6a-4b7f-5e98-8831-45d7b0098c75");
 	
 	//CLASSTYPE
 	private final UUID classtype = UUID.fromString("537869e6-a36e-5bd5-8e5b-dad90e9f4015");
@@ -178,9 +178,9 @@ public class LOINCRules implements TransformConceptIterateI
 				}
 				
 				//Rule 1003
-				if (cc.getPrimordialUuid().equals(loincAmpicillin))
+				if (cc.getPrimordialUuid().equals(loincHemoglobin))
 				{
-					mergeConcepts(cc, sctAmpicillin, ts);
+					mergeConcepts(cc, sctHemoglobin, ts);
 					ruleHits.get(1003).getAndIncrement();
 				}
 				return true;
@@ -254,6 +254,7 @@ public class LOINCRules implements TransformConceptIterateI
 	
 	private void mergeConcepts(ConceptChronicleBI source, UUID target, TerminologyStoreDI ts) throws IOException, InvalidCAB, ContradictionException
 	{
+		//TODO this doesn't work
 		ConceptAttributeVersionBI<?> sourceAttrib = source.getVersion(vc).getConceptAttributesActive();
 		ConceptAttributeAB cab = new ConceptAttributeAB(source.getConceptNid(), sourceAttrib.isDefined(), RefexDirective.EXCLUDE);
 		cab.setComponentUuidNoRecompute(target);
