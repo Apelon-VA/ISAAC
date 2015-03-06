@@ -86,17 +86,20 @@ public class AboutViewController {
 		//mainGridPane_ = new GridPane();
 		appGridPane_ = new GridPane();
 		appGridPane_.setHgap(10);
-		appGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		appGridPane_.setVgap(10);
+		appGridPane_.setPadding(new Insets(10, 10, 10, 10));
 		appTabScollPane_.setContent(appGridPane_);
 
 		dbGridPane_ = new GridPane();
 		dbGridPane_.setHgap(10);
-		dbGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		dbGridPane_.setVgap(10);
+		dbGridPane_.setPadding(new Insets(10, 10, 10, 10));
 		dbTabScollPane_.setContent(dbGridPane_);
 		
 		dbDependenciesGridPane_ = new GridPane();
 		dbDependenciesGridPane_.setHgap(10);
-		dbDependenciesGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		dbDependenciesGridPane_.setVgap(10);
+		dbDependenciesGridPane_.setPadding(new Insets(10, 10, 10, 10));
 		dbDependenciesTabScollPane_.setContent(dbDependenciesGridPane_);
 
 		okButton_.setOnAction((e) -> stage_.close());
@@ -190,11 +193,13 @@ public class AboutViewController {
 	private static void configureGridPaneNode(Node node, int labelColumns) {
 		int columnIndex = GridPane.getColumnIndex(node);
 		
-		if (columnIndex < labelColumns) {
-			if (node instanceof Label) {
-				Label label = (Label)node;
-				
+
+		if (node instanceof Label) {
+			Label label = (Label)node;
+			if (columnIndex < labelColumns) {
 				label.getStyleClass().add("boldLabel");
+			} else {
+				label.setWrapText(true);
 			}
 		}
 
