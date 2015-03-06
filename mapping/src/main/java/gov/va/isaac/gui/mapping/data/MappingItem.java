@@ -19,9 +19,11 @@
 package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.util.OTFUtility;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +34,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
+import org.ihtsdo.otf.tcc.api.uuid.UuidT5Generator;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 
 /**
@@ -65,14 +68,28 @@ public class MappingItem
 			mappingAnnotation.setData(new RefexDynamicDataBI[] {
 					(targetConcept == null ? null : new RefexDynamicUUID(targetConcept)),
 					(qualifier == null ? null : new RefexDynamicUUID(qualifier)),
-					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, null);
+					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinate());
+			
+			
+			UUID mappingUUID = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
+					sourceConcept.toString() + "|" 
+					+ mappingSetID.toString() + "|"
+					+ targetConcept.toString() + "|" 
+					+ qualifier.toString());
+			
+			if (ExtendedAppContext.getDataStore().hasUuid(mappingUUID))
+			{
+				throw new IOException("A mapping with the specified source, target and qualifier already exists in this set.  Please edit that mapping.");
+			}
+			
+			mappingAnnotation.setComponentUuidNoRecompute(mappingUUID);
 			
 			OTFUtility.getBuilder().construct(mappingAnnotation);
 			
 			ExtendedAppContext.getDataStore().addUncommitted(cv);
 			ExtendedAppContext.getDataStore().commit(cv);
 		}
-		catch (InvalidCAB | ContradictionException | PropertyVetoException e)
+		catch (InvalidCAB | ContradictionException | PropertyVetoException | NoSuchAlgorithmException e)
 		{
 			throw new RuntimeException("Unexpected error", e);
 		}
@@ -139,6 +156,8 @@ public class MappingItem
 	public List<Object> getComments()
 	{
 		//TODO implement
-		return new ArrayList();
+		return new ArrayList<>();
 	}
+	
+	//TODO implement edit / retire methods
 }
