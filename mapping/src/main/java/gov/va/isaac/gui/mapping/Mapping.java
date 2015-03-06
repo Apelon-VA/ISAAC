@@ -117,4 +117,12 @@ public class Mapping implements DockedViewI
 	{
 		return "Mapping";
 	}
+	/**
+	 * 
+	 */
+	public void refresh()
+	{
+		svc_.readData();
+		
+	}
 }

@@ -6,31 +6,29 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="mainPane" 
-	maxHeight="-Infinity" maxWidth="-Infinity" 
-	minHeight="-Infinity" minWidth="-Infinity" 
-	prefHeight="280.0" prefWidth="600.0" 
-	xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane fx:id="mainPane" prefHeight="280.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
 	fx:controller="gov.va.isaac.gui.mapping.CreateMappingSetController">
-	<center><GridPane BorderPane.alignment="CENTER">
-	  <columnConstraints>
-	    <ColumnConstraints hgrow="SOMETIMES" maxWidth="293.0" minWidth="10.0" prefWidth="184.0" />
-	    <ColumnConstraints hgrow="SOMETIMES" maxWidth="419.0" minWidth="10.0" prefWidth="416.0" />
-	  </columnConstraints>
-	  <rowConstraints>
-	    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-	    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-	    <RowConstraints minHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
-	  </rowConstraints>
-	<children>
-		<Label text="Mapping Set Name" />
-		<Label text="Mapping Set Description" GridPane.rowIndex="2" />
-		<Label text="Mapping Set Purpose" GridPane.rowIndex="1" />
-		<TextField fx:id="nameInput" GridPane.columnIndex="1" />
-		<TextArea fx:id="descInput" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-		<TextField fx:id="purposeInput" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-	</children>
-	</GridPane>
+	<center>
+		<GridPane fx:id="gridPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+			<columnConstraints>
+				<ColumnConstraints hgrow="NEVER" maxWidth="293.0" minWidth="10.0" prefWidth="184.0" />
+				<ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="416.0" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+				<RowConstraints minHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
+			</rowConstraints>
+			<children>
+				<Label text="Mapping Set Name" />
+				<Label text="Mapping Set Description" GridPane.rowIndex="2" />
+				<Label text="Mapping Set Purpose" GridPane.rowIndex="1" />
+				<TextField fx:id="nameInput" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
+				<TextArea fx:id="descInput" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1"
+					GridPane.rowIndex="2" />
+				<TextField fx:id="purposeInput" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+			</children>
+		</GridPane>
 	</center>
 	<bottom>
 		<GridPane>
@@ -53,9 +51,12 @@
 					</GridPane.margin>
 				</Button>
 			</children>
+			<padding>
+				<Insets top="10.0" />
+			</padding>
 		</GridPane>
 	</bottom>
-	
+
 	<padding>
 		<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 	</padding>

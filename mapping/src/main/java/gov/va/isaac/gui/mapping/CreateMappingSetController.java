@@ -1,16 +1,13 @@
 package gov.va.isaac.gui.mapping;
 
+import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.mapping.data.MappingDataAccess;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.ValidBooleanBinding;
-
-import java.io.IOException;
-import java.net.URL;
-
 import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -19,11 +16,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 
-public class CreateMappingSetController implements TaskCompleteCallback {
+public class CreateMappingSetController {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 	
 	@FXML private BorderPane	mainPane;
@@ -43,8 +39,8 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 	@FXML private TextField		purposeInput;
 	@FXML private Button		createButton;
 	@FXML private Button		cancelButton;
+	@FXML private GridPane		gridPane;
 	
-	private Region region = new Region();
 	private Label title = new Label();
 	
 	public Region getRootNode() {
@@ -69,11 +65,9 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 //		descInput.setPromptText("CURRENT DESC"); TODO: VK EDIT MAPPING FILLS THS OUT
 //		promptInput.setPromptText("CURRENT PROMPT") TODO: VK EDIT MAPPING FILLS THIS OUT 
 		
-		StackPane nameStack = new StackPane();
-		StackPane descStack = new StackPane();
 		title.setText("Create new Mapping Refset");;
 		
-		final ValidBooleanBinding nameInputEmpty = new ValidBooleanBinding() {
+		final ValidBooleanBinding nameInputValid = new ValidBooleanBinding() {
 			{
 				bind(nameInput.textProperty());
 				setComputeOnInvalidate(true);
@@ -89,7 +83,7 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 			}
 		};
 		
-		final ValidBooleanBinding descInputEmpty = new ValidBooleanBinding() {
+		final ValidBooleanBinding descInputValid = new ValidBooleanBinding() {
 			{
 				bind(descInput.textProperty());
 				setComputeOnInvalidate(true);
@@ -104,19 +98,29 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 				return true;
 			}
 		};
-		ErrorMarkerUtils.setupErrorMarker(nameInput, nameStack, nameInputEmpty);
-		ErrorMarkerUtils.setupErrorMarker(descInput, descStack, descInputEmpty);
+		ErrorMarkerUtils.setupErrorMarkerAndSwap(nameInput, gridPane, nameInputValid);
+		ErrorMarkerUtils.setupErrorMarkerAndSwap(descInput, gridPane, descInputValid);
 		
 		createButton.setDefaultButton(true);
-		createButton.setPadding(new Insets(5, 20, 5, 20));
-		createButton.disableProperty().bind(nameInputEmpty.not());
-		createButton.disableProperty().bind(descInputEmpty.not());
+		createButton.disableProperty().bind(nameInputValid.not().or(descInputValid.not()));
 		createButton.setOnAction((event) -> {
 			// TODO: vk CREATE LOGIC TO PASS ON TO NEXT STEP
+			
+			try
+			{
+				MappingDataAccess.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), null);
+				AppContext.getService(Mapping.class).refresh();
+				createButton.getScene().getWindow().hide();
+			}
+			catch (Exception e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 		});
 		
-		HBox.setHgrow(region, Priority.ALWAYS); //TODO: vk maybe get rid of this bc its done in fxml file
-		cancelButton.setPadding(new Insets(5, 20, 5, 20));
 		cancelButton.setCancelButton(true);
 		cancelButton.setOnKeyPressed(new EventHandler<KeyEvent>()  {
 			@Override
@@ -127,21 +131,7 @@ public class CreateMappingSetController implements TaskCompleteCallback {
 				}
 			}
 		});
-		
-		HBox buttons = new HBox();
-		buttons.setMaxWidth(Double.MAX_VALUE);
-		buttons.setPadding(new Insets(10));
-		buttons.setSpacing(5);
-		buttons.getChildren().add(cancelButton);
-		buttons.getChildren().add(createButton);
-		
 	}
-
-	@Override
-    public void taskComplete(long taskStartTime, Integer taskId) {
-	    // TODO Auto-generated method stub
-	    
-    }
 }
 
 
