@@ -51,7 +51,7 @@
 			<artifactId>isaac-app</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-
+		
 		<!-- Need this to run classifier -->
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
