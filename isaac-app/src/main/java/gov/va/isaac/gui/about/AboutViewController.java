@@ -26,8 +26,6 @@ package gov.va.isaac.gui.about;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import gov.va.isaac.AppContext;
@@ -44,6 +42,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.control.ScrollPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +58,16 @@ public class AboutViewController {
 	private Logger logger_ = LoggerFactory.getLogger(AboutViewController.class);
 
 	private @FXML BorderPane borderPane_;
-	private GridPane mainGridPane_;
+	//private GridPane mainGridPane_;
 
+	private @FXML ScrollPane appTabScollPane_;
+	private @FXML ScrollPane dbTabScollPane_;
+	private @FXML ScrollPane dbDependenciesTabScollPane_;
+	
+	private GridPane appGridPane_;
+	private GridPane dbGridPane_;
+	private GridPane dbDependenciesGridPane_;
+	
 	private @FXML Button okButton_;
 	
 	private AboutView stage_;
@@ -73,14 +80,24 @@ public class AboutViewController {
 	{
 		assert borderPane_ != null : "fx:id=\"borderPane_\" was not injected: check your FXML file 'AboutView.fxml'.";
 		assert okButton_ != null : "fx:id=\"okButton_\" was not injected: check your FXML file 'AboutView.fxml'.";
-
+		
 		borderPane_.setMaxWidth(Double.MAX_VALUE);
 
-		mainGridPane_ = new GridPane();
-		mainGridPane_.setHgap(10);
-		mainGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		//mainGridPane_ = new GridPane();
+		appGridPane_ = new GridPane();
+		appGridPane_.setHgap(10);
+		appGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		appTabScollPane_.setContent(appGridPane_);
+
+		dbGridPane_ = new GridPane();
+		dbGridPane_.setHgap(10);
+		dbGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		dbTabScollPane_.setContent(dbGridPane_);
 		
-		borderPane_.setCenter(mainGridPane_);
+		dbDependenciesGridPane_ = new GridPane();
+		dbDependenciesGridPane_.setHgap(10);
+		dbDependenciesGridPane_.setPadding(new Insets(0, 10, 0, 10));
+		dbDependenciesTabScollPane_.setContent(dbDependenciesGridPane_);
 
 		okButton_.setOnAction((e) -> stage_.close());
 	}
@@ -95,69 +112,90 @@ public class AboutViewController {
 		
 		IsaacAppConfigWrapper appConfig = (IsaacAppConfigWrapper) AppContext.getService(IsaacAppConfigWrapper.class);
 		
-		mainGridPane_.getChildren().clear();
-		int mainGridPaneRowCount = 0;
+		appGridPane_.getChildren().clear();
+		int appGridPaneRowCount = 0;
 		
 		// version
 		// DB loaded
 		// license for software
 		// license for DB content
 		// license statements like "this software includes things developed by Apache, etc"
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label("Application"));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Release Version"), new CopyableLabel(getReleaseVersion()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Extension Namespace"), new CopyableLabel(getExtensionNamespace()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Dependencies"), new Hyperlink(getDependencies()));
-
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("SCM"), new Hyperlink(appConfig.getScmUrl()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("ISAAC version"), new CopyableLabel(appConfig.getIsaacVersion()));
+		appGridPane_.addRow(appGridPaneRowCount++, new Label("Release Version"), new CopyableLabel(getReleaseVersion()));
+		appGridPane_.addRow(appGridPaneRowCount++, new Label("Extension Namespace"), new CopyableLabel(getExtensionNamespace()));
+		appGridPane_.addRow(appGridPaneRowCount++, new Label("Dependencies"), new Hyperlink(getDependencies()));
+		appGridPane_.addRow(appGridPaneRowCount++, new Label("SCM"), new Hyperlink(appConfig.getScmUrl()));
+		appGridPane_.addRow(appGridPaneRowCount++, new Label("ISAAC version"), new CopyableLabel(appConfig.getIsaacVersion()));
 
 		// App Licenses
 		for (Map<String, String> licenseInfo : appConfig.getAppLicenses()) {
-			if (licenseInfo.get("url") != null && licenseInfo.get("url").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " URL"), new Hyperlink(licenseInfo.get("url")));
+			if (licenseInfo.get("comments") != null && licenseInfo.get("comments").length() > 0) {
+				appGridPane_.addRow(appGridPaneRowCount++, new Label(licenseInfo.get("name")), new CopyableLabel(formatLicenseComment(licenseInfo.get("comments"))));
 			}
-			if (licenseInfo.get("comment") != null && licenseInfo.get("comment").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " Comment"), new CopyableLabel(licenseInfo.get("comment")));
+			if (licenseInfo.get("url") != null && licenseInfo.get("url").length() > 0) {
+				appGridPane_.addRow(appGridPaneRowCount++, new Label(licenseInfo.get("name") + " URL"), new Hyperlink(licenseInfo.get("url")));
 			}
 		}
+		
+		for (Node node : appGridPane_.getChildren()) {
+			configureGridPaneNode(node);
+		}
 
-
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label("Database"));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Type"), new CopyableLabel(appConfig.getDbType()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Version"), new CopyableLabel(appConfig.getDbVersion()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Classifier"), new CopyableLabel(appConfig.getDbClassifier()));
+		dbGridPane_.getChildren().clear();
+		int dbGridPaneRowCount = 0;
+		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Type"), new CopyableLabel(appConfig.getDbType()));
+		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Version"), new CopyableLabel(appConfig.getDbVersion()));
+		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Classifier"), new CopyableLabel(appConfig.getDbClassifier()));
 
 		// DB Licenses
 		for (Map<String, String> licenseInfo : appConfig.getDbLicenses()) {
-			if (licenseInfo.get("url") != null && licenseInfo.get("url").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " URL"), new Hyperlink(licenseInfo.get("url")));
+			if (licenseInfo.get("comments") != null && licenseInfo.get("comments").length() > 0) {
+				dbGridPane_.addRow(dbGridPaneRowCount++, new Label(licenseInfo.get("name")), new CopyableLabel(formatLicenseComment(licenseInfo.get("comments"))));
 			}
-			if (licenseInfo.get("comment") != null && licenseInfo.get("comment").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " Comment"), new CopyableLabel(licenseInfo.get("comment")));
+			if (licenseInfo.get("url") != null && licenseInfo.get("url").length() > 0) {
+				dbGridPane_.addRow(dbGridPaneRowCount++, new Label(licenseInfo.get("name") + " URL"), new Hyperlink(licenseInfo.get("url")));
 			}
 		}
 		
-		for (Node node : mainGridPane_.getChildren()) {
+		for (Node node : dbGridPane_.getChildren()) {
 			configureGridPaneNode(node);
+		}
+		
+
+		dbDependenciesGridPane_.getChildren().clear();
+		int dbDependenciesGridPaneRowCount = 0;
+		for (Map<String, String> dependency : appConfig.getDbDependencies()) {
+			dbDependenciesGridPane_.addRow(dbDependenciesGridPaneRowCount++, new CopyableLabel(dependency.get("artifactId")));
+
+			dbDependenciesGridPane_.addRow(dbDependenciesGridPaneRowCount++, new Label(), new Label("groupId"), new CopyableLabel(dependency.get("groupId")));
+			dbDependenciesGridPane_.addRow(dbDependenciesGridPaneRowCount++, new Label(), new Label("version"), new CopyableLabel(dependency.get("version")));
+			
+			if (dependency.get("classifier") != null) {
+				dbDependenciesGridPane_.addRow(dbDependenciesGridPaneRowCount++, new Label(), new Label("classifier"), new CopyableLabel(dependency.get("classifier")));
+			}
+		}
+		
+		for (Node node : dbDependenciesGridPane_.getChildren()) {
+			configureGridPaneNode(node, 2);
 		}
 	}
 	
+	private static String formatLicenseComment(String comment) {
+		return comment.replaceAll("[\n\r]", "").replaceAll("\\W+", " ");
+	}
+	
 	private static void configureGridPaneNode(Node node) {
-		//System.out.println("Row: "+ GridPane.getRowIndex(node));
+		configureGridPaneNode(node, 1);
+	}
+
+	private static void configureGridPaneNode(Node node, int labelColumns) {
 		int columnIndex = GridPane.getColumnIndex(node);
 		
-		switch(columnIndex) {
-		case 0:
-		case 1:
+		if (columnIndex < labelColumns) {
 			if (node instanceof Label) {
 				Label label = (Label)node;
 				
 				label.getStyleClass().add("boldLabel");
 			}
-			break;
-			
-		default:
-			break;
 		}
 
 		if (node instanceof Hyperlink) {

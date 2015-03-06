@@ -30,7 +30,25 @@
 			</padding>
 		</HBox>
 	</bottom>
-	<center>
-		<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
-	</center>
+   <center>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <Tab text="Application">
+               <content>
+                  <ScrollPane fx:id="appTabScollPane_" prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+          <Tab text="Database">
+               <content>
+                  <ScrollPane fx:id="dbTabScollPane_" prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+            <Tab text="Database Dependencies">
+               <content>
+                  <ScrollPane fx:id="dbDependenciesTabScollPane_" prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </center>
 </BorderPane>

@@ -163,22 +163,49 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 
 									dDoc = builder.parse(f);
 									
+									{
+										NodeList dbLicensesNodes = ((NodeList) xPath.evaluate("/project/licenses/license/name", dDoc, XPathConstants.NODESET));
 
-									NodeList appLicensesNodes = ((NodeList) xPath.evaluate("/project/licenses/license/name", dDoc, XPathConstants.NODESET));
+										log_.debug("Found {} license names in DB pom.xml", dbLicensesNodes.getLength());
+										for (int i = 0; i < dbLicensesNodes.getLength(); i++) {
+											Node currentLicenseNameNode = dbLicensesNodes.item(i);
+											String name = currentLicenseNameNode.getTextContent();
 
-									log_.debug("Found {} license names in DB pom.xml", appLicensesNodes.getLength());
-									for (int i = 0; i < appLicensesNodes.getLength(); i++) {
-										Node currentLicenseNameNode = appLicensesNodes.item(i);
-										String name = currentLicenseNameNode.getTextContent();
-										
-										Map<String, String> license = new HashMap<>();
-										license.put("name", name);
-										license.put("url", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/url", dDoc, XPathConstants.NODE)).getTextContent());
-										license.put("comments", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/comments", dDoc, XPathConstants.NODE)).getTextContent());
-										
-										dbLicenses.add(Collections.unmodifiableMap(license));
-										
-										log_.debug("Extracted license \"{}\" from DB pom.xml: {}", name, license.toString());
+											Map<String, String> license = new HashMap<>();
+											license.put("name", name);
+											license.put("url", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/url", dDoc, XPathConstants.NODE)).getTextContent());
+											license.put("comments", ((Node)xPath.evaluate("/project/licenses/license[name='" + name + "']/comments", dDoc, XPathConstants.NODE)).getTextContent());
+
+											dbLicenses.add(Collections.unmodifiableMap(license));
+
+											log_.debug("Extracted license \"{}\" from DB pom.xml: {}", name, license.toString());
+										}
+									}
+									
+									{
+										NodeList dbDependenciesNodes = ((NodeList) xPath.evaluate("/project/dependencies/dependency/artifactId", dDoc, XPathConstants.NODESET));
+
+										log_.debug("Found {} dependency artifactIds in DB pom.xml", dbDependenciesNodes.getLength());
+										for (int i = 0; i < dbDependenciesNodes.getLength(); i++) {
+											Node currentDbDependencyArtifactIdNode = dbDependenciesNodes.item(i);
+											String artifactId = currentDbDependencyArtifactIdNode.getTextContent();
+
+											Map<String, String> dependency = new HashMap<>();
+											dependency.put("artifactId", artifactId);
+											dependency.put("groupId", ((Node)xPath.evaluate("/project/dependencies/dependency[artifactId='" + artifactId + "']/groupId", dDoc, XPathConstants.NODE)).getTextContent());
+											dependency.put("version", ((Node)xPath.evaluate("/project/dependencies/dependency[artifactId='" + artifactId + "']/version", dDoc, XPathConstants.NODE)).getTextContent());
+								
+											try {
+												dependency.put("classifier", ((Node)xPath.evaluate("/project/dependencies/dependency[artifactId='" + artifactId + "']/classifier", dDoc, XPathConstants.NODE)).getTextContent());
+											} catch (Throwable t) {
+												log_.warn("Problem reading \"classifier\" element for {}", artifactId);
+											}
+											dependency.put("type", ((Node)xPath.evaluate("/project/dependencies/dependency[artifactId='" + artifactId + "']/type", dDoc, XPathConstants.NODE)).getTextContent());
+
+											dbDependencies.add(Collections.unmodifiableMap(dependency));
+
+											log_.debug("Extracted dependency \"{}\" from DB pom.xml: {}", artifactId, dependency.toString());
+										}
 									}
 								} catch (XPathExpressionException | SAXException | ParserConfigurationException e) {
 									e.printStackTrace();
@@ -634,5 +661,9 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	
 	public Set<Map<String, String>> getDbLicenses() {
 		return Collections.unmodifiableSet(dbLicenses);
+	}
+	
+	public Set<Map<String, String>> getDbDependencies() {
+		return Collections.unmodifiableSet(dbDependencies);
 	}
 }
