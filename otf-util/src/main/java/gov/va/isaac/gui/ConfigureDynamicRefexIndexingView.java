@@ -192,7 +192,7 @@ public class ConfigureDynamicRefexIndexingView implements PopupViewI
 									AppContext.getRuntimeGlobals().disableAllCommitListeners();
 									try
 									{
-										LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(assemblageConcept_.getNid(), toIndex);
+										LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(assemblageConcept_.getNid(), toIndex, false);
 									}
 									finally
 									{

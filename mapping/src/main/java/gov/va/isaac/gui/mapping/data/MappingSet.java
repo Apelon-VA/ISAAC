@@ -93,7 +93,7 @@ public class MappingSet
 					null, true, ComponentType.CONCEPT);
 			
 			//TODO background thread this
-			LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2});
+			LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2}, true);
 			
 			//Then, annotate the concept created above as a member of the MappingSet dynamic refex, and add the inverse name, if present.
 			ConceptVersionBI createdConcept = OTFUtility.getConceptVersion(rdud.getRefexUsageDescriptorNid());
@@ -174,7 +174,7 @@ public class MappingSet
 		RefexDynamicDataBI[] data = mappingRefexData_.getData();
 		if (data.length > 1)
 		{
-			return ((RefexDynamicString)data[1]).getDataString();
+			return data[1] == null ? null : ((RefexDynamicString)data[1]).getDataString();
 		}
 		return null;
 	}
