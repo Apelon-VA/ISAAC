@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 @PerLookup
 public class CreateMappingSetView implements PopupViewI{
 
-	private final Logger Logger = LoggerFactory.getLogger(this.getClass());
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private final CreateMappingSetController controller;
 
 	public CreateMappingSetView() throws IOException {
@@ -53,11 +53,7 @@ public class CreateMappingSetView implements PopupViewI{
 	    
     }
 	
-	
 	public void setMapping(String name, String desc, String purpose) {
-		
-		
-		
 		//Catch exceptions and throw up a dialog box
 	}
 	
