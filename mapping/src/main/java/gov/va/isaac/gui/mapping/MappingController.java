@@ -116,6 +116,15 @@ public class MappingController {
 			}
 		});
 		
+		commentButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
+				//itemView.setMapping();
+				commentView.showView(null);
+			}
+		});
+		
 		for (TableColumn<MappingSet, ?> x : mappingTableView.getColumns())
 		{
 			((TableColumn<MappingSet, String>)x).setCellValueFactory(new Callback<TableColumn.CellDataFeatures<MappingSet,String>, ObservableValue<String>>()
