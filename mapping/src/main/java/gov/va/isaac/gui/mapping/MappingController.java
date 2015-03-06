@@ -106,7 +106,15 @@ public class MappingController implements TaskCompleteCallback {
 				itemView.showView(null);
 			}
 		});
-		
+
+		commentButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
+				//itemView.setMapping();
+				commentView.showView(null);
+			}
+		});
 	}
 
 	public AnchorPane getRoot()	{
