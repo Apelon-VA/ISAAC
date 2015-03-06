@@ -84,7 +84,7 @@ import com.sun.javafx.collections.ObservableListWrapper;
  * @author <a href="mailto:dtriglianos@apelon.com">David Triglianos</a>
  */
 
-public class CreateMappingItemController {
+public class CreateMappingItemController implements TaskCompleteCallback  {
 	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingItemController.class);
 
     @FXML private BorderPane 		mainPane;
@@ -152,4 +152,9 @@ public class CreateMappingItemController {
 
 	}
     
+	@Override
+    public void taskComplete(long taskStartTime, Integer taskId) {
+	    // TODO Auto-generated method stub
+	    
+    }
 }
