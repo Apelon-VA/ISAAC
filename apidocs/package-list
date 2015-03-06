@@ -1,5 +1,6 @@
 eu.infomas.annotation
 gov.va.isaac
+gov.va.isaac.associations
 gov.va.isaac.classifier
 gov.va.isaac.classifier.model
 gov.va.isaac.classifier.utils
@@ -20,6 +21,7 @@ gov.va.isaac.drools.preferences
 gov.va.isaac.drools.refexUtils
 gov.va.isaac.drools.testmodel
 gov.va.isaac.gui
+gov.va.isaac.gui.about
 gov.va.isaac.gui.classifier
 gov.va.isaac.gui.conceptCreation
 gov.va.isaac.gui.conceptCreation.wizardPages
@@ -44,6 +46,8 @@ gov.va.isaac.gui.importedmodelsview
 gov.va.isaac.gui.infoModelView
 gov.va.isaac.gui.listview
 gov.va.isaac.gui.listview.operations
+gov.va.isaac.gui.mapping
+gov.va.isaac.gui.mapping.data
 gov.va.isaac.gui.preferences
 gov.va.isaac.gui.preferences.plugins
 gov.va.isaac.gui.preferences.plugins.properties
