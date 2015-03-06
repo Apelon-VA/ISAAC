@@ -85,8 +85,11 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	//things we read from other pom based property files
 	private String dbGroupId, dbArtifactId, dbVersion, dbClassifier, dbType;
 	private String scmUrl, isaacVersion, version;
+
 	private final Set<Map<String, String>> appLicenses = new HashSet<>();
 	private final Set<Map<String, String>> dbLicenses = new HashSet<>();
+	
+	private final Set<Map<String, String>> dbDependencies = new HashSet<>();
 	
 	private IsaacAppConfigWrapper()
 	{
@@ -116,6 +119,7 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		try
 		{
 			AtomicBoolean readDbMetadataFromProperties = new AtomicBoolean(false);
+			AtomicBoolean readDbDependenciesFromPom = new AtomicBoolean(false);
 			AtomicBoolean readDbMetadataFromPom = new AtomicBoolean(false);
 			AtomicBoolean readAppMetadata = new AtomicBoolean(false);
 			

@@ -24,14 +24,23 @@
  */
 package gov.va.isaac.gui.about;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.IsaacAppConfigWrapper;
 import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.gui.htmlView.NativeHTMLViewer;
+import gov.va.isaac.gui.util.CopyableLabel;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -47,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class AboutViewController {
-	private Logger kjoel = LoggerFactory.getLogger(AboutViewController.class);
+	private Logger logger_ = LoggerFactory.getLogger(AboutViewController.class);
 
 	private @FXML BorderPane borderPane_;
 	private GridPane mainGridPane_;
@@ -66,7 +75,10 @@ public class AboutViewController {
 		assert okButton_ != null : "fx:id=\"okButton_\" was not injected: check your FXML file 'AboutView.fxml'.";
 
 		borderPane_.setMaxWidth(Double.MAX_VALUE);
+
 		mainGridPane_ = new GridPane();
+		mainGridPane_.setHgap(10);
+		mainGridPane_.setPadding(new Insets(0, 10, 0, 10));
 		
 		borderPane_.setCenter(mainGridPane_);
 
@@ -82,7 +94,7 @@ public class AboutViewController {
 		// Load values here
 		
 		IsaacAppConfigWrapper appConfig = (IsaacAppConfigWrapper) AppContext.getService(IsaacAppConfigWrapper.class);
-
+		
 		mainGridPane_.getChildren().clear();
 		int mainGridPaneRowCount = 0;
 		
@@ -92,37 +104,72 @@ public class AboutViewController {
 		// license for DB content
 		// license statements like "this software includes things developed by Apache, etc"
 		mainGridPane_.addRow(mainGridPaneRowCount++, new Label("Application"));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Release Version"), new Label(getReleaseVersion()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Extension Namespace"), new Label(getExtensionNamespace()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Dependencies"), new Label(getDependencies()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Release Version"), new CopyableLabel(getReleaseVersion()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Extension Namespace"), new CopyableLabel(getExtensionNamespace()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("Dependencies"), new Hyperlink(getDependencies()));
 
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("SCM"), new Label(appConfig.getScmUrl()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("ISAAC version"), new Label(appConfig.getIsaacVersion()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("SCM"), new Hyperlink(appConfig.getScmUrl()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("ISAAC version"), new CopyableLabel(appConfig.getIsaacVersion()));
 
 		// App Licenses
 		for (Map<String, String> licenseInfo : appConfig.getAppLicenses()) {
 			if (licenseInfo.get("url") != null && licenseInfo.get("url").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " URL"), new Label(licenseInfo.get("url")));
+				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " URL"), new Hyperlink(licenseInfo.get("url")));
 			}
 			if (licenseInfo.get("comment") != null && licenseInfo.get("comment").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " Comment"), new Label(licenseInfo.get("comment")));
+				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " Comment"), new CopyableLabel(licenseInfo.get("comment")));
 			}
 		}
 
 
 		mainGridPane_.addRow(mainGridPaneRowCount++, new Label("Database"));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Type"), new Label(appConfig.getDbType()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Version"), new Label(appConfig.getDbVersion()));
-		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Classifier"), new Label(appConfig.getDbClassifier()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Type"), new CopyableLabel(appConfig.getDbType()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Version"), new CopyableLabel(appConfig.getDbVersion()));
+		mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label("DB Classifier"), new CopyableLabel(appConfig.getDbClassifier()));
 
 		// DB Licenses
 		for (Map<String, String> licenseInfo : appConfig.getDbLicenses()) {
 			if (licenseInfo.get("url") != null && licenseInfo.get("url").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " URL"), new Label(licenseInfo.get("url")));
+				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " URL"), new Hyperlink(licenseInfo.get("url")));
 			}
 			if (licenseInfo.get("comment") != null && licenseInfo.get("comment").length() > 0) {
-				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " Comment"), new Label(licenseInfo.get("comment")));
+				mainGridPane_.addRow(mainGridPaneRowCount++, new Label(), new Label(licenseInfo.get("name") + " Comment"), new CopyableLabel(licenseInfo.get("comment")));
 			}
+		}
+		
+		for (Node node : mainGridPane_.getChildren()) {
+			configureGridPaneNode(node);
+		}
+	}
+	
+	private static void configureGridPaneNode(Node node) {
+		//System.out.println("Row: "+ GridPane.getRowIndex(node));
+		int columnIndex = GridPane.getColumnIndex(node);
+		
+		switch(columnIndex) {
+		case 0:
+		case 1:
+			if (node instanceof Label) {
+				Label label = (Label)node;
+				
+				label.getStyleClass().add("boldLabel");
+			}
+			break;
+			
+		default:
+			break;
+		}
+
+		if (node instanceof Hyperlink) {
+			Hyperlink hyperlink = (Hyperlink)node;
+			hyperlink.setOnAction(arg0 -> {
+				try {
+					NativeHTMLViewer.viewInBrowser(new URI(hyperlink.getText()));
+				} catch (URISyntaxException e) {
+					System.err.println("ERROR: while attempting to open browser on link \"" + hyperlink.getText() + "\" caught " + e.getClass().getName() + " \"" + e.getLocalizedMessage() + "\"");
+					e.printStackTrace();
+				}
+			});
 		}
 	}
 	
