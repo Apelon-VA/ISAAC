@@ -42,34 +42,45 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 @SuppressWarnings("unused")
 public class MappingConstants
 {
-	public static ConceptSpec MAPPING_STATUS = new ConceptSpec("mapping status types", 
-		UUID.fromString("1d28d3a2-1b3d-5f97-add5-06b5f8ef08d7"), 
+	//This concept doesn't need to be in the taxonomy, it is just used as salt for generating other UUIDs
+	public static ConceptSpecWithDescriptions MAPPING_NAMESPACE = new ConceptSpecWithDescriptions("Mapping Namespace", 
+			UUID.fromString("e33c8a61-c956-50ce-8ba2-4defa430c65e"),
+			new String[] {"Mapping Namespace"},
+			new String[] {"A concept used to hold the UUID used as the namespace ID generation when creating mappings"},
+			null);
+	
+	public static ConceptSpecWithDescriptions MAPPING_QUALIFIERS = new ConceptSpecWithDescriptions("mapping qualifiers", 
+		UUID.fromString("83204ca8-bd51-530c-af04-5edbec04a7c6"), 
+		new String[] {"mapping qualifiers"},
+		new String[] {"Stores the editor selected mapping qualifier"},
 		Taxonomies.WB_AUX);
 	
 	//These don't have to be public - just want the hierarchy created during the DB build
 	private static ConceptSpec broader = new ConceptSpec("Broader Than", 
 		UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), 
-		MAPPING_STATUS);
+		MAPPING_QUALIFIERS);
 	
 	private static ConceptSpec exact = new ConceptSpec("Exact", 
 		UUID.fromString("8aa6421d-4966-5230-ae5f-aca96ee9c2c1"), 
-		MAPPING_STATUS);
+		MAPPING_QUALIFIERS);
 	
 	private static ConceptSpec narrower = new ConceptSpec("Narrower Than", 
 		UUID.fromString("250d3a08-4f28-5127-8758-e8df4947f89c"), 
-		MAPPING_STATUS);
+		MAPPING_QUALIFIERS);
 	
-	public static ConceptSpec MAPPING_QUALIFIERS = new ConceptSpec("mapping qualifiers", 
-		UUID.fromString("83204ca8-bd51-530c-af04-5edbec04a7c6"), 
-		Taxonomies.WB_AUX);
+	public static ConceptSpecWithDescriptions MAPPING_STATUS = new ConceptSpecWithDescriptions("mapping status types", 
+			UUID.fromString("1d28d3a2-1b3d-5f97-add5-06b5f8ef08d7"), 
+			new String[] {"mapping status types"},
+			new String[] {"Stores the editor selected mapping item status"},
+			Taxonomies.WB_AUX);
 	
 	private static ConceptSpec pending = new ConceptSpec("Pending", 
 		UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"), 
-		MAPPING_QUALIFIERS);
+		MAPPING_STATUS);
 	
 	private static ConceptSpec reviewed = new ConceptSpec("Reviewed", 
 		UUID.fromString("45b49b0d-e2d2-5a27-a08d-8f79856b6307"), 
-		MAPPING_QUALIFIERS);
+		MAPPING_STATUS);
 	
 	public static ConceptSpecWithDescriptions COLUMN_STATUS = new ConceptSpecWithDescriptions("status", 
 		UUID.fromString("2da30f4a-e930-50ad-9e86-c81598dfd8c3"),
@@ -94,7 +105,7 @@ public class MappingConstants
 				true, 
 				"A Sememe used to specify how user-created mapping Sememes are structured", 
 				new RefexDynamicColumnInfo[] {
-					new RefexDynamicColumnInfo(0, COLUMN_STATUS.getPrimodialUuid(), RefexDynamicDataType.NID, null, false, 
+					new RefexDynamicColumnInfo(0, COLUMN_STATUS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
 						RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MAPPING_STATUS.getPrimodialUuid())),
 					new RefexDynamicColumnInfo(1, COLUMN_PURPOSE.getPrimodialUuid(), RefexDynamicDataType.STRING, null, false, null, null)},
 				RefexDynamic.REFEX_DYNAMIC_IDENTITY,

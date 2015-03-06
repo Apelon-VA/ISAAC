@@ -87,10 +87,10 @@ public class ISAAC
 			RefexDynamic.REFEX_DYNAMIC_IDENTITY,
 			new Integer[] {0,1});  //Index the comments, and the columns
 	
-	public static ConceptSpecWithDescriptions REFEX_COLUMN_TARGET_CONCEPT = new ConceptSpecWithDescriptions("target concept", 
-			UUID.fromString("7ef9919c-9d0c-53e9-af1a-4b276723af92"),
-			new String[] {"target concept"},
-			new String[] {"Stores the (optional) target concept of an association, or a refex map"},
+	public static ConceptSpecWithDescriptions REFEX_COLUMN_TARGET_COMPONENT = new ConceptSpecWithDescriptions("target", 
+			UUID.fromString("e598e12f-3d39-56ac-be68-4e9fca98fb7a"),
+			new String[] {"target"},
+			new String[] {"Stores the (optional) target concept or component of an association or mapping"},
 			RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 	
 	public static DynamicRefexConceptSpec ASSOCIATION_REFEX = new DynamicRefexConceptSpec("Sememe represents association", 
