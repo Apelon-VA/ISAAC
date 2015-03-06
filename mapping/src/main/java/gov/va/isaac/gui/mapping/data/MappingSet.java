@@ -85,13 +85,14 @@ public class MappingSet
 			//We need to create a new concept - which itself is defining a dynamic refex - so set that up here.
 			RefexDynamicUsageDescription rdud = RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(mappingName, mappingName, description, 
 					new RefexDynamicColumnInfo[] {
-						new RefexDynamicColumnInfo(0, ISAAC.REFEX_COLUMN_TARGET_CONCEPT.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, null, null),
+						new RefexDynamicColumnInfo(0, ISAAC.REFEX_COLUMN_TARGET_COMPONENT.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, null, null),
 						new RefexDynamicColumnInfo(1, MappingConstants.MAPPING_QUALIFIERS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
 								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_QUALIFIERS.getPrimodialUuid())),
 						new RefexDynamicColumnInfo(2, MappingConstants.MAPPING_STATUS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
 								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_STATUS.getPrimodialUuid()))}, 
 					null, true, ComponentType.CONCEPT);
 			
+			//TODO background thread this
 			LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2});
 			
 			//Then, annotate the concept created above as a member of the MappingSet dynamic refex, and add the inverse name, if present.
@@ -107,7 +108,7 @@ public class MappingSet
 			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), MappingConstants.MAPPING_SEMEME_TYPE.getNid());
 			mappingAnnotation.setData(new RefexDynamicDataBI[] {
 					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus)),
-					(StringUtils.isBlank(purpose) ? null : new RefexDynamicString(purpose))}, null);
+					(StringUtils.isBlank(purpose) ? null : new RefexDynamicString(purpose))}, OTFUtility.getViewCoordinate());
 			OTFUtility.getBuilder().construct(mappingAnnotation);
 			
 			RefexDynamicCAB associationAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), ISAAC.ASSOCIATION_REFEX.getNid());
@@ -258,6 +259,8 @@ public class MappingSet
 	public List<Object> getComments()
 	{
 		//TODO implement
-		return new ArrayList();
+		return new ArrayList<>();
 	}
+	
+	//TODO implement retire and edit?  methods
 }

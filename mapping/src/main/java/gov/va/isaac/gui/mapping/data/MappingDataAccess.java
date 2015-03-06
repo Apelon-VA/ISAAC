@@ -21,14 +21,14 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.MappingConstants;
-import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
@@ -78,7 +78,38 @@ public class MappingDataAccess
 	
 	public static MappingSet createMappingSet(String mappingName, String inverseName, String purpose, String description, UUID editorStatus) throws IOException
 	{
-		return new MappingSet(mappingName, inverseName, purpose, description, editorStatus);
+		
+		MappingSet ms = new MappingSet(mappingName, inverseName, purpose, description, editorStatus);
+		
+		//TODO remove the random generator fun
+		try
+		{
+			LuceneDescriptionIndexer ldi = AppContext.getService(LuceneDescriptionIndexer.class);
+			List<SearchResult> result = ldi.query("acetaminophen", ComponentProperty.DESCRIPTION_TEXT, 100);
+
+			for (int i = 0; i < 10; i++)
+			{
+				UUID source;
+				UUID target = null;
+				
+				int index =  (int)(Math.random() * 100);
+				source = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
+				
+				while (target == null || target.equals(source))
+				{
+					index =  (int)(Math.random() * 100);
+					target = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
+				}
+				
+				createMapping(source, ms.getID(), target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+			}
+		}
+		catch (Exception e)
+		{
+			LOG.error("oops", e);
+		}
+
+		return ms;
 	}
 	
 	public static List<MappingItem> getMappings(UUID mappingSetID) throws IOException

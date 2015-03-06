@@ -21,19 +21,11 @@ package gov.va.isaac.gui.mapping;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.init.SystemInit;
-import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
-import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.UUID;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import org.ihtsdo.otf.query.lucene.LuceneIndexer;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
-import org.ihtsdo.otf.tcc.lookup.Hk2Looker;
 
 /**
  * EnhancedConceptViewRunner
@@ -66,10 +58,43 @@ public class MappingViewRunner extends Application
 			System.err.println("Configuration of datastore path failed.  DB will not be able to start properly!  " + dataStoreLocationInitException);
 			System.exit(-1);
 		}
-		
 		AppContext.getService(UserProfileManager.class).configureAutomationMode(new File("profiles"));
+		
+//		BdbTerminologyStore dataStore = AppContext.getServiceLocator().getService(BdbTerminologyStore.class);
+//		Thread.sleep(3000);
+//		
+//		MappingDataAccess.createMappingSet("test mapping2", "inverse another", "purpose 2", "description 2", UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+//		
+//		UUID allergy = UUID.fromString("022665ef-8bf5-5972-805a-c3f71ea31f3d");
+//		UUID chem = UUID.fromString("48bff044-2d3d-5a99-b005-d39ea2d94a54");
+//		MappingDataAccess.createMapping(allergy, UUID.fromString("45cadb52-d8e3-57ab-9a19-dc649177e197"), chem, 
+//				UUID.fromString("8aa6421d-4966-5230-ae5f-aca96ee9c2c1"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+//		
+//		MappingDataAccess.createMapping(allergy, UUID.fromString("45cadb52-d8e3-57ab-9a19-dc649177e197"), chem, 
+//				UUID.fromString("8aa6421d-4966-5230-ae5f-aca96ee9c2c1"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+		
+//		for (ConceptChronicleBI x : AssociationUtilities.getAssociationTypes())
+//		{
+//			for (Association y : AssociationUtilities.getAssociationsOfType(x))
+//			{
+//				System.out.println(y.toString());
+//			}
+//		}
+		
+//		for (Association x : AssociationUtilities.getSourceAssociations(ExtendedAppContext.getDataStore().getComponent(UUID.fromString("1daa10e3-6876-5650-b9fa-1f036076acc6")), 
+//				OTFUtility.getViewCoordinate()))
+//		{
+//			System.out.println(x.toString());
+//		}
+//		
+//		for (Association x : AssociationUtilities.getTargetAssociations(ExtendedAppContext.getDataStore().getComponent(UUID.fromString("80208468-e25d-5e03-a1b2-99b6da12a386")), 
+//				OTFUtility.getViewCoordinate()))
+//		{
+//			System.out.println(x.toString());
+//		}
 		
 		launch(args);
 	}
+	
 
 }

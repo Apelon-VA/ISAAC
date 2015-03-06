@@ -25,6 +25,7 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class Mapping implements DockedViewI
 {
+	private boolean hasBeenInited_ = false;
 	private MappingController svc_;
 	
 	private Mapping() throws IOException
@@ -61,7 +62,12 @@ public class Mapping implements DockedViewI
 			@Override
 			public void handleMenuSelection(Window parent)
 			{
-				//noop
+				if (!hasBeenInited_)
+				{
+					//delay init till first display
+					svc_.readData();
+					hasBeenInited_ = true;
+				}
 			}
 			
 			@Override
