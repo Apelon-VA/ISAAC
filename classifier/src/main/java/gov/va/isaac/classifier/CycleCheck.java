@@ -41,13 +41,13 @@ public class CycleCheck {
   private static final Logger LOG = LoggerFactory.getLogger(CycleCheck.class);
 
   /** The concepts. Map of id->seen */
-  private Map<Long, Boolean> concepts;
+  private Map<Integer, Boolean> concepts;
 
   /** The isa relationships map. Map of sourceId->destinationIds */
-  private Map<Long, List<Long>> isarelationships;
+  private Map<Integer, List<Integer>> isarelationships;
 
   /** The concept in loop. */
-  private Set<Long> conceptInLoop;
+  private Set<Integer> conceptInLoop;
 
   /** The output file. */
   private String outputFile;
@@ -74,9 +74,9 @@ public class CycleCheck {
   public boolean cycleDetected() throws FileNotFoundException, IOException,
     ClassificationException {
     conceptInLoop = new HashSet<>();
-    for (Long con : concepts.keySet()) {
+    for (Integer con : concepts.keySet()) {
       if (!concepts.get(con)) {
-        List<Long> desc = new ArrayList<>();
+        List<Integer> desc = new ArrayList<>();
         findCycle(con, desc);
         desc.remove(con);
         reviewed++;
@@ -99,12 +99,12 @@ public class CycleCheck {
    * @param desc the desc
    * @throws ClassificationException the classification exception
    */
-  private void findCycle(Long con, List<Long> desc)
+  private void findCycle(Integer con, List<Integer> desc)
     throws ClassificationException {
-    List<Long> parents = isarelationships.get(con);
+    List<Integer> parents = isarelationships.get(con);
     if (parents != null) {
       desc.add(con);
-      for (Long parent : parents) {
+      for (Integer parent : parents) {
         if (desc.contains(parent)) {
           conceptInLoop.add(parent);
         } else {
@@ -129,42 +129,42 @@ public class CycleCheck {
   /**
    * @return the concepts
    */
-  public Map<Long, Boolean> getConcepts() {
+  public Map<Integer, Boolean> getConcepts() {
     return concepts;
   }
 
   /**
    * @param concepts the concepts to set
    */
-  public void setConcepts(Map<Long, Boolean> concepts) {
+  public void setConcepts(Map<Integer, Boolean> concepts) {
     this.concepts = concepts;
   }
 
   /**
    * @return the isarelationships
    */
-  public Map<Long, List<Long>> getIsarelationships() {
+  public Map<Integer, List<Integer>> getIsarelationships() {
     return isarelationships;
   }
 
   /**
    * @param isarelationships the isarelationships to set
    */
-  public void setIsarelationships(Map<Long, List<Long>> isarelationships) {
+  public void setIsarelationships(Map<Integer, List<Integer>> isarelationships) {
     this.isarelationships = isarelationships;
   }
 
   /**
    * @return the conceptInLoop
    */
-  public Set<Long> getConceptInLoop() {
+  public Set<Integer> getConceptInLoop() {
     return conceptInLoop;
   }
 
   /**
    * @param conceptInLoop the conceptInLoop to set
    */
-  public void setConceptInLoop(HashSet<Long> conceptInLoop) {
+  public void setConceptInLoop(HashSet<Integer> conceptInLoop) {
     this.conceptInLoop = conceptInLoop;
   }
 }

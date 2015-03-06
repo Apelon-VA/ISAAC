@@ -19,15 +19,19 @@
 package gov.va.isaac.gui.util;
 
 import javafx.scene.Node;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
 import com.sun.javafx.tk.FontLoader;
 import com.sun.javafx.tk.Toolkit;
 
@@ -166,4 +170,15 @@ public class FxUtils {
         Font f = new Font("System", 13.0);
         return Toolkit.getToolkit().getFontLoader().computeStringWidth(l.getText(), f);
     }
+    
+	public static void assignImageToButton(ButtonBase button, ImageView imageView) {
+		FxUtils.assignImageToButton(button, imageView, "");
+	}
+
+	public static void assignImageToButton(ButtonBase button, ImageView imageView, String tooltip) {
+        button.setText("");
+        button.setGraphic(imageView);
+        button.setTooltip(new Tooltip(tooltip));
+	}
+
 }

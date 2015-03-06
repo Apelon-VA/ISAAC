@@ -27,7 +27,8 @@ public enum ApplicationMenus
 {
 	PANELS("Panels", "panelsMenu"),
 	IMPORT_EXPORT("Import/Export", "importExportMenu"),
-	ACTIONS("Actions", "actionsMenus");
+	ACTIONS("Actions", "actionsMenus"),
+	HELP("Help", "helpMenus");
 	
 	private String name_;
 	private String id_;

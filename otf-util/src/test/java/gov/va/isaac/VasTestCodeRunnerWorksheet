@@ -1,0 +1,72 @@
+Vas Test Worksheet
+
+Corresponding File: VasTestCodeRunner.java
+
+
+1)	From utilizing an existing right-click option in ISAAC, launch a process that writes the results of the following in a text file.  For each, create a method that is called within a single class.  To do so, use the concept Myocardial Infarction
+a.	Print out Fully Specified Name (FSN)
+
+b.	Print out Preferred Term
+
+c.	Print out all Descriptions (toString)
+
+d.	Print out all Relationships (toString)
+
+e.	Print out the Term for all Descriptions
+
+f.	Print out the isCapitalSignificance Boolean for the Fully Specified Name
+
+g.	Print out the isCapitalSignificance Boolean for the Description “Infarction of heart”
+
+h.	Print out the Relationship Type for all Relationships
+
+i.	Print out the IS_A Relationships only
+
+j.	Print out the Target for the relationship with a type of “Finding Site”
+
+k.	Print out the Role Group for the relationship with a target of “Infarct”
+
+
+2)	Next, perform some modifications using the Enhanced Concept View in ISAAC.  Commit after each modification.  Verify the changes exist by examining the Historical View (selected by the radio tab).
+a.	Modify the description “Myocardial infarct”.  Make it inactive
+
+b.	Modify the description “Cardiac infarction”.  Make it’s isCapitalSignificance to be true
+
+c.	Modify the same description “Cardiac infarction”.  Change the description type to “Definition” 
+
+d.	Modify the relationship with a target of “Ischemic heart disease”.  Make its role group be ‘1’
+
+e.	Retire the same relationship with a target of “Ischemic heart disease”
+
+3)	Next, access the versions for the modifications just made:
+a.	Print out every version of description “Myocardial infarct”.  
+
+b.	Print out both versions of description “Myocardial infarct”.  
+c.	
+d.	Print out all three versions of description “Cardiac infarction”.  
+
+e.	Print out all three versions of relationship with a target of “Ischemic heart disease”.  
+	
+4)	Next, create new components using the Enhanced Concept View in ISAAC.  Commit after each creation.  Verify the changes exist by examining the Historical View (selected by the radio tab).
+a.	Create a new Description:
+i.	Term = “Vas’s testing desc”
+ii.	Type = Synonym
+iii.	Case = false
+iv.	Language Code = en
+
+b.	Create a new Relationship:
+i.	Type = “Finding Site”
+ii.	Target = “Cardiac wall structure”
+iii.	Role Group = 1
+iv.	Characteristic Type = “Stated”
+v.	Refinability Type = “Optional”
+
+5)	Next, perform some modifications of your new description & relationship using the Enhanced Concept View in ISAAC.  Commit after each modification.  Verify the changes exist by examining the Historical View (selected by the radio tab).
+a.	Change description’s case to True
+b.	Change description’s term to “Vas’s testing description”
+c.	Change relationship’s role group to 2
+
+
+6)	Next, print out each version of the components you just created and then modified.  Write out each version separately in order of modification and identify what has changes by surrounding the value with “***”.
+a.	For example, ***Role Group: 2***
+

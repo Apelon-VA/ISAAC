@@ -38,7 +38,7 @@ public interface RefexViewI extends EmbeddableViewI
 {
 	/**
 	 * Tell this view to display the refexes for a particular component (typically, a concept, but could also 
-	 * be any valid thing that supportes refexes)
+	 * be any valid thing that supports refexes)
 	 * 
 	 * With this call - multiple assemblages will be shown - for a single component (concept)
 	 * 

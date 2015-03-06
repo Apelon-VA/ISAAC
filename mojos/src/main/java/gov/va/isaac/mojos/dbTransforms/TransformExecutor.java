@@ -20,9 +20,16 @@ package gov.va.isaac.mojos.dbTransforms;
 
 import gov.va.isaac.AppContext;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
+import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
+import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 
 /**
@@ -65,27 +72,112 @@ public class TransformExecutor extends AbstractMojo
 		try
 		{
 			getLog().info("Executing DB Transforms");
+			
+			ArrayList<TransformConceptIterateI> iterateTransforms = new ArrayList<>();
+			
 			// ASSUMES setup has run already
 			TerminologyStoreDI store = AppContext.getService(TerminologyStoreDI.class);
 
 			for (Transform t : transforms)
 			{
 				long start = System.currentTimeMillis();
-				//TODO rework API to allow any transforms that iterate all concepts to do so in parallel, with one iteration, instead of one per transform
 				TransformI transformer = AppContext.getServiceLocator().getService(TransformI.class, t.getName());
 				if (transformer == null)
 				{
 					throw new MojoExecutionException("Could not locate a TransformI implementation with the name '" + t.getName() + "'.");
 				}
-				getLog().info("Executing transform " + transformer.getDescription());
-				transformer.configure(t.getConfigFile());
-				transformer.transform(store);
-				String summary = "Transformer " + t.getName() + " completed:  " + transformer.getWorkResultSummary() + " in " + (System.currentTimeMillis() - start) + "ms";
-				getLog().info(summary);
-				summaryInfo.append(summary);
-				summaryInfo.append(System.getProperty("line.separator"));
+				if (transformer instanceof TransformArbitraryI)
+				{
+					getLog().info("Executing arbitrary transform " + transformer.getName() + " - " + transformer.getDescription());
+					transformer.configure(t.getConfigFile(), store);
+					
+					((TransformArbitraryI)transformer).transform(store);
+					String summary = "Transformer " + t.getName() + " completed:  " + transformer.getWorkResultSummary() + " in " + (System.currentTimeMillis() - start) + "ms";
+					getLog().info(summary);
+					summaryInfo.append(summary);
+					summaryInfo.append(System.getProperty("line.separator"));
+				}
+				else if (transformer instanceof TransformConceptIterateI)
+				{
+					iterateTransforms.add((TransformConceptIterateI)transformer);
+					transformer.configure(t.getConfigFile(), store);
+				}
+				else
+				{
+					throw new MojoExecutionException("Unhandled transform subtype");
+				}
 			}
+			
+			if (iterateTransforms.size() > 0)
+			{
+				getLog().info("Executing concept iterate transforms:");
+				for (TransformConceptIterateI it : iterateTransforms)
+				{
+					getLog().info(it.getName() + " - " + it.getDescription());
+				}
+				
+				AtomicInteger parallelChangeCount = new AtomicInteger();
+				long start = System.currentTimeMillis();
+				
+				//Start a process to iterate all concepts in the DB.
+				store.iterateConceptDataInParallel(new ProcessUnfetchedConceptDataBI()
+				{
+					@Override
+					public boolean continueWork()
+					{
+						return true;
+					}
 
+					@Override
+					public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher) throws Exception
+					{
+						ConceptChronicleBI cc = fetcher.fetch();
+						
+						for (TransformConceptIterateI it : iterateTransforms)
+						{
+							if (it.transform(store, cc))
+							{
+								int last = parallelChangeCount.getAndIncrement();
+								//commit every 2000 changes (this is running in parallel)
+								if (last % 2000 == 0)
+								{
+									store.commit();
+								}
+							}
+						}
+					}
+
+					@Override
+					public String getTitle()
+					{
+						return "Iterate All Concepts for Transform";
+					}
+
+					@Override
+					public NativeIdSetBI getNidSet() throws IOException
+					{
+						return null;
+					}
+
+					@Override
+					public boolean allowCancel()
+					{
+						return false;
+					}
+				});
+				
+				store.commit();
+				getLog().info("Parallel concept iterate completed in " + (System.currentTimeMillis() - start) + "ms.");
+				summaryInfo.append("Parallel concept iterate completed in " + (System.currentTimeMillis() - start) + "ms.");
+				for (TransformConceptIterateI it : iterateTransforms)
+				{
+					String summary = "Transformer " + it.getName() + " completed:  " + it.getWorkResultSummary();
+					getLog().info(summary);
+					summaryInfo.append(summary);
+					summaryInfo.append(System.getProperty("line.separator"));
+				}
+			}
+			
 			Files.write(new File(summaryOutputFolder, "transformsSummary.txt").toPath(), summaryInfo.toString().getBytes());
 			
 			getLog().info("Finished executing transforms");

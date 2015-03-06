@@ -76,6 +76,7 @@ public class LocalTasksApi implements LocalTasksServiceBI {
         ds = AppContext.getService(DatastoreManager.class).getDataSource();
         try
         {
+        	//TODO need to get this in a background thread
             createSchema();
         }
         catch (DatastoreException e)

@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>Sprint_18</version>
+    <version>Sprint_19</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
@@ -38,8 +38,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <otf-query.version>1.1-va-1.11</otf-query.version>
-        <otf-versioning.version>1.1-va-1.11</otf-versioning.version>
+        <otf-query.version>1.1-va-1.12</otf-query.version>
+        <otf-versioning.version>1.1-va-1.12</otf-versioning.version>
         <kie.version>6.0.1.Final</kie.version>  <!-- Workflow, drools, etc -->
     </properties>
     
@@ -81,6 +81,20 @@
             <dependency>
                 <groupId>org.ihtsdo.otf</groupId>
                 <artifactId>tcc-mojo</artifactId>
+                <version>${otf-versioning.version}</version>
+                <type>jar</type>
+                <!-- Exclude JavaFX 2.2.45 -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.ihtsdo.otf</groupId>
+                <artifactId>tcc-model-impl</artifactId>
                 <version>${otf-versioning.version}</version>
                 <type>jar</type>
                 <!-- Exclude JavaFX 2.2.45 -->
@@ -372,6 +386,7 @@
         <module>sync-git</module>
         <module>sync-svn</module>
         <module>isaac-db-processing-rules</module>
+        <module>mapping</module>
     </modules>
 
     <reporting>

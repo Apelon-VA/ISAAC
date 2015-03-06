@@ -20,15 +20,17 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.YesNoDialog;
+import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.gui.refexViews.refexEdit.HeaderNode.Filter;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.TableHeaderRowTooltipInstaller;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,6 +98,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.javafx.collections.ObservableMapWrapper;
 import com.sun.javafx.tk.Toolkit;
 
+
 /**
  * 
  * Refset View
@@ -111,10 +114,10 @@ public class DynamicRefexView implements RefexViewI
 	private VBox rootNode_ = null;
 	private TreeTableView<RefexDynamicGUI> ttv_;
 	private TreeItem<RefexDynamicGUI> treeRoot_;
-	private Button retireButton_, addButton_, commitButton_, cancelButton_, editButton_;
+	private Button retireButton_, addButton_, commitButton_, cancelButton_, editButton_, viewUsageButton_;
 	private ToggleButton stampButton_, activeOnlyButton_, historyButton_;
 	private UpdateableBooleanBinding currentRowSelected_, selectedRowIsActive_;
-	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_;
+	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_, showViewUsageButton_;
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
 	private BooleanProperty hasUncommitted_ = new SimpleBooleanProperty(false);
 
@@ -328,6 +331,64 @@ public class DynamicRefexView implements RefexViewI
 			});
 			t.getItems().add(editButton_);
 			
+			viewUsageButton_ = new Button(null, Images.SEARCH.createImageView());
+			viewUsageButton_.setTooltip(new Tooltip("The displayed concept also defines a sememe dynamic itself.  Click to see the usage of this sememe."));
+			viewUsageButton_.setOnAction((action) ->
+			{
+				try
+				{
+					ConceptChronicleBI c;
+					if (setFromType_.getComponentBI() instanceof ComponentChronicleBI)
+					{
+						c = ((ComponentChronicleBI<?>) setFromType_.getComponentBI()).getEnclosingConcept();
+					}
+					else if (setFromType_.getComponentBI() instanceof ConceptChronicleBI)
+					{
+						c = ((ConceptChronicleBI) setFromType_.getComponentBI());
+					}
+					else
+					{
+						throw new Exception("Unexpected case");
+					}
+					SimpleDisplayConcept sdc = new SimpleDisplayConcept(c, null);
+					DynamicReferencedItemsView driv = new DynamicReferencedItemsView(sdc);
+					driv.showView(null);
+				}
+				catch (Exception e)
+				{
+					logger_.error("Error launching sememe dynamic member viewer", e);
+					AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected launching the sememe member viewer", e.getMessage(), 
+							(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+				}
+			});
+			showViewUsageButton_ = new UpdateableBooleanBinding()
+			{
+				{
+					setComputeOnInvalidate(true);
+				}
+				@Override
+				protected boolean computeValue()
+				{
+					boolean show = false;
+					if (setFromType_ != null && setFromType_.getComponentNid() != null)
+					{
+						//Need to find out if this component has a the dynamic refex definition annotation on it.
+						try
+						{
+							RefexDynamicUsageDescription.read(setFromType_.getComponentNid());
+							show = true;
+						}
+						catch (Exception e)
+						{
+							//noop - this concept simply isn't configured as a dynamic refex concept.
+						}
+					}
+					return show;
+				}
+			};
+			viewUsageButton_.visibleProperty().bind(showViewUsageButton_);
+			t.getItems().add(viewUsageButton_);
+			
 			//fill to right
 			Region r = new Region();
 			HBox.setHgrow(r, Priority.ALWAYS);
@@ -530,6 +591,7 @@ public class DynamicRefexView implements RefexViewI
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
+		showViewUsageButton_.invalidate();
 		newComponentHint_ = null;
 		noRefresh_ = false;
 		refresh();

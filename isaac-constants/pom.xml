@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>Sprint_18</version>
+		<version>Sprint_19</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>isaac-constants</artifactId>
@@ -21,6 +21,10 @@
 		<dependency>
 			<groupId>org.ihtsdo.otf</groupId>
 			<artifactId>tcc-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ihtsdo.otf</groupId>
+			<artifactId>tcc-model-impl</artifactId>
 		</dependency>
 
 	</dependencies>
