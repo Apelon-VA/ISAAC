@@ -69,7 +69,7 @@ public class App extends Application implements ApplicationWindowI{
         this.controller = new AppController();
 
         primaryStage.getIcons().add(new Image("/icons/application-icon.png"));
-        String title = AppContext.getAppConfiguration().getApplicationTitle();
+        String title = AppContext.getAppConfiguration().getApplicationTitle()  + " - "+ AppContext.getAppConfiguration().getVersion();
         primaryStage.setTitle(title);
         primaryStage.setScene(new Scene(controller.getRoot()));
         primaryStage.getScene().getStylesheets().add(App.class.getResource("/isaac-shared-styles.css").toString());

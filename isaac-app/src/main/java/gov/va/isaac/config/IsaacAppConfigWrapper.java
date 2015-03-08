@@ -119,7 +119,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		try
 		{
 			AtomicBoolean readDbMetadataFromProperties = new AtomicBoolean(false);
-			AtomicBoolean readDbDependenciesFromPom = new AtomicBoolean(false);
 			AtomicBoolean readDbMetadataFromPom = new AtomicBoolean(false);
 			AtomicBoolean readAppMetadata = new AtomicBoolean(false);
 			
@@ -308,7 +307,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 			else
 			{
 				log_.debug("Successfully read app properties from maven config files.  version: {} scmUrl: {} isaacVersion: {}", version, scmUrl, isaacVersion);
-				setApplicationTitle(getApplicationTitle() + " - " + version);
 			}
 		}
 		catch (Exception ex)
@@ -352,7 +350,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setArchetypeGroupId(read.getArchetypeGroupId());
 		setArchetypeArtifactId(read.getArchetypeArtifactId());
 		setArchetypeVersion(read.getArchetypeVersion());
-		setApplicationTitle(read.getApplicationTitle());
 		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
 		setReleaseVersion(read.getReleaseVersion());
 		setExtensionNamespace(read.getExtensionNamespace());
