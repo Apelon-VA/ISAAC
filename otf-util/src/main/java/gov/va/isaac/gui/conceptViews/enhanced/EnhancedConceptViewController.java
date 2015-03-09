@@ -1,13 +1,19 @@
 package gov.va.isaac.gui.conceptViews.enhanced;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
+import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
-import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.UpdateableBooleanBinding;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.UUID;
 import javafx.collections.ObservableList;
@@ -80,6 +86,22 @@ public class EnhancedConceptViewController {
 	void setConcept(UUID currentCon, ConceptViewMode mode, ObservableList<Integer> conceptHistoryStack) {
 		if (!initialized ) {
 			initialized = true;
+            UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
+            userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.viewCoordinatePath, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                    setConcept(currentCon, mode, conceptHistoryStack);
+                }
+            });
+            userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.statedInferredPolicy, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                    setConcept(currentCon, mode, conceptHistoryStack);
+                }
+            });
+
 			initializeWindow(conceptHistoryStack, mode);
 		}
 		concept = OTFUtility.getConceptVersion(currentCon);
