@@ -35,7 +35,6 @@ import gov.va.isaac.config.users.InvalidUserException;
 import gov.va.isaac.gui.util.TextErrorColorHelper;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.ValidBooleanBinding;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -51,11 +50,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.HPos;
-import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
@@ -72,9 +70,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-
 import javax.inject.Singleton;
-
+import javax.management.RuntimeErrorException;
 import org.apache.commons.lang3.time.DateUtils;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -101,7 +98,6 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	
 	protected TreeSet<Long> times = new TreeSet<Long>();
 	protected DatePicker datePicker = null;
-	protected RadioButton optionButton = null;
 	protected ComboBox<Long> timeSelectCombo = null;
 	protected HashSet<LocalDate> pathDatesList = new HashSet<LocalDate>();
 	protected Date stampDate = null;
@@ -178,6 +174,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 		
 		if (hBox == null) {
 			VBox statedInferredToggleGroupVBox = new VBox();
+			statedInferredToggleGroupVBox.setSpacing(4.0);
 			
 			//Instantiate Everything
 			pathComboBox = new ComboBox<>(); //Path
@@ -188,10 +185,25 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 			
 			//Radio buttons
 			for (StatedInferredOptions option : StatedInferredOptions.values()) {
-				optionButton = new RadioButton(option.value());
+				RadioButton optionButton = new RadioButton();
+				if (option == StatedInferredOptions.STATED)
+				{
+					optionButton.setText("Stated");
+				}
+				else if (option == StatedInferredOptions.INFERRED_THEN_STATED)
+				{
+					optionButton.setText("Inferred Then Stated");
+				}
+				else if (option == StatedInferredOptions.INFERRED)
+				{
+					optionButton.setText("Inferred");
+				}
+				else
+				{
+					throw new RuntimeException("oops");
+				}
 				optionButton.setUserData(option);
 				optionButton.setTooltip(new Tooltip("Default StatedInferredOption is " + getDefaultStatedInferredOption()));
-				optionButton.setPadding(new Insets(12,5,12,5));
 				statedInferredToggleGroup.getToggles().add(optionButton);
 				statedInferredToggleGroupVBox.getChildren().add(optionButton);
 				statedInferredOptionButtons.add(optionButton);
@@ -271,7 +283,6 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 			});
 			
 			pathComboBox.setTooltip(new Tooltip("Default path is \"" + OTFUtility.getDescription(getDefaultPath()) + "\""));
-			pathComboBox.setPadding(new Insets(5,5,5,5));
 			
 			//Calendar Date Picker
 			final Callback<DatePicker, DateCell> dayCellFactory = 
@@ -405,26 +416,23 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 			}
 
 			GridPane gridPane = new GridPane();
-			gridPane.getRowConstraints().add(new RowConstraints(15)); // row 0
-			gridPane.getRowConstraints().add(new RowConstraints(60)); // row 1
-			gridPane.getRowConstraints().add(new RowConstraints(15)); // row 2
 			gridPane.setHgap(10);
 			gridPane.setVgap(10);
 			
-			Label pathLabel = new Label("ViewCoordinate PATH");
+			Label pathLabel = new Label("View Coordinate Path");
 			gridPane.add(pathLabel, 0, 0); //Path Label - Row 0
 			GridPane.setHalignment(pathLabel, HPos.LEFT);
+			gridPane.add(statedInferredToggleGroupVBox, 1, 0, 1, 2);  //--Row 0, span 2
 			
 			gridPane.add(pathComboBox, 0, 1); //Path Combo box - Row 2
-			gridPane.add(optionButton, 1, 1); //Radio Button - Row 2
-			gridPane.add(statedInferredToggleGroupVBox, 1, 1);
+			GridPane.setValignment(pathComboBox, VPos.TOP);
 			
-			Label datePickerLabel = new Label("ViewCoordinate Dates");
+			Label datePickerLabel = new Label("View Coordinate Dates");
 			gridPane.add(datePickerLabel, 0, 2); //Row 3
 			GridPane.setHalignment(datePickerLabel, HPos.LEFT);
 			gridPane.add(datePicker, 0, 3); //Row 4
 			
-			Label timeSelectLabel = new Label("ViewCoordinate Times");
+			Label timeSelectLabel = new Label("View Coordinate Times");
 			gridPane.add(timeSelectLabel, 1, 2); //Row 3
 			GridPane.setHalignment(timeSelectLabel, HPos.LEFT);
 			gridPane.add(timeSelectCombo, 1, 3); //Row 4
