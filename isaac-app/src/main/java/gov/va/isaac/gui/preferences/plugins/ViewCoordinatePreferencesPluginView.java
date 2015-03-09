@@ -384,7 +384,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 					cal.set(Calendar.MILLISECOND, 0); //Strip milliseconds
 					Long storedTruncTime = cal.getTimeInMillis();
 					
-					if(storedTime != getDefaultTime()) {
+					if(!storedTime.equals(getDefaultTime())) {
 						int path = OTFUtility.getConceptVersion(storedPathPref).getPathNid();
 						setTimeOptions(path, storedTimePref);
 						timeSelectCombo.setValue(storedTruncTime);
@@ -580,7 +580,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 				NidSet nidSet = new NidSet(); nidSet.add(path); 
 				
 				NidSetBI stamps = null;
-				if(storedTimePref != getDefaultTime()) {
+				if(!storedTimePref.equals(getDefaultTime())) {
 					startDate = getStartOfDay(new Date(storedTimePref)); 
 					finishDate = getEndOfDay(new Date(storedTimePref));
 					stamps = stampDb.getSpecifiedStamps(nidSet, startDate.getTime(), finishDate.getTime());
