@@ -22,12 +22,14 @@ import gov.va.isaac.mojos.dbTransforms.TransformConceptIterateI;
 import gov.va.isaac.util.OTFUtility;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Named;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
+import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
@@ -39,6 +41,7 @@ import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
 import org.ihtsdo.otf.tcc.api.coordinate.Position;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
+import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
@@ -49,6 +52,11 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
+import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesChronicleDdo;
+import org.ihtsdo.otf.tcc.dto.TtkConceptChronicle;
+import org.ihtsdo.otf.tcc.dto.component.identifier.TtkIdentifier;
+import org.ihtsdo.otf.tcc.dto.component.identifier.TtkIdentifierUuid;
+import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -252,16 +260,50 @@ public class LOINCRules implements TransformConceptIterateI
 		generatedRels.getAndIncrement();
 	}
 	
-	private void mergeConcepts(ConceptChronicleBI source, UUID target, TerminologyStoreDI ts) throws IOException, InvalidCAB, ContradictionException
+	private void mergeConcepts(ConceptChronicleBI source, UUID mergeOnto, TerminologyStoreDI ts) throws IOException, InvalidCAB, ContradictionException
 	{
-		//TODO this doesn't work
-		ConceptAttributeVersionBI<?> sourceAttrib = source.getVersion(vc).getConceptAttributesActive();
-		ConceptAttributeAB cab = new ConceptAttributeAB(source.getConceptNid(), sourceAttrib.isDefined(), RefexDirective.EXCLUDE);
-		cab.setComponentUuidNoRecompute(target);
+		//TODO this doesn't work - 
+
+		//Create a TtkConcept of the thing we want to merge - but change the primary UUID to the thing we want to merge onto.
+		//Keep our UUID as a secondary.
+		//TRY 1 - this still doesn't seem quite right - the other id ends up as an alternate identifier, instead of a primary... which seems wrong.
+		TtkConceptChronicle tcc = new TtkConceptChronicle(source);
 		
-		ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.UNSPECIFIED_MODULE.getLenient().getNid(), 
-				loincPathNid), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
-		ts.addUncommitted(source);
+		UUID temp = tcc.getPrimordialUuid();
+		tcc.setPrimordialUuid(mergeOnto);
+		if (tcc.getConceptAttributes().getAdditionalIdComponents() == null)
+		{
+			tcc.getConceptAttributes().setAdditionalIdComponents(new ArrayList<TtkIdentifier>());
+		}
+		
+		TtkIdentifier id = new TtkIdentifierUuid(temp);
+		id.setStatus(tcc.getConceptAttributes().getStatus());
+		id.setTime(tcc.getConceptAttributes().getTime());
+		id.setAuthorUuid(tcc.getConceptAttributes().getAuthorUuid());
+		id.setModuleUuid(tcc.getConceptAttributes().getModuleUuid());
+		id.setPathUuid(tcc.getConceptAttributes().getPathUuid());
+		id.setAuthorityUuid(LOINC_PATH);
+
+		tcc.getConceptAttributes().getAdditionalIdComponents().add(id);
+		
+		//THIS didn't work either
+//		ConceptVersionBI sourceVersion = source.getVersion(vc);
+//		ConceptAttributeAB cab = new ConceptAttributeAB(sourceVersion.getConceptNid(), true, RefexDirective.EXCLUDE);
+//		cab.setStatus(Status.INACTIVE);
+//		
+//		ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.UNSPECIFIED_MODULE.getLenient().getNid(), 
+//				loincPathNid), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
+//		ts.addUncommitted(sourceVersion);
+		
+		ConceptChronicle.mergeAndWrite(tcc);
+		
+		
+		
+		//TRY 2 - this still lost the other UUID - need to ask Keith about this
+//		ConceptChronicle mergeOntoCC = ConceptChronicle.get(ts.getNidForUuids(mergeOnto));
+//		
+//		ConceptChronicle.mergeWithEConcept(tcc, mergeOntoCC);
+//		ts.addUncommittedNoChecks(mergeOntoCC);
 		
 		mergedConcepts.incrementAndGet();
 	}
