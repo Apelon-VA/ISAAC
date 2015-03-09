@@ -21,6 +21,7 @@
  * ViewCoordinatePreferencesPluginView
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
+ * @author <a href="mailto:vkaloidis@apelon.com">Vas kaloidis</a>
  */
 package gov.va.isaac.gui.preferences.plugins;
 
@@ -114,8 +115,8 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 	protected Long storedTimePref = null;
 	protected UUID storedPathPref = null;
 	
-	protected boolean datePickerFirstRun = true;
-	protected boolean pathComboFirstRun = true;
+	protected boolean datePickerFirstRun = false; //This will probably need to go
+	protected boolean pathComboFirstRun = false;
 	/**
 	 * 
 	 */
@@ -383,7 +384,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 					cal.set(Calendar.MILLISECOND, 0); //Strip milliseconds
 					Long storedTruncTime = cal.getTimeInMillis();
 					
-					if(storedTime != getDefaultTime()) {
+					if(!storedTime.equals(getDefaultTime())) {
 						int path = OTFUtility.getConceptVersion(storedPathPref).getPathNid();
 						setTimeOptions(path, storedTimePref);
 						timeSelectCombo.setValue(storedTruncTime);
@@ -433,7 +434,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 //			StatedInferredOptions chosenPolicy = userProfile.getStatedInferredPolicy();
 //			UUID chosenPathUuid = userProfile.getViewCoordinatePath();
 //			Long chosenTime = userProfile.getViewCoordinateTime();
-			
+//			
 //			Label printSelectedPathLabel = new Label("Path: " + OTFUtility.getDescription(chosenPathUuid));
 //			gridPane.add(printSelectedPathLabel, 0, 4);
 //			GridPane.setHalignment(printSelectedPathLabel, HPos.LEFT);
@@ -579,7 +580,7 @@ public class ViewCoordinatePreferencesPluginView extends CoordinatePreferencesPl
 				NidSet nidSet = new NidSet(); nidSet.add(path); 
 				
 				NidSetBI stamps = null;
-				if(storedTimePref != getDefaultTime()) {
+				if(!storedTimePref.equals(getDefaultTime())) {
 					startDate = getStartOfDay(new Date(storedTimePref)); 
 					finishDate = getEndOfDay(new Date(storedTimePref));
 					stamps = stampDb.getSpecifiedStamps(nidSet, startDate.getTime(), finishDate.getTime());

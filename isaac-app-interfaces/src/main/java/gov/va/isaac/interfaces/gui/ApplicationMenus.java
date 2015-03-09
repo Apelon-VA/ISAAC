@@ -28,15 +28,23 @@ public enum ApplicationMenus
 	PANELS("Panels", "panelsMenu"),
 	IMPORT_EXPORT("Import/Export", "importExportMenu"),
 	ACTIONS("Actions", "actionsMenus"),
-	HELP("Help", "helpMenus");
+	HELP("Help", "helpMenus", true);
 	
 	private String name_;
 	private String id_;
+	private boolean alwaysAvailable_ = false;
 	
 	private ApplicationMenus(String menuName, String id)
 	{
 		name_ = menuName;
 		id_ = id;
+	}
+	
+	private ApplicationMenus(String menuName, String id, boolean alwaysAvailable)
+	{
+		name_ = menuName;
+		id_ = id;
+		alwaysAvailable_ = alwaysAvailable;
 	}
 
 	/**
@@ -53,5 +61,10 @@ public enum ApplicationMenus
 	public String getMenuId()
 	{
 		return id_;
+	}
+	
+	public boolean getAlwaysAvailable()
+	{
+		return alwaysAvailable_;
 	}
 }

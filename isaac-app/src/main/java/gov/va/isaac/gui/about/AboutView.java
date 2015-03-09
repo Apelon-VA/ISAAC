@@ -24,15 +24,16 @@
  */
 package gov.va.isaac.gui.about;
 
+import gov.va.isaac.gui.users.AddUserDialog;
+import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.ApplicationMenus;
+import gov.va.isaac.interfaces.gui.MenuItemI;
+import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Singleton;
-
-import org.jvnet.hk2.annotations.Service;
-
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,13 +43,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.users.AddUserDialog;
-import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.ApplicationMenus;
-import gov.va.isaac.interfaces.gui.MenuItemI;
-import gov.va.isaac.interfaces.gui.views.IsaacViewWithMenusI;
-import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import javax.inject.Singleton;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * AboutView
@@ -69,10 +65,10 @@ public class AboutView extends Stage implements PopupViewI, IsaacViewWithMenusI 
 		setTitle("About ISAAC");
 		setResizable(true);
 
-		Stage owner = AppContext.getMainApplicationWindow().getPrimaryStage();
-		initOwner(owner);
-		initModality(Modality.WINDOW_MODAL);  //Changed to modal because it kept accidently hiding behind things for me on linux - maybe make a full fledged window
-		initStyle(StageStyle.UTILITY);  //with a bottom tab instead (at the OS level)
+		initOwner(null);
+		initModality(Modality.NONE);
+		initStyle(StageStyle.DECORATED);  //with a bottom tab instead (at the OS level)
+		getIcons().add(Images.INFORMATION.getImage());
 
 		// Load from FXML.
 		URL resource = this.getClass().getResource("AboutView.fxml");
@@ -148,7 +144,7 @@ public class AboutView extends Stage implements PopupViewI, IsaacViewWithMenusI 
 			@Override
 			public Image getImage()
 			{
-				return Images.PROPERTIES.getImage(); // TODO change menu icon for AboutView
+				return Images.INFORMATION.getImage(); 
 			}
 		};
 		result.add(mi);

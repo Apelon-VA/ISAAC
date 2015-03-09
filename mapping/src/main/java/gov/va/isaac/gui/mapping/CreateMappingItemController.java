@@ -110,6 +110,8 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
     @FXML private ComboBox<?> 		childRestrictionCombo;
     @FXML private ComboBox<?> 		descriptionRestrictionCombo;
     @FXML private ComboBox<?> 		sourceConceptCombo;
+    @FXML private ComboBox<?>		qualifierCombo;
+    @FXML private ComboBox<?>		statusCombo;
     @FXML private ToggleGroup 		desc;    
 
     @FXML private Button 			clearRestrictionButton;
@@ -146,6 +148,8 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 	    assert childRestrictionCombo       != null: "fx:id=\"childRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert descriptionRestrictionCombo != null: "fx:id=\"descriptionRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert sourceConceptCombo          != null: "fx:id=\"sourceConceptCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert qualifierCombo          	   != null: "fx:id=\"qualifierCombo\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert statusCombo          	   != null: "fx:id=\"statusCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert clearRestrictionButton      != null: "fx:id=\"clearRestrictionButton\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert saveButton                  != null: "fx:id=\"saveButton\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert cancelButton                != null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";

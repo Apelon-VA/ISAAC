@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane fx:id="borderPane_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.about.AboutViewController">
+<BorderPane fx:id="borderPane_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="600.0" prefHeight="600.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.about.AboutViewController">
 	<top>
 		<Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="40.0" styleClass="headerBackground" text="ISAAC" BorderPane.alignment="CENTER">
 			<font>
@@ -30,7 +30,28 @@
 			</padding>
 		</HBox>
 	</bottom>
-	<center>
-		<ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
-	</center>
+   <center>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+          <Tab closable="false" text="Application">
+               <content>
+                  <ScrollPane fx:id="appTabScollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets></ScrollPane>
+               </content>
+            </Tab>
+          <Tab closable="false" text="Database">
+               <content>
+                  <ScrollPane fx:id="dbTabScollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+            <Tab closable="false" text="Database Dependencies">
+               <content>
+                  <ScrollPane fx:id="dbDependenciesTabScollPane_" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </center>
 </BorderPane>
