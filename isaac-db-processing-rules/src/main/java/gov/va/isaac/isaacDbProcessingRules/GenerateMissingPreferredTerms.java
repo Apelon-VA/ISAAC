@@ -92,7 +92,7 @@ public class GenerateMissingPreferredTerms implements TransformConceptIterateI
 	@Override
 	public boolean transform(TerminologyStoreDI ts, ConceptChronicleBI cc) throws Exception
 	{
-		
+		examinedConcepts.getAndIncrement();
 		boolean foundPreferred = false;;
 		String fsnText = null;
 		LanguageCode fsnLC = null;
