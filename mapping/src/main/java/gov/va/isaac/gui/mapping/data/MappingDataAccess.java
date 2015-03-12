@@ -49,8 +49,13 @@ public class MappingDataAccess
 	 * @return the mappings.  Will not return null.
 	 * @throws IOException 
 	 */
-	public static List<MappingSet> getMaps() throws IOException
+	public static List<MappingSet> getMappingSets() throws IOException {
+		return getMappingSets(false);
+	}
+	
+	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException
 	{
+		//TODO implement Active Only
 		try
 		{
 			ArrayList<MappingSet> result = new ArrayList<>();
@@ -76,12 +81,23 @@ public class MappingDataAccess
 		}
 	}
 	
+	/*
+	 * Removed by DNT 3/12/15
+	 * Object creation should be done by directly calling model, not DAO
+	 *
 	public static MappingSet createMappingSet(String mappingName, String inverseName, String purpose, String description, UUID editorStatus) throws IOException
 	{
 		
 		MappingSet ms = new MappingSet(mappingName, inverseName, purpose, description, editorStatus);
 		
 		//TODO remove the random generator fun
+
+		return ms;
+	}
+	*/
+	
+	// Holder for example mapping item generation
+	public static void generateRandomMappingItems(MappingSet ms) throws IOException {
 		try
 		{
 			LuceneDescriptionIndexer ldi = AppContext.getService(LuceneDescriptionIndexer.class);
@@ -101,18 +117,17 @@ public class MappingDataAccess
 					target = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
 				}
 				
-				createMapping(source, ms.getID(), target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+				MappingItem mi = new MappingItem(source, ms.getID(), target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+				
 			}
 		}
 		catch (Exception e)
 		{
 			LOG.error("oops", e);
 		}
-
-		return ms;
 	}
 	
-	public static List<MappingItem> getMappings(UUID mappingSetID) throws IOException
+	public static List<MappingItem> getMappingItems(UUID mappingSetID) throws IOException
 	{
 		try
 		{
@@ -139,8 +154,14 @@ public class MappingDataAccess
 		}
 	}
 	
+	/*
+	 * Removed by DNT 3/12/15
+	 * Object should be created through the model, not DAO.
+	 *
 	public static MappingItem createMapping(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
 	{
 		return new MappingItem(sourceConcept, mappingSetID, targetConcept, qualifier, editorStatus);
 	}
+	*
+	*/
 }
